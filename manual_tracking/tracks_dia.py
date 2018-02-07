@@ -1,3 +1,5 @@
+# File originally written by Guizela Huelsz Prince
+
 import numpy as np
 import tifffile as tif
 import matplotlib.pyplot as plt
