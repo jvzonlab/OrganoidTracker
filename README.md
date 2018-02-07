@@ -1,7 +1,9 @@
 Tracking code
 =============
 
-Code for tracking (identifiying and linking) the positions of particles.
+Code for tracking the positions of cells. Tracking consists of two tasks: identification and linking. Identification
+is the process where the positions of cells are determined in single images, while linking is the process where it is
+determined wat cell at frame t corresponds to wat cell(s) in frame t + 1.
 
 Setting up the environment
 --------------------------
@@ -68,3 +70,9 @@ track is within ± 2 z slices. Every time a cell divides, create a new track for
 ### From version 4: (Needs scikit image)  
 a​: Increase contrast  
 d​: Decrease contrast 
+
+extract_manual_positions
+------------------------
+Extracts the positions from the above manually obtained data. This throws away all trajectory information, which is on
+purpose, as our linking algorithm should be able to reconstruct it. See the file itself for instructions.
+
