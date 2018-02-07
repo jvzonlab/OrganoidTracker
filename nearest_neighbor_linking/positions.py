@@ -7,8 +7,6 @@ class Particle:
         self.x = x
         self.y = y
         self.z = z
-        self.links_next = []
-        self.links_previous = []
 
     def link_to_previous(self, particle_in_past) -> None:
         """Makes a connection in time between the particles. Multiple connections are allowed. No checks for physical
@@ -28,12 +26,12 @@ class Particle:
 class Frame:
     """A single point in time."""
 
-    def __init__(self, frame_number, particles):
+    def __init__(self, frame_number: int, particles):
         self._frame_number = frame_number
         self._particles = particles
 
     def frame_number(self) -> int:
-        self._frame_number
+        return self._frame_number
 
     def particles(self):
         return self._particles
@@ -44,11 +42,11 @@ class Experiment:
     def __init__(self):
         self._frames = {}
 
-    def add_frame(self, frame: int, raw_particles) -> None:
+    def add_frame(self, frame_number: int, raw_particles) -> None:
         particles = []
         for raw_particle in raw_particles:
             particles.append(Particle(raw_particle[0], raw_particle[1], raw_particle[2]))
-        self._frames[str(frame)] = Frame(particles)
+        self._frames[str(frame_number)] = Frame(frame_number, particles)
 
     def get_frame(self, frame_number : int) -> Frame:
         """Gets the frame with the given number. Throws ValueError if no such frame exists."""
@@ -57,9 +55,9 @@ class Experiment:
         except KeyError:
             raise ValueError # More appropriate error
 
-    def get_previous_frame(self, frame: Frame) -> Frame:
-        """Gets the frame directory before the given frame, or ValueError if the given frame is the first frame."""
-        return self.get_frame(self, frame.frame_number())
+    def get_next_frame(self, frame: Frame) -> Frame:
+        """Gets the frame directory after the given frame, or ValueError if the given frame is the last frame."""
+        return self.get_frame(frame.frame_number() + 1)
 
 
 def load_positions_from_json(json_file_name: str) -> Experiment:

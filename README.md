@@ -76,3 +76,6 @@ extract_manual_positions
 Extracts the positions from the above manually obtained data. This throws away all trajectory information, which is on
 purpose, as our linking algorithm should be able to reconstruct it. See the file itself for instructions.
 
+link_nearest_neighbors
+----------------------
+Simple nearest neighbor-linking.
