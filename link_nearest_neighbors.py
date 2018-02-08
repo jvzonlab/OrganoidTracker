@@ -1,3 +1,4 @@
+# Simple nearest-neighbor linking
 from nearest_neighbor_linking import positions
 from nearest_neighbor_linking import tree_creator
 import networkx
@@ -11,6 +12,6 @@ _input_file = "../Results/" + _name + "/Manual positions.json"
 
 
 particles = positions.load_positions_from_json(_input_file)
-graph = tree_creator.link_particles(particles)
+graph = tree_creator.link_particles(particles, 1.0)
 networkx.draw(graph, with_labels=False, font_weight='bold', node_size=3)
 pyplot.show()
