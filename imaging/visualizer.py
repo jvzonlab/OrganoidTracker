@@ -1,15 +1,18 @@
 from imaging import Experiment, Frame, Particle
 from matplotlib.figure import Figure, Axes
 from matplotlib.backend_bases import KeyEvent
-from networkx import Graph
 from numpy import ndarray
 import matplotlib.pyplot as plt
 import tifffile
 
 
-def visualize(experiment : Experiment):
-    return Visualizer(experiment)
+_visualizer = None # Reference to prevent event handler from being garbage collected
 
+
+def visualize(experiment : Experiment):
+    # Keep reference to avoid event handler from being garbage collected
+    global _visualizer
+    _visualizer = Visualizer(experiment)
 
 class Visualizer:
     """A complete application for visualization of an experiment"""

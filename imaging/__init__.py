@@ -2,6 +2,7 @@
 from typing import List, Iterable, Optional
 from networkx import Graph
 
+
 class Particle:
 
     def __init__(self, x: float, y: float, z: float):
@@ -30,6 +31,13 @@ class Particle:
         # Mostly useful for graphs
         return str(self._frame_number)
 
+    def __hash__(self):
+        return hash(self.x) ^ hash(self.y) ^ hash(self.z) ^ hash(self._frame_number)
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) \
+               and self.x == other.x and self.y == other.y and self.z == other.z \
+               and self._frame_number == other._frame_number
 
 class Frame:
     """A single point in time."""

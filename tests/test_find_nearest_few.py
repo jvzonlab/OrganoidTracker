@@ -1,5 +1,5 @@
 import unittest
-from imaging.positions import Frame, Particle
+from imaging.io import Frame, Particle
 from nearest_neighbor_linking.find_nearest_few import find_nearest_particles
 
 
