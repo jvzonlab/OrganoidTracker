@@ -1,6 +1,6 @@
 """Contains function that allows you to find the nearest few particles"""
 
-from nearest_neighbor_linking.positions import Particle, Frame
+from imaging import Particle, Frame
 
 
 class _NearestParticles:
