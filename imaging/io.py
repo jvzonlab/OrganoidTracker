@@ -29,6 +29,7 @@ def _my_decoder(json_object):
         return particle
     return json_object
 
+
 def save_links_to_json(links: Graph, json_file_name: str):
     """Saves particle linking data to a JSON file. File follows the d3.js format, like the example here:
     http://bl.ocks.org/mbostock/4062045 """
@@ -36,10 +37,11 @@ def save_links_to_json(links: Graph, json_file_name: str):
     with open(json_file_name, 'w') as handle:
         json.dump(data, handle, cls=_MyEncoder)
 
-def load_links_from_json(experiment: Experiment, json_file_name: str):
+
+def load_links_from_json(json_file_name: str) -> Graph:
     with open(json_file_name) as handle:
         data = json.load(handle, object_hook=_my_decoder)
         if data == None:
             raise ValueError
         graph = node_link_graph(data)
-        experiment.particle_links(graph)
+        return graph

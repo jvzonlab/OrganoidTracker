@@ -14,7 +14,7 @@ class Particle:
     def distance_squared(self, other) -> float:
         """Gets the squared distance. Working with squared distances instead of normal ones gives a much better
         performance, as the expensive sqrt(..) function can be avoided."""
-        return (self.x - other.x) ** 2 + (self.y - other.y) ** 2 + ((self.z - other.z) * 10) ** 2;
+        return (self.x - other.x) ** 2 + (self.y - other.y) ** 2 + ((self.z - other.z) * 5) ** 2;
 
     def frame_number(self, frame_number = None):
         if frame_number is not None:
@@ -26,10 +26,6 @@ class Particle:
 
     def __repr__(self):
         return "Particle(" + str(self.x) + "," + str(self.y) + "," + str(self.z) + ")"
-
-    def __str__(self):
-        # Mostly useful for graphs
-        return str(self._frame_number)
 
     def __hash__(self):
         return hash(self.x) ^ hash(self.y) ^ hash(self.z) ^ hash(self._frame_number)
@@ -72,10 +68,12 @@ class Experiment:
 
     _frames: List[Frame]
     _particle_links: Optional[Graph]
+    _particle_links_baseline: Optional[Graph] # Links that are assumed to be correct
 
     def __init__(self):
         self._frames = {}
         self._particle_links = None
+        self._particle_links_baseline = None
 
     def add_particles(self, frame_number: int, raw_particles) -> None:
         """Adds particles to a frame."""
@@ -112,3 +110,11 @@ class Experiment:
                 raise ValueError # Cannot replace network
             self._particle_links = network
         return self._particle_links
+
+    def particle_links_baseline(self, network: Optional[Graph] = None) -> Optional[Graph]:
+        """Gets or sets a particle linking result **that is known to be correct**."""
+        if network is not None:
+            if self._particle_links_baseline is not None:
+                raise ValueError # Cannot replace network
+            self._particle_links_baseline = network
+        return self._particle_links_baseline

@@ -5,6 +5,7 @@ Code for tracking the positions of cells. Tracking consists of two tasks: identi
 is the process where the positions of cells are determined in single images, while linking is the process where it is
 determined wat cell at frame t corresponds to wat cell(s) in frame t + 1.
 
+
 Setting up the environment
 --------------------------
 To be able to run the scripts, you first need to install the appropriate libraries. That is:
@@ -20,6 +21,7 @@ Anaconda to be installed)
 
 (On macOs, run `source activate` instead of `activate`.)
 
+
 Running the scripts
 -------------------
 
@@ -30,52 +32,29 @@ using:
    
 For now, we have the following scripts:
 
+
+visualize.py
+------------
+Generic data visualization tool that does not do any calculations first. Loads images from TIFF files, positions and
+tracks from JSON files. In [the manuals folder](manuals/VISUALIZER.md) a manual is available.
+
+
 track_manually.py
 -----------------
+Code by Guizela, modified by Rutger. This script is used to manually track the particles. In
+[the manuals folder](manuals/TRACK_MANUALLY.md) a short manual is available.
 
-Code by Guizela, modified by Rutger. This script is used to manually track the particles. Short manual:
 
-### Keys:
-
-1​: Previous time frame  
-2​: Next time frame  
-3​: Move 5 frames forwards  
-4​: Move 5 frames backwards
-
-z​: Show current time frame in green and next time point in red
-x​: Show current time frame (only here you can create and delete tracks)
-c​: Show next time frame in red
-
-o​: Show brightfield
-
-q​: Slice below  
-w​: Slice above  
-e​: 5 slices below  
-r​: 5 slices above
-
--​: Go to first timepoint of selected track
-=​: Go to last timepoint of selected track
-
-n​: Create track where mouse is positioned  
-Left click​: Move selected track to where mouse is positioned  
-Right click​: Select track  
-Del​: Delete point in selected track  
-Space​: Goes to z of selected track 
-
-Press ​escape ​to save tracks!!! 
-
-Selected track is shown in red, others in gray. Arrows indicate z position of track, points indicate that z position of
-track is within ± 2 z slices. Every time a cell divides, create a new track for each daughter cell. 
- 
-### From version 4: (Needs scikit image)  
-a​: Increase contrast  
-d​: Decrease contrast 
-
-extract_manual_positions
-------------------------
+extract_manual_positions.py
+---------------------------
 Extracts the positions from the above manually obtained data. This throws away all trajectory information, which is on
 purpose, as our linking algorithm should be able to reconstruct it. See the file itself for instructions.
 
-link_nearest_neighbors
-----------------------
+
+link_nearest_neighbors.py
+-------------------------
 Simple nearest neighbor-linking.
+
+compare_links.py
+----------------
+Assists in comparing linking results of 

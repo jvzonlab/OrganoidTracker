@@ -2,6 +2,8 @@ from imaging import Experiment, Frame, Particle
 from matplotlib.figure import Figure, Axes
 from matplotlib.backend_bases import KeyEvent
 from numpy import ndarray
+from networkx import Graph
+from typing import Optional
 import matplotlib.pyplot as plt
 import tifffile
 
@@ -10,9 +12,15 @@ _visualizer = None # Reference to prevent event handler from being garbage colle
 
 
 def visualize(experiment : Experiment):
+    _configure_matplotlib()
+
     # Keep reference to avoid event handler from being garbage collected
     global _visualizer
     _visualizer = Visualizer(experiment)
+
+def _configure_matplotlib():
+    plt.rcParams['keymap.forward'] = []
+    plt.rcParams['keymap.back'] = ['backspace']
 
 class Visualizer:
     """A complete application for visualization of an experiment"""
@@ -48,50 +56,95 @@ class Visualizer:
         return frame, frame_images
 
     def draw_view(self):
-        self._ax.clear()
+        self._clear_axis()
         if self._frame_images is not None:
             self._ax.imshow(self._frame_images[self._z])
-        self.draw_particles()
-        plt.title("Frame " + str(self._frame.frame_number()) + "    (z=" + str(self._z) + ")")
+        errors = self.draw_particles()
+
+        plt.title(self.get_title(errors))
         plt.draw()
 
-    def draw_particles(self):
+    def get_title(self, errors: int) -> str:
+        title = "Frame " + str(self._frame.frame_number()) + "    (z=" + str(self._z) + ")"
+        if errors != 0:
+            title += " (errors: " + str(errors) + ")"
+        return title
+
+    def _clear_axis(self):
+        xlim, ylim = self._ax.get_xlim(), self._ax.get_ylim()
+        self._ax.clear()
+        if xlim[1] - xlim[0] > 2:
+            # Only preserve scale if some sensible value was recorded
+            self._ax.set_xlim(*xlim)
+            self._ax.set_ylim(*ylim)
+            self._ax.set_autoscale_on(False)
+
+    def draw_particles(self) -> int:
+        """Draws particles and links. Returns the amount of logical inconsistencies in the iamge"""
+        errors = 0
         for particle in self._frame.particles():
             if abs(particle.z - self._z) > 2:
                 continue
-            self._draw_links(particle)
+            errors += self._draw_links(particle)
 
             # Draw the particle itself (as a square or circle, depending on its depth)
             marker_style = 's'
             marker_size = 7
             if particle.z != self._z:
                 marker_style = 'o'
-                marker_size = 4
+                marker_size = 5
             plt.plot(particle.x, particle.y, marker_style, color='red', markeredgecolor='black', markersize=marker_size,
                      markeredgewidth=1)
 
-    def _draw_links(self, particle: Particle):
-        network = self._experiment.particle_links()
+        return errors
+
+    def _draw_links(self, particle: Particle) -> int:
+        """Draws links between the particles. Returns 1 if there is 1 error: the baseline links don't match the actual
+        links.
+        """
+        links_normal = self._get_links(self._experiment.particle_links(), particle)
+        links_baseline = self._get_links(self._experiment.particle_links_baseline(), particle)
+
+        marker_style = 's'
+        marker_size = 6
+        if particle.z != self._z:
+            marker_style = 'o'
+            marker_size = 4
+
+        if len(links_baseline) != 0 and links_normal != links_baseline:
+            # Links don't match
+            self._draw_given_links(particle, links_normal, marker_size=marker_size, marker_style=marker_style,
+                                   line_style='dotted', line_width=3)
+            self._draw_given_links(particle, links_baseline, marker_size=marker_size, marker_style=marker_style)
+            return 1
+        else:
+            # Links do match
+            self._draw_given_links(particle, links_normal, marker_size=marker_size, marker_style=marker_style)
+            return 0
+
+    @staticmethod
+    def _draw_given_links(particle, links, line_style='solid', line_width=1, marker_style='s', marker_size=7):
+        for linked_particle in links:
+            if linked_particle.frame_number() < particle.frame_number():
+                # Drawing to past
+
+                plt.plot(linked_particle.x, linked_particle.y, marker_style, color='darkred', markeredgecolor='black',
+                         markersize=marker_size, markeredgewidth=1)
+                plt.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], color='darkred',
+                         linestyle=line_style, linewidth=line_width)
+            else:
+                plt.plot(linked_particle.x, linked_particle.y, marker_style, color='pink', markeredgecolor='black',
+                         markersize=marker_size, markeredgewidth=1)
+                plt.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], color='pink',
+                         linestyle=line_style, linewidth=line_width)
+
+    def _get_links(self, network: Optional[Graph], particle: Particle):
         if network is None:
-            return
+            return []
         try:
-            links = network[particle]
-            for linked_particle in links:
-                marker_style = 's'
-                marker_size = 7
-                if linked_particle.z != self._z:
-                    marker_style = 'o'
-                    marker_size = 4
-                if linked_particle.frame_number() < particle.frame_number():
-                    plt.plot(linked_particle.x, linked_particle.y, marker_style, color='darkred', markeredgecolor='black',
-                             markersize=marker_size, markeredgewidth=1)
-                    plt.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], 'w-')
-                else:
-                    plt.plot(linked_particle.x, linked_particle.y, marker_style, color='pink', markeredgecolor='black',
-                             markersize=marker_size, markeredgewidth=1)
-                    plt.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], 'w-')
+            return network[particle]
         except KeyError:
-            pass # No edges (links)
+            return []
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "up":
