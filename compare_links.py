@@ -2,7 +2,8 @@
 # counted as errors. Solid lines in the figures represent the correct linking result, dotted lines any deviations from
 # that.
 
-from imaging import io, tifffolder, visualizer, Experiment
+from imaging import io, tifffolder, Experiment
+from imaging import image_visualizer
 from matplotlib import pyplot
 from manual_tracking import links_extractor
 import networkx
@@ -15,7 +16,7 @@ _images_folder = "../Images/" + _name + "/"
 _images_format= "nd799xy08t%03dc1.tif"
 
 _automatic_links = io.load_links_from_json("../Results/" + _name + "/Nearest neighbor links.json")
-_baseline_links = links_extractor.extract_from_tracks("../Results/" + _name + "/Manual tracks")
+_baseline_links = io.load_links_from_json("../Results/" + _name + "/Manual links.json")
 # END OF PARAMETERS
 
 print("Starting...")
@@ -26,7 +27,7 @@ experiment.particle_links(_automatic_links)
 experiment.particle_links_baseline(_baseline_links)
 
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format)
-vis = visualizer.visualize(experiment)
+vis = image_visualizer.show(experiment)
 
 print("Done!")
 pyplot.show()

@@ -1,5 +1,5 @@
 # Simple nearest-neighbor linking
-from imaging import Experiment, io, tifffolder, visualizer
+from imaging import Experiment, io, tifffolder, image_visualizer
 from nearest_neighbor_linking import tree_creator
 from matplotlib import pyplot
 
@@ -20,11 +20,11 @@ io.load_positions_from_json(experiment, _positions_file)
 print("Disovering images")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format, max_frame=_max_frame)
 print("Staring link process")
-tree_creator.link_particles(experiment, max_frame=_max_frame, tolerance=1.3)
+tree_creator.link_particles(experiment, max_frame=_max_frame)
 print("Writing results to file")
 io.save_links_to_json(experiment.particle_links(), _output_file)
 print("Visualizing")
-visualizer.visualize(experiment)
+image_visualizer.show(experiment)
 print("Done")
 pyplot.show()
 

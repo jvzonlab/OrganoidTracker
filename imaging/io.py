@@ -3,6 +3,7 @@ import json
 from json import JSONEncoder
 from imaging import Experiment, Particle
 from networkx import node_link_data, node_link_graph, Graph
+import numpy
 
 
 def load_positions_from_json(experiment: Experiment, json_file_name: str):
@@ -17,6 +18,9 @@ class _MyEncoder(JSONEncoder):
     def default(self, o):
         if isinstance(o, Particle):
             return o.__dict__
+
+        if isinstance(o, numpy.int32):
+            return numpy.asscalar(o)
 
         return JSONEncoder.default(self, o)
 
