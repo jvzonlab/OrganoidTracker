@@ -1,7 +1,7 @@
 """Contains function that allows you to find the nearest few particles"""
 
 from imaging import Particle, Frame
-
+import operator
 
 class _NearestParticles:
     """Internal class for bookkeeping of what the nearest few particles are"""
@@ -33,13 +33,19 @@ class _NearestParticles:
 
     def get_particles(self):
         """Gets the found particles."""
-        return list(self._nearest.keys())
+        items = sorted(self._nearest.items(), key=operator.itemgetter(1))
+        return [item[0] for item in items]
 
 
 def find_nearest_particles(search_in: Frame, around: Particle, tolerance: float):
-    """Finds the particles nearest to the given particle. search_in is the frame to search in, around is the particle to
-    search around and tolarance is a number that influences how much particles other than the nearest are included. A
-    tolerance of 1.05 makes particles that are 5% further than the nearest also included.
+    """Finds the particles nearest to the given particle.
+
+    - search_in is the frame to search in
+    - around is the particle to search around
+    - tolerance is a number that influences how much particles other than the nearest are included. A tolerance of 1.05
+      makes particles that are 5% further than the nearest also included.
+
+    Returns a list of the nearest particles, ordered from closest to furthest
     """
     if tolerance < 1:
         raise ValueError()

@@ -25,16 +25,18 @@ class TrackVisualizer(Visualizer):
 
         self._draw_particle(self._particle, color='purple', size=7)
 
-        self._draw_network(self._experiment.particle_links(), line_style='dotted', line_width=3)
+        self._draw_network(self._experiment.particle_links(), line_style='dotted', line_width=3, max_distance=0)
         self._draw_network(self._experiment.particle_links_baseline())
 
-
+        plt.title("Tracks of particle " + str(self._particle))
         plt.draw()
 
-    def _draw_network(self, network: Optional[Graph], line_style: str = 'solid', line_width=1):
+    def _draw_network(self, network: Optional[Graph], line_style: str = 'solid', line_width: int = 1,
+                      max_distance: int = 10):
         if network is not None:
             already_drawn = {self._particle}
-            self._draw_all_connected(self._particle, network, already_drawn, line_style=line_style, line_width=line_width)
+            self._draw_all_connected(self._particle, network, already_drawn, line_style=line_style,
+                                     line_width=line_width, max_distance=max_distance)
             self._particles_on_display.update(already_drawn)
 
     def _draw_all_connected(self, particle: Particle, network: Graph, already_drawn: Set[Particle],
@@ -43,12 +45,16 @@ class TrackVisualizer(Visualizer):
             links = network[particle]
             for linked_particle in links:
                 if linked_particle not in already_drawn:
-                    color = 'darkred'
-                    if linked_particle.frame_number() > self._particle.frame_number():
-                        color = 'pink'
-                    # Particle in the future, draw
-                    self._ax.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], color=color,
-                                  linestyle=line_style, linewidth = line_width)
+                    color = 'pink'
+                    positions = [particle.x, particle.y, linked_particle.x - particle.x, linked_particle.y - particle.y]
+                    if linked_particle.frame_number() < self._particle.frame_number():
+                        # Particle in the past, use different style
+                        color = 'darkred'
+                        positions = [linked_particle.x, linked_particle.y,
+                                     particle.x - linked_particle.x, particle.y - linked_particle.y]
+
+                    self._ax.arrow(*positions, color=color, linestyle=line_style, linewidth=line_width, fc=color,
+                                   ec=color, head_width=1, head_length=1)
                     if abs(linked_particle.frame_number() - self._particle.frame_number()) <= max_distance:
                         already_drawn.add(linked_particle)
                         self._draw_particle(linked_particle, color)

@@ -16,24 +16,29 @@ class Particle:
         performance, as the expensive sqrt(..) function can be avoided."""
         return (self.x - other.x) ** 2 + (self.y - other.y) ** 2 + ((self.z - other.z) * 5) ** 2;
 
-    def frame_number(self, frame_number = None):
-        if frame_number is not None:
-            if self._frame_number is not None:
-                # Frame number cannot be changed once set
-                raise ValueError
-            self._frame_number = frame_number
+    def frame_number(self):
         return self._frame_number
 
+    def with_frame_number(self, frame_number: int):
+        if self._frame_number is not None:
+            raise ValueError("frame_number was already set")
+        self._frame_number = frame_number
+        return self
+
     def __repr__(self):
-        return "Particle(" + str(self.x) + "," + str(self.y) + "," + str(self.z) + ")"
+        string = "Particle(" + ("%.2f" % self.x) + ", " + ("%.2f" % self.y) + ", " + ("%.0f" % self.z) + ")"
+        if self._frame_number is not None:
+            string += ".with_frame_number(" + str(self._frame_number) + ")"
+        return string
 
     def __hash__(self):
-        return hash(self.x) ^ hash(self.y) ^ hash(self.z) ^ hash(self._frame_number)
+        return hash(int(self.x)) ^ hash(int(self.y)) ^ hash(int(self.z)) ^ hash(int(self._frame_number))
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) \
-               and self.x == other.x and self.y == other.y and self.z == other.z \
-               and self._frame_number == other._frame_number
+               and abs(self.x - other.x) < 0.00001 and abs(self.x - other.x) < 0.00001 and abs(self.z - other.z) < 0.00001 \
+               and abs(self._frame_number - other._frame_number) < 0.00001
+
 
 class Frame:
     """A single point in time."""
@@ -56,7 +61,7 @@ class Frame:
         """Adds all particles in the list to this frame. Throws ValueError if the particles were already assigned to
         a frame."""
         for particle in particles:
-            particle.frame_number(self._frame_number)
+            particle.with_frame_number(self._frame_number)
             self._particles.append(particle)
 
     def set_image_loader(self, loader):
@@ -68,7 +73,7 @@ class Frame:
     def load_images(self):
         image_loader = self._image_loader
         if self._image_loader is None:
-            return []
+            return None
         return image_loader()
 
 
@@ -128,3 +133,20 @@ class Experiment:
                 raise ValueError # Cannot replace network
             self._particle_links_baseline = network
         return self._particle_links_baseline
+
+
+def get_closest_particle(particles: Iterable[Particle], search_position: Particle,
+                         ignore_z: bool = False, max_distance: int = 100000) -> Optional[Particle]:
+    """Gets the particle closest ot the given position."""
+    closest_particle = None
+    closest_distance_squared = max_distance ** 2
+
+    for particle in particles:
+        if ignore_z:
+            search_position.z = particle.z # Make search ignore z
+        distance = particle.distance_squared(search_position)
+        if distance < closest_distance_squared:
+            closest_distance_squared = distance
+            closest_particle = particle
+
+    return closest_particle

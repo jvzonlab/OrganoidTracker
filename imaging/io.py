@@ -29,7 +29,7 @@ def _my_decoder(json_object):
     if 'x' in json_object and 'y' in json_object and 'z' in json_object:
         particle = Particle(json_object['x'], json_object['y'], json_object['z'])
         if '_frame_number' in json_object:
-            particle.frame_number(json_object['_frame_number'])
+            particle.with_frame_number(json_object['_frame_number'])
         return particle
     return json_object
 

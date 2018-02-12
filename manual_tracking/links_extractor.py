@@ -10,18 +10,19 @@ import sys
 import numpy
 
 
-def extract_from_tracks(tracks_dir : str) -> Graph:
+def extract_from_tracks(tracks_dir : str, max_frame: int = 5000) -> Graph:
     """Extracts all positions from the track files in tracks_dir, saves them to output_dir"""
 
     _fix_python_path_for_pickle()
     graph = Graph()
-    tracks = _read_track_files(tracks_dir, graph)
-    _read_lineage_file(tracks_dir, graph, tracks)
+
+    tracks = _read_track_files(tracks_dir, graph, max_frame=max_frame)
+    _read_lineage_file(tracks_dir, graph, tracks, max_frame=max_frame)
 
     return graph
 
 
-def _read_track_files(tracks_dir: str, graph: Graph) -> List[Track]:
+def _read_track_files(tracks_dir: str, graph: Graph, max_frame: int = 5000) -> List[Track]:
     """Adds all tracks to the graph, and returns the original tracks"""
     track_files = os.listdir(tracks_dir)
     print("Found " + str(len(track_files)) + " files to analyse")
@@ -37,14 +38,14 @@ def _read_track_files(tracks_dir: str, graph: Graph) -> List[Track]:
             print("Reading track " + str(track_index))
 
         # Note that the first track will get id 0, the second id 1, etc. This is required for the lineages file
-        tracks.append(_extract_links_from_track(track_file, graph))
+        tracks.append(_extract_links_from_track(track_file, graph, max_frame=max_frame))
 
         track_index += 1
 
     return tracks
 
 
-def _read_lineage_file(tracks_dir: str, graph: Graph, tracks: List[Track]) -> None:
+def _read_lineage_file(tracks_dir: str, graph: Graph, tracks: List[Track], max_frame: int = 5000) -> None:
     """Connects the lineages in the graph based on information from the lineages.p file"""
     print("Reading lineages file")
     lineage_file = os.path.join(tracks_dir, "lineages.p")
@@ -55,9 +56,14 @@ def _read_lineage_file(tracks_dir: str, graph: Graph, tracks: List[Track]) -> No
             child_track_1 = tracks[lineage[1]]
             child_track_2 = tracks[lineage[2]]
 
-            mother_last_snapshot = _get_cell_in_last_frame(mother_track)
-            child_1_first_snapshot = _get_cell_in_first_frame(child_track_1)
-            child_2_first_snapshot = _get_cell_in_first_frame(child_track_2)
+            first_frame_after_division = numpy.amin(child_track_1.t)
+            if first_frame_after_division > max_frame:
+                continue
+
+            mother_last_snapshot = _get_cell_in_frame(mother_track, first_frame_after_division - 1)
+            child_1_first_snapshot = _get_cell_in_frame(child_track_1, first_frame_after_division)
+            child_2_first_snapshot = _get_cell_in_frame(child_track_2, first_frame_after_division)
+
             graph.add_edge(mother_last_snapshot, child_1_first_snapshot)
             graph.add_edge(mother_last_snapshot, child_2_first_snapshot)
 
@@ -65,27 +71,19 @@ def _read_lineage_file(tracks_dir: str, graph: Graph, tracks: List[Track]) -> No
 def _get_cell_in_frame(track: Track, frame_number: int) -> Particle:
     position = track.get_pos(frame_number)
     particle = Particle(position[0], position[1], position[2])
-    particle.frame_number(frame_number)
+    particle.with_frame_number(frame_number)
     return particle
 
 
-def _get_cell_in_first_frame(track: Track) -> Particle:
-    first_frame = numpy.amin(track.t)
-    return _get_cell_in_frame(track, first_frame)
-
-
-def _get_cell_in_last_frame(track: Track) -> Particle:
-    last_frame = numpy.amax(track.t)
-    return _get_cell_in_frame(track, last_frame)
-
-
-def _extract_links_from_track(track_file: str, graph: Graph) -> Track:
+def _extract_links_from_track(track_file: str, graph: Graph, max_frame: int = 5000) -> Track:
     with open(track_file, "rb") as file_handle:
         track = pickle.load(file_handle, encoding = 'latin1')
-        previous_particle = None
         current_particle = None
 
         for frame in track.t:
+            if frame > max_frame:
+                break
+
             previous_particle = current_particle
             current_particle = _get_cell_in_frame(track, frame)
             graph.add_node(current_particle)

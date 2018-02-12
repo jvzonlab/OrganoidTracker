@@ -1,28 +1,26 @@
 from imaging import Experiment, io, tifffolder, image_visualizer
 from nearest_neighbor_linking import tree_creator
-from matplotlib import pyplot
-
+from nearest_neighbor_linking import link_fixer
 
 # PARAMETERS
 _name = "multiphoton.organoids.17-07-28_weekend_H2B-mCherry.nd799xy08"
 _positions_file = "../Results/" + _name + "/Manual positions.json"
-_output_file = "../Results/" + _name + "/Nearest neighbor links.json"
+_output_file = "../Results/" + _name + "/Smart nearest neighbor links.json"
 _images_folder = "../Images/" + _name + "/"
 _images_format= "nd799xy08t%03dc1.tif"
-_max_frame = 5000
+_max_frame = 115 # After this frame, the whole crypt has moved
 # END OF PARAMETERS
 
 
 experiment = Experiment()
 print("Loading cell positions...")
 io.load_positions_from_json(experiment, _positions_file)
-print("Disovering images")
+print("Disovering images...")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format, max_frame=_max_frame)
-print("Staring link process")
-tree_creator.link_particles(experiment, max_frame=_max_frame)
-print("Writing results to file")
-io.save_links_to_json(experiment.particle_links(), _output_file)
-print("Visualizing")
-image_visualizer.show(experiment)
+print("Performing nearest-neighbor linking...")
+possible_links = tree_creator.link_particles(experiment, max_frame=_max_frame, tolerance=2)
+print("Deciding on what links to use...")
+link_result = link_fixer.prune_links(possible_links)
+print("Writing results to file...")
+io.save_links_to_json(link_result, _output_file)
 print("Done")
-pyplot.show()

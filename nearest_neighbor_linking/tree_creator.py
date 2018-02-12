@@ -3,7 +3,7 @@ from imaging import Experiment, Frame
 from nearest_neighbor_linking.find_nearest_few import find_nearest_particles
 
 
-def link_particles(experiment: Experiment, tolerance: float = 1.0, max_frame: int = 5000):
+def link_particles(experiment: Experiment, tolerance: float = 1.0, max_frame: int = 5000) -> Graph:
     """Simple nearest neighbour linking, keeping a list of potential candidates based on a given tolerance.
 
     A tolerance of 1.05 also links particles 5% from the closest particle. Note that if a tolerance higher than 1 is
@@ -17,7 +17,7 @@ def link_particles(experiment: Experiment, tolerance: float = 1.0, max_frame: in
     _add_nodes(graph, frame_current)
 
     try:
-        for i in range(0, max_frame):
+        for i in range(0, max_frame - 1):
             frame_previous = frame_current
 
             frame_current = experiment.get_next_frame(frame_previous)
@@ -29,7 +29,7 @@ def link_particles(experiment: Experiment, tolerance: float = 1.0, max_frame: in
         pass
 
     print("Done creating the tree graph!")
-    experiment.particle_links(graph)
+    return graph
 
 
 def _add_nodes(graph: Graph, frame: Frame) -> None:
@@ -40,6 +40,7 @@ def _add_nodes(graph: Graph, frame: Frame) -> None:
 def _add_edges(graph: Graph, frame_previous: Frame, frame_current: Frame, tolerance: float):
     for particle in frame_current.particles():
         nearby_list = find_nearest_particles(frame_previous, particle, tolerance)
+        preferred = True
         for nearby_particle in nearby_list:
-            graph.add_edge(particle, nearby_particle)
-
+            graph.add_edge(particle, nearby_particle, pref=preferred)
+            preferred = False # All remaining links are not preferred

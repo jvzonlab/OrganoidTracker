@@ -1,3 +1,4 @@
+import imaging
 from imaging import Experiment, Particle
 from matplotlib.figure import Figure, Axes
 from matplotlib.backend_bases import KeyEvent, MouseEvent
@@ -49,18 +50,7 @@ class Visualizer:
     def get_closest_particle(particles: Iterable[Particle], x: int, y: int, z: Optional[int], max_distance: int = 100000):
         """Gets the particle closest ot the given position."""
         search_position = Particle(x, y, z)
-        closest_particle = None
-        closest_distance_squared = max_distance ** 2
-
-        for particle in particles:
-            if z is None:
-                search_position.z = particle.z # Make search ignore z
-            distance = particle.distance_squared(search_position)
-            if distance < closest_distance_squared:
-                closest_distance_squared = distance
-                closest_particle = particle
-
-        return closest_particle
+        return imaging.get_closest_particle(particles, search_position, ignore_z=z is None, max_distance=max_distance)
 
 
 _visualizer = None # Reference to prevent event handler from being garbage collected
