@@ -24,6 +24,7 @@ io.load_positions_from_json(experiment, _positions_file)
 experiment.particle_links(_automatic_links)
 experiment.particle_links_baseline(_baseline_links)
 
+print("There are " + str(networkx.number_of_edges(_baseline_links)) + " connections in the baseline results.")
 missed_links = networkx.difference(_baseline_links, _automatic_links);
 made_up_links = networkx.difference(_automatic_links, _baseline_links);
 
