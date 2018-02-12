@@ -31,11 +31,7 @@ class ImageVisualizer(Visualizer):
 
     def load_frame(self, frame_number: int):
         frame = self._experiment.get_frame(frame_number)
-        image_file = frame.image_file_name()
-
-        frame_images = None
-        if image_file is not None:
-            frame_images = _read_image_file(image_file)
+        frame_images = frame.load_images()
 
         return frame, frame_images
 
@@ -158,6 +154,3 @@ class ImageVisualizer(Visualizer):
             pass
 
 
-def _read_image_file(image_file) -> ndarray:
-    with tifffile.TiffFile(image_file) as f:
-        return f.asarray(maxworkers=None)

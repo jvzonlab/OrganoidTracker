@@ -1,5 +1,3 @@
-# Simple nearest-neighbor linking: every cell is linked to the nearest cell in the previous image. Physical and
-# biological constraints are not taken into account.
 from imaging import Experiment, io, tifffolder, image_visualizer
 from nearest_neighbor_linking import tree_creator
 from matplotlib import pyplot
@@ -28,4 +26,3 @@ print("Visualizing")
 image_visualizer.show(experiment)
 print("Done")
 pyplot.show()
-

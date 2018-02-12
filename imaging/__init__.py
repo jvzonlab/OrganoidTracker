@@ -38,10 +38,13 @@ class Particle:
 class Frame:
     """A single point in time."""
 
+    _frame_number: int
+    _particles: List[Particle]
+
     def __init__(self, frame_number: int):
         self._frame_number = frame_number
         self._particles = []
-        self._image_file_name = None
+        self._image_loader = None
 
     def frame_number(self) -> int:
         return self._frame_number
@@ -56,10 +59,17 @@ class Frame:
             particle.frame_number(self._frame_number)
             self._particles.append(particle)
 
-    def image_file_name(self, file: str = None) -> str:
-        if file is not None:
-            self._image_file_name = file
-        return self._image_file_name
+    def set_image_loader(self, loader):
+        """Sets the image loader. The image loader must ba a function with no args, that returns a numpy
+        multidimensional array. Each element in the array is another array that forms an image.
+        """
+        self._image_loader = loader
+
+    def load_images(self):
+        image_loader = self._image_loader
+        if self._image_loader is None:
+            return []
+        return image_loader()
 
 
 class Experiment:
@@ -83,9 +93,9 @@ class Experiment:
         frame = self._get_or_add_frame(frame_number)
         frame.add_particles(particles)
 
-    def add_image(self, frame_number: int, image_file_name: str) -> None:
+    def add_image_loader(self, frame_number: int, image_loader) -> None:
         frame = self._get_or_add_frame(frame_number)
-        frame.image_file_name(image_file_name)
+        frame.set_image_loader(image_loader)
 
     def get_frame(self, frame_number: int) -> Frame:
         """Gets the frame with the given number. Throws KeyError if no such frame exists."""
