@@ -25,7 +25,7 @@ class TrackVisualizer(Visualizer):
 
         self._draw_particle(self._particle, color='purple', size=7)
 
-        self._draw_network(self._experiment.particle_links(), line_style='dotted', line_width=3, max_distance=0)
+        self._draw_network(self._experiment.particle_links(), line_style='dotted', line_width=3, max_distance=1)
         self._draw_network(self._experiment.particle_links_baseline())
 
         plt.title("Tracks of particle " + str(self._particle))

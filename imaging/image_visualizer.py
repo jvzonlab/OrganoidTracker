@@ -6,7 +6,6 @@ from numpy import ndarray
 from networkx import Graph
 from typing import Optional, Iterable
 import matplotlib.pyplot as plt
-import tifffile
 
 
 def show(experiment : Experiment):
@@ -40,8 +39,8 @@ class ImageVisualizer(Visualizer):
         if self._frame_images is not None:
             self._ax.imshow(self._frame_images[self._z])
         errors = self.draw_particles()
-
         plt.title(self.get_title(errors))
+
         plt.draw()
 
     def get_title(self, errors: int) -> str:
@@ -131,6 +130,20 @@ class ImageVisualizer(Visualizer):
                 from imaging.track_visualizer import TrackVisualizer
                 track_visualizer = TrackVisualizer(self._experiment, self._fig, particle)
                 activate(track_visualizer)
+
+    def _on_command(self, command: str):
+        if command[0] == "f":
+            frame_str = command[1:]
+            try:
+                new_frame_number = int(frame_str.strip())
+                self._frame, self._frame_images = self.load_frame(new_frame_number)
+                self.draw_view()
+            except KeyError:
+                print("Unknown frame: " + str(new_frame_number))
+            except ValueError:
+                print("Cannot read number: " + frame_str)
+            return
+        print("Unknown command: " + command)
 
     def _move_in_z(self, dz: int):
         old_z = self._z

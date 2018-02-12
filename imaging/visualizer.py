@@ -15,13 +15,15 @@ class Visualizer:
 
     _key_handler_id: int
     _mouse_handler_id: int
+    _pending_text: Optional[str]
 
     def __init__(self, experiment: Experiment, figure: Figure):
         self._experiment = experiment
         self._fig = figure
         self._ax = self._fig.gca()
-        self._key_handler_id = self._fig.canvas.mpl_connect("key_press_event", self._on_key_press)
+        self._key_handler_id = self._fig.canvas.mpl_connect("key_press_event", self._on_key_press_raw)
         self._mouse_handler_id = self._fig.canvas.mpl_connect("button_press_event", self._on_mouse_click)
+        self._pending_text = None
 
     def _clear_axis(self):
         """Clears the axis, except that zoom settings are preserved"""
@@ -36,7 +38,29 @@ class Visualizer:
     def draw_view(self):
         print("Override this method to draw the view.")
 
+    def _on_key_press_raw(self, event: KeyEvent):
+        # Records commands
+        if event.key == '/':
+            # Entering command mode
+            self._pending_text = ""
+            return
+
+        if self._pending_text is None:
+            self._on_key_press(event)
+        else:
+            if event.key == 'enter':
+                # Finish typing command
+                text = self._pending_text
+                self._pending_text = None
+                if len(text) > 0:
+                    self._on_command(text)
+            else:
+                self._pending_text += event.key
+
     def _on_key_press(self, event: KeyEvent):
+        pass
+
+    def _on_command(self, text: str):
         pass
 
     def _on_mouse_click(self, event: MouseEvent):
@@ -55,12 +79,13 @@ class Visualizer:
 
 _visualizer = None # Reference to prevent event handler from being garbage collected
 
-def visualize(experiment: Experiment):
-    pass
 
 def _configure_matplotlib():
     plt.rcParams['keymap.forward'] = []
     plt.rcParams['keymap.back'] = ['backspace']
+    plt.rcParams['keymap.fullscreen'] = ['ctrl+f']
+    plt.rcParams['keymap.save'] = ['ctrl+s']
+
 
 def activate(visualizer: Visualizer) -> None:
     _configure_matplotlib()
