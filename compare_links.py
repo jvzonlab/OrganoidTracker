@@ -2,10 +2,9 @@
 # counted as errors. Solid lines in the figures represent the correct linking result, dotted lines any deviations from
 # that.
 
-from imaging import io, tifffolder, Experiment
-from imaging import image_visualizer
+from imaging import io, tifffolder, image_visualizer, Experiment
+from linking_analysis import comparison
 from matplotlib import pyplot
-import networkx
 
 # PARAMETERS
 _name = "multiphoton.organoids.17-07-28_weekend_H2B-mCherry.nd799xy08"
@@ -24,18 +23,7 @@ io.load_positions_from_json(experiment, _positions_file)
 experiment.particle_links(_automatic_links)
 experiment.particle_links_baseline(_baseline_links)
 
-print("There are " + str(networkx.number_of_edges(_baseline_links)) + " connections in the baseline results.")
-missed_links = networkx.difference(_baseline_links, _automatic_links);
-made_up_links = networkx.difference(_automatic_links, _baseline_links);
-
-print("There are " + str(networkx.number_of_edges(missed_links)) + " connections missed in the automatic results:")
-for particle1, particle2 in missed_links.edges():
-    print("\t" + str(particle1) + "---" + str(particle2))
-
-print("There are " + str(networkx.number_of_edges(made_up_links)) + " connections made by the automatic linker, that"
-      " did not exist in the manual results:")
-for particle1, particle2 in made_up_links.edges():
-    print("\t" + str(particle1) + "---" + str(particle2))
+comparison.print_differences(_automatic_links, _baseline_links)
 
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format)
 vis = image_visualizer.show(experiment)

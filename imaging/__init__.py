@@ -1,9 +1,14 @@
 """Images and positions of particles (biological cells in our case)"""
-from typing import List, Iterable, Optional
+from typing import List, Iterable, Optional, Dict
 from networkx import Graph
 
 
 class Particle:
+
+    x: int
+    y: int
+    z: int
+    _frame_number: Optional[int]
 
     def __init__(self, x: float, y: float, z: float):
         self.x = x
@@ -81,14 +86,18 @@ class Experiment:
     """A complete experiment, with many stacks of images collected over time. This class records the images and particle
      positions."""
 
-    _frames: List[Frame]
+    _frames: Dict[str, Frame]
     _particle_links: Optional[Graph]
     _particle_links_baseline: Optional[Graph] # Links that are assumed to be correct
+    _first_frame_number: Optional[int]
+    _last_frame_number: Optional[int]
 
     def __init__(self):
         self._frames = {}
         self._particle_links = None
         self._particle_links_baseline = None
+        self._last_frame_number = None
+        self._first_frame_number = None
 
     def add_particles(self, frame_number: int, raw_particles) -> None:
         """Adds particles to a frame."""
@@ -112,7 +121,24 @@ class Experiment:
         except KeyError:
             frame = Frame(frame_number)
             self._frames[str(frame_number)] = frame
+            self._update_frame_statistics(frame_number)
             return frame
+
+    def _update_frame_statistics(self, new_frame_number: int):
+        if self._first_frame_number is None or self._first_frame_number > new_frame_number:
+            self._first_frame_number = new_frame_number
+        if self._last_frame_number is None or self._last_frame_number < new_frame_number:
+            self._last_frame_number = new_frame_number
+
+    def first_frame_number(self):
+        if self._first_frame_number is None:
+            raise ValueError("No frames exist")
+        return self._first_frame_number
+
+    def last_frame_number(self):
+        if self._last_frame_number is None:
+            raise ValueError("No frames exist")
+        return self._last_frame_number
 
     def get_next_frame(self, frame: Frame) -> Frame:
         """Gets the frame directory after the given frame, or KeyError if the given frame is the last frame."""

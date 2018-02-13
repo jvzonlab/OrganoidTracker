@@ -3,6 +3,7 @@ import json
 from json import JSONEncoder
 from imaging import Experiment, Particle
 from networkx import node_link_data, node_link_graph, Graph
+from typing import List
 import numpy
 
 
@@ -40,6 +41,12 @@ def save_links_to_json(links: Graph, json_file_name: str):
     data = node_link_data(links)
     with open(json_file_name, 'w') as handle:
         json.dump(data, handle, cls=_MyEncoder)
+
+
+def save_particles_to_json(particles: List[Particle], json_file_name: str):
+    """Saves a list of particles to disk."""
+    with open(json_file_name, 'w') as handle:
+        json.dump(particles, handle, cls=_MyEncoder)
 
 
 def load_links_from_json(json_file_name: str) -> Graph:
