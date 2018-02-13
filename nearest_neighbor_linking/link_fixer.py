@@ -5,17 +5,19 @@
 import imaging
 from networkx import Graph
 from typing import Iterable
-from imaging import Particle
+from imaging import Particle, Experiment
 
 
-def prune_links(graph: Graph) -> Graph:
-    for particle in graph.nodes():
-        _fix_no_future_particle(graph, particle)
+def prune_links(experiment: Experiment, graph: Graph) -> Graph:
+    last_frame_number = experiment.last_frame_number()
+
+    [_fix_no_future_particle(graph, particle, last_frame_number) for particle in graph.nodes()]
+    [_fix_cell_divisions(graph, particle) for particle in graph.nodes()]
 
     return _with_only_the_preferred_edges(graph)
 
 
-def _fix_no_future_particle(graph: Graph, particle: Particle):
+def _fix_no_future_particle(graph: Graph, particle: Particle, last_frame_number: int):
     """This fixes the case where a particle has no future particle lined up"""
     future_particles = _find_future_particles(graph, particle)
     future_preferred_particles = _find_preferred_links(graph, particle, future_particles)
@@ -26,7 +28,8 @@ def _fix_no_future_particle(graph: Graph, particle: Particle):
     # Oops, found dead end. Choose a best match from the future_particles list
     newly_matched_future_particle = imaging.get_closest_particle(future_particles, particle)
     if newly_matched_future_particle is None:
-        print("Found no future cell for " + str(particle) + ", dead cell?")
+        if particle.frame_number() != last_frame_number:
+            print("Found no future cell for " + str(particle) + ", dead cell?")
         return
 
     # Downgrade existing edges of new best match, as it is getting a new best match
@@ -34,7 +37,20 @@ def _fix_no_future_particle(graph: Graph, particle: Particle):
         graph.add_edge(old_connection_of_new_match, newly_matched_future_particle, pref=False)
 
     graph.add_edge(particle, newly_matched_future_particle, pref=True)
-    print("Connected cell " + str(particle) + " to a new match")
+
+
+def _fix_cell_divisions(graph: Graph, particle: Particle):
+    future_particles = _find_future_particles(graph, particle)
+    future_preferred_particles = _find_preferred_links(graph, particle, future_particles)
+
+    if len(future_particles) < 2:
+        return
+
+    if len(future_preferred_particles) > 2:
+        print("Illegal cell division: cell " + str(particle) + "split into " + str(len(future_preferred_particles)) + " daughters")
+        return
+
+    print("Potential cell division: mother is " + str(particle))
 
 # Helper functions below
 
