@@ -23,12 +23,11 @@ def link_particles(experiment: Experiment, tolerance: float = 1.0, max_frame: in
             frame_current = experiment.get_next_frame(frame_previous)
             _add_nodes(graph, frame_current)
             _add_edges(graph, frame_previous, frame_current, tolerance)
-            print("Added links for frame " + str(frame_current.frame_number()))
     except KeyError:
         # Done! No more frames remain
         pass
 
-    print("Done creating the tree graph!")
+    print("Done creating nearest-neighbor links!")
     return graph
 
 
