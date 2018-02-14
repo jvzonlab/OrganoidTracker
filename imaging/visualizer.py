@@ -24,9 +24,15 @@ class Visualizer:
         self._key_handler_id = self._fig.canvas.mpl_connect("key_press_event", self._on_key_press_raw)
         self._mouse_handler_id = self._fig.canvas.mpl_connect("button_press_event", self._on_mouse_click)
         self._pending_text = None
+        self._legend = None
 
     def _clear_axis(self):
         """Clears the axis, except that zoom settings are preserved"""
+        for image in self._ax.images:
+            colorbar = image.colorbar
+            if colorbar is not None:
+                colorbar.remove()
+
         xlim, ylim = self._ax.get_xlim(), self._ax.get_ylim()
         self._ax.clear()
         if xlim[1] - xlim[0] > 2:
@@ -73,8 +79,12 @@ class Visualizer:
     @staticmethod
     def get_closest_particle(particles: Iterable[Particle], x: int, y: int, z: Optional[int], max_distance: int = 100000):
         """Gets the particle closest ot the given position."""
+        ignore_z = False
+        if z is None:
+            z = 0
+            ignore_z = True
         search_position = Particle(x, y, z)
-        return imaging.get_closest_particle(particles, search_position, ignore_z=z is None, max_distance=max_distance)
+        return imaging.get_closest_particle(particles, search_position, ignore_z=ignore_z, max_distance=max_distance)
 
 
 _visualizer = None # Reference to prevent event handler from being garbage collected

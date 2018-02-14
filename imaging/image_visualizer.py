@@ -1,7 +1,7 @@
 from imaging.visualizer import Visualizer, activate
 from imaging import Experiment, Frame, Particle
 from matplotlib.figure import Figure, Axes
-from matplotlib.backend_bases import KeyEvent
+from matplotlib.backend_bases import KeyEvent, MouseEvent
 from numpy import ndarray
 from networkx import Graph
 from typing import Optional, Iterable
@@ -37,7 +37,8 @@ class ImageVisualizer(Visualizer):
     def draw_view(self):
         self._clear_axis()
         if self._frame_images is not None:
-            self._ax.imshow(self._frame_images[self._z])
+            image = self._ax.imshow(self._frame_images[self._z], cmap="gray")
+            plt.colorbar(mappable=image, ax=self._ax)
         errors = self.draw_particles()
         plt.title(self.get_title(errors))
 
@@ -102,9 +103,9 @@ class ImageVisualizer(Visualizer):
                 plt.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], color='darkred',
                          linestyle=line_style, linewidth=line_width)
             else:
-                plt.plot(linked_particle.x, linked_particle.y, marker_style, color='pink', markeredgecolor='black',
+                plt.plot(linked_particle.x, linked_particle.y, marker_style, color='orange', markeredgecolor='black',
                          markersize=marker_size, markeredgewidth=1)
-                plt.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], color='pink',
+                plt.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], color='orange',
                          linestyle=line_style, linewidth=line_width)
 
     def _get_links(self, network: Optional[Graph], particle: Particle) -> Iterable[Particle]:
@@ -139,7 +140,7 @@ class ImageVisualizer(Visualizer):
                 self._frame, self._frame_images = self.load_frame(new_frame_number)
                 self.draw_view()
             except KeyError:
-                print("Unknown frame: " + str(new_frame_number))
+                print("Unknown frame: " + frame_str)
             except ValueError:
                 print("Cannot read number: " + frame_str)
             return

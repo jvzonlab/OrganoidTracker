@@ -1,13 +1,14 @@
 """Images and positions of particles (biological cells in our case)"""
 from typing import List, Iterable, Optional, Dict
 from networkx import Graph
+from imaging import image_cache
 
 
 class Particle:
 
-    x: int
-    y: int
-    z: int
+    x: float
+    y: float
+    z: float
     _frame_number: Optional[int]
 
     def __init__(self, x: float, y: float, z: float):
@@ -19,7 +20,7 @@ class Particle:
     def distance_squared(self, other) -> float:
         """Gets the squared distance. Working with squared distances instead of normal ones gives a much better
         performance, as the expensive sqrt(..) function can be avoided."""
-        return (self.x - other.x) ** 2 + (self.y - other.y) ** 2 + ((self.z - other.z) * 5) ** 2;
+        return (self.x - other.x) ** 2 + (self.y - other.y) ** 2 + ((self.z - other.z) * 5) ** 2
 
     def frame_number(self):
         return self._frame_number
@@ -27,7 +28,7 @@ class Particle:
     def with_frame_number(self, frame_number: int):
         if self._frame_number is not None:
             raise ValueError("frame_number was already set")
-        self._frame_number = frame_number
+        self._frame_number = int(frame_number)
         return self
 
     def __repr__(self):
@@ -75,16 +76,29 @@ class Frame:
         """
         self._image_loader = loader
 
-    def load_images(self):
+    def load_images(self, allow_cache=True):
+        if allow_cache:
+            images = image_cache.get_from_cache(self._frame_number)
+            if images is not None:
+                return images
+
+        # Cache miss
+        images = self._load_images_uncached()
+        if allow_cache:
+            image_cache.add_to_cache(self._frame_number, images)
+        return images
+
+    def _load_images_uncached(self):
         image_loader = self._image_loader
         if self._image_loader is None:
             return None
         return image_loader()
 
 
+
 class Experiment:
-    """A complete experiment, with many stacks of images collected over time. This class records the images and particle
-     positions."""
+    """A complete experiment, with many stacks of images collected over time. This class records the images, particle
+     positions and particle trajectories."""
 
     _frames: Dict[str, Frame]
     _particle_links: Optional[Graph]

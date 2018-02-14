@@ -45,7 +45,7 @@ class TrackVisualizer(Visualizer):
             links = network[particle]
             for linked_particle in links:
                 if linked_particle not in already_drawn:
-                    color = 'pink'
+                    color = 'orange'
                     positions = [particle.x, particle.y, linked_particle.x - particle.x, linked_particle.y - particle.y]
                     if linked_particle.frame_number() < self._particle.frame_number():
                         # Particle in the past, use different style
