@@ -6,9 +6,8 @@ import imaging
 import numpy
 from networkx import Graph
 from typing import Iterable, Set, Optional, Tuple
-from imaging import Particle, Experiment
+from imaging import Particle, Experiment, cell
 from imaging.image_helper import Image2d
-from numpy import ndarray
 
 
 def prune_links(experiment: Experiment, graph: Graph, mitotic_radius: int) -> Graph:
@@ -61,20 +60,20 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle
     two_daughters = _get_two_daughters(particle, future_preferred_particles, future_particles)
     if two_daughters is None:
         raise ValueError("Unable to find two daughters, even though there were at least two future_particles")
-    score = _cell_is_mother_likeliness(experiment, particle, two_daughters[0], two_daughters[1], mitotic_radius)
+    score = _cell_is_mother_likeliness(experiment, graph, particle, two_daughters[0], two_daughters[1], mitotic_radius)
 
     # Daughter1 surely is in preferred_particles, but maybe daughter2 not yet. If so, we might need to declare this cell
     # as a mother, and "undeclare" another cell from being one
     daughter2 = two_daughters[1]
     if daughter2 in future_preferred_particles:
         return  # Nothing to fix
-    current_mother_of_daughter2 = _find_previous_position(graph, daughter2)
+    current_mother_of_daughter2 = _find_past_particle(graph, daughter2)
     children_of_current_parent_of_daughter2 = list(_find_preferred_links(graph, current_mother_of_daughter2,
                                                        _find_future_particles(graph, current_mother_of_daughter2)))
     if len(children_of_current_parent_of_daughter2) < 2:
         return # Cannot decouple current parent from daughter2, as then the current parent would be a dead cell
 
-    current_parent_score = _cell_is_mother_likeliness(experiment, current_mother_of_daughter2,
+    current_parent_score = _cell_is_mother_likeliness(experiment, graph, current_mother_of_daughter2,
                                                       children_of_current_parent_of_daughter2[0],
                                                       children_of_current_parent_of_daughter2[1], mitotic_radius)
     if score > current_parent_score:
@@ -122,7 +121,8 @@ def _find_past_particles(graph: Graph, particle: Particle):
             if linked_particle.frame_number() < particle.frame_number()}
 
 
-def _find_previous_position(graph: Graph, particle: Particle):
+def _find_past_particle(graph: Graph, particle: Particle):
+    # the one most likely connection one step in the past
     previous_positions = _find_preferred_links(graph, particle, _find_past_particles(graph, particle))
     if len(previous_positions) == 0:
         print("Error at " + str(particle) + ": cell popped up out of nothing")
@@ -193,12 +193,13 @@ def _get_angle(a: Particle, b: Particle, c: Particle):
 
 _cached_intensities = None
 
+
 def _get_average_intensity_at(experiment: Experiment, particle: Particle):
     return _get_2d_image(experiment, particle).get_average_intensity_at(int(particle.x), int(particle.y))
 
 
-def _cell_is_mother_likeliness(experiment: Experiment, mother: Particle, daughter1: Particle, daughter2: Particle,
-                               mitotic_radius: int):
+def _cell_is_mother_likeliness(experiment: Experiment, graph: Graph, mother: Particle, daughter1: Particle,
+                               daughter2: Particle, mitotic_radius: int = 2, min_cell_age: int = 4):
     global _cached_intensities
 
     image = _get_2d_image(experiment, mother)
@@ -233,5 +234,10 @@ def _cell_is_mother_likeliness(experiment: Experiment, mother: Particle, daughte
     daughter2_intensity = _get_average_intensity_at(experiment, daughter2)
     intensity_difference = abs(daughter1_intensity - daughter2_intensity)
     score -= intensity_difference * 2
+
+    # Mothers cannot be too young
+    age = cell.get_age(experiment, graph, mother)
+    if age is not None and age < min_cell_age:
+        score -= 5 # Severe punishment, as this is biologically impossible
 
     return score

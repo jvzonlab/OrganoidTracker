@@ -21,7 +21,7 @@ experiment = Experiment()
 if path.exists(_positions_file):
     io.load_positions_from_json(experiment, _positions_file)
 if path.exists(_links_file):
-    experiment.particle_links_baseline(io.load_links_from_json( _links_file))
+    experiment.particle_links(io.load_links_from_json(_links_file))
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format)
 image_visualizer.show(experiment)
 

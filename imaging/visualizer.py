@@ -77,8 +77,12 @@ class Visualizer:
         self._fig.canvas.mpl_disconnect(self._mouse_handler_id)
 
     @staticmethod
-    def get_closest_particle(particles: Iterable[Particle], x: int, y: int, z: Optional[int], max_distance: int = 100000):
-        """Gets the particle closest ot the given position."""
+    def get_closest_particle(particles: Iterable[Particle], x: Optional[int], y: Optional[int], z: Optional[int], max_distance: int = 100000):
+        """Gets the particle closest ot the given position. If z is missing, it is ignored. If x or y are missing,
+        None is returned.
+        """
+        if x is None or y is None:
+            return None # Mouse outside figure, so x or y are None
         ignore_z = False
         if z is None:
             z = 0

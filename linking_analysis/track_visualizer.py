@@ -1,12 +1,10 @@
 from imaging.visualizer import Visualizer, activate
-from imaging import Experiment, Frame, Particle
-from matplotlib.figure import Figure, Axes
+from imaging import Experiment, Particle, cell
+from matplotlib.figure import Figure
 from matplotlib.backend_bases import KeyEvent, MouseEvent
-from numpy import ndarray
 from networkx import Graph
 from typing import Set, Optional
 import matplotlib.pyplot as plt
-import tifffile
 
 
 class TrackVisualizer(Visualizer):
@@ -15,7 +13,7 @@ class TrackVisualizer(Visualizer):
     _particles_on_display: Set[Particle]
 
     def __init__(self, experiment: Experiment, figure: Figure, particle: Particle):
-        super(TrackVisualizer, self).__init__(experiment, figure)
+        super().__init__(experiment, figure)
         self._particle = particle
         self._particles_on_display = set()
 
@@ -25,11 +23,20 @@ class TrackVisualizer(Visualizer):
 
         self._draw_particle(self._particle, color='purple', size=7)
 
-        self._draw_network(self._experiment.particle_links(), line_style='dotted', line_width=3, max_distance=1)
-        self._draw_network(self._experiment.particle_links_baseline())
+        self._draw_network(self._experiment.particle_links_automatic(), line_style='dotted', line_width=3, max_distance=1)
+        self._draw_network(self._experiment.particle_links())
 
-        plt.title("Tracks of particle " + str(self._particle))
+        plt.title("Tracks of particle " + str(self._particle) + "\n" + self._get_cell_age_str())
         plt.draw()
+
+    def _get_cell_age_str(self) -> str:
+        graph = self._experiment.particle_links()
+        if graph is None:
+            return ""
+        age = cell.get_age(self._experiment, graph, self._particle)
+        if age is None:
+            return "Age: born before measurements"
+        return "Age: " + str(age)
 
     def _draw_network(self, network: Optional[Graph], line_style: str = 'solid', line_width: int = 1,
                       max_distance: int = 10):
@@ -47,9 +54,11 @@ class TrackVisualizer(Visualizer):
                 if linked_particle not in already_drawn:
                     color = 'orange'
                     positions = [particle.x, particle.y, linked_particle.x - particle.x, linked_particle.y - particle.y]
-                    if linked_particle.frame_number() < self._particle.frame_number():
+                    if linked_particle.frame_number() <= self._particle.frame_number():
                         # Particle in the past, use different style
                         color = 'darkred'
+                    if linked_particle.frame_number() < particle.frame_number():
+                        # Always draw arrow from oldest to newest particle
                         positions = [linked_particle.x, linked_particle.y,
                                      particle.x - linked_particle.x, particle.y - linked_particle.y]
 

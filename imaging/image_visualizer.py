@@ -1,7 +1,7 @@
 from imaging.visualizer import Visualizer, activate
 from imaging import Experiment, Frame, Particle
-from matplotlib.figure import Figure, Axes
-from matplotlib.backend_bases import KeyEvent, MouseEvent
+from matplotlib.figure import Figure
+from matplotlib.backend_bases import KeyEvent
 from numpy import ndarray
 from networkx import Graph
 from typing import Optional, Iterable
@@ -73,8 +73,8 @@ class ImageVisualizer(Visualizer):
         """Draws links between the particles. Returns 1 if there is 1 error: the baseline links don't match the actual
         links.
         """
-        links_normal = self._get_links(self._experiment.particle_links(), particle)
-        links_baseline = self._get_links(self._experiment.particle_links_baseline(), particle)
+        links_normal = self._get_links(self._experiment.particle_links_automatic(), particle)
+        links_baseline = self._get_links(self._experiment.particle_links(), particle)
 
         marker_style = 's'
         marker_size = 6
@@ -87,7 +87,7 @@ class ImageVisualizer(Visualizer):
         self._draw_given_links(particle, links_baseline, marker_size=marker_size, marker_style=marker_style)
 
         # Check for errors
-        if self._experiment.particle_links() is not None and self._experiment.particle_links_baseline() is not None:
+        if self._experiment.particle_links_automatic() is not None and self._experiment.particle_links() is not None:
             if links_baseline != links_normal:
                 return 1
         return 0
@@ -128,8 +128,14 @@ class ImageVisualizer(Visualizer):
         elif event.key == "t":
             particle = self.get_closest_particle(self._frame.particles(), event.xdata, event.ydata, self._z, 20)
             if particle is not None:
-                from imaging.track_visualizer import TrackVisualizer
+                from linking_analysis.track_visualizer import TrackVisualizer
                 track_visualizer = TrackVisualizer(self._experiment, self._fig, particle)
+                activate(track_visualizer)
+        elif event.key == "m":
+            particle = self.get_closest_particle(self._frame.particles(), event.xdata, event.ydata, self._z)
+            if particle is not None:
+                from linking_analysis.cell_division_visualizer import CellDivisionVisualizer
+                track_visualizer = CellDivisionVisualizer(self._experiment, self._fig, particle)
                 activate(track_visualizer)
 
     def _on_command(self, command: str):

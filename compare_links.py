@@ -20,8 +20,8 @@ print("Starting...")
 
 experiment = Experiment()
 io.load_positions_from_json(experiment, _positions_file)
-experiment.particle_links(_automatic_links)
-experiment.particle_links_baseline(_baseline_links)
+experiment.particle_links_automatic(_automatic_links)
+experiment.particle_links(_baseline_links)
 
 comparison.print_differences(_automatic_links, _baseline_links)
 

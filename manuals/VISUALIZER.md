@@ -16,3 +16,7 @@ Press `T` to view the track of a single particle. You will end up in a separate 
 trajectory 10 points forward or backwards in time. Double-click on any particle to focus on that particle instead.
 Press `T` again to go back to the normal view.
 
+Press `M` to jump to the mother view. Here you get an overview of all cell divisions found during the experiment. The
+left and right arrow keys can now be used to jump to the next or previous cell division. Press `M` again to exit the
+mother view and return to the normal view.
+

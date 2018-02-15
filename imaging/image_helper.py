@@ -1,4 +1,5 @@
 from numpy import ndarray
+import scipy.misc
 import numpy
 
 
@@ -20,6 +21,9 @@ class Image2d:
 
         return total_intensity / ((r * 2 + 1) ** 2)
 
+    def save_snapshot(self, center_x: int, center_y: int, r: int = 10, outfile: str = "out.jpg"):
+        image_array = self._image_data[center_y - r : center_y + r, center_x - r : center_x + r]
+        scipy.misc.imsave(outfile, image_array)
 
     def get_intensities_square(self, center_x: int, center_y: int, r: int, out_array: ndarray = None) -> ndarray:
         """Imagine a square centered around (center_x, center_y) with radius r. This method returns all intensities at
