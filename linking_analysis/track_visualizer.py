@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 
 
 class TrackVisualizer(Visualizer):
+    """Shows trajectories of particles. The past is brown, the future is orange.
+    Double-click on a cell point to focus on that cell.
+    Press T to return to the normal view."""
 
     _particle: Particle
     _particles_on_display: Set[Particle]

@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 
 
 class CellDivisionVisualizer(Visualizer):
+    """Shows cells that are about to divide.
+    Use the left/right arrow keys to move to the next cell division.
+    Press M to exit this view."""
 
     _mother_index: int
     _all_mothers = List[Particle]
@@ -49,7 +52,8 @@ class CellDivisionVisualizer(Visualizer):
             if len(self._all_mothers) == 0:
                 plt.title("No mothers found. Is the linking data missing?")
             else:
-                plt.title("Use the left and right keys to browse through the mother cells")
+                plt.title("No mother found at mouse position."
+                          "\nPress the right arrow key to view the first mother in the sample.")
             plt.draw()
             return
 
@@ -87,10 +91,15 @@ class CellDivisionVisualizer(Visualizer):
         self.draw_view()
 
     def _goto_full_image(self):
-        mother = self._all_mothers[self._mother_index]
         from imaging.image_visualizer import ImageVisualizer
-        image_visualizer = ImageVisualizer(self._experiment, self._fig,
-                                           frame_number=mother.frame_number(), z=int(mother.z))
+
+        if self._mother_index < 0 or self._mother_index >= len(self._all_mothers):
+            # Don't know where to go
+            image_visualizer = ImageVisualizer(self._experiment, self._fig)
+        else:
+            mother = self._all_mothers[self._mother_index]
+            image_visualizer = ImageVisualizer(self._experiment, self._fig,
+                                               frame_number=mother.frame_number(), z=int(mother.z))
         activate(image_visualizer)
 
     def _on_key_press(self, event: KeyEvent):

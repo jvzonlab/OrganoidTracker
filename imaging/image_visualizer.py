@@ -16,7 +16,11 @@ def show(experiment : Experiment):
 
 
 class ImageVisualizer(Visualizer):
-    """Visualizer focused on images, with short trajectories drawn on top"""
+    """Shows microscopy images with cells and cell trajectories drawn on top.
+    Left/right keys: move in time
+    Up/down keys: move in z-direction
+    T key: view trajectory of cell at mouse position
+    M key: overview of all mothers found in the experiment"""
 
     _frame: Frame
     _frame_images: ndarray
@@ -146,11 +150,11 @@ class ImageVisualizer(Visualizer):
                 self._frame, self._frame_images = self.load_frame(new_frame_number)
                 self.draw_view()
             except KeyError:
-                print("Unknown frame: " + frame_str)
+                self.update_status("Unknown frame: " + frame_str)
             except ValueError:
-                print("Cannot read number: " + frame_str)
+                self.update_status("Cannot read number: " + frame_str)
             return
-        print("Unknown command: " + command)
+        self.update_status("Unknown command: " + command)
 
     def _move_in_z(self, dz: int):
         old_z = self._z
