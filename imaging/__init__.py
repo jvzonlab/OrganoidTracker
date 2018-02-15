@@ -154,8 +154,12 @@ class Experiment:
             raise ValueError("No frames exist")
         return self._last_frame_number
 
+    def get_previous_frame(self, frame: Frame) -> Frame:
+        """Gets the frame directly before the given frame, or KeyError if the given frame is the first frame."""
+        return self.get_frame(frame.frame_number() - 1)
+
     def get_next_frame(self, frame: Frame) -> Frame:
-        """Gets the frame directory after the given frame, or KeyError if the given frame is the last frame."""
+        """Gets the frame directly after the given frame, or KeyError if the given frame is the last frame."""
         return self.get_frame(frame.frame_number() + 1)
 
     def particle_links_scratch(self, network: Optional[Graph] = None) -> Optional[Graph]:

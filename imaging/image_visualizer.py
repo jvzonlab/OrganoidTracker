@@ -56,22 +56,40 @@ class AbstractImageVisualizer(Visualizer):
 
     def draw_particles(self) -> int:
         """Draws particles and links. Returns the amount of logical inconsistencies in the iamge"""
+
+        # Draw particles
+        self._draw_particles_of_frame(self._frame, marker_size=7)
+        try:
+            self._draw_particles_of_frame(self._experiment.get_next_frame(self._frame), color='orange')
+        except KeyError:
+            pass
+        try:
+            self._draw_particles_of_frame(self._experiment.get_previous_frame(self._frame), color='darkred')
+        except KeyError:
+            pass
+
+        # Draw links
         errors = 0
         for particle in self._frame.particles():
-            if abs(particle.z - self._z) > 2:
+            if abs(particle.z - self._z) > 3:
                 continue
             errors += self._draw_links(particle)
 
+        return errors
+
+    def _draw_particles_of_frame(self, frame: Frame, color: str = 'red', marker_size:int = 6):
+        for particle in frame.particles():
+            dz = abs(particle.z - self._z)
+            if dz > 3:
+                continue
+
             # Draw the particle itself (as a square or circle, depending on its depth)
             marker_style = 's'
-            marker_size = 7
+            current_marker_size = marker_size - dz
             if particle.z != self._z:
                 marker_style = 'o'
-                marker_size = 5
-            plt.plot(particle.x, particle.y, marker_style, color='red', markeredgecolor='black', markersize=marker_size,
-                     markeredgewidth=1)
-
-        return errors
+            plt.plot(particle.x, particle.y, marker_style, color=color, markeredgecolor='black',
+                     markersize=current_marker_size, markeredgewidth=1)
 
     def _draw_links(self, particle: Particle) -> int:
         """Draws links between the particles. Returns 1 if there is 1 error: the baseline links don't match the actual
@@ -80,15 +98,8 @@ class AbstractImageVisualizer(Visualizer):
         links_normal = self._get_links(self._experiment.particle_links_scratch(), particle)
         links_baseline = self._get_links(self._experiment.particle_links(), particle)
 
-        marker_style = 's'
-        marker_size = 6
-        if particle.z != self._z:
-            marker_style = 'o'
-            marker_size = 4
-
-        self._draw_given_links(particle, links_normal, marker_size=marker_size, marker_style=marker_style,
-                               line_style='dotted', line_width=3)
-        self._draw_given_links(particle, links_baseline, marker_size=marker_size, marker_style=marker_style)
+        self._draw_given_links(particle, links_normal, line_style='dotted', line_width=3)
+        self._draw_given_links(particle, links_baseline)
 
         # Check for errors
         if self._experiment.particle_links_scratch() is not None and self._experiment.particle_links() is not None:
@@ -97,18 +108,14 @@ class AbstractImageVisualizer(Visualizer):
         return 0
 
     @staticmethod
-    def _draw_given_links(particle, links, line_style='solid', line_width=1, marker_style='s', marker_size=7):
+    def _draw_given_links(particle, links, line_style='solid', line_width=1):
         for linked_particle in links:
             if linked_particle.frame_number() < particle.frame_number():
                 # Drawing to past
 
-                plt.plot(linked_particle.x, linked_particle.y, marker_style, color='darkred', markeredgecolor='black',
-                         markersize=marker_size, markeredgewidth=1)
                 plt.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], color='darkred',
                          linestyle=line_style, linewidth=line_width)
             else:
-                plt.plot(linked_particle.x, linked_particle.y, marker_style, color='orange', markeredgecolor='black',
-                         markersize=marker_size, markeredgewidth=1)
                 plt.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], color='orange',
                          linestyle=line_style, linewidth=line_width)
 
@@ -170,8 +177,8 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     """Shows microscopy images with cells and cell trajectories drawn on top.
     Left/right keys: move in time
     Up/down keys: move in z-direction
-    T key: view trajectory of cell at mouse position
-    M key: overview of all mothers found in the experiment"""
+    T key: view trajectory of cell at mouse, M key: view images of mother cells
+    L key: manual linking interface"""
 
     def __init__(self, experiment: Experiment, figure: Figure, frame_number: int = 1, z: int = 14):
         super().__init__(experiment, figure, frame_number=frame_number, z=z)

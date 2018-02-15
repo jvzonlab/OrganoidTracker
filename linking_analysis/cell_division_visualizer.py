@@ -17,7 +17,7 @@ class CellDivisionVisualizer(Visualizer):
 
     def __init__(self, experiment: Experiment, figure: Figure, mother: Particle):
         super().__init__(experiment, figure)
-        self._all_mothers = None
+        self._all_mothers = []
 
         graph = experiment.particle_links()
         if graph is not None:
