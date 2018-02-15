@@ -11,23 +11,19 @@ import matplotlib.pyplot as plt
 def show(experiment : Experiment):
     """Creates a standard visualizer for an experiment."""
     figure = plt.figure(figsize=(8,8))
-    visualizer = ImageVisualizer(experiment, figure)
+    visualizer = StandardImageVisualizer(experiment, figure)
     activate(visualizer)
 
 
-class ImageVisualizer(Visualizer):
-    """Shows microscopy images with cells and cell trajectories drawn on top.
-    Left/right keys: move in time
-    Up/down keys: move in z-direction
-    T key: view trajectory of cell at mouse position
-    M key: overview of all mothers found in the experiment"""
+class AbstractImageVisualizer(Visualizer):
+    """A generic image visualizer."""
 
     _frame: Frame
     _frame_images: ndarray
     _z: int
 
     def __init__(self, experiment: Experiment, figure: Figure, frame_number: int = 1, z: int = 14):
-        super(ImageVisualizer, self).__init__(experiment, figure)
+        super().__init__(experiment, figure)
 
         self._z = int(z)
         self._frame, self._frame_images = self.load_frame(frame_number)
@@ -44,6 +40,7 @@ class ImageVisualizer(Visualizer):
             image = self._ax.imshow(self._frame_images[self._z], cmap="gray")
             plt.colorbar(mappable=image, ax=self._ax)
         errors = self.draw_particles()
+        self.draw_extra()
         plt.title(self.get_title(errors))
 
         plt.draw()
@@ -53,6 +50,9 @@ class ImageVisualizer(Visualizer):
         if errors != 0:
             title += " (errors: " + str(errors) + ")"
         return title
+
+    def draw_extra(self):
+        pass # Subclasses can override this
 
     def draw_particles(self) -> int:
         """Draws particles and links. Returns the amount of logical inconsistencies in the iamge"""
@@ -77,7 +77,7 @@ class ImageVisualizer(Visualizer):
         """Draws links between the particles. Returns 1 if there is 1 error: the baseline links don't match the actual
         links.
         """
-        links_normal = self._get_links(self._experiment.particle_links_automatic(), particle)
+        links_normal = self._get_links(self._experiment.particle_links_scratch(), particle)
         links_baseline = self._get_links(self._experiment.particle_links(), particle)
 
         marker_style = 's'
@@ -91,7 +91,7 @@ class ImageVisualizer(Visualizer):
         self._draw_given_links(particle, links_baseline, marker_size=marker_size, marker_style=marker_style)
 
         # Check for errors
-        if self._experiment.particle_links_automatic() is not None and self._experiment.particle_links() is not None:
+        if self._experiment.particle_links_scratch() is not None and self._experiment.particle_links() is not None:
             if links_baseline != links_normal:
                 return 1
         return 0
@@ -129,20 +129,8 @@ class ImageVisualizer(Visualizer):
             self._move_in_time(-1)
         elif event.key == "right":
             self._move_in_time(1)
-        elif event.key == "t":
-            particle = self.get_closest_particle(self._frame.particles(), event.xdata, event.ydata, self._z, 20)
-            if particle is not None:
-                from linking_analysis.track_visualizer import TrackVisualizer
-                track_visualizer = TrackVisualizer(self._experiment, self._fig, particle)
-                activate(track_visualizer)
-        elif event.key == "m":
-            particle = self.get_closest_particle(self._frame.particles(), event.xdata, event.ydata, self._z)
-            if particle is not None:
-                from linking_analysis.cell_division_visualizer import CellDivisionVisualizer
-                track_visualizer = CellDivisionVisualizer(self._experiment, self._fig, particle)
-                activate(track_visualizer)
 
-    def _on_command(self, command: str):
+    def _on_command(self, command: str) -> bool:
         if command[0] == "f":
             frame_str = command[1:]
             try:
@@ -153,8 +141,8 @@ class ImageVisualizer(Visualizer):
                 self.update_status("Unknown frame: " + frame_str)
             except ValueError:
                 self.update_status("Cannot read number: " + frame_str)
-            return
-        self.update_status("Unknown command: " + command)
+            return True
+        return False
 
     def _move_in_z(self, dz: int):
         old_z = self._z
@@ -178,3 +166,32 @@ class ImageVisualizer(Visualizer):
             pass
 
 
+class StandardImageVisualizer(AbstractImageVisualizer):
+    """Shows microscopy images with cells and cell trajectories drawn on top.
+    Left/right keys: move in time
+    Up/down keys: move in z-direction
+    T key: view trajectory of cell at mouse position
+    M key: overview of all mothers found in the experiment"""
+
+    def __init__(self, experiment: Experiment, figure: Figure, frame_number: int = 1, z: int = 14):
+        super().__init__(experiment, figure, frame_number=frame_number, z=z)
+
+    def _on_key_press(self, event: KeyEvent):
+        if event.key == "t":
+            particle = self.get_closest_particle(self._frame.particles(), event.xdata, event.ydata, self._z, 20)
+            if particle is not None:
+                from linking_analysis.track_visualizer import TrackVisualizer
+                track_visualizer = TrackVisualizer(self._experiment, self._fig, particle)
+                activate(track_visualizer)
+        elif event.key == "m":
+            particle = self.get_closest_particle(self._frame.particles(), event.xdata, event.ydata, self._z)
+            if particle is not None:
+                from linking_analysis.cell_division_visualizer import CellDivisionVisualizer
+                track_visualizer = CellDivisionVisualizer(self._experiment, self._fig, particle)
+                activate(track_visualizer)
+        elif event.key == "l":
+            from linking_analysis.link_editor import LinkEditor
+            link_editor = LinkEditor(self._experiment, self._fig, frame_number=self._frame.frame_number(), z=self._z)
+            activate(link_editor)
+        else:
+            super()._on_key_press(event)

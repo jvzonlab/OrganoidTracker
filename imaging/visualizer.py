@@ -75,16 +75,23 @@ class Visualizer:
                 text = self._pending_command_text
                 self._pending_command_text = None
                 if len(text) > 0:
-                    self._on_command(text)
+                    if not self._on_command(text):
+                        self.update_status("Unknown command: " + text + ". Type /help for help.")
             else:
-                self._pending_command_text += event.key
+                if event.key == 'backspace':
+                    if len(self._pending_command_text) > 0:
+                        self._pending_command_text = self._pending_command_text[:-1]
+                elif event.key == 'shift' or event.key == 'control':
+                    pass
+                else:
+                    self._pending_command_text += event.key
                 self.update_status("/" + self._pending_command_text)
 
     def _on_key_press(self, event: KeyEvent):
         pass
 
-    def _on_command(self, text: str):
-        pass
+    def _on_command(self, text: str) -> bool:
+        return False
 
     def _on_mouse_click(self, event: MouseEvent):
         pass

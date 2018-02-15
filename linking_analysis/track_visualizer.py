@@ -26,7 +26,7 @@ class TrackVisualizer(Visualizer):
 
         self._draw_particle(self._particle, color='purple', size=7)
 
-        self._draw_network(self._experiment.particle_links_automatic(), line_style='dotted', line_width=3, max_distance=1)
+        self._draw_network(self._experiment.particle_links_scratch(), line_style='dotted', line_width=3, max_distance=1)
         self._draw_network(self._experiment.particle_links())
 
         plt.title("Tracks of particle " + str(self._particle) + "\n" + self._get_cell_age_str())
@@ -80,9 +80,9 @@ class TrackVisualizer(Visualizer):
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "t":
-            from imaging.image_visualizer import ImageVisualizer
-            image_visualizer = ImageVisualizer(self._experiment, self._fig,
-                                               frame_number=self._particle.frame_number(), z=self._particle.z)
+            from imaging.image_visualizer import StandardImageVisualizer
+            image_visualizer = StandardImageVisualizer(self._experiment, self._fig, z=int(self._particle.z),
+                                                       frame_number=self._particle.frame_number())
             activate(image_visualizer)
 
     def _on_mouse_click(self, event: MouseEvent):

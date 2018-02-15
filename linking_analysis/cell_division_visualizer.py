@@ -44,7 +44,7 @@ class CellDivisionVisualizer(Visualizer):
                 return self._all_mothers.index(close_match)
             if frame_match is not None:
                 return self._all_mothers.index(frame_match)
-            return -1 # Give up
+            return -1  # Give up
 
     def draw_view(self):
         self._clear_axis()
@@ -61,7 +61,7 @@ class CellDivisionVisualizer(Visualizer):
         self._show_image()
 
         mother = self._all_mothers[self._mother_index]
-        plt.title("Mother " + str(self._mother_index + 1) + "/" + str(len(self._all_mothers))+ "\n" + str(mother))
+        plt.title("Mother " + str(self._mother_index + 1) + "/" + str(len(self._all_mothers)) + "\n" + str(mother))
 
         plt.draw()
 
@@ -91,14 +91,14 @@ class CellDivisionVisualizer(Visualizer):
         self.draw_view()
 
     def _goto_full_image(self):
-        from imaging.image_visualizer import ImageVisualizer
+        from imaging.image_visualizer import StandardImageVisualizer
 
         if self._mother_index < 0 or self._mother_index >= len(self._all_mothers):
             # Don't know where to go
-            image_visualizer = ImageVisualizer(self._experiment, self._fig)
+            image_visualizer = StandardImageVisualizer(self._experiment, self._fig)
         else:
             mother = self._all_mothers[self._mother_index]
-            image_visualizer = ImageVisualizer(self._experiment, self._fig,
+            image_visualizer = StandardImageVisualizer(self._experiment, self._fig,
                                                frame_number=mother.frame_number(), z=int(mother.z))
         activate(image_visualizer)
 

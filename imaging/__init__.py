@@ -158,19 +158,15 @@ class Experiment:
         """Gets the frame directory after the given frame, or KeyError if the given frame is the last frame."""
         return self.get_frame(frame.frame_number() + 1)
 
-    def particle_links_automatic(self, network: Optional[Graph] = None) -> Optional[Graph]:
+    def particle_links_scratch(self, network: Optional[Graph] = None) -> Optional[Graph]:
         """Gets or sets the particle linking results. It is not possible to replace exising results."""
         if network is not None:
-            if self._particle_links is not None:
-                raise ValueError # Cannot replace network
             self._particle_links = network
         return self._particle_links
 
     def particle_links(self, network: Optional[Graph] = None) -> Optional[Graph]:
         """Gets or sets a particle linking result **that is known to be correct**."""
         if network is not None:
-            if self._particle_links_baseline is not None:
-                raise ValueError # Cannot replace network
             self._particle_links_baseline = network
         return self._particle_links_baseline
 
