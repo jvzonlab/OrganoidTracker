@@ -61,6 +61,7 @@ class CellDivisionVisualizer(Visualizer):
         self._show_image()
 
         mother = self._all_mothers[self._mother_index]
+        self._draw_mother(mother)
         plt.title("Mother " + str(self._mother_index + 1) + "/" + str(len(self._all_mothers)) + "\n" + str(mother))
 
         plt.draw()
@@ -70,6 +71,9 @@ class CellDivisionVisualizer(Visualizer):
         self._ax.set_xlim(mother.x - 50, mother.x + 50)
         self._ax.set_ylim(mother.y - 50, mother.y + 50)
         self._ax.set_autoscale_on(False)
+
+    def _draw_mother(self, mother: Particle):
+        plt.plot(mother.x, mother.y, 's', color='red', markeredgecolor='black', markersize=7, markeredgewidth=1)
 
     def _show_image(self):
         mother = self._all_mothers[self._mother_index]
