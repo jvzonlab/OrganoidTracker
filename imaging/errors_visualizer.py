@@ -1,6 +1,6 @@
 from matplotlib.backend_bases import KeyEvent
 from matplotlib.figure import Figure
-from imaging import Particle, Experiment
+from imaging import Particle, Experiment, errors
 from imaging.particle_list_visualizer import ParticleListVisualizer
 from typing import List, Optional, Tuple
 
@@ -17,12 +17,10 @@ def _get_problematic_particles(experiment: Experiment) -> List[Particle]:
     for particle, data in graph.nodes(data=True):
         if "error" in data and data["error"] is not None:
             particles.append(particle)
-        elif "warning" in data and data["warning"] is not None:
-            particles.append(particle)
     return particles
 
 
-class WarningsVisualizer(ParticleListVisualizer):
+class ErrorsVisualizer(ParticleListVisualizer):
     """Shows all errors and warnings in the sample.
     Press E to exit this view (so that you can for example make a correction to the data).
     Press DELETE to delete an error or warning.
@@ -54,10 +52,9 @@ class WarningsVisualizer(ParticleListVisualizer):
                 continue
             is_edited = "edited" in data and data["edited"]
             if "error" in data:
-                return "ERROR", data["error"], is_edited
-            if "warning" in data:
-                return "Warning", data["warning"], is_edited
-            return "Unknown", str(data), is_edited
+                error = data["error"]
+                return errors.get_severity(error).name, errors.get_message(error), is_edited
+            return "UNKNOWN", str(data), is_edited
 
     def _delete_warning(self):
         if self._current_particle_index < 0 or self._current_particle_index >= len(self._particle_list):

@@ -29,7 +29,7 @@ class TrackVisualizer(Visualizer):
         self._draw_network(self._experiment.particle_links_scratch(), line_style='dotted', line_width=3, max_distance=1)
         self._draw_network(self._experiment.particle_links())
 
-        plt.title("Tracks of particle " + str(self._particle) + "\n" + self._get_cell_age_str())
+        plt.title("Tracks of " + str(self._particle) + "\n" + self._get_cell_age_str())
         plt.draw()
 
     def _get_cell_age_str(self) -> str:

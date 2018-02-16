@@ -6,7 +6,7 @@ import imaging
 import numpy
 from networkx import Graph
 from typing import Iterable, Set, Optional, Tuple
-from imaging import Particle, Experiment, cell
+from imaging import Particle, Experiment, cell, errors
 from imaging.image_helper import Image2d
 
 
@@ -36,7 +36,7 @@ def _fix_no_future_particle(graph: Graph, particle: Particle, last_frame_number:
     newly_matched_future_particle = imaging.get_closest_particle(future_particles, particle)
     if newly_matched_future_particle is None:
         if particle.frame_number() != last_frame_number:
-            graph.add_node(particle, warning="No future position, dead cell?")
+            graph.add_node(particle, error=errors.NO_FUTURE_POSITION)
         return
 
     # Replace edge
@@ -54,7 +54,7 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle
         return # Surely not a mother cell
 
     if len(future_preferred_particles) > 2:
-        graph.add_node(particle, error=str(len(future_preferred_particles)) + " daughter cells")
+        graph.add_node(particle, error=errors.TOO_MANY_DAUGHTER_CELLS)
         return
 
     two_daughters = _get_two_daughters(particle, future_preferred_particles, future_particles)
@@ -69,7 +69,7 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle
         return  # Nothing to fix
     current_mother_of_daughter2 = _find_past_particle(graph, daughter2)
     children_of_current_parent_of_daughter2 = list(_find_preferred_links(graph, current_mother_of_daughter2,
-                                                       _find_future_particles(graph, current_mother_of_daughter2)))
+                                                   _find_future_particles(graph, current_mother_of_daughter2)))
     if len(children_of_current_parent_of_daughter2) < 2:
         return # Cannot decouple current parent from daughter2, as then the current parent would be a dead cell
 
@@ -84,9 +84,9 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle
     if abs(score - current_parent_score) < 3:
         # Not sure
         if score > current_parent_score:
-            graph.add_node(particle, warning="Not sure if this is the correct mother")
+            graph.add_node(particle, error=errors.POTENTIALLY_NOT_A_MOTHER)
         else:
-            graph.add_node(particle, warning="Maybe this should be a mother cell")
+            graph.add_node(particle, error=errors.POTENTIALLY_SHOULD_BE_A_MOTHER)
 
 #
 # Helper functions below
@@ -145,9 +145,8 @@ def _with_only_the_preferred_edges(old_graph: Graph):
         if not isinstance(node, Particle):
             raise ValueError("Found a node that was not a particle: " + str(node))
         if "error" in data:
-            print("Error at " + str(node) + ": " + data["error"])
-        if "warning" in data:
-            print("Warning at " + str(node) + ": " + data["warning"])
+            error = data["error"]
+            print(errors.get_severity(error).name + " at " + str(node) + ": " + errors.get_message(error))
         graph.add_node(node, **data)
 
     for particle_1, particle_2, data in old_graph.edges(data=True):

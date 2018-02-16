@@ -37,6 +37,12 @@ class Particle:
             string += ".with_frame_number(" + str(self._frame_number) + ")"
         return string
 
+    def __str__(self):
+        string = "cell at (" + ("%.2f" % self.x) + ", " + ("%.2f" % self.y) + ", " + ("%.0f" % self.z) + ")"
+        if self._frame_number is not None:
+            string += " at time point " + str(self._frame_number)
+        return string
+
     def __hash__(self):
         return hash(int(self.x)) ^ hash(int(self.y)) ^ hash(int(self.z)) ^ hash(int(self._frame_number))
 

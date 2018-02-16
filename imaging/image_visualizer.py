@@ -209,8 +209,8 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             activate(track_visualizer)
         elif event.key == "e":
             particle = self._get_particle_at(event.xdata, event.ydata)
-            from imaging.warnings_visualizer import WarningsVisualizer
-            warnings_visualizer = WarningsVisualizer(self._experiment, self._fig, particle)
+            from imaging.errors_visualizer import ErrorsVisualizer
+            warnings_visualizer = ErrorsVisualizer(self._experiment, self._fig, particle)
             activate(warnings_visualizer)
         elif event.key == "l":
             from linking_analysis.link_editor import LinkEditor
