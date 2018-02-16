@@ -9,7 +9,7 @@ _output_file = "../Results/" + _name + "/Smart nearest neighbor links.json"
 _images_folder = "../Images/" + _name + "/"
 _images_format= "nd799xy08t%03dc1.tif"
 _max_frame = 115 # After this frame, the whole crypt has moved
-_mitotic_radius = 3
+_mitotic_radius = 2
 # END OF PARAMETERS
 
 

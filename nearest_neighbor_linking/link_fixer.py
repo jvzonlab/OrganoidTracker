@@ -36,7 +36,7 @@ def _fix_no_future_particle(graph: Graph, particle: Particle, last_frame_number:
     newly_matched_future_particle = imaging.get_closest_particle(future_particles, particle)
     if newly_matched_future_particle is None:
         if particle.frame_number() != last_frame_number:
-            print("Potential error at " + str(particle) + ": no future position, dead cell?")
+            graph.add_node(particle, warning="No future position, dead cell?")
         return
 
     # Replace edge
@@ -54,7 +54,7 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle
         return # Surely not a mother cell
 
     if len(future_preferred_particles) > 2:
-        print("Error at " + str(particle) + ": found three daughter cells")
+        graph.add_node(particle, error=str(len(future_preferred_particles)) + " daughter cells")
         return
 
     two_daughters = _get_two_daughters(particle, future_preferred_particles, future_particles)
@@ -77,17 +77,16 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle
                                                       children_of_current_parent_of_daughter2[0],
                                                       children_of_current_parent_of_daughter2[1], mitotic_radius)
     if score > current_parent_score:
-        # For sure replace parent
+        # Replace parent
         _downgrade_edges_pointing_to_past(graph, daughter2) # Removes old mother
         graph.add_edge(particle, daughter2, pref=True)
-        print("Made " + str(particle) + " to be the mother of " + str(daughter2) + " instead of "
-              + str(current_mother_of_daughter2))
 
     if abs(score - current_parent_score) < 3:
         # Not sure
-        print("Potential error at " + str(particle) + ": not sure whether "
-              + str(current_mother_of_daughter2) + " (score " + str(current_parent_score) + ") should be the parent of "
-              + str(daughter2) + " or this cell (score " + str(score) + ")")
+        if score > current_parent_score:
+            graph.add_node(particle, warning="Not sure if this is the correct mother")
+        else:
+            graph.add_node(particle, warning="Maybe this should be a mother cell")
 
 #
 # Helper functions below
@@ -142,10 +141,14 @@ def _find_future_particles(graph: Graph, particle: Particle):
 
 def _with_only_the_preferred_edges(old_graph: Graph):
     graph = Graph()
-    for node in old_graph.nodes():
+    for node, data in old_graph.nodes(data=True):
         if not isinstance(node, Particle):
             raise ValueError("Found a node that was not a particle: " + str(node))
-        graph.add_node(node)
+        if "error" in data:
+            print("Error at " + str(node) + ": " + data["error"])
+        if "warning" in data:
+            print("Warning at " + str(node) + ": " + data["warning"])
+        graph.add_node(node, **data)
 
     for particle_1, particle_2, data in old_graph.edges(data=True):
         if data["pref"]:

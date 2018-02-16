@@ -1,115 +1,57 @@
 from matplotlib.backend_bases import KeyEvent
 from matplotlib.figure import Figure
 from imaging import Particle, Experiment
-from imaging.visualizer import Visualizer, activate
+from imaging.particle_list_visualizer import ParticleListVisualizer
 from linking_analysis import mother_finder
-from typing import List
-import matplotlib.pyplot as plt
+from typing import List, Optional
 
 
-class CellDivisionVisualizer(Visualizer):
+def _get_mothers(experiment: Experiment) -> List[Particle]:
+    graph = experiment.particle_links()
+    if graph is None:
+        return []
+    all_mothers = list(mother_finder.find_mothers(graph))
+    return all_mothers
+
+
+class CellDivisionVisualizer(ParticleListVisualizer):
     """Shows cells that are about to divide.
     Use the left/right arrow keys to move to the next cell division.
     Press M to exit this view."""
 
-    _mother_index: int
-    _all_mothers = List[Particle]
+    def __init__(self, experiment: Experiment, figure: Figure, mother: Optional[Particle]):
+        super().__init__(experiment, figure, chosen_particle=mother, all_particles=_get_mothers(experiment))
 
-    def __init__(self, experiment: Experiment, figure: Figure, mother: Particle):
-        super().__init__(experiment, figure)
-        self._all_mothers = []
+    def get_message_no_particles(self):
+        return "No mothers found. Is the linking data missing?"
 
-        graph = experiment.particle_links()
-        if graph is not None:
-            self._all_mothers = list(mother_finder.find_mothers(graph))
-            self._all_mothers.sort(key=lambda particle: particle.frame_number())
+    def get_message_press_right(self):
+        return "No mother found at mouse position.\nPress the right arrow key to view the first mother in the sample."
 
-        self._mother_index = self._find_closest_mother_index(mother)
+    def get_title(self, _all_mothers: List[Particle], _mother_index: int):
+        mother = _all_mothers[_mother_index]
+        recognized_str = ""
+        if self._was_recognized(mother) is False:
+            recognized_str = "    (NOT RECOGNIZED)"
+        return "Mother " + str(self._current_particle_index + 1) + "/" + str(len(self._particle_list))\
+               + recognized_str + "\n" + str(mother)
 
-    def _find_closest_mother_index(self, particle: Particle) -> int:
+    def _was_recognized(self, mother: Particle) -> Optional[bool]:
+        """Gets if a mother was correctly recognized by the scratch graph. Returns None if there is no scratch graph."""
+        main_graph = self._experiment.particle_links()
+        scratch_graph = self._experiment.particle_links_scratch()
+        if main_graph is None or scratch_graph is None:
+            return None
+
         try:
-            return self._all_mothers.index(particle)
-        except ValueError:
-            # Try nearest mother
-            close_match = None
-            frame_match = None
-
-            for mother in self._all_mothers:
-                if mother.frame_number() == particle.frame_number():
-                    frame_match = mother
-                    if mother.z == particle.z:
-                        close_match = mother
-
-            if close_match is not None:
-                return self._all_mothers.index(close_match)
-            if frame_match is not None:
-                return self._all_mothers.index(frame_match)
-            return -1  # Give up
-
-    def draw_view(self):
-        self._clear_axis()
-        if self._mother_index < 0 or self._mother_index >= len(self._all_mothers):
-            if len(self._all_mothers) == 0:
-                plt.title("No mothers found. Is the linking data missing?")
-            else:
-                plt.title("No mother found at mouse position."
-                          "\nPress the right arrow key to view the first mother in the sample.")
-            plt.draw()
-            return
-
-        self._zoom_to_mother()
-        self._show_image()
-
-        mother = self._all_mothers[self._mother_index]
-        self._draw_mother(mother)
-        plt.title("Mother " + str(self._mother_index + 1) + "/" + str(len(self._all_mothers)) + "\n" + str(mother))
-
-        plt.draw()
-
-    def _zoom_to_mother(self):
-        mother = self._all_mothers[self._mother_index]
-        self._ax.set_xlim(mother.x - 50, mother.x + 50)
-        self._ax.set_ylim(mother.y - 50, mother.y + 50)
-        self._ax.set_autoscale_on(False)
-
-    def _draw_mother(self, mother: Particle):
-        plt.plot(mother.x, mother.y, 's', color='red', markeredgecolor='black', markersize=7, markeredgewidth=1)
-
-    def _show_image(self):
-        mother = self._all_mothers[self._mother_index]
-        image_stack = self._experiment.get_frame(mother.frame_number()).load_images()
-        if image_stack is not None:
-            image = self._ax.imshow(image_stack[int(mother.z)], cmap="gray")
-            plt.colorbar(mappable=image, ax=self._ax)
-
-    def _goto_next(self):
-        self._mother_index += 1
-        if self._mother_index >= len(self._all_mothers):
-            self._mother_index = 0
-        self.draw_view()
-
-    def _goto_previous(self):
-        self._mother_index -= 1
-        if self._mother_index < 0:
-            self._mother_index = len(self._all_mothers) - 1
-        self.draw_view()
-
-    def _goto_full_image(self):
-        from imaging.image_visualizer import StandardImageVisualizer
-
-        if self._mother_index < 0 or self._mother_index >= len(self._all_mothers):
-            # Don't know where to go
-            image_visualizer = StandardImageVisualizer(self._experiment, self._fig)
-        else:
-            mother = self._all_mothers[self._mother_index]
-            image_visualizer = StandardImageVisualizer(self._experiment, self._fig,
-                                               frame_number=mother.frame_number(), z=int(mother.z))
-        activate(image_visualizer)
+            connections_main = main_graph[mother]
+            connections_scratch = scratch_graph[mother]
+            return set(connections_main) == set(connections_scratch)
+        except KeyError:
+            return False
 
     def _on_key_press(self, event: KeyEvent):
-        if event.key == "left":
-            self._goto_previous()
-        elif event.key == "right":
-            self._goto_next()
-        elif event.key == "m":
-            self._goto_full_image()
+        if event.key == "m":
+            self.goto_full_image()
+        else:
+            super()._on_key_press(event)

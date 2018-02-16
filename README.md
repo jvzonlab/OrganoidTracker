@@ -36,7 +36,13 @@ For now, we have the following scripts:
 visualize.py
 ------------
 Generic data visualization tool that does not do any calculations first. Loads images from TIFF files, positions and
-tracks from JSON files. In [the manuals folder](manuals/VISUALIZER.md) a manual is available.
+tracks from JSON files. In [the manuals folder](manuals/VISUALIZER.md) a manual is available. This program can be used
+to edit positional and linking data.
+
+
+show_images.py
+--------------
+Stripped down version of the visualizer that only shows the images, no positions or links.
 
 
 track_manually.py
@@ -55,6 +61,18 @@ link_nearest_neighbors.py
 -------------------------
 Simple nearest neighbor-linking.
 
+
+link_nearest_neighbors_smart.py
+-------------------------------
+Nearest neighbor linking with some error corrections afterwards.
+
+1. IF a cell is dead (has no future positions), nearby cells are checked. If a cell appears to be newborn, it will
+   be connected to the dead cell instead.
+2. If a cell appears to be a mother cell (has two linked positions in the next timepoint), a scoring system is used to
+   give it a mother cell. If a nearby cell has a higher mother score, that cell becomes the mother instead.
+
+
 compare_links.py
 ----------------
-Assists in comparing linking results of 
+Assists in comparing two linking results. The "scratchpad" links are shown as dotted lines, the "verified" links as
+solid lines.

@@ -81,9 +81,6 @@ class LinkEditor(AbstractImageVisualizer):
                 except NetworkXError:
                     self.update_status("Cannot delete link: there was no link between selected particles")
         elif event.key == "l":
-            if self._has_uncommitted_changes:
-                self.update_status("There are uncommitted changes. /commit or /revert them first.")
-                return
             from imaging.image_visualizer import StandardImageVisualizer
             image_visualizer = StandardImageVisualizer(self._experiment, self._fig,
                                                        frame_number=self._frame.frame_number(), z=self._z)

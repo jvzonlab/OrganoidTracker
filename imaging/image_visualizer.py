@@ -48,7 +48,7 @@ class AbstractImageVisualizer(Visualizer):
     def get_title(self, errors: int) -> str:
         title = "Frame " + str(self._frame.frame_number()) + "    (z=" + str(self._z) + ")"
         if errors != 0:
-            title += " (errors: " + str(errors) + ")"
+            title += " (changes: " + str(errors) + ")"
         return title
 
     def draw_extra(self):
@@ -178,7 +178,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     Left/right keys: move in time
     Up/down keys: move in z-direction
     T key: view trajectory of cell at mouse, M key: view images of mother cells
-    L key: manual linking interface"""
+    L key: manual linking interface, E key: view images of potential errors"""
 
     def __init__(self, experiment: Experiment, figure: Figure, frame_number: int = 1, z: int = 14):
         super().__init__(experiment, figure, frame_number=frame_number, z=z)
@@ -192,10 +192,14 @@ class StandardImageVisualizer(AbstractImageVisualizer):
                 activate(track_visualizer)
         elif event.key == "m":
             particle = self.get_closest_particle(self._frame.particles(), event.xdata, event.ydata, self._z)
-            if particle is not None:
-                from linking_analysis.cell_division_visualizer import CellDivisionVisualizer
-                track_visualizer = CellDivisionVisualizer(self._experiment, self._fig, particle)
-                activate(track_visualizer)
+            from linking_analysis.cell_division_visualizer import CellDivisionVisualizer
+            track_visualizer = CellDivisionVisualizer(self._experiment, self._fig, particle)
+            activate(track_visualizer)
+        elif event.key == "e":
+            particle = self.get_closest_particle(self._frame.particles(), event.xdata, event.ydata, self._z)
+            from imaging.warnings_visualizer import WarningsVisualizer
+            warnings_visualizer = WarningsVisualizer(self._experiment, self._fig, particle)
+            activate(warnings_visualizer)
         elif event.key == "l":
             from linking_analysis.link_editor import LinkEditor
             link_editor = LinkEditor(self._experiment, self._fig, frame_number=self._frame.frame_number(), z=self._z)
