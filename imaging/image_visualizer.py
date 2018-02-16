@@ -22,9 +22,11 @@ class AbstractImageVisualizer(Visualizer):
     _frame_images: ndarray
     _z: int
 
-    def __init__(self, experiment: Experiment, figure: Figure, frame_number: int = 1, z: int = 14):
+    def __init__(self, experiment: Experiment, figure: Figure, frame_number: Optional[int] = None, z: int = 14):
         super().__init__(experiment, figure)
 
+        if frame_number is None:
+            frame_number = experiment.first_frame_number()
         self._z = int(z)
         self._frame, self._frame_images = self.load_frame(frame_number)
 
@@ -180,7 +182,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     T key: view trajectory of cell at mouse, M key: view images of mother cells
     L key: manual linking interface, E key: view images of potential errors"""
 
-    def __init__(self, experiment: Experiment, figure: Figure, frame_number: int = 1, z: int = 14):
+    def __init__(self, experiment: Experiment, figure: Figure, frame_number: Optional[int] = None, z: int = 14):
         super().__init__(experiment, figure, frame_number=frame_number, z=z)
 
     def _on_key_press(self, event: KeyEvent):

@@ -12,6 +12,8 @@ def get_age(experiment: Experiment, graph: Graph, particle: Particle) -> Optiona
         timesteps_ago += 1
 
         particle = _find_past_particle(graph, particle)
+        if particle is None:
+            return None # Cell first appeared here, don't know age for sure
         daughters = _find_preferred_links(graph, particle, _find_future_particles(graph, particle))
         if len(daughters) > 1:
             return timesteps_ago

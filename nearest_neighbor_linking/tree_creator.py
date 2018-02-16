@@ -3,7 +3,7 @@ from imaging import Experiment, Frame
 from nearest_neighbor_linking.find_nearest_few import find_nearest_particles
 
 
-def link_particles(experiment: Experiment, tolerance: float = 1.0, max_frame: int = 5000) -> Graph:
+def link_particles(experiment: Experiment, tolerance: float = 1.0, min_frame: int = 0, max_frame: int = 5000) -> Graph:
     """Simple nearest neighbour linking, keeping a list of potential candidates based on a given tolerance.
 
     A tolerance of 1.05 also links particles 5% from the closest particle. Note that if a tolerance higher than 1 is
@@ -13,11 +13,11 @@ def link_particles(experiment: Experiment, tolerance: float = 1.0, max_frame: in
     """
     graph = Graph()
 
-    frame_current = experiment.get_frame(1)
+    frame_current = experiment.get_frame(max(experiment.first_frame_number(), min_frame))
     _add_nodes(graph, frame_current)
 
     try:
-        for i in range(0, max_frame - 1):
+        while frame_current.frame_number() < max_frame:
             frame_previous = frame_current
 
             frame_current = experiment.get_next_frame(frame_previous)

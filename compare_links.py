@@ -11,6 +11,8 @@ _name = "multiphoton.organoids.17-07-28_weekend_H2B-mCherry.nd799xy08"
 _positions_file = "../Results/" + _name + "/Manual positions.json"
 _images_folder = "../Images/" + _name + "/"
 _images_format= "nd799xy08t%03dc1.tif"
+_min_frame = 116  # Just before this frame, the whole organoid moved
+_max_frame = 5000
 
 _automatic_links = io.load_links_from_json("../Results/" + _name + "/Smart nearest neighbor links.json")
 _baseline_links = io.load_links_from_json("../Results/" + _name + "/Manual links.json")
@@ -25,7 +27,8 @@ experiment.particle_links(_baseline_links)
 
 comparison.print_differences(_automatic_links, _baseline_links)
 
-tifffolder.load_images_from_folder(experiment, _images_folder, _images_format)
+tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
+                                   min_frame=_min_frame, max_frame=_max_frame)
 vis = image_visualizer.show(experiment)
 
 print("Done!")
