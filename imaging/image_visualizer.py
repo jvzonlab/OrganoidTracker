@@ -18,6 +18,8 @@ def show(experiment : Experiment):
 class AbstractImageVisualizer(Visualizer):
     """A generic image visualizer."""
 
+    MAX_Z_DISTANCE: int = 3
+
     _frame: Frame
     _frame_images: ndarray
     _z: int
@@ -73,8 +75,6 @@ class AbstractImageVisualizer(Visualizer):
         # Draw links
         errors = 0
         for particle in self._frame.particles():
-            if abs(particle.z - self._z) > 3:
-                continue
             errors += self._draw_links(particle)
 
         return errors
@@ -82,7 +82,7 @@ class AbstractImageVisualizer(Visualizer):
     def _draw_particles_of_frame(self, frame: Frame, color: str = 'red', marker_size:int = 6):
         for particle in frame.particles():
             dz = abs(particle.z - self._z)
-            if dz > 3:
+            if dz > self.MAX_Z_DISTANCE:
                 continue
 
             # Draw the particle itself (as a square or circle, depending on its depth)
@@ -109,9 +109,11 @@ class AbstractImageVisualizer(Visualizer):
                 return 1
         return 0
 
-    @staticmethod
-    def _draw_given_links(particle, links, line_style='solid', line_width=1):
+    def _draw_given_links(self, particle, links, line_style='solid', line_width=1):
         for linked_particle in links:
+            if abs(linked_particle.z - self._z) > self.MAX_Z_DISTANCE\
+                    and abs(particle.z - self._z) > self.MAX_Z_DISTANCE:
+                continue
             if linked_particle.frame_number() < particle.frame_number():
                 # Drawing to past
 
