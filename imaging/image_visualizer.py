@@ -4,7 +4,7 @@ from matplotlib.figure import Figure
 from matplotlib.backend_bases import KeyEvent
 from numpy import ndarray
 from networkx import Graph
-from typing import Optional, Iterable
+from typing import Optional, Iterable, List
 import matplotlib.pyplot as plt
 
 
@@ -23,6 +23,7 @@ class AbstractImageVisualizer(Visualizer):
     _frame: Frame
     _frame_images: ndarray
     _z: int
+    __drawn_particles: List[Particle]
 
     def __init__(self, experiment: Experiment, figure: Figure, frame_number: Optional[int] = None, z: int = 14):
         super().__init__(experiment, figure)
@@ -31,6 +32,7 @@ class AbstractImageVisualizer(Visualizer):
             frame_number = experiment.first_frame_number()
         self._z = int(z)
         self._frame, self._frame_images = self.load_frame(frame_number)
+        self.__drawn_particles = []
 
     def load_frame(self, frame_number: int):
         frame = self._experiment.get_frame(frame_number)
@@ -40,6 +42,7 @@ class AbstractImageVisualizer(Visualizer):
 
     def draw_view(self):
         self._clear_axis()
+        self.__drawn_particles.clear()
         if self._frame_images is not None:
             image = self._ax.imshow(self._frame_images[self._z], cmap="gray")
             plt.colorbar(mappable=image, ax=self._ax)
@@ -92,6 +95,7 @@ class AbstractImageVisualizer(Visualizer):
                 marker_style = 'o'
             plt.plot(particle.x, particle.y, marker_style, color=color, markeredgecolor='black',
                      markersize=current_marker_size, markeredgewidth=1)
+            self.__drawn_particles.append(particle)
 
     def _draw_links(self, particle: Particle) -> int:
         """Draws links between the particles. Returns 1 if there is 1 error: the baseline links don't match the actual
@@ -130,6 +134,10 @@ class AbstractImageVisualizer(Visualizer):
             return network[particle]
         except KeyError:
             return []
+
+    def _get_particle_at(self, x: Optional[int], y: Optional[int]) -> Optional[Particle]:
+        """Wrapper of get_closest_particle that makes use of the fact that we can lookup all particles ourselves."""
+        return self.get_closest_particle(self.__drawn_particles, x, y, None, max_distance=5)
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "up":
@@ -189,18 +197,18 @@ class StandardImageVisualizer(AbstractImageVisualizer):
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "t":
-            particle = self.get_closest_particle(self._frame.particles(), event.xdata, event.ydata, self._z, 20)
+            particle = self._get_particle_at(event.xdata, event.ydata)
             if particle is not None:
                 from linking_analysis.track_visualizer import TrackVisualizer
                 track_visualizer = TrackVisualizer(self._experiment, self._fig, particle)
                 activate(track_visualizer)
         elif event.key == "m":
-            particle = self.get_closest_particle(self._frame.particles(), event.xdata, event.ydata, self._z)
+            particle = self._get_particle_at(event.xdata, event.ydata)
             from linking_analysis.cell_division_visualizer import CellDivisionVisualizer
             track_visualizer = CellDivisionVisualizer(self._experiment, self._fig, particle)
             activate(track_visualizer)
         elif event.key == "e":
-            particle = self.get_closest_particle(self._frame.particles(), event.xdata, event.ydata, self._z)
+            particle = self._get_particle_at(event.xdata, event.ydata)
             from imaging.warnings_visualizer import WarningsVisualizer
             warnings_visualizer = WarningsVisualizer(self._experiment, self._fig, particle)
             activate(warnings_visualizer)

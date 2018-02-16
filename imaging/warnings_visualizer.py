@@ -2,7 +2,7 @@ from matplotlib.backend_bases import KeyEvent
 from matplotlib.figure import Figure
 from imaging import Particle, Experiment
 from imaging.particle_list_visualizer import ParticleListVisualizer
-from typing import List, Optional, Set
+from typing import List, Optional, Tuple
 
 
 def _get_problematic_particles(experiment: Experiment) -> List[Particle]:
@@ -40,19 +40,24 @@ class WarningsVisualizer(ParticleListVisualizer):
 
     def get_title(self, particle_list: List[Particle], current_particle_index: int):
         particle = particle_list[current_particle_index]
-        return "Error or warning " + str(current_particle_index + 1) + "/" + str(len(particle_list)) + \
-               "\n" + str(self._get_warning(particle)) + "\n" + str(particle)
+        type, message, is_edited = self._get_warning_info(particle)
+        outdated_str = ""
+        if is_edited:
+            outdated_str = " (edited afterwards)"
+        return type + " " + str(current_particle_index + 1) + "/" + str(len(particle_list)) + outdated_str + \
+            "\n" + message + "\n" + str(particle)
 
-    def _get_warning(self, particle: Particle) -> Optional[str]:
+    def _get_warning_info(self, particle: Particle) -> Tuple[str, str, bool]:
         graph = self._experiment.particle_links_scratch()
         for node, data in graph.nodes(data=True):
             if node != particle:
                 continue
+            is_edited = "edited" in data and data["edited"]
             if "error" in data:
-                return data["error"]
+                return "ERROR", data["error"], is_edited
             if "warning" in data:
-                return data["warning"]
-            return None
+                return "Warning", data["warning"], is_edited
+            return "Unknown", str(data), is_edited
 
     def _delete_warning(self):
         if self._current_particle_index < 0 or self._current_particle_index >= len(self._particle_list):

@@ -57,12 +57,17 @@ class LinkEditor(AbstractImageVisualizer):
     def _on_mouse_click(self, event: MouseEvent):
         if not event.dblclick:
             return
-        new_selection = self.get_closest_particle(self._frame.particles(), event.xdata, event.ydata, self._z, max_distance=20)
+        new_selection = self._get_particle_at(event.xdata, event.ydata)
         if new_selection is None:
             self.update_status("Cannot find a particle here")
             return
-        self._selected1 = self._selected2
-        self._selected2 = new_selection
+        if new_selection == self._selected1:
+            self._selected1 = None  # Deselect
+        elif new_selection == self._selected2:
+            self._selected2 = None  # Deselect
+        else:
+            self._selected1 = self._selected2
+            self._selected2 = new_selection
         self.draw_view()
         self.update_status("Selected:\n        " + str(self._selected2) + "\n        " + str(self._selected1))
 
@@ -137,6 +142,9 @@ class LinkEditor(AbstractImageVisualizer):
         return super()._on_command(command)
 
     def _after_modification(self):
+        graph = self._experiment.particle_links_scratch()
+        graph.add_node(self._selected1, edited=True)  # Mark as edited, so that warnings displayer knows this
+        graph.add_node(self._selected2, edited=True)
         self._selected1 = None
         self._selected2 = None
         self._has_uncommitted_changes = True

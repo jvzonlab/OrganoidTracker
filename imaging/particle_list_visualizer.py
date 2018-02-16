@@ -5,6 +5,7 @@ from imaging.visualizer import Visualizer, activate
 from networkx import Graph
 from typing import List, Optional
 import matplotlib.pyplot as plt
+import imaging
 
 
 class ParticleListVisualizer(Visualizer):
@@ -15,7 +16,10 @@ class ParticleListVisualizer(Visualizer):
     _current_particle_index: int
     _particle_list = List[Particle]
 
-    def __init__(self, experiment: Experiment, figure: Figure, all_particles: List[Particle], chosen_particle: Optional[Particle] = None):
+    __last_index = -1  # Static variable
+
+    def __init__(self, experiment: Experiment, figure: Figure, all_particles: List[Particle],
+                 chosen_particle: Optional[Particle] = None):
         """Creates a viewer for a list of particles. The particles will automatically be sorted by frame number.
         chosen_particle is a particle that is used as a starting point for the viewer, but only if it appears in the
         list
@@ -27,25 +31,16 @@ class ParticleListVisualizer(Visualizer):
 
     def _find_closest_particle_index(self, particle: Optional[Particle]) -> int:
         if particle is None:
-            return -1 # Give up immediately
+            return ParticleListVisualizer.__last_index  # Give up immediately
         try:
             return self._particle_list.index(particle)
         except ValueError:
-            # Try nearest mother
-            close_match = None
-            frame_match = None
-
-            for mother in self._particle_list:
-                if mother.frame_number() == particle.frame_number():
-                    frame_match = mother
-                    if mother.z == particle.z:
-                        close_match = mother
+            # Try nearest particle
+            close_match = imaging.get_closest_particle(self._particle_list, particle, max_distance=200)
 
             if close_match is not None:
                 return self._particle_list.index(close_match)
-            if frame_match is not None:
-                return self._particle_list.index(frame_match)
-            return -1  # Give up
+            return ParticleListVisualizer.__last_index  # Give up
 
     def get_message_no_particles(self):
         return "No cells found. Is there some data missing?"
@@ -74,6 +69,7 @@ class ParticleListVisualizer(Visualizer):
         plt.title(self.get_title(self._particle_list, self._current_particle_index))
 
         plt.draw()
+        ParticleListVisualizer.__last_index = self._current_particle_index
 
     def _zoom_to_mother(self):
         mother = self._particle_list[self._current_particle_index]
