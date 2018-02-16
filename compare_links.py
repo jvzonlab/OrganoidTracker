@@ -11,8 +11,8 @@ _name = "multiphoton.organoids.17-07-28_weekend_H2B-mCherry.nd799xy08"
 _positions_file = "../Results/" + _name + "/Manual positions.json"
 _images_folder = "../Images/" + _name + "/"
 _images_format= "nd799xy08t%03dc1.tif"
-_min_frame = 116  # Just before this frame, the whole organoid moved
-_max_frame = 5000
+_min_frame = 0
+_max_frame = 115  # Organoid moved position here
 
 _automatic_links = io.load_links_from_json("../Results/" + _name + "/Smart nearest neighbor links.json")
 _baseline_links = io.load_links_from_json("../Results/" + _name + "/Manual links.json")

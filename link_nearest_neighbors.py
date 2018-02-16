@@ -11,8 +11,8 @@ _positions_file = "../Results/" + _name + "/Manual positions.json"
 _output_file = "../Results/" + _name + "/Nearest neighbor links.json"
 _images_folder = "../Images/" + _name + "/"
 _images_format= "nd799xy08t%03dc1.tif"
-_min_frame = 116  # Organoid moved position here
-_max_frame = 5000
+_min_frame = 0
+_max_frame = 115  # Organoid moved position here
 # END OF PARAMETERS
 
 
