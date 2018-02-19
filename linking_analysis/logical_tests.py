@@ -11,6 +11,8 @@ def apply(experiment: Experiment, graph: Graph):
         future_particles = _get_future_particles(graph, particle)
         if len(future_particles) > 2:
             _set_error(graph, particle, errors.TOO_MANY_DAUGHTER_CELLS)
+        if len(future_particles) == 0:
+            _set_error(graph, particle, errors.NO_FUTURE_POSITION)
 
         past_particles = _get_past_particles(graph, particle)
         if len(past_particles) == 0 and particle.frame_number() > experiment.first_frame_number():
