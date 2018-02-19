@@ -187,10 +187,10 @@ class AbstractImageVisualizer(Visualizer):
 
 class StandardImageVisualizer(AbstractImageVisualizer):
     """Shows microscopy images with cells and cell trajectories drawn on top.
-    Left/right keys: move in time
-    Up/down keys: move in z-direction
+    Left/right keys: move in time, up/down keys: move in z-direction
     T key: view trajectory of cell at mouse, M key: view images of mother cells
-    L key: manual linking interface, E key: view images of potential errors"""
+    L key: manual linking interface, E key: view images of potential errors
+    D key: view differences between official and scratch links"""
 
     def __init__(self, experiment: Experiment, figure: Figure, frame_number: Optional[int] = None, z: int = 14):
         super().__init__(experiment, figure, frame_number=frame_number, z=z)
@@ -212,6 +212,11 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             from imaging.errors_visualizer import ErrorsVisualizer
             warnings_visualizer = ErrorsVisualizer(self._experiment, self._fig, particle)
             activate(warnings_visualizer)
+        elif event.key == "d":
+            particle = self._get_particle_at(event.xdata, event.ydata)
+            from linking_analysis.differences_visualizer import DifferencesVisualizer
+            differences_visualizer = DifferencesVisualizer(self._experiment, self._fig, particle)
+            activate(differences_visualizer)
         elif event.key == "l":
             from linking_analysis.link_editor import LinkEditor
             link_editor = LinkEditor(self._experiment, self._fig, frame_number=self._frame.frame_number(), z=self._z)
