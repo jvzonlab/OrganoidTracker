@@ -107,8 +107,6 @@ class AbstractImageVisualizer(Visualizer):
                  markersize=current_marker_size, markeredgewidth=1)
         self.__drawn_particles.append(particle)
 
-
-
     def _draw_links(self, particle: Particle) -> int:
         """Draws links between the particles. Returns 1 if there is 1 error: the baseline links don't match the actual
         links.

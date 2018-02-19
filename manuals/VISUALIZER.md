@@ -19,10 +19,13 @@ Press `M` to jump to the mother view. Here you get an overview of all cell divis
 left and right arrow keys can now be used to jump to the next or previous cell division. Press `M` again to exit the
 mother view and return to the normal view.
 
-Press `E` to go the errors and warnings view. All errors and warnings reported during the analysis are shown here. Use
-the left and right arrow keys to jump to the next or previous error. After you have fixed an error (for example by
+Press `E` to go to the errors and warnings view. All errors and warnings reported during the analysis are shown here.
+Use the left and right arrow keys to jump to the next or previous error. After you have fixed an error (for example by
 changing the linking data, see next section), or after you have made sure that the error was in error, press `DELETE` to
 delete an error. Press `E` again to leave this view, and go back to the normal view.
+
+Press `D` to go to a view that displays all differences between two sets of links between the cells in time. In this
+view, use the left and right arrow keys to jump to the next or previous error. Press `D` again to exit this view.
 
 The link editor
 ---------------
