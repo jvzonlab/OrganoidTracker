@@ -2,14 +2,11 @@ from typing import Optional
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 from matplotlib.figure import Figure
+from networkx import Graph, NetworkXError
 
 from imaging import Experiment, Particle, io
 from imaging.image_visualizer import AbstractImageVisualizer
-
-from networkx import Graph, NetworkXError
-
 from imaging.visualizer import activate
-
 
 class LinkEditor(AbstractImageVisualizer):
     """Editor for links.
@@ -122,17 +119,7 @@ class LinkEditor(AbstractImageVisualizer):
             self.update_status("Reverted all uncommitted changes.")
             return True
         if command.startswith("export "):
-            if self._has_uncommitted_changes:
-                self.update_status("There are uncommitted changes. /commit or /revert them first.")
-                return True
-            filename = command[7:].strip()
-            if len(filename) == 0:
-                self.update_status("Please give a file name to save to")
-                return True
-            if not filename.endswith(".json"):
-                filename+= ".json"
-            io.save_links_to_json(self._experiment.particle_links(), filename)
-            self.update_status("Saved committed links to " + filename)
+            self._export_links(filename=command[7:].strip())
             return True
         if command == "help":
             self.update_status("/commit - commits all changes, so that they cannot be reverted\n"
@@ -140,6 +127,18 @@ class LinkEditor(AbstractImageVisualizer):
                                "/export - exports all committed changes to a file")
             return True
         return super()._on_command(command)
+
+    def _export_links(self, filename: str):
+        if self._has_uncommitted_changes:
+            self.update_status("There are uncommitted changes. /commit or /revert them first.")
+            return
+        if len(filename) == 0:
+            self.update_status("Please give a file name to save to")
+            return
+        if not filename.endswith(".json"):
+            filename += ".json"
+        io.save_links_to_json(self._experiment.particle_links(), filename)
+        self.update_status("Saved committed links to " + filename)
 
     def _after_modification(self):
         graph = self._experiment.particle_links_scratch()

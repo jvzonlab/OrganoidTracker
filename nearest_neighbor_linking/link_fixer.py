@@ -8,7 +8,7 @@ from networkx import Graph
 from typing import Iterable, Set, Optional, Tuple
 from imaging import Particle, Experiment, cell, errors
 from imaging.image_helper import Image2d
-
+from linking_analysis import logical_tests
 
 def prune_links(experiment: Experiment, graph: Graph, mitotic_radius: int) -> Graph:
     """Takes a graph with all possible edges between cells, and returns a graph with only the most likely edges.
@@ -21,7 +21,9 @@ def prune_links(experiment: Experiment, graph: Graph, mitotic_radius: int) -> Gr
     [_fix_no_future_particle(graph, particle, last_frame_number) for particle in graph.nodes()]
     [_fix_cell_divisions(experiment, graph, particle, mitotic_radius) for particle in graph.nodes()]
 
-    return _with_only_the_preferred_edges(graph)
+    graph = _with_only_the_preferred_edges(graph)
+    logical_tests.apply(experiment, graph)
+    return graph
 
 
 def _fix_no_future_particle(graph: Graph, particle: Particle, last_frame_number: int):
@@ -144,9 +146,6 @@ def _with_only_the_preferred_edges(old_graph: Graph):
     for node, data in old_graph.nodes(data=True):
         if not isinstance(node, Particle):
             raise ValueError("Found a node that was not a particle: " + str(node))
-        if "error" in data:
-            error = data["error"]
-            print(errors.get_severity(error).name + " at " + str(node) + ": " + errors.get_message(error))
         graph.add_node(node, **data)
 
     for particle_1, particle_2, data in old_graph.edges(data=True):
