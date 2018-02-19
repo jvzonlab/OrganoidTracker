@@ -43,6 +43,7 @@ def _print_edges(graph: Graph):
 
         print("\t" + str(particle1) + "---" + str(particle2))
 
+
 def _print_links_differences(automatic_links: Graph, baseline_links: Graph):
     print("There are " + str(baseline_links.number_of_edges()) + " connections in the baseline results.")
     missed_links = networkx.difference(baseline_links, automatic_links);

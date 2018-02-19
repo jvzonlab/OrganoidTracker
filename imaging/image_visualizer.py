@@ -93,9 +93,21 @@ class AbstractImageVisualizer(Visualizer):
             current_marker_size = marker_size - dz
             if particle.z != self._z:
                 marker_style = 'o'
-            plt.plot(particle.x, particle.y, marker_style, color=color, markeredgecolor='black',
-                     markersize=current_marker_size, markeredgewidth=1)
-            self.__drawn_particles.append(particle)
+            self._draw_particle(particle, color, current_marker_size, marker_style)
+
+    def _draw_particle(self, particle, color, current_marker_size, marker_style):
+        # Draw error marker
+        graph = self._experiment.particle_links_scratch() or self._experiment.particle_links()
+        if graph is not None and particle in graph and "error" in graph.nodes[particle]:
+            plt.plot(particle.x, particle.y, 'X', color='black', markeredgecolor='white',
+                 markersize=current_marker_size + 12, markeredgewidth=2)
+
+        # Draw particle
+        plt.plot(particle.x, particle.y, marker_style, color=color, markeredgecolor='black',
+                 markersize=current_marker_size, markeredgewidth=1)
+        self.__drawn_particles.append(particle)
+
+
 
     def _draw_links(self, particle: Particle) -> int:
         """Draws links between the particles. Returns 1 if there is 1 error: the baseline links don't match the actual
