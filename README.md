@@ -12,6 +12,7 @@ To be able to run the scripts, you first need to install the appropriate librari
 
 * Anaconda
 * The `tifffile` package from Anaconda Forge
+* The `opencv` package from Anaoconda Forge 
 
 If you want to have an exact copy of my environment, run the following commands: (they require
 Anaconda to be installed)
