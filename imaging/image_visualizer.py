@@ -232,7 +232,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             link_editor = LinkEditor(self._experiment, self._fig, frame_number=self._frame.frame_number(), z=self._z)
             activate(link_editor)
         elif event.key == "s":
-            from particle_detection import position_detection
-            position_detection.perform(self._frame.load_images()[self._z])
+            from particle_detection import edge_detection
+            edge_detection.perform(self._frame.load_images()[self._z])
         else:
             super()._on_key_press(event)
