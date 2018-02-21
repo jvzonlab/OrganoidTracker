@@ -1,7 +1,7 @@
 # Simple nearest-neighbor linking: every cell is linked to the nearest cell in the previous image. Physical and
 # biological constraints are not taken into account.
 from imaging import Experiment, io, tifffolder, image_visualizer
-from nearest_neighbor_linking import tree_creator
+from linking_analysis import linker_for_experiment
 from matplotlib import pyplot
 
 
@@ -23,7 +23,7 @@ print("Disovering images")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format, min_frame=_min_frame,
                                    max_frame=_max_frame)
 print("Staring link process")
-results = tree_creator.link_particles(experiment, min_frame=_min_frame, max_frame=_max_frame)
+results = linker_for_experiment.link_particles(experiment, min_frame=_min_frame, max_frame=_max_frame)
 print("Writing results to file")
 io.save_links_to_json(results, _output_file)
 print("Visualizing")

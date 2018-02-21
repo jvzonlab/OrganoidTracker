@@ -66,14 +66,16 @@ class AbstractImageVisualizer(Visualizer):
 
         # Draw particles
         self._draw_particles_of_frame(self._frame, marker_size=7)
-        try:
-            self._draw_particles_of_frame(self._experiment.get_next_frame(self._frame), color='orange')
-        except KeyError:
-            pass
-        try:
-            self._draw_particles_of_frame(self._experiment.get_previous_frame(self._frame), color='darkred')
-        except KeyError:
-            pass
+        if self._experiment.particle_links() is not None and self._experiment.particle_links_scratch() is not None:
+            # Only draw particles of next/previous frame if there is linking data
+            try:
+                self._draw_particles_of_frame(self._experiment.get_next_frame(self._frame), color='orange')
+            except KeyError:
+                pass
+            try:
+                self._draw_particles_of_frame(self._experiment.get_previous_frame(self._frame), color='darkred')
+            except KeyError:
+                pass
 
         # Draw links
         errors = 0
@@ -91,7 +93,7 @@ class AbstractImageVisualizer(Visualizer):
             # Draw the particle itself (as a square or circle, depending on its depth)
             marker_style = 's'
             current_marker_size = marker_size - dz
-            if particle.z != self._z:
+            if int(particle.z) != self._z:
                 marker_style = 'o'
             self._draw_particle(particle, color, current_marker_size, marker_style)
 
@@ -231,8 +233,5 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             from linking_analysis.link_editor import LinkEditor
             link_editor = LinkEditor(self._experiment, self._fig, frame_number=self._frame.frame_number(), z=self._z)
             activate(link_editor)
-        elif event.key == "s":
-            from particle_detection import edge_detection
-            edge_detection.perform(self._frame.load_images()[self._z])
         else:
             super()._on_key_press(event)

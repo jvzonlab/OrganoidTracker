@@ -1,6 +1,6 @@
 from networkx import Graph
 from imaging import Experiment, Frame
-from nearest_neighbor_linking.find_nearest_few import find_nearest_particles
+from linking_analysis.find_nearest_neighbors import find_nearest_particles
 
 
 def link_particles(experiment: Experiment, tolerance: float = 1.0, min_frame: int = 0, max_frame: int = 5000) -> Graph:

@@ -43,7 +43,7 @@ def save_links_to_json(links: Graph, json_file_name: str):
         json.dump(data, handle, cls=_MyEncoder)
 
 
-def save_particles_to_json(particles: List[Particle], json_file_name: str):
+def save_positions_to_json(particles: List[Particle], json_file_name: str):
     """Saves a list of particles to disk."""
     with open(json_file_name, 'w') as handle:
         json.dump(particles, handle, cls=_MyEncoder)

@@ -1,6 +1,5 @@
-from imaging import Experiment, io, tifffolder, image_visualizer
-from nearest_neighbor_linking import tree_creator
-from nearest_neighbor_linking import link_fixer
+from imaging import Experiment, io, tifffolder
+from linking_analysis import link_fixer, linker_for_experiment
 
 # PARAMETERS
 _name = "multiphoton.organoids.17-07-28_weekend_H2B-mCherry.nd799xy08"
@@ -21,7 +20,7 @@ print("Discovering images...")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_frame=_min_frame, max_frame=_max_frame)
 print("Performing nearest-neighbor linking...")
-possible_links = tree_creator.link_particles(experiment, min_frame=_min_frame, max_frame=_max_frame, tolerance=2)
+possible_links = linker_for_experiment.link_particles(experiment, min_frame=_min_frame, max_frame=_max_frame, tolerance=2)
 print("Deciding on what links to use...")
 link_result = link_fixer.prune_links(experiment, possible_links, _mitotic_radius)
 print("Writing results to file...")
