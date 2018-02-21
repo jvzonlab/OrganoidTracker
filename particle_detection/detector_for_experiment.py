@@ -6,8 +6,6 @@ from typing import Dict, Optional, List, Tuple
 
 def detect_particles_using_distance_transform(experiment: Experiment, min_intensity = 0.6,
                                               max_cell_height = 6, **kwargs):
-    all_particles = []
-
     for frame_number in range(experiment.first_frame_number(), experiment.last_frame_number() + 1):
         print("Searching for particles in frame " + str(frame_number) + "/"
               + str(experiment.last_frame_number()))
@@ -21,9 +19,6 @@ def detect_particles_using_distance_transform(experiment: Experiment, min_intens
 
         particles = _to_particles(z_stop=image_stack.shape[0], peaks=peaks_in_frame, max_cell_height=max_cell_height)
         frame.add_particles(particles)
-        all_particles.append(particles)
-
-    return all_particles
 
 
 class Peak:

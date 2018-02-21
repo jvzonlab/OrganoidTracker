@@ -43,10 +43,15 @@ def save_links_to_json(links: Graph, json_file_name: str):
         json.dump(data, handle, cls=_MyEncoder)
 
 
-def save_positions_to_json(particles: List[Particle], json_file_name: str):
+def save_positions_to_json(experiment: Experiment, json_file_name: str):
     """Saves a list of particles to disk."""
+    data_structure = {}
+    for frame_number in range(experiment.first_frame_number(), experiment.last_frame_number() + 1):
+        frame = experiment.get_frame(frame_number)
+        particles = [(p.x, p.y, p.z) for p in frame.particles()]
+        data_structure[str(frame_number)] = particles
     with open(json_file_name, 'w') as handle:
-        json.dump(particles, handle, cls=_MyEncoder)
+        json.dump(data_structure, handle, cls=_MyEncoder)
 
 
 def load_links_from_json(json_file_name: str) -> Graph:
