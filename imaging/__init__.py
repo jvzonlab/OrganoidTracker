@@ -49,7 +49,7 @@ class Particle:
     def __eq__(self, other):
         return isinstance(other, self.__class__) \
                and abs(self.x - other.x) < 0.00001 and abs(self.x - other.x) < 0.00001 and abs(self.z - other.z) < 0.00001 \
-               and abs(self._frame_number - other._frame_number) < 0.00001
+               and self._frame_number == other._frame_number
 
 
 class Frame:

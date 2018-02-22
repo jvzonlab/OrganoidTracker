@@ -77,3 +77,9 @@ compare_links.py
 ----------------
 Assists in comparing two linking results. The "scratchpad" links are shown as dotted lines, the "verified" links as
 solid lines.
+
+
+detect_cells_*.py
+-----------------
+Several detectors using (slightly) different algorithms to extract cell positions. The detector can also show insights
+into the algorithm and display earlier results.

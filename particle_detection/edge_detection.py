@@ -13,8 +13,6 @@ def perform(image: ndarray):
     tight = cv2.Canny(blurred, 225, 250)
 
     kernel = np.ones((5,5),np.uint8)
-    tight = cv2.dilate(tight, kernel)
-    tight = cv2.morphologyEx(tight, cv2.MORPH_CLOSE, kernel)
 
     # show the images
     cv2.imshow("Edges",tight)

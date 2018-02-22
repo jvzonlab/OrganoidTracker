@@ -5,7 +5,8 @@ from imaging import Experiment, Particle
 from networkx import node_link_data, node_link_graph, Graph
 from typing import List
 import numpy
-
+from pathlib import Path
+import os
 
 def load_positions_from_json(experiment: Experiment, json_file_name: str):
     """Loads all particle positions from a JSON file"""
@@ -39,6 +40,8 @@ def save_links_to_json(links: Graph, json_file_name: str):
     """Saves particle linking data to a JSON file. File follows the d3.js format, like the example here:
     http://bl.ocks.org/mbostock/4062045 """
     data = node_link_data(links)
+
+    _create_parent_directories(json_file_name)
     with open(json_file_name, 'w') as handle:
         json.dump(data, handle, cls=_MyEncoder)
 
@@ -50,6 +53,8 @@ def save_positions_to_json(experiment: Experiment, json_file_name: str):
         frame = experiment.get_frame(frame_number)
         particles = [(p.x, p.y, p.z) for p in frame.particles()]
         data_structure[str(frame_number)] = particles
+
+    _create_parent_directories(json_file_name)
     with open(json_file_name, 'w') as handle:
         json.dump(data_structure, handle, cls=_MyEncoder)
 
@@ -61,3 +66,7 @@ def load_links_from_json(json_file_name: str) -> Graph:
             raise ValueError
         graph = node_link_graph(data)
         return graph
+
+
+def _create_parent_directories(file_name: str):
+    Path(file_name).parent.mkdir(parents=True, exist_ok=True)

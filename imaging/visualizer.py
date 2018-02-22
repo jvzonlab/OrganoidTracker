@@ -126,6 +126,8 @@ def _configure_matplotlib():
     plt.rcParams['keymap.xscale'] = []
     plt.rcParams['keymap.yscale'] = []
     plt.rcParams['keymap.quit'] = ['ctrl+w','cmd+w']
+    plt.rcParams['font.family'] = ['serif']
+    plt.rcParams['font.serif'] = ['Times New Roman', 'Times']
 
 
 def activate(visualizer: Visualizer) -> None:
