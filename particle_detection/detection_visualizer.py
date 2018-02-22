@@ -19,7 +19,10 @@ def show(experiment: Experiment, detector: Detector, detection_parameters: Dict)
 
 class DetectionVisualizer(AbstractImageVisualizer):
     """Visualizer specialized in displaying particle positions.
-    Press D to perform 2D detection in this frame, showing intermediate results."""
+    Use the left/right arrow keys to move in time.
+    Use the up/down arrow keys to move in the z-direction
+    Press D to perform 2D detection in this frame, showing intermediate results.
+    """
     _detection_parameters = Dict
     _detector: Detector
 
