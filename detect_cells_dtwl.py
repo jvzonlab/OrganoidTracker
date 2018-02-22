@@ -38,7 +38,7 @@ else:
     detector.detect_particles_in_3d(experiment, _method, **_method_parameters)
     io.save_positions_to_json(experiment, _particles_file)
 
-detection_visualizer.show(experiment, _method_parameters)
+detection_visualizer.show(experiment, _method, _method_parameters)
 
 print("Done!")
 pyplot.show()
