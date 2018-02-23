@@ -21,7 +21,8 @@ class DetectionVisualizer(AbstractImageVisualizer):
     """Visualizer specialized in displaying particle positions.
     Use the left/right arrow keys to move in time.
     Use the up/down arrow keys to move in the z-direction
-    Press D to perform 2D detection in this time_point, showing intermediate results.
+    Press D to perform 2D detection in this time point, showing intermediate results.
+    Press N to show the next and current time point together in a single image (red=next time point, green=current)
     """
     _detection_parameters = Dict
     _detector: Detector
@@ -32,8 +33,8 @@ class DetectionVisualizer(AbstractImageVisualizer):
         self._detector = detector
 
     def _on_key_press(self, event: KeyEvent):
-        image = self._time_point_images[self._z]
         if event.key == "d":
+            image = self._time_point.load_images()[self._z]
             self._detector.detect(image, show_results=True, **self._detection_parameters)
 
         super()._on_key_press(event)

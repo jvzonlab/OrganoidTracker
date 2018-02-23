@@ -1,5 +1,7 @@
+import numpy
+
 import imaging
-from imaging import Experiment, Particle
+from imaging import Experiment, Particle, TimePoint
 from matplotlib.figure import Figure, Axes, Text
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 from typing import Iterable, Optional, Union
@@ -99,6 +101,26 @@ class Visualizer:
     def detach(self):
         self._fig.canvas.mpl_disconnect(self._key_handler_id)
         self._fig.canvas.mpl_disconnect(self._mouse_handler_id)
+
+    def create_image(self, time_point: TimePoint, show_next_time_point: bool):
+        """Creates an image suitable for display purposes. IF show_next_time_point is set to True, then then a color
+        image will be created with the next image in red, and the current image in green."""
+        time_point_images = time_point.load_images()
+        if time_point_images is None:
+            return None
+        if show_next_time_point:
+            image_shape = time_point_images.shape
+
+            rgb_images = numpy.zeros((image_shape[0], image_shape[1], image_shape[2], 3), dtype='float')
+            rgb_images[:,:,:,1] = time_point_images  # Green channel is current image
+            try:
+                next_time_point = self._experiment.get_next_time_point(time_point)
+                next_time_point_images = next_time_point.load_images()
+                rgb_images[:,:,:,0] = next_time_point_images # Red channel is next image
+            except KeyError:
+                pass  # There is no next time point, ignore
+            time_point_images = rgb_images / rgb_images.max()
+        return time_point_images
 
     @staticmethod
     def get_closest_particle(particles: Iterable[Particle], x: Optional[int], y: Optional[int], z: Optional[int], max_distance: int = 100000):

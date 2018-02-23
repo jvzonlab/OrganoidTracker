@@ -4,6 +4,7 @@ from matplotlib.backend_bases import KeyEvent, MouseEvent
 from matplotlib.figure import Figure
 from networkx import Graph, NetworkXError
 
+import imaging
 from imaging import Experiment, Particle, io
 from imaging.image_visualizer import AbstractImageVisualizer
 from imaging.visualizer import activate
@@ -43,11 +44,11 @@ class LinkEditor(AbstractImageVisualizer):
     def _draw_highlight(self, particle: Optional[Particle]):
         if particle is None:
             return
-        color = "red"
+        color = imaging.COLOR_CELL_CURRENT
         if particle.time_point_number() < self._time_point.time_point_number():
-            color = "darkred"
+            color = imaging.COLOR_CELL_PREVIOUS
         elif particle.time_point_number() > self._time_point.time_point_number():
-            color = "orange"
+            color = imaging.COLOR_CELL_NEXT
         self._ax.plot(particle.x, particle.y, 'o', markersize=25, color=(0,0,0,0), markeredgecolor=color,
                       markeredgewidth=5)
 

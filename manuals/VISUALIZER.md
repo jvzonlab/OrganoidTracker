@@ -8,12 +8,15 @@ The image viewer
 The arrow keys allow you to switch to other photos. The left and right keys move backward and forward in time,
 respectively. The up and down keys move up and down in the z-direction, respectively.
 
-If you need to jump to a time point far away, it is best to use a command. Type `/f30` and then `ENTER`  to go to time_point
-number 30.
+If you need to jump to a time point far away, it is best to use a command. Type `/t30` and then `ENTER`  to go to time
+point number 30.
 
-Press `T` to view the track of a single particle. You will end up in a separate view, where you can see the particle
-trajectory 10 points forward or backwards in time. Double-click on any particle to focus on that particle instead.
-Press `T` again to go back to the normal view.
+Press `N` to view both the next and current time point in a single image. The next time point is drawn in red, the
+current in green. Any overlap between the cells at the different time point therefore results in a lime color.
+
+Press `T` to view the track of a single cell. You will end up in a separate view, where you can see the cell trajectory
+10 points forward or backwards in time. Double-click on any particle to focus on that particle instead. Press `T` again
+to go back to the normal view.
 
 Press `M` to jump to the mother view. Here you get an overview of all cell divisions found during the experiment. The
 left and right arrow keys can now be used to jump to the next or previous cell division. Press `M` again to exit the
@@ -29,7 +32,7 @@ view, use the left and right arrow keys to jump to the next or previous error. P
 
 The link editor
 ---------------
-Links are the connections between cells at different time time_points.
+Links are the connections between cells at different time points.
 
 Press `L` to jump to an editor for the particle links. Here you need to select two cells. Cells can be selected by
 double-clicking them. Then press `INSERT` to insert a link between cells, or `DELETE` to delete a link between two

@@ -1,3 +1,4 @@
+import imaging
 from imaging.visualizer import Visualizer, activate
 from imaging import Experiment, TimePoint, Particle
 from matplotlib.figure import Figure
@@ -26,33 +27,22 @@ class AbstractImageVisualizer(Visualizer):
     _z: int
     __drawn_particles: List[Particle]
     _drawn_time_point_images: ndarray
-    _show_next_time_point: bool = True
+    _show_next_image: bool = False
 
-    def __init__(self, experiment: Experiment, figure: Figure, time_point_number: Optional[int] = None, z: int = 14):
+    def __init__(self, experiment: Experiment, figure: Figure, time_point_number: Optional[int] = None, z: int = 14,
+                 show_next_image: bool = False):
         super().__init__(experiment, figure)
 
         if time_point_number is None:
             time_point_number = experiment.first_time_point_number()
         self._z = int(z)
+        self._show_next_image = show_next_image
         self._time_point, self._time_point_images = self.load_time_point(time_point_number)
         self.__drawn_particles = []
 
     def load_time_point(self, time_point_number: int) -> Tuple[TimePoint, ndarray]:
         time_point = self._experiment.get_time_point(time_point_number)
-        time_point_images = time_point.load_images()
-
-        if self._show_next_time_point:
-            image_shape = time_point_images.shape
-
-            rgb_images = numpy.zeros((image_shape[0], image_shape[1], image_shape[2], 3), dtype='float')
-            rgb_images[:,:,:,1] = time_point_images  # Green channel is current image
-            try:
-                next_time_point = self._experiment.get_next_time_point(time_point)
-                next_time_point_images = next_time_point.load_images()
-                rgb_images[:,:,:,0] = next_time_point_images # Red channel is next image
-            except KeyError:
-                pass
-            time_point_images = rgb_images / rgb_images.max()
+        time_point_images = self.create_image(time_point, self._show_next_image)
 
         return time_point, time_point_images
 
@@ -69,7 +59,7 @@ class AbstractImageVisualizer(Visualizer):
     def _draw_image(self):
         if self._time_point_images is not None:
             image = self._ax.imshow(self._time_point_images[self._z], cmap="gray")
-            if not self._show_next_time_point:
+            if not self._show_next_image:
                 plt.colorbar(mappable=image, ax=self._ax)
 
     def get_title(self, errors: int) -> str:
@@ -82,20 +72,28 @@ class AbstractImageVisualizer(Visualizer):
         pass # Subclasses can override this
 
     def draw_particles(self) -> int:
-        """Draws particles and links. Returns the amount of logical inconsistencies in the iamge"""
+        """Draws particles and links. Returns the amount of non-equal links in the image"""
 
         # Draw particles
         self._draw_particles_of_time_point(self._time_point, marker_size=7)
-        if self._experiment.particle_links() is not None and self._experiment.particle_links_scratch() is not None:
-            # Only draw particles of next/previous time_point if there is linking data
+
+        # Next time point
+        has_linking_data = self._experiment.particle_links() is not None \
+                           or self._experiment.particle_links_scratch() is not None
+        if self._show_next_image or has_linking_data:
+            # Only draw particles of next/previous time point if there is linking data
             try:
-                self._draw_particles_of_time_point(self._experiment.get_next_time_point(self._time_point), color='orange')
+                self._draw_particles_of_time_point(self._experiment.get_next_time_point(self._time_point), color='red')
             except KeyError:
-                pass
+                pass  # There is no next time point, ignore
+
+        # Previous time point
+        if not self._show_next_image and has_linking_data:
             try:
-                self._draw_particles_of_time_point(self._experiment.get_previous_time_point(self._time_point), color='darkred')
+                self._draw_particles_of_time_point(self._experiment.get_previous_time_point(self._time_point),
+                                                   color='blue')
             except KeyError:
-                pass
+                pass  # There is no previous time point, ignore
 
         # Draw links
         errors = 0
@@ -104,7 +102,8 @@ class AbstractImageVisualizer(Visualizer):
 
         return errors
 
-    def _draw_particles_of_time_point(self, time_point: TimePoint, color: str = 'red', marker_size:int = 6):
+    def _draw_particles_of_time_point(self, time_point: TimePoint, color: str = imaging.COLOR_CELL_CURRENT,
+                                      marker_size:int = 6):
         for particle in time_point.particles():
             dz = abs(particle.z - self._z)
             if dz > self.MAX_Z_DISTANCE:
@@ -152,12 +151,12 @@ class AbstractImageVisualizer(Visualizer):
                 continue
             if linked_particle.time_point_number() < particle.time_point_number():
                 # Drawing to past
-
-                plt.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], color='darkred',
-                         linestyle=line_style, linewidth=line_width)
+                if not self._show_next_image:
+                    plt.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], linestyle=line_style,
+                             color=imaging.COLOR_CELL_PREVIOUS, linewidth=line_width)
             else:
-                plt.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], color='orange',
-                         linestyle=line_style, linewidth=line_width)
+                plt.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], linestyle=line_style,
+                         color=imaging.COLOR_CELL_NEXT, linewidth=line_width)
 
     def _get_links(self, network: Optional[Graph], particle: Particle) -> Iterable[Particle]:
         if network is None:
@@ -180,18 +179,26 @@ class AbstractImageVisualizer(Visualizer):
             self._move_in_time(-1)
         elif event.key == "right":
             self._move_in_time(1)
+        elif event.key == imaging.KEY_SHOW_NEXT_IMAGE_ON_TOP:
+            self._show_next_image = not self._show_next_image
+            self._move_in_time(0)  # Reloads images
 
     def _on_command(self, command: str) -> bool:
-        if command[0] == "f":
+        if command[0] == "t":
             time_point_str = command[1:]
             try:
                 new_time_point_number = int(time_point_str.strip())
                 self._time_point, self._time_point_images = self.load_time_point(new_time_point_number)
                 self.draw_view()
             except KeyError:
-                self.update_status("Unknown time_point: " + time_point_str)
+                self.update_status("Unknown time point: " + time_point_str + " (range is "
+                                   + str(self._experiment.first_time_point_number()) + " to "
+                                   + str(self._experiment.last_time_point_number()) + ", inclusive)")
             except ValueError:
                 self.update_status("Cannot read number: " + time_point_str)
+            return True
+        if command == "help":
+            self.update_status("/t20: Jump to time point 20 (also works for other time points)")
             return True
         return False
 
@@ -218,14 +225,16 @@ class AbstractImageVisualizer(Visualizer):
 
 
 class StandardImageVisualizer(AbstractImageVisualizer):
-    """Shows microscopy images with cells and cell trajectories drawn on top.
-    Left/right keys: move in time, up/down keys: move in z-direction
-    T key: view trajectory of cell at mouse, M key: view images of mother cells
-    L key: manual linking interface, E key: view images of potential errors
-    D key: view differences between official and scratch links"""
+    """Cell and image viewer
 
-    def __init__(self, experiment: Experiment, figure: Figure, time_point_number: Optional[int] = None, z: int = 14):
-        super().__init__(experiment, figure, time_point_number=time_point_number, z=z)
+    Moving: left/right moves in time, up/down in the z-direction and type '/t30' + ENTER to jump to time point 30
+    Viewing: N shows next frame in red, current in green and T shows trajectory of cell under the mouse cursor
+    Cell lists: M shows mother cells, E shows detected errors and D shows differences between two loaded data sets
+    Editing: L shows an editor for links"""
+
+    def __init__(self, experiment: Experiment, figure: Figure, time_point_number: Optional[int] = None, z: int = 14,
+                 show_next_image: bool = False):
+        super().__init__(experiment, figure, time_point_number=time_point_number, z=z, show_next_image=show_next_image)
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "t":

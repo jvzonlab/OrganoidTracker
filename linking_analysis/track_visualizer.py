@@ -1,3 +1,4 @@
+import imaging
 from imaging.visualizer import Visualizer, activate
 from imaging import Experiment, Particle, cell
 from matplotlib.figure import Figure
@@ -8,7 +9,7 @@ import matplotlib.pyplot as plt
 
 
 class TrackVisualizer(Visualizer):
-    """Shows trajectories of particles. The past is brown, the future is orange.
+    """Shows trajectories of particles. The past is blue, the future is red.
     Double-click on a cell point to focus on that cell.
     Press T to return to the normal view."""
 
@@ -24,7 +25,7 @@ class TrackVisualizer(Visualizer):
         self._clear_axis()
         self._particles_on_display.clear()
 
-        self._draw_particle(self._particle, color='purple', size=7)
+        self._draw_particle(self._particle, color=imaging.COLOR_CELL_CURRENT, size=7)
 
         self._draw_network(self._experiment.particle_links_scratch(), line_style='dotted', line_width=3, max_distance=1)
         self._draw_network(self._experiment.particle_links())
@@ -55,11 +56,11 @@ class TrackVisualizer(Visualizer):
             links = network[particle]
             for linked_particle in links:
                 if linked_particle not in already_drawn:
-                    color = 'orange'
+                    color = imaging.COLOR_CELL_NEXT
                     positions = [particle.x, particle.y, linked_particle.x - particle.x, linked_particle.y - particle.y]
                     if linked_particle.time_point_number() <= self._particle.time_point_number():
                         # Particle in the past, use different style
-                        color = 'darkred'
+                        color = imaging.COLOR_CELL_PREVIOUS
                     if linked_particle.time_point_number() < particle.time_point_number():
                         # Always draw arrow from oldest to newest particle
                         positions = [linked_particle.x, linked_particle.y,

@@ -62,7 +62,7 @@ def save_positions_to_json(experiment: Experiment, json_file_name: str):
 def load_links_from_json(json_file_name: str) -> Graph:
     with open(json_file_name) as handle:
         data = json.load(handle, object_hook=_my_decoder)
-        if data == None:
+        if data is None:
             raise ValueError
         graph = node_link_graph(data)
         return graph

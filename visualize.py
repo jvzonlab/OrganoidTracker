@@ -10,7 +10,7 @@ from os import path
 # links data will be displayed.
 _name = "multiphoton.organoids.17-07-28_weekend_H2B-mCherry.nd799xy08"
 _positions_file = "../Results/" + _name + "/Positions/Manual.json"
-_links_file = "../Results/" + _name + "/Smart nearest neighbor links.json"
+_links_file = "../Results/" + _name + "/Manual links.json"
 _images_folder = "../Images/" + _name + "/"
 _images_format= "nd799xy08t%03dc1.tif"
 # END OF PARAMETERS

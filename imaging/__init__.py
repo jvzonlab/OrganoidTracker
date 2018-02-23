@@ -4,6 +4,11 @@ from networkx import Graph
 from imaging import image_cache
 from numpy import ndarray
 
+COLOR_CELL_NEXT = "red"
+COLOR_CELL_PREVIOUS = "blue"
+COLOR_CELL_CURRENT = "lime"
+KEY_SHOW_NEXT_IMAGE_ON_TOP = "n"
+
 
 class Particle:
 

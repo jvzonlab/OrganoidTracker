@@ -15,11 +15,12 @@ class ParticleListVisualizer(Visualizer):
 
     _current_particle_index: int
     _particle_list = List[Particle]
+    _show_next_image: bool
 
     __last_index = -1  # Static variable
 
     def __init__(self, experiment: Experiment, figure: Figure, all_particles: List[Particle],
-                 chosen_particle: Optional[Particle] = None):
+                 chosen_particle: Optional[Particle] = None, show_next_image: bool = False):
         """Creates a viewer for a list of particles. The particles will automatically be sorted by time_point number.
         chosen_particle is a particle that is used as a starting point for the viewer, but only if it appears in the
         list
@@ -28,6 +29,7 @@ class ParticleListVisualizer(Visualizer):
         self._particle_list = all_particles
         self._particle_list.sort(key=lambda particle: particle.time_point_number())
         self._current_particle_index = self._find_closest_particle_index(chosen_particle)
+        self._show_next_image = show_next_image
 
     def _find_closest_particle_index(self, particle: Optional[Particle]) -> int:
         if particle is None:
@@ -77,7 +79,7 @@ class ParticleListVisualizer(Visualizer):
         self._ax.set_ylim(mother.y - 50, mother.y + 50)
         self._ax.set_autoscale_on(False)
 
-    def _draw_particle(self, particle: Particle, color='red', size=7):
+    def _draw_particle(self, particle: Particle, color=imaging.COLOR_CELL_CURRENT, size=7):
         style = 's'
         dz = abs(particle.time_point_number() - self._particle_list[self._current_particle_index].time_point_number())
         if dz != 0:
@@ -92,9 +94,11 @@ class ParticleListVisualizer(Visualizer):
             return
         try:
             for connected_particle in graph[main_particle]:
-                color = 'darkred'
-                if connected_particle.time_point_number() > main_particle.time_point_number():
-                    color = 'orange'
+                color = imaging.COLOR_CELL_NEXT
+                if connected_particle.time_point_number() < main_particle.time_point_number():
+                    color = imaging.COLOR_CELL_PREVIOUS
+                    if self._show_next_image:
+                        continue  # Showing the previous position only makes things more confusing here
                 self._ax.plot([connected_particle.x, main_particle.x], [connected_particle.y, main_particle.y],
                               color=color, linestyle=line_style, linewidth=line_width)
                 self._draw_particle(connected_particle, color=color, size=6)
@@ -103,10 +107,12 @@ class ParticleListVisualizer(Visualizer):
 
     def _show_image(self):
         mother = self._particle_list[self._current_particle_index]
-        image_stack = self._experiment.get_time_point(mother.time_point_number()).load_images()
+        time_point = self._experiment.get_time_point(mother.time_point_number())
+        image_stack = self.create_image(time_point, self._show_next_image)
         if image_stack is not None:
             image = self._ax.imshow(image_stack[int(mother.z)], cmap="gray")
-            plt.colorbar(mappable=image, ax=self._ax)
+            if not self._show_next_image:
+                plt.colorbar(mappable=image, ax=self._ax)
 
     def _goto_next(self):
         self._current_particle_index += 1
@@ -125,11 +131,13 @@ class ParticleListVisualizer(Visualizer):
 
         if self._current_particle_index < 0 or self._current_particle_index >= len(self._particle_list):
             # Don't know where to go
-            image_visualizer = StandardImageVisualizer(self._experiment, self._fig)
+            image_visualizer = StandardImageVisualizer(self._experiment, self._fig,
+                                                       show_next_image=self._show_next_image)
         else:
             mother = self._particle_list[self._current_particle_index]
             image_visualizer = StandardImageVisualizer(self._experiment, self._fig,
-                                               time_point_number=mother.time_point_number(), z=int(mother.z))
+                                                       time_point_number=mother.time_point_number(), z=int(mother.z),
+                                                       show_next_image=self._show_next_image)
         activate(image_visualizer)
 
     def _on_key_press(self, event: KeyEvent):
@@ -137,6 +145,9 @@ class ParticleListVisualizer(Visualizer):
             self._goto_previous()
         elif event.key == "right":
             self._goto_next()
+        elif event.key == imaging.KEY_SHOW_NEXT_IMAGE_ON_TOP:
+            self._show_next_image = not self._show_next_image
+            self.draw_view()
 
     def get_title(self, _all_mothers: List[Particle], _mother_index: int):
         mother = _all_mothers[_mother_index]

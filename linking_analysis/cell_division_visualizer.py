@@ -20,7 +20,8 @@ class CellDivisionVisualizer(ParticleListVisualizer):
     Press M to exit this view."""
 
     def __init__(self, experiment: Experiment, figure: Figure, mother: Optional[Particle]):
-        super().__init__(experiment, figure, chosen_particle=mother, all_particles=_get_mothers(experiment))
+        super().__init__(experiment, figure, chosen_particle=mother, all_particles=_get_mothers(experiment),
+                         show_next_image=True)
 
     def get_message_no_particles(self):
         return "No mothers found. Is the linking data missing?"
