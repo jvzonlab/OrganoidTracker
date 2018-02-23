@@ -14,7 +14,7 @@ curr_tr = 0
 
 # Initial and final time points
 t0 = 1
-tf = 5
+tf = 5000
 
 
 t_zeros = 3

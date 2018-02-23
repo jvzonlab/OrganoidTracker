@@ -2,6 +2,7 @@
 from typing import List, Iterable, Optional, Dict
 from networkx import Graph
 from imaging import image_cache
+from numpy import ndarray
 
 
 class Particle:
@@ -82,7 +83,7 @@ class Frame:
         """
         self._image_loader = loader
 
-    def load_images(self, allow_cache=True):
+    def load_images(self, allow_cache=True) -> ndarray:
         if allow_cache:
             images = image_cache.get_from_cache(self._frame_number)
             if images is not None:

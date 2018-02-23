@@ -4,8 +4,9 @@ from matplotlib.figure import Figure
 from matplotlib.backend_bases import KeyEvent
 from numpy import ndarray
 from networkx import Graph
-from typing import Optional, Iterable, List
+from typing import Optional, Iterable, List, Tuple
 import matplotlib.pyplot as plt
+import numpy
 
 
 def show(experiment : Experiment):
@@ -24,6 +25,8 @@ class AbstractImageVisualizer(Visualizer):
     _frame_images: ndarray
     _z: int
     __drawn_particles: List[Particle]
+    _drawn_frame_images: ndarray
+    _show_next_frame: bool = True
 
     def __init__(self, experiment: Experiment, figure: Figure, frame_number: Optional[int] = None, z: int = 14):
         super().__init__(experiment, figure)
@@ -34,23 +37,40 @@ class AbstractImageVisualizer(Visualizer):
         self._frame, self._frame_images = self.load_frame(frame_number)
         self.__drawn_particles = []
 
-    def load_frame(self, frame_number: int):
+    def load_frame(self, frame_number: int) -> Tuple[Frame, ndarray]:
         frame = self._experiment.get_frame(frame_number)
         frame_images = frame.load_images()
+
+        if self._show_next_frame:
+            image_shape = frame_images.shape
+
+            rgb_images = numpy.zeros((image_shape[0], image_shape[1], image_shape[2], 3), dtype='float')
+            rgb_images[:,:,:,1] = frame_images  # Green channel is current image
+            try:
+                next_frame = self._experiment.get_next_frame(frame)
+                next_frame_images = next_frame.load_images()
+                rgb_images[:,:,:,0] = next_frame_images # Red channel is next image
+            except KeyError:
+                pass
+            frame_images = rgb_images / rgb_images.max()
 
         return frame, frame_images
 
     def draw_view(self):
         self._clear_axis()
         self.__drawn_particles.clear()
-        if self._frame_images is not None:
-            image = self._ax.imshow(self._frame_images[self._z], cmap="gray")
-            plt.colorbar(mappable=image, ax=self._ax)
+        self._draw_image()
         errors = self.draw_particles()
         self.draw_extra()
         plt.title(self.get_title(errors))
 
         plt.draw()
+
+    def _draw_image(self):
+        if self._frame_images is not None:
+            image = self._ax.imshow(self._frame_images[self._z], cmap="gray")
+            if not self._show_next_frame:
+                plt.colorbar(mappable=image, ax=self._ax)
 
     def get_title(self, errors: int) -> str:
         title = "Frame " + str(self._frame.frame_number()) + "    (z=" + str(self._z) + ")"
