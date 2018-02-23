@@ -69,7 +69,7 @@ if load_im_data:
             print ("out of memory: loaded %d timepoints, %d-%d" % (len(im_data),T[0],T[-1]))
 #    print (time.clock()-tt, "s loading")
 
-    # save dimensions and number of frames
+    # save dimensions and number of time_points
 #    NZ=im_data[0].shape[0]
 #    NX=im_data[0].shape[1]
 #    NY=im_data[0].shape[2]
@@ -140,7 +140,7 @@ class annotate_track_dialog_window:
         self.cid_mouse = self.fig.canvas.mpl_connect('button_press_event', self.on_button_press)
         
         self.T=T
-        self.frame=0
+        self.time_point=0
         
         # initialize RGB_mode (0-RG, 1-R, 2-G)
         self.RGB_mode=0
@@ -159,7 +159,7 @@ class annotate_track_dialog_window:
         
         self.im_peek=[]
         self.z_peek=-1
-        self.frame_peek=-1           
+        self.time_point_peek=-1
         
         # calculate image for current z and RGB mode
         self.calc_im_RGB()
@@ -175,16 +175,16 @@ class annotate_track_dialog_window:
             tr=self.track_list[self.current_track]
             # save cell position for time point corresponding to image in green channel
             if self.RGB_mode in [0,2]:
-                t=self.T[self.frame+1]
+                t=self.T[self.time_point+1]
             elif self.RGB_mode == 1:
-                t=self.T[self.frame]
+                t=self.T[self.time_point]
                 tr.add_point(x,t) #only add point in current time f
             # update image
             self.show_image()
         elif event.button==3:
             # switch to track closest to mouse position (x,y)
             x=np.array([event.xdata, event.ydata])
-            t=self.T[self.frame]
+            t=self.T[self.time_point]
             self.current_track=self.find_track_closest_to_x(self.track_list,x,t)
             # show image
             self.show_image()
@@ -208,7 +208,7 @@ class annotate_track_dialog_window:
             # corresponding to image in red channel at mouse position (x,y)
             x=np.array([event.xdata, event.ydata, self.z],dtype=float)
             # add track to track list
-            t=self.T[self.frame]
+            t=self.T[self.time_point]
             (self.track_list,self.track_lbl_list,self.current_track) = add_track_to_tracklist(x,t,self.track_list,self.track_lbl_list)
             # show image
             self.show_image()
@@ -230,8 +230,8 @@ class annotate_track_dialog_window:
                 df=+1
             elif event.key==self.key_t[3]:
                 df = +5
-            if self.frame+df>=0 and self.frame+df<NF-1:
-                self.frame+=df
+            if self.time_point+df>=0 and self.time_point+df<NF-1:
+                self.time_point+=df
                 # calculate image for current z and RGB mode
                 self.calc_im_RGB()
                 # show image
@@ -240,26 +240,26 @@ class annotate_track_dialog_window:
         elif event.key in self.key_rwff:
             tr=self.track_list[self.current_track]
             if event.key==self.key_rwff[0]:
-                # get frame that corresponds to the first timepoint of track 
+                # get time_point that corresponds to the first timepoint of track
                 q=[i for i,j in enumerate(self.T) if j==tr.t[0]]
                 if q:
-                    # if that frame exists, then set current frame to it
-                    self.frame=q[0]
+                    # if that time_point exists, then set current time_point to it
+                    self.time_point=q[0]
                 else:
-                    # otherwise, just do first frame
-                    self.frame=0
+                    # otherwise, just do first time_point
+                    self.time_point=0
             elif event.key==self.key_rwff[1]:
-                # get frame that corresponds to the second-to-last timepoint of track 
+                # get time_point that corresponds to the second-to-last timepoint of track
                 q=[i for i,j in enumerate(self.T) if j==tr.t[-2]]
                 if q:
-                    # if that frame exists, then set current frame to it
-                    self.frame=q[0]
-                    # but make sure that frame is never larger than the second-to-last
-                    if self.frame>NF-2:
-                        self.frame=NF-2
+                    # if that time_point exists, then set current time_point to it
+                    self.time_point=q[0]
+                    # but make sure that time_point is never larger than the second-to-last
+                    if self.time_point>NF-2:
+                        self.time_point=NF-2
                 else:
-                    # otherwise, just do second-to-last frame
-                    self.frame=NF-2
+                    # otherwise, just do second-to-last time_point
+                    self.time_point=NF-2
             # calculate image for current z and RGB mode
             self.calc_im_RGB()
             # show image
@@ -269,9 +269,9 @@ class annotate_track_dialog_window:
             # move to z-slice of cell in the current track at time point 
             # corresponding to the red channel
             if self.RGB_mode in [0,2]:
-                t=self.T[self.frame+1]
+                t=self.T[self.time_point+1]
             else:
-                t=self.T[self.frame]
+                t=self.T[self.time_point]
             x_p=self.track_list[self.current_track].get_pos(t)
             if x_p.size:
                 # if a point for the current track exists at this time
@@ -287,9 +287,9 @@ class annotate_track_dialog_window:
             tr=self.track_list[self.current_track]
             # get correct time
             if self.RGB_mode in [0,2]:
-                t=self.T[self.frame+1]
+                t=self.T[self.time_point+1]
             elif self.RGB_mode == 1:
-                t=self.T[self.frame]
+                t=self.T[self.time_point]
             # remove point
             tr.delete_point(t)
             # show image
@@ -311,16 +311,16 @@ class annotate_track_dialog_window:
         
         elif event.key=='o':
             # if an up to date RFP image doesn't exist
-            if self.frame_peek != self.frame+1 and self.z_peek != self.z:
+            if self.time_point_peek != self.time_point+1 and self.z_peek != self.z:
                 # then load proper RFP image
-                t=self.T[self.frame]
+                t=self.T[self.time_point]
                 name = 't%0' + str(t_zeros) + 'dc2.tif'
                 infile=data_dir + pref + name % t
                 print ("Loading brigt field")
                 self.im_peek=np.array(tif.imread(infile,key=int(self.z)),dtype=float)
             # use it to make RGB image
             im0=self.im_peek
-            im1=self.im_data[self.frame+1][self.z,:,:]
+            im1=self.im_data[self.time_point+1][self.z,:,:]
             self.im_RGB=make_RGB_time_image( [im0,im1], 0, self.contrast)
             self.show_image()
 
@@ -352,8 +352,8 @@ class annotate_track_dialog_window:
 
     def calc_im_RGB(self):
         self.z =int(self.z)
-        im0=self.im_data[self.frame][self.z,:,:]
-        im1=self.im_data[self.frame+1][self.z,:,:]
+        im0=self.im_data[self.time_point][self.z,:,:]
+        im1=self.im_data[self.time_point+1][self.z,:,:]
         self.im_RGB = make_RGB_time_image( [im1,im0], self.RGB_mode, self.contrast)
  
     def show_image(self, *size):
@@ -391,7 +391,7 @@ class annotate_track_dialog_window:
 #                col = 'None'
             if self.RGB_mode in [0,1]:
                 # if green channel is visible, plot points of cell in previous time point
-                t=self.T[self.frame]
+                t=self.T[self.time_point]
                 x_p=tr.get_pos(t)
                 if x_p.size:
                     if x_p[2] in [self.z]:
@@ -406,14 +406,14 @@ class annotate_track_dialog_window:
                         
             if self.RGB_mode in [0,2]:
                 # if red channel is visible, plot points of cell in current time point
-                t=self.T[self.frame+1]
+                t=self.T[self.time_point+1]
                 x_p=tr.get_pos(t)
                 if x_p.size:
                     if x_p[2] in [self.z -1,self.z,self.z + 1]:
                         plt.plot(x_p[0],x_p[1],'o',color=col, markeredgecolor = 'k')
                            
-        # plot frame
-        plt.title('T:%d,z:%d' % (self.T[self.frame],self.z),color='w',fontsize=32)    
+        # plot time_point
+        plt.title('T:%d,z:%d' % (self.T[self.time_point],self.z),color='w',fontsize=32)
         plt.draw()
 
 

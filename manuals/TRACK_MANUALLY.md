@@ -3,14 +3,14 @@ Manual by Guizela Huelsz Prince.
 Keys:
 -----
 
-1​: Previous time frame  
-2​: Next time frame  
-3​: Move 5 frames forwards  
-4​: Move 5 frames backwards
+1​: Previous time time_point  
+2​: Next time time_point  
+3​: Move 5 time_points forwards  
+4​: Move 5 time_points backwards
 
-z​: Show current time frame in green and next time point in red
-x​: Show current time frame (only here you can create and delete tracks)
-c​: Show next time frame in red
+z​: Show current time time_point in green and next time point in red
+x​: Show current time time_point (only here you can create and delete tracks)
+c​: Show next time time_point in red
 
 o​: Show brightfield
 

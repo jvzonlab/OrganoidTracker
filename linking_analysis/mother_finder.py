@@ -9,7 +9,7 @@ def find_mothers(graph: Graph) -> Set[Particle]:
 
     for particle in graph.nodes():
         linked_particles = graph[particle]
-        future_particles = [p for p in linked_particles if p.frame_number() > particle.frame_number()]
+        future_particles = [p for p in linked_particles if p.time_point_number() > particle.time_point_number()]
         if len(future_particles) >= 2:
             mothers.add(particle)
         if len(future_particles) > 2:

@@ -11,9 +11,9 @@ import os
 def load_positions_from_json(experiment: Experiment, json_file_name: str):
     """Loads all particle positions from a JSON file"""
     with open(json_file_name) as handle:
-        frames = json.load(handle)
-        for frame, raw_particles in frames.items():
-            experiment.add_particles(int(frame), raw_particles)
+        time_points = json.load(handle)
+        for time_point, raw_particles in time_points.items():
+            experiment.add_particles(int(time_point), raw_particles)
 
 
 class _MyEncoder(JSONEncoder):
@@ -30,8 +30,8 @@ class _MyEncoder(JSONEncoder):
 def _my_decoder(json_object):
     if 'x' in json_object and 'y' in json_object and 'z' in json_object:
         particle = Particle(json_object['x'], json_object['y'], json_object['z'])
-        if '_frame_number' in json_object:
-            particle.with_frame_number(json_object['_frame_number'])
+        if '_time_point_number' in json_object:
+            particle.with_time_point_number(json_object['_time_point_number'])
         return particle
     return json_object
 
@@ -49,10 +49,10 @@ def save_links_to_json(links: Graph, json_file_name: str):
 def save_positions_to_json(experiment: Experiment, json_file_name: str):
     """Saves a list of particles to disk."""
     data_structure = {}
-    for frame_number in range(experiment.first_frame_number(), experiment.last_frame_number() + 1):
-        frame = experiment.get_frame(frame_number)
-        particles = [(p.x, p.y, p.z) for p in frame.particles()]
-        data_structure[str(frame_number)] = particles
+    for time_point_number in range(experiment.first_time_point_number(), experiment.last_time_point_number() + 1):
+        time_point = experiment.get_time_point(time_point_number)
+        particles = [(p.x, p.y, p.z) for p in time_point.particles()]
+        data_structure[str(time_point_number)] = particles
 
     _create_parent_directories(json_file_name)
     with open(json_file_name, 'w') as handle:

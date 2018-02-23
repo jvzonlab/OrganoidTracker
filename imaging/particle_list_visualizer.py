@@ -20,13 +20,13 @@ class ParticleListVisualizer(Visualizer):
 
     def __init__(self, experiment: Experiment, figure: Figure, all_particles: List[Particle],
                  chosen_particle: Optional[Particle] = None):
-        """Creates a viewer for a list of particles. The particles will automatically be sorted by frame number.
+        """Creates a viewer for a list of particles. The particles will automatically be sorted by time_point number.
         chosen_particle is a particle that is used as a starting point for the viewer, but only if it appears in the
         list
         """
         super().__init__(experiment, figure)
         self._particle_list = all_particles
-        self._particle_list.sort(key=lambda particle: particle.frame_number())
+        self._particle_list.sort(key=lambda particle: particle.time_point_number())
         self._current_particle_index = self._find_closest_particle_index(chosen_particle)
 
     def _find_closest_particle_index(self, particle: Optional[Particle]) -> int:
@@ -79,7 +79,7 @@ class ParticleListVisualizer(Visualizer):
 
     def _draw_particle(self, particle: Particle, color='red', size=7):
         style = 's'
-        dz = abs(particle.frame_number() - self._particle_list[self._current_particle_index].frame_number())
+        dz = abs(particle.time_point_number() - self._particle_list[self._current_particle_index].time_point_number())
         if dz != 0:
             style='o'
             size -= dz
@@ -93,7 +93,7 @@ class ParticleListVisualizer(Visualizer):
         try:
             for connected_particle in graph[main_particle]:
                 color = 'darkred'
-                if connected_particle.frame_number() > main_particle.frame_number():
+                if connected_particle.time_point_number() > main_particle.time_point_number():
                     color = 'orange'
                 self._ax.plot([connected_particle.x, main_particle.x], [connected_particle.y, main_particle.y],
                               color=color, linestyle=line_style, linewidth=line_width)
@@ -103,7 +103,7 @@ class ParticleListVisualizer(Visualizer):
 
     def _show_image(self):
         mother = self._particle_list[self._current_particle_index]
-        image_stack = self._experiment.get_frame(mother.frame_number()).load_images()
+        image_stack = self._experiment.get_time_point(mother.time_point_number()).load_images()
         if image_stack is not None:
             image = self._ax.imshow(image_stack[int(mother.z)], cmap="gray")
             plt.colorbar(mappable=image, ax=self._ax)
@@ -129,7 +129,7 @@ class ParticleListVisualizer(Visualizer):
         else:
             mother = self._particle_list[self._current_particle_index]
             image_visualizer = StandardImageVisualizer(self._experiment, self._fig,
-                                               frame_number=mother.frame_number(), z=int(mother.z))
+                                               time_point_number=mother.time_point_number(), z=int(mother.z))
         activate(image_visualizer)
 
     def _on_key_press(self, event: KeyEvent):

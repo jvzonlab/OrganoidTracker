@@ -3,7 +3,7 @@ Tracking code
 
 Code for tracking the positions of cells. Tracking consists of two tasks: identification and linking. Identification
 is the process where the positions of cells are determined in single images, while linking is the process where it is
-determined wat cell at frame t corresponds to wat cell(s) in frame t + 1.
+determined wat cell at time point t corresponds to wat cell(s) in time point t + 1.
 
 
 Setting up the environment

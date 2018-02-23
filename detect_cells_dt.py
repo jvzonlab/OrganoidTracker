@@ -17,8 +17,8 @@ from particle_detection.dt_detection import DistanceTransformDetector
 _name = "multiphoton.organoids.17-07-28_weekend_H2B-mCherry.nd799xy08"
 _images_folder = "../Images/" + _name + "/"
 _images_format= "nd799xy08t%03dc1.tif"
-_min_frame = 1
-_max_frame = 5000
+_min_time_point = 1
+_max_time_point = 5000
 _method = DistanceTransformDetector()
 _method_parameters = {
     "min_intensity": 0.6,  # Intensities below this value are considered to be background
@@ -33,7 +33,7 @@ print("Starting...")
 script_dir = path.dirname(__file__)
 experiment = Experiment()
 tifffolder.load_images_from_folder(experiment, path.join(script_dir, _images_folder), _images_format,
-                                   min_frame=_min_frame, max_frame=_max_frame)
+                                   min_time_point=_min_time_point, max_time_point=_max_time_point)
 particle_file_abs = path.join(script_dir, _particles_file)
 if path.exists(particle_file_abs):
     io.load_positions_from_json(experiment, particle_file_abs)

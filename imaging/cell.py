@@ -6,9 +6,9 @@ from networkx import Graph
 def get_age(experiment: Experiment, graph: Graph, particle: Particle) -> Optional[int]:
     """Gets how many time steps ago this cell was born"""
     timesteps_ago = 0
-    min_frame_number = experiment.first_frame_number()
+    min_time_point_number = experiment.first_time_point_number()
 
-    while particle.frame_number() > min_frame_number + 1:
+    while particle.time_point_number() > min_time_point_number + 1:
         timesteps_ago += 1
 
         particle = _find_past_particle(graph, particle)
@@ -29,7 +29,7 @@ def _find_past_particles(graph: Graph, particle: Particle):
     # all possible connections one step in the past
     linked_particles = graph[particle]
     return {linked_particle for linked_particle in linked_particles
-            if linked_particle.frame_number() < particle.frame_number()}
+            if linked_particle.time_point_number() < particle.time_point_number()}
 
 
 def _find_past_particle(graph: Graph, particle: Particle):
@@ -48,4 +48,4 @@ def _find_future_particles(graph: Graph, particle: Particle):
     # All possible connections one step in the future
     linked_particles = graph[particle]
     return {linked_particle for linked_particle in linked_particles
-            if linked_particle.frame_number() > particle.frame_number()}
+            if linked_particle.time_point_number() > particle.time_point_number()}

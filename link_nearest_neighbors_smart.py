@@ -7,8 +7,8 @@ _positions_file = "../Results/" + _name + "/Manual positions.json"
 _output_file = "../Results/" + _name + "/Smart nearest neighbor links.json"
 _images_folder = "../Images/" + _name + "/"
 _images_format= "nd799xy08t%03dc1.tif"
-_min_frame = 0
-_max_frame = 115  # Organoid moved position here
+_min_time_point = 0
+_max_time_point = 115  # Organoid moved position here
 _mitotic_radius = 2
 # END OF PARAMETERS
 
@@ -18,9 +18,9 @@ print("Loading cell positions...")
 io.load_positions_from_json(experiment, _positions_file)
 print("Discovering images...")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
-                                   min_frame=_min_frame, max_frame=_max_frame)
+                                   min_time_point=_min_time_point, max_time_point=_max_time_point)
 print("Performing nearest-neighbor linking...")
-possible_links = linker_for_experiment.link_particles(experiment, min_frame=_min_frame, max_frame=_max_frame, tolerance=2)
+possible_links = linker_for_experiment.link_particles(experiment, min_time_point=_min_time_point, max_time_point=_max_time_point, tolerance=2)
 print("Deciding on what links to use...")
 link_result = link_fixer.prune_links(experiment, possible_links, _mitotic_radius)
 print("Writing results to file...")

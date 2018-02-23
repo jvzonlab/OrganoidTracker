@@ -1,6 +1,6 @@
 """Contains function that allows you to find the nearest few particles"""
 
-from imaging import Particle, Frame
+from imaging import Particle, TimePoint
 import operator
 
 class _NearestParticles:
@@ -37,10 +37,10 @@ class _NearestParticles:
         return [item[0] for item in items]
 
 
-def find_nearest_particles(search_in: Frame, around: Particle, tolerance: float):
+def find_nearest_particles(search_in: TimePoint, around: Particle, tolerance: float):
     """Finds the particles nearest to the given particle.
 
-    - search_in is the frame to search in
+    - search_in is the time_point to search in
     - around is the particle to search around
     - tolerance is a number that influences how much particles other than the nearest are included. A tolerance of 1.05
       makes particles that are 5% further than the nearest also included.

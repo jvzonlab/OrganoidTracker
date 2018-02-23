@@ -8,7 +8,7 @@ The image viewer
 The arrow keys allow you to switch to other photos. The left and right keys move backward and forward in time,
 respectively. The up and down keys move up and down in the z-direction, respectively.
 
-If you need to jump to a time point far away, it is best to use a command. Type `/f30` and then `ENTER`  to go to frame
+If you need to jump to a time point far away, it is best to use a command. Type `/f30` and then `ENTER`  to go to time_point
 number 30.
 
 Press `T` to view the track of a single particle. You will end up in a separate view, where you can see the particle
@@ -29,7 +29,7 @@ view, use the left and right arrow keys to jump to the next or previous error. P
 
 The link editor
 ---------------
-Links are the connections between cells at different time frames.
+Links are the connections between cells at different time time_points.
 
 Press `L` to jump to an editor for the particle links. Here you need to select two cells. Cells can be selected by
 double-clicking them. Then press `INSERT` to insert a link between cells, or `DELETE` to delete a link between two

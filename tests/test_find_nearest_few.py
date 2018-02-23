@@ -1,24 +1,24 @@
 import unittest
-from imaging import Frame, Particle
+from imaging import TimePoint, Particle
 from linking_analysis.find_nearest_neighbors import find_nearest_particles
 
 
 class TestFindNearestFew(unittest.TestCase):
 
     def test_find_two(self):
-        frame = Frame(2)
-        frame.add_particles([Particle(10,20,0), Particle(11,20,0), Particle(100,20,0)])
-        found = find_nearest_particles(frame, Particle(40,20,0), 1.1)
+        time_point = TimePoint(2)
+        time_point.add_particles([Particle(10,20,0), Particle(11,20,0), Particle(100,20,0)])
+        found = find_nearest_particles(time_point, Particle(40,20,0), 1.1)
         self.assertEqual(2, len(found), "Expected to find two particles that are close to each other")
 
     def test_find_one(self):
-        frame = Frame(2)
-        frame.add_particles([Particle(10, 20, 0), Particle(11, 20, 0), Particle(100, 20, 0)])
-        found = find_nearest_particles(frame, Particle(80, 20, 0), 1.1)
+        time_point = TimePoint(2)
+        time_point.add_particles([Particle(10, 20, 0), Particle(11, 20, 0), Particle(100, 20, 0)])
+        found = find_nearest_particles(time_point, Particle(80, 20, 0), 1.1)
         self.assertEqual(1, len(found), "Expected to find one particle that is close enough")
 
     def test_zero_tolerance(self):
-        frame = Frame(2)
-        frame.add_particles([Particle(10,20,0), Particle(11,20,0), Particle(100,20,0)])
-        found = find_nearest_particles(frame, Particle(40,20,0), 1)
+        time_point = TimePoint(2)
+        time_point.add_particles([Particle(10,20,0), Particle(11,20,0), Particle(100,20,0)])
+        found = find_nearest_particles(time_point, Particle(40,20,0), 1)
         self.assertEqual(1, len(found), "Tolerance is set to 1.0, so only one particle may be found")

@@ -57,17 +57,17 @@ class TrackVisualizer(Visualizer):
                 if linked_particle not in already_drawn:
                     color = 'orange'
                     positions = [particle.x, particle.y, linked_particle.x - particle.x, linked_particle.y - particle.y]
-                    if linked_particle.frame_number() <= self._particle.frame_number():
+                    if linked_particle.time_point_number() <= self._particle.time_point_number():
                         # Particle in the past, use different style
                         color = 'darkred'
-                    if linked_particle.frame_number() < particle.frame_number():
+                    if linked_particle.time_point_number() < particle.time_point_number():
                         # Always draw arrow from oldest to newest particle
                         positions = [linked_particle.x, linked_particle.y,
                                      particle.x - linked_particle.x, particle.y - linked_particle.y]
 
                     self._ax.arrow(*positions, color=color, linestyle=line_style, linewidth=line_width, fc=color,
                                    ec=color, head_width=1, head_length=1)
-                    if abs(linked_particle.frame_number() - self._particle.frame_number()) <= max_distance:
+                    if abs(linked_particle.time_point_number() - self._particle.time_point_number()) <= max_distance:
                         already_drawn.add(linked_particle)
                         self._draw_particle(linked_particle, color)
                         self._draw_all_connected(linked_particle, network, already_drawn, max_distance, line_style,
@@ -82,7 +82,7 @@ class TrackVisualizer(Visualizer):
         if event.key == "t":
             from imaging.image_visualizer import StandardImageVisualizer
             image_visualizer = StandardImageVisualizer(self._experiment, self._fig, z=int(self._particle.z),
-                                                       frame_number=self._particle.frame_number())
+                                                       time_point_number=self._particle.time_point_number())
             activate(image_visualizer)
 
     def _on_mouse_click(self, event: MouseEvent):

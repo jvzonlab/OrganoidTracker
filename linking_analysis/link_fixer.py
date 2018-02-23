@@ -13,12 +13,12 @@ from linking_analysis import logical_tests
 def prune_links(experiment: Experiment, graph: Graph, mitotic_radius: int) -> Graph:
     """Takes a graph with all possible edges between cells, and returns a graph with only the most likely edges.
     mitotic_radius is the radius used to detect whether a cell is undergoing mitosis (i.e. it will have divided itself
-    into two in the next frame). For non-mitotic cells, it must fall entirely within the cell, for mitotic cells it must
+    into two in the next time_point). For non-mitotic cells, it must fall entirely within the cell, for mitotic cells it must
     fall partly outside the cell.
     """
-    last_frame_number = experiment.last_frame_number()
+    last_time_point_number = experiment.last_time_point_number()
 
-    [_fix_no_future_particle(graph, particle, last_frame_number) for particle in graph.nodes()]
+    [_fix_no_future_particle(graph, particle, last_time_point_number) for particle in graph.nodes()]
     [_fix_cell_divisions(experiment, graph, particle, mitotic_radius) for particle in graph.nodes()]
 
     graph = _with_only_the_preferred_edges(graph)
@@ -26,7 +26,7 @@ def prune_links(experiment: Experiment, graph: Graph, mitotic_radius: int) -> Gr
     return graph
 
 
-def _fix_no_future_particle(graph: Graph, particle: Particle, last_frame_number: int):
+def _fix_no_future_particle(graph: Graph, particle: Particle, last_time_point_number: int):
     """This fixes the case where a particle has no future particle lined up"""
     future_particles = _find_future_particles(graph, particle)
     future_preferred_particles = _find_preferred_links(graph, particle, future_particles)
@@ -37,7 +37,7 @@ def _fix_no_future_particle(graph: Graph, particle: Particle, last_frame_number:
     # Oops, found dead end. Choose a best match from the future_particles list
     newly_matched_future_particle = imaging.get_closest_particle(future_particles, particle)
     if newly_matched_future_particle is None:
-        if particle.frame_number() != last_frame_number:
+        if particle.time_point_number() != last_time_point_number:
             graph.add_node(particle, error=errors.NO_FUTURE_POSITION)
         return
 
@@ -119,7 +119,7 @@ def _find_past_particles(graph: Graph, particle: Particle):
     # all possible connections one step in the past
     linked_particles = graph[particle]
     return {linked_particle for linked_particle in linked_particles
-            if linked_particle.frame_number() < particle.frame_number()}
+            if linked_particle.time_point_number() < particle.time_point_number()}
 
 
 def _find_past_particle(graph: Graph, particle: Particle):
@@ -138,7 +138,7 @@ def _find_future_particles(graph: Graph, particle: Particle):
     # All possible connections one step in the future
     linked_particles = graph[particle]
     return {linked_particle for linked_particle in linked_particles
-            if linked_particle.frame_number() > particle.frame_number()}
+            if linked_particle.time_point_number() > particle.time_point_number()}
 
 
 def _with_only_the_preferred_edges(old_graph: Graph):
@@ -155,9 +155,9 @@ def _with_only_the_preferred_edges(old_graph: Graph):
 
 
 def _get_2d_image(experiment: Experiment, particle: Particle):
-    images = experiment.get_frame(particle.frame_number()).load_images()
+    images = experiment.get_time_point(particle.time_point_number()).load_images()
     if images is None:
-        raise ValueError("Image for frame " + str(particle.frame_number()) + " not loaded")
+        raise ValueError("Image for time_point " + str(particle.time_point_number()) + " not loaded")
     image = images[int(particle.z)]
     return Image2d(image)
 

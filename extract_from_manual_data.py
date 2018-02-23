@@ -10,12 +10,12 @@ _name = "multiphoton.organoids.17-07-28_weekend_H2B-mCherry.nd799xy08"
 _input_dir = "../Results/" + _name + "/Manual tracks/"
 _output_file_positions = "../Results/" + _name + "/Manual positions.json"
 _output_file_tracks = "../Results/" + _name + "/Manual links.json"
-_min_frame = 0
-_max_frame = 115  # Organoid moved position here
+_min_time_point = 0
+_max_time_point = 115  # Organoid moved position here
 # END OF PARAMETERS
 
 
-positions_extractor.extract_positions(_input_dir, _output_file_positions, min_frame=_min_frame, max_frame=_max_frame)
+positions_extractor.extract_positions(_input_dir, _output_file_positions, min_time_point=_min_time_point, max_time_point=_max_time_point)
 io.save_links_to_json(
-    links_extractor.extract_from_tracks(_input_dir, min_frame=_min_frame, max_frame=_max_frame),
+    links_extractor.extract_from_tracks(_input_dir, min_time_point=_min_time_point, max_time_point=_max_time_point),
     _output_file_tracks)

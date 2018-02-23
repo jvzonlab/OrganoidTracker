@@ -18,8 +18,8 @@ class LinkEditor(AbstractImageVisualizer):
     _selected2: Optional[Particle]
     _has_uncommitted_changes: bool
 
-    def __init__(self, experiment: Experiment, figure: Figure, frame_number: int = 1, z: int = 14):
-        super().__init__(experiment, figure, frame_number=frame_number, z=z)
+    def __init__(self, experiment: Experiment, figure: Figure, time_point_number: int = 1, z: int = 14):
+        super().__init__(experiment, figure, time_point_number=time_point_number, z=z)
         self._selected1 = None
         self._selected2 = None
         self._has_uncommitted_changes = False
@@ -34,7 +34,7 @@ class LinkEditor(AbstractImageVisualizer):
                 experiment.particle_links_scratch(baseline_graph.copy())
 
     def get_title(self, errors: int) -> str:
-        return "Editing frame " + str(self._frame.frame_number()) + "    (z=" + str(self._z) + ")"
+        return "Editing time_point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
 
     def draw_extra(self):
         self._draw_highlight(self._selected1)
@@ -44,9 +44,9 @@ class LinkEditor(AbstractImageVisualizer):
         if particle is None:
             return
         color = "red"
-        if particle.frame_number() < self._frame.frame_number():
+        if particle.time_point_number() < self._time_point.time_point_number():
             color = "darkred"
-        elif particle.frame_number() > self._frame.frame_number():
+        elif particle.time_point_number() > self._time_point.time_point_number():
             color = "orange"
         self._ax.plot(particle.x, particle.y, 'o', markersize=25, color=(0,0,0,0), markeredgecolor=color,
                       markeredgewidth=5)
@@ -85,7 +85,7 @@ class LinkEditor(AbstractImageVisualizer):
         elif event.key == "l":
             from imaging.image_visualizer import StandardImageVisualizer
             image_visualizer = StandardImageVisualizer(self._experiment, self._fig,
-                                                       frame_number=self._frame.frame_number(), z=self._z)
+                                                       time_point_number=self._time_point.time_point_number(), z=self._z)
             activate(image_visualizer)
         else:
             super()._on_key_press(event)
@@ -94,12 +94,12 @@ class LinkEditor(AbstractImageVisualizer):
         if self._selected1 is None or self._selected2 is None:
             self.update_status("Need to select two particles first")
             return False
-        delta_frame_number = abs(self._selected1.frame_number() - self._selected2.frame_number())
-        if delta_frame_number == 0:
+        delta_time_point_number = abs(self._selected1.time_point_number() - self._selected2.time_point_number())
+        if delta_time_point_number == 0:
             self.update_status("Cannot link two cells from the same time point together")
             return False
-        if delta_frame_number > 5:
-            self.update_status("Cannot link two cells together that are"  + str(delta_frame_number) + " time points apart")
+        if delta_time_point_number > 5:
+            self.update_status("Cannot link two cells together that are"  + str(delta_time_point_number) + " time points apart")
             return False
         return True
 

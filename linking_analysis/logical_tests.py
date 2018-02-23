@@ -15,7 +15,7 @@ def apply(experiment: Experiment, graph: Graph):
             _set_error(graph, particle, errors.NO_FUTURE_POSITION)
 
         past_particles = _get_past_particles(graph, particle)
-        if len(past_particles) == 0 and particle.frame_number() > experiment.first_frame_number():
+        if len(past_particles) == 0 and particle.time_point_number() > experiment.first_time_point_number():
             _set_error(graph, particle, errors.NO_PAST_POSITION)
         if len(past_particles) >= 2:
             _set_error(graph, particle, error=errors.CELL_MERGE)
@@ -31,7 +31,7 @@ def _set_error(graph: Graph, particle: Particle, error: int):
 def _get_future_particles(graph: Graph, particle: Particle):
     try:
         linked_particles = graph[particle]
-        return [p for p in linked_particles if p.frame_number() > particle.frame_number()]
+        return [p for p in linked_particles if p.time_point_number() > particle.time_point_number()]
     except KeyError:
         return []
 
@@ -39,6 +39,6 @@ def _get_future_particles(graph: Graph, particle: Particle):
 def _get_past_particles(graph: Graph, particle: Particle):
     try:
         linked_particles = graph[particle]
-        return [p for p in linked_particles if p.frame_number() < particle.frame_number()]
+        return [p for p in linked_particles if p.time_point_number() < particle.time_point_number()]
     except KeyError:
         return []

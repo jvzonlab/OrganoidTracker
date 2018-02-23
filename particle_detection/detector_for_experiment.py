@@ -6,19 +6,19 @@ import math
 
 
 def detect_particles_in_3d(experiment: Experiment, method: Detector, max_cell_height=6, **kwargs):
-    for frame_number in range(experiment.first_frame_number(), experiment.last_frame_number() + 1):
-        print("Searching for particles in frame " + str(frame_number) + "/"
-              + str(experiment.last_frame_number()))
-        frame = experiment.get_frame(frame_number)
-        peaks_in_frame = {}
-        image_stack = frame.load_images(allow_cache=False)
+    for time_point_number in range(experiment.first_time_point_number(), experiment.last_time_point_number() + 1):
+        print("Searching for particles in time_point " + str(time_point_number) + "/"
+              + str(experiment.last_time_point_number()))
+        time_point = experiment.get_time_point(time_point_number)
+        peaks_in_time_point = {}
+        image_stack = time_point.load_images(allow_cache=False)
         for z in range(image_stack.shape[0]):
             image = image_stack[z]
             results = method.detect(image, **kwargs)
-            peaks_in_frame[z] = _to_peaks(results, z)
+            peaks_in_time_point[z] = _to_peaks(results, z)
 
-        particles = _to_particles(z_stop=image_stack.shape[0], peaks=peaks_in_frame, max_cell_height=max_cell_height)
-        frame.add_particles(particles)
+        particles = _to_particles(z_stop=image_stack.shape[0], peaks=peaks_in_time_point, max_cell_height=max_cell_height)
+        time_point.add_particles(particles)
 
 
 class Peak:

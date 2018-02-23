@@ -1,5 +1,5 @@
 from imaging.visualizer import Visualizer, activate
-from imaging import Experiment, Frame, Particle
+from imaging import Experiment, TimePoint, Particle
 from matplotlib.figure import Figure
 from matplotlib.backend_bases import KeyEvent
 from numpy import ndarray
@@ -21,40 +21,40 @@ class AbstractImageVisualizer(Visualizer):
 
     MAX_Z_DISTANCE: int = 3
 
-    _frame: Frame
-    _frame_images: ndarray
+    _time_point: TimePoint
+    _time_point_images: ndarray
     _z: int
     __drawn_particles: List[Particle]
-    _drawn_frame_images: ndarray
-    _show_next_frame: bool = True
+    _drawn_time_point_images: ndarray
+    _show_next_time_point: bool = True
 
-    def __init__(self, experiment: Experiment, figure: Figure, frame_number: Optional[int] = None, z: int = 14):
+    def __init__(self, experiment: Experiment, figure: Figure, time_point_number: Optional[int] = None, z: int = 14):
         super().__init__(experiment, figure)
 
-        if frame_number is None:
-            frame_number = experiment.first_frame_number()
+        if time_point_number is None:
+            time_point_number = experiment.first_time_point_number()
         self._z = int(z)
-        self._frame, self._frame_images = self.load_frame(frame_number)
+        self._time_point, self._time_point_images = self.load_time_point(time_point_number)
         self.__drawn_particles = []
 
-    def load_frame(self, frame_number: int) -> Tuple[Frame, ndarray]:
-        frame = self._experiment.get_frame(frame_number)
-        frame_images = frame.load_images()
+    def load_time_point(self, time_point_number: int) -> Tuple[TimePoint, ndarray]:
+        time_point = self._experiment.get_time_point(time_point_number)
+        time_point_images = time_point.load_images()
 
-        if self._show_next_frame:
-            image_shape = frame_images.shape
+        if self._show_next_time_point:
+            image_shape = time_point_images.shape
 
             rgb_images = numpy.zeros((image_shape[0], image_shape[1], image_shape[2], 3), dtype='float')
-            rgb_images[:,:,:,1] = frame_images  # Green channel is current image
+            rgb_images[:,:,:,1] = time_point_images  # Green channel is current image
             try:
-                next_frame = self._experiment.get_next_frame(frame)
-                next_frame_images = next_frame.load_images()
-                rgb_images[:,:,:,0] = next_frame_images # Red channel is next image
+                next_time_point = self._experiment.get_next_time_point(time_point)
+                next_time_point_images = next_time_point.load_images()
+                rgb_images[:,:,:,0] = next_time_point_images # Red channel is next image
             except KeyError:
                 pass
-            frame_images = rgb_images / rgb_images.max()
+            time_point_images = rgb_images / rgb_images.max()
 
-        return frame, frame_images
+        return time_point, time_point_images
 
     def draw_view(self):
         self._clear_axis()
@@ -67,13 +67,13 @@ class AbstractImageVisualizer(Visualizer):
         plt.draw()
 
     def _draw_image(self):
-        if self._frame_images is not None:
-            image = self._ax.imshow(self._frame_images[self._z], cmap="gray")
-            if not self._show_next_frame:
+        if self._time_point_images is not None:
+            image = self._ax.imshow(self._time_point_images[self._z], cmap="gray")
+            if not self._show_next_time_point:
                 plt.colorbar(mappable=image, ax=self._ax)
 
     def get_title(self, errors: int) -> str:
-        title = "Frame " + str(self._frame.frame_number()) + "    (z=" + str(self._z) + ")"
+        title = "Time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
         if errors != 0:
             title += " (changes: " + str(errors) + ")"
         return title
@@ -85,27 +85,27 @@ class AbstractImageVisualizer(Visualizer):
         """Draws particles and links. Returns the amount of logical inconsistencies in the iamge"""
 
         # Draw particles
-        self._draw_particles_of_frame(self._frame, marker_size=7)
+        self._draw_particles_of_time_point(self._time_point, marker_size=7)
         if self._experiment.particle_links() is not None and self._experiment.particle_links_scratch() is not None:
-            # Only draw particles of next/previous frame if there is linking data
+            # Only draw particles of next/previous time_point if there is linking data
             try:
-                self._draw_particles_of_frame(self._experiment.get_next_frame(self._frame), color='orange')
+                self._draw_particles_of_time_point(self._experiment.get_next_time_point(self._time_point), color='orange')
             except KeyError:
                 pass
             try:
-                self._draw_particles_of_frame(self._experiment.get_previous_frame(self._frame), color='darkred')
+                self._draw_particles_of_time_point(self._experiment.get_previous_time_point(self._time_point), color='darkred')
             except KeyError:
                 pass
 
         # Draw links
         errors = 0
-        for particle in self._frame.particles():
+        for particle in self._time_point.particles():
             errors += self._draw_links(particle)
 
         return errors
 
-    def _draw_particles_of_frame(self, frame: Frame, color: str = 'red', marker_size:int = 6):
-        for particle in frame.particles():
+    def _draw_particles_of_time_point(self, time_point: TimePoint, color: str = 'red', marker_size:int = 6):
+        for particle in time_point.particles():
             dz = abs(particle.z - self._z)
             if dz > self.MAX_Z_DISTANCE:
                 continue
@@ -150,7 +150,7 @@ class AbstractImageVisualizer(Visualizer):
             if abs(linked_particle.z - self._z) > self.MAX_Z_DISTANCE\
                     and abs(particle.z - self._z) > self.MAX_Z_DISTANCE:
                 continue
-            if linked_particle.frame_number() < particle.frame_number():
+            if linked_particle.time_point_number() < particle.time_point_number():
                 # Drawing to past
 
                 plt.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], color='darkred',
@@ -183,15 +183,15 @@ class AbstractImageVisualizer(Visualizer):
 
     def _on_command(self, command: str) -> bool:
         if command[0] == "f":
-            frame_str = command[1:]
+            time_point_str = command[1:]
             try:
-                new_frame_number = int(frame_str.strip())
-                self._frame, self._frame_images = self.load_frame(new_frame_number)
+                new_time_point_number = int(time_point_str.strip())
+                self._time_point, self._time_point_images = self.load_time_point(new_time_point_number)
                 self.draw_view()
             except KeyError:
-                self.update_status("Unknown frame: " + frame_str)
+                self.update_status("Unknown time_point: " + time_point_str)
             except ValueError:
-                self.update_status("Cannot read number: " + frame_str)
+                self.update_status("Cannot read number: " + time_point_str)
             return True
         return False
 
@@ -201,17 +201,17 @@ class AbstractImageVisualizer(Visualizer):
 
         if self._z < 0:
             self._z = 0
-        if self._z >= len(self._frame_images):
-            self._z = len(self._frame_images) - 1
+        if self._z >= len(self._time_point_images):
+            self._z = len(self._time_point_images) - 1
 
         if self._z != old_z:
             self.draw_view()
 
     def _move_in_time(self, dt: int):
-        old_frame_number = self._frame.frame_number()
-        new_frame_number = old_frame_number + dt
+        old_time_point_number = self._time_point.time_point_number()
+        new_time_point_number = old_time_point_number + dt
         try:
-            self._frame, self._frame_images = self.load_frame(new_frame_number)
+            self._time_point, self._time_point_images = self.load_time_point(new_time_point_number)
             self.draw_view()
         except KeyError:
             pass
@@ -224,8 +224,8 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     L key: manual linking interface, E key: view images of potential errors
     D key: view differences between official and scratch links"""
 
-    def __init__(self, experiment: Experiment, figure: Figure, frame_number: Optional[int] = None, z: int = 14):
-        super().__init__(experiment, figure, frame_number=frame_number, z=z)
+    def __init__(self, experiment: Experiment, figure: Figure, time_point_number: Optional[int] = None, z: int = 14):
+        super().__init__(experiment, figure, time_point_number=time_point_number, z=z)
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "t":
@@ -251,7 +251,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             activate(differences_visualizer)
         elif event.key == "l":
             from linking_analysis.link_editor import LinkEditor
-            link_editor = LinkEditor(self._experiment, self._fig, frame_number=self._frame.frame_number(), z=self._z)
+            link_editor = LinkEditor(self._experiment, self._fig, time_point_number=self._time_point.time_point_number(), z=self._z)
             activate(link_editor)
         else:
             super()._on_key_press(event)
