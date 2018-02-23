@@ -2,13 +2,16 @@
 # * Every cell must have one or two cells in the next image
 # * Every cell must have exactly one cell in the previous image
 
-import imaging
+from typing import Iterable, Set, Optional, Tuple
+
 import numpy
 from networkx import Graph
-from typing import Iterable, Set, Optional, Tuple
-from imaging import Particle, Experiment, cell, errors
-from imaging.image_helper import Image2d
+from numpy import ndarray
+
+import imaging
+from imaging import Particle, Experiment, cell, errors, normalized_image
 from linking_analysis import logical_tests
+
 
 def prune_links(experiment: Experiment, graph: Graph, mitotic_radius: int) -> Graph:
     """Takes a graph with all possible edges between cells, and returns a graph with only the most likely edges.
@@ -68,22 +71,27 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle
     # as a mother, and "undeclare" another cell from being one
     daughter2 = two_daughters[1]
     if daughter2 in future_preferred_particles:
+        print("No need to fix " + str(particle) + " (score " + str(score) + ", daughters: "+str(future_preferred_particles)+")")
         return  # Nothing to fix
     current_mother_of_daughter2 = _find_past_particle(graph, daughter2)
     children_of_current_parent_of_daughter2 = list(_find_preferred_links(graph, current_mother_of_daughter2,
                                                    _find_future_particles(graph, current_mother_of_daughter2)))
     if len(children_of_current_parent_of_daughter2) < 2:
-        return # Cannot decouple current parent from daughter2, as then the current parent would be a dead cell
+        print("Cannot fix " + str(particle) + " (score " + str(score) + ")")
+        return  # Cannot decouple current parent from daughter2, as then the current parent would be a dead cell
 
     current_parent_score = _cell_is_mother_likeliness(experiment, graph, current_mother_of_daughter2,
                                                       children_of_current_parent_of_daughter2[0],
                                                       children_of_current_parent_of_daughter2[1], mitotic_radius)
     if score > current_parent_score:
         # Replace parent
+        print("Let " + str(particle) + " (score " + str(score) + ") replace " + str(current_mother_of_daughter2) + " (score " + str(current_parent_score) + ")")
         _downgrade_edges_pointing_to_past(graph, daughter2) # Removes old mother
         graph.add_edge(particle, daughter2, pref=True)
+    else:
+        print("Didn't let " + str(particle) + " (score " + str(score) + ") replace " + str(current_mother_of_daughter2) + " (score " + str(current_parent_score) + ")")
 
-    if abs(score - current_parent_score) < 3:
+    if abs(score - current_parent_score) < 1:
         # Not sure
         if score > current_parent_score:
             graph.add_node(particle, error=errors.POTENTIALLY_NOT_A_MOTHER)
@@ -157,28 +165,29 @@ def _with_only_the_preferred_edges(old_graph: Graph):
 def _get_2d_image(experiment: Experiment, particle: Particle):
     images = experiment.get_time_point(particle.time_point_number()).load_images()
     if images is None:
-        raise ValueError("Image for time_point " + str(particle.time_point_number()) + " not loaded")
+        raise ValueError("Image for time point " + str(particle.time_point_number()) + " not loaded")
     image = images[int(particle.z)]
-    return Image2d(image)
+    return image
 
 
-def _get_two_daughters(mother: Particle, preferred_particles: Set[Particle], all_particles: Set[Particle]) \
+def _get_two_daughters(mother: Particle, already_declared_as_daughter: Set[Particle], all_future_cells: Set[Particle]) \
         -> Optional[Tuple[Particle, Particle]]:
     """Gets a list with two daughter cells at positions 0 and 1. First, particles from te preferred lists are chosen,
-    then the nearest from the other list are chosen.
+    then the nearest from the other list are chosen. The order of the cells in the resulting list is not defined.
     """
-    result = set(preferred_particles)
-    in_consideration = set(all_particles)
-    in_consideration = in_consideration.difference(result)
+    result = list(already_declared_as_daughter)
+    in_consideration = set(all_future_cells)
+    for preferred_particle in already_declared_as_daughter:
+        in_consideration.remove(preferred_particle)
 
     while len(result) < 2:
         nearest = imaging.get_closest_particle(in_consideration, mother)
         if nearest is None:
             return None # Simply not enough cells provided
-        result.add(nearest)
+        result.append(nearest)
         in_consideration.remove(nearest)
 
-    return result.pop(), result.pop()
+    return (result[0], result[1])
 
 
 def _get_angle(a: Particle, b: Particle, c: Particle):
@@ -192,53 +201,88 @@ def _get_angle(a: Particle, b: Particle, c: Particle):
     return numpy.degrees(angle)
 
 
-_cached_intensities = None
-
-
-def _get_average_intensity_at(experiment: Experiment, particle: Particle):
-    return _get_2d_image(experiment, particle).get_average_intensity_at(int(particle.x), int(particle.y))
-
-
 def _cell_is_mother_likeliness(experiment: Experiment, graph: Graph, mother: Particle, daughter1: Particle,
-                               daughter2: Particle, mitotic_radius: int = 2, min_cell_age: int = 4):
-    global _cached_intensities
+                               daughter2: Particle, mitotic_radius: int = 2, min_cell_age: int = 2):
 
-    image = _get_2d_image(experiment, mother)
-    _cached_intensities = image.get_intensities_square(int(mother.x), int(mother.y),
-                                                       mitotic_radius, _cached_intensities)
+    mother_image_stack = experiment.get_time_point(mother.time_point_number()).load_images()
+    mother_image = mother_image_stack[int(mother.z)]
+    daughter1_image = _get_2d_image(experiment, daughter1)
+    daughter2_image = _get_2d_image(experiment, daughter2)
+    daughter1_image_prev = mother_image_stack[int(daughter1.z)]
+    daughter2_image_prev = mother_image_stack[int(daughter2.z)]
+
+    mother_intensities = normalized_image.get_square(mother_image, mother.x, mother.y, mitotic_radius)
+    daughter1_intensities = normalized_image.get_square(daughter1_image, daughter1.x, daughter1.y, mitotic_radius)
+    daughter2_intensities = normalized_image.get_square(daughter2_image, daughter2.x, daughter2.y, mitotic_radius)
+    daughter1_intensities_prev = normalized_image.get_square(daughter1_image_prev, daughter1.x, daughter1.y,
+                                                             mitotic_radius)
+    daughter2_intensities_prev = normalized_image.get_square(daughter2_image_prev, daughter2.x, daughter2.y,
+                                                             mitotic_radius)
 
     score = 0
+    score += score_mother_intensities(mother_intensities)
+    score += score_mother_age(experiment, graph, min_cell_age, mother)
+    score += score_daughter_angles(mother, daughter1, daughter2)
+    score += score_daughter_distance(daughter1, daughter2, mother)
+    score += score_daughter_intensities(daughter1_intensities, daughter2_intensities,
+                                        daughter1_intensities_prev, daughter2_intensities_prev)
+    print(str(mother) + " has score of " + str(score))
+    return score
 
-    # Mother cell must have high intensity and contrast
-    min_value = numpy.amin(_cached_intensities)
-    max_value = numpy.amax(_cached_intensities)
-    score += max_value * 2 # The higher intensity, the better: the DNA is concentrated
-    score += (max_value - min_value) # High contrast is also desirable, as there are parts where there is no DNA
 
-    # Daughter cells must move to opposite angles
-    angle = _get_angle(daughter1, mother, daughter2)
-    if angle < 80 or angle > 280:
-        score -= 4  # Very bad, daughters usually go in opposite directions
-    elif angle < 120 or angle > 240:
-        score -= 1  # Less bad
+def score_mother_age(experiment, graph, min_cell_age, mother):
+    """Mothers cannot be too young"""
+    age = cell.get_age(experiment, graph, mother)
+    if age is not None and age < min_cell_age:
+        return -100  # Severe punishment, as this is biologically impossible
+    return 0
 
-    # Daughter cells must keep some distance from mother
+
+def score_daughter_intensities(daughter1_intensities: ndarray, daughter2_intensities: ndarray,
+                               daughter1_intensities_prev: ndarray, daughter2_intensities_prev: ndarray):
+    """Daughter cells must have almost the same intensity"""
+    daughter1_average = numpy.average(daughter1_intensities)
+    daughter2_average = numpy.average(daughter2_intensities)
+    daughter1_average_prev = numpy.average(daughter1_intensities_prev)
+    daughter2_average_prev = numpy.average(daughter2_intensities_prev)
+
+    # Daughter cells must have almost the same intensity
+    score = 0
+    score -= abs(daughter1_average - daughter2_average)
+    if daughter1_average / (daughter1_average_prev + 0.0001) > 2:
+        score += 3
+    if daughter2_average / (daughter2_average_prev + 0.0001) > 2:
+        score += 3
+    print(str(daughter1_average) + "/" + str(daughter1_average_prev + 0.0001) + " and " + str(daughter2_average) + "/"
+          + str(daughter2_average_prev + 0.0001) + " results in score of " + str(score))
+    return score
+
+def score_daughter_distance(daughter1, daughter2, mother):
+    """Daughter cells must keep some distance from mother"""
+    score = 0
     distance1_squared = abs(mother.x - daughter1.x) ** 2 + abs(mother.y - daughter1.y) ** 2
     if distance1_squared < 7 ** 2:
         score -= 1
     distance2_squared = abs(mother.x - daughter2.x) ** 2 + abs(mother.y - daughter2.y) ** 2
     if distance2_squared < 7 ** 2:
         score -= 1
-
-    # Daughter cells must have almost the same intensity
-    daughter1_intensity = _get_average_intensity_at(experiment, daughter1)
-    daughter2_intensity = _get_average_intensity_at(experiment, daughter2)
-    intensity_difference = abs(daughter1_intensity - daughter2_intensity)
-    score -= intensity_difference * 2
-
-    # Mothers cannot be too young
-    age = cell.get_age(experiment, graph, mother)
-    if age is not None and age < min_cell_age:
-        score -= 5 # Severe punishment, as this is biologically impossible
-
     return score
+
+
+def score_mother_intensities(mother_intensities: ndarray) -> float:
+    """Mother cell must have high intensity and contrast"""
+    min_value = numpy.min(mother_intensities)
+    max_value = numpy.max(mother_intensities)
+    score = max_value * 2  # The higher intensity, the better: the DNA is concentrated
+    score += (max_value - min_value)  # High contrast is also desirable, as there are parts where there is no DNA
+    return score
+
+
+def score_daughter_angles(mother: Particle, daughter1: Particle, daughter2: Particle) -> int:
+    """Daughter cells must move to opposite angles"""
+    angle = _get_angle(daughter1, mother, daughter2)
+    if angle < 80 or angle > 280:
+        return -4  # Very bad, daughters usually go in opposite directions
+    elif angle < 120 or angle > 240:
+        return -1  # Less bad
+    return 0
