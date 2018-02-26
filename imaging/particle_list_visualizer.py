@@ -60,7 +60,7 @@ class ParticleListVisualizer(Visualizer):
             plt.draw()
             return
 
-        self._zoom_to_mother()
+        self._zoom_to_cell()
         self._show_image()
 
         current_particle = self._particle_list[self._current_particle_index]
@@ -73,10 +73,10 @@ class ParticleListVisualizer(Visualizer):
         plt.draw()
         ParticleListVisualizer.__last_index = self._current_particle_index
 
-    def _zoom_to_mother(self):
+    def _zoom_to_cell(self):
         mother = self._particle_list[self._current_particle_index]
         self._ax.set_xlim(mother.x - 50, mother.x + 50)
-        self._ax.set_ylim(mother.y - 50, mother.y + 50)
+        self._ax.set_ylim(mother.y + 50, mother.y - 50)
         self._ax.set_autoscale_on(False)
 
     def _draw_particle(self, particle: Particle, color=imaging.COLOR_CELL_CURRENT, size=7):
