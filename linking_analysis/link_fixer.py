@@ -40,13 +40,11 @@ def _fix_no_future_particle(graph: Graph, particle: Particle, last_time_point_nu
     # Oops, found dead end. Choose a best match from the future_particles list
     newly_matched_future_particle = imaging.get_closest_particle(future_particles, particle)
     if newly_matched_future_particle is None:
-        if particle.time_point_number() != last_time_point_number:
-            graph.add_node(particle, error=errors.NO_FUTURE_POSITION)
         return
 
     # Replace edge
-    _downgrade_edges_pointing_to_past(graph, newly_matched_future_particle)
-    graph.add_edge(particle, newly_matched_future_particle, pref=True)
+    if _downgrade_edges_pointing_to_past(graph, newly_matched_future_particle, allow_deaths=False):
+        graph.add_edge(particle, newly_matched_future_particle, pref=True)
 
 
 def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle, mitotic_radius: int):
@@ -108,7 +106,7 @@ def _downgrade_edges_pointing_to_past(graph: Graph, particle: Particle, allow_de
     particle connected to the given particle would become dead (i.e. has no connections to the future left)
     Returns whether all edges were removed, which is always the case if `allow_deaths == True`
     """
-    for particle_in_past in _find_past_particles(graph, particle):
+    for particle_in_past in _find_preferred_links(graph, particle, _find_past_particles(graph, particle)):
         graph.add_edge(particle_in_past, particle, pref=False)
         remaining_connections = _find_preferred_links(graph, particle_in_past, _find_future_particles(graph, particle_in_past))
         if len(remaining_connections) == 0 and not allow_deaths:
