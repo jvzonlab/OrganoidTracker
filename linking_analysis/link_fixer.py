@@ -227,21 +227,10 @@ def _cell_is_mother_likeliness(experiment: Experiment, graph: Graph, mother: Par
 
     score = 0
     score += score_mother_intensities(mother_intensities, mother_intensities_next)
-    score += score_mother_age(experiment, graph, min_cell_age, mother)
-    score += score_daughter_angles(mother, daughter1, daughter2)
-    score += score_daughter_distance(daughter1, daughter2, mother)
     score += score_daughter_intensities(daughter1_intensities, daughter2_intensities,
                                         daughter1_intensities_prev, daughter2_intensities_prev)
     print(str(mother) + " has score of " + str(score))
     return score
-
-
-def score_mother_age(experiment, graph, min_cell_age, mother):
-    """Mothers cannot be too young"""
-    age = cell.get_age(experiment, graph, mother)
-    if age is not None and age < min_cell_age:
-        return -100  # Severe punishment, as this is biologically impossible
-    return 0
 
 
 def score_daughter_intensities(daughter1_intensities: ndarray, daughter2_intensities: ndarray,
@@ -263,17 +252,6 @@ def score_daughter_intensities(daughter1_intensities: ndarray, daughter2_intensi
           + str(daughter2_average_prev + 0.0001) + " results in score of " + str(score))
     return score
 
-def score_daughter_distance(daughter1, daughter2, mother):
-    """Daughter cells must keep some distance from mother"""
-    score = 0
-    distance1_squared = abs(mother.x - daughter1.x) ** 2 + abs(mother.y - daughter1.y) ** 2
-    if distance1_squared < 7 ** 2:
-        score -= 1
-    distance2_squared = abs(mother.x - daughter2.x) ** 2 + abs(mother.y - daughter2.y) ** 2
-    if distance2_squared < 7 ** 2:
-        score -= 1
-    return score
-
 
 def score_mother_intensities(mother_intensities: ndarray, mother_intensities_next: ndarray) -> float:
     """Mother cell must have high intensity """
@@ -291,13 +269,3 @@ def score_mother_intensities(mother_intensities: ndarray, mother_intensities_nex
         score += 3
 
     return score
-
-
-def score_daughter_angles(mother: Particle, daughter1: Particle, daughter2: Particle) -> int:
-    """Daughter cells must move to opposite angles"""
-    angle = _get_angle(daughter1, mother, daughter2)
-    if angle < 80 or angle > 280:
-        return -4  # Very bad, daughters usually go in opposite directions
-    elif angle < 120 or angle > 240:
-        return -1  # Less bad
-    return 0
