@@ -109,6 +109,8 @@ def _downgrade_edges_pointing_to_past(graph: Graph, particle: Particle, allow_de
     particle connected to the given particle would become dead (i.e. has no connections to the future left)
     Returns whether all edges were removed, which is always the case if `allow_deaths == True`
     """
+    if "error" in graph.nodes[particle]:
+        graph.add_node(particle, error=None)  # Remove any errors, they will not be up to date anymore
     for particle_in_past in _find_preferred_links(graph, particle, _find_past_particles(graph, particle)):
         graph.add_edge(particle_in_past, particle, pref=False)
         remaining_connections = _find_preferred_links(graph, particle_in_past, _find_future_particles(graph, particle_in_past))
