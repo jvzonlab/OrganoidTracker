@@ -23,6 +23,7 @@ def prune_links(experiment: Experiment, graph: Graph, mitotic_radius: int) -> Gr
 
     [_fix_no_future_particle(graph, particle, last_time_point_number) for particle in graph.nodes()]
     [_fix_cell_divisions(experiment, graph, particle, mitotic_radius) for particle in graph.nodes()]
+    [_fix_no_future_particle(graph, particle, last_time_point_number) for particle in graph.nodes()]
 
     graph = _with_only_the_preferred_edges(graph)
     logical_tests.apply(experiment, graph)
