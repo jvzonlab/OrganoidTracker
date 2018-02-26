@@ -21,16 +21,16 @@ def prune_links(experiment: Experiment, graph: Graph, mitotic_radius: int) -> Gr
     """
     last_time_point_number = experiment.last_time_point_number()
 
-    [_fix_no_future_particle(graph, particle, last_time_point_number) for particle in graph.nodes()]
+    [_fix_no_future_particle(graph, particle) for particle in graph.nodes()]
     [_fix_cell_divisions(experiment, graph, particle, mitotic_radius) for particle in graph.nodes()]
-    [_fix_no_future_particle(graph, particle, last_time_point_number) for particle in graph.nodes()]
+    [_fix_no_future_particle(graph, particle) for particle in graph.nodes()]
 
     graph = _with_only_the_preferred_edges(graph)
     logical_tests.apply(experiment, graph)
     return graph
 
 
-def _fix_no_future_particle(graph: Graph, particle: Particle, last_time_point_number: int):
+def _fix_no_future_particle(graph: Graph, particle: Particle):
     """This fixes the case where a particle has no future particle lined up"""
     future_particles = _find_future_particles(graph, particle)
     future_preferred_particles = _find_preferred_links(graph, particle, future_particles)
@@ -39,13 +39,18 @@ def _fix_no_future_particle(graph: Graph, particle: Particle, last_time_point_nu
         return
 
     # Oops, found dead end. Choose a best match from the future_particles list
-    newly_matched_future_particle = imaging.get_closest_particle(future_particles, particle)
-    if newly_matched_future_particle is None:
-        return
+    while True:
+        newly_matched_future_particle = imaging.get_closest_particle(future_particles, particle)
+        if newly_matched_future_particle is None:
+            return False
 
-    # Replace edge
-    if _downgrade_edges_pointing_to_past(graph, newly_matched_future_particle, allow_deaths=False):
-        graph.add_edge(particle, newly_matched_future_particle, pref=True)
+        # Replace edge
+        if _downgrade_edges_pointing_to_past(graph, newly_matched_future_particle, allow_deaths=False):
+            graph.add_edge(particle, newly_matched_future_particle, pref=True)
+            return True
+        else:
+            # Try other match in next loop iteration
+            future_particles.remove(newly_matched_future_particle)
 
 
 def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle, mitotic_radius: int):
