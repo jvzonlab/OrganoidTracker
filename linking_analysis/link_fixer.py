@@ -206,13 +206,16 @@ def _cell_is_mother_likeliness(experiment: Experiment, graph: Graph, mother: Par
                                daughter2: Particle, mitotic_radius: int = 2, min_cell_age: int = 2):
 
     mother_image_stack = experiment.get_time_point(mother.time_point_number()).load_images()
+    daughter1_image_stack = experiment.get_time_point(daughter1.time_point_number()).load_images()
     mother_image = mother_image_stack[int(mother.z)]
-    daughter1_image = _get_2d_image(experiment, daughter1)
+    mother_image_next = daughter1_image_stack[int(mother.z)]
+    daughter1_image = daughter1_image_stack[int(daughter1.z)]
     daughter2_image = _get_2d_image(experiment, daughter2)
     daughter1_image_prev = mother_image_stack[int(daughter1.z)]
     daughter2_image_prev = mother_image_stack[int(daughter2.z)]
 
     mother_intensities = normalized_image.get_square(mother_image, mother.x, mother.y, mitotic_radius)
+    mother_intensities_next = normalized_image.get_square(mother_image_next, mother.x, mother.y, mitotic_radius)
     daughter1_intensities = normalized_image.get_square(daughter1_image, daughter1.x, daughter1.y, mitotic_radius)
     daughter2_intensities = normalized_image.get_square(daughter2_image, daughter2.x, daughter2.y, mitotic_radius)
     daughter1_intensities_prev = normalized_image.get_square(daughter1_image_prev, daughter1.x, daughter1.y,
@@ -221,7 +224,7 @@ def _cell_is_mother_likeliness(experiment: Experiment, graph: Graph, mother: Par
                                                              mitotic_radius)
 
     score = 0
-    score += score_mother_intensities(mother_intensities)
+    score += score_mother_intensities(mother_intensities, mother_intensities_next)
     score += score_mother_age(experiment, graph, min_cell_age, mother)
     score += score_daughter_angles(mother, daughter1, daughter2)
     score += score_daughter_distance(daughter1, daughter2, mother)
@@ -270,12 +273,21 @@ def score_daughter_distance(daughter1, daughter2, mother):
     return score
 
 
-def score_mother_intensities(mother_intensities: ndarray) -> float:
-    """Mother cell must have high intensity and contrast"""
+def score_mother_intensities(mother_intensities: ndarray, mother_intensities_next: ndarray) -> float:
+    """Mother cell must have high intensity """
+    score = 0
+
+    # Intensity and contrast
     min_value = numpy.min(mother_intensities)
     max_value = numpy.max(mother_intensities)
-    score = max_value * 2  # The higher intensity, the better: the DNA is concentrated
+    score += max_value * 2  # The higher intensity, the better: the DNA is concentrated
     score += (max_value - min_value)  # High contrast is also desirable, as there are parts where there is no DNA
+
+    # Change of intensity (we use the max, as mothers often have both bright spots and darker spots near their center)
+    max_value_next = numpy.max(mother_intensities_next)
+    if max_value / (max_value_next + 0.0001) > 2: # +0.0001 protects against division by zero
+        score += 3
+
     return score
 
 
