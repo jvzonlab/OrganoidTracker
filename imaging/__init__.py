@@ -133,6 +133,11 @@ class Experiment:
         time_point = self._get_or_add_time_point(time_point_number)
         time_point.add_particles(particles)
 
+    def add_particle(self, x: float, y: float, z: float, time_point_number: int):
+        """Adds a single particle to the experiment, creating the time point if it does not exist yet."""
+        time_point = self._get_or_add_time_point(time_point_number)
+        time_point.add_particles([Particle(x, y, z)])
+
     def add_image_loader(self, time_point_number: int, image_loader) -> None:
         time_point = self._get_or_add_time_point(time_point_number)
         time_point.set_image_loader(image_loader)
@@ -185,6 +190,7 @@ class Experiment:
         if network is not None:
             self._particle_links_baseline = network
         return self._particle_links_baseline
+
 
 
 def get_closest_particle(particles: Iterable[Particle], search_position: Particle,
