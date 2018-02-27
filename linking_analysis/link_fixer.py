@@ -2,7 +2,7 @@
 # * Every cell must have one or two cells in the next image
 # * Every cell must have exactly one cell in the previous image
 
-from typing import Iterable, Set, Optional, Tuple
+from typing import Iterable, Set, Optional, Tuple, List
 
 import numpy
 from networkx import Graph
@@ -21,9 +21,9 @@ def prune_links(experiment: Experiment, graph: Graph, mitotic_radius: int) -> Gr
     """
     last_time_point_number = experiment.last_time_point_number()
 
-    [_fix_no_future_particle(graph, particle) for particle in graph.nodes()]
-    [_fix_cell_divisions(experiment, graph, particle, mitotic_radius) for particle in graph.nodes()]
-    [_fix_no_future_particle(graph, particle) for particle in graph.nodes()]
+    for i in range(2):
+        [_fix_no_future_particle(graph, particle) for particle in graph.nodes()]
+        [_fix_cell_divisions(experiment, graph, particle, mitotic_radius) for particle in graph.nodes()]
 
     graph = _with_only_the_preferred_edges(graph)
     logical_tests.apply(experiment, graph)
@@ -46,6 +46,7 @@ def _fix_no_future_particle(graph: Graph, particle: Particle):
 
         # Replace edge
         if _downgrade_edges_pointing_to_past(graph, newly_matched_future_particle, allow_deaths=False):
+            print("Created new link for previously dead " + str(particle) + " towards " + str(newly_matched_future_particle))
             graph.add_edge(particle, newly_matched_future_particle, pref=True)
             return True
         else:
@@ -69,32 +70,24 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle
     two_daughters = _get_two_daughters(particle, future_preferred_particles, future_particles)
     if two_daughters is None:
         raise ValueError("Unable to find two daughters, even though there were at least two future_particles")
-    score = _cell_is_mother_likeliness(experiment, graph, particle, two_daughters[0], two_daughters[1], mitotic_radius)
 
     # Daughter1 surely is in preferred_particles, but maybe daughter2 not yet. If so, we might need to declare this cell
     # as a mother, and "undeclare" another cell from being one
     daughter2 = two_daughters[1]
     if daughter2 in future_preferred_particles:
-        print("No need to fix " + str(particle) + " (score " + str(score) + ", daughters: "+str(future_preferred_particles)+")")
+        print("No need to fix " + str(particle))
         return  # Nothing to fix
     current_mother_of_daughter2 = _find_past_particle(graph, daughter2)
-    children_of_current_parent_of_daughter2 = list(_find_preferred_links(graph, current_mother_of_daughter2,
+    children_of_current_mother_of_daughter2 = list(_find_preferred_links(graph, current_mother_of_daughter2,
                                                    _find_future_particles(graph, current_mother_of_daughter2)))
-    if len(children_of_current_parent_of_daughter2) < 2:
-        print("Cannot fix " + str(particle) + " (score " + str(score) + ")")
-        return  # Cannot decouple current parent from daughter2, as then the current parent would be a dead cell
+    if len(children_of_current_mother_of_daughter2) < 2:
+        print("Cannot fix " + str(particle))
+        return
 
+    score = _cell_is_mother_likeliness(experiment, graph, particle, two_daughters[0], two_daughters[1], mitotic_radius)
     current_parent_score = _cell_is_mother_likeliness(experiment, graph, current_mother_of_daughter2,
-                                                      children_of_current_parent_of_daughter2[0],
-                                                      children_of_current_parent_of_daughter2[1], mitotic_radius)
-    if score > current_parent_score:
-        # Replace parent
-        print("Let " + str(particle) + " (score " + str(score) + ") replace " + str(current_mother_of_daughter2) + " (score " + str(current_parent_score) + ")")
-        _downgrade_edges_pointing_to_past(graph, daughter2) # Removes old mother
-        graph.add_edge(particle, daughter2, pref=True)
-    else:
-        print("Didn't let " + str(particle) + " (score " + str(score) + ") replace " + str(current_mother_of_daughter2) + " (score " + str(current_parent_score) + ")")
-
+                                                      children_of_current_mother_of_daughter2[0],
+                                                      children_of_current_mother_of_daughter2[1], mitotic_radius)
     if abs(score - current_parent_score) < 1:
         # Not sure
         if score > current_parent_score:
@@ -103,6 +96,22 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle
         else:
             graph.add_node(particle, error=errors.POTENTIALLY_SHOULD_BE_A_MOTHER)
             graph.add_node(current_mother_of_daughter2, error=errors.POTENTIALLY_NOT_A_MOTHER)
+    else:  # Remove any existing errors, they will be outdated
+        _remove_error(graph, particle)
+        _remove_error(graph, current_mother_of_daughter2)
+
+    if score > current_parent_score:
+        # Replace parent
+        print("Let " + str(particle) + " (score " + str(score) + ") replace " + str(
+            current_mother_of_daughter2) + " (score " + str(current_parent_score) + ")")
+        _downgrade_edges_pointing_to_past(graph, daughter2)  # Removes old mother
+        graph.add_edge(particle, daughter2, pref=True)
+        return True
+    else:
+        print("Didn't let " + str(particle) + " (score " + str(score) + ") replace " + str(
+            current_mother_of_daughter2) + " (score " + str(current_parent_score) + ")")
+        return False
+
 
 #
 # Helper functions below
@@ -114,8 +123,7 @@ def _downgrade_edges_pointing_to_past(graph: Graph, particle: Particle, allow_de
     particle connected to the given particle would become dead (i.e. has no connections to the future left)
     Returns whether all edges were removed, which is always the case if `allow_deaths == True`
     """
-    if "error" in graph.nodes[particle]:
-        graph.add_node(particle, error=None)  # Remove any errors, they will not be up to date anymore
+    _remove_error(graph, particle)  # Remove any errors, they will not be up to date anymore
     for particle_in_past in _find_preferred_links(graph, particle, _find_past_particles(graph, particle)):
         graph.add_edge(particle_in_past, particle, pref=False)
         remaining_connections = _find_preferred_links(graph, particle_in_past, _find_future_particles(graph, particle_in_past))
@@ -156,6 +164,11 @@ def _find_future_particles(graph: Graph, particle: Particle):
     return {linked_particle for linked_particle in linked_particles
             if linked_particle.time_point_number() > particle.time_point_number()}
 
+
+def _remove_error(graph: Graph, particle: Particle):
+    """Removes any error message associated to the given particle"""
+    if "error" in graph.nodes[particle]:
+        del graph.nodes[particle]["error"]
 
 def _with_only_the_preferred_edges(old_graph: Graph):
     graph = Graph()
@@ -234,7 +247,6 @@ def _cell_is_mother_likeliness(experiment: Experiment, graph: Graph, mother: Par
     score += score_mother_intensities(mother_intensities, mother_intensities_next)
     score += score_daughter_intensities(daughter1_intensities, daughter2_intensities,
                                         daughter1_intensities_prev, daughter2_intensities_prev)
-    print(str(mother) + " has score of " + str(score))
     return score
 
 
@@ -250,11 +262,9 @@ def score_daughter_intensities(daughter1_intensities: ndarray, daughter2_intensi
     score = 0
     score -= abs(daughter1_average - daughter2_average)
     if daughter1_average / (daughter1_average_prev + 0.0001) > 2:
-        score += 3
+        score += 2
     if daughter2_average / (daughter2_average_prev + 0.0001) > 2:
-        score += 3
-    print(str(daughter1_average) + "/" + str(daughter1_average_prev + 0.0001) + " and " + str(daughter2_average) + "/"
-          + str(daughter2_average_prev + 0.0001) + " results in score of " + str(score))
+        score += 2
     return score
 
 
@@ -266,11 +276,11 @@ def score_mother_intensities(mother_intensities: ndarray, mother_intensities_nex
     min_value = numpy.min(mother_intensities)
     max_value = numpy.max(mother_intensities)
     score += max_value * 2  # The higher intensity, the better: the DNA is concentrated
-    score += (max_value - min_value)  # High contrast is also desirable, as there are parts where there is no DNA
+    score += 2 * (max_value - min_value)  # High contrast is also desirable, as there are parts where there is no DNA
 
     # Change of intensity (we use the max, as mothers often have both bright spots and darker spots near their center)
     max_value_next = numpy.max(mother_intensities_next)
     if max_value / (max_value_next + 0.0001) > 2: # +0.0001 protects against division by zero
-        score += 3
+        score += 2
 
     return score
