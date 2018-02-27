@@ -1,12 +1,20 @@
-from imaging import Experiment
 from os import path
-from numpy import ndarray
+from typing import Optional
+
 import tifffile
+from numpy import ndarray
+
+from imaging import Experiment
 
 
-def load_images_from_folder(experiment: Experiment, folder: str, file_name_format: str, min_time_point: int = 0,
-                            max_time_point: int = 5000):
-    time_point = max(1, min_time_point)
+def load_images_from_folder(experiment: Experiment, folder: str, file_name_format: str,
+                            min_time_point: Optional[int] = None, max_time_point: Optional[int] = None):
+    if min_time_point is None:
+        min_time_point = 1
+    if max_time_point is None:
+        max_time_point = 5000
+
+    time_point = min_time_point
     while time_point <= max_time_point:
         file_name = path.join(folder, file_name_format % time_point)
 
