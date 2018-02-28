@@ -88,7 +88,7 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle
     current_parent_score = _cell_is_mother_likeliness(experiment, graph, current_mother_of_daughter2,
                                                       children_of_current_mother_of_daughter2[0],
                                                       children_of_current_mother_of_daughter2[1], mitotic_radius)
-    if abs(score - current_parent_score) < 1:
+    if abs(score - current_parent_score) <= 1:
         # Not sure
         if score > current_parent_score:
             graph.add_node(particle, error=errors.POTENTIALLY_NOT_A_MOTHER)
@@ -136,7 +136,7 @@ def _downgrade_edges_pointing_to_past(graph: Graph, particle: Particle, allow_de
 
 def _find_preferred_links(graph: Graph, particle: Particle, linked_particles: Iterable[Particle]):
     return {linked_particle for linked_particle in linked_particles
-            if graph[particle][linked_particle]["pref"] == True}
+            if graph[particle][linked_particle]["pref"] is True}
 
 
 def _find_past_particles(graph: Graph, particle: Particle):
@@ -247,7 +247,18 @@ def _cell_is_mother_likeliness(experiment: Experiment, graph: Graph, mother: Par
     score += score_mother_intensities(mother_intensities, mother_intensities_next)
     score += score_daughter_intensities(daughter1_intensities, daughter2_intensities,
                                         daughter1_intensities_prev, daughter2_intensities_prev)
+    score += score_daughter_positions(mother, daughter1, daughter2)
     return score
+
+
+def score_daughter_positions(mother: Particle, daughter1: Particle, daughter2: Particle) -> int:
+    m_d1_distance = mother.distance_squared(daughter1)
+    m_d2_distance = mother.distance_squared(daughter2)
+    shorter_distance = m_d1_distance if m_d1_distance < m_d2_distance else m_d2_distance
+    longer_distance = m_d1_distance if m_d1_distance > m_d2_distance else m_d2_distance
+    if shorter_distance * (6 ** 2) < longer_distance:
+        return -2
+    return 0
 
 
 def score_daughter_intensities(daughter1_intensities: ndarray, daughter2_intensities: ndarray,
@@ -262,9 +273,9 @@ def score_daughter_intensities(daughter1_intensities: ndarray, daughter2_intensi
     score = 0
     score -= abs(daughter1_average - daughter2_average)
     if daughter1_average / (daughter1_average_prev + 0.0001) > 2:
-        score += 2
+        score += 1
     if daughter2_average / (daughter2_average_prev + 0.0001) > 2:
-        score += 2
+        score += 1
     return score
 
 
@@ -275,12 +286,14 @@ def score_mother_intensities(mother_intensities: ndarray, mother_intensities_nex
     # Intensity and contrast
     min_value = numpy.min(mother_intensities)
     max_value = numpy.max(mother_intensities)
-    score += max_value * 2  # The higher intensity, the better: the DNA is concentrated
-    score += 2 * (max_value - min_value)  # High contrast is also desirable, as there are parts where there is no DNA
+    if max_value > 0.7:
+        score += 1  # The higher intensity, the better: the DNA is concentrated
+    if max_value - min_value > 0.4:
+        score += 0.5  # High contrast is also desirable, as there are parts where there is no DNA
 
     # Change of intensity (we use the max, as mothers often have both bright spots and darker spots near their center)
     max_value_next = numpy.max(mother_intensities_next)
     if max_value / (max_value_next + 0.0001) > 2: # +0.0001 protects against division by zero
-        score += 2
+        score += 1
 
     return score
