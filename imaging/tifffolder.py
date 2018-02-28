@@ -14,7 +14,7 @@ def load_images_from_folder(experiment: Experiment, folder: str, file_name_forma
     if max_time_point is None:
         max_time_point = 5000
 
-    time_point = min_time_point
+    time_point = max(1, min_time_point)
     while time_point <= max_time_point:
         file_name = path.join(folder, file_name_format % time_point)
 
