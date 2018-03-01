@@ -48,8 +48,6 @@ def _fix_no_future_particle(graph: Graph, particle: Particle):
 
 
 def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle, mitotic_radius: int):
-    global _cached_intensities
-
     future_particles = _find_future_particles(graph, particle)
     future_preferred_particles = _find_preferred_links(graph, particle, future_particles)
 
@@ -62,7 +60,7 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle
 
     two_daughters = _get_two_daughters(graph, particle, future_preferred_particles, future_particles)
     if two_daughters is None:
-        print("Cannot fix " + str(particle) + ", no other mother nearby")
+        #print("Cannot fix " + str(particle) + ", no other mother nearby")
         return
 
     # Daughter1 surely is in preferred_particles, but maybe daughter2 not yet. If so, we might need to declare this cell
