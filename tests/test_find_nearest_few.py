@@ -1,6 +1,6 @@
 import unittest
 from imaging import TimePoint, Particle
-from linking_analysis.find_nearest_neighbors import find_nearest_particles
+from linking.find_nearest_neighbors import find_nearest_particles
 
 
 class TestFindNearestFew(unittest.TestCase):

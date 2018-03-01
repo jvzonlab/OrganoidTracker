@@ -2,14 +2,17 @@
 # * Every cell must have one or two cells in the next image
 # * Every cell must have exactly one cell in the previous image
 
-from typing import Iterable, Set, Optional, Tuple, List
+from typing import Iterable, Set, Optional, Tuple
 
 import numpy
 from networkx import Graph
 from numpy import ndarray
 
 import imaging
-from imaging import Particle, Experiment, cell, errors, normalized_image
+from imaging import Particle, Experiment, errors, normalized_image
+from linking.link_fixer import downgrade_edges_pointing_to_past, find_preferred_links, find_preferred_past_particle, \
+    find_future_particles, remove_error, with_only_the_preferred_edges, get_2d_image, fix_no_future_particle, \
+    get_closest_particle_having_a_sister
 from linking_analysis import logical_tests
 
 
@@ -20,38 +23,17 @@ def prune_links(experiment: Experiment, graph: Graph, mitotic_radius: int) -> Gr
     fall partly outside the cell.
     """
     for i in range(2):
-        [_fix_no_future_particle(graph, particle) for particle in graph.nodes()]
+        [fix_no_future_particle(graph, particle) for particle in graph.nodes()]
         [_fix_cell_divisions(experiment, graph, particle, mitotic_radius) for particle in graph.nodes()]
 
-    graph = _with_only_the_preferred_edges(graph)
+    graph = with_only_the_preferred_edges(graph)
     logical_tests.apply(experiment, graph)
     return graph
 
 
-def _fix_no_future_particle(graph: Graph, particle: Particle):
-    """This fixes the case where a particle has no future particle lined up"""
-    future_particles = _find_future_particles(graph, particle)
-    future_preferred_particles = _find_preferred_links(graph, particle, future_particles)
-
-    if len(future_preferred_particles) > 0:
-        return
-
-    # Oops, found dead end. Choose a best match from the future_particles list
-    newly_matched_future_particle = _get_closest_particle_having_a_sister(graph, future_particles, particle)
-    if newly_matched_future_particle is None:
-        return False
-
-    # Replace edge
-    _downgrade_edges_pointing_to_past(graph, newly_matched_future_particle)
-    print("Created new link for previously dead " + str(particle) + " towards " + str(newly_matched_future_particle))
-    graph.add_edge(particle, newly_matched_future_particle, pref=True)
-
-
 def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle, mitotic_radius: int):
-    global _cached_intensities
-
-    future_particles = _find_future_particles(graph, particle)
-    future_preferred_particles = _find_preferred_links(graph, particle, future_particles)
+    future_particles = find_future_particles(graph, particle)
+    future_preferred_particles = find_preferred_links(graph, particle, future_particles)
 
     if len(future_particles) < 2 or len(future_preferred_particles) == 0:
         return # Surely not a mother cell
@@ -71,9 +53,9 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle
     if daughter2 in future_preferred_particles:
         print("No need to fix " + str(particle))
         return  # Nothing to fix
-    current_mother_of_daughter2 = _find_preferred_past_particle(graph, daughter2)
-    children_of_current_mother_of_daughter2 = list(_find_preferred_links(graph, current_mother_of_daughter2,
-                                                   _find_future_particles(graph, current_mother_of_daughter2)))
+    current_mother_of_daughter2 = find_preferred_past_particle(graph, daughter2)
+    children_of_current_mother_of_daughter2 = list(find_preferred_links(graph, current_mother_of_daughter2,
+                                                   find_future_particles(graph, current_mother_of_daughter2)))
     if len(children_of_current_mother_of_daughter2) < 2:
         # The _get_two_daughters should have checked for this
         raise ValueError("No nearby mother available for " + str(particle))
@@ -82,6 +64,7 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle
     current_parent_score = _cell_is_mother_likeliness(experiment, graph, current_mother_of_daughter2,
                                                       children_of_current_mother_of_daughter2[0],
                                                       children_of_current_mother_of_daughter2[1], mitotic_radius)
+    # Printing of warnings
     if abs(score - current_parent_score) <= 1:
         # Not sure
         if score > current_parent_score:
@@ -91,14 +74,15 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle
             graph.add_node(particle, error=errors.POTENTIALLY_SHOULD_BE_A_MOTHER)
             graph.add_node(current_mother_of_daughter2, error=errors.POTENTIALLY_NOT_A_MOTHER)
     else:  # Remove any existing errors, they will be outdated
-        _remove_error(graph, particle)
-        _remove_error(graph, current_mother_of_daughter2)
+        remove_error(graph, particle)
+        remove_error(graph, current_mother_of_daughter2)
 
+    # Parent replacement
     if score > current_parent_score:
         # Replace parent
         print("Let " + str(particle) + " (score " + str(score) + ") replace " + str(
             current_mother_of_daughter2) + " (score " + str(current_parent_score) + ")")
-        _downgrade_edges_pointing_to_past(graph, daughter2)  # Removes old mother
+        downgrade_edges_pointing_to_past(graph, daughter2)  # Removes old mother
         graph.add_edge(particle, daughter2, pref=True)
         return True
     else:
@@ -112,106 +96,6 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle
 #
 
 
-def _get_closest_particle_having_a_sister(graph: Graph,
-                                          candidates_list: Iterable[Particle], center: Particle) -> Optional[Particle]:
-    """This function gets the closest particle relative to a given center that has a sister. That stipulation may seem
-    strange on the first sight, but it is very useful. A lot of cells with two future positions are authomatically
-    recognized as a mother with two daughters. However, this may have been a mistake. Maybe the cell has only one
-    future position, and the other "daughter" actually belongs to (is a future position of) another cell.
-    """
-    candidates = set(candidates_list)
-    while True:
-        candidate = imaging.get_closest_particle(candidates, center)
-        if candidate is None:
-            return None  # No more candidates left
-
-        past_of_candidate = _find_preferred_past_particle(graph, candidate)
-
-        graph.add_edge(past_of_candidate, candidate, pref=False)
-        remaining_connections_of_past_of_candidate = _find_preferred_links(graph, past_of_candidate, _find_future_particles(graph, past_of_candidate))
-        graph.add_edge(past_of_candidate, candidate, pref=True)
-
-        if len(remaining_connections_of_past_of_candidate) == 0:
-            # Didn't work
-            candidates.remove(candidate)
-        else:
-            return candidate
-
-
-def _downgrade_edges_pointing_to_past(graph: Graph, particle: Particle, allow_deaths: bool = True) -> bool:
-    """Removes all edges pointing to the past. When allow_deaths is set to False, the action is cancelled when a
-    particle connected to the given particle would become dead (i.e. has no connections to the future left)
-    Returns whether all edges were removed, which is always the case if `allow_deaths == True`
-    """
-    _remove_error(graph, particle)  # Remove any errors, they will not be up to date anymore
-    for particle_in_past in _find_preferred_links(graph, particle, _find_preferred_past_particles(graph, particle)):
-        graph.add_edge(particle_in_past, particle, pref=False)
-        remaining_connections = _find_preferred_links(graph, particle_in_past, _find_future_particles(graph, particle_in_past))
-        if len(remaining_connections) == 0 and not allow_deaths:
-            # Oops, that didn't work out. We marked a particle as dead by breaking all its links to the future
-            graph.add_edge(particle_in_past, particle, pref=True)
-            return False
-    return True
-
-
-def _find_preferred_links(graph: Graph, particle: Particle, linked_particles: Iterable[Particle]):
-    return {linked_particle for linked_particle in linked_particles
-            if graph[particle][linked_particle]["pref"] is True}
-
-
-def _find_preferred_past_particles(graph: Graph, particle: Particle):
-    # all possible connections one step in the past
-    linked_particles = graph[particle]
-    return {linked_particle for linked_particle in linked_particles
-            if linked_particle.time_point_number() < particle.time_point_number()}
-
-
-def _find_preferred_past_particle(graph: Graph, particle: Particle):
-    # the one most likely connection one step in the past
-    previous_positions = _find_preferred_links(graph, particle, _find_preferred_past_particles(graph, particle))
-    if len(previous_positions) == 0:
-        print("Error at " + str(particle) + ": cell popped up out of nothing")
-        return None
-    if len(previous_positions) > 1:
-        print("Error at " + str(particle) + ": cell originated from two different cells")
-        return None
-    return previous_positions.pop()
-
-
-def _find_future_particles(graph: Graph, particle: Particle):
-    # All possible connections one step in the future
-    linked_particles = graph[particle]
-    return {linked_particle for linked_particle in linked_particles
-            if linked_particle.time_point_number() > particle.time_point_number()}
-
-
-def _remove_error(graph: Graph, particle: Particle):
-    """Removes any error message associated to the given particle"""
-    if "error" in graph.nodes[particle]:
-        del graph.nodes[particle]["error"]
-
-
-def _with_only_the_preferred_edges(old_graph: Graph):
-    graph = Graph()
-    for node, data in old_graph.nodes(data=True):
-        if not isinstance(node, Particle):
-            raise ValueError("Found a node that was not a particle: " + str(node))
-        graph.add_node(node, **data)
-
-    for particle_1, particle_2, data in old_graph.edges(data=True):
-        if data["pref"]:
-            graph.add_edge(particle_1, particle_2)
-    return graph
-
-
-def _get_2d_image(experiment: Experiment, particle: Particle):
-    images = experiment.get_time_point(particle.time_point_number()).load_images()
-    if images is None:
-        raise ValueError("Image for time point " + str(particle.time_point_number()) + " not loaded")
-    image = images[int(particle.z)]
-    return image
-
-
 def _get_two_daughters(graph: Graph, mother: Particle, already_declared_as_daughter: Set[Particle],
                        all_future_cells: Set[Particle]) -> Optional[Tuple[Particle, Particle]]:
     """Gets a list with two daughter cells at positions 0 and 1. First, particles from te preferred lists are chosen,
@@ -223,7 +107,7 @@ def _get_two_daughters(graph: Graph, mother: Particle, already_declared_as_daugh
         in_consideration.remove(preferred_particle)
 
     while len(result) < 2:
-        nearest = _get_closest_particle_having_a_sister(graph, in_consideration, mother)
+        nearest = get_closest_particle_having_a_sister(graph, in_consideration, mother)
         if nearest is None:
             return None # Simply not enough cells provided
         result.append(nearest)
@@ -240,7 +124,7 @@ def _cell_is_mother_likeliness(experiment: Experiment, graph: Graph, mother: Par
     mother_image = mother_image_stack[int(mother.z)]
     mother_image_next = daughter1_image_stack[int(mother.z)]
     daughter1_image = daughter1_image_stack[int(daughter1.z)]
-    daughter2_image = _get_2d_image(experiment, daughter2)
+    daughter2_image = get_2d_image(experiment, daughter2)
     daughter1_image_prev = mother_image_stack[int(daughter1.z)]
     daughter2_image_prev = mother_image_stack[int(daughter2.z)]
 

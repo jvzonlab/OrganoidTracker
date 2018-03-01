@@ -1,7 +1,7 @@
 # Simple nearest-neighbor linking: every cell is linked to the nearest cell in the previous image. Physical and
 # biological constraints are not taken into account.
 from imaging import Experiment, io, tifffolder, image_visualizer
-from linking_analysis import linker_for_experiment
+from linking import linker_for_experiment
 from matplotlib import pyplot
 
 
