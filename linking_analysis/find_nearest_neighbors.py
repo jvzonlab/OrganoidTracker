@@ -3,7 +3,6 @@
 from imaging import Particle, TimePoint
 import operator
 
-
 class _NearestParticles:
     """Internal class for bookkeeping of what the nearest few particles are"""
 

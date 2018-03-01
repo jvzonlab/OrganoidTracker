@@ -20,7 +20,7 @@ print("Discovering images...")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
 print("Performing nearest-neighbor linking...")
-possible_links = linker_for_experiment.link_particles(experiment, min_time_point=_min_time_point, max_time_point=_max_time_point, tolerance=4)
+possible_links = linker_for_experiment.link_particles(experiment, min_time_point=_min_time_point, max_time_point=_max_time_point, tolerance=2)
 print("Deciding on what links to use...")
 link_result = link_fixer.prune_links(experiment, possible_links, _mitotic_radius)
 print("Writing results to file...")
