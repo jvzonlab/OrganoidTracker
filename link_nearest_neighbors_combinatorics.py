@@ -14,7 +14,7 @@ _images_format= "nd799xy08t%03dc1.tif"
 _min_time_point = 0
 _max_time_point = 5000
 _detection_radius_large = 10  # Used to check whether a mother is at a position
-_detection_radius_small = 3  # Used to check whether no mother is at a position
+_detection_radius_small = 2  # Used to check whether no mother is at a position
 # END OF PARAMETERS
 
 

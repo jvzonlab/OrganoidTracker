@@ -1,5 +1,6 @@
 import numpy
 from networkx import Graph
+from numpy import ndarray
 
 from imaging import Particle, Experiment, TimePoint, normalized_image, Marker
 from linking.link_fixer import fix_no_future_particle, with_only_the_preferred_edges
@@ -77,31 +78,60 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, time_point: TimePo
     next_tp_images = next_time_point.load_images()
 
     for particle in time_point.particles():
-        z = int(particle.z)
-        try:
-            intensities = normalized_image.get_square(tp_images[z], particle.x, particle.y, detection_radius_small)
-            intensities_next = normalized_image.get_square(next_tp_images[z], particle.x, particle.y, detection_radius_small)
-            if numpy.average(intensities) / (numpy.average(intensities_next) + 0.0001) > 2:
-                linking_result.add_mother(time_point, particle)
-            intensities = normalized_image.get_square(tp_images[z], particle.x, particle.y, detection_radius_large)
-            intensities_next = normalized_image.get_square(next_tp_images[z], particle.x, particle.y,
-                                                           detection_radius_large)
-            if numpy.average(intensities) / (numpy.average(intensities_next) + 0.0001) > 1.1:
-                linking_result.add_mother_unsure(time_point, particle)
-        except IndexError:
-            pass  # Cell too close to border of image
+        _search_for_mother(particle, time_point, tp_images, next_tp_images, linking_result,
+                           detection_radius_small, detection_radius_large)
 
     for particle in next_time_point.particles():
-        z = int(particle.z)
-        try:
-            intensities = normalized_image.get_square(next_tp_images[z], particle.x, particle.y, detection_radius_small)
-            intensities_previous = normalized_image.get_square(tp_images[z], particle.x, particle.y, detection_radius_small)
-            if numpy.average(intensities) / (numpy.average(intensities_previous) + 0.0001) > 2:
-                linking_result.add_daughter(time_point, particle)
-            intensities = normalized_image.get_square(next_tp_images[z], particle.x, particle.y, detection_radius_large)
-            intensities_previous = normalized_image.get_square(tp_images[z], particle.x, particle.y,
-                                                               detection_radius_large)
-            if numpy.average(intensities) / (numpy.average(intensities_previous) + 0.0001) > 1:
-                linking_result.add_daughter_unsure(time_point, particle)
-        except IndexError:
-            pass  # Cell too close to border of image
+        _search_for_daugher(particle, time_point, tp_images, next_tp_images, linking_result,
+                           detection_radius_small, detection_radius_large)
+
+
+def _search_for_mother(particle: Particle, time_point: TimePoint, tp_images: ndarray, next_tp_images: ndarray,
+                      linking_result: LinkingResult, detection_radius_small: int, detection_radius_large: int):
+   z = int(particle.z)
+   try:
+       intensities_previous = normalized_image.get_square(tp_images[z], particle.x, particle.y,
+                                                          detection_radius_small)
+       intensities_next = normalized_image.get_square(next_tp_images[z], particle.x, particle.y,
+                                                      detection_radius_small)
+       if numpy.average(intensities_previous) / (numpy.average(intensities_next) + 0.0001) > 2:
+           linking_result.add_mother(time_point, particle)
+           return
+       intensities_difference = intensities_next - intensities_previous
+       if intensities_difference.max() < 0.05 and intensities_difference.min() > -0.05:
+           return  # No change in intensity, so just a normal moving cell
+
+       intensities_previous = normalized_image.get_square(tp_images[z], particle.x, particle.y,
+                                                          detection_radius_large)
+       intensities_next = normalized_image.get_square(next_tp_images[z], particle.x, particle.y,
+                                                      detection_radius_large)
+       if numpy.average(intensities_previous) / (numpy.average(intensities_next) + 0.0001) > 1.1:
+           linking_result.add_mother_unsure(time_point, particle)
+   except IndexError:
+       pass  # Cell too close to border of image
+
+
+def _search_for_daugher(particle: Particle, time_point: TimePoint, tp_images: ndarray, next_tp_images: ndarray,
+                   linking_result: LinkingResult, detection_radius_small: int, detection_radius_large: int):
+    z = int(particle.z)
+    try:
+        intensities_next = normalized_image.get_square(next_tp_images[z], particle.x, particle.y,
+                                                       detection_radius_small)
+        intensities_previous = normalized_image.get_square(tp_images[z], particle.x, particle.y,
+                                                           detection_radius_small)
+        intensities_difference = intensities_next - intensities_previous
+        if numpy.average(intensities_next) / (numpy.average(intensities_previous) + 0.0001) > 2:
+            linking_result.add_daughter(time_point, particle)
+            return
+        if intensities_difference.max() < 0.05 and intensities_difference.min() > -0.05:
+            return  # No change in intensity, so just a normal moving cell
+
+        intensities_next = normalized_image.get_square(next_tp_images[z], particle.x, particle.y,
+                                                       detection_radius_large)
+        intensities_previous = normalized_image.get_square(tp_images[z], particle.x, particle.y,
+                                                           detection_radius_large)
+        intensities_difference = intensities_next - intensities_previous
+        if intensities_difference.max() > 0.4:
+            linking_result.add_daughter_unsure(time_point, particle)
+    except IndexError:
+        pass  # Cell too close to border of image
