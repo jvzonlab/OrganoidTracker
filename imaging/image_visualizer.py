@@ -117,12 +117,6 @@ class AbstractImageVisualizer(Visualizer):
             self._draw_particle(particle, color, current_marker_size, marker_style)
 
     def _draw_particle(self, particle, color, current_marker_size, marker_style):
-        # Draw color marker
-        marker_color = self._experiment.marker().get_color(self._time_point, particle)
-        if marker_color is not None:
-            plt.plot(particle.x, particle.y, "o", color=marker_color, markersize=current_marker_size * 3,
-                     markeredgecolor='black', markeredgewidth=1)
-
         # Draw error marker
         graph = self._experiment.particle_links_scratch() or self._experiment.particle_links()
         if graph is not None and particle in graph and "error" in graph.nodes[particle]:

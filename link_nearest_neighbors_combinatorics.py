@@ -13,8 +13,9 @@ _images_folder = "../Images/" + _name + "/"
 _images_format= "nd799xy08t%03dc1.tif"
 _min_time_point = 0
 _max_time_point = 5000
-_detection_radius_large = 10  # Used to check whether a mother is at a position
-_detection_radius_small = 2  # Used to check whether no mother is at a position
+_detection_radius_large = 10  # Used to check for cells that are maybe a mother/daughter
+_detection_radius_small = 2  # Used to check for cells that are surely a mother/daughter
+_max_distance = 40  # Maximum distance between centers of a mother and a daughter in pixels
 # END OF PARAMETERS
 
 
@@ -27,35 +28,16 @@ tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
 print("Performing nearest-neighbor linking...")
 possible_links = linker_for_experiment.link_particles(experiment, min_time_point=_min_time_point, max_time_point=_max_time_point, tolerance=2)
 print("Deciding on what links to use...")
-link_result = link_fixer_combinatorics.prune_links(experiment, possible_links, _detection_radius_small, _detection_radius_large)
+mothers, daughters = link_fixer_combinatorics.prune_links(experiment, possible_links, _detection_radius_small,
+                                                   _detection_radius_large, _max_distance)
 print("Writing results to file...")
-#io.save_links_to_json(link_result, _output_file)
-
 baseline_links = io.load_links_from_json(_comparison_links_file)
 mothers_baseline, daughters_baseline = mother_finder.find_mothers_and_daughters(baseline_links)
 
-mothers_baseline.difference_update(link_result.mothers.keys())
-print(str(len(mothers_baseline)) + " missed mothers")
-for particle in mothers_baseline:
-    print("    " + str(particle))
-mothers_baseline.difference_update(link_result.mothers_unsure.keys())
-print(str(len(mothers_baseline)) + " totally missed mothers")
-for particle in mothers_baseline:
-    print("    " + str(particle))
+mothers_baseline.difference_update(mothers)
+print("Missed mothers: " + str(mothers_baseline))
+daughters_baseline.difference_update(daughters)
+print("Missed daughters: " + str(daughters_baseline))
 
-daughters_baseline.difference_update(link_result.daughters.keys())
-print(str(len(daughters_baseline)) + " missed daughters")
-for particle in daughters_baseline:
-    print("    " + str(particle))
-daughters_baseline.difference_update(link_result.daughters_unsure.keys())
-print(str(len(daughters_baseline)) + " totally missed daughters")
-for particle in daughters_baseline:
-    print("    " + str(particle))
-
-print("Linking results: " + str(link_result))
-experiment.particle_links(baseline_links)
-experiment.marker(link_result)
-image_visualizer.show(experiment)
-
+#io.save_links_to_json(link_result, _output_file)
 print("Done!")
-pyplot.show()

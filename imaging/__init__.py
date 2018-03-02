@@ -106,14 +106,6 @@ class TimePoint:
             return None
         return image_loader()
 
-
-class Marker:
-
-    def get_color(self, reference: TimePoint, particle: Particle) -> Union[None, str, Tuple]:
-        """Gets a Matplotlib color that is used as a marker color for the given particle."""
-        return None
-
-
 class Experiment:
     """A complete experiment, with many stacks of images collected over time. This class records the images, particle
      positions and particle trajectories."""
@@ -123,7 +115,6 @@ class Experiment:
     _particle_links_baseline: Optional[Graph] # Links that are assumed to be correct
     _first_time_point_number: Optional[int]
     _last_time_point_number: Optional[int]
-    _marker: Marker
 
     def __init__(self):
         self._time_points = {}
@@ -131,7 +122,6 @@ class Experiment:
         self._particle_links_baseline = None
         self._last_time_point_number = None
         self._first_time_point_number = None
-        self._marker = Marker()
 
     def add_particles(self, time_point_number: int, raw_particles) -> None:
         """Adds particles to a time_point."""
@@ -198,13 +188,6 @@ class Experiment:
         if network is not None:
             self._particle_links_baseline = network
         return self._particle_links_baseline
-
-    def marker(self, marker: Optional[Marker] = None):
-        """Gets or sets the particle marker."""
-        if marker is not None:
-            self._marker = marker
-        return self._marker
-
 
 
 def get_closest_particle(particles: Iterable[Particle], search_position: Particle,
