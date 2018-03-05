@@ -14,7 +14,7 @@ class TestPeakMerge(unittest.TestCase):
         peak_3.above = peak_4
 
         self.assertEquals([Particle(0, 0, 1.5), Particle(0, 0, 3.5)],
-                          peak_1.to_particle(max_cell_height=2))
+                          peak_1.to_particles(max_cell_height=2))
 
     def test_split_in_four_parts(self):
         # Construct peak structure
@@ -24,7 +24,7 @@ class TestPeakMerge(unittest.TestCase):
         peak_3.above = peak_4
 
         self.assertEquals([Particle(0, 0, 1), Particle(0, 0, 2), Particle(0, 0, 3), Particle(0, 0, 4)],
-                          peak_1.to_particle(max_cell_height=1))
+                          peak_1.to_particles(max_cell_height=1))
 
     def test_split_in_one_part(self):
         # Construct peak structure
@@ -33,4 +33,4 @@ class TestPeakMerge(unittest.TestCase):
         peak_2.above = peak_3
         peak_3.above = peak_4
 
-        self.assertEquals([Particle(0, 0, 2.5)], peak_1.to_particle(max_cell_height=4))
+        self.assertEquals([Particle(0, 0, 2.5)], peak_1.to_particles(max_cell_height=4))
