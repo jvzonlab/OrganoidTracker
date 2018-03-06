@@ -1,11 +1,14 @@
 import numpy
 from networkx import Graph
 from numpy import ndarray
+import itertools
+import math
 
+import imaging
 from imaging import Particle, Experiment, TimePoint, normalized_image
 from linking.link_fixer import fix_no_future_particle, with_only_the_preferred_edges, find_future_particles, find_preferred_links
 from linking_analysis import logical_tests
-from typing import Set, Union, Tuple, Dict
+from typing import Set, Union, Tuple, Dict, List
 
 
 class SearchResult:
@@ -57,6 +60,24 @@ class SearchResult:
         return mothers, daughters
 
 
+class Family:
+    mother: Particle
+    daughter1: Particle
+    daughter2: Particle
+    score: float
+
+    def __init__(self, mother: Particle, daughter1: Particle, daughter2: Particle, score: float):
+        self.mother = mother
+        self.daughter1 = daughter1
+        self.daughter2 = daughter2
+        self.score = score
+
+    def __repr__(self):
+        return "<m" + ("%.2f" % (self.mother.x + self.mother.y)) \
+               + "(d" + ("%.2f" % (self.daughter1.x + self.daughter1.y)) \
+               + ", d" + ("%.2f" % (self.daughter2.x + self.daughter2.y)) + ")>"
+
+
 def prune_links(experiment: Experiment, graph: Graph, detection_radius_small: int, detection_radius_large: int,
                 max_distance_mother_daughter: int):
     """Takes a graph with all possible edges between cells, and returns a graph with only the most likely edges.
@@ -69,10 +90,12 @@ def prune_links(experiment: Experiment, graph: Graph, detection_radius_small: in
     [fix_no_future_particle(graph, particle) for particle in graph.nodes()]
     for time_point_number in range(experiment.first_time_point_number(), experiment.last_time_point_number() + 1):
         time_point = experiment.get_time_point(time_point_number)
-        mothers, daughters = _fix_cell_divisions(experiment, graph, time_point, detection_radius_small, detection_radius_large,
-                            max_distance_mother_daughter)
-        all_mothers |= mothers
-        all_daughters |= daughters
+        family_stack = _fix_cell_divisions_for_time_point(experiment, graph, time_point, detection_radius_small,
+                                                          detection_radius_large, max_distance_mother_daughter)
+        for family in family_stack:
+            all_mothers.add(family.mother)
+            all_daughters.add(family.daughter1)
+            all_daughters.add(family.daughter2)
     [fix_no_future_particle(graph, particle) for particle in graph.nodes()]
 
     graph = with_only_the_preferred_edges(graph)
@@ -80,26 +103,80 @@ def prune_links(experiment: Experiment, graph: Graph, detection_radius_small: in
     return all_mothers, all_daughters
 
 
-def _fix_cell_divisions(experiment: Experiment, graph: Graph, time_point: TimePoint,
-                        detection_radius_small: int, detection_radius_large: int, max_distance_mother_daughter: int):
+def _fix_cell_divisions_for_time_point(experiment: Experiment, graph: Graph, time_point: TimePoint,
+                        detection_radius_small: int, detection_radius_large: int, max_distance_mother_daughter: int
+                        ) -> List[Family]:
     print("Working on time point " + str(time_point.time_point_number()))
     tp_images = time_point.load_images()
     try:
         next_time_point = experiment.get_next_time_point(time_point)
     except KeyError:
-        return set(), set()  # Last time point, cannot do anything
+        return []  # Last time point, cannot do anything
     next_tp_images = next_time_point.load_images()
 
     cell_divisions_count = _get_cell_division_count(time_point, graph)
     if cell_divisions_count == 0:
-        return set(), set()  # No cell divisions here
+        return []  # No cell divisions here
     possible_mothers_and_daughters = _find_mothers_and_daughters(time_point, next_time_point, tp_images, next_tp_images,
                                                                  detection_radius_small, detection_radius_large)
     mothers, daughters = possible_mothers_and_daughters.find_likely_candidates(max_distance_mother_daughter)
+    family_stack = _perform_combinatorics(cell_divisions_count, mothers, daughters,
+                                          max_distance=max_distance_mother_daughter)
     print("Mothers: " + str(len(mothers)) + " (expected " + str(cell_divisions_count)
-          + ")  Daughters: " + str(len(daughters)) + " Combinations: "
-          + str(len(mothers) * len(daughters) * (len(daughters) - 1)))
-    return mothers, daughters
+          + ")  Daughters: " + str(len(daughters)) + " Best combination: "
+          + str(family_stack))
+
+    return family_stack
+
+
+def _perform_combinatorics(mothers_pick_amount: int, mothers: Set[Particle], daughters: Set[Particle], max_distance: int
+                           ) -> List[Family]:
+    # Loop through all possible combinations of N mothers
+    nearby_daughters = dict()
+    for mother in mothers:
+        nearby_daughters[mother] = imaging.get_closest_n_particles(daughters, mother, 4, max_distance=max_distance)
+
+    best_family_stack = []
+    best_family_stack_score = 0
+    for picked_mothers in itertools.combinations(mothers, mothers_pick_amount):
+        for family_stack in _scan(picked_mothers, 0, nearby_daughters):
+            score = _score_stack(family_stack)
+            if score > best_family_stack_score:
+                best_family_stack = family_stack
+    return best_family_stack
+
+
+def _scan(mothers: List[Particle], mother_pos: int, nearby_daughters_dict: Dict[Particle, Set[Particle]],
+          family_stack: List[Family] = []):
+    mother = mothers[mother_pos]
+
+    # Get nearby daughters that are still available
+    nearby_daughters = set(nearby_daughters_dict[mother])
+    for family in family_stack:
+        nearby_daughters.discard(family.daughter1)
+        nearby_daughters.discard(family.daughter2)
+
+    for daughters in itertools.combinations(nearby_daughters, 2):
+        score = _score(mother, daughters[0], daughters[1])
+        family = Family(mother, daughters[0], daughters[1], score)
+        family_stack_new = family_stack + [family]
+
+        if mother_pos >= len(mothers) - 1:
+            yield family_stack_new
+        else:
+            yield from _scan(mothers, mother_pos + 1, nearby_daughters_dict, family_stack_new)
+
+
+def _score(mother: Particle, daughter1: Particle, daughter2: Particle):
+    return 1
+
+
+def _score_stack(family_stack: List[Family]):
+    """Calculates the total score of a collection of families."""
+    score = 0
+    for family in family_stack:
+        score += family.score
+    return score
 
 
 def _get_cell_division_count(time_point: TimePoint, graph: Graph):

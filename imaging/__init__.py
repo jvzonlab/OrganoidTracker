@@ -1,5 +1,6 @@
 """Images and positions of particles (biological cells in our case)"""
-from typing import List, Iterable, Optional, Dict, Union, Tuple
+from operator import itemgetter
+from typing import List, Iterable, Optional, Dict, Union, Tuple, Set
 from networkx import Graph
 from imaging import image_cache
 from numpy import ndarray
@@ -205,3 +206,26 @@ def get_closest_particle(particles: Iterable[Particle], search_position: Particl
             closest_particle = particle
 
     return closest_particle
+
+
+def get_closest_n_particles(particles: Iterable[Particle], search_position: Particle, amount: int,
+                            max_distance: int = 100000) -> Set[Particle]:
+    max_distance_squared = max_distance ** 2
+    closest_particles = []
+
+    for particle in particles:
+        distance_squared = particle.distance_squared(search_position)
+        if distance_squared > max_distance_squared:
+            continue
+        if len(closest_particles) == 0 or closest_particles[-1][0] > distance_squared:
+            # Found closer particle
+            closest_particles.append((distance_squared, particle))
+            closest_particles.sort(key=itemgetter(0))
+            if len(closest_particles) > amount:
+                # List too long, remove furthest
+                del closest_particles[-1]
+
+    return_value = set()
+    for distance_squared, particle in closest_particles:
+        return_value.add(particle)
+    return return_value
