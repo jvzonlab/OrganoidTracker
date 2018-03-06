@@ -7,7 +7,7 @@ from linking_analysis import mother_finder
 # PARAMETERS
 _name = "multiphoton.organoids.17-07-28_weekend_H2B-mCherry.nd799xy08"
 _positions_file = "../Results/" + _name + "/Positions/Manual.json"
-_output_file = "../Results/" + _name + "/Smart nearest neighbor links.json"
+_output_file = "../Results/" + _name + "/Combinatorics nearest neighbor links.json"
 _comparison_links_file = "../Results/" + _name + "/Manual links.json"
 _images_folder = "../Images/" + _name + "/"
 _images_format= "nd799xy08t%03dc1.tif"
@@ -26,18 +26,26 @@ print("Discovering images...")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
 print("Performing nearest-neighbor linking...")
-possible_links = linker_for_experiment.link_particles(experiment, min_time_point=_min_time_point, max_time_point=_max_time_point, tolerance=2)
+link_result = linker_for_experiment.link_particles(experiment, min_time_point=_min_time_point, max_time_point=_max_time_point, tolerance=2)
 print("Deciding on what links to use...")
-mothers, daughters = link_fixer_combinatorics.prune_links(experiment, possible_links, _detection_radius_small,
+link_result, families = link_fixer_combinatorics.prune_links(experiment, link_result, _detection_radius_small,
                                                    _detection_radius_large, _max_distance)
 print("Writing results to file...")
+io.save_links_to_json(link_result, _output_file)
+
+print("Basic comparison...")
 baseline_links = io.load_links_from_json(_comparison_links_file)
-mothers_baseline, daughters_baseline = mother_finder.find_mothers_and_daughters(baseline_links)
+families_baseline = mother_finder.find_families(baseline_links)
 
-mothers_baseline.difference_update(mothers)
-print("Missed mothers: " + str(mothers_baseline))
-daughters_baseline.difference_update(daughters)
-print("Missed daughters: " + str(daughters_baseline))
+missed_families = families_baseline.difference(families)
+print("Missed families: " + str(len(missed_families)))
+for missed_family in missed_families:
+    print("\t" + str(missed_family))
 
-#io.save_links_to_json(link_result, _output_file)
+made_up_families = families.difference(families_baseline)
+print("Made up families: " + str(len(made_up_families)))
+for made_up_family in made_up_families:
+    print("\t" + str(made_up_family))
+
+
 print("Done!")

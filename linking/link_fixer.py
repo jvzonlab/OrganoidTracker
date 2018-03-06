@@ -39,6 +39,8 @@ def get_closest_particle_having_a_sister(graph: Graph,
             return None  # No more candidates left
 
         past_of_candidate = find_preferred_past_particle(graph, candidate)
+        if past_of_candidate is None:
+            return None
 
         graph.add_edge(past_of_candidate, candidate, pref=False)
         remaining_connections_of_past_of_candidate = find_preferred_links(graph, past_of_candidate, find_future_particles(graph, past_of_candidate))
@@ -91,7 +93,7 @@ def find_preferred_past_particle(graph: Graph, particle: Particle):
     return previous_positions.pop()
 
 
-def find_future_particles(graph: Graph, particle: Particle):
+def find_future_particles(graph: Graph, particle: Particle) -> Set[Particle]:
     # All possible connections one step in the future
     linked_particles = graph[particle]
     return {linked_particle for linked_particle in linked_particles
