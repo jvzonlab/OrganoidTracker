@@ -32,11 +32,16 @@ class Family:
         self.daughter1 = daughter1
         self.daughter2 = daughter2
 
+    @staticmethod
+    def _pos_str(particle: Particle) -> str:
+        return "(" + ("%.2f" % particle.x) + ", " + ("%.2f" % particle.y) + ", " + ("%.0f" % particle.z) + ")"
+
     def __str__(self):
-        return str(self.mother) + " ---> " + str(self.daughter1) + " and " + str(self.daughter2)
+        return self._pos_str(self.mother) + " " + str(self.mother.time_point_number()) + "---> " \
+               + self._pos_str(self.daughter1) + " and " + self._pos_str(self.daughter2)
 
     def __repr__(self):
-        return "Family(" + str(self.mother) + ", " + str(self.daughter1) + ", " + str(self.daughter2) + ")"
+        return "Family(" + repr(self.mother) + ", " + repr(self.daughter1) + ", " + repr(self.daughter2) + ")"
 
     def __hash__(self):
         return hash(self.mother) ^ hash(self.daughter1) ^ hash(self.daughter2)
