@@ -60,8 +60,8 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle
         # The _get_two_daughters should have checked for this
         raise ValueError("No nearby mother available for " + str(particle))
 
-    score = _cell_is_mother_likeliness(experiment, graph, particle, two_daughters[0], two_daughters[1], mitotic_radius)
-    current_parent_score = _cell_is_mother_likeliness(experiment, graph, current_mother_of_daughter2,
+    score = _cell_is_mother_likeliness(experiment, particle, two_daughters[0], two_daughters[1], mitotic_radius)
+    current_parent_score = _cell_is_mother_likeliness(experiment, current_mother_of_daughter2,
                                                       children_of_current_mother_of_daughter2[0],
                                                       children_of_current_mother_of_daughter2[1], mitotic_radius)
     # Printing of warnings
@@ -116,8 +116,8 @@ def _get_two_daughters(graph: Graph, mother: Particle, already_declared_as_daugh
     return (result[0], result[1])
 
 
-def _cell_is_mother_likeliness(experiment: Experiment, graph: Graph, mother: Particle, daughter1: Particle,
-                               daughter2: Particle, mitotic_radius: int = 2, min_cell_age: int = 2):
+def _cell_is_mother_likeliness(experiment: Experiment, mother: Particle, daughter1: Particle,
+                               daughter2: Particle, mitotic_radius: int = 2):
 
     mother_image_stack = experiment.get_time_point(mother.time_point_number()).load_images()
     daughter1_image_stack = experiment.get_time_point(daughter1.time_point_number()).load_images()
