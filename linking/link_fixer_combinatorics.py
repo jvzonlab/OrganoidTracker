@@ -164,6 +164,7 @@ def _perform_combinatorics(experiment: Experiment, mothers_pick_amount: int, mot
             score = _score_stack(family_stack)
             if score > best_family_stack_score:
                 best_family_stack = family_stack
+                best_family_stack_score = score
     return best_family_stack
 
 
