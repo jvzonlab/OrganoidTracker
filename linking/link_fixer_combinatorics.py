@@ -8,7 +8,7 @@ from numpy import ndarray
 import imaging
 from imaging import Particle, Experiment, TimePoint, normalized_image
 from linking.link_fixer import fix_no_future_particle, with_only_the_preferred_edges, find_future_particles, \
-    find_preferred_links, downgrade_edges_pointing_to_past, get_2d_image
+    find_preferred_links, downgrade_edges_pointing_to_past, get_2d_image, find_preferred_past_particle
 from linking_analysis import logical_tests
 from linking_analysis.mother_finder import Family
 
@@ -71,7 +71,7 @@ class ScoredFamily:
         self.score = score
 
     def __repr__(self):
-        return "<family with score " + str(self.score) + ">"
+        return "<ScoredFamily " + str(self.score) + " " + str(self.family) + ">"
 
 
 def prune_links(experiment: Experiment, graph: Graph, detection_radius_small: int, detection_radius_large: int,
@@ -121,7 +121,7 @@ def _fix_cell_divisions_for_time_point(experiment: Experiment, graph: Graph, tim
     possible_mothers_and_daughters = _find_mothers_and_daughters(time_point, next_time_point, tp_images, next_tp_images,
                                                                  detection_radius_small, detection_radius_large)
     mothers, daughters = possible_mothers_and_daughters.find_likely_candidates(max_distance_mother_daughter)
-    family_stack = _perform_combinatorics(experiment, expected_cell_divisions, mothers, daughters,
+    family_stack = _perform_combinatorics(experiment, graph, expected_cell_divisions, mothers, daughters,
                                           max_distance=max_distance_mother_daughter)
     print("Mothers: " + str(len(mothers)) + " (expected " + str(expected_cell_divisions)+ ")  Daughters: "
           + str(len(daughters)) + " Best combination: " + str(family_stack))
@@ -143,24 +143,25 @@ def _replace_divisions(graph: Graph, old_divisions: Set[Family], new_divisions: 
         print("Adding new family: " + str(new_family))
         for existing_connection in find_future_particles(graph, new_family.mother):
             graph.add_edge(new_family.mother, existing_connection, pref=False)
-        downgrade_edges_pointing_to_past(graph, new_family.daughter1)
-        downgrade_edges_pointing_to_past(graph, new_family.daughter2)
-        graph.add_edge(new_family.mother, new_family.daughter1, pref=True)
-        graph.add_edge(new_family.mother, new_family.daughter2, pref=True)
+        for daughter in new_family.daughters:
+            downgrade_edges_pointing_to_past(graph, daughter)
+            graph.add_edge(new_family.mother, daughter, pref=True)
 
 
-def _perform_combinatorics(experiment: Experiment, mothers_pick_amount: int, mothers: Set[Particle],
+def _perform_combinatorics(experiment: Experiment, graph: Graph, mothers_pick_amount: int, mothers: Set[Particle],
                            daughters: Set[Particle], max_distance: int) -> List[ScoredFamily]:
     # Loop through all possible combinations of N mothers, and picks the best combination of mothers and daughters
-
     nearby_daughters = dict()
     for mother in mothers:
         nearby_daughters[mother] = imaging.get_closest_n_particles(daughters, mother, 4, max_distance=max_distance)
 
+
     best_family_stack = []
     best_family_stack_score = 0
     for picked_mothers in itertools.combinations(mothers, mothers_pick_amount):
-        for family_stack in _scan(experiment, picked_mothers, 0, nearby_daughters):
+        for family_stack in _scan(experiment, graph, picked_mothers, 0, nearby_daughters):
+            if family_stack[0].family.mother.time_point_number() == 99:
+                print(family_stack)
             score = _score_stack(family_stack)
             if score > best_family_stack_score:
                 best_family_stack = family_stack
@@ -168,29 +169,29 @@ def _perform_combinatorics(experiment: Experiment, mothers_pick_amount: int, mot
     return best_family_stack
 
 
-def _scan(experiment: Experiment, mothers: List[Particle], mother_pos: int,
+def _scan(experiment: Experiment, graph: Graph, mothers: List[Particle], mother_pos: int,
           nearby_daughters_dict: Dict[Particle, Set[Particle]], family_stack: List[ScoredFamily] = []):
     mother = mothers[mother_pos]
 
     # Get nearby daughters that are still available
     nearby_daughters = set(nearby_daughters_dict[mother])
     for scored_family in family_stack:
-        nearby_daughters.discard(scored_family.family.daughter1)
-        nearby_daughters.discard(scored_family.family.daughter2)
+        for daughter in scored_family.family.daughters:
+            nearby_daughters.discard(daughter)
 
     for daughters in itertools.combinations(nearby_daughters, 2):
-        scored_family = _score(experiment, mother, daughters[0], daughters[1])
+        scored_family = _score(experiment, graph, mother, daughters[0], daughters[1])
         family_stack_new = family_stack + [scored_family]
 
         if mother_pos >= len(mothers) - 1:
             yield family_stack_new
         else:
-            yield from _scan(experiment, mothers, mother_pos + 1, nearby_daughters_dict, family_stack_new)
+            yield from _scan(experiment, graph, mothers, mother_pos + 1, nearby_daughters_dict, family_stack_new)
 
 
-def _score(experiment: Experiment, mother: Particle, daughter1: Particle, daughter2: Particle) -> ScoredFamily:
+def _score(experiment: Experiment, graph: Graph, mother: Particle, daughter1: Particle, daughter2: Particle) -> ScoredFamily:
     return ScoredFamily(Family(mother, daughter1, daughter2),
-                        _cell_is_mother_likeliness(experiment, mother, daughter1, daughter2))
+                        _cell_is_mother_likeliness(experiment, graph, mother, daughter1, daughter2))
 
 
 def _score_stack(family_stack: List[ScoredFamily]):
@@ -279,7 +280,7 @@ def _search_for_daughter(particle: Particle, tp_images: ndarray, next_tp_images:
         pass  # Cell too close to border of image
 
 
-def _cell_is_mother_likeliness(experiment: Experiment, mother: Particle, daughter1: Particle,
+def _cell_is_mother_likeliness(experiment: Experiment, graph: Graph, mother: Particle, daughter1: Particle,
                                daughter2: Particle, mitotic_radius: int = 2):
 
     mother_image_stack = experiment.get_time_point(mother.time_point_number()).load_images()
@@ -305,6 +306,7 @@ def _cell_is_mother_likeliness(experiment: Experiment, mother: Particle, daughte
     score += score_daughter_intensities(daughter1_intensities, daughter2_intensities,
                                         daughter1_intensities_prev, daughter2_intensities_prev)
     score += score_daughter_positions(mother, daughter1, daughter2)
+    score += score_cell_deaths(graph, mother, daughter1, daughter2)
     return score
 
 
@@ -353,4 +355,17 @@ def score_mother_intensities(mother_intensities: ndarray, mother_intensities_nex
     if max_value / (max_value_next + 0.0001) > 2: # +0.0001 protects against division by zero
         score += 1
 
+    return score
+
+
+def score_cell_deaths(graph: Graph, mother: Particle, daughter1: Particle, daughter2: Particle):
+    score = 0
+    for daughter in [daughter1, daughter2]:
+        existing_mother = find_preferred_past_particle(graph, daughter)
+        if existing_mother == mother:
+            continue  # Don't worry, no cell will become dead
+        futures = find_preferred_links(graph, existing_mother, find_future_particles(graph, existing_mother))
+        if len(futures) >= 2:
+            continue  # Don't worry, cell will have another
+        score -= 0.5  # Penalize for creating a dead cell when daughter is removed from the existing mother
     return score
