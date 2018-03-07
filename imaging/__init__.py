@@ -217,7 +217,7 @@ def get_closest_n_particles(particles: Iterable[Particle], search_position: Part
         distance_squared = particle.distance_squared(search_position)
         if distance_squared > max_distance_squared:
             continue
-        if len(closest_particles) == 0 or closest_particles[-1][0] > distance_squared:
+        if len(closest_particles) < amount or closest_particles[-1][0] > distance_squared:
             # Found closer particle
             closest_particles.append((distance_squared, particle))
             closest_particles.sort(key=itemgetter(0))
