@@ -7,8 +7,7 @@ from numpy import ndarray
 from networkx import Graph
 from typing import Optional, Iterable, List, Tuple
 import matplotlib.pyplot as plt
-import numpy
-
+from segmentation import hybrid_segmentation
 
 def show(experiment : Experiment):
     """Creates a standard visualizer for an experiment."""
@@ -26,7 +25,6 @@ class AbstractImageVisualizer(Visualizer):
     _time_point_images: ndarray
     _z: int
     __drawn_particles: List[Particle]
-    _drawn_time_point_images: ndarray
     _show_next_image: bool = False
 
     def __init__(self, experiment: Experiment, figure: Figure, time_point_number: Optional[int] = None, z: int = 14,
@@ -262,5 +260,21 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             from linking_analysis.link_editor import LinkEditor
             link_editor = LinkEditor(self._experiment, self._fig, time_point_number=self._time_point.time_point_number(), z=self._z)
             activate(link_editor)
+        elif event.key == "s":
+            particle = self._get_particle_at(event.xdata, event.ydata)
+            if particle is not None:
+                self.__show_shape(particle)
         else:
             super()._on_key_press(event)
+
+    def __show_shape(self, particle: Particle):
+        image_stack = self._time_point_images if not self._show_next_image else self._time_point.load_images()
+        image = image_stack[int(particle.z)]
+        x, y, r = int(particle.x), int(particle.y), 16
+        image_local = image[y - r:y + r, x - r:x + r]
+        thresholded_image = hybrid_segmentation.perform(image_local)
+        plt.figure()
+        plt.tight_layout()
+        plt.axis('off')
+        plt.imshow(thresholded_image, cmap="flag")
+        plt.show()

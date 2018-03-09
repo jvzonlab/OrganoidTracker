@@ -4,6 +4,8 @@ from typing import Set, Dict, List, Iterable, Tuple
 import numpy
 from networkx import Graph
 from numpy import ndarray
+import cv2
+import math
 
 import imaging
 from imaging import Particle, Experiment, TimePoint, normalized_image
@@ -160,7 +162,7 @@ def _perform_combinatorics(experiment: Experiment, graph: Graph, mothers_pick_am
     best_family_stack_score = 0
     for picked_mothers in itertools.combinations(mothers, mothers_pick_amount):
         for family_stack in _scan(experiment, graph, picked_mothers, 0, nearby_daughters):
-            if family_stack[0].family.mother.time_point_number() == 99:
+            if family_stack[0].family.mother.time_point_number() == 48:
                 print(family_stack)
             score = _score_stack(family_stack)
             if score > best_family_stack_score:
@@ -231,27 +233,27 @@ def _find_mothers_and_daughters(time_point: TimePoint, next_time_point: TimePoin
 
 def _search_for_mother(particle: Particle, tp_images: ndarray, next_tp_images: ndarray,
                        search_result: SearchResult, detection_radius_small: int, detection_radius_large: int):
-   z = int(particle.z)
-   try:
-       intensities_previous = normalized_image.get_square(tp_images[z], particle.x, particle.y,
+    z = int(particle.z)
+    try:
+        intensities_previous = normalized_image.get_square(tp_images[z], particle.x, particle.y,
                                                           detection_radius_small)
-       intensities_next = normalized_image.get_square(next_tp_images[z], particle.x, particle.y,
+        intensities_next = normalized_image.get_square(next_tp_images[z], particle.x, particle.y,
                                                       detection_radius_small)
-       if numpy.average(intensities_previous) / (numpy.average(intensities_next) + 0.0001) > 2:
-           search_result.add_mother(particle)
-           return
-       intensities_difference = intensities_next - intensities_previous
-       if intensities_difference.max() < 0.05 and intensities_difference.min() > -0.05:
-           return  # No change in intensity, so just a normal moving cell
+        if numpy.average(intensities_previous) / (numpy.average(intensities_next) + 0.0001) > 2:
+            search_result.add_mother(particle)
+            return
+        intensities_difference = intensities_next - intensities_previous
+        if intensities_difference.max() < 0.05 and intensities_difference.min() > -0.05:
+            return  # No change in intensity, so just a normal moving cell
 
-       intensities_previous = normalized_image.get_square(tp_images[z], particle.x, particle.y,
+        intensities_previous = normalized_image.get_square(tp_images[z], particle.x, particle.y,
                                                           detection_radius_large)
-       intensities_next = normalized_image.get_square(next_tp_images[z], particle.x, particle.y,
+        intensities_next = normalized_image.get_square(next_tp_images[z], particle.x, particle.y,
                                                       detection_radius_large)
-       if numpy.average(intensities_previous) / (numpy.average(intensities_next) + 0.0001) > 1.1:
-           search_result.add_mother_unsure(particle)
-   except IndexError:
-       pass  # Cell too close to border of image
+        if numpy.average(intensities_previous) / (numpy.average(intensities_next) + 0.0001) > 1.1:
+            search_result.add_mother_unsure(particle)
+    except IndexError:
+        pass  # Cell too close to border of image
 
 
 def _search_for_daughter(particle: Particle, tp_images: ndarray, next_tp_images: ndarray,
@@ -307,6 +309,7 @@ def _cell_is_mother_likeliness(experiment: Experiment, graph: Graph, mother: Par
                                         daughter1_intensities_prev, daughter2_intensities_prev)
     score += score_daughter_positions(mother, daughter1, daughter2)
     score += score_cell_deaths(graph, mother, daughter1, daughter2)
+    score += score_mother_shape(mother, mother_image)
     return score
 
 
@@ -367,5 +370,43 @@ def score_cell_deaths(graph: Graph, mother: Particle, daughter1: Particle, daugh
         futures = find_preferred_links(graph, existing_mother, find_future_particles(graph, existing_mother))
         if len(futures) >= 2:
             continue  # Don't worry, cell will have another
-        score -= 0.5  # Penalize for creating a dead cell when daughter is removed from the existing mother
+        score -= 1  # Penalize for creating a dead cell when daughter is removed from the existing mother
     return score
+
+
+def score_mother_shape(mother: Particle, full_image: ndarray, detection_radius = 16) -> int:
+    """Returns a black-and-white image where white is particle and black is background, at least in theory."""
+
+    # Zoom in on mother
+    x = int(mother.x)
+    y = int(mother.y)
+    image = full_image[y - detection_radius:y + detection_radius, x - detection_radius:x + detection_radius]
+    image_8bit = cv2.convertScaleAbs(image, alpha=256 / image.max(), beta=0)
+
+    # Crop to a circle
+    image_circle = numpy.zeros_like(image_8bit)
+    width = image_circle.shape[1]
+    height = image_circle.shape[0]
+    circle_size = min(width, height) - 3
+    cv2.circle(image_circle, (int(width/2), int(height/2)), int(circle_size/2), 255, -1)
+    cv2.bitwise_and(image_8bit, image_circle, image_8bit)
+
+    # Find contour
+    ret, thresholded_image = cv2.threshold(image_8bit, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    contour_image, contours, hierarchy = cv2.findContours(thresholded_image, 1, 2)
+
+    # Calculate the isoperimetric quotient of the largest area
+    highest_area = 0
+    isoperimetric_quotient = 1
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        if area > highest_area:
+            highest_area = area
+            perimeter = cv2.arcLength(contour, True)
+            isoperimetric_quotient = 4 * math.pi * area / perimeter**2 if perimeter > 0 else 0
+
+    if isoperimetric_quotient < 0.4:
+        # Clear case of being a mother, give a bonus
+        return 2
+    # Just use a normal scoring system
+    return 1 - isoperimetric_quotient
