@@ -161,7 +161,7 @@ def _perform_combinatorics(experiment: Experiment, graph: Graph, mothers_pick_am
     best_family_stack = []
     best_family_stack_score = 0
     for picked_mothers in itertools.combinations(mothers, mothers_pick_amount):
-        for family_stack in _scan(experiment, graph, picked_mothers, 0, nearby_daughters):
+        for family_stack in _scan(dict(), experiment, graph, picked_mothers, 0, nearby_daughters):
             if family_stack[0].family.mother.time_point_number() == 48:
                 print(family_stack)
             score = _score_stack(family_stack)
@@ -171,7 +171,7 @@ def _perform_combinatorics(experiment: Experiment, graph: Graph, mothers_pick_am
     return best_family_stack
 
 
-def _scan(experiment: Experiment, graph: Graph, mothers: List[Particle], mother_pos: int,
+def _scan(cache: Dict[Family, ScoredFamily], experiment: Experiment, graph: Graph, mothers: List[Particle], mother_pos: int,
           nearby_daughters_dict: Dict[Particle, Set[Particle]], family_stack: List[ScoredFamily] = []):
     mother = mothers[mother_pos]
 
@@ -182,18 +182,24 @@ def _scan(experiment: Experiment, graph: Graph, mothers: List[Particle], mother_
             nearby_daughters.discard(daughter)
 
     for daughters in itertools.combinations(nearby_daughters, 2):
-        scored_family = _score(experiment, graph, mother, daughters[0], daughters[1])
+        scored_family = _score(cache, experiment, graph, mother, daughters[0], daughters[1])
         family_stack_new = family_stack + [scored_family]
 
         if mother_pos >= len(mothers) - 1:
             yield family_stack_new
         else:
-            yield from _scan(experiment, graph, mothers, mother_pos + 1, nearby_daughters_dict, family_stack_new)
+            yield from _scan(cache, experiment, graph, mothers, mother_pos + 1, nearby_daughters_dict, family_stack_new)
 
 
-def _score(experiment: Experiment, graph: Graph, mother: Particle, daughter1: Particle, daughter2: Particle) -> ScoredFamily:
-    return ScoredFamily(Family(mother, daughter1, daughter2),
-                        _cell_is_mother_likeliness(experiment, graph, mother, daughter1, daughter2))
+def _score(cache: Dict[Family, ScoredFamily], experiment: Experiment, graph: Graph,
+           mother: Particle, daughter1: Particle, daughter2: Particle) -> ScoredFamily:
+    family = Family(mother, daughter1, daughter2)
+    try:
+        return cache[family]
+    except KeyError:
+        scored = ScoredFamily(family, _cell_is_mother_likeliness(experiment, graph, mother, daughter1, daughter2))
+        cache[family] = scored
+        return scored
 
 
 def _score_stack(family_stack: List[ScoredFamily]):

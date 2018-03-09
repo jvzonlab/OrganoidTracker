@@ -3,6 +3,7 @@ from matplotlib import pyplot
 from imaging import Experiment, io, tifffolder, image_visualizer
 from linking import link_fixer_combinatorics, linker_for_experiment
 from linking_analysis import mother_finder
+import time
 
 # PARAMETERS
 _name = "multiphoton.organoids.17-07-28_weekend_H2B-mCherry.nd799xy08"
@@ -28,8 +29,11 @@ tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
 print("Performing nearest-neighbor linking...")
 link_result = linker_for_experiment.link_particles(experiment, min_time_point=_min_time_point, max_time_point=_max_time_point, tolerance=2)
 print("Deciding on what links to use...")
+
+start_time = time.time()
 link_result, families = link_fixer_combinatorics.prune_links(experiment, link_result, _detection_radius_small,
                                                    _detection_radius_large, _max_distance)
+print("Time elapsed: {:.2f}s".format(time.time() - start_time))
 print("Writing results to file...")
 io.save_links_to_json(link_result, _output_file)
 
