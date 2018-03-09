@@ -1,7 +1,7 @@
 from matplotlib import pyplot
 
 from imaging import Experiment, io, tifffolder, image_visualizer
-from linking import link_fixer_combinatorics, linker_for_experiment
+from linking import link_fixer_combinatorics, linker_for_experiment, Parameters
 from linking_analysis import mother_finder
 import time
 
@@ -13,10 +13,13 @@ _comparison_links_file = "../Results/" + _name + "/Manual links.json"
 _images_folder = "../Images/" + _name + "/"
 _images_format= "nd799xy08t%03dc1.tif"
 _min_time_point = 0
-_max_time_point = 115
-_detection_radius_large = 10  # Used to check for cells that are maybe a mother/daughter
-_detection_radius_small = 2  # Used to check for cells that are surely a mother/daughter
-_max_distance = 40  # Maximum distance between centers of a mother and a daughter in pixels
+_max_time_point = 5000
+_parameters = Parameters(
+    max_distance = 40,  # Maximum distance between centers of a mother and a daughter in pixels
+    intensity_detection_radius = 2,  # Used to score (changing) intensities for cells that are maybe a mother/daughter
+    shape_detection_radius = 16,   # Used to check the shape of the mother cell
+    intensity_detection_radius_large = 10  # Used in the inital mother/daughter finding process
+)
 # END OF PARAMETERS
 
 
@@ -31,8 +34,7 @@ link_result = linker_for_experiment.link_particles(experiment, min_time_point=_m
 print("Deciding on what links to use...")
 
 start_time = time.time()
-link_result, families = link_fixer_combinatorics.prune_links(experiment, link_result, _detection_radius_small,
-                                                   _detection_radius_large, _max_distance)
+link_result, families = link_fixer_combinatorics.prune_links(experiment, link_result, _parameters)
 print("Time elapsed: {:.2f}s".format(time.time() - start_time))
 print("Writing results to file...")
 io.save_links_to_json(link_result, _output_file)

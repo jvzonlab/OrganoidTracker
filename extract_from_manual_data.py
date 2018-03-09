@@ -11,7 +11,7 @@ _input_dir = "../Results/" + _name + "/Manual tracks/"
 _output_file_positions = "../Results/" + _name + "/Positions/Manual.json"
 _output_file_tracks = "../Results/" + _name + "/Manual links.json"
 _min_time_point = 0
-_max_time_point = 115  # Organoid moved position here
+_max_time_point = 5000  # Organoid moved position here
 # END OF PARAMETERS
 
 
