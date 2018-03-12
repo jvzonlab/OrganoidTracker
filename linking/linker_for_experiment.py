@@ -23,6 +23,7 @@ def link_particles(experiment: Experiment, tolerance: float = 1.0, min_time_poin
             time_point_current = experiment.get_next_time_point(time_point_previous)
             _add_nodes(graph, time_point_current)
             _add_edges(graph, time_point_previous, time_point_current, tolerance)
+            _add_extra_edges(graph, time_point_previous, time_point_current, tolerance)
     except KeyError:
         # Done! No more time points remain
         pass
@@ -37,9 +38,19 @@ def _add_nodes(graph: Graph, time_point: TimePoint) -> None:
 
 
 def _add_edges(graph: Graph, time_point_previous: TimePoint, time_point_current: TimePoint, tolerance: float):
+    """Adds edges pointing towards previous time point, making the shortest one the preferred."""
     for particle in time_point_current.particles():
         nearby_list = find_nearest_particles(time_point_previous, particle, tolerance)
         preferred = True
         for nearby_particle in nearby_list:
             graph.add_edge(particle, nearby_particle, pref=preferred)
             preferred = False # All remaining links are not preferred
+
+
+def _add_extra_edges(graph: Graph, time_point_current: TimePoint, time_point_next: TimePoint, tolerance: float):
+    """Adds edges to the next time point, which is useful if _add_edges missed some possible links."""
+    for particle in time_point_current.particles():
+        nearby_list = find_nearest_particles(time_point_next, particle, tolerance)
+        for nearby_particle in nearby_list:
+            if not graph.has_edge(particle, nearby_particle):
+                graph.add_edge(particle, nearby_particle, pref=False)

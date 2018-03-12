@@ -12,9 +12,9 @@ _positions_file = "../Results/" + _name + "/Positions/Manual.json"
 _images_folder = "../Images/" + _name + "/"
 _images_format= "nd799xy08t%03dc1.tif"
 _min_time_point = 0
-_max_time_point = 115  # Organoid moved position here
+_max_time_point = 5000
 
-_automatic_links = io.load_links_from_json("../Results/" + _name + "/Combinatorics nearest neighbor links.json")
+_automatic_links = io.load_links_from_json("../Results/" + _name + "/Smart nearest neighbor links.json")
 _baseline_links = io.load_links_from_json("../Results/" + _name + "/Manual links.json")
 # END OF PARAMETERS
 

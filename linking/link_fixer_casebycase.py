@@ -7,8 +7,9 @@ from typing import Iterable, Set, Optional, Tuple
 import numpy
 from networkx import Graph
 from numpy import ndarray
+import cv2
+import math
 
-import imaging
 from imaging import Particle, Experiment, errors, normalized_image
 from linking.link_fixer import downgrade_edges_pointing_to_past, find_preferred_links, find_preferred_past_particle, \
     find_future_particles, remove_error, with_only_the_preferred_edges, get_2d_image, fix_no_future_particle, \
@@ -128,21 +129,25 @@ def _cell_is_mother_likeliness(experiment: Experiment, mother: Particle, daughte
     daughter1_image_prev = mother_image_stack[int(daughter1.z)]
     daughter2_image_prev = mother_image_stack[int(daughter2.z)]
 
-    mother_intensities = normalized_image.get_square(mother_image, mother.x, mother.y, mitotic_radius)
-    mother_intensities_next = normalized_image.get_square(mother_image_next, mother.x, mother.y, mitotic_radius)
-    daughter1_intensities = normalized_image.get_square(daughter1_image, daughter1.x, daughter1.y, mitotic_radius)
-    daughter2_intensities = normalized_image.get_square(daughter2_image, daughter2.x, daughter2.y, mitotic_radius)
-    daughter1_intensities_prev = normalized_image.get_square(daughter1_image_prev, daughter1.x, daughter1.y,
-                                                             mitotic_radius)
-    daughter2_intensities_prev = normalized_image.get_square(daughter2_image_prev, daughter2.x, daughter2.y,
-                                                             mitotic_radius)
+    try:
+        mother_intensities = normalized_image.get_square(mother_image, mother.x, mother.y, mitotic_radius)
+        mother_intensities_next = normalized_image.get_square(mother_image_next, mother.x, mother.y, mitotic_radius)
+        daughter1_intensities = normalized_image.get_square(daughter1_image, daughter1.x, daughter1.y, mitotic_radius)
+        daughter2_intensities = normalized_image.get_square(daughter2_image, daughter2.x, daughter2.y, mitotic_radius)
+        daughter1_intensities_prev = normalized_image.get_square(daughter1_image_prev, daughter1.x, daughter1.y,
+                                                                 mitotic_radius)
+        daughter2_intensities_prev = normalized_image.get_square(daughter2_image_prev, daughter2.x, daughter2.y,
+                                                                 mitotic_radius)
 
-    score = 0
-    score += score_mother_intensities(mother_intensities, mother_intensities_next)
-    score += score_daughter_intensities(daughter1_intensities, daughter2_intensities,
-                                        daughter1_intensities_prev, daughter2_intensities_prev)
-    score += score_daughter_positions(mother, daughter1, daughter2)
-    return score
+        score = 0
+        score += score_mother_intensities(mother_intensities, mother_intensities_next)
+        score += score_daughter_intensities(daughter1_intensities, daughter2_intensities,
+                                            daughter1_intensities_prev, daughter2_intensities_prev)
+        score += score_daughter_positions(mother, daughter1, daughter2)
+        score += score_mother_shape(mother, mother_image)
+        return score
+    except IndexError:
+        return 0
 
 
 def score_daughter_positions(mother: Particle, daughter1: Particle, daughter2: Particle) -> int:
@@ -191,3 +196,44 @@ def score_mother_intensities(mother_intensities: ndarray, mother_intensities_nex
         score += 1
 
     return score
+
+
+def score_mother_shape(mother: Particle, full_image: ndarray, detection_radius = 16) -> int:
+    """Returns a black-and-white image where white is particle and black is background, at least in theory."""
+
+    # Zoom in on mother
+    x = int(mother.x)
+    y = int(mother.y)
+    if x - detection_radius < 0 or y - detection_radius < 0 or x + detection_radius >= full_image.shape[1] \
+            or y + detection_radius >= full_image.shape[0]:
+        return 0  # Out of bounds
+    image = full_image[y - detection_radius:y + detection_radius, x - detection_radius:x + detection_radius]
+    image_8bit = cv2.convertScaleAbs(image, alpha=256 / image.max(), beta=0)
+
+    # Crop to a circle
+    image_circle = numpy.zeros_like(image_8bit)
+    width = image_circle.shape[1]
+    height = image_circle.shape[0]
+    circle_size = min(width, height) - 3
+    cv2.circle(image_circle, (int(width/2), int(height/2)), int(circle_size/2), 255, -1)
+    cv2.bitwise_and(image_8bit, image_circle, image_8bit)
+
+    # Find contour
+    ret, thresholded_image = cv2.threshold(image_8bit, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    contour_image, contours, hierarchy = cv2.findContours(thresholded_image, 1, 2)
+
+    # Calculate the isoperimetric quotient of the largest area
+    highest_area = 0
+    isoperimetric_quotient = 1
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        if area > highest_area:
+            highest_area = area
+            perimeter = cv2.arcLength(contour, True)
+            isoperimetric_quotient = 4 * math.pi * area / perimeter**2 if perimeter > 0 else 0
+
+    if isoperimetric_quotient < 0.4:
+        # Clear case of being a mother, give a bonus
+        return 2
+    # Just use a normal scoring system
+    return 1 - isoperimetric_quotient

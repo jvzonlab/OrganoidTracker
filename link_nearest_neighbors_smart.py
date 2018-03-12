@@ -8,7 +8,7 @@ _output_file = "../Results/" + _name + "/Smart nearest neighbor links.json"
 _images_folder = "../Images/" + _name + "/"
 _images_format= "nd799xy08t%03dc1.tif"
 _min_time_point = 0
-_max_time_point = 115  # Organoid moved position here
+_max_time_point = 5000
 _mitotic_radius = 3
 # END OF PARAMETERS
 
