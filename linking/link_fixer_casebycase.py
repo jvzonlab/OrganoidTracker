@@ -70,9 +70,7 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle
         # Not sure
         if score > current_parent_score:
             graph.add_node(particle, error=errors.POTENTIALLY_NOT_A_MOTHER)
-            graph.add_node(current_mother_of_daughter2, error=errors.POTENTIALLY_SHOULD_BE_A_MOTHER)
         else:
-            graph.add_node(particle, error=errors.POTENTIALLY_SHOULD_BE_A_MOTHER)
             graph.add_node(current_mother_of_daughter2, error=errors.POTENTIALLY_NOT_A_MOTHER)
     else:  # Remove any existing errors, they will be outdated
         remove_error(graph, particle)
