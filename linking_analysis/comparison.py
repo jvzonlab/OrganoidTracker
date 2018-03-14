@@ -45,7 +45,8 @@ def _print_edges(graph: Graph):
 
 
 def _print_links_differences(automatic_links: Graph, baseline_links: Graph):
-    print("There are " + str(baseline_links.number_of_edges()) + " connections in the baseline results.")
+    print("There are " + str(baseline_links.number_of_nodes()) + " cells and "+ str(baseline_links.number_of_edges())
+          + " links in the baseline results.")
     missed_links = networkx.difference(baseline_links, automatic_links);
     made_up_links = networkx.difference(automatic_links, baseline_links);
 
