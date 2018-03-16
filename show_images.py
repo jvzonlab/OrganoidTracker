@@ -9,7 +9,7 @@ from os import path
 # _positions_file and _links_file are optional: if they point to a file that does not exist, simply no positions or
 # links data will be displayed.
 _name = "multiphoton.organoids.17-07-28_weekend_H2B-mCherry.nd799xy08"
-_images_folder = "../Images/" + _name + "/"
+_images_folder = "../Data/" + _name + "/"
 _images_format= "nd799xy08t%03dc1.tif"
 # END OF PARAMETERS
 

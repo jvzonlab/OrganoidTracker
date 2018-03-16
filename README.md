@@ -26,10 +26,26 @@ Anaconda to be installed)
 Running the scripts
 -------------------
 
-All Python scripts in the project root (this folder) are intended to be executed from the command line
-using:
+AT the moment, there are two types of scripts in this folder. The older ones need to be run like this:
 
     python <script_name>.py
+
+They need to be run from this folder. You'll need to edit the scripts beforehand to correct the paths
+inside them.
+
+Newer scripts (they have a name starting with `autotrack_`) are easier to run. You can run them from any
+folder, and they don't need to be edited beforehand. However, you need to add this folder (the folder where
+this README file is stored) to the system PATH first. After you have done that, on Unix systems (Mac/Linux)
+you can run the scripts like this:
+
+    <script_name>.py
+
+On Windows, I created `.bat` files. As a result, you can run the scripts simply by running:
+
+    <script_name>.bat
+
+(You can even leave out the `.bat` extension if you want.) The first time you run any script, it will ask
+for some parameters, which are then saved to a configuration file.
    
 For now, we have the following scripts:
 
@@ -52,7 +68,7 @@ Code by Guizela, modified by Rutger. This script is used to manually track the p
 [the manuals folder](manuals/TRACK_MANUALLY.md) a short manual is available.
 
 
-extract_manual_positions.py
+autotrack_convert_from_manual.py
 ---------------------------
 Extracts the positions from the above manually obtained data. This throws away all trajectory information, which is on
 purpose, as our linking algorithm should be able to reconstruct it. See the file itself for instructions.

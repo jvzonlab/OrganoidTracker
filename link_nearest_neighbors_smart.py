@@ -3,9 +3,9 @@ from linking import link_fixer_casebycase, linker_for_experiment
 
 # PARAMETERS
 _name = "multiphoton.organoids.17-07-28_weekend_H2B-mCherry.nd799xy08"
-_positions_file = "../Results/" + _name + "/Positions/Manual.json"
-_output_file = "../Results/" + _name + "/Smart nearest neighbor links.json"
-_images_folder = "../Images/" + _name + "/"
+_positions_file = "../Data/" + _name + "/Automatic analysis/Positions/Manual.json"
+_output_file = "../Data/" + _name + "/Automatic analysis/Links/Smart nearest neighbor.json"
+_images_folder = "../Data/" + _name + "/"
 _images_format= "nd799xy08t%03dc1.tif"
 _min_time_point = 0
 _max_time_point = 5000

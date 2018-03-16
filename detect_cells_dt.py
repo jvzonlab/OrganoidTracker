@@ -15,7 +15,7 @@ from particle_detection.dt_detection import DistanceTransformDetector
 
 # PARAMETERS
 _name = "multiphoton.organoids.17-07-28_weekend_H2B-mCherry.nd799xy08"
-_images_folder = "../Images/" + _name + "/"
+_images_folder = "../Data/" + _name + "/"
 _images_format= "nd799xy08t%03dc1.tif"
 _min_time_point = 1
 _max_time_point = 5000
@@ -25,7 +25,7 @@ _method_parameters = {
     "max_cell_height": 8
 }
 # File is loaded if it exists, otherwise it created
-_particles_file = "../Results/" + _name + "/" + detector.get_file_name(_method, _method_parameters)
+_particles_file = "../Data/" + _name + "/Automatic analysis/Positions/" + detector.get_file_name(_method, _method_parameters)
 # END OF PARAMETERS
 
 print("Starting...")

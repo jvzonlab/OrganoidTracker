@@ -19,7 +19,7 @@ tf = 5000
 
 
 t_zeros = 3
-data_dir = os.path.join(script_dir, '../Images/' + data_name + '/')
-save_dir = os.path.join(script_dir, '../Results/' + data_name + '/Manual tracks/')
+data_dir = os.path.join(script_dir, '../Data/' + data_name + '/')
+save_dir = os.path.join(script_dir, '../Data/' + data_name + '/Manual analysis/')
 exec(open(os.path.join(script_dir, 'manual_tracking/tracks_dia.py')).read())
 plt.show()

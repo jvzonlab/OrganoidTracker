@@ -7,9 +7,9 @@ from matplotlib import pyplot
 
 # PARAMETERS
 _name = "multiphoton.organoids.17-07-28_weekend_H2B-mCherry.nd799xy08"
-_positions_file = "../Results/" + _name + "/Manual positions.json"
-_output_file = "../Results/" + _name + "/Nearest neighbor links.json"
-_images_folder = "../Images/" + _name + "/"
+_positions_file = "../Data/" + _name + "/Automati analysis/Positions/Manual.json"
+_output_file = "../Data/" + _name + "/Automatic analysis/Links/Nearest neighbor.json"
+_images_folder = "../Data/" + _name + "/"
 _images_format= "nd799xy08t%03dc1.tif"
 _min_time_point = 0
 _max_time_point = 115  # Organoid moved position here

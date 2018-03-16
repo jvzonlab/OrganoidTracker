@@ -120,7 +120,7 @@ def _to_peaks(results: ndarray, z: int) -> List[Peak]:
 
 def get_file_name(method: Detector, method_parameters: Dict[str, Any]):
     """Gets a unique file name based on the given method and its parameters"""
-    file_name = "Positions/" + method.__class__.__name__.replace("Detector", "")
+    file_name = method.__class__.__name__.replace("Detector", "")
     for key, value in method_parameters.items():
         file_name += " " + key + "=" + str(value)
     return file_name + ".json"
