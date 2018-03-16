@@ -9,7 +9,8 @@ from typing import Optional, Iterable, List, Tuple
 import matplotlib.pyplot as plt
 from segmentation import hybrid_segmentation
 
-def show(experiment : Experiment):
+
+def show(experiment: Experiment):
     """Creates a standard visualizer for an experiment."""
     figure = plt.figure(figsize=(8,8))
     visualizer = StandardImageVisualizer(experiment, figure)

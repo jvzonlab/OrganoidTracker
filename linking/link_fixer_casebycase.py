@@ -23,9 +23,11 @@ def prune_links(experiment: Experiment, graph: Graph, mitotic_radius: int) -> Gr
     into two in the next time_point). For non-mitotic cells, it must fall entirely within the cell, for mitotic cells it must
     fall partly outside the cell.
     """
-    for i in range(2):
-        [fix_no_future_particle(graph, particle) for particle in graph.nodes()]
-        [_fix_cell_divisions(experiment, graph, particle, mitotic_radius) for particle in graph.nodes()]
+
+    [fix_no_future_particle(graph, particle) for particle in graph.nodes()]
+    [_fix_cell_divisions(experiment, graph, particle, mitotic_radius) for particle in graph.nodes()]
+    [fix_no_future_particle(graph, particle) for particle in graph.nodes()]
+    [_fix_cell_divisions(experiment, graph, particle, mitotic_radius) for particle in graph.nodes()]
 
     graph = with_only_the_preferred_edges(graph)
     logical_tests.apply(experiment, graph)

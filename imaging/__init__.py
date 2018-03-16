@@ -107,6 +107,7 @@ class TimePoint:
             return None
         return image_loader()
 
+
 class Experiment:
     """A complete experiment, with many stacks of images collected over time. This class records the images, particle
      positions and particle trajectories."""
