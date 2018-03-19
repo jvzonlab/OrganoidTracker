@@ -57,8 +57,8 @@ tracks from JSON files. In [the manuals folder](manuals/VISUALIZER.md) a manual 
 to edit positional and linking data.
 
 
-show_images.py
---------------
+autotrack_show_images.py
+------------------------
 Stripped down version of the visualizer that only shows the images, no positions or links.
 
 
@@ -69,7 +69,7 @@ Code by Guizela, modified by Rutger. This script is used to manually track the p
 
 
 autotrack_convert_from_manual.py
----------------------------
+--------------------------------
 Extracts the positions from the above manually obtained data. This throws away all trajectory information, which is on
 purpose, as our linking algorithm should be able to reconstruct it. See the file itself for instructions.
 
@@ -79,8 +79,8 @@ link_nearest_neighbors.py
 Simple nearest neighbor-linking.
 
 
-link_nearest_neighbors_smart.py
--------------------------------
+autotrack_create_links.py
+-------------------------
 Nearest neighbor linking with some error corrections afterwards.
 
 1. IF a cell is dead (has no future positions), nearby cells are checked. If a cell appears to be newborn, it will
@@ -89,8 +89,8 @@ Nearest neighbor linking with some error corrections afterwards.
    give it a mother cell. If a nearby cell has a higher mother score, that cell becomes the mother instead.
 
 
-compare_links.py
-----------------
+autotrack_compare_links.py
+--------------------------
 Assists in comparing two linking results. The "scratchpad" links are shown as dotted lines, the "verified" links as
 solid lines.
 
