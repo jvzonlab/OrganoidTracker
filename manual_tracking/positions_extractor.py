@@ -4,6 +4,8 @@ import re
 import sys
 import json
 
+import math
+
 from imaging import Experiment, io
 
 
@@ -51,5 +53,8 @@ def _extract_positions_from_track(track_file: str, all_positions: Experiment, mi
             if time_point < min_time_point or time_point > max_time_point:
                 continue
             pos = track.get_pos(time_point)
+            if math.isnan(pos[0] + pos[1] + pos[2]):
+                print("Warning: encountered invalid position: " + str(pos))
+                continue
             all_positions.add_particle(pos[0], pos[1], pos[2], time_point)
 

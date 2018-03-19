@@ -7,6 +7,7 @@ from typing import List
 import os
 import pickle
 import sys
+import math
 import numpy
 
 
@@ -87,6 +88,9 @@ def _extract_links_from_track(track_file: str, graph: Graph, min_time_point: int
 
             previous_particle = current_particle
             current_particle = _get_cell_in_time_point(track, time_point)
+            if math.isnan(current_particle.x + current_particle.y + current_particle.z):
+                print("Warning: found invalid " + str(current_particle))
+                continue
             graph.add_node(current_particle)
 
             if previous_particle is not None:
