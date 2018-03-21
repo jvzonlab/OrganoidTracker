@@ -10,7 +10,7 @@ from numpy import ndarray
 import cv2
 import math
 
-from imaging import Particle, Experiment, errors, normalized_image, cell
+from imaging import Particle, Experiment, errors, normalized_image
 from linking.link_fixer import downgrade_edges_pointing_to_past, find_preferred_links, find_preferred_past_particle, \
     find_future_particles, remove_error, with_only_the_preferred_edges, get_2d_image, fix_no_future_particle, \
     get_closest_particle_having_a_sister
@@ -27,15 +27,14 @@ def prune_links(experiment: Experiment, graph: Graph, mitotic_radius: int) -> Gr
     [fix_no_future_particle(graph, particle) for particle in graph.nodes()]
     [_fix_cell_divisions(experiment, graph, particle, mitotic_radius) for particle in graph.nodes()]
     [fix_no_future_particle(graph, particle) for particle in graph.nodes()]
-    [_fix_cell_divisions(experiment, graph, particle, mitotic_radius, consider_age=True) for particle in graph.nodes()]
+    [_fix_cell_divisions(experiment, graph, particle, mitotic_radius) for particle in graph.nodes()]
 
     graph = with_only_the_preferred_edges(graph)
     logical_tests.apply(experiment, graph)
     return graph
 
 
-def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle, mitotic_radius: int,
-                        consider_age: bool = False):
+def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle, mitotic_radius: int):
     future_particles = find_future_particles(graph, particle)
     future_preferred_particles = find_preferred_links(graph, particle, future_particles)
 
@@ -64,12 +63,10 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle
         # The _get_two_daughters should have checked for this
         raise ValueError("No nearby mother available for " + str(particle))
 
-    score = _cell_is_mother_likeliness(graph, experiment, particle, two_daughters[0], two_daughters[1], mitotic_radius,
-                                       consider_age)
-    current_parent_score = _cell_is_mother_likeliness(graph, experiment, current_mother_of_daughter2,
+    score = _cell_is_mother_likeliness(experiment, particle, two_daughters[0], two_daughters[1], mitotic_radius)
+    current_parent_score = _cell_is_mother_likeliness(experiment, current_mother_of_daughter2,
                                                       children_of_current_mother_of_daughter2[0],
-                                                      children_of_current_mother_of_daughter2[1],
-                                                      mitotic_radius, consider_age)
+                                                      children_of_current_mother_of_daughter2[1], mitotic_radius)
     # Printing of warnings
     if abs(score - current_parent_score) <= 1:
         # Not sure
@@ -120,8 +117,8 @@ def _get_two_daughters(graph: Graph, mother: Particle, already_declared_as_daugh
     return (result[0], result[1])
 
 
-def _cell_is_mother_likeliness(graph: Graph, experiment: Experiment, mother: Particle, daughter1: Particle,
-                               daughter2: Particle, mitotic_radius: int = 2, consider_age: bool = False):
+def _cell_is_mother_likeliness(experiment: Experiment, mother: Particle, daughter1: Particle,
+                               daughter2: Particle, mitotic_radius: int = 2):
 
     mother_image_stack = experiment.get_time_point(mother.time_point_number()).load_images()
     daughter1_image_stack = experiment.get_time_point(daughter1.time_point_number()).load_images()
@@ -148,8 +145,6 @@ def _cell_is_mother_likeliness(graph: Graph, experiment: Experiment, mother: Par
                                             daughter1_intensities_prev, daughter2_intensities_prev)
         score += score_daughter_positions(mother, daughter1, daughter2)
         score += score_mother_shape(mother, mother_image)
-        if consider_age:
-            score += score_mother_age(graph, mother)
         return score
     except IndexError:
         return 0
@@ -242,14 +237,3 @@ def score_mother_shape(mother: Particle, full_image: ndarray, detection_radius =
         return 2
     # Just use a normal scoring system
     return 1 - isoperimetric_quotient
-
-def score_mother_age(graph: Graph, mother: Particle):
-    """Mothers may not be too young. Warning: this score highly depends on the correctness of the other links."""
-    age = cell.get_age(graph, mother)
-    if age is None:
-        return 0  # Unknown age, cell was born before measurement
-    if age <= 1:
-        return -5
-    if age <= 3:
-        return -1
-    return 0
