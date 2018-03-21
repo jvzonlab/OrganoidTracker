@@ -13,6 +13,7 @@ _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_i
 _positions_file = config.get_or_default("positions_file", "Automatic analysis/Positions/Manual.json")
 _output_file = config.get_or_default("links_output_file", "Automatic analysis/Links/Smart nearest neighbor.json")
 _mitotic_radius = int(config.get_or_default("mitotic_radius", str(3)))
+config.save_if_changed()
 # END OF PARAMETERS
 
 

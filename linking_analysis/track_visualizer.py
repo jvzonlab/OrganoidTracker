@@ -37,7 +37,7 @@ class TrackVisualizer(Visualizer):
         graph = self._experiment.particle_links()
         if graph is None:
             return ""
-        age = cell.get_age(self._experiment, graph, self._particle)
+        age = cell.get_age(graph, self._particle)
         if age is None:
             return "Age: born before measurements"
         return "Age: " + str(age)

@@ -4,6 +4,7 @@ from linking_analysis import mother_finder
 from typing import Iterable
 from imaging import Particle
 
+
 def print_differences(automatic_links: Graph, baseline_links: Graph):
     _print_links_differences(automatic_links, baseline_links)
     _print_mother_differences(automatic_links, baseline_links)

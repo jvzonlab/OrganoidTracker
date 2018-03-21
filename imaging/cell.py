@@ -3,21 +3,19 @@ from typing import Optional, Iterable
 from networkx import Graph
 
 
-def get_age(experiment: Experiment, graph: Graph, particle: Particle) -> Optional[int]:
+def get_age(graph: Graph, particle: Particle) -> Optional[int]:
     """Gets how many time steps ago this cell was born"""
     timesteps_ago = 0
-    min_time_point_number = experiment.first_time_point_number()
 
-    while particle.time_point_number() > min_time_point_number + 1:
+    while True:
         timesteps_ago += 1
 
-        particle = _find_past_particle(graph, particle)
+        particle = _find_preferred_past_particle(graph, particle)
         if particle is None:
             return None # Cell first appeared here, don't know age for sure
         daughters = _find_preferred_links(graph, particle, _find_future_particles(graph, particle))
         if len(daughters) > 1:
             return timesteps_ago
-    return None # Has never divided since start of measurement
 
 
 def _find_preferred_links(graph: Graph, particle: Particle, linked_particles: Iterable[Particle]):
@@ -32,11 +30,11 @@ def _find_past_particles(graph: Graph, particle: Particle):
             if linked_particle.time_point_number() < particle.time_point_number()}
 
 
-def _find_past_particle(graph: Graph, particle: Particle):
+def _find_preferred_past_particle(graph: Graph, particle: Particle):
     # the one most likely connection one step in the past
     previous_positions = _find_preferred_links(graph, particle, _find_past_particles(graph, particle))
     if len(previous_positions) == 0:
-        print("Error at " + str(particle) + ": cell popped up out of nothing")
+        # No previous position
         return None
     if len(previous_positions) > 1:
         print("Error at " + str(particle) + ": cell originated from two different cells")
