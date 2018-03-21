@@ -17,7 +17,7 @@ class ParticleListVisualizer(Visualizer):
     _particle_list = List[Particle]
     _show_next_image: bool
 
-    __last_index = -1  # Static variable
+    __last_index_per_class = dict()  # Static variable
 
     def __init__(self, experiment: Experiment, figure: Figure, all_particles: List[Particle],
                  chosen_particle: Optional[Particle] = None, show_next_image: bool = False):
@@ -33,16 +33,23 @@ class ParticleListVisualizer(Visualizer):
 
     def _find_closest_particle_index(self, particle: Optional[Particle]) -> int:
         if particle is None:
-            return ParticleListVisualizer.__last_index  # Give up immediately
+            return self.__get_last_index()
         try:
             return self._particle_list.index(particle)
         except ValueError:
             # Try nearest particle
-            close_match = imaging.get_closest_particle(self._particle_list, particle, max_distance=200)
+            close_match = imaging.get_closest_particle(self._particle_list, particle, max_distance=100)
 
             if close_match is not None:
                 return self._particle_list.index(close_match)
-            return ParticleListVisualizer.__last_index  # Give up
+            return self.__get_last_index()  # Give up
+
+    def __get_last_index(self):
+        """Gets the index we were at last time a visualizer of this kind was open."""
+        try:
+            return ParticleListVisualizer.__last_index_per_class[self.__class__]
+        except KeyError:
+            return -1
 
     def get_message_no_particles(self):
         return "No cells found. Is there some data missing?"
@@ -71,7 +78,7 @@ class ParticleListVisualizer(Visualizer):
         plt.title(self.get_title(self._particle_list, self._current_particle_index))
 
         plt.draw()
-        ParticleListVisualizer.__last_index = self._current_particle_index
+        ParticleListVisualizer.__last_index_per_class[self.__class__] = self._current_particle_index
 
     def _zoom_to_cell(self):
         mother = self._particle_list[self._current_particle_index]
