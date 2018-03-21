@@ -6,27 +6,71 @@ import imaging
 from imaging import Particle, Experiment, cell, errors, normalized_image
 
 
-def fix_no_future_particle(graph: Graph, particle: Particle):
-    """This fixes the case where a particle has no future particle lined up"""
+def __repair_dead_cell(graph: Graph, particle: Particle, used_candidates=set(), remaining_iterations=7) -> bool:
+    """Repairs a dead cell, searching for a "fake" mother nearby. Note: if the cell is not repairable, this procedure
+    will abort halfway with a ValueError. To prevent this, call this routine with check_only=True first.
+    """
     future_particles = find_future_particles(graph, particle)
     future_preferred_particles = find_preferred_links(graph, particle, future_particles)
 
     if len(future_preferred_particles) > 0:
-        return
-
-    # Oops, found dead end. Choose a best match from the future_particles list
-    newly_matched_future_particle = get_closest_particle_having_a_sister(graph, future_particles, particle)
-    if newly_matched_future_particle is None:
         return False
 
-    # Replace edge
-    downgrade_edges_pointing_to_past(graph, newly_matched_future_particle)
-    print("Created new link for previously dead " + str(particle) + " towards " + str(newly_matched_future_particle))
-    graph.add_edge(particle, newly_matched_future_particle, pref=True)
+    # Oops, found dead end. Choose a best match from the future_particles list
+    candidates = set(future_particles)
+    if len(candidates) > 10:
+        return False  # Give up, this is becoming too expensive to calculate
+    candidates.difference_update(used_candidates)  # Exclude cells that are already being relinked
+    candidates = __remove_relatively_far_away(candidates, particle, tolerance=1.5)
+    while True:  # Loop through all possible candidates
+        candidate = get_closest_particle_having_a_sister(graph, candidates, particle)
+        if candidate is None:  # Ok, ok, choose a less likely one
+            candidate = imaging.get_closest_particle(candidates, particle)
+        if candidate is None:
+            return False  # No more candidates left
+
+        past_of_candidate = find_preferred_past_particle(graph, candidate)
+        if past_of_candidate is None:
+            return False  # Strange, cell popped up out of nothing. Maybe this is the first time point?
+
+        # Try to change the link
+        graph.add_edge(past_of_candidate, candidate, pref=False)
+        graph.add_edge(candidate, particle, pref=True)
+        repairable = len(find_preferred_future_particles(graph, past_of_candidate)) > 0
+        if not repairable and remaining_iterations >= 0:
+            used_candidates_new = used_candidates.copy()
+            used_candidates_new.add(candidate)
+            repairable = __repair_dead_cell(graph, past_of_candidate, used_candidates_new, remaining_iterations - 1)
+
+        if not repairable:
+            # Undo changes
+            graph.add_edge(past_of_candidate, candidate, pref=True)
+            graph.add_edge(candidate, particle, pref=False)
+        else:
+            print("Created new link for previously dead " + str(particle) + " towards " + str(
+                candidate) + ", replaces link with " + str(past_of_candidate))
+
+        if not repairable:
+            candidates.remove(candidate)  # This candidate doesn't work out
+        else:
+            return True  # Worked!
+
+
+def __remove_relatively_far_away(particles: Set[Particle], center: Particle, tolerance: float) -> Set[Particle]:
+    if len(particles) <= 1:
+        return particles
+    min_distance_squared = imaging.get_closest_particle(particles, center).distance_squared(center)
+    max_distance_squared = min_distance_squared * (tolerance ** 2)
+    return {particle for particle in particles if particle.distance_squared(center) <= max_distance_squared}
+
+
+def fix_no_future_particle(graph: Graph, particle: Particle):
+    """This fixes the case where a particle has no future particle lined up"""
+    __repair_dead_cell(graph, particle)
 
 
 def get_closest_particle_having_a_sister(graph: Graph,
-                                          candidates_list: Iterable[Particle], center: Particle) -> Optional[Particle]:
+                                         candidates_list: Iterable[Particle], center: Particle) -> Optional[Particle]:
     """This function gets the closest particle relative to a given center that has a sister. That stipulation may seem
     strange on the first sight, but it is very useful. A lot of cells with two future positions are authomatically
     recognized as a mother with two daughters. However, this may have been a mistake. Maybe the cell has only one
@@ -70,8 +114,11 @@ def downgrade_edges_pointing_to_past(graph: Graph, particle: Particle, allow_dea
 
 
 def find_preferred_links(graph: Graph, particle: Particle, linked_particles: Iterable[Particle]):
-    return {linked_particle for linked_particle in linked_particles
-            if graph[particle][linked_particle]["pref"] is True}
+    preferred_particles = set()
+    for linked_particle in linked_particles:
+        if graph[particle][linked_particle]["pref"] is True:
+            preferred_particles.add(linked_particle)
+    return preferred_particles
 
 
 def find_past_particles(graph: Graph, particle: Particle):
@@ -98,6 +145,10 @@ def find_future_particles(graph: Graph, particle: Particle) -> Set[Particle]:
     linked_particles = graph[particle]
     return {linked_particle for linked_particle in linked_particles
             if linked_particle.time_point_number() > particle.time_point_number()}
+
+
+def find_preferred_future_particles(graph: Graph, particle: Particle) -> Set[Particle]:
+    return find_preferred_links(graph, particle, find_future_particles(graph, particle))
 
 
 def remove_error(graph: Graph, particle: Particle):
