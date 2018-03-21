@@ -1,6 +1,6 @@
 from matplotlib.backend_bases import KeyEvent
 from matplotlib.figure import Figure
-from imaging import Particle, Experiment
+from imaging import Particle, Experiment, cell
 from imaging.particle_list_visualizer import ParticleListVisualizer
 from linking_analysis import mother_finder
 from typing import List, Optional
@@ -45,9 +45,9 @@ class CellDivisionVisualizer(ParticleListVisualizer):
             return None
 
         try:
-            connections_main = main_graph[mother]
-            connections_scratch = scratch_graph[mother]
-            return set(connections_main) == set(connections_scratch)
+            connections_main = cell._find_future_particles(main_graph, mother)
+            connections_scratch = cell._find_future_particles(scratch_graph, mother)
+            return connections_main == connections_scratch
         except KeyError:
             return False
 
