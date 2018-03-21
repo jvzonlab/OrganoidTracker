@@ -1,5 +1,5 @@
 from imaging import Experiment, Particle
-from typing import Optional, Iterable
+from typing import Optional, Iterable, Set
 from networkx import Graph
 
 
@@ -42,7 +42,7 @@ def _find_preferred_past_particle(graph: Graph, particle: Particle):
     return previous_positions.pop()
 
 
-def _find_future_particles(graph: Graph, particle: Particle):
+def _find_future_particles(graph: Graph, particle: Particle) -> Set[Particle]:
     # All possible connections one step in the future
     linked_particles = graph[particle]
     return {linked_particle for linked_particle in linked_particles
