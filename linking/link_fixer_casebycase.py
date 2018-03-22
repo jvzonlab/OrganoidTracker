@@ -14,7 +14,7 @@ import math
 from imaging import Particle, Experiment, errors, normalized_image
 from linking.link_fixer import downgrade_edges_pointing_to_past, find_preferred_links, find_preferred_past_particle, \
     find_future_particles, remove_error, with_only_the_preferred_edges, get_2d_image, fix_no_future_particle, \
-    get_closest_particle_having_a_sister
+    get_closest_particle_having_a_sister, find_preferred_future_particles
 from linking_analysis import logical_tests
 
 
@@ -48,29 +48,44 @@ def _fix_cell_division_daughters(experiment: Experiment, graph: Graph, particle:
     current_score = _cell_is_mother_likeliness(experiment, particle, current_daughter1, current_daughter2,
                                                mitotic_radius)
 
+    best_daughter1 = None
+    best_daughter2 = None
+    best_score = current_score
+
     for daughter1, daughter2 in itertools.combinations(future_particles, 2):
         intersection = {daughter1, daughter2} & current_daughters
         if len(intersection) != 1:
-            continue  #
+            continue  # Exactly one daughter must be new
+        if _has_sister(graph, daughter1) and _has_sister(graph, daughter2):
+            # Two nearby cell divisions, don't try to recombine
+            # (maybe this could be interesting for the future)
+            continue
 
         # Check if this combination is better
         score = _cell_is_mother_likeliness(experiment, particle, daughter1, daughter2, mitotic_radius)
-        if score / current_score >= 4/3:
-            # Find the cells
-            removed_daughter = current_daughters.difference(intersection).pop()
-            remaining_daughter = intersection.pop()
-            new_daughter = daughter1 if daughter1 != remaining_daughter else daughter2
-            old_parent_of_new_daughter = find_preferred_past_particle(graph, new_daughter)
+        if score > best_score:
+            best_daughter1 = daughter1
+            best_daughter2 = daughter2
+            best_score = score
 
-            # Switches the daughter (and binds the old parent to the newly removed daughter)
-            graph.add_edge(new_daughter, old_parent_of_new_daughter, pref=False)
-            graph.add_edge(particle, new_daughter, pref=True)
-            graph.add_edge(particle, removed_daughter, pref=False)
-            graph.add_edge(removed_daughter, old_parent_of_new_daughter, pref=True)
+    if best_score / current_score >= 4/3:  # Improvement is possible
+        # Find the cells
+        intersection = {best_daughter1, best_daughter2} & current_daughters
 
-            print("Set " + str(new_daughter) + " as the new daughter of " + str(particle) + ", instead of " \
-                  + str(removed_daughter))
-            graph.add_node(particle, error=errors.POTENTIALLY_WRONG_DAUGHTERS)
+        removed_daughter = current_daughters.difference(intersection).pop()
+        remaining_daughter = intersection.pop()
+        new_daughter = best_daughter1 if best_daughter1 != remaining_daughter else best_daughter2
+        old_parent_of_new_daughter = find_preferred_past_particle(graph, new_daughter)
+
+        # Switches the daughter (and binds the old parent to the newly removed daughter)
+        graph.add_edge(new_daughter, old_parent_of_new_daughter, pref=False)
+        graph.add_edge(particle, new_daughter, pref=True)
+        graph.add_edge(particle, removed_daughter, pref=False)
+        graph.add_edge(removed_daughter, old_parent_of_new_daughter, pref=True)
+
+        print("Set " + str(new_daughter) + " as the new daughter of " + str(particle) + ", instead of " \
+              + str(removed_daughter))
+        graph.add_node(particle, error=errors.POTENTIALLY_WRONG_DAUGHTERS)
 
 
 def _fix_cell_division_mother(experiment: Experiment, graph: Graph, particle: Particle, mitotic_radius: int):
@@ -134,6 +149,13 @@ def _fix_cell_division_mother(experiment: Experiment, graph: Graph, particle: Pa
 #
 # Helper functions below
 #
+
+
+def _has_sister(graph: Graph, particle: Particle) -> bool:
+    mother = find_preferred_past_particle(graph, particle)
+    if mother is None:
+        return False
+    return len(find_preferred_future_particles(graph, mother)) > 2
 
 
 def _get_two_daughters(graph: Graph, mother: Particle, already_declared_as_daughter: Set[Particle],
