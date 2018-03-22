@@ -4,6 +4,7 @@
 
 from typing import Iterable, Set, Optional, Tuple
 
+import itertools
 import numpy
 from networkx import Graph
 from numpy import ndarray
@@ -24,22 +25,62 @@ def prune_links(experiment: Experiment, graph: Graph, mitotic_radius: int) -> Gr
     fall partly outside the cell.
     """
 
-    [fix_no_future_particle(graph, particle) for particle in graph.nodes()]
-    [_fix_cell_divisions(experiment, graph, particle, mitotic_radius) for particle in graph.nodes()]
-    [fix_no_future_particle(graph, particle) for particle in graph.nodes()]
-    [_fix_cell_divisions(experiment, graph, particle, mitotic_radius) for particle in graph.nodes()]
+    for i in range(2):
+        [fix_no_future_particle(graph, particle) for particle in graph.nodes()]
+        [_fix_cell_division_mother(experiment, graph, particle, mitotic_radius) for particle in graph.nodes()]
+        [_fix_cell_division_daughters(experiment, graph, particle, mitotic_radius) for particle in graph.nodes()]
 
     graph = with_only_the_preferred_edges(graph)
     logical_tests.apply(experiment, graph)
     return graph
 
 
-def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle, mitotic_radius: int):
+def _fix_cell_division_daughters(experiment: Experiment, graph: Graph, particle: Particle, mitotic_radius: int):
+    future_particles = find_future_particles(graph, particle)
+    future_preferred_particles = find_preferred_links(graph, particle, future_particles)
+
+    if len(future_preferred_particles) != 2 or len(future_particles) <= 2:
+        return
+
+    current_daughter1 = future_preferred_particles.pop()
+    current_daughter2 = future_preferred_particles.pop()
+    current_daughters = {current_daughter1, current_daughter2}
+    current_score = _cell_is_mother_likeliness(experiment, particle, current_daughter1, current_daughter2,
+                                               mitotic_radius)
+
+    for daughter1, daughter2 in itertools.combinations(future_particles, 2):
+        intersection = {daughter1, daughter2} & current_daughters
+        if len(intersection) != 1:
+            continue  #
+
+        # Check if this combination is better
+        score = _cell_is_mother_likeliness(experiment, particle, daughter1, daughter2, mitotic_radius)
+        if score / current_score >= 4/3:
+            # Find the cells
+            removed_daughter = current_daughters.difference(intersection).pop()
+            remaining_daughter = intersection.pop()
+            new_daughter = daughter1 if daughter1 != remaining_daughter else daughter2
+            old_parent_of_new_daughter = find_preferred_past_particle(graph, new_daughter)
+
+            # Switches the daughter (and binds the old parent to the newly removed daughter)
+            graph.add_edge(new_daughter, old_parent_of_new_daughter, pref=False)
+            graph.add_edge(particle, new_daughter, pref=True)
+            graph.add_edge(particle, removed_daughter, pref=False)
+            graph.add_edge(removed_daughter, old_parent_of_new_daughter, pref=True)
+
+            print("Set " + str(new_daughter) + " as the new daughter of " + str(particle) + ", instead of " \
+                  + str(removed_daughter))
+            graph.add_node(particle, error=errors.POTENTIALLY_WRONG_DAUGHTERS)
+
+
+def _fix_cell_division_mother(experiment: Experiment, graph: Graph, particle: Particle, mitotic_radius: int):
+    """Checks if there isn't a mother nearby that is a worse mother than this cell would be. If yes, one daughter over
+    there is removed and placed under this cell."""
     future_particles = find_future_particles(graph, particle)
     future_preferred_particles = find_preferred_links(graph, particle, future_particles)
 
     if len(future_particles) < 2 or len(future_preferred_particles) == 0:
-        return # Surely not a mother cell
+        return  # Surely not a mother cell
 
     if len(future_preferred_particles) > 2:
         graph.add_node(particle, error=errors.TOO_MANY_DAUGHTER_CELLS)
@@ -85,11 +126,9 @@ def _fix_cell_divisions(experiment: Experiment, graph: Graph, particle: Particle
             current_mother_of_daughter2) + " (score " + str(current_parent_score) + ")")
         downgrade_edges_pointing_to_past(graph, daughter2)  # Removes old mother
         graph.add_edge(particle, daughter2, pref=True)
-        return True
     else:
         print("Didn't let " + str(particle) + " (score " + str(score) + ") replace " + str(
             current_mother_of_daughter2) + " (score " + str(current_parent_score) + ")")
-        return False
 
 
 #
