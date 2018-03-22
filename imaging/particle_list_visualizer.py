@@ -47,7 +47,7 @@ class ParticleListVisualizer(Visualizer):
     def __get_last_index(self):
         """Gets the index we were at last time a visualizer of this kind was open."""
         try:
-            return ParticleListVisualizer.__last_index_per_class[self.__class__]
+            return ParticleListVisualizer.__last_index_per_class[type(self)]
         except KeyError:
             return -1
 
@@ -78,7 +78,7 @@ class ParticleListVisualizer(Visualizer):
         plt.title(self.get_title(self._particle_list, self._current_particle_index))
 
         plt.draw()
-        ParticleListVisualizer.__last_index_per_class[self.__class__] = self._current_particle_index
+        ParticleListVisualizer.__last_index_per_class[type(self)] = self._current_particle_index
 
     def _zoom_to_cell(self):
         mother = self._particle_list[self._current_particle_index]
