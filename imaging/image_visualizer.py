@@ -7,6 +7,8 @@ from numpy import ndarray
 from networkx import Graph
 from typing import Optional, Iterable, List, Tuple
 import matplotlib.pyplot as plt
+
+from linking import particle_flow
 from segmentation import hybrid_segmentation
 
 
@@ -229,7 +231,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     Moving: left/right moves in time, up/down in the z-direction and type '/t30' + ENTER to jump to time point 30
     Viewing: N shows next frame in red, current in green and T shows trajectory of cell under the mouse cursor
     Cell lists: M shows mother cells, E shows detected errors and D shows differences between two loaded data sets
-    Editing: L shows an editor for links"""
+    Editing: L shows an editor for links                    Other: S shows the detected shape, F the detected flow"""
 
     def __init__(self, experiment: Experiment, figure: Figure, time_point_number: Optional[int] = None, z: int = 14,
                  show_next_image: bool = False):
@@ -265,6 +267,12 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             particle = self._get_particle_at(event.xdata, event.ydata)
             if particle is not None:
                 self.__show_shape(particle)
+        elif event.key == "f":
+            particle = self._get_particle_at(event.xdata, event.ydata)
+            links = self._experiment.particle_links_scratch()
+            if particle is not None and links is not None:
+                self.update_status("Flow toward previous frame: " +
+                                   str(particle_flow.get_flow_to_previous(links, self._time_point, particle)))
         else:
             super()._on_key_press(event)
 

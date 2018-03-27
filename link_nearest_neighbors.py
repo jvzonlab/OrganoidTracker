@@ -23,7 +23,8 @@ print("Disovering images")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format, min_time_point=_min_time_point,
                                    max_time_point=_max_time_point)
 print("Staring link process")
-results = linker_for_experiment.link_particles(experiment, min_time_point=_min_time_point, max_time_point=_max_time_point)
+results = linker_for_experiment.nearest_neighbor(experiment,
+                                                 min_time_point=_min_time_point, max_time_point=_max_time_point)
 print("Writing results to file")
 io.save_links_to_json(results, _output_file)
 print("Visualizing")
