@@ -13,6 +13,7 @@ _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_i
 _positions_file = config.get_or_default("positions_file", "Automatic analysis/Positions/Manual.json")
 _output_file = config.get_or_default("links_output_file", "Automatic analysis/Links/Smart nearest neighbor.json")
 _mitotic_radius = int(config.get_or_default("mitotic_radius", str(3)))
+_flow_detection_radius = int(config.get_or_default("flow_detection_radius", str(50)))
 config.save_if_changed()
 # END OF PARAMETERS
 
@@ -24,7 +25,13 @@ print("Discovering images...")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
 print("Performing nearest-neighbor linking...")
-possible_links = linker_for_experiment.link_particles(experiment, min_time_point=_min_time_point, max_time_point=_max_time_point, tolerance=2)
+possible_links = linker_for_experiment.nearest_neighbor(experiment, tolerance=2,
+                                                       min_time_point=_min_time_point, max_time_point=_max_time_point)
+print("Improving links by analyzing local average movement...")
+possible_links = linker_for_experiment.nearest_neighbor_using_flow(experiment, possible_links,
+                                                                   flow_detection_radius=_flow_detection_radius,
+                                                                   min_time_point=_min_time_point,
+                                                                   max_time_point=_max_time_point)
 print("Deciding on what links to use...")
 link_result = link_fixer_casebycase.prune_links(experiment, possible_links, _mitotic_radius)
 print("Writing results to file...")
