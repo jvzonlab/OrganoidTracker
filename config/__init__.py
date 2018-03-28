@@ -55,7 +55,11 @@ class ConfigFile:
         if key in self._config["DEFAULTS"]:
             return self._config["DEFAULTS"][key]
 
-        default_value = input(question + " ")
+        try:
+            default_value = input(question + " ")
+        except EOFError:
+            # Happens when the user presses CTRL + C. Allow to try again
+            exit(200)
         return self.get_or_default(key, default_value, store_in_defaults=store_in_defaults)
 
     def save_if_changed(self) -> bool:
