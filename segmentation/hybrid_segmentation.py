@@ -25,6 +25,13 @@ def perform(image: ndarray) -> ndarray:
         perimeter = cv2.arcLength(contours[i], True)
         area = cv2.contourArea(contours[i])
         area_perimeter = 4 * math.pi * area / perimeter**2 if perimeter > 0 else 0
+
         print("Perimeter: " + str(perimeter) + "  Area: " + str(area) + "  Area/perimeter^2: " + str(area_perimeter))
+        if perimeter > 10:
+            ellipse = cv2.fitEllipse(contours[i])
+            print("Ellipse: " + str(ellipse))
+            cv2.ellipse(contour_image, ellipse, 70 + i * 31, 1)
+        else:  # Too few pixels to draw reliable perimeter
+            print("No ellipse")
     print("---")
     return contour_image
