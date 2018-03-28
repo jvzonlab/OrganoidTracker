@@ -116,7 +116,8 @@ def downgrade_edges_pointing_to_past(graph: Graph, particle: Particle, allow_dea
 def find_preferred_links(graph: Graph, particle: Particle, linked_particles: Iterable[Particle]):
     preferred_particles = set()
     for linked_particle in linked_particles:
-        if graph[particle][linked_particle]["pref"] is True:
+        link = graph[particle][linked_particle]
+        if "pref" not in link or link["pref"] is True:
             preferred_particles.add(linked_particle)
     return preferred_particles
 
