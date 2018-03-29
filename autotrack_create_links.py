@@ -3,6 +3,8 @@ from imaging import Experiment, io, tifffolder
 from linking import link_fixer_casebycase, linker_for_experiment
 
 # PARAMETERS
+from linking.score_system import RationalScoreSystem
+
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("create_links")
 _images_folder = config.get_or_default("images_folder", "./", store_in_defaults=True)
@@ -34,7 +36,8 @@ possible_links = linker_for_experiment.nearest_neighbor_using_flow(experiment, p
                                                                    min_time_point=_min_time_point,
                                                                    max_time_point=_max_time_point)
 print("Deciding on what links to use...")
-link_result = link_fixer_casebycase.prune_links(experiment, possible_links, _mitotic_radius, _shape_detection_radius)
+score_system = RationalScoreSystem(_mitotic_radius, _shape_detection_radius)
+link_result = link_fixer_casebycase.prune_links(experiment, possible_links, score_system)
 print("Writing results to file...")
 io.save_links_to_json(link_result, _output_file)
 print("Done")

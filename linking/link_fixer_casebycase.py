@@ -15,21 +15,19 @@ from imaging import Particle, Experiment, errors, normalized_image, angles
 from linking.link_fixer import downgrade_edges_pointing_to_past, find_preferred_links, find_preferred_past_particle, \
     find_future_particles, remove_error, with_only_the_preferred_edges, get_2d_image, fix_no_future_particle, \
     get_closest_particle_having_a_sister, find_preferred_future_particles
+from linking.score_system import MotherScoreSystem
 from linking_analysis import logical_tests
 
 
-def prune_links(experiment: Experiment, graph: Graph, mitotic_radius: int, shape_detection_radius: int) -> Graph:
-    """Takes a graph with all possible edges between cells, and returns a graph with only the most likely edges.
-    mitotic_radius is the radius used to detect whether a cell is undergoing mitosis (i.e. it will have divided itself
-    into two in the next time_point). For non-mitotic cells, it must fall entirely within the cell, for mitotic cells it must
-    fall partly outside the cell.
+def prune_links(experiment: Experiment, graph: Graph, score_system: MotherScoreSystem) -> Graph:
+    """Takes a graph with all possible edges between cells, and returns a graph with only the most likely edges./
     """
 
     for i in range(2):
         [fix_no_future_particle(graph, particle) for particle in graph.nodes()]
-        [_fix_cell_division_mother(experiment, graph, particle, mitotic_radius, shape_detection_radius)
+        [_fix_cell_division_mother(experiment, graph, particle, score_system)
             for particle in graph.nodes()]
-        [_fix_cell_division_daughters(experiment, graph, particle, mitotic_radius, shape_detection_radius)
+        [_fix_cell_division_daughters(experiment, graph, particle, score_system)
            for particle in graph.nodes()]
 
     graph = with_only_the_preferred_edges(graph)
@@ -37,8 +35,8 @@ def prune_links(experiment: Experiment, graph: Graph, mitotic_radius: int, shape
     return graph
 
 
-def _fix_cell_division_daughters(experiment: Experiment, graph: Graph, particle: Particle, mitotic_radius: int,
-                                 shape_detection_radius: int):
+def _fix_cell_division_daughters(experiment: Experiment, graph: Graph, particle: Particle,
+                                 score_system: MotherScoreSystem):
     future_particles = find_future_particles(graph, particle)
     future_preferred_particles = find_preferred_links(graph, particle, future_particles)
 
@@ -48,8 +46,7 @@ def _fix_cell_division_daughters(experiment: Experiment, graph: Graph, particle:
     current_daughter1 = future_preferred_particles.pop()
     current_daughter2 = future_preferred_particles.pop()
     current_daughters = {current_daughter1, current_daughter2}
-    current_score = _cell_is_mother_likeliness(experiment, particle, current_daughter1, current_daughter2,
-                                               mitotic_radius, shape_detection_radius)
+    current_score = score_system.calculate(experiment, particle, current_daughter1, current_daughter2).total()
 
     best_daughter1 = None
     best_daughter2 = None
@@ -65,8 +62,7 @@ def _fix_cell_division_daughters(experiment: Experiment, graph: Graph, particle:
             continue
 
         # Check if this combination is better
-        score = _cell_is_mother_likeliness(experiment, particle, daughter1, daughter2,
-                                           mitotic_radius, shape_detection_radius)
+        score = score_system.calculate(experiment, particle, daughter1, daughter2).total()
         if score > best_score:
             best_daughter1 = daughter1
             best_daughter2 = daughter2
@@ -92,8 +88,7 @@ def _fix_cell_division_daughters(experiment: Experiment, graph: Graph, particle:
         graph.add_node(particle, error=errors.POTENTIALLY_WRONG_DAUGHTERS)
 
 
-def _fix_cell_division_mother(experiment: Experiment, graph: Graph, particle: Particle, mitotic_radius: int,
-                              shape_detection_radius: int):
+def _fix_cell_division_mother(experiment: Experiment, graph: Graph, particle: Particle, score_system: MotherScoreSystem):
     """Checks if there isn't a mother nearby that is a worse mother than this cell would be. If yes, one daughter over
     there is removed and placed under this cell."""
     future_particles = find_future_particles(graph, particle)
@@ -124,12 +119,10 @@ def _fix_cell_division_mother(experiment: Experiment, graph: Graph, particle: Pa
         # The _get_two_daughters should have checked for this
         raise ValueError("No nearby mother available for " + str(particle))
 
-    score = _cell_is_mother_likeliness(experiment, particle, two_daughters[0], two_daughters[1],
-                                       mitotic_radius, shape_detection_radius)
-    current_parent_score = _cell_is_mother_likeliness(experiment, current_mother_of_daughter2,
-                                                      children_of_current_mother_of_daughter2[0],
-                                                      children_of_current_mother_of_daughter2[1],
-                                                      mitotic_radius, shape_detection_radius)
+    score = score_system.calculate(experiment, particle, two_daughters[0], two_daughters[1]).total()
+    current_parent_score = score_system.calculate(experiment, current_mother_of_daughter2,
+                                                  children_of_current_mother_of_daughter2[0],
+                                                  children_of_current_mother_of_daughter2[1]).total()
     # Printing of warnings
     if abs(score - current_parent_score) <= 1:
         # Not sure
@@ -185,164 +178,5 @@ def _get_two_daughters(graph: Graph, mother: Particle, already_declared_as_daugh
     return (result[0], result[1])
 
 
-def _cell_is_mother_likeliness(experiment: Experiment, mother: Particle, daughter1: Particle,
-                               daughter2: Particle, mitotic_radius: int, shape_detection_radius: int):
 
-    mother_image_stack = experiment.get_time_point(mother.time_point_number()).load_images()
-    daughter1_image_stack = experiment.get_time_point(daughter1.time_point_number()).load_images()
-    mother_image = mother_image_stack[int(mother.z)]
-    mother_image_next = daughter1_image_stack[int(mother.z)]
-    daughter1_image = daughter1_image_stack[int(daughter1.z)]
-    daughter2_image = get_2d_image(experiment, daughter2)
-    daughter1_image_prev = mother_image_stack[int(daughter1.z)]
-    daughter2_image_prev = mother_image_stack[int(daughter2.z)]
-
-    try:
-        mother_intensities = normalized_image.get_square(mother_image, mother.x, mother.y, mitotic_radius)
-        mother_intensities_next = normalized_image.get_square(mother_image_next, mother.x, mother.y, mitotic_radius)
-        daughter1_intensities = normalized_image.get_square(daughter1_image, daughter1.x, daughter1.y, mitotic_radius)
-        daughter2_intensities = normalized_image.get_square(daughter2_image, daughter2.x, daughter2.y, mitotic_radius)
-        daughter1_intensities_prev = normalized_image.get_square(daughter1_image_prev, daughter1.x, daughter1.y,
-                                                                 mitotic_radius)
-        daughter2_intensities_prev = normalized_image.get_square(daughter2_image_prev, daughter2.x, daughter2.y,
-                                                                 mitotic_radius)
-
-        score = 0
-        score += score_mother_intensities(mother_intensities, mother_intensities_next)
-        score += score_daughter_intensities(daughter1_intensities, daughter2_intensities,
-                                            daughter1_intensities_prev, daughter2_intensities_prev)
-        score += score_daughter_positions(mother, daughter1, daughter2)
-        score += score_using_mother_shape(mother, daughter1, daughter2, mother_image, shape_detection_radius)
-        return score
-    except IndexError:
-        return 0
-
-
-def score_daughter_positions(mother: Particle, daughter1: Particle, daughter2: Particle) -> int:
-    m_d1_distance = mother.distance_squared(daughter1)
-    m_d2_distance = mother.distance_squared(daughter2)
-    shorter_distance = m_d1_distance if m_d1_distance < m_d2_distance else m_d2_distance
-    longer_distance = m_d1_distance if m_d1_distance > m_d2_distance else m_d2_distance
-    if shorter_distance * (6 ** 2) < longer_distance:
-        return -2
-    return 0
-
-
-def score_daughter_intensities(daughter1_intensities: ndarray, daughter2_intensities: ndarray,
-                               daughter1_intensities_prev: ndarray, daughter2_intensities_prev: ndarray):
-    """Daughter cells must have almost the same intensity"""
-    daughter1_average = numpy.average(daughter1_intensities)
-    daughter2_average = numpy.average(daughter2_intensities)
-    daughter1_average_prev = numpy.average(daughter1_intensities_prev)
-    daughter2_average_prev = numpy.average(daughter2_intensities_prev)
-
-    # Daughter cells must have almost the same intensity
-    score = 0
-    score -= abs(daughter1_average - daughter2_average) / 2
-    if daughter1_average / (daughter1_average_prev + 0.0001) > 2:
-        score += 1
-    if daughter2_average / (daughter2_average_prev + 0.0001) > 2:
-        score += 1
-    return score
-
-
-def score_mother_intensities(mother_intensities: ndarray, mother_intensities_next: ndarray) -> float:
-    """Mother cell must have high intensity """
-    score = 0
-
-    # Intensity and contrast
-    min_value = numpy.min(mother_intensities)
-    max_value = numpy.max(mother_intensities)
-    if max_value > 0.7:
-        score += 1  # The higher intensity, the better: the DNA is concentrated
-    if max_value - min_value > 0.4:
-        score += 0.5  # High contrast is also desirable, as there are parts where there is no DNA
-
-    # Change of intensity (we use the max, as mothers often have both bright spots and darker spots near their center)
-    max_value_next = numpy.max(mother_intensities_next)
-    if max_value / (max_value_next + 0.0001) > 2: # +0.0001 protects against division by zero
-        score += 1
-
-    return score
-
-
-def score_using_mother_shape(mother: Particle, daughter1: Particle, daughter2: Particle, full_image: ndarray,
-                             detection_radius: int) -> float:
-    """Returns a black-and-white image where white is particle and black is background, at least in theory."""
-
-    # Zoom in on mother
-    x = int(mother.x)
-    y = int(mother.y)
-    if x - detection_radius < 0 or y - detection_radius < 0 or x + detection_radius >= full_image.shape[1] \
-            or y + detection_radius >= full_image.shape[0]:
-        return 0  # Out of bounds
-    image = full_image[y - detection_radius:y + detection_radius, x - detection_radius:x + detection_radius]
-    image_8bit = cv2.convertScaleAbs(image, alpha=256 / image.max(), beta=0)
-    __crop_to_circle(image_8bit)
-
-    # Find contour
-    ret, thresholded_image = cv2.threshold(image_8bit, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    contour_image, contours, hierarchy = cv2.findContours(thresholded_image, 1, 2)
-
-    # Calculate the isoperimetric quotient and ellipse of the largest area
-    index_with_highest_area, area = __find_largest_area(contours)
-    contour = contours[index_with_highest_area]
-    perimeter = cv2.arcLength(contour, True)
-    isoperimetric_quotient = 4 * math.pi * area / perimeter ** 2 if perimeter > 0 else 0
-
-    score = 0
-    if thresholded_image[detection_radius, detection_radius] == 255:
-        # Only try to score if the mother position is inside the threshold
-        # (Otherwise we got a very irregular shape of which the angle is unreliable)
-        fitted_ellipse = cv2.fitEllipse(contour)
-        ellipse_length = fitted_ellipse[1][1]
-        ellipse_width = fitted_ellipse[1][0]
-        if ellipse_length / ellipse_width >= 1.2:
-            score += _score_daughter_angles(fitted_ellipse[2], mother, daughter1, daughter2)
-
-    if isoperimetric_quotient < 0.4:
-        # Clear case of being a mother, give a bonus
-        score += 2
-    else:
-        # Just use a normal scoring system
-        score += 1 - isoperimetric_quotient
-
-    return score
-
-
-def _score_daughter_angles(ellipse_angle: float, mother: Particle, daughter1: Particle, daughter2: Particle) -> float:
-    ellipse_angle_perpendicular = (ellipse_angle + 90) % 360
-
-    # These angles are from 0 to 180, where 90 is completely aligned with the director of the ellipse
-    daughter1_angle = angles.difference(angles.direction_2d(mother, daughter1), ellipse_angle_perpendicular)
-    daughter2_angle = angles.difference(angles.direction_2d(mother, daughter2), ellipse_angle_perpendicular)
-
-    if (daughter1_angle < 90 and daughter2_angle < 90) or (daughter1_angle > 90 and daughter2_angle > 90):
-        return -1  # Two daughters on the same side, punish
-
-    return 0
-
-
-def __crop_to_circle(image_8bit: ndarray):
-    """Crops the (rectangular or square) 2D image to a circle. Essentially this function makes all pixels zero that are
-    near the corners of the image.
-    """
-    image_circle = numpy.zeros_like(image_8bit)
-    width = image_circle.shape[1]
-    height = image_circle.shape[0]
-    circle_size = min(width, height) - 3
-    cv2.circle(image_circle, (int(width / 2), int(height / 2)), int(circle_size / 2), 255, -1)
-    cv2.bitwise_and(image_8bit, image_circle, image_8bit)
-
-
-def __find_largest_area(contours) -> Tuple[int, float]:
-    highest_area = 0
-    index_with_highest_area = -1
-    for i in range(len(contours)):
-        contour = contours[i]
-        area = cv2.contourArea(contour)
-        if area > highest_area:
-            highest_area = area
-            index_with_highest_area = i
-    return index_with_highest_area, highest_area
 
