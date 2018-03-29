@@ -1,11 +1,11 @@
-import pandas
-
+"""Script for testing the mother scoring system. Output a CSV file with the scores of all putative mothers, based on
+simple nearest-neighbor linking. The data is compared with data of the actual mothers.
+"""
 from config import ConfigFile
-from imaging import io, tifffolder, image_visualizer, Experiment
+from imaging import io, tifffolder, Experiment
 from linking import linker_for_experiment, scores_dataframe
 from linking.score_system import RationalScoringSystem
 from linking_analysis import mother_finder
-from matplotlib import pyplot
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
