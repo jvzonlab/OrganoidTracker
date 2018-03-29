@@ -290,8 +290,15 @@ def score_using_mother_shape(mother: Particle, daughter1: Particle, daughter2: P
     perimeter = cv2.arcLength(contour, True)
     isoperimetric_quotient = 4 * math.pi * area / perimeter ** 2 if perimeter > 0 else 0
 
-    fitted_ellipse = cv2.fitEllipse(contour)
-    score = _score_daughter_angles(fitted_ellipse, mother, daughter1, daughter2)
+    score = 0
+    if thresholded_image[detection_radius, detection_radius] == 255:
+        # Only try to score if the mother position is inside the threshold
+        # (Otherwise we got a very irregular shape of which the angle is unreliable)
+        fitted_ellipse = cv2.fitEllipse(contour)
+        ellipse_length = fitted_ellipse[1][1]
+        ellipse_width = fitted_ellipse[1][0]
+        if ellipse_length / ellipse_width >= 1.2:
+            score += _score_daughter_angles(fitted_ellipse[2], mother, daughter1, daughter2)
 
     if isoperimetric_quotient < 0.4:
         # Clear case of being a mother, give a bonus
@@ -303,12 +310,7 @@ def score_using_mother_shape(mother: Particle, daughter1: Particle, daughter2: P
     return score
 
 
-def _score_daughter_angles(fitted_ellipse: Tuple, mother: Particle, daughter1: Particle, daughter2: Particle) -> float:
-    ellipse_length = fitted_ellipse[1][1]
-    ellipse_width = fitted_ellipse[1][0]
-    if ellipse_length / ellipse_width < 1.2:
-        return 0  # Cannot decide which side is which
-    ellipse_angle = fitted_ellipse[2]
+def _score_daughter_angles(ellipse_angle: float, mother: Particle, daughter1: Particle, daughter2: Particle) -> float:
     ellipse_angle_perpendicular = (ellipse_angle + 90) % 360
 
     # These angles are from 0 to 180, where 90 is completely aligned with the director of the ellipse
@@ -318,16 +320,7 @@ def _score_daughter_angles(fitted_ellipse: Tuple, mother: Particle, daughter1: P
     if (daughter1_angle < 90 and daughter2_angle < 90) or (daughter1_angle > 90 and daughter2_angle > 90):
         return -1  # Two daughters on the same side, punish
 
-    score = 0
-    if daughter1_angle < 15 or daughter1_angle > 165:
-        score += 0.5
-    elif 40 < daughter1_angle < 140:
-        score -= 0.5
-    if daughter2_angle < 15 or daughter2_angle > 165:
-        score += 0.5
-    elif 40 < daughter2_angle < 140:
-        score -= 0.5
-    return score
+    return 0
 
 
 def __crop_to_circle(image_8bit: ndarray):
