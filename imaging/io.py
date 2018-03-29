@@ -1,6 +1,9 @@
 """Classes for expressing the positions of particles"""
 import json
 from json import JSONEncoder
+
+from pandas import DataFrame
+
 from imaging import Experiment, Particle
 from networkx import node_link_data, node_link_graph, Graph
 from typing import List
@@ -57,6 +60,11 @@ def save_positions_to_json(experiment: Experiment, json_file_name: str):
     _create_parent_directories(json_file_name)
     with open(json_file_name, 'w') as handle:
         json.dump(data_structure, handle, cls=_MyEncoder)
+
+def save_dataframe_to_csv(data_frame: DataFrame, csv_file_name: str):
+    """Saves the data frame to a CSV file, creating necessary parent directories first."""
+    _create_parent_directories(csv_file_name)
+    data_frame.to_csv(csv_file_name, index=False)
 
 
 def load_links_from_json(json_file_name: str) -> Graph:

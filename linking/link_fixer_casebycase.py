@@ -15,11 +15,11 @@ from imaging import Particle, Experiment, errors, normalized_image, angles
 from linking.link_fixer import downgrade_edges_pointing_to_past, find_preferred_links, find_preferred_past_particle, \
     find_future_particles, remove_error, with_only_the_preferred_edges, get_2d_image, fix_no_future_particle, \
     get_closest_particle_having_a_sister, find_preferred_future_particles
-from linking.score_system import MotherScoreSystem
+from linking.score_system import MotherScoringSystem
 from linking_analysis import logical_tests
 
 
-def prune_links(experiment: Experiment, graph: Graph, score_system: MotherScoreSystem) -> Graph:
+def prune_links(experiment: Experiment, graph: Graph, score_system: MotherScoringSystem) -> Graph:
     """Takes a graph with all possible edges between cells, and returns a graph with only the most likely edges./
     """
 
@@ -36,7 +36,7 @@ def prune_links(experiment: Experiment, graph: Graph, score_system: MotherScoreS
 
 
 def _fix_cell_division_daughters(experiment: Experiment, graph: Graph, particle: Particle,
-                                 score_system: MotherScoreSystem):
+                                 score_system: MotherScoringSystem):
     future_particles = find_future_particles(graph, particle)
     future_preferred_particles = find_preferred_links(graph, particle, future_particles)
 
@@ -88,7 +88,7 @@ def _fix_cell_division_daughters(experiment: Experiment, graph: Graph, particle:
         graph.add_node(particle, error=errors.POTENTIALLY_WRONG_DAUGHTERS)
 
 
-def _fix_cell_division_mother(experiment: Experiment, graph: Graph, particle: Particle, score_system: MotherScoreSystem):
+def _fix_cell_division_mother(experiment: Experiment, graph: Graph, particle: Particle, score_system: MotherScoringSystem):
     """Checks if there isn't a mother nearby that is a worse mother than this cell would be. If yes, one daughter over
     there is removed and placed under this cell."""
     future_particles = find_future_particles(graph, particle)

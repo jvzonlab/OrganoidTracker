@@ -1,4 +1,4 @@
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Set, KeysView, List
 
 import cv2
 import numpy
@@ -6,6 +6,7 @@ import math
 from numpy import ndarray
 
 from imaging import Experiment, Particle, normalized_image, angles
+from imaging.normalized_image import ImageEdgeError
 from linking.link_fixer import get_2d_image
 
 
@@ -36,14 +37,26 @@ class Score:
             score += value
         return score
 
+    def keys(self) -> List[str]:
+        keylist = list(self.__dict__["scores"].keys())
+        keylist.sort()
+        return keylist
+
+    def get(self, key: str) -> float:
+        """Gets the specified score, or 0 if it does not exist"""
+        try:
+            return self.__dict__["scores"][key]
+        except KeyError:
+            return 0.0
+
     def __str__(self):
-        return str(self.__scores)
+        return str(self.total()) + " FROM " + str(self.__dict__["scores"])
 
     def __repr__(self):
-        return "Score(**" + repr(self.__scores) + ")"
+        return "Score(**" + repr(self.__dict__["scores"]) + ")"
 
 
-class MotherScoreSystem:
+class MotherScoringSystem:
     """Abstract class for scoring putative mothers."""
 
     def calculate(self, experiment: Experiment, mother: Particle,
@@ -52,7 +65,7 @@ class MotherScoreSystem:
         pass
 
 
-class RationalScoreSystem(MotherScoreSystem):
+class RationalScoringSystem(MotherScoringSystem):
     """Rationally-designed score system."""
     mitotic_radius: int  # Used to detect max/min intensity of a cell. Can be a few pixels, just to suppress noise
     shape_detection_radius: int  # Used to detect the shape. Must be as large as the expected cell radius.
@@ -93,7 +106,7 @@ class RationalScoreSystem(MotherScoreSystem):
             score_daughter_distances(score, mother, daughter1, daughter2)
             score_using_mother_shape(score, mother, daughter1, daughter2, mother_image, self.shape_detection_radius)
             return score
-        except IndexError:
+        except ImageEdgeError:
             return Score()
 
 
@@ -154,12 +167,15 @@ def score_using_mother_shape(score: Score, mother: Particle, daughter1: Particle
             or y + detection_radius >= full_image.shape[0]:
         return  # Out of bounds
     image = full_image[y - detection_radius:y + detection_radius, x - detection_radius:x + detection_radius]
-    image_8bit = cv2.convertScaleAbs(image, alpha=256 / image.max(), beta=0)
+    image_max_intensity = max(image.max(), 256)
+    image_8bit = cv2.convertScaleAbs(image, alpha=256 / image_max_intensity, beta=0)
     __crop_to_circle(image_8bit)
 
     # Find contour
     ret, thresholded_image = cv2.threshold(image_8bit, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     contour_image, contours, hierarchy = cv2.findContours(thresholded_image, 1, 2)
+    if (len(contours) == 0):
+        return  # No contours found
 
     # Calculate the isoperimetric quotient and ellipse of the largest area
     index_with_highest_area, area = __find_largest_area(contours)

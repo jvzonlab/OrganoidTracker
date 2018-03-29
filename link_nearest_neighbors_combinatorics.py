@@ -41,7 +41,7 @@ io.save_links_to_json(link_result, _output_file)
 
 print("Basic comparison...")
 baseline_links = io.load_links_from_json(_comparison_links_file)
-families_baseline = mother_finder.find_families(baseline_links)
+families_baseline = set(mother_finder.find_families(baseline_links))
 
 missed_families = families_baseline.difference(families)
 print("Missed families: " + str(len(missed_families)))
