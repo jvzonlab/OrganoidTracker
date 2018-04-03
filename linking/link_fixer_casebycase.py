@@ -28,7 +28,7 @@ def prune_links(experiment: Experiment, graph: Graph, score_system: MotherScorin
         [_fix_cell_division_mother(experiment, graph, particle, score_system)
             for particle in graph.nodes()]
         [_fix_cell_division_daughters(experiment, graph, particle, score_system)
-           for particle in graph.nodes()]
+            for particle in graph.nodes()]
 
     graph = with_only_the_preferred_edges(graph)
     logical_tests.apply(experiment, graph)

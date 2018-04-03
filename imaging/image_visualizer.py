@@ -272,7 +272,9 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             links = self._experiment.particle_links_scratch()
             if particle is not None and links is not None:
                 self.update_status("Flow toward previous frame: " +
-                                   str(particle_flow.get_flow_to_previous(links, self._time_point, particle)))
+                                   str(particle_flow.get_flow_to_previous(links, self._time_point, particle)) +
+                                   "\nFlow towards next frame: " +
+                                   str(particle_flow.get_flow_to_next(links, self._time_point, particle)))
         else:
             super()._on_key_press(event)
 

@@ -11,8 +11,8 @@ from linking.score_system import MotherScoringSystem, Score
 def create(experiment: Experiment, putative_families: List[Family], scoring_system: MotherScoringSystem,
            actual_families: Set[Family]):
     tryout_score = _score(experiment, putative_families[0], scoring_system)
-    keys = tryout_score.keys()
-    data = numpy.zeros([len(putative_families), len(keys) + 1], dtype=numpy.float32)
+    keys = ["mother"] + tryout_score.keys() + ["total_score", "is_actual_mother"]
+    data = numpy.zeros([len(putative_families), len(keys)], dtype=numpy.object)
 
     for i in range(len(putative_families)):
         if i % 50 == 0:
@@ -20,12 +20,14 @@ def create(experiment: Experiment, putative_families: List[Family], scoring_syst
 
         family = putative_families[i]
         score = _score(experiment, family, scoring_system)
-        for j in range(len(keys)):
+        data[i, 0] = str(family.mother)
+        for j in range(1, len(keys) - 2):
             key = keys[j]
             data[i, j] = score.get(key)
-        data[i, len(keys)] = 1 if family in actual_families else 0
+        data[i, len(keys) - 2] = score.total()
+        data[i, len(keys) - 1] = 1 if family in actual_families else 0
 
-    return pandas.DataFrame(data=data, columns=keys + ["is_actual_family"])
+    return pandas.DataFrame(data=data, columns=keys)
 
 def _score(experiment: Experiment, family: Family, scoring_system: MotherScoringSystem) -> Score:
     daughters = list(family.daughters)
