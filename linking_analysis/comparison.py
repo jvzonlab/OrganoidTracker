@@ -11,16 +11,16 @@ def print_differences(automatic_links: Graph, baseline_links: Graph):
 
 
 def _print_mother_differences(automatic_links: Graph, baseline_links: Graph):
-    baseline_mothers = mother_finder.find_mothers(baseline_links)
-    automatic_mothers = mother_finder.find_mothers(automatic_links)
+    baseline_families = set(mother_finder.find_families(baseline_links))
+    automatic_families = set(mother_finder.find_families(automatic_links))
 
-    missed_mothers = baseline_mothers.difference(automatic_mothers)
-    made_up_mothers = automatic_mothers.difference(baseline_mothers)
-    print("There are " + str(len(missed_mothers)) + " mother cells that were not recognized")
-    _print_cells(missed_mothers)
+    missed_families = baseline_families.difference(automatic_families)
+    made_up_families = automatic_families.difference(baseline_families)
+    print("There are " + str(len(missed_families)) + " mother cells that were not recognized")
+    _print_cells([family.mother for family in missed_families])
 
-    print ("There are " + str(len(made_up_mothers)) + " mother cells made up by the linking algorithm")
-    _print_cells(made_up_mothers)
+    print("There are " + str(len(made_up_families)) + " mother cells made up by the linking algorithm")
+    _print_cells([family.mother for family in made_up_families])
 
 
 def _print_cells(cells: Iterable[Particle]):
