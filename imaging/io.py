@@ -64,7 +64,11 @@ def save_positions_to_json(experiment: Experiment, json_file_name: str):
 def save_dataframe_to_csv(data_frame: DataFrame, csv_file_name: str):
     """Saves the data frame to a CSV file, creating necessary parent directories first."""
     _create_parent_directories(csv_file_name)
-    data_frame.to_csv(csv_file_name, index=False)
+    try:
+        data_frame.to_csv(csv_file_name, index=False)
+    except PermissionError as e:
+        data_frame.to_csv(csv_file_name + ".ALT", index=False)
+        raise e
 
 
 def load_links_from_json(json_file_name: str) -> Graph:
