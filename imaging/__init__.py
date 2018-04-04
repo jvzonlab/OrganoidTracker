@@ -24,10 +24,10 @@ class Particle:
         self.z = z
         self._time_point_number = None
 
-    def distance_squared(self, other) -> float:
+    def distance_squared(self, other: "Particle", z_factor: float = 5) -> float:
         """Gets the squared distance. Working with squared distances instead of normal ones gives a much better
         performance, as the expensive sqrt(..) function can be avoided."""
-        return (self.x - other.x) ** 2 + (self.y - other.y) ** 2 + ((self.z - other.z) * 5) ** 2
+        return (self.x - other.x) ** 2 + (self.y - other.y) ** 2 + ((self.z - other.z) * z_factor) ** 2
 
     def time_point_number(self):
         return self._time_point_number

@@ -52,6 +52,6 @@ def find_nearest_particles(search_in: TimePoint, around: Particle, tolerance: fl
         raise ValueError()
     nearest_particles = _NearestParticles(tolerance)
     for particle in search_in.particles():
-        nearest_particles.add_candidate(particle, particle.distance_squared(around))
+        nearest_particles.add_candidate(particle, particle.distance_squared(around, z_factor=3))
     return nearest_particles.get_particles()
 
