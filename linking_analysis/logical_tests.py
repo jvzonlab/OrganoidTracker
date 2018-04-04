@@ -1,6 +1,6 @@
 from networkx import Graph
 
-from imaging import errors, Experiment, Particle
+from imaging import errors, Experiment, Particle, cell
 
 
 def apply(experiment: Experiment, graph: Graph):
@@ -13,6 +13,10 @@ def apply(experiment: Experiment, graph: Graph):
             _set_error(graph, particle, errors.TOO_MANY_DAUGHTER_CELLS)
         if len(future_particles) == 0 and particle.time_point_number() < experiment.last_time_point_number() - 1:
             _set_error(graph, particle, errors.NO_FUTURE_POSITION)
+        if len(future_particles) == 2:
+            age = cell.get_age(graph, particle)
+            if age is not None and age < 2:
+                _set_error(graph, particle, errors.YOUNG_MOTHER)
 
         past_particles = _get_past_particles(graph, particle)
         if len(past_particles) == 0 and particle.time_point_number() > experiment.first_time_point_number():

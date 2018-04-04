@@ -13,6 +13,7 @@ TOO_MANY_DAUGHTER_CELLS = 4
 NO_PAST_POSITION = 5
 CELL_MERGE = 6
 POTENTIALLY_WRONG_DAUGHTERS = 7
+YOUNG_MOTHER = 8
 
 
 __info = {
@@ -22,7 +23,8 @@ __info = {
     TOO_MANY_DAUGHTER_CELLS: (Severity.ERROR, "Has more than two daughter cells"),
     NO_PAST_POSITION: (Severity.ERROR, "Cell popped up out of nothing"),
     CELL_MERGE: (Severity.ERROR, "Two cells merged together into this cell"),
-    POTENTIALLY_WRONG_DAUGHTERS: (Severity.WARNING, "Maybe not the correct daughter")
+    POTENTIALLY_WRONG_DAUGHTERS: (Severity.WARNING, "Maybe not the correct daughter"),
+    YOUNG_MOTHER: (Severity.ERROR, "Mother cell is very young")
 }
 
 
