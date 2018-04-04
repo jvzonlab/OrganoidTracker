@@ -158,6 +158,7 @@ def score_using_mother_shape(score: Score, mother: Particle, daughter1: Particle
                              full_image: ndarray, detection_radius: int):
     """Returns a black-and-white image where white is particle and black is background, at least in theory."""
     score.mother_shape = 0
+    score.mother_eccentric = 0
     score.daughter_angles = 0
 
     # Zoom in on mother
@@ -171,8 +172,11 @@ def score_using_mother_shape(score: Score, mother: Particle, daughter1: Particle
     image_8bit = cv2.convertScaleAbs(image, alpha=256 / image_max_intensity, beta=0)
     __crop_to_circle(image_8bit)
 
-    # Find contour
     ret, thresholded_image = cv2.threshold(image_8bit, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    if thresholded_image[detection_radius, detection_radius] == 0:
+        score.mother_eccentric = 2
+
+    # Find contour
     contour_image, contours, hierarchy = cv2.findContours(thresholded_image, 1, 2)
     if (len(contours) == 0):
         return  # No contours found
