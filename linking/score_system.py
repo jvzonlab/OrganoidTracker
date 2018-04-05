@@ -1,4 +1,4 @@
-from typing import Tuple, Dict, Set, KeysView, List
+from typing import Tuple, Dict, Set, KeysView, List, Optional
 
 import cv2
 import numpy
@@ -105,6 +105,8 @@ class RationalScoringSystem(MotherScoringSystem):
                                                 daughter1_intensities_prev, daughter2_intensities_prev)
             score_daughter_distances(score, mother, daughter1, daughter2)
             score_using_mother_shape(score, mother, daughter1, daughter2, mother_image, self.shape_detection_radius)
+            score_using_daughter_shapes(score, mother, daughter1, daughter2, daughter1_image, daughter2_image,
+                                        self.shape_detection_radius)
             return score
         except ImageEdgeError:
             return Score()
@@ -159,26 +161,18 @@ def score_using_mother_shape(score: Score, mother: Particle, daughter1: Particle
     """Returns a black-and-white image where white is particle and black is background, at least in theory."""
     score.mother_shape = 0
     score.mother_eccentric = 0
-    score.daughter_angles = 0
+    score.mother_angle = 0
 
     # Zoom in on mother
-    x = int(mother.x)
-    y = int(mother.y)
-    if x - detection_radius < 0 or y - detection_radius < 0 or x + detection_radius >= full_image.shape[1] \
-            or y + detection_radius >= full_image.shape[0]:
-        return  # Out of bounds
-    image = full_image[y - detection_radius:y + detection_radius, x - detection_radius:x + detection_radius]
-    image_max_intensity = max(image.max(), 256)
-    image_8bit = cv2.convertScaleAbs(image, alpha=256 / image_max_intensity, beta=0)
-    __crop_to_circle(image_8bit)
-
-    ret, thresholded_image = cv2.threshold(image_8bit, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    thresholded_image = __get_threshold_for_shape(mother, full_image, detection_radius)
+    if thresholded_image is None:
+        return  # Too close to edge
     if thresholded_image[detection_radius, detection_radius] == 0:
         score.mother_eccentric = 2
 
     # Find contour
     contour_image, contours, hierarchy = cv2.findContours(thresholded_image, 1, 2)
-    if (len(contours) == 0):
+    if len(contours) == 0:
         return  # No contours found
 
     # Calculate the isoperimetric quotient and ellipse of the largest area
@@ -194,7 +188,7 @@ def score_using_mother_shape(score: Score, mother: Particle, daughter1: Particle
         ellipse_length = fitted_ellipse[1][1]
         ellipse_width = fitted_ellipse[1][0]
         if ellipse_length / ellipse_width >= 1.2:
-            score.daughter_angles = _score_daughter_angles(fitted_ellipse[2], mother, daughter1, daughter2)
+            score.mother_angle = _score_daughter_angles(fitted_ellipse[2], mother, daughter1, daughter2)
 
     if isoperimetric_quotient < 0.4:
         # Clear case of being a mother, give a bonus
@@ -218,6 +212,50 @@ def _score_daughter_angles(ellipse_angle: float, mother: Particle, daughter1: Pa
         return -1  # Two daughters on the same side, punish
 
     return 0
+
+
+def score_using_daughter_shapes(score: Score, mother: Particle, daughter1: Particle, daughter2: Particle,
+                                daughter1_image: ndarray, daughter2_image: ndarray, detection_radius: int):
+    #score.daughters_angles = 0
+    score.daughters_area = 0
+
+    daughter1_threshold = __get_threshold_for_shape(daughter1, daughter1_image, detection_radius)
+    daughter2_threshold = __get_threshold_for_shape(daughter2, daughter2_image, detection_radius)
+
+    if daughter1_threshold is None or daughter2_threshold is None:
+        return  # Too close to edge
+
+    # Find the contours
+    contour_image1, contours1, hierarchy1 = cv2.findContours(daughter1_threshold, 1, 2)
+    contour_image2, contours2, hierarchy2 = cv2.findContours(daughter2_threshold, 1, 2)
+    if len(contours1) == 0 or len(contours2) == 0:
+        return  # No contours found
+
+    # Find contours with largest areas
+    index1_with_highest_area, area1 = __find_largest_area(contours1)
+    index2_with_highest_area, area2 = __find_largest_area(contours2)
+    if min(area1, area2) / max(area1, area2) < 1/2:
+        score.daughters_area = -1  # Size too dissimilar
+    # ellipse1 = cv2.fitEllipse(contours1[index1_with_highest_area])
+    # ellipse2 = cv2.fitEllipse(contours2[index2_with_highest_area])
+
+
+def __get_threshold_for_shape(particle: Particle, full_image: ndarray, detection_radius: int) -> Optional[ndarray]:
+    """Gets an image consisting of a circle or radius detection_radius around the given particle. Inside the circle,
+    the image is thresholded using Otsu's method. This thresholded image can be used for shape detection.
+    full_image must be a 2d ndarray consisting of intensities."""
+    x = int(particle.x)
+    y = int(particle.y)
+    if x - detection_radius < 0 or y - detection_radius < 0 or x + detection_radius >= full_image.shape[1] \
+            or y + detection_radius >= full_image.shape[0]:
+        return None  # Out of bounds
+    image = full_image[y - detection_radius:y + detection_radius, x - detection_radius:x + detection_radius]
+    image_max_intensity = max(image.max(), 256)
+    image_8bit = cv2.convertScaleAbs(image, alpha=256 / image_max_intensity, beta=0)
+    __crop_to_circle(image_8bit)
+
+    ret, thresholded_image = cv2.threshold(image_8bit, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    return thresholded_image
 
 
 def __crop_to_circle(image_8bit: ndarray):
