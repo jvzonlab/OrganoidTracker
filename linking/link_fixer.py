@@ -1,15 +1,20 @@
 from typing import Iterable, Set, Optional, Tuple, List
 
+import numpy
 from networkx import Graph
 
 import imaging
 from imaging import Particle, Experiment, cell, errors, normalized_image
+from imaging.normalized_image import ImageEdgeError
 
 
-def __repair_dead_cell(graph: Graph, particle: Particle, used_candidates=set(), remaining_iterations=7) -> bool:
+def __repair_dead_cell(experiment: Experiment, graph: Graph, particle: Particle, used_candidates=set(),
+                       remaining_iterations=7) -> bool:
     """Repairs a dead cell, searching for a "fake" mother nearby. Note: if the cell is not repairable, this procedure
     will abort halfway with a ValueError. To prevent this, call this routine with check_only=True first.
     """
+    intensity = max(0.1, __get_intensity(experiment, particle))
+
     future_particles = find_future_particles(graph, particle)
     future_preferred_particles = find_preferred_links(graph, particle, future_particles)
 
@@ -33,6 +38,12 @@ def __repair_dead_cell(graph: Graph, particle: Particle, used_candidates=set(), 
         if past_of_candidate is None:
             return False  # Strange, cell popped up out of nothing. Maybe this is the first time point?
 
+        # Intensity may not increase too much
+        candidate_intensity = __get_intensity(experiment, candidate)
+        if candidate_intensity / (intensity + 0.0001) > 2:
+            candidates.remove(candidate)
+            continue
+
         # Try to change the link
         graph.add_edge(past_of_candidate, candidate, pref=False)
         graph.add_edge(candidate, particle, pref=True)
@@ -40,7 +51,8 @@ def __repair_dead_cell(graph: Graph, particle: Particle, used_candidates=set(), 
         if not repairable and remaining_iterations >= 0:
             used_candidates_new = used_candidates.copy()
             used_candidates_new.add(candidate)
-            repairable = __repair_dead_cell(graph, past_of_candidate, used_candidates_new, remaining_iterations - 1)
+            repairable = __repair_dead_cell(experiment, graph, past_of_candidate, used_candidates_new,
+                                            remaining_iterations - 1)
 
         if not repairable:
             # Undo changes
@@ -56,6 +68,14 @@ def __repair_dead_cell(graph: Graph, particle: Particle, used_candidates=set(), 
             return True  # Worked!
 
 
+def __get_intensity(experiment: Experiment, particle: Particle, radius: int = 3) -> float:
+    try:
+        image = experiment.get_time_point(particle.time_point_number()).load_images()[int(particle.z)]
+        return numpy.average(normalized_image.get_square(image, particle.x, particle.y, radius))
+    except ImageEdgeError:
+        return 0
+
+
 def __remove_relatively_far_away(particles: Set[Particle], center: Particle, tolerance: float) -> Set[Particle]:
     if len(particles) <= 1:
         return particles
@@ -64,9 +84,9 @@ def __remove_relatively_far_away(particles: Set[Particle], center: Particle, tol
     return {particle for particle in particles if particle.distance_squared(center) <= max_distance_squared}
 
 
-def fix_no_future_particle(graph: Graph, particle: Particle):
+def fix_no_future_particle(experiment: Experiment, graph: Graph, particle: Particle):
     """This fixes the case where a particle has no future particle lined up"""
-    __repair_dead_cell(graph, particle)
+    __repair_dead_cell(experiment, graph, particle)
 
 
 def get_closest_particle_having_a_sister(graph: Graph,

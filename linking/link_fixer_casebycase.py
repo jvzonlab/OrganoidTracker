@@ -5,11 +5,7 @@
 from typing import Iterable, Set, Optional, Tuple
 
 import itertools
-import numpy
 from networkx import Graph
-from numpy import ndarray
-import cv2
-import math
 
 from imaging import Particle, Experiment, errors, normalized_image, angles
 from linking.link_fixer import downgrade_edges_pointing_to_past, find_preferred_links, find_preferred_past_particle, \
@@ -24,7 +20,7 @@ def prune_links(experiment: Experiment, graph: Graph, score_system: MotherScorin
     """
 
     for i in range(2):
-        [fix_no_future_particle(graph, particle) for particle in graph.nodes()]
+        [fix_no_future_particle(experiment, graph, particle) for particle in graph.nodes()]
         [_fix_cell_division_mother(experiment, graph, particle, score_system)
             for particle in graph.nodes()]
         [_fix_cell_division_daughters(experiment, graph, particle, score_system)

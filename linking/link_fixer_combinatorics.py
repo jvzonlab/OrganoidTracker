@@ -85,7 +85,7 @@ def prune_links(experiment: Experiment, graph: Graph, parameters: Parameters) ->
     """
     all_families = set()
 
-    [fix_no_future_particle(graph, particle) for particle in graph.nodes()]
+    [fix_no_future_particle(experiment, graph, particle) for particle in graph.nodes()]
     for time_point_number in range(experiment.first_time_point_number(), experiment.last_time_point_number() + 1):
         time_point = experiment.get_time_point(time_point_number)
         scored_families = _fix_cell_divisions_for_time_point(experiment, graph, time_point,  parameters)
