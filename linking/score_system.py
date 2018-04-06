@@ -105,7 +105,7 @@ class RationalScoringSystem(MotherScoringSystem):
                                                 daughter1_intensities_prev, daughter2_intensities_prev)
             score_daughter_distances(score, mother, daughter1, daughter2)
             score_using_mother_shape(score, mother, daughter1, daughter2, mother_image, self.shape_detection_radius)
-            score_using_daughter_shapes(score, mother, daughter1, daughter2, daughter1_image, daughter2_image,
+            score_using_daughter_shapes(score, daughter1, daughter2, daughter1_image, daughter2_image,
                                         self.shape_detection_radius)
             return score
         except ImageEdgeError:
@@ -119,7 +119,8 @@ def score_daughter_distances(score: Score, mother: Particle, daughter1: Particle
     longer_distance = m_d1_distance if m_d1_distance > m_d2_distance else m_d2_distance
     if shorter_distance * (6 ** 2) < longer_distance:
         score.daughter_distances = -2
-    score.daughter_distances = 0
+    else:
+        score.daughter_distances = 0
 
 
 def score_daughter_intensities(score: Score, daughter1_intensities: ndarray, daughter2_intensities: ndarray,
@@ -161,7 +162,7 @@ def score_using_mother_shape(score: Score, mother: Particle, daughter1: Particle
     """Returns a black-and-white image where white is particle and black is background, at least in theory."""
     score.mother_shape = 0
     score.mother_eccentric = 0
-    score.mother_angle = 0
+    score.daughter_sides = 0
 
     # Zoom in on mother
     thresholded_image = __get_threshold_for_shape(mother, full_image, detection_radius)
@@ -188,7 +189,7 @@ def score_using_mother_shape(score: Score, mother: Particle, daughter1: Particle
         ellipse_length = fitted_ellipse[1][1]
         ellipse_width = fitted_ellipse[1][0]
         if ellipse_length / ellipse_width >= 1.2:
-            score.mother_angle = _score_daughter_angles(fitted_ellipse[2], mother, daughter1, daughter2)
+            score.daughter_sides = _score_daughter_sides(fitted_ellipse[2], mother, daughter1, daughter2)
 
     if isoperimetric_quotient < 0.4:
         # Clear case of being a mother, give a bonus
@@ -200,8 +201,8 @@ def score_using_mother_shape(score: Score, mother: Particle, daughter1: Particle
     return score
 
 
-def _score_daughter_angles(ellipse_angle: float, mother: Particle, daughter1: Particle,
-                           daughter2: Particle) -> float:
+def _score_daughter_sides(ellipse_angle: float, mother: Particle, daughter1: Particle,
+                          daughter2: Particle) -> float:
     ellipse_angle_perpendicular = (ellipse_angle + 90) % 360
 
     # These angles are from 0 to 180, where 90 is completely aligned with the director of the ellipse
@@ -214,9 +215,9 @@ def _score_daughter_angles(ellipse_angle: float, mother: Particle, daughter1: Pa
     return 0
 
 
-def score_using_daughter_shapes(score: Score, mother: Particle, daughter1: Particle, daughter2: Particle,
+def score_using_daughter_shapes(score: Score, daughter1: Particle, daughter2: Particle,
                                 daughter1_image: ndarray, daughter2_image: ndarray, detection_radius: int):
-    #score.daughters_angles = 0
+    score.daughters_angles = 0
     score.daughters_area = 0
 
     daughter1_threshold = __get_threshold_for_shape(daughter1, daughter1_image, detection_radius)
@@ -236,8 +237,22 @@ def score_using_daughter_shapes(score: Score, mother: Particle, daughter1: Parti
     index2_with_highest_area, area2 = __find_largest_area(contours2)
     if min(area1, area2) / max(area1, area2) < 1/2:
         score.daughters_area = -1  # Size too dissimilar
-    # ellipse1 = cv2.fitEllipse(contours1[index1_with_highest_area])
-    # ellipse2 = cv2.fitEllipse(contours2[index2_with_highest_area])
+
+    # Find daughters that are mirror images of themselves (mirror = equidistant line between the two)
+    ellipse1 = cv2.fitEllipse(contours1[index1_with_highest_area])
+    ellipse2 = cv2.fitEllipse(contours2[index2_with_highest_area])
+    daughter1_direction = ellipse1[2]
+    daughter2_direction = ellipse2[2]
+    if angles.difference(daughter1_direction, daughter2_direction) > 90:
+        daughter2_direction = angles.flipped(daughter2_direction)  # Make sure daughters lie in almost the same dir
+
+    d1_to_d2_direction = angles.direction_2d(daughter1, daughter2)
+    mirror_angle = angles.perpendicular(d1_to_d2_direction)
+    mirrored_daughter2_direction = angles.mirrored(daughter2_direction, mirror_angle)
+    difference = angles.difference(daughter1_direction, mirrored_daughter2_direction)
+    if difference > 90:
+        difference = 180 - difference  # Ignore whether daughter lies like this:  -->  or this:  <--
+    score.daughters_angles = -difference / 90
 
 
 def __get_threshold_for_shape(particle: Particle, full_image: ndarray, detection_radius: int) -> Optional[ndarray]:
