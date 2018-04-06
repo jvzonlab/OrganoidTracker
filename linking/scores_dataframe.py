@@ -20,7 +20,7 @@ def create(experiment: Experiment, putative_families: List[Family], scoring_syst
 
         family = putative_families[i]
         score = _score(experiment, family, scoring_system)
-        data[i, 0] = str(family.mother)
+        data[i, 0] = str(family)
         for j in range(1, len(keys) - 2):
             key = keys[j]
             data[i, j] = score.get(key)
