@@ -1,8 +1,5 @@
-from matplotlib import pyplot
-
-from imaging import Experiment, io, tifffolder, image_visualizer
-from linking import link_fixer_combinatorics, linker_for_experiment, Parameters
-from linking_analysis import mother_finder
+from imaging import Experiment, io, tifffolder
+from linking import link_fixer_combinatorics, linker_for_experiment, Parameters, mother_finder
 import time
 
 # PARAMETERS

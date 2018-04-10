@@ -1,6 +1,6 @@
 import networkx
 from networkx import Graph
-from linking_analysis import mother_finder
+from linking import mother_finder
 from typing import Iterable
 from imaging import Particle
 

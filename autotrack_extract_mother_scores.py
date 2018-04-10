@@ -3,9 +3,9 @@ simple nearest-neighbor linking. The data is compared with data of the actual mo
 """
 from config import ConfigFile
 from imaging import io, tifffolder, Experiment
-from linking import linker_for_experiment, scores_dataframe
-from linking.score_system import RationalScoringSystem
-from linking_analysis import mother_finder
+from linking import linker_for_experiment, mother_finder
+from linking_analysis import scores_dataframe
+from linking.scoring_system import RationalScoringSystem
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)

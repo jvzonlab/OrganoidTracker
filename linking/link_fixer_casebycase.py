@@ -7,23 +7,23 @@ from typing import Iterable, Set, Optional, Tuple
 import itertools
 from networkx import Graph
 
-from imaging import Particle, Experiment, errors, normalized_image, angles
+from imaging import Particle, Experiment, errors, normalized_image, angles, Family
 from linking.link_fixer import downgrade_edges_pointing_to_past, find_preferred_links, find_preferred_past_particle, \
-    find_future_particles, remove_error, with_only_the_preferred_edges, get_2d_image, fix_no_future_particle, \
+    find_future_particles, remove_error, with_only_the_preferred_edges, add_mother_scores, fix_no_future_particle, \
     get_closest_particle_having_a_sister, find_preferred_future_particles
-from linking.score_system import MotherScoringSystem
+from linking.scoring_system import MotherScoringSystem
 from linking_analysis import logical_tests
 
 
 def prune_links(experiment: Experiment, graph: Graph, score_system: MotherScoringSystem) -> Graph:
     """Takes a graph with all possible edges between cells, and returns a graph with only the most likely edges./
     """
-
+    add_mother_scores(experiment, graph, score_system)
     for i in range(2):
         [fix_no_future_particle(experiment, graph, particle) for particle in graph.nodes()]
-        [_fix_cell_division_mother(experiment, graph, particle, score_system)
+        [_fix_cell_division_mother(experiment, graph, particle)
             for particle in graph.nodes()]
-        [_fix_cell_division_daughters(experiment, graph, particle, score_system)
+        [_fix_cell_division_daughters(experiment, graph, particle)
             for particle in graph.nodes()]
 
     graph = with_only_the_preferred_edges(graph)
@@ -31,8 +31,8 @@ def prune_links(experiment: Experiment, graph: Graph, score_system: MotherScorin
     return graph
 
 
-def _fix_cell_division_daughters(experiment: Experiment, graph: Graph, particle: Particle,
-                                 score_system: MotherScoringSystem):
+def _fix_cell_division_daughters(experiment: Experiment, graph: Graph, particle: Particle):
+    time_point = experiment.get_time_point(particle.time_point_number())
     future_particles = find_future_particles(graph, particle)
     future_preferred_particles = find_preferred_links(graph, particle, future_particles)
 
@@ -41,15 +41,15 @@ def _fix_cell_division_daughters(experiment: Experiment, graph: Graph, particle:
 
     current_daughter1 = future_preferred_particles.pop()
     current_daughter2 = future_preferred_particles.pop()
-    current_daughters = {current_daughter1, current_daughter2}
-    current_score = score_system.calculate(experiment, particle, current_daughter1, current_daughter2).total()
+    current_family = Family(particle, current_daughter1, current_daughter2)
+    current_score = time_point.mother_score(current_family).total()
 
     best_daughter1 = None
     best_daughter2 = None
     best_score = current_score
 
     for daughter1, daughter2 in itertools.combinations(future_particles, 2):
-        intersection = {daughter1, daughter2} & current_daughters
+        intersection = {daughter1, daughter2} & current_family.daughters
         if len(intersection) != 1:
             continue  # Exactly one daughter must be new
         if _has_sister(graph, daughter1) and _has_sister(graph, daughter2):
@@ -58,7 +58,8 @@ def _fix_cell_division_daughters(experiment: Experiment, graph: Graph, particle:
             continue
 
         # Check if this combination is better
-        score = score_system.calculate(experiment, particle, daughter1, daughter2).total()
+        new_family = Family(particle, daughter1, daughter2)
+        score = time_point.mother_score(new_family).total()
         if score > best_score:
             best_daughter1 = daughter1
             best_daughter2 = daughter2
@@ -66,9 +67,9 @@ def _fix_cell_division_daughters(experiment: Experiment, graph: Graph, particle:
 
     if best_score / current_score >= 4/3:  # Improvement is possible
         # Find the cells
-        intersection = {best_daughter1, best_daughter2} & current_daughters
+        intersection = {best_daughter1, best_daughter2} & current_family.daughters
 
-        removed_daughter = current_daughters.difference(intersection).pop()
+        removed_daughter = current_family.daughters.difference(intersection).pop()
         remaining_daughter = intersection.pop()
         new_daughter = best_daughter1 if best_daughter1 != remaining_daughter else best_daughter2
         old_parent_of_new_daughter = find_preferred_past_particle(graph, new_daughter)
@@ -84,7 +85,7 @@ def _fix_cell_division_daughters(experiment: Experiment, graph: Graph, particle:
         graph.add_node(particle, error=errors.POTENTIALLY_WRONG_DAUGHTERS)
 
 
-def _fix_cell_division_mother(experiment: Experiment, graph: Graph, particle: Particle, score_system: MotherScoringSystem):
+def _fix_cell_division_mother(experiment: Experiment, graph: Graph, particle: Particle):
     """Checks if there isn't a mother nearby that is a worse mother than this cell would be. If yes, one daughter over
     there is removed and placed under this cell."""
     future_particles = find_future_particles(graph, particle)
@@ -115,10 +116,11 @@ def _fix_cell_division_mother(experiment: Experiment, graph: Graph, particle: Pa
         # The _get_two_daughters should have checked for this
         raise ValueError("No nearby mother available for " + str(particle))
 
-    score = score_system.calculate(experiment, particle, two_daughters[0], two_daughters[1]).total()
-    current_parent_score = score_system.calculate(experiment, current_mother_of_daughter2,
-                                                  children_of_current_mother_of_daughter2[0],
-                                                  children_of_current_mother_of_daughter2[1]).total()
+    family = Family(particle, *two_daughters)
+    score = experiment.get_time_point(particle.time_point_number()).mother_score(family).total()
+    current_family = Family(current_mother_of_daughter2, *children_of_current_mother_of_daughter2)
+    current_parent_score = experiment.get_time_point(current_mother_of_daughter2.time_point_number())\
+        .mother_score(current_family).total()
     # Printing of warnings
     if abs(score - current_parent_score) <= 1:
         # Not sure

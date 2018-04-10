@@ -2,7 +2,7 @@ import imaging
 from imaging.visualizer import Visualizer, activate
 from imaging import Experiment, TimePoint, Particle
 from matplotlib.figure import Figure
-from matplotlib.backend_bases import KeyEvent
+from matplotlib.backend_bases import KeyEvent, MouseEvent
 from numpy import ndarray
 from networkx import Graph
 from typing import Optional, Iterable, List, Tuple
@@ -236,6 +236,28 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     def __init__(self, experiment: Experiment, figure: Figure, time_point_number: Optional[int] = None, z: int = 14,
                  show_next_image: bool = False):
         super().__init__(experiment, figure, time_point_number=time_point_number, z=z, show_next_image=show_next_image)
+
+    def _on_mouse_click(self, event: MouseEvent):
+        if event.dblclick and event.button == 1:
+            particle = self._get_particle_at(event.xdata, event.ydata)
+            if particle is not None:
+                cell_divisions = list(self._time_point.mother_scores(particle))
+                cell_divisions.sort(key=lambda d: d.score.total(), reverse=True)
+                displayed_items = 0
+                text = ""
+                for scored_family in cell_divisions:
+                    if displayed_items >= 4:
+                        text+= "... and " + str(len(cell_divisions) - displayed_items) + " more"
+                        break
+                    text += str(displayed_items + 1) + ". " + str(scored_family.family) + ", score: "\
+                            + str(scored_family.score.total()) + "\n"
+                    displayed_items += 1
+                if text:
+                    self.update_status("Possible cell division scores:\n" + text)
+                else:
+                    self.update_status("No cell division scores found")
+        else:
+            super()._on_mouse_click(event)
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "t":

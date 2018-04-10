@@ -20,18 +20,16 @@ _automatic_links_file = config.get_or_default("automatic_links_file",
 _baseline_links_file = config.get_or_default("baseline_links_file", "Automatic analysis/Links/Manual.json")
 config.save_if_changed()
 
-_automatic_links = io.load_links_from_json(_automatic_links_file)
-_baseline_links = io.load_links_from_json(_baseline_links_file)
 # END OF PARAMETERS
 
 print("Starting...")
 
 experiment = Experiment()
 io.load_positions_from_json(experiment, _positions_file)
-experiment.particle_links_scratch(_automatic_links)
-experiment.particle_links(_baseline_links)
+io.load_links_and_scores_from_json(experiment, _automatic_links_file, links_are_scratch=True)
+experiment.particle_links(io.load_links_from_json(_baseline_links_file))
 
-comparison.print_differences(_automatic_links, _baseline_links)
+comparison.print_differences(experiment.particle_links_scratch(), experiment.particle_links())
 
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)

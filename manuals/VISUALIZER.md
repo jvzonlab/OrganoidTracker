@@ -30,6 +30,9 @@ delete an error. Press `E` again to leave this view, and go back to the normal v
 Press `D` to go to a view that displays all differences between two sets of links between the cells in time. In this
 view, use the left and right arrow keys to jump to the next or previous error. Press `D` again to exit this view.
 
+Press `F` to view information on the flow field: the direction in which cells are going. Press `S` to view how the shape
+of the cell is recognized. Double-click a cell to view the mother score of a cell.
+
 The link editor
 ---------------
 Links are the connections between cells at different time points.

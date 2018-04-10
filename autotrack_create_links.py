@@ -3,7 +3,7 @@ from imaging import Experiment, io, tifffolder
 from linking import link_fixer_casebycase, linker_for_experiment
 
 # PARAMETERS
-from linking.score_system import RationalScoringSystem
+from linking.rational_scoring_system import RationalScoringSystem
 
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("create_links")
@@ -13,7 +13,7 @@ _images_format = config.get_or_prompt("images_pattern", "What are the image file
 _min_time_point = int(config.get_or_default("min_time_point", str(1), store_in_defaults=True))
 _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_in_defaults=True))
 _positions_file = config.get_or_default("positions_file", "Automatic analysis/Positions/Manual.json")
-_output_file = config.get_or_default("links_output_file", "Automatic analysis/Links/Smart nearest neighbor.json")
+_links_output_file = config.get_or_default("links_output_file", "Automatic analysis/Links/Smart nearest neighbor.json")
 _mitotic_radius = int(config.get_or_default("mitotic_radius", str(3)))
 _shape_detection_radius = int(config.get_or_default("shape_detection_radius", str(16)))
 _flow_detection_radius = int(config.get_or_default("flow_detection_radius", str(50)))
@@ -39,5 +39,5 @@ print("Deciding on what links to use...")
 score_system = RationalScoringSystem(_mitotic_radius, _shape_detection_radius)
 link_result = link_fixer_casebycase.prune_links(experiment, possible_links, score_system)
 print("Writing results to file...")
-io.save_links_to_json(link_result, _output_file)
+io.save_links_and_scores_to_json(experiment, link_result, _links_output_file)
 print("Done")

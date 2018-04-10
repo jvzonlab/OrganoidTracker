@@ -35,6 +35,29 @@ def nearest_neighbor(experiment: Experiment, tolerance: float = 1.0, min_time_po
     return graph
 
 
+def nearest_neighbor_using_flow(experiment: Experiment, initial_links: Graph, flow_detection_radius: int,
+                                min_time_point: int = 0, max_time_point: int = 5000) -> Graph:
+    """A bit more advanced nearest-neighbor linking, that analysis the already-established links around a particle to
+    decide in which direction a particle is going.
+
+    max_time_point is the last time point that will still be included.
+    """
+    graph = _all_links_downgraded(initial_links)
+
+    time_point_current = experiment.get_time_point(max(experiment.first_time_point_number(), min_time_point))
+
+    try:
+        while time_point_current.time_point_number() < max_time_point:
+            time_point_current = experiment.get_next_time_point(time_point_current)
+            _find_nearest_edges_using_flow(graph, initial_links, time_point_current, flow_detection_radius)
+    except KeyError:
+        # Done! No more time points remain
+        pass
+
+    print("Done creating nearest-neighbor links using flow!")
+    return graph
+
+
 def _add_nodes(graph: Graph, time_point: TimePoint) -> None:
     for particle in time_point.particles():
         graph.add_node(particle)
@@ -57,29 +80,6 @@ def _add_nearest_edges_extra(graph: Graph, time_point_current: TimePoint, time_p
         for nearby_particle in nearby_list:
             if not graph.has_edge(particle, nearby_particle):
                 graph.add_edge(particle, nearby_particle, pref=False)
-
-
-def nearest_neighbor_using_flow(experiment: Experiment, initial_links: Graph, flow_detection_radius: int,
-                                min_time_point: int = 0, max_time_point: int = 5000) -> Graph:
-    """A bit more advanced nearest-neighbor linking, that analysis the already-established links around a particle to
-    decide in which direction a particle is going.
-
-    max_time_point is the last time point that will still be included.
-    """
-    graph = _all_links_downgraded(initial_links)
-
-    time_point_current = experiment.get_time_point(max(experiment.first_time_point_number(), min_time_point))
-
-    try:
-        while time_point_current.time_point_number() < max_time_point:
-            time_point_current = experiment.get_next_time_point(time_point_current)
-            _find_nearest_edges_using_flow(graph, initial_links, time_point_current, flow_detection_radius)
-    except KeyError:
-        # Done! No more time points remain
-        pass
-
-    print("Done creating nearest-neighbor links using flow!")
-    return graph
 
 
 def _all_links_downgraded(original_graph: Graph):

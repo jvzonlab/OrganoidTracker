@@ -1,68 +1,14 @@
-from typing import Tuple, Dict, Set, KeysView, List, Optional
+from typing import Tuple, Optional
 
 import cv2
 import numpy
 import math
 from numpy import ndarray
 
-from imaging import Experiment, Particle, normalized_image, angles
+from imaging import Experiment, Particle, normalized_image, angles, Score
 from imaging.normalized_image import ImageEdgeError
 from linking.link_fixer import get_2d_image
-
-
-class Score:
-    """Represents a score, calculated from the individual elements. Usage:
-
-        score = Score()
-        score.foo = 4
-        score.bar = 3
-        # Results in score.total() == 7
-    """
-
-    def __init__(self, **kwargs):
-        self.__dict__["scores"] = kwargs.copy()
-
-    def __setattr__(self, key, value):
-        self.__dict__["scores"][key] = value
-
-    def __getattr__(self, item):
-        return self.__dict__["scores"][item]
-
-    def __delattr__(self, item):
-        del self.__dict__["scores"][item]
-
-    def total(self):
-        score = 0
-        for name, value in self.__dict__["scores"].items():
-            score += value
-        return score
-
-    def keys(self) -> List[str]:
-        keylist = list(self.__dict__["scores"].keys())
-        keylist.sort()
-        return keylist
-
-    def get(self, key: str) -> float:
-        """Gets the specified score, or 0 if it does not exist"""
-        try:
-            return self.__dict__["scores"][key]
-        except KeyError:
-            return 0.0
-
-    def __str__(self):
-        return str(self.total()) + " FROM " + str(self.__dict__["scores"])
-
-    def __repr__(self):
-        return "Score(**" + repr(self.__dict__["scores"]) + ")"
-
-
-class MotherScoringSystem:
-    """Abstract class for scoring putative mothers."""
-
-    def calculate(self, experiment: Experiment, mother: Particle,
-                  daughter1: Particle, daughter2: Particle) -> Score:
-        """Gets the likeliness of this actually being a family. Higher is more likely."""
-        pass
+from linking.scoring_system import MotherScoringSystem
 
 
 class RationalScoringSystem(MotherScoringSystem):
@@ -118,9 +64,9 @@ def score_daughter_distances(score: Score, mother: Particle, daughter1: Particle
     shorter_distance = m_d1_distance if m_d1_distance < m_d2_distance else m_d2_distance
     longer_distance = m_d1_distance if m_d1_distance > m_d2_distance else m_d2_distance
     if shorter_distance * (6 ** 2) < longer_distance:
-        score.daughter_distances = -2
+        score.daughters_distance = -2
     else:
-        score.daughter_distances = 0
+        score.daughters_distance = 0
 
 
 def score_daughter_intensities(score: Score, daughter1_intensities: ndarray, daughter2_intensities: ndarray,
@@ -132,12 +78,12 @@ def score_daughter_intensities(score: Score, daughter1_intensities: ndarray, dau
     daughter2_average_prev = numpy.average(daughter2_intensities_prev)
 
     # Daughter cells must have almost the same intensity
-    score.daughter_intensity_difference = -abs(daughter1_average - daughter2_average) / 2
-    score.daughter_intensity_delta = 0
+    score.daughters_intensity_difference = -abs(daughter1_average - daughter2_average) / 2
+    score.daughters_intensity_delta = 0
     if daughter1_average / (daughter1_average_prev + 0.0001) > 2:
-        score.daughter_intensity_delta += 1
+        score.daughters_intensity_delta += 1
     if daughter2_average / (daughter2_average_prev + 0.0001) > 2:
-        score.daughter_intensity_delta += 1
+        score.daughters_intensity_delta += 1
 
 
 def score_mother_intensities(score: Score, mother_intensities: ndarray, mother_intensities_next: ndarray):

@@ -6,6 +6,23 @@ from networkx import Graph
 import imaging
 from imaging import Particle, Experiment, cell, errors, normalized_image
 from imaging.normalized_image import ImageEdgeError
+from linking import mother_finder
+from linking.scoring_system import MotherScoringSystem
+
+
+def add_mother_scores(experiment: Experiment, graph: Graph, score_system: MotherScoringSystem):
+    """Calculates the score for all possible mothers in the graph. (So for all cells with at least two future
+    positions.)
+    """
+    families = mother_finder.find_families(graph, warn_on_many_daughters=False)
+    for i in range(len(families)):
+        if i % 50 == 0:  # Periodic progress updates
+            print("Working on putative family " + str(i) + "/" + str(len(families)))
+        family = families[i]
+        mother = family.mother
+        daughters = list(family.daughters)
+        score = score_system.calculate(experiment, mother, daughters[0], daughters[1])
+        experiment.get_time_point(mother.time_point_number()).mother_score(family, score)
 
 
 def __repair_dead_cell(experiment: Experiment, graph: Graph, particle: Particle, used_candidates=set(),

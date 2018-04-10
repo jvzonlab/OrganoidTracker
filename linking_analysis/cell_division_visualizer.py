@@ -2,7 +2,7 @@ from matplotlib.backend_bases import KeyEvent
 from matplotlib.figure import Figure
 from imaging import Particle, Experiment, cell
 from imaging.particle_list_visualizer import ParticleListVisualizer
-from linking_analysis import mother_finder
+from linking import mother_finder
 from typing import List, Optional
 
 

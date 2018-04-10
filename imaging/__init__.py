@@ -1,9 +1,11 @@
 """Images and positions of particles (biological cells in our case)"""
 from operator import itemgetter
-from typing import List, Iterable, Optional, Dict, Union, Tuple, Set
+from typing import List, Iterable, Optional, Dict, Set, Any, ItemsView
+
 from networkx import Graph
-from imaging import image_cache
 from numpy import ndarray
+
+from imaging import image_cache
 
 COLOR_CELL_NEXT = "red"
 COLOR_CELL_PREVIOUS = "blue"
@@ -59,15 +61,113 @@ class Particle:
                and self._time_point_number == other._time_point_number
 
 
+class Score:
+    """Represents a score, calculated from the individual elements. Usage:
+
+        score = Score()
+        score.foo = 4
+        score.bar = 3.1
+        # Results in score.total() == 7.1
+    """
+
+    def __init__(self, **kwargs):
+        self.__dict__["scores"] = kwargs.copy()
+
+    def __setattr__(self, key, value):
+        self.__dict__["scores"][key] = value
+
+    def __getattr__(self, item):
+        return self.__dict__["scores"][item]
+
+    def __delattr__(self, item):
+        del self.__dict__["scores"][item]
+
+    def total(self):
+        score = 0
+        for name, value in self.__dict__["scores"].items():
+            score += value
+        return score
+
+    def keys(self) -> List[str]:
+        keylist = list(self.__dict__["scores"].keys())
+        keylist.sort()
+        return keylist
+
+    def get(self, key: str) -> float:
+        """Gets the specified score, or 0 if it does not exist"""
+        try:
+            return self.__dict__["scores"][key]
+        except KeyError:
+            return 0.0
+
+    def dict(self) -> Dict[str, float]:
+        """Gets the underlying score dictionary"""
+        return self.__dict__["scores"]
+
+    def __str__(self):
+        return str(self.total()) + " (based on " + str(self.__dict__["scores"]) + ")"
+
+    def __repr__(self):
+        return "Score(**" + repr(self.__dict__["scores"]) + ")"
+
+
+class Family:
+    """A mother cell with two daughter cells."""
+    mother: Particle
+    daughters: Set[Particle]
+
+    def __init__(self, mother: Particle, daughter1: Particle, daughter2: Particle):
+        self.mother = mother
+        self.daughters = {daughter1, daughter2}
+
+    @staticmethod
+    def _pos_str(particle: Particle) -> str:
+        return "(" + ("%.2f" % particle.x) + ", " + ("%.2f" % particle.y) + ", " + ("%.0f" % particle.z) + ")"
+
+    def __str__(self):
+        return self._pos_str(self.mother) + " " + str(self.mother.time_point_number()) + "---> " \
+               + " and ".join([self._pos_str(daughter) for daughter in self.daughters])
+
+    def __repr__(self):
+        return "Family(" + repr(self.mother) + ", " +  ", ".join([repr(daughter) for daughter in self.daughters]) + ")"
+
+    def __hash__(self):
+        hash_code = hash(self.mother)
+        for daughter in self.daughters:
+            hash_code += hash(daughter)
+        return hash_code
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) \
+            and other.mother == self.mother \
+            and other.daughters == self.daughters
+
+
+class ScoredFamily:
+    """A family with a score attached. The higher the score, the higher the chance that this family actually exists."""
+    family: Family
+    score: Score
+
+    def __init__(self, family: Family, score: Score):
+        self.family = family
+        self.score = score
+
+    def __repr__(self):
+        return "<" + str(self.family) + " scored " + str(self.score) + ">"
+
+
 class TimePoint:
     """A single point in time."""
 
     _time_point_number: int
     _particles: List[Particle]
+    _mother_scores: Dict[Family, Score]
+    _image_loader: Any
 
     def __init__(self, time_point_number: int):
         self._time_point_number = time_point_number
         self._particles = []
+        self._mother_scores = dict()
         self._image_loader = None
 
     def time_point_number(self) -> int:
@@ -75,6 +175,16 @@ class TimePoint:
 
     def particles(self) -> List[Particle]:
         return self._particles
+
+    def mother_score(self, family: Family, score: Optional[Score] = None) -> Score:
+        """Gets or sets the mother score of the given particle. Returns None if the cell has no score set. Raises
+        KeyError if no score has been set for this particle."""
+        if family.mother.time_point_number() != self._time_point_number:
+            raise KeyError("Family belongs to another time point")
+        if score is not None:
+            self._mother_scores[family] = score
+            return score
+        return self._mother_scores[family]
 
     def add_particles(self, particles: Iterable[Particle]) -> None:
         """Adds all particles in the list to this time_point. Throws ValueError if the particles were already assigned to
@@ -106,6 +216,14 @@ class TimePoint:
         if self._image_loader is None:
             return None
         return image_loader()
+
+    def mother_scores(self, mother: Optional[Particle] = None) -> Iterable[ScoredFamily]:
+        """Gets all mother scores of either all putative mothers, or just the given mother (if any)."""
+        for family, score in self._mother_scores.items():
+            if mother is not None:
+                if family.mother != mother:
+                    continue
+            yield ScoredFamily(family, score)
 
 
 class Experiment:
@@ -190,6 +308,14 @@ class Experiment:
         if network is not None:
             self._particle_links_baseline = network
         return self._particle_links_baseline
+
+    def time_points(self) -> Iterable[TimePoint]:
+        first_number = self.first_time_point_number()
+        last_number = self.last_time_point_number()
+        current_number = first_number
+        while current_number <= last_number:
+            yield self.get_time_point(current_number)
+            current_number += 1
 
 
 def get_closest_particle(particles: Iterable[Particle], search_position: Particle,

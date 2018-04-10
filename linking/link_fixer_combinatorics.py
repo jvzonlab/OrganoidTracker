@@ -4,18 +4,17 @@ from typing import Set, Dict, List, Iterable, Tuple
 import numpy
 from networkx import Graph
 from numpy import ndarray
-import cv2
-import math
 
 import imaging
-from imaging import Particle, Experiment, TimePoint, normalized_image
+from imaging import Particle, Experiment, TimePoint, ScoredFamily, normalized_image
 from imaging.normalized_image import ImageEdgeError
 from linking import Parameters
 from linking.link_fixer import fix_no_future_particle, with_only_the_preferred_edges, find_future_particles, \
-    find_preferred_links, downgrade_edges_pointing_to_past, get_2d_image, find_preferred_past_particle
-from linking.score_system import MotherScoringSystem, RationalScoringSystem
+    find_preferred_links, downgrade_edges_pointing_to_past
+from linking.scoring_system import MotherScoringSystem
+from linking.rational_scoring_system import RationalScoringSystem
 from linking_analysis import logical_tests
-from linking_analysis.mother_finder import Family
+from linking.mother_finder import Family
 
 
 class SearchResult:
@@ -65,18 +64,6 @@ class SearchResult:
                     daughters.add(daughter)
 
         return mothers, daughters
-
-class ScoredFamily:
-    """A family with a score attached. The higher the score, the higher the chance that this family actually exists."""
-    family: Family
-    score: float
-
-    def __init__(self, family: Family, score: float):
-        self.family = family
-        self.score = score
-
-    def __repr__(self):
-        return "<ScoredFamily " + str(self.score) + " " + str(self.family) + ">"
 
 
 def prune_links(experiment: Experiment, graph: Graph, parameters: Parameters) -> Tuple[Graph, Set[Family]]:
@@ -162,8 +149,6 @@ def _perform_combinatorics(experiment: Experiment, graph: Graph, mothers_pick_am
     best_family_stack_score = 0
     for picked_mothers in itertools.combinations(mothers, mothers_pick_amount):
         for family_stack in _scan(experiment, graph, scoring_system, picked_mothers, 0, nearby_daughters, dict()):
-            if family_stack[0].family.mother.time_point_number() == 48:
-                print(family_stack)
             score = _score_stack(family_stack)
             if score > best_family_stack_score:
                 best_family_stack = family_stack
@@ -199,7 +184,7 @@ def _score(cache: Dict[Family, ScoredFamily], experiment: Experiment, graph: Gra
     if family in cache:
         return cache[family]
     else:
-        scored = ScoredFamily(family, scoring.calculate(experiment, mother, daughter1, daughter2).total())
+        scored = ScoredFamily(family, scoring.calculate(experiment, mother, daughter1, daughter2))
         cache[family] = scored
         return scored
 
@@ -208,7 +193,7 @@ def _score_stack(family_stack: List[ScoredFamily]):
     """Calculates the total score of a collection of families."""
     score = 0
     for family in family_stack:
-        score += family.score
+        score += family.score.total()
     return score
 
 

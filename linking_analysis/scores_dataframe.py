@@ -3,9 +3,9 @@ from typing import List, Set
 import numpy
 import pandas
 
-from imaging import Experiment, Particle
-from linking_analysis.mother_finder import Family
-from linking.score_system import MotherScoringSystem, Score
+from imaging import Experiment
+from linking.mother_finder import Family
+from linking.scoring_system import MotherScoringSystem, Score
 
 
 def create(experiment: Experiment, putative_families: List[Family], scoring_system: MotherScoringSystem,

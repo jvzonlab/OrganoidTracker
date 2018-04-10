@@ -1,6 +1,6 @@
 import unittest
 
-from linking.score_system import Score
+from linking.scoring_system import Score
 
 
 class TestScoreClass(unittest.TestCase):

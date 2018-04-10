@@ -4,8 +4,7 @@ from typing import Set, Tuple, List
 import itertools
 from networkx import Graph
 
-from imaging import Particle
-from linking import Family
+from imaging import Particle, Family
 
 
 def find_mothers(graph: Graph) -> Set[Particle]:
