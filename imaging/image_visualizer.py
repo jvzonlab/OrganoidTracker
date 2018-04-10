@@ -191,6 +191,7 @@ class AbstractImageVisualizer(Visualizer):
                 new_time_point_number = int(time_point_str.strip())
                 self._time_point, self._time_point_images = self.load_time_point(new_time_point_number)
                 self.draw_view()
+                self.update_status("Moved! Press 1 to enable the mouse controls again.")
             except KeyError:
                 self.update_status("Unknown time point: " + time_point_str + " (range is "
                                    + str(self._experiment.first_time_point_number()) + " to "
