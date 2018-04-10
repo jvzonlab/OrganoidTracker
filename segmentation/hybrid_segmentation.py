@@ -18,6 +18,7 @@ def perform(image: ndarray) -> ndarray:
     cv2.bitwise_and(image_8bit, image_circle, image_8bit)
 
     ret, thresholded_image = cv2.threshold(image_8bit, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    thresholded_image = cv2.erode(thresholded_image, kernel=cv2.getStructuringElement(cv2.MORPH_CROSS, (3,3)))
     contour_image, contours, hierarchy = cv2.findContours(thresholded_image, 1, 2)
 
     for i in range(len(contours)):

@@ -162,7 +162,8 @@ def score_using_mother_shape(score: Score, mother: Particle, daughter1: Particle
     """Returns a black-and-white image where white is particle and black is background, at least in theory."""
     score.mother_shape = 0
     score.mother_eccentric = 0
-    score.daughter_sides = 0
+    score.mother_concavity = 0
+    score.daughters_side = 0
 
     # Zoom in on mother
     thresholded_image = __get_threshold_for_shape(mother, full_image, detection_radius)
@@ -172,6 +173,7 @@ def score_using_mother_shape(score: Score, mother: Particle, daughter1: Particle
         score.mother_eccentric = 2
 
     # Find contour
+    thresholded_image = cv2.erode(thresholded_image, kernel=cv2.getStructuringElement(cv2.MORPH_CROSS, (3,3)))
     contour_image, contours, hierarchy = cv2.findContours(thresholded_image, 1, 2)
     if len(contours) == 0:
         return  # No contours found
@@ -181,16 +183,6 @@ def score_using_mother_shape(score: Score, mother: Particle, daughter1: Particle
     contour = contours[index_with_highest_area]
     perimeter = cv2.arcLength(contour, True)
     isoperimetric_quotient = 4 * math.pi * area / perimeter ** 2 if perimeter > 0 else 0
-
-    if thresholded_image[detection_radius, detection_radius] == 255:
-        # Only try to score if the mother position is inside the threshold
-        # (Otherwise we got a very irregular shape of which the angle is unreliable)
-        fitted_ellipse = cv2.fitEllipse(contour)
-        ellipse_length = fitted_ellipse[1][1]
-        ellipse_width = fitted_ellipse[1][0]
-        if ellipse_length / ellipse_width >= 1.2:
-            score.daughter_sides = _score_daughter_sides(fitted_ellipse[2], mother, daughter1, daughter2)
-
     if isoperimetric_quotient < 0.4:
         # Clear case of being a mother, give a bonus
         score.mother_shape = 2
@@ -198,7 +190,15 @@ def score_using_mother_shape(score: Score, mother: Particle, daughter1: Particle
         # Just use a normal scoring system
         score.mother_shape = 1 - isoperimetric_quotient
 
-    return score
+    # Score ellipsis
+    if thresholded_image[detection_radius, detection_radius] == 255:
+        # Only try to score ellipsis if the mother position is inside the threshold
+        # (Otherwise we got a very irregular shape of which the angle is unreliable)
+        fitted_ellipse = cv2.fitEllipse(contour)
+        ellipse_length = fitted_ellipse[1][1]
+        ellipse_width = fitted_ellipse[1][0]
+        if ellipse_length / ellipse_width >= 1.2:
+            score.daughters_side = _score_daughter_sides(fitted_ellipse[2], mother, daughter1, daughter2)
 
 
 def _score_daughter_sides(ellipse_angle: float, mother: Particle, daughter1: Particle,
