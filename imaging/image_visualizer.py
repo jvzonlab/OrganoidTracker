@@ -242,23 +242,26 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         if event.dblclick and event.button == 1:
             particle = self._get_particle_at(event.xdata, event.ydata)
             if particle is not None:
-                cell_divisions = list(self._time_point.mother_scores(particle))
-                cell_divisions.sort(key=lambda d: d.score.total(), reverse=True)
-                displayed_items = 0
-                text = ""
-                for scored_family in cell_divisions:
-                    if displayed_items >= 4:
-                        text+= "... and " + str(len(cell_divisions) - displayed_items) + " more"
-                        break
-                    text += str(displayed_items + 1) + ". " + str(scored_family.family) + ", score: "\
-                            + str(scored_family.score.total()) + "\n"
-                    displayed_items += 1
-                if text:
-                    self.update_status("Possible cell division scores:\n" + text)
-                else:
-                    self.update_status("No cell division scores found")
+                self.__display_cell_division_scores(particle)
         else:
             super()._on_mouse_click(event)
+
+    def __display_cell_division_scores(self, particle):
+        cell_divisions = list(self._time_point.mother_scores(particle))
+        cell_divisions.sort(key=lambda d: d.score.total(), reverse=True)
+        displayed_items = 0
+        text = ""
+        for scored_family in cell_divisions:
+            if displayed_items >= 4:
+                text += "... and " + str(len(cell_divisions) - displayed_items) + " more"
+                break
+            text += str(displayed_items + 1) + ". " + str(scored_family.family) + ", score: " \
+                    + str(scored_family.score.total()) + "\n"
+            displayed_items += 1
+        if text:
+            self.update_status("Possible cell division scores:\n" + text)
+        else:
+            self.update_status("No cell division scores found")
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "t":
