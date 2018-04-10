@@ -40,7 +40,7 @@ class ParticleListVisualizer(Visualizer):
             # Try nearest particle
             close_match = imaging.get_closest_particle(self._particle_list, particle, max_distance=100)
 
-            if close_match is not None:
+            if close_match is not None and close_match.time_point_number() == particle.time_point_number():
                 return self._particle_list.index(close_match)
             return self.__get_last_index()  # Give up
 
