@@ -139,8 +139,9 @@ def downgrade_edges_pointing_to_past(graph: Graph, particle: Particle, allow_dea
     particle connected to the given particle would become dead (i.e. has no connections to the future left)
     Returns whether all edges were removed, which is always the case if `allow_deaths == True`
     """
-    remove_error(graph, particle)  # Remove any errors, they will not be up to date anymore
     for particle_in_past in find_preferred_links(graph, particle, find_past_particles(graph, particle)):
+        remove_error(graph, particle_in_past, errors.POTENTIALLY_NOT_A_MOTHER)  # Indeed not a mother anymore
+
         graph.add_edge(particle_in_past, particle, pref=False)
         remaining_connections = find_preferred_links(graph, particle_in_past, find_future_particles(graph, particle_in_past))
         if len(remaining_connections) == 0 and not allow_deaths:
@@ -189,9 +190,9 @@ def find_preferred_future_particles(graph: Graph, particle: Particle) -> Set[Par
     return find_preferred_links(graph, particle, find_future_particles(graph, particle))
 
 
-def remove_error(graph: Graph, particle: Particle):
-    """Removes any error message associated to the given particle"""
-    if "error" in graph.nodes[particle]:
+def remove_error(graph: Graph, particle: Particle, error: int):
+    """Removes the given error associated to the given particle."""
+    if "error" in graph.nodes[particle] and graph.nodes[particle]["error"] == error:
         del graph.nodes[particle]["error"]
 
 

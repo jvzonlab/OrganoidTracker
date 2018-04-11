@@ -82,6 +82,7 @@ def _fix_cell_division_daughters(experiment: Experiment, graph: Graph, particle:
 
         print("Set " + str(new_daughter) + " (score " + str(best_score) + ") as the new daughter of " + str(particle) +
               ", instead of " + str(removed_daughter) + " (score " + str(current_score) + ")")
+    if best_score > current_score:
         graph.add_node(particle, error=errors.POTENTIALLY_WRONG_DAUGHTERS)
 
 
@@ -122,15 +123,15 @@ def _fix_cell_division_mother(experiment: Experiment, graph: Graph, particle: Pa
     current_parent_score = experiment.get_time_point(current_mother_of_daughter2.time_point_number())\
         .mother_score(current_family).total()
     # Printing of warnings
-    if abs(score - current_parent_score) <= 1:
+    if abs(score - current_parent_score) <= 2:
         # Not sure
         if score > current_parent_score:
             graph.add_node(particle, error=errors.POTENTIALLY_NOT_A_MOTHER)
         else:
             graph.add_node(current_mother_of_daughter2, error=errors.POTENTIALLY_NOT_A_MOTHER)
     else:  # Remove any existing errors, they will be outdated
-        remove_error(graph, particle)
-        remove_error(graph, current_mother_of_daughter2)
+        remove_error(graph, particle, errors.POTENTIALLY_NOT_A_MOTHER)
+        remove_error(graph, current_mother_of_daughter2, errors.POTENTIALLY_NOT_A_MOTHER)
 
     # Parent replacement
     if score > current_parent_score:

@@ -14,17 +14,19 @@ NO_PAST_POSITION = 5
 CELL_MERGE = 6
 POTENTIALLY_WRONG_DAUGHTERS = 7
 YOUNG_MOTHER = 8
+LOW_MOTHER_SCORE = 9
 
 
 __info = {
-    NO_FUTURE_POSITION: (Severity.WARNING, "No future position for cell; dead cell?"),
-    POTENTIALLY_NOT_A_MOTHER: (Severity.WARNING, "Maybe not a mother"),
-    POTENTIALLY_SHOULD_BE_A_MOTHER: (Severity.WARNING, "Should maybe be a mother"),
-    TOO_MANY_DAUGHTER_CELLS: (Severity.ERROR, "Has more than two daughter cells"),
-    NO_PAST_POSITION: (Severity.ERROR, "Cell popped up out of nothing"),
-    CELL_MERGE: (Severity.ERROR, "Two cells merged together into this cell"),
-    POTENTIALLY_WRONG_DAUGHTERS: (Severity.WARNING, "Maybe not the correct daughter"),
-    YOUNG_MOTHER: (Severity.ERROR, "Mother cell is very young")
+    NO_FUTURE_POSITION: (Severity.WARNING, "This cell has no links to the future. Please check if this is correct."),
+    POTENTIALLY_NOT_A_MOTHER: (Severity.WARNING, "This cell is maybe not a mother; nearby cell has similar likelyness."),
+    POTENTIALLY_SHOULD_BE_A_MOTHER: (Severity.WARNING, "(This error code is no longer used, as the errors were always superfluous.)"),
+    TOO_MANY_DAUGHTER_CELLS: (Severity.ERROR, "This cell has more than two daughter cells. This is impossible."),
+    NO_PAST_POSITION: (Severity.ERROR, "This cell popped up out of nothing."),
+    CELL_MERGE: (Severity.ERROR, "Two cells merged together into this cell. This is impossible."),
+    POTENTIALLY_WRONG_DAUGHTERS: (Severity.WARNING, "One of the two daughter cells is maybe wrong."),
+    YOUNG_MOTHER: (Severity.ERROR, "This is most likely not a mother cell: it is a very young cell."),
+    LOW_MOTHER_SCORE: (Severity.WARNING, "This cell is probably not a mother cell.")
 }
 
 

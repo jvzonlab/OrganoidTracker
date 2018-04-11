@@ -11,9 +11,12 @@ def apply(experiment: Experiment, graph: Graph):
         future_particles = _get_future_particles(graph, particle)
         if len(future_particles) > 2:
             _set_error(graph, particle, errors.TOO_MANY_DAUGHTER_CELLS)
-        if len(future_particles) == 0 and particle.time_point_number() < experiment.last_time_point_number() - 1:
+        elif len(future_particles) == 0 and particle.time_point_number() < experiment.last_time_point_number() - 1:
             _set_error(graph, particle, errors.NO_FUTURE_POSITION)
-        if len(future_particles) == 2:
+        elif len(future_particles) == 2:
+            score = _get_highest_mother_score(experiment, particle)
+            if score < 2:
+                _set_error(graph, particle, errors.LOW_MOTHER_SCORE)
             age = cell.get_age(graph, particle)
             if age is not None and age < 2:
                 _set_error(graph, particle, errors.YOUNG_MOTHER)
@@ -22,7 +25,15 @@ def apply(experiment: Experiment, graph: Graph):
         if len(past_particles) == 0 and particle.time_point_number() > experiment.first_time_point_number():
             _set_error(graph, particle, errors.NO_PAST_POSITION)
         if len(past_particles) >= 2:
-            _set_error(graph, particle, error=errors.CELL_MERGE)
+            _set_error(graph, particle, errors.CELL_MERGE)
+
+def _get_highest_mother_score(experiment: Experiment, particle: Particle) -> float:
+    highest_score = -999
+    for scored_family in experiment.get_time_point(particle.time_point_number()).mother_scores(particle):
+        score = scored_family.score.total()
+        if score > highest_score:
+            highest_score = score
+    return highest_score
 
 
 def _set_error(graph: Graph, particle: Particle, error: int):
