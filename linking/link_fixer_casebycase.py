@@ -42,7 +42,11 @@ def _fix_cell_division_daughters(experiment: Experiment, graph: Graph, particle:
     current_daughter1 = future_preferred_particles.pop()
     current_daughter2 = future_preferred_particles.pop()
     current_family = Family(particle, current_daughter1, current_daughter2)
-    current_score = time_point.mother_score(current_family).total()
+    try:
+        current_score = time_point.mother_score(current_family).total()
+    except KeyError:
+        print("Cannot observe daughters of " + str(particle) + " - no score specified")
+        return
 
     best_daughter1 = None
     best_daughter2 = None
@@ -116,12 +120,18 @@ def _fix_cell_division_mother(experiment: Experiment, graph: Graph, particle: Pa
     if len(children_of_current_mother_of_daughter2) < 2:
         # The _get_two_daughters should have checked for this
         raise ValueError("No nearby mother available for " + str(particle))
+    if len(children_of_current_mother_of_daughter2) > 2:
+        children_of_current_mother_of_daughter2 = children_of_current_mother_of_daughter2[0:2]
 
     family = Family(particle, *two_daughters)
-    score = experiment.get_time_point(particle.time_point_number()).mother_score(family).total()
     current_family = Family(current_mother_of_daughter2, *children_of_current_mother_of_daughter2)
-    current_parent_score = experiment.get_time_point(current_mother_of_daughter2.time_point_number())\
-        .mother_score(current_family).total()
+    try:
+        score = experiment.get_time_point(particle.time_point_number()).mother_score(family).total()
+        current_parent_score = experiment.get_time_point(current_mother_of_daughter2.time_point_number())\
+            .mother_score(current_family).total()
+    except KeyError:
+        print("Cannot compare " + str(particle) + " - no mother score set")
+        return
     # Printing of warnings
     if abs(score - current_parent_score) <= 2:
         # Not sure

@@ -26,7 +26,7 @@ def add_mother_scores(experiment: Experiment, graph: Graph, score_system: Mother
 
 
 def __repair_dead_cell(experiment: Experiment, graph: Graph, particle: Particle, used_candidates=set(),
-                       remaining_iterations=7) -> bool:
+                       remaining_iterations=8) -> bool:
     """Repairs a dead cell, searching for a "fake" mother nearby. Note: if the cell is not repairable, this procedure
     will abort halfway with a ValueError. To prevent this, call this routine with check_only=True first.
     """
@@ -65,7 +65,8 @@ def __repair_dead_cell(experiment: Experiment, graph: Graph, particle: Particle,
         graph.add_edge(past_of_candidate, candidate, pref=False)
         graph.add_edge(candidate, particle, pref=True)
         repairable = len(find_preferred_future_particles(graph, past_of_candidate)) > 0
-        if not repairable and remaining_iterations >= 0:
+
+        if not repairable and remaining_iterations > 0:
             used_candidates_new = used_candidates.copy()
             used_candidates_new.add(candidate)
             repairable = __repair_dead_cell(experiment, graph, past_of_candidate, used_candidates_new,
