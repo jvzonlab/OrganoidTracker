@@ -50,8 +50,8 @@ for some parameters, which are then saved to a configuration file.
 For now, we have the following scripts:
 
 
-visualize.py
-------------
+autotrack_visualize_and_edit.py
+-------------------------------
 Generic data visualization tool that does not do any calculations first. Loads images from TIFF files, positions and
 tracks from JSON files. In [the manuals folder](manuals/VISUALIZER.md) a manual is available. This program can be used
 to edit positional and linking data.
