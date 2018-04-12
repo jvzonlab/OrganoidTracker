@@ -104,6 +104,14 @@ class Score:
         """Gets the underlying score dictionary"""
         return self.__dict__["scores"]
 
+    def is_likely_mother(self):
+        """Uses a simple threshold to check whether it is likely that this mother is a mother cell."""
+        return self.total() > 3
+
+    def is_unlikely_mother(self):
+        """Uses a simple threshold to check whether it is likely that this mother is a mother cell."""
+        return self.total() < 2
+
     def __str__(self):
         return str(self.total()) + " (based on " + str(self.__dict__["scores"]) + ")"
 
@@ -177,10 +185,11 @@ class TimePoint:
         return self._particles
 
     def mother_score(self, family: Family, score: Optional[Score] = None) -> Score:
-        """Gets or sets the mother score of the given particle. Returns None if the cell has no score set. Raises
-        KeyError if no score has been set for this particle."""
+        """Gets or sets the mother score of the given particle. Raises KeyError if no score has been set for this
+         particle. Raises ValueError if you're looking in the wrong time point.
+         """
         if family.mother.time_point_number() != self._time_point_number:
-            raise KeyError("Family belongs to another time point")
+            raise ValueError("Family belongs to another time point")
         if score is not None:
             self._mother_scores[family] = score
             return score

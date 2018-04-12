@@ -40,7 +40,7 @@ you can run the scripts like this:
 
     <script_name>.py
 
-On Windows, I created `.bat` files. As a result, you can run the scripts simply by running:
+For Windows, I created `.bat` files. As a result, you can run the scripts simply by running:
 
     <script_name>.bat
 

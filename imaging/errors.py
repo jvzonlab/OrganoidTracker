@@ -20,7 +20,7 @@ LOW_MOTHER_SCORE = 9
 __info = {
     NO_FUTURE_POSITION: (Severity.WARNING, "This cell has no links to the future. Please check if this is correct."),
     POTENTIALLY_NOT_A_MOTHER: (Severity.WARNING, "This cell is maybe not a mother; nearby cell has similar likeliness."),
-    POTENTIALLY_SHOULD_BE_A_MOTHER: (Severity.WARNING, "(This error code is no longer used, as the errors were always superfluous.)"),
+    POTENTIALLY_SHOULD_BE_A_MOTHER: (Severity.WARNING, "This cell is possibly a mother; its score is high enough."),
     TOO_MANY_DAUGHTER_CELLS: (Severity.ERROR, "This cell has more than two daughter cells. This is impossible."),
     NO_PAST_POSITION: (Severity.ERROR, "This cell popped up out of nothing."),
     CELL_MERGE: (Severity.ERROR, "Two cells merged together into this cell. This is impossible."),

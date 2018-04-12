@@ -4,7 +4,7 @@ import numpy
 from networkx import Graph
 
 import imaging
-from imaging import Particle, Experiment, cell, errors, normalized_image
+from imaging import Particle, Experiment, Family, errors, normalized_image
 from imaging.normalized_image import ImageEdgeError
 from linking import mother_finder
 from linking.scoring_system import MotherScoringSystem
@@ -64,7 +64,8 @@ def __repair_dead_cell(experiment: Experiment, graph: Graph, particle: Particle,
         # Try to change the link
         graph.add_edge(past_of_candidate, candidate, pref=False)
         graph.add_edge(candidate, particle, pref=True)
-        repairable = len(find_preferred_future_particles(graph, past_of_candidate)) > 0
+        remaining_future_of_past_of_candidate = find_preferred_future_particles(graph, past_of_candidate)
+        repairable = len(remaining_future_of_past_of_candidate) > 0
 
         if not repairable and remaining_iterations > 0:
             used_candidates_new = used_candidates.copy()
@@ -79,6 +80,17 @@ def __repair_dead_cell(experiment: Experiment, graph: Graph, particle: Particle,
         else:
             print("Created new link for previously dead " + str(particle) + " towards " + str(
                 candidate) + ", replaces link with " + str(past_of_candidate))
+
+            # Show warning if mother with a considerable score has been broken up
+            if len(remaining_future_of_past_of_candidate) == 1:
+                time_point = experiment.get_time_point(past_of_candidate.time_point_number())
+                broken_up_family = Family(past_of_candidate, candidate, *remaining_future_of_past_of_candidate)
+                try:
+                    score = time_point.mother_score(broken_up_family)
+                    if score.is_likely_mother():
+                        graph.add_node(past_of_candidate, error=errors.POTENTIALLY_SHOULD_BE_A_MOTHER)
+                except KeyError:
+                    pass  # Good thing, as this cell doesn't even have a mother score
 
         if not repairable:
             candidates.remove(candidate)  # This candidate doesn't work out

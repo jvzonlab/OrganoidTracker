@@ -1,6 +1,8 @@
+from typing import Optional
+
 from networkx import Graph
 
-from imaging import errors, Experiment, Particle, cell
+from imaging import errors, Experiment, Particle, cell, Score
 
 
 def apply(experiment: Experiment, graph: Graph):
@@ -15,7 +17,7 @@ def apply(experiment: Experiment, graph: Graph):
             _set_error(graph, particle, errors.NO_FUTURE_POSITION)
         elif len(future_particles) == 2:
             score = _get_highest_mother_score(experiment, particle)
-            if score < 2:
+            if score is None or score.is_unlikely_mother():
                 _set_error(graph, particle, errors.LOW_MOTHER_SCORE)
             age = cell.get_age(graph, particle)
             if age is not None and age < 2:
@@ -27,12 +29,16 @@ def apply(experiment: Experiment, graph: Graph):
         if len(past_particles) >= 2:
             _set_error(graph, particle, errors.CELL_MERGE)
 
-def _get_highest_mother_score(experiment: Experiment, particle: Particle) -> float:
-    highest_score = -999
+
+def _get_highest_mother_score(experiment: Experiment, particle: Particle) -> Optional[Score]:
+    highest_score = None
+    highest_score_num = -999
     for scored_family in experiment.get_time_point(particle.time_point_number()).mother_scores(particle):
-        score = scored_family.score.total()
-        if score > highest_score:
+        score = scored_family.score
+        score_num = score.total()
+        if score_num > highest_score_num:
             highest_score = score
+            highest_score_num = score_num
     return highest_score
 
 
