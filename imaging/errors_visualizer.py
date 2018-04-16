@@ -5,7 +5,7 @@ from networkx import Graph
 from imaging import Particle, Experiment, errors
 from imaging.particle_list_visualizer import ParticleListVisualizer
 from typing import List, Optional, Tuple
-from linking_analysis import logical_tests
+from linking import logical_tests
 
 
 def _get_problematic_particles(experiment: Experiment) -> List[Particle]:
@@ -95,6 +95,7 @@ class ErrorsVisualizer(ParticleListVisualizer):
             return True
         if command == "help":
             self.update_status("Available commands:\n"
-                               "/recheck - checks all links for obvious errors")
+                               "/recheck - checks all links for obvious errors\n"
+                               "/exit - exits this view")
             return True
         return super()._on_command(command)

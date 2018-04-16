@@ -156,6 +156,16 @@ class ParticleListVisualizer(Visualizer):
             self._show_next_image = not self._show_next_image
             self.draw_view()
 
-    def get_title(self, _all_mothers: List[Particle], _mother_index: int):
-        mother = _all_mothers[_mother_index]
+    def _on_command(self, command: str) -> bool:
+        if command == "exit":
+            self.goto_full_image()
+            return True
+        if command == "help":
+            self.update_status("Available commands:\n"
+                               "/exit - Exits this view, and goes back to the main view.")
+            return True
+        return super()._on_command(command)
+
+    def get_title(self, all_cells: List[Particle], cell_index: int):
+        mother = all_cells[cell_index]
         return "Cell " + str(self._current_particle_index + 1) + "/" + str(len(self._particle_list)) + "\n" + str(mother)

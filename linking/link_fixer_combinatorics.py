@@ -8,12 +8,11 @@ from numpy import ndarray
 import imaging
 from imaging import Particle, Experiment, TimePoint, ScoredFamily, normalized_image
 from imaging.normalized_image import ImageEdgeError
-from linking import Parameters
+from linking import Parameters, logical_tests
 from linking.link_fixer import fix_no_future_particle, with_only_the_preferred_edges, find_future_particles, \
     find_preferred_links, downgrade_edges_pointing_to_past
 from linking.scoring_system import MotherScoringSystem
 from linking.rational_scoring_system import RationalScoringSystem
-from linking_analysis import logical_tests
 from linking.mother_finder import Family
 
 

@@ -13,7 +13,7 @@ def get_age(graph: Graph, particle: Particle) -> Optional[int]:
         particle = _find_preferred_past_particle(graph, particle)
         if particle is None:
             return None # Cell first appeared here, don't know age for sure
-        daughters = _find_preferred_links(graph, particle, _find_future_particles(graph, particle))
+        daughters = _find_preferred_links(graph, particle, find_future_particles(graph, particle))
         if len(daughters) > 1:
             return timesteps_ago
 
@@ -42,7 +42,7 @@ def _find_preferred_past_particle(graph: Graph, particle: Particle):
     return previous_positions.pop()
 
 
-def _find_future_particles(graph: Graph, particle: Particle) -> Set[Particle]:
+def find_future_particles(graph: Graph, particle: Particle) -> Set[Particle]:
     # All possible connections one step in the future
     linked_particles = graph[particle]
     return {linked_particle for linked_particle in linked_particles

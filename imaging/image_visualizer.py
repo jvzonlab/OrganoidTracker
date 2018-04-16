@@ -305,6 +305,18 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         else:
             super()._on_key_press(event)
 
+    def _on_command(self, command: str) -> bool:
+        if command == "deaths":
+            from linking_analysis.cell_death_visualizer import CellDeathVisualizer
+            activate(CellDeathVisualizer(self._experiment, self._fig, None))
+            return True
+        if command == "help":
+            self.update_status("Available commands:\n"
+                               "/deaths - views cell deaths.\n"
+                               "/t20 - jumps to time point 20 (also works for other time points")
+            return True
+        return super()._on_command(command)
+
     def __show_shape(self, particle: Particle):
         image_stack = self._time_point_images if not self._show_next_image else self._time_point.load_images()
         image = image_stack[int(particle.z)]

@@ -1,12 +1,10 @@
 import networkx
 from matplotlib.backend_bases import KeyEvent
 from matplotlib.figure import Figure
-from networkx import Graph
 
-from imaging import Particle, Experiment, errors
+from imaging import Particle, Experiment
 from imaging.particle_list_visualizer import ParticleListVisualizer
-from typing import List, Optional, Tuple
-from linking_analysis import logical_tests
+from typing import List, Optional
 
 
 def _get_differences(experiment: Experiment) -> List[Particle]:
