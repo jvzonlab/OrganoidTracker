@@ -20,6 +20,7 @@ class Visualizer:
 
     _pending_command_text: Optional[str]
     _status_text_widget: Optional[Text]
+    _controls_enabled: bool = True
 
     def __init__(self, experiment: Experiment, figure: Figure):
         self._experiment = experiment
@@ -63,13 +64,19 @@ class Visualizer:
 
     def _on_key_press_raw(self, event: KeyEvent):
         # Records commands
-        if event.key == '/':
-            # Entering command mode
-            self._pending_command_text = ""
-            self.update_status("/")
+
+        if not self._controls_enabled:
+            if event.key == "1":
+                self._controls_enabled = True
+                self.update_status(self.__doc__)
             return
 
         if self._pending_command_text is None:
+            if event.key == '/':
+                # Staring command mode
+                self._pending_command_text = ""
+                self.update_status("/")
+                return
             self._on_key_press(event)
         else:
             if event.key == 'enter':
@@ -79,12 +86,16 @@ class Visualizer:
                 if len(text) > 0:
                     if not self._on_command(text):
                         self.update_status("Unknown command: " + text + ". Type /help for help.")
+            elif event.key == 'escape':
+                # Exit typing command
+                self._pending_command_text = None
+                self.update_status(self.__doc__)
             else:
                 if event.key == 'backspace':
                     if len(self._pending_command_text) > 0:
                         self._pending_command_text = self._pending_command_text[:-1]
-                elif event.key == 'shift' or event.key == 'control':
-                    pass
+                elif len(event.key) > 1:
+                    pass  # Pressing "shift", "control", "left", etc.
                 else:
                     self._pending_command_text += event.key
                 self.update_status("/" + self._pending_command_text)
