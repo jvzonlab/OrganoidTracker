@@ -108,7 +108,6 @@ def score_using_mother_shape(score: Score, mother: Particle, daughter1: Particle
     """Returns a black-and-white image where white is particle and black is background, at least in theory."""
     score.mother_shape = 0
     score.mother_eccentric = 0
-    score.mother_concavity = 0
     score.daughters_side = 0
 
     # Zoom in on mother
