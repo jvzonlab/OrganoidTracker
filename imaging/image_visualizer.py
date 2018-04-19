@@ -1,4 +1,5 @@
 import imaging
+from gui import launch_window, Window
 from imaging.visualizer import Visualizer, activate
 from imaging import Experiment, TimePoint, Particle
 from matplotlib.figure import Figure
@@ -14,8 +15,8 @@ from segmentation import hybrid_segmentation
 
 def show(experiment: Experiment):
     """Creates a standard visualizer for an experiment."""
-    figure = plt.figure(figsize=(8,8))
-    visualizer = StandardImageVisualizer(experiment, figure)
+    window = launch_window()
+    visualizer = StandardImageVisualizer(experiment, window)
     activate(visualizer)
 
 
@@ -30,9 +31,9 @@ class AbstractImageVisualizer(Visualizer):
     __drawn_particles: List[Particle]
     _show_next_image: bool = False
 
-    def __init__(self, experiment: Experiment, figure: Figure, time_point_number: Optional[int] = None, z: int = 14,
+    def __init__(self, experiment: Experiment, window: Window, time_point_number: Optional[int] = None, z: int = 14,
                  show_next_image: bool = False):
-        super().__init__(experiment, figure)
+        super().__init__(experiment, window)
 
         if time_point_number is None:
             time_point_number = experiment.first_time_point_number()
@@ -53,15 +54,13 @@ class AbstractImageVisualizer(Visualizer):
         self._draw_image()
         errors = self.draw_particles()
         self.draw_extra()
-        plt.title(self.get_title(errors))
+        self._window.set_title(self.get_title(errors))
 
-        plt.draw()
+        self._fig.canvas.draw()
 
     def _draw_image(self):
         if self._time_point_images is not None:
-            image = self._ax.imshow(self._time_point_images[self._z], cmap="gray")
-            if not self._show_next_image:
-                plt.colorbar(mappable=image, ax=self._ax)
+            self._ax.imshow(self._time_point_images[self._z], cmap="gray")
 
     def get_title(self, errors: int) -> str:
         title = "Time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
@@ -121,11 +120,11 @@ class AbstractImageVisualizer(Visualizer):
         # Draw error marker
         graph = self._experiment.particle_links_scratch() or self._experiment.particle_links()
         if graph is not None and particle in graph and "error" in graph.nodes[particle]:
-            plt.plot(particle.x, particle.y, 'X', color='black', markeredgecolor='white',
+            self._ax.plot(particle.x, particle.y, 'X', color='black', markeredgecolor='white',
                  markersize=current_marker_size + 12, markeredgewidth=2)
 
         # Draw particle
-        plt.plot(particle.x, particle.y, marker_style, color=color, markeredgecolor='black',
+        self._ax.plot(particle.x, particle.y, marker_style, color=color, markeredgecolor='black',
                  markersize=current_marker_size, markeredgewidth=1)
         self.__drawn_particles.append(particle)
 
@@ -153,10 +152,10 @@ class AbstractImageVisualizer(Visualizer):
             if linked_particle.time_point_number() < particle.time_point_number():
                 # Drawing to past
                 if not self._show_next_image:
-                    plt.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], linestyle=line_style,
+                    self._ax.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], linestyle=line_style,
                              color=imaging.COLOR_CELL_PREVIOUS, linewidth=line_width)
             else:
-                plt.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], linestyle=line_style,
+                self._ax.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], linestyle=line_style,
                          color=imaging.COLOR_CELL_NEXT, linewidth=line_width)
 
     def _get_links(self, network: Optional[Graph], particle: Particle) -> Iterable[Particle]:
@@ -191,8 +190,7 @@ class AbstractImageVisualizer(Visualizer):
                 new_time_point_number = int(time_point_str.strip())
                 self._time_point, self._time_point_images = self.load_time_point(new_time_point_number)
                 self.draw_view()
-                self.update_status("Moved! Press 1 to enable the mouse controls again.")
-                self._controls_enabled = False
+                self.update_status("Moved to time point " + str(new_time_point_number) + "!")
             except KeyError:
                 self.update_status("Unknown time point: " + time_point_str + " (range is "
                                    + str(self._experiment.first_time_point_number()) + " to "
@@ -223,6 +221,7 @@ class AbstractImageVisualizer(Visualizer):
         try:
             self._time_point, self._time_point_images = self.load_time_point(new_time_point_number)
             self.draw_view()
+            self.update_status(self.__doc__)
         except KeyError:
             pass
 
@@ -235,9 +234,9 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     Cell lists: M shows mother cells, E shows detected errors and D shows differences between two loaded data sets
     Editing: L shows an editor for links                    Other: S shows the detected shape, F the detected flow"""
 
-    def __init__(self, experiment: Experiment, figure: Figure, time_point_number: Optional[int] = None, z: int = 14,
+    def __init__(self, experiment: Experiment, window: Window, time_point_number: Optional[int] = None, z: int = 14,
                  show_next_image: bool = False):
-        super().__init__(experiment, figure, time_point_number=time_point_number, z=z, show_next_image=show_next_image)
+        super().__init__(experiment, window, time_point_number=time_point_number, z=z, show_next_image=show_next_image)
 
     def _on_mouse_click(self, event: MouseEvent):
         if event.dblclick and event.button == 1:
@@ -269,26 +268,26 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             particle = self._get_particle_at(event.xdata, event.ydata)
             if particle is not None:
                 from linking_analysis.track_visualizer import TrackVisualizer
-                track_visualizer = TrackVisualizer(self._experiment, self._fig, particle)
+                track_visualizer = TrackVisualizer(self._experiment, self._window, particle)
                 activate(track_visualizer)
         elif event.key == "m":
             particle = self._get_particle_at(event.xdata, event.ydata)
             from linking_analysis.cell_division_visualizer import CellDivisionVisualizer
-            track_visualizer = CellDivisionVisualizer(self._experiment, self._fig, particle)
+            track_visualizer = CellDivisionVisualizer(self._experiment, self._window, particle)
             activate(track_visualizer)
         elif event.key == "e":
             particle = self._get_particle_at(event.xdata, event.ydata)
             from imaging.errors_visualizer import ErrorsVisualizer
-            warnings_visualizer = ErrorsVisualizer(self._experiment, self._fig, particle)
+            warnings_visualizer = ErrorsVisualizer(self._experiment, self._window, particle)
             activate(warnings_visualizer)
         elif event.key == "d":
             particle = self._get_particle_at(event.xdata, event.ydata)
             from linking_analysis.differences_visualizer import DifferencesVisualizer
-            differences_visualizer = DifferencesVisualizer(self._experiment, self._fig, particle)
+            differences_visualizer = DifferencesVisualizer(self._experiment, self._window, particle)
             activate(differences_visualizer)
         elif event.key == "l":
             from linking_analysis.link_editor import LinkEditor
-            link_editor = LinkEditor(self._experiment, self._fig, time_point_number=self._time_point.time_point_number(), z=self._z)
+            link_editor = LinkEditor(self._experiment, self._window, time_point_number=self._time_point.time_point_number(), z=self._z)
             activate(link_editor)
         elif event.key == "s":
             particle = self._get_particle_at(event.xdata, event.ydata)
@@ -308,7 +307,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     def _on_command(self, command: str) -> bool:
         if command == "deaths":
             from linking_analysis.cell_death_visualizer import CellDeathVisualizer
-            activate(CellDeathVisualizer(self._experiment, self._fig, None))
+            activate(CellDeathVisualizer(self._experiment, self._window, None))
             return True
         if command == "help":
             self.update_status("Available commands:\n"

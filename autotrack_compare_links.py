@@ -1,6 +1,7 @@
 # Compares two linking results. The baseline links are assumed to be 100% correct, any deviations from that are
 # counted as errors. Solid lines in the figures represent the correct linking result, dotted lines any deviations from
 # that.
+import gui
 from config import ConfigFile
 from imaging import io, tifffolder, image_visualizer, Experiment
 from linking_analysis import comparison
@@ -36,4 +37,4 @@ tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
 vis = image_visualizer.show(experiment)
 
 print("Done!")
-pyplot.show()
+gui.mainloop()

@@ -8,6 +8,7 @@ from os import path
 
 from matplotlib import pyplot
 
+import gui
 import particle_detection.detector_for_experiment as detector
 from imaging import tifffolder, Experiment, io
 from particle_detection import detection_visualizer
@@ -44,4 +45,4 @@ else:
 detection_visualizer.show(experiment, _method, _method_parameters)
 
 print("Done!")
-pyplot.show()
+gui.mainloop()

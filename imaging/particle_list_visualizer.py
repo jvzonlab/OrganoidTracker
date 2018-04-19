@@ -1,5 +1,7 @@
 from matplotlib.backend_bases import KeyEvent
 from matplotlib.figure import Figure
+
+from gui import Window
 from imaging import Particle, Experiment
 from imaging.visualizer import Visualizer, activate
 from networkx import Graph
@@ -19,13 +21,13 @@ class ParticleListVisualizer(Visualizer):
 
     __last_index_per_class = dict()  # Static variable
 
-    def __init__(self, experiment: Experiment, figure: Figure, all_particles: List[Particle],
+    def __init__(self, experiment: Experiment, window: Window, all_particles: List[Particle],
                  chosen_particle: Optional[Particle] = None, show_next_image: bool = False):
         """Creates a viewer for a list of particles. The particles will automatically be sorted by time_point number.
         chosen_particle is a particle that is used as a starting point for the viewer, but only if it appears in the
         list
         """
-        super().__init__(experiment, figure)
+        super().__init__(experiment, window)
         self._particle_list = all_particles
         self._particle_list.sort(key=lambda particle: particle.time_point_number())
         self._current_particle_index = self._find_closest_particle_index(chosen_particle)
@@ -61,9 +63,9 @@ class ParticleListVisualizer(Visualizer):
         self._clear_axis()
         if self._current_particle_index < 0 or self._current_particle_index >= len(self._particle_list):
             if len(self._particle_list) == 0:
-                plt.title(self.get_message_no_particles())
+                self._window.set_title(self.get_message_no_particles())
             else:
-                plt.title(self.get_message_press_right())
+                self._window.set_title(self.get_message_press_right())
             plt.draw()
             return
 
@@ -75,9 +77,9 @@ class ParticleListVisualizer(Visualizer):
         self._draw_connections(self._experiment.particle_links(), current_particle)
         self._draw_connections(self._experiment.particle_links_scratch(), current_particle, line_style='dotted',
                                line_width=3)
-        plt.title(self.get_title(self._particle_list, self._current_particle_index))
+        self._window.set_title(self.get_title(self._particle_list, self._current_particle_index))
 
-        plt.draw()
+        self._fig.canvas.draw()
         ParticleListVisualizer.__last_index_per_class[type(self)] = self._current_particle_index
 
     def _zoom_to_cell(self):
@@ -117,9 +119,7 @@ class ParticleListVisualizer(Visualizer):
         time_point = self._experiment.get_time_point(mother.time_point_number())
         image_stack = self.create_image(time_point, self._show_next_image)
         if image_stack is not None:
-            image = self._ax.imshow(image_stack[int(mother.z)], cmap="gray")
-            if not self._show_next_image:
-                plt.colorbar(mappable=image, ax=self._ax)
+            self._ax.imshow(image_stack[int(mother.z)], cmap="gray")
 
     def _goto_next(self):
         self._current_particle_index += 1
@@ -138,11 +138,11 @@ class ParticleListVisualizer(Visualizer):
 
         if self._current_particle_index < 0 or self._current_particle_index >= len(self._particle_list):
             # Don't know where to go
-            image_visualizer = StandardImageVisualizer(self._experiment, self._fig,
+            image_visualizer = StandardImageVisualizer(self._experiment, self._window,
                                                        show_next_image=self._show_next_image)
         else:
             mother = self._particle_list[self._current_particle_index]
-            image_visualizer = StandardImageVisualizer(self._experiment, self._fig,
+            image_visualizer = StandardImageVisualizer(self._experiment, self._window,
                                                        time_point_number=mother.time_point_number(), z=int(mother.z),
                                                        show_next_image=self._show_next_image)
         activate(image_visualizer)

@@ -1,5 +1,7 @@
 from matplotlib.backend_bases import KeyEvent
 from matplotlib.figure import Figure
+
+from gui import Window
 from imaging import Particle, Experiment, cell
 from imaging.particle_list_visualizer import ParticleListVisualizer
 from linking import mother_finder
@@ -19,8 +21,8 @@ class CellDivisionVisualizer(ParticleListVisualizer):
     Use the left/right arrow keys to move to the next cell division.
     Press M to exit this view."""
 
-    def __init__(self, experiment: Experiment, figure: Figure, mother: Optional[Particle]):
-        super().__init__(experiment, figure, chosen_particle=mother, all_particles=_get_mothers(experiment),
+    def __init__(self, experiment: Experiment, window: Window, mother: Optional[Particle]):
+        super().__init__(experiment, window, chosen_particle=mother, all_particles=_get_mothers(experiment),
                          show_next_image=True)
 
     def get_message_no_particles(self):

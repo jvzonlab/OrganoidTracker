@@ -2,6 +2,7 @@ from matplotlib.backend_bases import KeyEvent
 from matplotlib.figure import Figure
 from networkx import Graph
 
+from gui import Window
 from imaging import Particle, Experiment, errors
 from imaging.particle_list_visualizer import ParticleListVisualizer
 from typing import List, Optional, Tuple
@@ -38,8 +39,8 @@ class ErrorsVisualizer(ParticleListVisualizer):
     Type /recheck to recheck the experiment for obvious errors.
     """
 
-    def __init__(self, experiment: Experiment, figure: Figure, start_particle: Optional[Particle]):
-        super().__init__(experiment, figure,
+    def __init__(self, experiment: Experiment, window: Window, start_particle: Optional[Particle]):
+        super().__init__(experiment, window,
                          chosen_particle=start_particle,
                          all_particles=_get_problematic_particles(experiment))
 

@@ -5,6 +5,7 @@ from matplotlib.figure import Figure
 from networkx import Graph, NetworkXError
 
 import imaging
+from gui import Window
 from imaging import Experiment, Particle, io
 from imaging.image_visualizer import AbstractImageVisualizer
 from imaging.visualizer import activate
@@ -19,8 +20,8 @@ class LinkEditor(AbstractImageVisualizer):
     _selected2: Optional[Particle]
     _has_uncommitted_changes: bool
 
-    def __init__(self, experiment: Experiment, figure: Figure, time_point_number: int = 1, z: int = 14):
-        super().__init__(experiment, figure, time_point_number=time_point_number, z=z)
+    def __init__(self, experiment: Experiment, window: Window, time_point_number: int = 1, z: int = 14):
+        super().__init__(experiment, window, time_point_number=time_point_number, z=z)
         self._selected1 = None
         self._selected2 = None
         self._has_uncommitted_changes = False
@@ -35,7 +36,7 @@ class LinkEditor(AbstractImageVisualizer):
                 experiment.particle_links_scratch(baseline_graph.copy())
 
     def get_title(self, errors: int) -> str:
-        return "Editing time_point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
+        return "Editing time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
 
     def draw_extra(self):
         self._draw_highlight(self._selected1)
@@ -85,7 +86,7 @@ class LinkEditor(AbstractImageVisualizer):
                     self.update_status("Cannot delete link: there was no link between selected particles")
         elif event.key == "l":
             from imaging.image_visualizer import StandardImageVisualizer
-            image_visualizer = StandardImageVisualizer(self._experiment, self._fig,
+            image_visualizer = StandardImageVisualizer(self._experiment, self._window,
                                                        time_point_number=self._time_point.time_point_number(), z=self._z)
             activate(image_visualizer)
         else:

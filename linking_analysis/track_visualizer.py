@@ -1,4 +1,5 @@
 import imaging
+from gui import Window
 from imaging.visualizer import Visualizer, activate
 from imaging import Experiment, Particle, cell
 from matplotlib.figure import Figure
@@ -16,8 +17,8 @@ class TrackVisualizer(Visualizer):
     _particle: Particle
     _particles_on_display: Set[Particle]
 
-    def __init__(self, experiment: Experiment, figure: Figure, particle: Particle):
-        super().__init__(experiment, figure)
+    def __init__(self, experiment: Experiment, window: Window, particle: Particle):
+        super().__init__(experiment, window)
         self._particle = particle
         self._particles_on_display = set()
 
@@ -31,7 +32,7 @@ class TrackVisualizer(Visualizer):
         self._draw_network(self._experiment.particle_links())
 
         plt.title("Tracks of " + str(self._particle) + "\n" + self._get_cell_age_str())
-        plt.draw()
+        self._fig.canvas.draw()
 
     def _get_cell_age_str(self) -> str:
         graph = self._experiment.particle_links()
@@ -82,7 +83,7 @@ class TrackVisualizer(Visualizer):
     def _on_key_press(self, event: KeyEvent):
         if event.key == "t":
             from imaging.image_visualizer import StandardImageVisualizer
-            image_visualizer = StandardImageVisualizer(self._experiment, self._fig, z=int(self._particle.z),
+            image_visualizer = StandardImageVisualizer(self._experiment, self._window, z=int(self._particle.z),
                                                        time_point_number=self._particle.time_point_number())
             activate(image_visualizer)
 

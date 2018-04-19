@@ -1,6 +1,7 @@
 import numpy
 
 import imaging
+from gui import Window
 from imaging import Experiment, Particle, TimePoint
 from matplotlib.figure import Figure, Axes, Text
 from matplotlib.backend_bases import KeyEvent, MouseEvent
@@ -11,7 +12,7 @@ import matplotlib.pyplot as plt
 class Visualizer:
     """A complete application for visualization of an experiment"""
     _experiment: Experiment
-
+    _window: Window
     _fig: Figure
     _ax: Axes
 
@@ -19,18 +20,18 @@ class Visualizer:
     _mouse_handler_id: int
 
     _pending_command_text: Optional[str]
-    _status_text_widget: Optional[Text]
-    _controls_enabled: bool = True
 
-    def __init__(self, experiment: Experiment, figure: Figure):
+    def __init__(self, experiment: Experiment, window: Window):
+        if not isinstance(window, Window):
+            raise ValueError("window is not a Window")
         self._experiment = experiment
-        self._fig = figure
+        self._window = window
+        self._fig = window.get_figure()
         self._ax = self._fig.gca()
-        self._key_handler_id = self._fig.canvas.mpl_connect("key_press_event", self._on_key_press_raw)
-        self._mouse_handler_id = self._fig.canvas.mpl_connect("button_press_event", self._on_mouse_click)
+        self._key_handler_id = window.register_event_handler("key_press_event", self._on_key_press_raw)
+        self._mouse_handler_id = window.register_event_handler("button_press_event", self._on_mouse_click)
 
         self._pending_command_text = None
-        self._status_text_widget = None
 
     def _clear_axis(self):
         """Clears the axis, except that zoom settings are preserved"""
@@ -40,7 +41,6 @@ class Visualizer:
                 colorbar.remove()
         for text in self._fig.texts:
             text.remove()
-        self._status_text_widget = None
 
         xlim, ylim = self._ax.get_xlim(), self._ax.get_ylim()
         self._ax.clear()
@@ -50,26 +50,14 @@ class Visualizer:
             self._ax.set_ylim(*ylim)
             self._ax.set_autoscale_on(False)
 
-        self.update_status(self.__doc__, redraw=False)
-
     def draw_view(self):
         print("Override the draw_view method to draw the view.")
 
     def update_status(self, text: Union[str, bytes], redraw=True):
-        if self._status_text_widget is not None:
-            self._status_text_widget.remove()
-        self._status_text_widget = plt.figtext(.02, .02, text)
-        if redraw:
-            plt.draw()
+        self._window.set_status(str(text))
 
     def _on_key_press_raw(self, event: KeyEvent):
         # Records commands
-
-        if not self._controls_enabled:
-            if event.key == "1":
-                self._controls_enabled = True
-                self.update_status(self.__doc__)
-            return
 
         if self._pending_command_text is None:
             if event.key == '/':
@@ -148,7 +136,6 @@ class Visualizer:
         return imaging.get_closest_particle(particles, search_position, ignore_z=ignore_z, max_distance=max_distance)
 
 
-_visualizer = None # Reference to prevent event handler from being garbage collected
 
 
 def _configure_matplotlib():
@@ -163,14 +150,16 @@ def _configure_matplotlib():
     plt.rcParams['font.serif'] = ['Times New Roman', 'Times']
 
 
+__active_visualizer = None # Reference to prevent event handler from being garbage collected
+
+
 def activate(visualizer: Visualizer) -> None:
-    _configure_matplotlib()
-
-    global _visualizer
-    if _visualizer is not None:
+    global __active_visualizer
+    if __active_visualizer is not None:
         # Unregister old event handlers
-        _visualizer.detach()
+        __active_visualizer.detach()
 
-    _visualizer = visualizer
-    _visualizer.draw_view()
+    __active_visualizer = visualizer
+    __active_visualizer.draw_view()
+    __active_visualizer.update_status(__active_visualizer.__doc__)
 

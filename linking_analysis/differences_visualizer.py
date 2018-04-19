@@ -2,6 +2,7 @@ import networkx
 from matplotlib.backend_bases import KeyEvent
 from matplotlib.figure import Figure
 
+from gui import Window
 from imaging import Particle, Experiment
 from imaging.particle_list_visualizer import ParticleListVisualizer
 from typing import List, Optional
@@ -34,8 +35,8 @@ class DifferencesVisualizer(ParticleListVisualizer):
     Press D to exit this view.
     """
 
-    def __init__(self, experiment: Experiment, figure: Figure, start_particle: Optional[Particle]):
-        super().__init__(experiment, figure,
+    def __init__(self, experiment: Experiment, window: Window, start_particle: Optional[Particle]):
+        super().__init__(experiment, window,
                          chosen_particle=start_particle,
                          all_particles=_get_differences(experiment))
 
