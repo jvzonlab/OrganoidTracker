@@ -1,14 +1,10 @@
-import cv2
-import threading
 import tkinter
 from tkinter import StringVar, ttk
 from tkinter.font import Font
 
 from matplotlib.backends.backend_tkagg import NavigationToolbar2TkAgg, FigureCanvasTkAgg
 from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
 
-from numpy import ndarray
 
 class Window:
     """The model for a window."""
@@ -40,13 +36,26 @@ def _create_menu(root: tkinter.Tk, window: Window):
     file_menu = tkinter.Menu(menu_bar, tearoff=0)
     file_menu.add_command(label="Exit", command=lambda: _action_exit(root))
 
+    view_menu = tkinter.Menu(menu_bar, tearoff=0)
+    view_menu.add_command(label="Toggle axis", command=lambda: _action_toggle_axis(window.get_figure()))
+
     menu_bar.add_cascade(label="File", menu=file_menu)
+    menu_bar.add_cascade(label="View", menu=view_menu)
     return menu_bar
 
 
 def _action_exit(root: tkinter.Tk):
     root.quit()
     root.destroy()
+
+def _action_toggle_axis(figure: Figure):
+    set_visible = None
+    for axis in figure.axes:
+        if set_visible is None:
+            set_visible = not axis.get_xaxis().get_visible()
+        axis.get_xaxis().set_visible(set_visible)
+        axis.get_yaxis().set_visible(set_visible)
+    figure.canvas.draw()
 
 
 def launch_window() -> Window:
@@ -60,6 +69,7 @@ def launch_window() -> Window:
     status_text = StringVar()
     window = Window(fig, title_text, status_text)
     root.title("Autotrack")
+    root.iconbitmap('gui/icon.ico')
     root.geometry('800x700')
     root.config(menu=_create_menu(root, window))
     root.grid_columnconfigure(1, weight=1)
