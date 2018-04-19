@@ -1,13 +1,13 @@
+import threading
+
 import imaging
-from gui import launch_window, Window
+from gui import launch_window, Window, popup_figure
 from imaging.visualizer import Visualizer, activate
 from imaging import Experiment, TimePoint, Particle
-from matplotlib.figure import Figure
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 from numpy import ndarray
 from networkx import Graph
 from typing import Optional, Iterable, List, Tuple
-import matplotlib.pyplot as plt
 
 from linking import particle_flow
 from segmentation import hybrid_segmentation
@@ -322,8 +322,5 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         x, y, r = int(particle.x), int(particle.y), 16
         image_local = image[y - r:y + r, x - r:x + r]
         thresholded_image = hybrid_segmentation.perform(image_local)
-        plt.figure()
-        plt.tight_layout()
-        plt.axis('off')
-        plt.imshow(thresholded_image, cmap="flag")
-        plt.show()
+        popup_figure(lambda fig: fig.gca().imshow(thresholded_image))
+
