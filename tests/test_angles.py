@@ -1,6 +1,6 @@
 import unittest
 
-from core import angles
+from imaging import angles
 
 
 class TestAngles(unittest.TestCase):

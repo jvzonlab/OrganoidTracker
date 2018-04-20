@@ -100,6 +100,10 @@ class Window:
             "Edit": [],  # This fixes the position of the edit menu
             "View": [
                 ("Toggle axis numbers", lambda: action.toggle_axis(self.get_figure())),
+            ],
+            "Image": [
+                ("Add z-averaging filter", lambda: action.add_z_averaging_filter(self)),
+                ("Remove all filters", lambda: action.remove_filters(self))
             ]
         }
 

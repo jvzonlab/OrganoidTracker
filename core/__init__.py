@@ -218,6 +218,12 @@ class ImageLoader:
         """Loads an image, usually from disk. Returns None if there is no image for this time point."""
         return None
 
+    def unwrap(self) -> "ImageLoader":
+        """If this loader is a wrapper around another loader, this method returns one loader below. Otherwise, it
+        returns self.
+        """
+        return self
+
 
 class _CachedImageLoader(ImageLoader):
     """Wrapper that caches the last few loaded images."""
@@ -244,6 +250,9 @@ class _CachedImageLoader(ImageLoader):
         image = self._internal.load_3d_image(time_point)
         self._add_to_cache(time_point_number, image)
         return image
+
+    def unwrap(self) -> ImageLoader:
+        return self._internal
 
 
 class Experiment:
@@ -339,10 +348,12 @@ class Experiment:
             yield self.get_time_point(current_number)
             current_number += 1
 
-    def set_image_loader(self, image_loader: ImageLoader, cache: bool = True):
-        if cache:
-            image_loader = _CachedImageLoader(image_loader)
-        self._image_loader = image_loader
+    def set_image_loader(self, image_loader: ImageLoader):
+        self._image_loader = _CachedImageLoader(image_loader)
+
+    def get_image_loader(self):
+        """Gets the image loader."""
+        return self._image_loader.unwrap()  # The single unwrap call removes the cache
 
     def get_image_stack(self, time_point: TimePoint) -> Optional[ndarray]:
         """Gets a stack of all images for a time point, one for every z layer. Returns None if there is no image."""

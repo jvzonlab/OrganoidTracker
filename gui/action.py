@@ -9,9 +9,10 @@ from core import Experiment
 from gui import Window
 from gui.dialog import message_cancellable
 from imaging import io, tifffolder
+from imaging.stacked_image import AveragingImageLoader
 from manual_tracking import links_extractor
-from visualizer.empty_visualizer import EmptyVisualizer
 from visualizer import activate
+from visualizer.empty_visualizer import EmptyVisualizer
 
 
 def ask_exit(root: tkinter.Tk):
@@ -136,6 +137,22 @@ def export_links(experiment: Experiment):
         return  # Cancelled
 
     io.save_links_to_json(links, links_file)
+
+
+def add_z_averaging_filter(window: Window):
+    experiment = window.get_experiment()
+    new_loader = AveragingImageLoader(experiment.get_image_loader())
+    experiment.set_image_loader(new_loader)
+    window.refresh()
+
+
+def remove_filters(window: Window):
+    experiment = window.get_experiment()
+    image_loader = experiment.get_image_loader()
+    while image_loader is not image_loader.unwrap():
+        image_loader = image_loader.unwrap()
+    experiment.set_image_loader(image_loader)
+    window.refresh()
 
 
 def _error_message(error: Exception):
