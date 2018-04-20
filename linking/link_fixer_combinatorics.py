@@ -92,12 +92,12 @@ def _fix_cell_divisions_for_time_point(experiment: Experiment, graph: Graph, tim
     print("Working on time point " + str(time_point.time_point_number()))
 
     # Load images
-    tp_images = time_point.load_images()
+    tp_images = experiment.get_image_stack(time_point)
     try:
         next_time_point = experiment.get_next_time_point(time_point)
     except KeyError:
         return []  # Last time point, cannot do anything
-    next_tp_images = next_time_point.load_images()
+    next_tp_images = experiment.get_image_stack(next_time_point)
 
     # Calculate the number of expected cell divisions based on cell count
     expected_cell_divisions = len(next_time_point.particles()) - len(time_point.particles())

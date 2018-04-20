@@ -106,7 +106,7 @@ class Visualizer:
     def create_image(self, time_point: TimePoint, show_next_time_point: bool):
         """Creates an image suitable for display purposes. IF show_next_time_point is set to True, then then a color
         image will be created with the next image in red, and the current image in green."""
-        time_point_images = time_point.load_images()
+        time_point_images = self._experiment.get_image_stack(time_point)
         if time_point_images is None:
             return None
         if show_next_time_point:
@@ -116,7 +116,7 @@ class Visualizer:
             rgb_images[:,:,:,1] = time_point_images  # Green channel is current image
             try:
                 next_time_point = self._experiment.get_next_time_point(time_point)
-                next_time_point_images = next_time_point.load_images()
+                next_time_point_images = self._experiment.get_image_stack(next_time_point)
                 rgb_images[:,:,:,0] = next_time_point_images # Red channel is next image
             except KeyError:
                 pass  # There is no next time point, ignore

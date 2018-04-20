@@ -100,7 +100,8 @@ def __repair_dead_cell(experiment: Experiment, graph: Graph, particle: Particle,
 
 def __get_intensity(experiment: Experiment, particle: Particle, radius: int = 3) -> float:
     try:
-        image = experiment.get_time_point(particle.time_point_number()).load_images()[int(particle.z)]
+        time_point = experiment.get_time_point(particle.time_point_number())
+        image = experiment.get_image_stack(time_point)[int(particle.z)]
         return numpy.average(normalized_image.get_square(image, particle.x, particle.y, radius))
     except ImageEdgeError:
         return 0
@@ -223,7 +224,7 @@ def with_only_the_preferred_edges(old_graph: Graph):
 
 
 def get_2d_image(experiment: Experiment, particle: Particle):
-    images = experiment.get_time_point(particle.time_point_number()).load_images()
+    images = experiment.get_image_stack(experiment.get_time_point(particle.time_point_number()))
     if images is None:
         raise ValueError("Image for time point " + str(particle.time_point_number()) + " not loaded")
     image = images[int(particle.z)]

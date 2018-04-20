@@ -6,6 +6,7 @@ from tkinter import filedialog, messagebox
 from matplotlib.figure import Figure
 from tkinter.messagebox import Message
 from gui import Window
+from gui.dialog import message_cancellable
 from imaging import io, Experiment, tifffolder
 from imaging.empty_visualizer import EmptyVisualizer
 from imaging.image_visualizer import StandardImageVisualizer
@@ -51,12 +52,10 @@ def new(window: Window):
 
 def load_images(window: Window):
     # Show an OK/cancel box, but with an INFO icon instead of a question mark
-    box = Message(title="Image loading", icon=messagebox.INFO, type=messagebox.OKCANCEL,
-                  message="Images are expected to be 3D grayscale TIF files. Each TIF file represents a single time "
-                          "point.\n\n"
-                          "Please select the TIF file of the first time point. The file name of the image must contain "
-                          "t01, t001 or longer in the file name.").show()
-    if str(box) != messagebox.OK:
+    if not message_cancellable("Image loading", "Images are expected to be 3D grayscale TIF files. Each TIF file "
+                               "represents a single time point.\n\n"
+                               "Please select the TIF file of the first time point. The file name of the image must "
+                               "contain \"t01\", \"t001\" or longer in the file name."):
         return  # Cancelled
     full_path = filedialog.askopenfilename(title="Select first image file", filetypes=(("TIF file", "*.tif"),))
     if not full_path:

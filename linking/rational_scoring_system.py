@@ -23,8 +23,8 @@ class RationalScoringSystem(MotherScoringSystem):
     def calculate(self, experiment: Experiment, mother: Particle, daughter1: Particle,
                   daughter2: Particle) -> Score:
 
-        mother_image_stack = experiment.get_time_point(mother.time_point_number()).load_images()
-        daughter1_image_stack = experiment.get_time_point(daughter1.time_point_number()).load_images()
+        mother_image_stack = experiment.get_image_stack(experiment.get_time_point(mother.time_point_number()))
+        daughter1_image_stack = experiment.get_image_stack(experiment.get_time_point(daughter1.time_point_number()))
         mother_image = mother_image_stack[int(mother.z)]
         mother_image_next = daughter1_image_stack[int(mother.z)]
         daughter1_image = daughter1_image_stack[int(daughter1.z)]

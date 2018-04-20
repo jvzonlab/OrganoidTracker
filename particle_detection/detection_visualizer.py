@@ -34,7 +34,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "d":
-            image = self._time_point.load_images()[self._z]
+            image = self._experiment.get_image_stack(self._time_point)[self._z]
             self._detector.detect(image, show_results=True, **self._detection_parameters)
 
         super()._on_key_press(event)

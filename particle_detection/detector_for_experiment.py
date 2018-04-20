@@ -11,7 +11,7 @@ def detect_particles_in_3d(experiment: Experiment, method: Detector, max_cell_he
               + str(experiment.last_time_point_number()))
         time_point = experiment.get_time_point(time_point_number)
         peaks_in_time_point = {}
-        image_stack = time_point.load_images(allow_cache=False)
+        image_stack = experiment.get_image_stack(time_point)
         for z in range(image_stack.shape[0]):
             image = image_stack[z]
             results = method.detect(image, **kwargs)

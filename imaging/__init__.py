@@ -5,8 +5,6 @@ from typing import List, Iterable, Optional, Dict, Set, Any, ItemsView
 from networkx import Graph
 from numpy import ndarray
 
-from imaging import image_cache
-
 COLOR_CELL_NEXT = "red"
 COLOR_CELL_PREVIOUS = "blue"
 COLOR_CELL_CURRENT = "lime"
@@ -202,29 +200,8 @@ class TimePoint:
         particle.with_time_point_number(self._time_point_number)
         self._particles.add(particle)
 
-    def set_image_loader(self, loader):
-        """Sets the image loader. The image loader must ba a function with no args, that returns a numpy
-        multidimensional array. Each element in the array is another array that forms an image.
-        """
-        self._image_loader = loader
-
     def load_images(self, allow_cache=True) -> ndarray:
-        if allow_cache:
-            images = image_cache.get_from_cache(self._time_point_number)
-            if images is not None:
-                return images
-
-        # Cache miss
-        images = self._load_images_uncached()
-        if allow_cache:
-            image_cache.add_to_cache(self._time_point_number, images)
-        return images
-
-    def _load_images_uncached(self):
-        image_loader = self._image_loader
-        if self._image_loader is None:
-            return None
-        return image_loader()
+        raise NotImplementedError()
 
     def mother_scores(self, mother: Optional[Particle] = None) -> Iterable[ScoredFamily]:
         """Gets all mother scores of either all putative mothers, or just the given mother (if any)."""
@@ -235,22 +212,53 @@ class TimePoint:
             yield ScoredFamily(family, score)
 
 
+class ImageLoader:
+
+    def load_3d_image(self, time_point: TimePoint) -> Optional[ndarray]:
+        """Loads an image, usually from disk. Returns None if there is no image for this time point."""
+        return None
+
+
+class _CachedImageLoader(ImageLoader):
+    """Wrapper that caches the last few loaded images."""
+
+    _internal: ImageLoader
+    _image_cache: List
+
+    def __init__(self, wrapped: ImageLoader):
+        self._image_cache = []
+        self._internal = wrapped
+
+    def _add_to_cache(self, time_point_number: int, image: ndarray):
+        if len(self._image_cache) > 5:
+            self._image_cache.pop(0)
+        self._image_cache.append((time_point_number, image))
+
+    def load_3d_image(self, time_point: TimePoint) -> Optional[ndarray]:
+        time_point_number = time_point.time_point_number()
+        for entry in self._image_cache:
+            if entry[0] == time_point_number:
+                return entry[1]
+
+        # Cache miss
+        image = self._internal.load_3d_image(time_point)
+        self._add_to_cache(time_point_number, image)
+        return image
+
+
 class Experiment:
     """A complete experiment, with many stacks of images collected over time. This class records the images, particle
      positions and particle trajectories."""
 
     _time_points: Dict[str, TimePoint]
-    _particle_links: Optional[Graph]
-    _particle_links_baseline: Optional[Graph] # Links that are assumed to be correct
-    _first_time_point_number: Optional[int]
-    _last_time_point_number: Optional[int]
+    _particle_links: Optional[Graph] = None
+    _particle_links_baseline: Optional[Graph] = None # Links that are assumed to be correct
+    _first_time_point_number: Optional[int] = None
+    _last_time_point_number: Optional[int] = None
+    _image_loader: ImageLoader = ImageLoader()
 
     def __init__(self):
         self._time_points = {}
-        self._particle_links = None
-        self._particle_links_baseline = None
-        self._last_time_point_number = None
-        self._first_time_point_number = None
 
     def add_particles_raw(self, time_point_number: int, raw_particles) -> None:
         """Adds particles to a time_point."""
@@ -270,10 +278,6 @@ class Experiment:
         """Adds a particle to the experiment. The particle must have a time point number specified."""
         time_point = self.get_or_add_time_point(particle.time_point_number())
         time_point.add_particle(particle)
-
-    def add_image_loader(self, time_point_number: int, image_loader) -> None:
-        time_point = self.get_or_add_time_point(time_point_number)
-        time_point.set_image_loader(image_loader)
 
     def get_time_point(self, time_point_number: int) -> TimePoint:
         """Gets the time point with the given number. Throws KeyError if no such time point exists."""
@@ -334,6 +338,15 @@ class Experiment:
         while current_number <= last_number:
             yield self.get_time_point(current_number)
             current_number += 1
+
+    def set_image_loader(self, image_loader: ImageLoader, cache: bool = True):
+        if cache:
+            image_loader = _CachedImageLoader(image_loader)
+        self._image_loader = image_loader
+
+    def get_image_stack(self, time_point: TimePoint) -> Optional[ndarray]:
+        """Gets a stack of all images for a time point, one for every z layer. Returns None if there is no image."""
+        return self._image_loader.load_3d_image(time_point)
 
 
 def get_closest_particle(particles: Iterable[Particle], search_position: Particle,

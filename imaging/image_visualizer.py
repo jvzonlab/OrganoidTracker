@@ -2,7 +2,7 @@ import threading
 
 import imaging
 from gui import launch_window, Window
-from gui.dialog import popup_figure, prompt_int
+from gui.dialog import popup_figure, prompt_int, popup_error
 from imaging.visualizer import Visualizer, activate
 from imaging import Experiment, TimePoint, Particle
 from matplotlib.backend_bases import KeyEvent, MouseEvent
@@ -177,7 +177,9 @@ class AbstractImageVisualizer(Visualizer):
             max_str = str(self._experiment.last_time_point_number())
             given = prompt_int("Time point", "Which time point do you want to go to? (" + min_str + "-" + max_str
                                + ", inclusive)")
-            self._move_to_time(given)
+            if not self._move_to_time(given):
+                popup_error("Out of range", "Oops, time point " + str(given) + " is outside the range " + min_str + "-"
+                            + max_str + ".")
         return {
             "View": [
                 ("Toggle showing next image (" + imaging.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + ")",
@@ -235,15 +237,17 @@ class AbstractImageVisualizer(Visualizer):
         if self._z != old_z:
             self.draw_view()
 
-    def _move_to_time(self, new_time_point_number: int):
+    def _move_to_time(self, new_time_point_number: int) -> bool:
         try:
             self._time_point, self._time_point_images = self.load_time_point(new_time_point_number)
             self.draw_view()
             self.update_status("Moved to time point " + str(new_time_point_number) + "!")
+            return True
         except KeyError:
             self.update_status("Unknown time point: " + str(new_time_point_number) + " (range is "
                                + str(self._experiment.first_time_point_number()) + " to "
                                + str(self._experiment.last_time_point_number()) + ", inclusive)")
+            return False
 
     def _move_in_time(self, dt: int):
         old_time_point_number = self._time_point.time_point_number()
@@ -380,7 +384,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         activate(CellDeathVisualizer(self._window, None))
 
     def __show_shape(self, particle: Particle):
-        image_stack = self._time_point_images if not self._show_next_image else self._time_point.load_images()
+        image_stack = self._time_point_images if not self._show_next_image else self._experiment.get_image_stack(self._time_point)
         if image_stack is None:
             return  # No images loaded
         image = image_stack[int(particle.z)]
