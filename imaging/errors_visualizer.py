@@ -39,10 +39,10 @@ class ErrorsVisualizer(ParticleListVisualizer):
     Type /recheck to recheck the experiment for obvious errors.
     """
 
-    def __init__(self, experiment: Experiment, window: Window, start_particle: Optional[Particle]):
-        super().__init__(experiment, window,
+    def __init__(self, window: Window, start_particle: Optional[Particle]):
+        super().__init__(window,
                          chosen_particle=start_particle,
-                         all_particles=_get_problematic_particles(experiment))
+                         all_particles=_get_problematic_particles(window.get_experiment()))
 
     def get_message_no_particles(self):
         return "No warnings or errors found. Hurray?"

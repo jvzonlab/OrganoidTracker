@@ -20,13 +20,14 @@ class LinkEditor(AbstractImageVisualizer):
     _selected2: Optional[Particle]
     _has_uncommitted_changes: bool
 
-    def __init__(self, experiment: Experiment, window: Window, time_point_number: int = 1, z: int = 14):
-        super().__init__(experiment, window, time_point_number=time_point_number, z=z)
+    def __init__(self, window: Window, time_point_number: int = 1, z: int = 14):
+        super().__init__( window, time_point_number=time_point_number, z=z)
         self._selected1 = None
         self._selected2 = None
         self._has_uncommitted_changes = False
 
         # Check if graph exists
+        experiment = window.get_experiment()
         graph = experiment.particle_links_scratch()
         if graph is None:
             baseline_graph = experiment.particle_links()
@@ -86,7 +87,7 @@ class LinkEditor(AbstractImageVisualizer):
                     self.update_status("Cannot delete link: there was no link between selected particles")
         elif event.key == "l":
             from imaging.image_visualizer import StandardImageVisualizer
-            image_visualizer = StandardImageVisualizer(self._experiment, self._window,
+            image_visualizer = StandardImageVisualizer(self._window,
                                                        time_point_number=self._time_point.time_point_number(), z=self._z)
             activate(image_visualizer)
         else:

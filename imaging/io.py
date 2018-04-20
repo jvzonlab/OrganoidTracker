@@ -17,7 +17,7 @@ def load_positions_from_json(experiment: Experiment, json_file_name: str):
     with open(json_file_name) as handle:
         time_points = json.load(handle)
         for time_point, raw_particles in time_points.items():
-            experiment.add_particles(int(time_point), raw_particles)
+            experiment.add_particles_raw(int(time_point), raw_particles)
 
 
 def load_links_and_scores_from_json(experiment: Experiment, json_file_name: str, links_are_scratch=False):
@@ -30,12 +30,14 @@ def load_links_and_scores_from_json(experiment: Experiment, json_file_name: str,
         family_scores_list: List[ScoredFamily] = data["family_scores"] if "family_scores" in data else []
         for scored_family in family_scores_list:
             family = scored_family.family
-            time_point = experiment.get_time_point(family.mother.time_point_number())
+            time_point = experiment.get_or_add_time_point(family.mother.time_point_number())
             time_point.mother_score(family, scored_family.score)
 
         # Read graph
         link_data = data if "directed" in data else data["links"]
         graph = node_link_graph(link_data)
+        for particle in graph.nodes():
+            experiment.add_particle(particle)
         experiment.particle_links_scratch(graph) if links_are_scratch else experiment.particle_links(graph)
 
 

@@ -5,7 +5,7 @@ from gui import Window
 from imaging import Particle, Experiment
 from imaging.visualizer import Visualizer, activate
 from networkx import Graph
-from typing import List, Optional
+from typing import List, Optional, Dict
 import matplotlib.pyplot as plt
 import imaging
 
@@ -21,17 +21,28 @@ class ParticleListVisualizer(Visualizer):
 
     __last_index_per_class = dict()  # Static variable
 
-    def __init__(self, experiment: Experiment, window: Window, all_particles: List[Particle],
-                 chosen_particle: Optional[Particle] = None, show_next_image: bool = False):
+    def __init__(self, window: Window, all_particles: List[Particle], chosen_particle: Optional[Particle] = None,
+                 show_next_image: bool = False):
         """Creates a viewer for a list of particles. The particles will automatically be sorted by time_point number.
         chosen_particle is a particle that is used as a starting point for the viewer, but only if it appears in the
         list
         """
-        super().__init__(experiment, window)
+        super().__init__(window)
         self._particle_list = all_particles
         self._particle_list.sort(key=lambda particle: particle.time_point_number())
         self._current_particle_index = self._find_closest_particle_index(chosen_particle)
         self._show_next_image = show_next_image
+
+    def get_extra_menu_options(self) -> Dict[str, List]:
+        return {
+            "View": [
+                ("Exit this view (/exit)", lambda: self.goto_full_image()),
+            ],
+            "Navigate": [
+                ("Next (Right)", self._goto_next),
+                ("Previous (Left)", self._goto_previous),
+            ]
+        }
 
     def _find_closest_particle_index(self, particle: Optional[Particle]) -> int:
         if particle is None:
@@ -138,11 +149,11 @@ class ParticleListVisualizer(Visualizer):
 
         if self._current_particle_index < 0 or self._current_particle_index >= len(self._particle_list):
             # Don't know where to go
-            image_visualizer = StandardImageVisualizer(self._experiment, self._window,
+            image_visualizer = StandardImageVisualizer(self._window,
                                                        show_next_image=self._show_next_image)
         else:
             mother = self._particle_list[self._current_particle_index]
-            image_visualizer = StandardImageVisualizer(self._experiment, self._window,
+            image_visualizer = StandardImageVisualizer(self._window,
                                                        time_point_number=mother.time_point_number(), z=int(mother.z),
                                                        show_next_image=self._show_next_image)
         activate(image_visualizer)

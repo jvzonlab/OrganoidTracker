@@ -35,7 +35,7 @@ class Particle:
         return self._time_point_number
 
     def with_time_point_number(self, time_point_number: int):
-        if self._time_point_number is not None:
+        if self._time_point_number is not None and self._time_point_number != time_point_number:
             raise ValueError("time_point_number was already set")
         self._time_point_number = int(time_point_number)
         return self
@@ -168,20 +168,20 @@ class TimePoint:
     """A single point in time."""
 
     _time_point_number: int
-    _particles: List[Particle]
+    _particles: Set[Particle]
     _mother_scores: Dict[Family, Score]
     _image_loader: Any
 
     def __init__(self, time_point_number: int):
         self._time_point_number = time_point_number
-        self._particles = []
+        self._particles = set()
         self._mother_scores = dict()
         self._image_loader = None
 
     def time_point_number(self) -> int:
         return self._time_point_number
 
-    def particles(self) -> List[Particle]:
+    def particles(self) -> Set[Particle]:
         return self._particles
 
     def mother_score(self, family: Family, score: Optional[Score] = None) -> Score:
@@ -195,12 +195,12 @@ class TimePoint:
             return score
         return self._mother_scores[family]
 
-    def add_particles(self, particles: Iterable[Particle]) -> None:
-        """Adds all particles in the list to this time_point. Throws ValueError if the particles were already assigned to
-        a time_point."""
-        for particle in particles:
-            particle.with_time_point_number(self._time_point_number)
-            self._particles.append(particle)
+    def add_particle(self, particle: Particle) -> None:
+        """Adds a particle to this time point. Does nothing if the particle was already added. Throws ValueError if
+        the particle belongs to another time point. If the particle belongs to no time point, it is attached to this
+        time point."""
+        particle.with_time_point_number(self._time_point_number)
+        self._particles.add(particle)
 
     def set_image_loader(self, loader):
         """Sets the image loader. The image loader must ba a function with no args, that returns a numpy
@@ -252,28 +252,37 @@ class Experiment:
         self._last_time_point_number = None
         self._first_time_point_number = None
 
-    def add_particles(self, time_point_number: int, raw_particles) -> None:
+    def add_particles_raw(self, time_point_number: int, raw_particles) -> None:
         """Adds particles to a time_point."""
         particles = []
         for raw_particle in raw_particles:
             particles.append(Particle(raw_particle[0], raw_particle[1], raw_particle[2]))
-        time_point = self._get_or_add_time_point(time_point_number)
-        time_point.add_particles(particles)
+        time_point = self.get_or_add_time_point(time_point_number)
+        for particle in particles:
+            time_point.add_particle(particle)
 
-    def add_particle(self, x: float, y: float, z: float, time_point_number: int):
+    def add_particle_raw(self, x: float, y: float, z: float, time_point_number: int):
         """Adds a single particle to the experiment, creating the time point if it does not exist yet."""
-        time_point = self._get_or_add_time_point(time_point_number)
-        time_point.add_particles([Particle(x, y, z)])
+        time_point = self.get_or_add_time_point(time_point_number)
+        time_point.add_particle(Particle(x, y, z))
+
+    def add_particle(self, particle: Particle):
+        """Adds a particle to the experiment. The particle must have a time point number specified."""
+        time_point = self.get_or_add_time_point(particle.time_point_number())
+        time_point.add_particle(particle)
 
     def add_image_loader(self, time_point_number: int, image_loader) -> None:
-        time_point = self._get_or_add_time_point(time_point_number)
+        time_point = self.get_or_add_time_point(time_point_number)
         time_point.set_image_loader(image_loader)
 
     def get_time_point(self, time_point_number: int) -> TimePoint:
-        """Gets the time_point with the given number. Throws KeyError if no such time_point exists."""
+        """Gets the time point with the given number. Throws KeyError if no such time point exists."""
         return self._time_points[str(time_point_number)]
 
-    def _get_or_add_time_point(self, time_point_number: int) -> TimePoint:
+    def get_or_add_time_point(self, time_point_number: int) -> TimePoint:
+        """Gets the time point with the given number. Creates the time point if it doesn't exist."""
+        if time_point_number is None:
+            raise ValueError("time_point_number is None")
         try:
             return self._time_points[str(time_point_number)]
         except KeyError:

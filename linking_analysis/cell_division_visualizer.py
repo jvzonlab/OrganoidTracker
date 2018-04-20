@@ -21,8 +21,8 @@ class CellDivisionVisualizer(ParticleListVisualizer):
     Use the left/right arrow keys to move to the next cell division.
     Press M to exit this view."""
 
-    def __init__(self, experiment: Experiment, window: Window, mother: Optional[Particle]):
-        super().__init__(experiment, window, chosen_particle=mother, all_particles=_get_mothers(experiment),
+    def __init__(self, window: Window, mother: Optional[Particle]):
+        super().__init__(window, chosen_particle=mother, all_particles=_get_mothers(window.get_experiment()),
                          show_next_image=True)
 
     def get_message_no_particles(self):

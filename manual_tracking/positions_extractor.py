@@ -56,5 +56,5 @@ def _extract_positions_from_track(track_file: str, all_positions: Experiment, mi
             if math.isnan(pos[0] + pos[1] + pos[2]):
                 print("Warning: encountered invalid position: " + str(pos))
                 continue
-            all_positions.add_particle(pos[0], pos[1], pos[2], time_point)
+            all_positions.add_particle_raw(pos[0], pos[1], pos[2], time_point)
 

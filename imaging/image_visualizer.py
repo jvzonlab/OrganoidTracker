@@ -1,7 +1,8 @@
 import threading
 
 import imaging
-from gui import launch_window, Window, popup_figure
+from gui import launch_window, Window
+from gui.dialog import popup_figure, prompt_int
 from imaging.visualizer import Visualizer, activate
 from imaging import Experiment, TimePoint, Particle
 from matplotlib.backend_bases import KeyEvent, MouseEvent
@@ -15,8 +16,8 @@ from segmentation import hybrid_segmentation
 
 def show(experiment: Experiment):
     """Creates a standard visualizer for an experiment."""
-    window = launch_window()
-    visualizer = StandardImageVisualizer(experiment, window)
+    window = launch_window(experiment)
+    visualizer = StandardImageVisualizer(window)
     activate(visualizer)
 
 
@@ -31,12 +32,12 @@ class AbstractImageVisualizer(Visualizer):
     __drawn_particles: List[Particle]
     _show_next_image: bool = False
 
-    def __init__(self, experiment: Experiment, window: Window, time_point_number: Optional[int] = None, z: int = 14,
+    def __init__(self, window: Window, time_point_number: Optional[int] = None, z: int = 14,
                  show_next_image: bool = False):
-        super().__init__(experiment, window)
+        super().__init__(window)
 
         if time_point_number is None:
-            time_point_number = experiment.first_time_point_number()
+            time_point_number = window.get_experiment().first_time_point_number()
         self._z = int(z)
         self._show_next_image = show_next_image
         self._time_point, self._time_point_images = self.load_time_point(time_point_number)
@@ -170,6 +171,28 @@ class AbstractImageVisualizer(Visualizer):
         """Wrapper of get_closest_particle that makes use of the fact that we can lookup all particles ourselves."""
         return self.get_closest_particle(self.__drawn_particles, x, y, None, max_distance=5)
 
+    def get_extra_menu_options(self):
+        def time_point_prompt():
+            min_str = str(self._experiment.first_time_point_number())
+            max_str = str(self._experiment.last_time_point_number())
+            given = prompt_int("Time point", "Which time point do you want to go to? (" + min_str + "-" + max_str
+                               + ", inclusive)")
+            self._move_to_time(given)
+        return {
+            "View": [
+                ("Toggle showing next image (" + imaging.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + ")",
+                    self._toggle_showing_next_image),
+            ],
+            "Navigate": [
+                ("Above layer (Up)", lambda: self._move_in_z(1)),
+                ("Below layer (Down)", lambda: self._move_in_z(-1)),
+                '-',
+                ("Next time point (Right)", lambda: self._move_in_time(1)),
+                ("Previous time point (Left)", lambda: self._move_in_time(-1)),
+                ("Other time point... (/t*)", time_point_prompt)
+            ]
+        }
+
     def _on_key_press(self, event: KeyEvent):
         if event.key == "up":
             self._move_in_z(1)
@@ -180,21 +203,14 @@ class AbstractImageVisualizer(Visualizer):
         elif event.key == "right":
             self._move_in_time(1)
         elif event.key == imaging.KEY_SHOW_NEXT_IMAGE_ON_TOP:
-            self._show_next_image = not self._show_next_image
-            self._move_in_time(0)  # Reloads images
+            self._toggle_showing_next_image()
 
     def _on_command(self, command: str) -> bool:
         if command[0] == "t":
             time_point_str = command[1:]
             try:
                 new_time_point_number = int(time_point_str.strip())
-                self._time_point, self._time_point_images = self.load_time_point(new_time_point_number)
-                self.draw_view()
-                self.update_status("Moved to time point " + str(new_time_point_number) + "!")
-            except KeyError:
-                self.update_status("Unknown time point: " + time_point_str + " (range is "
-                                   + str(self._experiment.first_time_point_number()) + " to "
-                                   + str(self._experiment.last_time_point_number()) + ", inclusive)")
+                self._move_to_time(new_time_point_number)
             except ValueError:
                 self.update_status("Cannot read number: " + time_point_str)
             return True
@@ -203,17 +219,31 @@ class AbstractImageVisualizer(Visualizer):
             return True
         return False
 
+    def _toggle_showing_next_image(self):
+        self._show_next_image = not self._show_next_image
+        self._move_in_time(0)  # Reloads images
+
     def _move_in_z(self, dz: int):
         old_z = self._z
         self._z += dz
 
         if self._z < 0:
             self._z = 0
-        if self._z >= len(self._time_point_images):
+        if self._time_point_images is not None and self._z >= len(self._time_point_images):
             self._z = len(self._time_point_images) - 1
 
         if self._z != old_z:
             self.draw_view()
+
+    def _move_to_time(self, new_time_point_number: int):
+        try:
+            self._time_point, self._time_point_images = self.load_time_point(new_time_point_number)
+            self.draw_view()
+            self.update_status("Moved to time point " + str(new_time_point_number) + "!")
+        except KeyError:
+            self.update_status("Unknown time point: " + str(new_time_point_number) + " (range is "
+                               + str(self._experiment.first_time_point_number()) + " to "
+                               + str(self._experiment.last_time_point_number()) + ", inclusive)")
 
     def _move_in_time(self, dt: int):
         old_time_point_number = self._time_point.time_point_number()
@@ -234,9 +264,9 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     Cell lists: M shows mother cells, E shows detected errors and D shows differences between two loaded data sets
     Editing: L shows an editor for links                    Other: S shows the detected shape, F the detected flow"""
 
-    def __init__(self, experiment: Experiment, window: Window, time_point_number: Optional[int] = None, z: int = 14,
+    def __init__(self, window: Window, time_point_number: Optional[int] = None, z: int = 14,
                  show_next_image: bool = False):
-        super().__init__(experiment, window, time_point_number=time_point_number, z=z, show_next_image=show_next_image)
+        super().__init__(window, time_point_number=time_point_number, z=z, show_next_image=show_next_image)
 
     def _on_mouse_click(self, event: MouseEvent):
         if event.dblclick and event.button == 1:
@@ -263,32 +293,42 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         else:
             self.update_status("No cell division scores found")
 
+    def get_extra_menu_options(self):
+        options = super().get_extra_menu_options()
+        if "View" in options:
+            options["View"] += ["-"]
+        else:
+            options["View"] = []
+
+        options["Edit"] = [
+            ("Links (L)", self._show_link_editor),
+        ]
+        options["View"] += [
+            ("Linking differences (D)", self._show_linking_differences),
+            ("Linking errors and warnings (E)", self._show_linking_errors),
+            ("Cell divisions (M)", self._show_mother_cells),
+            ("Cell deaths (/deaths)", self._show_dead_cells),
+        ]
+        return options
+
     def _on_key_press(self, event: KeyEvent):
         if event.key == "t":
             particle = self._get_particle_at(event.xdata, event.ydata)
             if particle is not None:
                 from linking_analysis.track_visualizer import TrackVisualizer
-                track_visualizer = TrackVisualizer(self._experiment, self._window, particle)
+                track_visualizer = TrackVisualizer(self._window, particle)
                 activate(track_visualizer)
         elif event.key == "m":
             particle = self._get_particle_at(event.xdata, event.ydata)
-            from linking_analysis.cell_division_visualizer import CellDivisionVisualizer
-            track_visualizer = CellDivisionVisualizer(self._experiment, self._window, particle)
-            activate(track_visualizer)
+            self._show_mother_cells(particle)
         elif event.key == "e":
             particle = self._get_particle_at(event.xdata, event.ydata)
-            from imaging.errors_visualizer import ErrorsVisualizer
-            warnings_visualizer = ErrorsVisualizer(self._experiment, self._window, particle)
-            activate(warnings_visualizer)
+            self._show_linking_errors(particle)
         elif event.key == "d":
             particle = self._get_particle_at(event.xdata, event.ydata)
-            from linking_analysis.differences_visualizer import DifferencesVisualizer
-            differences_visualizer = DifferencesVisualizer(self._experiment, self._window, particle)
-            activate(differences_visualizer)
+            self._show_linking_differences(particle)
         elif event.key == "l":
-            from linking_analysis.link_editor import LinkEditor
-            link_editor = LinkEditor(self._experiment, self._window, time_point_number=self._time_point.time_point_number(), z=self._z)
-            activate(link_editor)
+            self._show_link_editor()
         elif event.key == "s":
             particle = self._get_particle_at(event.xdata, event.ydata)
             if particle is not None:
@@ -304,10 +344,29 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         else:
             super()._on_key_press(event)
 
+    def _show_mother_cells(self, particle: Optional[Particle] = None):
+        from linking_analysis.cell_division_visualizer import CellDivisionVisualizer
+        track_visualizer = CellDivisionVisualizer(self._window, particle)
+        activate(track_visualizer)
+
+    def _show_linking_errors(self, particle: Optional[Particle] = None):
+        from imaging.errors_visualizer import ErrorsVisualizer
+        warnings_visualizer = ErrorsVisualizer(self._window, particle)
+        activate(warnings_visualizer)
+
+    def _show_linking_differences(self, particle: Optional[Particle] = None):
+        from linking_analysis.differences_visualizer import DifferencesVisualizer
+        differences_visualizer = DifferencesVisualizer(self._window, particle)
+        activate(differences_visualizer)
+
+    def _show_link_editor(self):
+        from linking_analysis.link_editor import LinkEditor
+        link_editor = LinkEditor(self._window, time_point_number=self._time_point.time_point_number(), z=self._z)
+        activate(link_editor)
+
     def _on_command(self, command: str) -> bool:
         if command == "deaths":
-            from linking_analysis.cell_death_visualizer import CellDeathVisualizer
-            activate(CellDeathVisualizer(self._experiment, self._window, None))
+            self._show_dead_cells()
             return True
         if command == "help":
             self.update_status("Available commands:\n"
@@ -316,8 +375,14 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             return True
         return super()._on_command(command)
 
+    def _show_dead_cells(self):
+        from linking_analysis.cell_death_visualizer import CellDeathVisualizer
+        activate(CellDeathVisualizer(self._window, None))
+
     def __show_shape(self, particle: Particle):
         image_stack = self._time_point_images if not self._show_next_image else self._time_point.load_images()
+        if image_stack is None:
+            return  # No images loaded
         image = image_stack[int(particle.z)]
         x, y, r = int(particle.x), int(particle.y), 16
         image_local = image[y - r:y + r, x - r:x + r]

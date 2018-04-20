@@ -5,7 +5,7 @@ from gui import Window
 from imaging import Experiment, Particle, TimePoint
 from matplotlib.figure import Figure, Axes, Text
 from matplotlib.backend_bases import KeyEvent, MouseEvent
-from typing import Iterable, Optional, Union
+from typing import Iterable, Optional, Union, Dict, List
 import matplotlib.pyplot as plt
 
 
@@ -16,20 +16,15 @@ class Visualizer:
     _fig: Figure
     _ax: Axes
 
-    _key_handler_id: int
-    _mouse_handler_id: int
-
     _pending_command_text: Optional[str]
 
-    def __init__(self, experiment: Experiment, window: Window):
+    def __init__(self, window: Window):
         if not isinstance(window, Window):
             raise ValueError("window is not a Window")
-        self._experiment = experiment
+        self._experiment = window.get_experiment()
         self._window = window
         self._fig = window.get_figure()
         self._ax = self._fig.gca()
-        self._key_handler_id = window.register_event_handler("key_press_event", self._on_key_press_raw)
-        self._mouse_handler_id = window.register_event_handler("button_press_event", self._on_mouse_click)
 
         self._pending_command_text = None
 
@@ -51,7 +46,7 @@ class Visualizer:
             self._ax.set_autoscale_on(False)
 
     def draw_view(self):
-        print("Override the draw_view method to draw the view.")
+        raise NotImplementedError()
 
     def update_status(self, text: Union[str, bytes], redraw=True):
         self._window.set_status(str(text))
@@ -97,9 +92,16 @@ class Visualizer:
     def _on_mouse_click(self, event: MouseEvent):
         pass
 
+    def attach(self):
+        self._window.setup_menu(self.get_extra_menu_options())
+        self._window.register_event_handler("key_press_event", self._on_key_press_raw)
+        self._window.register_event_handler("button_press_event", self._on_mouse_click)
+
     def detach(self):
-        self._fig.canvas.mpl_disconnect(self._key_handler_id)
-        self._fig.canvas.mpl_disconnect(self._mouse_handler_id)
+        self._window.unregister_event_handlers()
+
+    def get_extra_menu_options(self) -> Dict[str, List]:
+        return {}
 
     def create_image(self, time_point: TimePoint, show_next_time_point: bool):
         """Creates an image suitable for display purposes. IF show_next_time_point is set to True, then then a color
@@ -136,20 +138,6 @@ class Visualizer:
         return imaging.get_closest_particle(particles, search_position, ignore_z=ignore_z, max_distance=max_distance)
 
 
-
-
-def _configure_matplotlib():
-    plt.rcParams['keymap.forward'] = []
-    plt.rcParams['keymap.back'] = ['backspace']
-    plt.rcParams['keymap.fullscreen'] = ['ctrl+f']
-    plt.rcParams['keymap.save'] = ['ctrl+s']
-    plt.rcParams['keymap.xscale'] = []
-    plt.rcParams['keymap.yscale'] = []
-    plt.rcParams['keymap.quit'] = ['ctrl+w','cmd+w']
-    plt.rcParams['font.family'] = ['serif']
-    plt.rcParams['font.serif'] = ['Times New Roman', 'Times']
-
-
 __active_visualizer = None # Reference to prevent event handler from being garbage collected
 
 
@@ -160,6 +148,7 @@ def activate(visualizer: Visualizer) -> None:
         __active_visualizer.detach()
 
     __active_visualizer = visualizer
+    __active_visualizer.attach()
     __active_visualizer.draw_view()
     __active_visualizer.update_status(__active_visualizer.__doc__)
 

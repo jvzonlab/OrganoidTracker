@@ -1,7 +1,7 @@
 from imaging import Experiment, Particle
 from particle_detection import dt_detection, Detector
 from numpy import ndarray
-from typing import Dict, Optional, List, Tuple, Any
+from typing import Dict, Optional, List, Tuple, Any, Iterable
 import math
 
 
@@ -18,7 +18,8 @@ def detect_particles_in_3d(experiment: Experiment, method: Detector, max_cell_he
             peaks_in_time_point[z] = _to_peaks(results, z)
 
         particles = _to_particles(z_stop=image_stack.shape[0], peaks=peaks_in_time_point, max_cell_height=max_cell_height)
-        time_point.add_particles(particles)
+        for particle in particles:
+            time_point.add_particle(particle)
 
 
 class Peak:
@@ -86,7 +87,7 @@ def _chunk(seq: List, num: int) -> List[List]:
     return out
 
 
-def _to_particles(z_stop: int, peaks: Dict[int, List[Peak]], max_cell_height) -> List[Particle]:
+def _to_particles(z_stop: int, peaks: Dict[int, List[Peak]], max_cell_height) -> Iterable[Particle]:
     # A particle is represented by one or more peaks vertically (z-direction) placed above each other
 
     # Find and connect peaks vertically, searching from bottom to top
@@ -97,9 +98,7 @@ def _to_particles(z_stop: int, peaks: Dict[int, List[Peak]], max_cell_height) ->
     particles = []
     for z in range(z_stop - 1):
         for peak in peaks[z]:
-            particles += peak.to_particles(max_cell_height)
-
-    return particles
+            yield peak.to_particles(max_cell_height)
 
 
 def _connect_peaks_vertically(peaks: List[Peak], peaks_above: List[Peak]):

@@ -23,9 +23,9 @@ class CellDeathVisualizer(ParticleListVisualizer):
     Use the left/right arrow keys to move to the next cell division.
     Press M to exit this view."""
 
-    def __init__(self, experiment: Experiment, window: Window, mother: Optional[Particle]):
-        super().__init__(experiment, window, chosen_particle=mother, all_particles=_get_deaths(experiment),
-                         show_next_image=True)
+    def __init__(self, window: Window, focus_particle: Optional[Particle]):
+        super().__init__(window, chosen_particle=focus_particle, all_particles=_get_deaths(window.get_experiment()),
+                         show_next_image=False)
 
     def get_message_no_particles(self):
         return "No cell deaths found. Is the linking data missing?"

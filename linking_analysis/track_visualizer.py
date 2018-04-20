@@ -17,8 +17,8 @@ class TrackVisualizer(Visualizer):
     _particle: Particle
     _particles_on_display: Set[Particle]
 
-    def __init__(self, experiment: Experiment, window: Window, particle: Particle):
-        super().__init__(experiment, window)
+    def __init__(self, window: Window, particle: Particle):
+        super().__init__(window)
         self._particle = particle
         self._particles_on_display = set()
 
@@ -83,7 +83,7 @@ class TrackVisualizer(Visualizer):
     def _on_key_press(self, event: KeyEvent):
         if event.key == "t":
             from imaging.image_visualizer import StandardImageVisualizer
-            image_visualizer = StandardImageVisualizer(self._experiment, self._window, z=int(self._particle.z),
+            image_visualizer = StandardImageVisualizer(self._window, z=int(self._particle.z),
                                                        time_point_number=self._particle.time_point_number())
             activate(image_visualizer)
 
