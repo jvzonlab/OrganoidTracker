@@ -6,8 +6,9 @@ from os import path
 
 import gui
 import particle_detection.detector_for_experiment as detector
-from core import tifffolder, Experiment, io
-from particle_detection import detection_visualizer
+from core import Experiment
+from imaging import tifffolder, io
+from visualizer import detection_visualizer
 from particle_detection.dt_with_laplacian import DistanceTransformWithLaplacianDetector
 
 # PARAMETERS

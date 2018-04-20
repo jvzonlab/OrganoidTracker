@@ -4,8 +4,10 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy
 import skimage.feature
+from matplotlib.figure import Figure
 from numpy import ndarray
 
+from gui import dialog
 from particle_detection import Detector
 
 
@@ -39,25 +41,20 @@ class DistanceTransformWithLaplacianDetector(Detector):
 
         # show the images
         if show_results:
-            _new_figure()
-            plt.title("Original image")
-            plt.imshow(image_8bit, cmap="binary")
-            plt.plot(local_maxima[:, 1], local_maxima[:, 0], 'o', color='red')
-            plt.colorbar()
-            _new_figure()
-            plt.title("Laplacian")
-            plt.imshow(gaussian_laplacian, cmap="Spectral")
-            plt.colorbar()
-            _new_figure()
-            plt.title("Threshold applied on laplacian")
-            plt.imshow(thresholded_laplacian, cmap="binary")
-            _new_figure()
-            plt.title("Threshold applied on image")
-            plt.imshow(thresholded_image, cmap="binary")
-            _new_figure()
-            plt.title("Threshold sum")
-            plt.imshow(thresholded_sum, cmap="binary")
-            plt.show()
+            def paint_figure(figure: Figure):
+                ((ax1, ax2), (ax3, ax4)) = figure.subplots(2, 2)
+                ax1.title.set_text("Original image")
+                ax1.imshow(image_8bit, cmap="binary")
+                ax1.plot(local_maxima[:, 1], local_maxima[:, 0], 'o', color='red', markersize=2)
+
+                ax2.title.set_text("Laplacian")
+                image = ax2.imshow(gaussian_laplacian, cmap="Spectral")
+                figure.colorbar(image, ax=ax2)
+
+                ax3.title.set_text("Threshold sum")
+                ax3.imshow(thresholded_sum, cmap="binary")
+
+            dialog.popup_figure(paint_figure)
 
         return local_maxima
 

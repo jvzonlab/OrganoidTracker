@@ -23,11 +23,13 @@ def popup_error(title: str, message: str):
 def popup_figure(draw_function):
     """Shows a popup screen with the image"""
     popup = tkinter.Toplevel()
-    popup.title("Test")
+    popup.title("Figure")
+    popup.grid_columnconfigure(0, weight=1)
+    popup.grid_rowconfigure(0, weight=1)
 
-    figure = Figure(figsize=(4, 4), dpi=95)
+    figure = Figure(figsize=(7, 7), dpi=95)
     draw_function(figure)
 
     mpl_canvas = FigureCanvasTkAgg(figure, master=popup)
     mpl_canvas.show()
-    mpl_canvas.get_tk_widget().pack()
+    mpl_canvas.get_tk_widget().grid(row=0, column=0, sticky="nesw")
