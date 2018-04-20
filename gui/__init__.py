@@ -76,6 +76,7 @@ class Window:
             "File": [
                 ("New project", lambda: action.new(self)),
                 "-",
+                ("Import images...", lambda: action.load_images(self)),
                 ("Import positions...", lambda: action.load_positions(self)),
                 ("Import links...", lambda: action.load_links(self)),
                 "-",

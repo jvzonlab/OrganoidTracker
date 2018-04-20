@@ -1,10 +1,12 @@
+import re
 import tkinter
+from os import path
 from tkinter import filedialog, messagebox
 
 from matplotlib.figure import Figure
-
+from tkinter.messagebox import Message
 from gui import Window
-from imaging import io, Experiment
+from imaging import io, Experiment, tifffolder
 from imaging.empty_visualizer import EmptyVisualizer
 from imaging.image_visualizer import StandardImageVisualizer
 from imaging.visualizer import activate
@@ -45,6 +47,32 @@ def new(window: Window):
         window.set_experiment(Experiment())
         visualizer = EmptyVisualizer(window)
         activate(visualizer)
+
+
+def load_images(window: Window):
+    # Show an OK/cancel box, but with an INFO icon instead of a question mark
+    box = Message(title="Image loading", icon=messagebox.INFO, type=messagebox.OKCANCEL,
+                  message="Images are expected to be 3D grayscale TIF files. Each TIF file represents a single time "
+                          "point.\n\n"
+                          "Please select the TIF file of the first time point. The file name of the image must contain "
+                          "t01, t001 or longer in the file name.").show()
+    if str(box) != messagebox.OK:
+        return  # Cancelled
+    full_path = filedialog.askopenfilename(title="Select first image file", filetypes=(("TIF file", "*.tif"),))
+    if not full_path:
+        return  # Cancelled
+    directory, file_name = path.split(full_path)
+    counting_part = re.search('t0+1', file_name)
+    if counting_part is None:
+        messagebox.showerror("Could not read file pattern", "Could not find 't01' (or similar) in the file name \"" +
+                             file_name + "\". Make sure you selected the first image.")
+        return
+    start, end = counting_part.start(0), counting_part.end(0)
+    file_name_pattern = file_name[0:start] + "t%0" + str(end - start - 1) + "d" + file_name[end:]
+
+    # Load and show images
+    tifffolder.load_images_from_folder(window.get_experiment(), directory, file_name_pattern)
+    _visualize_experiment(window)
 
 
 def load_positions(window: Window):
