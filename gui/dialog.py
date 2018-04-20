@@ -1,5 +1,5 @@
 import tkinter
-from tkinter import simpledialog, messagebox
+from tkinter import simpledialog, messagebox, ttk
 from tkinter.messagebox import Message
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg

@@ -46,7 +46,12 @@ class Visualizer:
             self._ax.set_autoscale_on(False)
 
     def draw_view(self):
+        """Draws the view."""
         raise NotImplementedError()
+
+    def refresh_view(self):
+        """Draws the view, forcing to reload any cached data."""
+        self.draw_view()
 
     def update_status(self, text: Union[str, bytes], redraw=True):
         self._window.set_status(str(text))
@@ -96,6 +101,8 @@ class Visualizer:
         self._window.setup_menu(self.get_extra_menu_options())
         self._window.register_event_handler("key_press_event", self._on_key_press_raw)
         self._window.register_event_handler("button_press_event", self._on_mouse_click)
+        self._window.register_event_handler("refresh_event", self.refresh_view)
+
 
     def detach(self):
         self._window.unregister_event_handlers()

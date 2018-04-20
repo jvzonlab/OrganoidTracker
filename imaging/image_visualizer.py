@@ -223,7 +223,7 @@ class AbstractImageVisualizer(Visualizer):
 
     def _toggle_showing_next_image(self):
         self._show_next_image = not self._show_next_image
-        self._move_in_time(0)  # Reloads images
+        self.refresh_view()
 
     def _move_in_z(self, dz: int):
         old_z = self._z
@@ -258,6 +258,9 @@ class AbstractImageVisualizer(Visualizer):
             self.update_status(self.__doc__)
         except KeyError:
             pass
+
+    def refresh_view(self):
+        self._move_in_time(0)  # This makes the viewer reload the image
 
 
 class StandardImageVisualizer(AbstractImageVisualizer):

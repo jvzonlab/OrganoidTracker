@@ -4,22 +4,12 @@ from os import path
 from tkinter import filedialog, messagebox
 
 from matplotlib.figure import Figure
-from tkinter.messagebox import Message
+from manual_tracking import links_extractor
 from gui import Window
 from gui.dialog import message_cancellable
 from imaging import io, Experiment, tifffolder
 from imaging.empty_visualizer import EmptyVisualizer
-from imaging.image_visualizer import StandardImageVisualizer
 from imaging.visualizer import activate
-
-
-def _visualize_experiment(window: Window):
-    try:
-        window.get_experiment().time_points()
-        visualizer = StandardImageVisualizer(window)
-    except ValueError:
-        visualizer = EmptyVisualizer(window)
-    activate(visualizer)
 
 
 def ask_exit(root: tkinter.Tk):
@@ -71,7 +61,7 @@ def load_images(window: Window):
 
     # Load and show images
     tifffolder.load_images_from_folder(window.get_experiment(), directory, file_name_pattern)
-    _visualize_experiment(window)
+    window.refresh()
 
 
 def load_positions(window: Window):
@@ -87,7 +77,7 @@ def load_positions(window: Window):
         messagebox.showerror("Error loading positions",
                              "Failed to load positions.\n\n" + _error_message(e))
     else:
-        _visualize_experiment(window)
+        window.refresh()
 
 
 def load_links(window: Window):
@@ -105,7 +95,23 @@ def load_links(window: Window):
                                                     " file? Are the corresponding cell positions loaded?\n\n"
                                                     + _error_message(e))
     else:
-        _visualize_experiment(window)
+        window.refresh()
+
+
+def load_guizela_tracks(window: Window):
+    """Loads the tracks in Guizela's format."""
+    folder = filedialog.askdirectory()
+
+    graph = links_extractor.extract_from_tracks(folder)
+
+    experiment = window.get_experiment()
+    for particle in graph.nodes():
+        experiment.add_particle(particle)
+    if experiment.particle_links() is None:
+        experiment.particle_links(graph)
+    else:
+        experiment.particle_links_scratch(graph)
+    window.refresh()
 
 
 def export_positions(experiment: Experiment):

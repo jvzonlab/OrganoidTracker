@@ -4,7 +4,7 @@ from tkinter.font import Font
 
 from matplotlib.backends.backend_tkagg import NavigationToolbar2TkAgg, FigureCanvasTkAgg
 from matplotlib.figure import Figure
-from typing import List, Dict
+from typing import List, Dict, Any
 
 from imaging import Experiment
 
@@ -19,6 +19,7 @@ class Window:
     __experiment: Experiment
 
     __event_handler_ids: List[int]
+    __refresh_handler: Any = None
     __menu: tkinter.Menu
 
     def __init__(self, root: tkinter.Tk, menu: tkinter.Menu, figure: Figure, experiment: Experiment,
@@ -35,7 +36,11 @@ class Window:
         """Registers an event handler. Supported events:
 
         * All matplotlib events.
+        * "refresh_event" for when the figure needs to be redrawn.
         """
+        if event == "refresh_event":
+            self.__refresh_handler = action
+
         self.__event_handler_ids.append(self.__fig.canvas.mpl_connect(event, action))
 
     def unregister_event_handlers(self):
@@ -43,6 +48,7 @@ class Window:
         for id in self.__event_handler_ids:
             self.__fig.canvas.mpl_disconnect(id)
         self.__event_handler_ids = []
+        self.__refresh_handler = None
         self.setup_menu(dict())
 
     def get_figure(self) -> Figure:
@@ -59,6 +65,11 @@ class Window:
 
     def set_experiment(self, experiment: Experiment):
         self.__experiment = experiment
+
+    def refresh(self):
+        """Redraws the main figure."""
+        if self.__refresh_handler is not None:
+            self.__refresh_handler()
 
     def setup_menu(self, extra_items: Dict[str, any]):
         menu_items = self._get_default_menu()
@@ -77,8 +88,9 @@ class Window:
                 ("New project", lambda: action.new(self)),
                 "-",
                 ("Import images...", lambda: action.load_images(self)),
-                ("Import positions...", lambda: action.load_positions(self)),
-                ("Import links...", lambda: action.load_links(self)),
+                ("Import JSON positions...", lambda: action.load_positions(self)),
+                ("Import JSON links...", lambda: action.load_links(self)),
+                ("Import Guizela's track files...", lambda: action.load_guizela_tracks(self)),
                 "-",
                 ("Export positions...", lambda: action.export_positions(self.get_experiment())),
                 ("Export links...", lambda: action.export_links(self.get_experiment())),
