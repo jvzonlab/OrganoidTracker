@@ -1,5 +1,6 @@
 import unittest
-from imaging import TimePoint, Particle
+
+from core import TimePoint, Particle
 from linking.find_nearest_neighbors import find_nearest_particles
 
 

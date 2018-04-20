@@ -1,7 +1,7 @@
 from networkx import Graph
 
-import imaging
-from imaging import Experiment, TimePoint, Particle
+import core
+from core import Experiment, TimePoint, Particle
 from linking import particle_flow
 from linking.find_nearest_neighbors import find_nearest_particles
 
@@ -99,8 +99,8 @@ def _find_nearest_edges_using_flow(graph: Graph, initial_links: Graph, time_poin
             continue
         flow_x, flow_y, flow_z = particle_flow.get_flow_to_previous(initial_links, time_point, particle,
                                                                     max_dx_and_dy=flow_detection_radius)
-        nearest = imaging.get_closest_particle(possible_connections,
-                                               Particle(particle.x + flow_x, particle.y + flow_y, particle.z + flow_z))
+        nearest = core.get_closest_particle(possible_connections,
+                                            Particle(particle.x + flow_x, particle.y + flow_y, particle.z + flow_z))
         graph[particle][nearest]["pref"] = True
 
 

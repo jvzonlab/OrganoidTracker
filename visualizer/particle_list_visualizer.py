@@ -1,13 +1,13 @@
-from matplotlib.backend_bases import KeyEvent
-from matplotlib.figure import Figure
-
-from gui import Window
-from imaging import Particle, Experiment
-from imaging.visualizer import Visualizer, activate
-from networkx import Graph
 from typing import List, Optional, Dict
+
 import matplotlib.pyplot as plt
-import imaging
+from matplotlib.backend_bases import KeyEvent
+from networkx import Graph
+
+import core
+from core import Particle
+from gui import Window
+from visualizer import Visualizer, activate
 
 
 class ParticleListVisualizer(Visualizer):
@@ -51,7 +51,7 @@ class ParticleListVisualizer(Visualizer):
             return self._particle_list.index(particle)
         except ValueError:
             # Try nearest particle
-            close_match = imaging.get_closest_particle(self._particle_list, particle, max_distance=100)
+            close_match = core.get_closest_particle(self._particle_list, particle, max_distance=100)
 
             if close_match is not None and close_match.time_point_number() == particle.time_point_number():
                 return self._particle_list.index(close_match)
@@ -99,7 +99,7 @@ class ParticleListVisualizer(Visualizer):
         self._ax.set_ylim(mother.y + 50, mother.y - 50)
         self._ax.set_autoscale_on(False)
 
-    def _draw_particle(self, particle: Particle, color=imaging.COLOR_CELL_CURRENT, size=7):
+    def _draw_particle(self, particle: Particle, color=core.COLOR_CELL_CURRENT, size=7):
         style = 's'
         dz = abs(particle.time_point_number() - self._particle_list[self._current_particle_index].time_point_number())
         if dz != 0:
@@ -114,9 +114,9 @@ class ParticleListVisualizer(Visualizer):
             return
         try:
             for connected_particle in graph[main_particle]:
-                color = imaging.COLOR_CELL_NEXT
+                color = core.COLOR_CELL_NEXT
                 if connected_particle.time_point_number() < main_particle.time_point_number():
-                    color = imaging.COLOR_CELL_PREVIOUS
+                    color = core.COLOR_CELL_PREVIOUS
                     if self._show_next_image:
                         continue  # Showing the previous position only makes things more confusing here
                 self._ax.plot([connected_particle.x, main_particle.x], [connected_particle.y, main_particle.y],
@@ -145,7 +145,7 @@ class ParticleListVisualizer(Visualizer):
         self.draw_view()
 
     def goto_full_image(self):
-        from imaging.image_visualizer import StandardImageVisualizer
+        from visualizer.image_visualizer import StandardImageVisualizer
 
         if self._current_particle_index < 0 or self._current_particle_index >= len(self._particle_list):
             # Don't know where to go
@@ -163,7 +163,7 @@ class ParticleListVisualizer(Visualizer):
             self._goto_previous()
         elif event.key == "right":
             self._goto_next()
-        elif event.key == imaging.KEY_SHOW_NEXT_IMAGE_ON_TOP:
+        elif event.key == core.KEY_SHOW_NEXT_IMAGE_ON_TOP:
             self._show_next_image = not self._show_next_image
             self.draw_view()
 

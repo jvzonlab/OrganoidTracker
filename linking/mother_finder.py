@@ -1,10 +1,9 @@
-from collections import namedtuple
-from typing import Set, Tuple, List
-
 import itertools
+from typing import Set, List
+
 from networkx import Graph
 
-from imaging import Particle, Family
+from core import Particle, Family
 
 
 def find_mothers(graph: Graph) -> Set[Particle]:

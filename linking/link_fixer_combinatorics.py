@@ -5,15 +5,15 @@ import numpy
 from networkx import Graph
 from numpy import ndarray
 
-import imaging
-from imaging import Particle, Experiment, TimePoint, ScoredFamily, normalized_image
-from imaging.normalized_image import ImageEdgeError
+import core
+from core import ImageEdgeError
+from core import Particle, Experiment, TimePoint, ScoredFamily, normalized_image
 from linking import Parameters, logical_tests
 from linking.link_fixer import fix_no_future_particle, with_only_the_preferred_edges, find_future_particles, \
     find_preferred_links, downgrade_edges_pointing_to_past
-from linking.scoring_system import MotherScoringSystem
-from linking.rational_scoring_system import RationalScoringSystem
 from linking.mother_finder import Family
+from linking.rational_scoring_system import RationalScoringSystem
+from linking.scoring_system import MotherScoringSystem
 
 
 class SearchResult:
@@ -141,7 +141,7 @@ def _perform_combinatorics(experiment: Experiment, graph: Graph, mothers_pick_am
     # Loop through all possible combinations of N mothers, and picks the best combination of mothers and daughters
     nearby_daughters = dict()
     for mother in mothers:
-        nearby_daughters[mother] = imaging.get_closest_n_particles(daughters, mother, 4, max_distance=parameters.max_distance)
+        nearby_daughters[mother] = core.get_closest_n_particles(daughters, mother, 4, max_distance=parameters.max_distance)
 
     scoring_system = RationalScoringSystem(parameters.intensity_detection_radius, parameters.shape_detection_radius)
     best_family_stack = []

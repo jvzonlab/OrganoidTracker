@@ -1,7 +1,8 @@
 """Contains function that allows you to find the nearest few particles"""
 
-from imaging import Particle, TimePoint
 import operator
+
+from core import Particle, TimePoint
 
 
 class _NearestParticles:

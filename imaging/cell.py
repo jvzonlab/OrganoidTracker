@@ -1,6 +1,8 @@
-from imaging import Experiment, Particle
 from typing import Optional, Iterable, Set
+
 from networkx import Graph
+
+from core import Particle
 
 
 def get_age(graph: Graph, particle: Particle) -> Optional[int]:

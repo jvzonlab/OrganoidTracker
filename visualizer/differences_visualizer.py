@@ -1,11 +1,11 @@
+from typing import List, Optional
+
 import networkx
 from matplotlib.backend_bases import KeyEvent
-from matplotlib.figure import Figure
 
+from core import Particle, Experiment
 from gui import Window
-from imaging import Particle, Experiment
-from imaging.particle_list_visualizer import ParticleListVisualizer
-from typing import List, Optional
+from visualizer.particle_list_visualizer import ParticleListVisualizer
 
 
 def _get_differences(experiment: Experiment) -> List[Particle]:

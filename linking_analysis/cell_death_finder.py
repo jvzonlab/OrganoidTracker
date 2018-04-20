@@ -1,7 +1,8 @@
-from networkx import Graph
 from typing import Set
 
-from imaging import Particle, Experiment
+from networkx import Graph
+
+from core import Particle, Experiment
 
 
 def find_cell_deaths(experiment: Experiment, graph: Graph) -> Set[Particle]:

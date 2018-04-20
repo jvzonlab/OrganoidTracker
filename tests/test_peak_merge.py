@@ -1,6 +1,6 @@
 import unittest
 
-from imaging import Particle
+from core import Particle
 from particle_detection.detector_for_experiment import Peak
 
 

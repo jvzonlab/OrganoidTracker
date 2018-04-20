@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 from matplotlib.backend_bases import KeyEvent
 from matplotlib.figure import Figure
 
-from imaging import Experiment
-from imaging.image_visualizer import AbstractImageVisualizer, activate
+from core import AbstractImageVisualizer, activate
+from core import Experiment
 from particle_detection import Detector
 
 

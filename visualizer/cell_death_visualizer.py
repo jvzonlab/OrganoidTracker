@@ -1,12 +1,9 @@
-from matplotlib.backend_bases import KeyEvent
-from matplotlib.figure import Figure
-
-from gui import Window
-from imaging import Particle, Experiment, cell
-from imaging.particle_list_visualizer import ParticleListVisualizer
-from linking import mother_finder
 from typing import List, Optional
 
+from core import Particle, Experiment
+from imaging import cell
+from visualizer.particle_list_visualizer import ParticleListVisualizer
+from gui import Window
 from linking_analysis import cell_death_finder
 
 

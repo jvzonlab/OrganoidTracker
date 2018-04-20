@@ -1,6 +1,6 @@
 from gui import Window
-from imaging.image_visualizer import StandardImageVisualizer
-from imaging.visualizer import Visualizer, activate
+from visualizer.image_visualizer import StandardImageVisualizer
+from visualizer import Visualizer, activate
 
 
 class EmptyVisualizer(Visualizer):

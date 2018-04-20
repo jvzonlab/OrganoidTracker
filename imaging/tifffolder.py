@@ -4,7 +4,7 @@ from typing import Optional
 import tifffile
 from numpy import ndarray
 
-from imaging import Experiment, ImageLoader, TimePoint
+from core import Experiment, ImageLoader, TimePoint
 
 
 def load_images_from_folder(experiment: Experiment, folder: str, file_name_format: str,

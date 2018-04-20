@@ -1,9 +1,8 @@
 """Attempt at edge detection. Doesn't work so well."""
 
 import cv2
-
-from numpy import ndarray
 import numpy as np
+from numpy import ndarray
 
 
 # Load picture, convert to grayscale and detect edges

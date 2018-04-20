@@ -1,9 +1,10 @@
 # File originally written by Guizela Huelsz Prince
 
-import numpy as np
-import pickle as pickle
 import os
+import pickle as pickle
 import re
+
+import numpy as np
 
 
 class Track:

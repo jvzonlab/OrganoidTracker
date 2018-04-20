@@ -1,8 +1,10 @@
-from imaging import Experiment, Particle
-from particle_detection import dt_detection, Detector
-from numpy import ndarray
-from typing import Dict, Optional, List, Tuple, Any, Iterable
 import math
+from typing import Dict, Optional, List, Any, Iterable
+
+from numpy import ndarray
+
+from core import Experiment, Particle
+from particle_detection import Detector
 
 
 def detect_particles_in_3d(experiment: Experiment, method: Detector, max_cell_height=6, **kwargs):

@@ -1,6 +1,6 @@
-"""Images and positions of particles (biological cells in our case)"""
+"""Some base classes."""
 from operator import itemgetter
-from typing import List, Iterable, Optional, Dict, Set, Any, ItemsView
+from typing import List, Iterable, Optional, Dict, Set, Any
 
 from networkx import Graph
 from numpy import ndarray

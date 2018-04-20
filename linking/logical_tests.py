@@ -2,7 +2,7 @@ from typing import Optional
 
 from networkx import Graph
 
-from imaging import errors, Experiment, Particle, cell, Score
+from core import errors, Experiment, Particle, cell, Score
 
 
 def apply(experiment: Experiment, graph: Graph):

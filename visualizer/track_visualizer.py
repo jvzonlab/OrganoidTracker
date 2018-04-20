@@ -1,12 +1,14 @@
-import imaging
-from gui import Window
-from imaging.visualizer import Visualizer, activate
-from imaging import Experiment, Particle, cell
-from matplotlib.figure import Figure
+from typing import Set, Optional
+
+import matplotlib.pyplot as plt
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 from networkx import Graph
-from typing import Set, Optional
-import matplotlib.pyplot as plt
+
+import core
+from core import Particle
+from imaging import cell
+from visualizer import Visualizer, activate
+from gui import Window
 
 
 class TrackVisualizer(Visualizer):
@@ -26,7 +28,7 @@ class TrackVisualizer(Visualizer):
         self._clear_axis()
         self._particles_on_display.clear()
 
-        self._draw_particle(self._particle, color=imaging.COLOR_CELL_CURRENT, size=7)
+        self._draw_particle(self._particle, color=core.COLOR_CELL_CURRENT, size=7)
 
         self._draw_network(self._experiment.particle_links_scratch(), line_style='dotted', line_width=3, max_distance=1)
         self._draw_network(self._experiment.particle_links())
@@ -57,11 +59,11 @@ class TrackVisualizer(Visualizer):
             links = network[particle]
             for linked_particle in links:
                 if linked_particle not in already_drawn:
-                    color = imaging.COLOR_CELL_NEXT
+                    color = core.COLOR_CELL_NEXT
                     positions = [particle.x, particle.y, linked_particle.x - particle.x, linked_particle.y - particle.y]
                     if linked_particle.time_point_number() <= self._particle.time_point_number():
                         # Particle in the past, use different style
-                        color = imaging.COLOR_CELL_PREVIOUS
+                        color = core.COLOR_CELL_PREVIOUS
                     if linked_particle.time_point_number() < particle.time_point_number():
                         # Always draw arrow from oldest to newest particle
                         positions = [linked_particle.x, linked_particle.y,
@@ -82,7 +84,7 @@ class TrackVisualizer(Visualizer):
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "t":
-            from imaging.image_visualizer import StandardImageVisualizer
+            from core import StandardImageVisualizer
             image_visualizer = StandardImageVisualizer(self._window, z=int(self._particle.z),
                                                        time_point_number=self._particle.time_point_number())
             activate(image_visualizer)

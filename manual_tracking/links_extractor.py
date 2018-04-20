@@ -1,14 +1,16 @@
 """Extracting the tracks as measured by Guizela to a Graph object"""
 
-from imaging import Particle
-from manual_tracking.track_lib import Track
-from networkx import Graph
-from typing import List
+import math
 import os
 import pickle
 import sys
-import math
+from typing import List
+
 import numpy
+from networkx import Graph
+
+from core import Particle
+from manual_tracking.track_lib import Track
 
 
 def extract_from_tracks(tracks_dir: str, min_time_point: int = 0, max_time_point: int = 5000) -> Graph:

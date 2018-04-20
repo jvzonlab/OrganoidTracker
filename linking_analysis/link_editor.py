@@ -1,14 +1,15 @@
 from typing import Optional
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent
-from matplotlib.figure import Figure
 from networkx import Graph, NetworkXError
 
-import imaging
+import core
+from core import Particle
 from gui import Window
-from imaging import Experiment, Particle, io
-from imaging.image_visualizer import AbstractImageVisualizer
-from imaging.visualizer import activate
+from imaging import io
+from visualizer.image_visualizer import AbstractImageVisualizer
+from visualizer import activate
+
 
 class LinkEditor(AbstractImageVisualizer):
     """Editor for links.
@@ -46,11 +47,11 @@ class LinkEditor(AbstractImageVisualizer):
     def _draw_highlight(self, particle: Optional[Particle]):
         if particle is None:
             return
-        color = imaging.COLOR_CELL_CURRENT
+        color = core.COLOR_CELL_CURRENT
         if particle.time_point_number() < self._time_point.time_point_number():
-            color = imaging.COLOR_CELL_PREVIOUS
+            color = core.COLOR_CELL_PREVIOUS
         elif particle.time_point_number() > self._time_point.time_point_number():
-            color = imaging.COLOR_CELL_NEXT
+            color = core.COLOR_CELL_NEXT
         self._ax.plot(particle.x, particle.y, 'o', markersize=25, color=(0,0,0,0), markeredgecolor=color,
                       markeredgewidth=5)
 
@@ -86,7 +87,7 @@ class LinkEditor(AbstractImageVisualizer):
                 except NetworkXError:
                     self.update_status("Cannot delete link: there was no link between selected particles")
         elif event.key == "l":
-            from imaging.image_visualizer import StandardImageVisualizer
+            from core import StandardImageVisualizer
             image_visualizer = StandardImageVisualizer(self._window,
                                                        time_point_number=self._time_point.time_point_number(), z=self._z)
             activate(image_visualizer)

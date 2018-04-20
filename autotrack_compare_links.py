@@ -3,9 +3,8 @@
 # that.
 import gui
 from config import ConfigFile
-from imaging import io, tifffolder, image_visualizer, Experiment
+from core import io, tifffolder, image_visualizer, Experiment
 from linking_analysis import comparison
-from matplotlib import pyplot
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)

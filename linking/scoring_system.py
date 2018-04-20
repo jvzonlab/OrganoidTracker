@@ -1,4 +1,4 @@
-from imaging import Experiment, Particle, Score
+from core import Experiment, Particle, Score
 
 
 class MotherScoringSystem:

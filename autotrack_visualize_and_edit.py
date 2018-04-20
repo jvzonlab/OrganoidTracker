@@ -1,11 +1,11 @@
 # Compares two linking results. The baseline links are assumed to be 100% correct, any deviations from that are
 # counted as errors. Solid lines in the figures represent the correct linking result, dotted lines any deviations from
 # that.
+from os import path
+
 import gui
 from config import ConfigFile
-from imaging import io, tifffolder, image_visualizer, Experiment
-from os import path
-from matplotlib import pyplot
+from core import io, tifffolder, image_visualizer, Experiment
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)

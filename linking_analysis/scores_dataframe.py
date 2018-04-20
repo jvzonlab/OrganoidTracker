@@ -3,7 +3,7 @@ from typing import List, Set
 import numpy
 import pandas
 
-from imaging import Experiment
+from core import Experiment
 from linking.mother_finder import Family
 from linking.scoring_system import MotherScoringSystem, Score
 

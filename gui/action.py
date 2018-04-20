@@ -4,12 +4,14 @@ from os import path
 from tkinter import filedialog, messagebox
 
 from matplotlib.figure import Figure
-from manual_tracking import links_extractor
+
+from core import Experiment
 from gui import Window
 from gui.dialog import message_cancellable
-from imaging import io, Experiment, tifffolder
-from imaging.empty_visualizer import EmptyVisualizer
-from imaging.visualizer import activate
+from imaging import io, tifffolder
+from manual_tracking import links_extractor
+from visualizer.empty_visualizer import EmptyVisualizer
+from visualizer import activate
 
 
 def ask_exit(root: tkinter.Tk):
@@ -101,6 +103,8 @@ def load_links(window: Window):
 def load_guizela_tracks(window: Window):
     """Loads the tracks in Guizela's format."""
     folder = filedialog.askdirectory()
+    if not folder:
+        return  # Cancelled
 
     graph = links_extractor.extract_from_tracks(folder)
 

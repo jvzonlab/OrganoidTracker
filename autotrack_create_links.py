@@ -1,5 +1,5 @@
 from config import ConfigFile
-from imaging import Experiment, io, tifffolder
+from core import Experiment, io, tifffolder
 from linking import link_fixer_casebycase, linker_for_experiment
 
 # PARAMETERS

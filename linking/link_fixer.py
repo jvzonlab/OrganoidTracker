@@ -1,12 +1,13 @@
-from typing import Iterable, Set, Optional, Tuple, List
+from typing import Iterable, Set, Optional
 
 import numpy
 from networkx import Graph
 
-import imaging
-from imaging import Particle, Experiment, Family, errors, normalized_image
+import core
+from core import Particle, Experiment, Family
+from imaging import normalized_image
 from imaging.normalized_image import ImageEdgeError
-from linking import mother_finder
+from linking import mother_finder, errors
 from linking.scoring_system import MotherScoringSystem
 
 
@@ -47,7 +48,7 @@ def __repair_dead_cell(experiment: Experiment, graph: Graph, particle: Particle,
     while True:  # Loop through all possible candidates
         candidate = get_closest_particle_having_a_sister(graph, candidates, particle)
         if candidate is None:  # Ok, ok, choose a less likely one
-            candidate = imaging.get_closest_particle(candidates, particle)
+            candidate = core.get_closest_particle(candidates, particle)
         if candidate is None:
             return False  # No more candidates left
 
@@ -110,7 +111,7 @@ def __get_intensity(experiment: Experiment, particle: Particle, radius: int = 3)
 def __remove_relatively_far_away(particles: Set[Particle], center: Particle, tolerance: float) -> Set[Particle]:
     if len(particles) <= 1:
         return particles
-    min_distance_squared = imaging.get_closest_particle(particles, center).distance_squared(center)
+    min_distance_squared = core.get_closest_particle(particles, center).distance_squared(center)
     max_distance_squared = min_distance_squared * (tolerance ** 2)
     return {particle for particle in particles if particle.distance_squared(center) <= max_distance_squared}
 
@@ -129,7 +130,7 @@ def get_closest_particle_having_a_sister(graph: Graph,
     """
     candidates = set(candidates_list)
     while True:
-        candidate = imaging.get_closest_particle(candidates, center)
+        candidate = core.get_closest_particle(candidates, center)
         if candidate is None:
             return None  # No more candidates left
 

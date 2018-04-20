@@ -1,12 +1,13 @@
+from typing import List, Optional, Tuple
+
 from matplotlib.backend_bases import KeyEvent
-from matplotlib.figure import Figure
 from networkx import Graph
 
+from core import Particle, Experiment
 from gui import Window
-from imaging import Particle, Experiment, errors
-from imaging.particle_list_visualizer import ParticleListVisualizer
-from typing import List, Optional, Tuple
+from linking import errors
 from linking import logical_tests
+from visualizer.particle_list_visualizer import ParticleListVisualizer
 
 
 def _get_problematic_particles(experiment: Experiment) -> List[Particle]:

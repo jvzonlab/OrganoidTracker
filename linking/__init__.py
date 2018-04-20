@@ -1,8 +1,3 @@
-from typing import Set
-
-from imaging import Particle
-
-
 class Parameters:
     """Object used to store measurement parameters."""
 

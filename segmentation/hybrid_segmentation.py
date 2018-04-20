@@ -1,8 +1,9 @@
 """Segmentation using both intensities and the laplacian."""
-from numpy import ndarray
+import math
+
 import cv2
 import numpy
-import math
+from numpy import ndarray
 
 
 def perform(image: ndarray) -> ndarray:

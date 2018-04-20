@@ -1,17 +1,16 @@
-import threading
-
-import imaging
-from gui import launch_window, Window
-from gui.dialog import popup_figure, prompt_int, popup_error
-from imaging.visualizer import Visualizer, activate
-from imaging import Experiment, TimePoint, Particle
-from matplotlib.backend_bases import KeyEvent, MouseEvent
-from numpy import ndarray
-from networkx import Graph
 from typing import Optional, Iterable, List, Tuple
 
+from matplotlib.backend_bases import KeyEvent, MouseEvent
+from networkx import Graph
+from numpy import ndarray
+
+import core
+from core import Experiment, TimePoint, Particle
+from gui import launch_window, Window
+from gui.dialog import popup_figure, prompt_int, popup_error
 from linking import particle_flow
 from segmentation import hybrid_segmentation
+from visualizer import Visualizer, activate
 
 
 def show(experiment: Experiment):
@@ -103,7 +102,7 @@ class AbstractImageVisualizer(Visualizer):
 
         return errors
 
-    def _draw_particles_of_time_point(self, time_point: TimePoint, color: str = imaging.COLOR_CELL_CURRENT,
+    def _draw_particles_of_time_point(self, time_point: TimePoint, color: str = core.COLOR_CELL_CURRENT,
                                       marker_size:int = 6):
         for particle in time_point.particles():
             dz = abs(particle.z - self._z)
@@ -154,10 +153,10 @@ class AbstractImageVisualizer(Visualizer):
                 # Drawing to past
                 if not self._show_next_image:
                     self._ax.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], linestyle=line_style,
-                             color=imaging.COLOR_CELL_PREVIOUS, linewidth=line_width)
+                                  color=core.COLOR_CELL_PREVIOUS, linewidth=line_width)
             else:
                 self._ax.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], linestyle=line_style,
-                         color=imaging.COLOR_CELL_NEXT, linewidth=line_width)
+                              color=core.COLOR_CELL_NEXT, linewidth=line_width)
 
     def _get_links(self, network: Optional[Graph], particle: Particle) -> Iterable[Particle]:
         if network is None:
@@ -182,8 +181,8 @@ class AbstractImageVisualizer(Visualizer):
                             + max_str + ".")
         return {
             "View": [
-                ("Toggle showing next image (" + imaging.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + ")",
-                    self._toggle_showing_next_image),
+                ("Toggle showing next image (" + core.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + ")",
+                 self._toggle_showing_next_image),
             ],
             "Navigate": [
                 ("Above layer (Up)", lambda: self._move_in_z(1)),
@@ -204,7 +203,7 @@ class AbstractImageVisualizer(Visualizer):
             self._move_in_time(-1)
         elif event.key == "right":
             self._move_in_time(1)
-        elif event.key == imaging.KEY_SHOW_NEXT_IMAGE_ON_TOP:
+        elif event.key == core.KEY_SHOW_NEXT_IMAGE_ON_TOP:
             self._toggle_showing_next_image()
 
     def _on_command(self, command: str) -> bool:
@@ -322,7 +321,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         if event.key == "t":
             particle = self._get_particle_at(event.xdata, event.ydata)
             if particle is not None:
-                from linking_analysis.track_visualizer import TrackVisualizer
+                from visualizer.track_visualizer import TrackVisualizer
                 track_visualizer = TrackVisualizer(self._window, particle)
                 activate(track_visualizer)
         elif event.key == "m":
@@ -352,17 +351,17 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             super()._on_key_press(event)
 
     def _show_mother_cells(self, particle: Optional[Particle] = None):
-        from linking_analysis.cell_division_visualizer import CellDivisionVisualizer
+        from visualizer.cell_division_visualizer import CellDivisionVisualizer
         track_visualizer = CellDivisionVisualizer(self._window, particle)
         activate(track_visualizer)
 
     def _show_linking_errors(self, particle: Optional[Particle] = None):
-        from imaging.errors_visualizer import ErrorsVisualizer
+        from core import ErrorsVisualizer
         warnings_visualizer = ErrorsVisualizer(self._window, particle)
         activate(warnings_visualizer)
 
     def _show_linking_differences(self, particle: Optional[Particle] = None):
-        from linking_analysis.differences_visualizer import DifferencesVisualizer
+        from visualizer.differences_visualizer import DifferencesVisualizer
         differences_visualizer = DifferencesVisualizer(self._window, particle)
         activate(differences_visualizer)
 
@@ -383,7 +382,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         return super()._on_command(command)
 
     def _show_dead_cells(self):
-        from linking_analysis.cell_death_visualizer import CellDeathVisualizer
+        from visualizer.cell_death_visualizer import CellDeathVisualizer
         activate(CellDeathVisualizer(self._window, None))
 
     def __show_shape(self, particle: Particle):

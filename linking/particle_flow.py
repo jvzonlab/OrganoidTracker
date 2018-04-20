@@ -3,7 +3,7 @@ from typing import Tuple
 import numpy
 from networkx import Graph
 
-from imaging import TimePoint, Particle
+from core import TimePoint, Particle
 from linking.link_fixer import find_preferred_past_particle, find_preferred_future_particles
 
 

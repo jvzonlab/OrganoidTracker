@@ -1,11 +1,11 @@
-from matplotlib.backend_bases import KeyEvent
-from matplotlib.figure import Figure
-
-from gui import Window
-from imaging import Particle, Experiment, cell
-from imaging.particle_list_visualizer import ParticleListVisualizer
-from linking import mother_finder
 from typing import List, Optional
+
+from matplotlib.backend_bases import KeyEvent
+
+from core import Particle, Experiment, cell
+from core import ParticleListVisualizer
+from gui import Window
+from linking import mother_finder
 
 
 def _get_mothers(experiment: Experiment) -> List[Particle]:

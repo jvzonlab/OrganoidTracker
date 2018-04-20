@@ -1,6 +1,4 @@
 from numpy import ndarray
-import scipy.misc
-import numpy
 
 
 class ImageEdgeError(LookupError):

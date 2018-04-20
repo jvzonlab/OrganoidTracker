@@ -2,14 +2,13 @@
 # First, a microscopy image is converted to purely black-or-white using a more complex thresholding technique
 # Then a distance transform is applied, such that pixels further from the background have a higher intensity.
 # Then the local maximums become the particles
-import gui
-from imaging import tifffolder, Experiment, io
-from particle_detection import detection_visualizer
-import particle_detection.detector_for_experiment as detector
-from matplotlib import pyplot
 from os import path
-from particle_detection.dt_with_laplacian import DistanceTransformWithLaplacianDetector
 
+import gui
+import particle_detection.detector_for_experiment as detector
+from core import tifffolder, Experiment, io
+from particle_detection import detection_visualizer
+from particle_detection.dt_with_laplacian import DistanceTransformWithLaplacianDetector
 
 # PARAMETERS
 _name = "multiphoton.organoids.17-07-28_weekend_H2B-mCherry.nd799xy08"

@@ -1,6 +1,6 @@
 import unittest
-import imaging
-from imaging import Particle, angles
+
+from core import angles
 
 
 class TestAngles(unittest.TestCase):

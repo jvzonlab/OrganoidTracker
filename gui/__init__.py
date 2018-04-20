@@ -1,12 +1,12 @@
 import tkinter
-from tkinter import StringVar, ttk, filedialog, simpledialog
+from tkinter import StringVar, ttk
 from tkinter.font import Font
+from typing import List, Dict, Any
 
 from matplotlib.backends.backend_tkagg import NavigationToolbar2TkAgg, FigureCanvasTkAgg
 from matplotlib.figure import Figure
-from typing import List, Dict, Any
 
-from imaging import Experiment
+from core import Experiment
 
 
 class Window:
@@ -90,7 +90,7 @@ class Window:
                 ("Import images...", lambda: action.load_images(self)),
                 ("Import JSON positions...", lambda: action.load_positions(self)),
                 ("Import JSON links...", lambda: action.load_links(self)),
-                ("Import Guizela's track files...", lambda: action.load_guizela_tracks(self)),
+                ("Import Guizela's track format...", lambda: action.load_guizela_tracks(self)),
                 "-",
                 ("Export positions...", lambda: action.export_positions(self.get_experiment())),
                 ("Export links...", lambda: action.export_links(self.get_experiment())),

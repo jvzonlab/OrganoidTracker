@@ -1,6 +1,7 @@
 """Some helper function for calculations with angles."""
-from imaging import Particle
 import math
+
+from core import Particle
 
 
 def direction_2d(particle1: Particle, particle2: Particle) -> float:

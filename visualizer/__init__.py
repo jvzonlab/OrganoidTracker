@@ -1,12 +1,14 @@
-import numpy
+"""A bunch of visualizers, all based on Matplotlib. (The fact that TkInter is also used is abstracted away.)"""
 
-import imaging
-from gui import Window
-from imaging import Experiment, Particle, TimePoint
-from matplotlib.figure import Figure, Axes, Text
-from matplotlib.backend_bases import KeyEvent, MouseEvent
 from typing import Iterable, Optional, Union, Dict, List
-import matplotlib.pyplot as plt
+
+import numpy
+from matplotlib.backend_bases import KeyEvent, MouseEvent
+from matplotlib.figure import Figure, Axes
+
+import core
+from core import Experiment, Particle, TimePoint
+from gui import Window
 
 
 class Visualizer:
@@ -142,7 +144,7 @@ class Visualizer:
             z = 0
             ignore_z = True
         search_position = Particle(x, y, z)
-        return imaging.get_closest_particle(particles, search_position, ignore_z=ignore_z, max_distance=max_distance)
+        return core.get_closest_particle(particles, search_position, ignore_z=ignore_z, max_distance=max_distance)
 
 
 __active_visualizer = None # Reference to prevent event handler from being garbage collected

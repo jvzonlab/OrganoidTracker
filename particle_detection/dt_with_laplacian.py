@@ -1,10 +1,10 @@
 """Image derivative visualization"""
 
 import cv2
+import matplotlib.pyplot as plt
 import numpy
 import skimage.feature
 from numpy import ndarray
-import matplotlib.pyplot as plt
 
 from particle_detection import Detector
 

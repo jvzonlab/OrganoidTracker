@@ -1,14 +1,14 @@
 # File originally written by Guizela Huelsz Prince
 
+import os
+import time
+
+import matplotlib.patheffects as path_effects
+import matplotlib.pyplot as plt
 import numpy as np
 import tifffile as tif
-import matplotlib.pyplot as plt
-import os
-import sys
-from track_lib import Track, load_track_list, save_track_list, add_track_to_tracklist
-import time
-import matplotlib.patheffects as path_effects
 from skimage import exposure
+from track_lib import load_track_list, save_track_list, add_track_to_tracklist
 
 
 def make_RGB_time_image(im_array,mode, contr):

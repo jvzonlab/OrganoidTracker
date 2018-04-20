@@ -1,8 +1,10 @@
+from typing import Iterable
+
 import networkx
 from networkx import Graph
+
+from core import Particle
 from linking import mother_finder
-from typing import Iterable
-from imaging import Particle
 
 
 def print_differences(automatic_links: Graph, baseline_links: Graph):

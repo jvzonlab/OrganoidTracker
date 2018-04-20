@@ -1,15 +1,14 @@
 """Classes for expressing the positions of particles"""
 import json
 from json import JSONEncoder
+from pathlib import Path
+from typing import List
 
+import numpy
+from networkx import node_link_data, node_link_graph, Graph
 from pandas import DataFrame
 
-from imaging import Experiment, Particle, Score, Family, ScoredFamily
-from networkx import node_link_data, node_link_graph, Graph
-from typing import List
-import numpy
-from pathlib import Path
-import os
+from core import Experiment, Particle, Score, Family, ScoredFamily
 
 
 def load_positions_from_json(experiment: Experiment, json_file_name: str):

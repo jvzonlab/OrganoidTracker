@@ -1,10 +1,9 @@
 
 
 import cv2
-import numpy as np
 import skimage.feature
-from numpy import ndarray
 from matplotlib import pyplot
+from numpy import ndarray
 
 from particle_detection import Detector
 

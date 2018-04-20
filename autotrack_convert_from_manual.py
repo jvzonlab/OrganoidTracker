@@ -3,8 +3,8 @@
 # This script is used to convert data from Guizela's scripts (e.g. track_manually.py) to data in our standard JSON
 # format. Just launch it
 from config import ConfigFile
+from core import io
 from manual_tracking import positions_extractor, links_extractor
-from imaging import io
 
 # CONFIGURATION
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
