@@ -5,7 +5,9 @@ from os import path
 
 import gui
 from config import ConfigFile
-from core import io, tifffolder, image_visualizer, Experiment
+from imaging import io, tifffolder
+from visualizer import image_visualizer
+from core import Experiment
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
