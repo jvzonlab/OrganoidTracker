@@ -1,8 +1,18 @@
 name: C:\Users\rkok\anaconda3
 channels:
 - conda-forge
+- anaconda
 - defaults
 dependencies:
+- click=6.7=py36hec8c647_0
+- locket=0.2.0=py36hfed976d_1
+- markupsafe=1.0=py36h0e26971_1
+- partd=0.3.8=py36hc8e763b_0
+- pywavelets=0.5.2=py36hc649158_0
+- pyyaml=3.12=py36h1d1928f_1
+- tblib=1.3.2=py36h30f5020_0
+- zict=0.1.3=py36h2d8e73e_0
+- altgraph=0.15=py_0
 - backports.functools_lru_cache=1.5=py36_0
 - boto3=1.5.26=py_0
 - botocore=1.8.40=py_0
@@ -12,6 +22,7 @@ dependencies:
 - conda-env=2.6.0=0
 - curl=7.55.1=vc14_0
 - freetype=2.7=vc14_2
+- future=0.16.0=py36_0
 - gensim=3.3.0=py36_vc14_0
 - hdf5=1.10.1=vc14_1
 - icu=58.2=vc14_0
@@ -28,11 +39,15 @@ dependencies:
 - llvm-meta=5.0.0=0
 - llvmdev=5.0.0=default_1
 - lzo=2.10=vc14_0
+- macholib=1.8=py_0
+- mahotas=1.4.4=py36_0
 - matplotlib=2.1.1=py36_0
 - opencv=3.3.0=py36_203
 - openmp=5.0.0=vc14_0
 - openssl=1.0.2n=vc14_0
+- pefile=2017.11.5=py_0
 - pillow=4.3.0=py36_1
+- pyinstaller=3.3.1=py36_vc14_0
 - python-crfsuite=0.9.2=py36_vc14_0
 - qt=5.6.2=vc14_1
 - s3transfer=0.1.12=py36_0
@@ -69,7 +84,6 @@ dependencies:
 - certifi=2017.7.27.1=py36h043bc9e_0
 - cffi=1.10.0=py36hae3d1b5_1
 - chardet=3.0.4=py36h420ce6e_1
-- click=6.7=py36hec8c647_0
 - cloudpickle=0.4.0=py36h639d8dc_0
 - clyent=1.2.2=py36hb10d595_1
 - colorama=0.3.9=py36h029ae33_0
@@ -123,17 +137,18 @@ dependencies:
 - jupyter_core=4.3.0=py36h511e818_0
 - jupyterlab=0.27.0=py36h34cc53b_2
 - jupyterlab_launcher=0.4.0=py36h22c3ccf_0
+- kiwisolver=1.0.1=py36h12c3424_0
 - lazy-object-proxy=1.3.1=py36hd1c21d2_0
 - llvmlite=0.20.0=py36_0
-- locket=0.2.0=py36hfed976d_1
 - lockfile=0.12.2=py36h0468280_0
 - lxml=4.1.0=py36h0dcd83c_0
-- markupsafe=1.0=py36h0e26971_1
 - mccabe=0.6.1=py36hb41005a_1
 - menuinst=1.4.10=py36h42196fb_0
 - mistune=0.7.4=py36h4874169_0
 - mkl=2018.0.0=h36b65af_4
 - mkl-service=1.1.2=py36h57e144c_4
+- mkl_fft=1.0.1=py36h452e1ab_0
+- mkl_random=1.0.1=py36h9258bd6_0
 - mpmath=0.19=py36he326802_2
 - msgpack-python=0.4.8=py36h58b1e9d_0
 - multipledispatch=0.4.9=py36he44c36e_0
@@ -155,7 +170,6 @@ dependencies:
 - pandas=0.20.3=py36hce827b7_2
 - pandoc=1.19.2.1=hb2460c7_1
 - pandocfilters=1.4.2=py36h3ef6317_1
-- partd=0.3.8=py36hc8e763b_0
 - path.py=10.3.1=py36h3dd8b46_0
 - pathlib2=2.3.0=py36h7bfb78b_0
 - patsy=0.4.1=py36h42cefec_0
@@ -186,9 +200,7 @@ dependencies:
 - python=3.6.3=h9e2ca53_1
 - python-dateutil=2.6.1=py36h509ddcb_1
 - pytz=2017.2=py36h05d413f_1
-- pywavelets=0.5.2=py36hc649158_0
 - pywin32=221=py36h9c10281_0
-- pyyaml=3.12=py36h1d1928f_1
 - pyzmq=16.0.2=py36h38c27d9_2
 - qtawesome=0.4.4=py36h5aa48f6_0
 - qtconsole=4.3.1=py36h99a29a9_0
@@ -215,7 +227,6 @@ dependencies:
 - sqlalchemy=1.1.13=py36h5948d12_0
 - statsmodels=0.8.0=py36h6189b4c_0
 - sympy=1.1.1=py36h96708e0_0
-- tblib=1.3.2=py36h30f5020_0
 - testpath=0.3.1=py36h2698cfe_0
 - toolz=0.8.2=py36he152a52_0
 - tornado=4.5.2=py36h57f6048_0
@@ -238,7 +249,6 @@ dependencies:
 - xlsxwriter=1.0.2=py36hf723b7d_0
 - xlwings=0.11.4=py36hd3cf94d_0
 - xlwt=1.3.0=py36h1a4751e_0
-- zict=0.1.3=py36h2d8e73e_0
 - pip:
   - backports.functools-lru-cache==1.5
   - backports.shutil-get-terminal-size==1.0.0
@@ -248,6 +258,8 @@ dependencies:
   - jupyter-console==5.2.0
   - jupyter-core==4.3.0
   - jupyterlab-launcher==0.4.0
+  - mkl-fft==1.0.0
+  - mkl-random==1.0.1
   - prompt-toolkit==1.0.15
   - ruamel-yaml==0.11.14
   - smart-open==1.5.6
