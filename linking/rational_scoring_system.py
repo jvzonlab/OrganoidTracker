@@ -1,7 +1,5 @@
 import math
-from typing import Tuple, Optional
 
-import cv2
 import numpy
 from numpy import ndarray
 
@@ -179,45 +177,3 @@ def score_using_daughter_shapes(score: Score, time_point: TimePoint, daughter1: 
     if difference > 90:
         difference = 180 - difference  # Ignore whether daughter lies like this:  -->  or this:  <--
     score.daughters_angles = -difference / 90
-
-
-def __get_threshold_for_shape(particle: Particle, full_image: ndarray, detection_radius: int) -> Optional[ndarray]:
-    """Gets an image consisting of a circle or radius detection_radius around the given particle. Inside the circle,
-    the image is thresholded using Otsu's method. This thresholded image can be used for shape detection.
-    full_image must be a 2d ndarray consisting of intensities."""
-    x = int(particle.x)
-    y = int(particle.y)
-    if x - detection_radius < 0 or y - detection_radius < 0 or x + detection_radius >= full_image.shape[1] \
-            or y + detection_radius >= full_image.shape[0]:
-        return None  # Out of bounds
-    image = full_image[y - detection_radius:y + detection_radius, x - detection_radius:x + detection_radius]
-    image_max_intensity = max(image.max(), 256)
-    image_8bit = cv2.convertScaleAbs(image, alpha=256 / image_max_intensity, beta=0)
-    __crop_to_circle(image_8bit)
-
-    ret, thresholded_image = cv2.threshold(image_8bit, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    return thresholded_image
-
-
-def __crop_to_circle(image_8bit: ndarray):
-    """Crops the (rectangular or square) 2D image to a circle. Essentially this function makes all pixels zero that are
-    near the corners of the image.
-    """
-    image_circle = numpy.zeros_like(image_8bit)
-    width = image_circle.shape[1]
-    height = image_circle.shape[0]
-    circle_size = min(width, height) - 3
-    cv2.circle(image_circle, (int(width / 2), int(height / 2)), int(circle_size / 2), 255, -1)
-    cv2.bitwise_and(image_8bit, image_circle, image_8bit)
-
-
-def __find_largest_area(contours) -> Tuple[int, float]:
-    highest_area = 0
-    index_with_highest_area = -1
-    for i in range(len(contours)):
-        contour = contours[i]
-        area = cv2.contourArea(contour)
-        if area > highest_area:
-            highest_area = area
-            index_with_highest_area = i
-    return index_with_highest_area, highest_area
