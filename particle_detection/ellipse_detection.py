@@ -20,6 +20,7 @@ def detect_for_all(experiment: Experiment, detection_radius: int):
                 continue  # Too close to edge of image
 
             eccentric = thresholded[detection_radius, detection_radius] == 0
+            thresholded = cv2.erode(thresholded, kernel=cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3)))
             contour_image, contours, hierarchy = cv2.findContours(thresholded, 1, 2)
             contour_index, area = __find_contour_with_largest_area(contours)
             if contour_index == -1 or area < 20:
@@ -51,7 +52,6 @@ def __get_threshold_for_shape(particle: Particle, full_image: ndarray, detection
     __crop_to_circle(image_8bit)
 
     ret, thresholded_image = cv2.threshold(image_8bit, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    thresholded_image = cv2.erode(thresholded_image, kernel=cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3)))
     return thresholded_image
 
 
