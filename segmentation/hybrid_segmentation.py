@@ -3,10 +3,13 @@ import math
 
 import cv2
 import numpy
+from matplotlib.axis import Axis
+from matplotlib.patches import Ellipse
 from numpy import ndarray
+from typing import Tuple, List
 
 
-def perform(image: ndarray) -> ndarray:
+def perform(image: ndarray) -> Tuple[ndarray, List[Ellipse]]:
     """Returns a black-and-white image where white is particle and black is background, at least in theory."""
     image_8bit = cv2.convertScaleAbs(image, alpha=256 / image.max(), beta=0)
 
@@ -22,6 +25,7 @@ def perform(image: ndarray) -> ndarray:
     thresholded_image = cv2.erode(thresholded_image, kernel=cv2.getStructuringElement(cv2.MORPH_CROSS, (3,3)))
     contour_image, contours, hierarchy = cv2.findContours(thresholded_image, 1, 2)
 
+    ellipses = []
     for i in range(len(contours)):
         contour_image = cv2.drawContours(contour_image, contours, i, 60 + i * 31, 1)
         perimeter = cv2.arcLength(contours[i], True)
@@ -32,8 +36,10 @@ def perform(image: ndarray) -> ndarray:
         if perimeter > 15:
             ellipse = cv2.fitEllipse(contours[i])
             print("Ellipse: " + str(ellipse))
-            cv2.ellipse(contour_image, ellipse, 70 + i * 31, 1)
+            ellipses.append(Ellipse(xy=ellipse[0], width=ellipse[1][0], height=ellipse[1][1], angle=ellipse[2],
+                                      fill=False, linewidth=8, linestyle='dashed', edgecolor="white"))
         else:  # Too few pixels to draw reliable perimeter
             print("No ellipse")
     print("---")
-    return contour_image
+
+    return contour_image, ellipses

@@ -2,10 +2,10 @@ from typing import List, Optional
 
 from matplotlib.backend_bases import KeyEvent
 
-from core import Particle, Experiment, cell
-from core import ParticleListVisualizer
+from core import Particle, Experiment
+from visualizer.particle_list_visualizer import ParticleListVisualizer
 from gui import Window
-from linking import mother_finder
+from linking import mother_finder, cell_links
 
 
 def _get_mothers(experiment: Experiment) -> List[Particle]:
@@ -47,8 +47,8 @@ class CellDivisionVisualizer(ParticleListVisualizer):
             return None
 
         try:
-            connections_main = cell.find_future_particles(main_graph, mother)
-            connections_scratch = cell.find_future_particles(scratch_graph, mother)
+            connections_main = cell_links.find_future_particles(main_graph, mother)
+            connections_scratch = cell_links.find_future_particles(scratch_graph, mother)
             return connections_main == connections_scratch
         except KeyError:
             return False

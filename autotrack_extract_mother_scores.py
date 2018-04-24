@@ -38,7 +38,7 @@ possible_links = linker_for_experiment.nearest_neighbor(experiment, tolerance=2,
 experiment.particle_links_scratch(possible_links)
 
 print("Scoring all possible mothers")
-scoring_system = RationalScoringSystem(_mitotic_radius, _shape_detection_radius)
+scoring_system = RationalScoringSystem(_mitotic_radius)
 real_families = set(mother_finder.find_families(_baseline_links, warn_on_many_daughters=True))
 putative_families = mother_finder.find_families(possible_links, warn_on_many_daughters=False)
 dataframe = scores_dataframe.create(experiment, putative_families, scoring_system, real_families)

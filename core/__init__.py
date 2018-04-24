@@ -1,28 +1,30 @@
-"""Some base classes."""
+"""Some base classes. Quick overview: Particles (usually cells, but may also be artifacts) are placed in TimePoints,
+which are placed in an Experiment. A TimePoint also stores scores of possible mother-daughter cell combinations.
+An Experiment also stores an ImageLoader and up to two cell links networks (stored as Graph objects)."""
 from operator import itemgetter
-from typing import List, Iterable, Optional, Dict, Set, Any
+from typing import List, Iterable, Optional, Dict, Set, Any, Union, AbstractSet
 
 from networkx import Graph
 from numpy import ndarray
 
+from core.shape import ParticleShape, UnknownShape
+
 COLOR_CELL_NEXT = "red"
 COLOR_CELL_PREVIOUS = "blue"
 COLOR_CELL_CURRENT = "lime"
-KEY_SHOW_NEXT_IMAGE_ON_TOP = "n"
 
 
 class Particle:
-
+    """A detected particle. Only the 3D + time position is stored here, see the ParticleShape class for the shape."""
     x: float
     y: float
     z: float
-    _time_point_number: Optional[int]
+    _time_point_number: Optional[int] = None
 
     def __init__(self, x: float, y: float, z: float):
         self.x = x
         self.y = y
         self.z = z
-        self._time_point_number = None
 
     def distance_squared(self, other: "Particle", z_factor: float = 5) -> float:
         """Gets the squared distance. Working with squared distances instead of normal ones gives a much better
@@ -60,7 +62,7 @@ class Particle:
 
 
 class Score:
-    """Represents a score, calculated from the individual elements. Usage:
+    """Represents some abstract score, calculated from the individual elements. Usage:
 
         score = Score()
         score.foo = 4
@@ -120,9 +122,10 @@ class Score:
 class Family:
     """A mother cell with two daughter cells."""
     mother: Particle
-    daughters: Set[Particle]
+    daughters: Set[Particle]  # Size of two, ensured by constructor.
 
     def __init__(self, mother: Particle, daughter1: Particle, daughter2: Particle):
+        """Creates a new family. daughter1 and daughter2 can be swapped without consequences."""
         self.mother = mother
         self.daughters = {daughter1, daughter2}
 
@@ -150,7 +153,8 @@ class Family:
 
 
 class ScoredFamily:
-    """A family with a score attached. The higher the score, the higher the chance that this family actually exists."""
+    """A family with a score attached. The higher the score, the higher the chance that this family is a "real" family,
+    and not just some artifact."""
     family: Family
     score: Score
 
@@ -163,23 +167,24 @@ class ScoredFamily:
 
 
 class TimePoint:
-    """A single point in time."""
+    """A single point in time. Particle positions & shapes, as well as possible families are stored here."""
 
     _time_point_number: int
-    _particles: Set[Particle]
+    _particles: Dict[Particle, ParticleShape]
     _mother_scores: Dict[Family, Score]
-    _image_loader: Any
 
     def __init__(self, time_point_number: int):
         self._time_point_number = time_point_number
-        self._particles = set()
+        self._particles = dict()
         self._mother_scores = dict()
-        self._image_loader = None
 
     def time_point_number(self) -> int:
         return self._time_point_number
 
-    def particles(self) -> Set[Particle]:
+    def particles(self) -> AbstractSet[Particle]:
+        return self._particles.keys()
+
+    def particles_and_shapes(self) -> Dict[Particle, ParticleShape]:
         return self._particles
 
     def mother_score(self, family: Family, score: Optional[Score] = None) -> Score:
@@ -198,7 +203,19 @@ class TimePoint:
         the particle belongs to another time point. If the particle belongs to no time point, it is attached to this
         time point."""
         particle.with_time_point_number(self._time_point_number)
-        self._particles.add(particle)
+        if particle not in self._particles:
+            self._particles[particle] = UnknownShape()
+
+    def get_shape(self, particle: Particle) -> ParticleShape:
+        """Gets the shape of a particle. Throws KeyError if the given particle is not part of this time point."""
+        return self._particles[particle]
+
+    def add_shaped_particle(self, particle: Particle, particle_shape: ParticleShape):
+        """Adds a particle to this time point. If the particle was already added, its shape is replaced. Throws
+        ValueError if the particle belongs to another time point. If the particle belongs to no time point, it is
+        attached to this time point."""
+        particle.with_time_point_number(self._time_point_number)
+        self._particles[particle] = particle_shape
 
     def load_images(self, allow_cache=True) -> ndarray:
         raise NotImplementedError()
@@ -213,6 +230,7 @@ class TimePoint:
 
 
 class ImageLoader:
+    """Responsible for loading all images in an experiment."""
 
     def load_3d_image(self, time_point: TimePoint) -> Optional[ndarray]:
         """Loads an image, usually from disk. Returns None if there is no image for this time point."""
@@ -256,8 +274,8 @@ class _CachedImageLoader(ImageLoader):
 
 
 class Experiment:
-    """A complete experiment, with many stacks of images collected over time. This class records the images, particle
-     positions and particle trajectories."""
+    """A complete experiment, with many stacks of images collected over time. This class ultimately collects all
+    details of the experiment."""
 
     _time_points: Dict[str, TimePoint]
     _particle_links: Optional[Graph] = None
@@ -269,14 +287,13 @@ class Experiment:
     def __init__(self):
         self._time_points = {}
 
-    def add_particles_raw(self, time_point_number: int, raw_particles) -> None:
+    def add_particles_raw(self, time_point_number: int, raw_particles: List) -> None:
         """Adds particles to a time_point."""
-        particles = []
-        for raw_particle in raw_particles:
-            particles.append(Particle(raw_particle[0], raw_particle[1], raw_particle[2]))
         time_point = self.get_or_add_time_point(time_point_number)
-        for particle in particles:
-            time_point.add_particle(particle)
+        for raw_particle in raw_particles:
+            particle = Particle(*raw_particle[0:3])
+            particle_shape = shape.from_list(raw_particle[3:])
+            time_point.add_shaped_particle(particle, particle_shape)
 
     def add_particle_raw(self, x: float, y: float, z: float, time_point_number: int):
         """Adds a single particle to the experiment, creating the time point if it does not exist yet."""

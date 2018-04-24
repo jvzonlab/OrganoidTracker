@@ -27,7 +27,7 @@ print("Starting...")
 
 experiment = Experiment()
 if path.exists(_positions_file):
-    io.load_positions_from_json(experiment, _positions_file)
+    io.load_positions_and_shapes_from_json(experiment, _positions_file)
 if path.exists(_links_file):
     io.load_links_and_scores_from_json(experiment, _links_file, links_are_scratch=False)
 

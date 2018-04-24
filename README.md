@@ -8,19 +8,16 @@ determined wat cell at time point t corresponds to wat cell(s) in time point t +
 
 Setting up the environment
 --------------------------
-To be able to run the scripts, you first need to install the appropriate libraries. That is:
+To be able to run the scripts, you first need to have Anaconda or Miniconda installed. Then, open an Anaconda Prompt and use `cd` to navigate to this directory. If you don't need Anaconda to run other Python scripts, just run the following command:
 
-* Anaconda
-* The `tifffile` package from Anaconda Forge
-* The `opencv` package from Anaoconda Forge 
+    conda env update -n root -f environment.yml
 
-If you want to have an exact copy of my environment, run the following commands: (they require
-Anaconda to be installed)
+This installs all the required Python packages, and uninstalls all others. This makes it impossible to run most other Python scripts. So instead, it is probably better to create a separate environment for Autotrack. Instead of running the above command, run the following two commands:
 
     conda env create -f environment.yml
-    activate rutger-tracking
+    activate autotrack
 
-(On macOs, run `source activate` instead of `activate`.)
+(On macOs or Linux, run `source activate` instead of `activate`.)
 
 
 Running the scripts
@@ -33,7 +30,7 @@ AT the moment, there are two types of scripts in this folder. The older ones nee
 They need to be run from this folder. You'll need to edit the scripts beforehand to correct the paths
 inside them.
 
-Newer scripts (they have a name starting with `autotrack_`) are easier to run. You can run them from any
+Newer scripts (they have a name starting with `autotrack`) are easier to run. You can run them from any
 folder, and they don't need to be edited beforehand. However, you need to add this folder (the folder where
 this README file is stored) to the system PATH first. After you have done that, on Unix systems (Mac/Linux)
 you can run the scripts like this:

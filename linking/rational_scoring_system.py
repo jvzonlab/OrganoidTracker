@@ -5,8 +5,9 @@ import cv2
 import numpy
 from numpy import ndarray
 
-from core import Experiment, Particle, normalized_image, angles, Score
-from core import ImageEdgeError
+from core import Experiment, Particle, Score, TimePoint
+from imaging import normalized_image, angles
+from imaging.normalized_image import ImageEdgeError
 from linking.link_fixer import get_2d_image
 from linking.scoring_system import MotherScoringSystem
 
@@ -14,17 +15,16 @@ from linking.scoring_system import MotherScoringSystem
 class RationalScoringSystem(MotherScoringSystem):
     """Rationally-designed score system."""
     mitotic_radius: int  # Used to detect max/min intensity of a cell. Can be a few pixels, just to suppress noise
-    shape_detection_radius: int  # Used to detect the shape. Must be as large as the expected cell radius.
 
-    def __init__(self, mitotic_radius: int, shape_detection_radius: int):
+    def __init__(self, mitotic_radius: int):
         self.mitotic_radius = mitotic_radius
-        self.shape_detection_radius = shape_detection_radius
 
     def calculate(self, experiment: Experiment, mother: Particle, daughter1: Particle,
                   daughter2: Particle) -> Score:
-
-        mother_image_stack = experiment.get_image_stack(experiment.get_time_point(mother.time_point_number()))
-        daughter1_image_stack = experiment.get_image_stack(experiment.get_time_point(daughter1.time_point_number()))
+        mother_time_point = experiment.get_time_point(mother.time_point_number())
+        daughter_time_point = experiment.get_time_point(daughter1.time_point_number())
+        mother_image_stack = experiment.get_image_stack(mother_time_point)
+        daughter1_image_stack = experiment.get_image_stack(daughter_time_point)
         mother_image = mother_image_stack[int(mother.z)]
         mother_image_next = daughter1_image_stack[int(mother.z)]
         daughter1_image = daughter1_image_stack[int(daughter1.z)]
@@ -50,9 +50,8 @@ class RationalScoringSystem(MotherScoringSystem):
             score_daughter_intensities(score, daughter1_intensities, daughter2_intensities,
                                                 daughter1_intensities_prev, daughter2_intensities_prev)
             score_daughter_distances(score, mother, daughter1, daughter2)
-            score_using_mother_shape(score, mother, daughter1, daughter2, mother_image, self.shape_detection_radius)
-            score_using_daughter_shapes(score, daughter1, daughter2, daughter1_image, daughter2_image,
-                                        self.shape_detection_radius)
+            score_using_mother_shape(score, mother_time_point, mother, daughter1, daughter2)
+            score_using_daughter_shapes(score, daughter_time_point, daughter1, daughter2)
             return score
         except ImageEdgeError:
             return Score()
@@ -103,30 +102,23 @@ def score_mother_intensities(score: Score, mother_intensities: ndarray, mother_i
         score.mother_intensity_delta = 0
 
 
-def score_using_mother_shape(score: Score, mother: Particle, daughter1: Particle, daughter2: Particle,
-                             full_image: ndarray, detection_radius: int):
+def score_using_mother_shape(score: Score, time_point: TimePoint, mother: Particle, daughter1: Particle,
+                             daughter2: Particle):
     """Returns a black-and-white image where white is particle and black is background, at least in theory."""
     score.mother_shape = 0
     score.mother_eccentric = 0
     score.daughters_side = 0
 
     # Zoom in on mother
-    thresholded_image = __get_threshold_for_shape(mother, full_image, detection_radius)
-    if thresholded_image is None:
+    mother_shape = time_point.get_shape(mother)
+    if mother_shape.is_unknown():
         return  # Too close to edge
-    if thresholded_image[detection_radius, detection_radius] == 0:
+    if not mother_shape.is_point_in_shape(0, 0):
         score.mother_eccentric = 2
 
-    # Find contour
-    thresholded_image = cv2.erode(thresholded_image, kernel=cv2.getStructuringElement(cv2.MORPH_CROSS, (3,3)))
-    contour_image, contours, hierarchy = cv2.findContours(thresholded_image, 1, 2)
-    if len(contours) == 0:
-        return  # No contours found
-
     # Calculate the isoperimetric quotient and ellipse of the largest area
-    index_with_highest_area, area = __find_largest_area(contours)
-    contour = contours[index_with_highest_area]
-    perimeter = cv2.arcLength(contour, True)
+    area = mother_shape.area()
+    perimeter = mother_shape.perimeter()
     isoperimetric_quotient = 4 * math.pi * area / perimeter ** 2 if perimeter > 0 else 0
     if isoperimetric_quotient < 0.4:
         # Clear case of being a mother, give a bonus
@@ -136,14 +128,12 @@ def score_using_mother_shape(score: Score, mother: Particle, daughter1: Particle
         score.mother_shape = 1 - isoperimetric_quotient
 
     # Score ellipsis
-    if thresholded_image[detection_radius, detection_radius] == 255:
+    if mother_shape.is_point_in_shape(0, 0):
         # Only try to score ellipsis if the mother position is inside the threshold
         # (Otherwise we got a very irregular shape of which the angle is unreliable)
-        fitted_ellipse = cv2.fitEllipse(contour)
-        ellipse_length = fitted_ellipse[1][1]
-        ellipse_width = fitted_ellipse[1][0]
-        if ellipse_length / ellipse_width >= 1.2:
-            score.daughters_side = _score_daughter_sides(fitted_ellipse[2], mother, daughter1, daughter2)
+        director = mother_shape.director(require_reliable=True)
+        if director is not None:
+            score.daughters_side = _score_daughter_sides(director, mother, daughter1, daughter2)
 
 
 def _score_daughter_sides(ellipse_angle: float, mother: Particle, daughter1: Particle,
@@ -160,34 +150,25 @@ def _score_daughter_sides(ellipse_angle: float, mother: Particle, daughter1: Par
     return 0
 
 
-def score_using_daughter_shapes(score: Score, daughter1: Particle, daughter2: Particle,
-                                daughter1_image: ndarray, daughter2_image: ndarray, detection_radius: int):
+def score_using_daughter_shapes(score: Score, time_point: TimePoint, daughter1: Particle, daughter2: Particle):
     score.daughters_angles = 0
     score.daughters_area = 0
 
-    daughter1_threshold = __get_threshold_for_shape(daughter1, daughter1_image, detection_radius)
-    daughter2_threshold = __get_threshold_for_shape(daughter2, daughter2_image, detection_radius)
+    daughter1_shape = time_point.get_shape(daughter1)
+    daughter2_shape = time_point.get_shape(daughter2)
 
-    if daughter1_threshold is None or daughter2_threshold is None:
+    if daughter1_shape.is_unknown() or daughter2_shape.is_unknown():
         return  # Too close to edge
 
-    # Find the contours
-    contour_image1, contours1, hierarchy1 = cv2.findContours(daughter1_threshold, 1, 2)
-    contour_image2, contours2, hierarchy2 = cv2.findContours(daughter2_threshold, 1, 2)
-    if len(contours1) == 0 or len(contours2) == 0:
-        return  # No contours found
-
     # Find contours with largest areas
-    index1_with_highest_area, area1 = __find_largest_area(contours1)
-    index2_with_highest_area, area2 = __find_largest_area(contours2)
+    area1 = daughter1_shape.area()
+    area2 = daughter2_shape.area()
     if min(area1, area2) / max(area1, area2) < 1/2:
         score.daughters_area = -1  # Size too dissimilar
 
     # Find daughters that are mirror images of themselves (mirror = equidistant line between the two)
-    ellipse1 = cv2.fitEllipse(contours1[index1_with_highest_area])
-    ellipse2 = cv2.fitEllipse(contours2[index2_with_highest_area])
-    daughter1_direction = ellipse1[2]
-    daughter2_direction = ellipse2[2]
+    daughter1_direction = daughter1_shape.director()
+    daughter2_direction = daughter1_shape.director()
     if angles.difference(daughter1_direction, daughter2_direction) > 90:
         daughter2_direction = angles.flipped(daughter2_direction)  # Make sure daughters lie in almost the same dir
 

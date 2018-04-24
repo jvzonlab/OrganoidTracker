@@ -1,11 +1,12 @@
 from typing import Optional, Iterable, List, Tuple
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent
+from matplotlib.figure import Figure
 from networkx import Graph
 from numpy import ndarray
 
 import core
-from core import Experiment, TimePoint, Particle
+from core import Experiment, TimePoint, Particle, ParticleShape
 from gui import launch_window, Window
 from gui.dialog import popup_figure, prompt_int, popup_error
 from linking import particle_flow
@@ -20,6 +21,15 @@ def show(experiment: Experiment):
     activate(visualizer)
 
 
+class _DisplaySettings:
+    show_next_time_point: bool = False
+    show_images: bool = True
+    show_shapes: bool = True
+
+    KEY_SHOW_NEXT_IMAGE_ON_TOP = "n"
+    KEY_SHOW_IMAGES = "i"
+
+
 class AbstractImageVisualizer(Visualizer):
     """A generic image visualizer."""
 
@@ -29,22 +39,27 @@ class AbstractImageVisualizer(Visualizer):
     _time_point_images: ndarray
     _z: int
     __drawn_particles: List[Particle]
-    _show_next_image: bool = False
+    _display_settings: _DisplaySettings
 
     def __init__(self, window: Window, time_point_number: Optional[int] = None, z: int = 14,
-                 show_next_image: bool = False):
+                 show_next_time_point: bool = False):
         super().__init__(window)
 
+        self._display_settings = _DisplaySettings()
+        self._display_settings.show_next_time_point = show_next_time_point
         if time_point_number is None:
             time_point_number = window.get_experiment().first_time_point_number()
         self._z = int(z)
-        self._show_next_image = show_next_image
         self._time_point, self._time_point_images = self.load_time_point(time_point_number)
         self.__drawn_particles = []
 
+
     def load_time_point(self, time_point_number: int) -> Tuple[TimePoint, ndarray]:
         time_point = self._experiment.get_time_point(time_point_number)
-        time_point_images = self.create_image(time_point, self._show_next_image)
+        if self._display_settings.show_images:
+            time_point_images = self.create_image(time_point, self._display_settings.show_next_time_point)
+        else:
+            time_point_images = None
 
         return time_point, time_point_images
 
@@ -75,20 +90,20 @@ class AbstractImageVisualizer(Visualizer):
         """Draws particles and links. Returns the amount of non-equal links in the image"""
 
         # Draw particles
-        self._draw_particles_of_time_point(self._time_point, marker_size=7)
+        self._draw_particles_of_time_point(self._time_point)
 
         # Next time point
         has_linking_data = self._experiment.particle_links() is not None \
                            or self._experiment.particle_links_scratch() is not None
-        if self._show_next_image or has_linking_data:
-            # Only draw particles of next/previous time point if there is linking data
+        if self._display_settings.show_next_time_point or has_linking_data:
+            # Only draw particles of next/previous time point if there is linking data, or if we're forced to
             try:
                 self._draw_particles_of_time_point(self._experiment.get_next_time_point(self._time_point), color='red')
             except KeyError:
                 pass  # There is no next time point, ignore
 
         # Previous time point
-        if not self._show_next_image and has_linking_data:
+        if not self._display_settings.show_next_time_point and has_linking_data:
             try:
                 self._draw_particles_of_time_point(self._experiment.get_previous_time_point(self._time_point),
                                                    color='blue')
@@ -102,30 +117,28 @@ class AbstractImageVisualizer(Visualizer):
 
         return errors
 
-    def _draw_particles_of_time_point(self, time_point: TimePoint, color: str = core.COLOR_CELL_CURRENT,
-                                      marker_size:int = 6):
-        for particle in time_point.particles():
-            dz = abs(particle.z - self._z)
-            if dz > self.MAX_Z_DISTANCE:
+    def _draw_particles_of_time_point(self, time_point: TimePoint, color: str = core.COLOR_CELL_CURRENT):
+        dt = time_point.time_point_number() - self._time_point.time_point_number()
+        for particle, shape in time_point.particles_and_shapes().items():
+            dz = int(particle.z - self._z)
+            if abs(dz) > self.MAX_Z_DISTANCE:
                 continue
 
             # Draw the particle itself (as a square or circle, depending on its depth)
-            marker_style = 's'
-            current_marker_size = marker_size - dz
-            if int(particle.z) != self._z:
-                marker_style = 'o'
-            self._draw_particle(particle, color, current_marker_size, marker_style)
+            self._draw_particle(particle, shape, color, dz, dt)
 
-    def _draw_particle(self, particle, color, current_marker_size, marker_style):
+    def _draw_particle(self, particle: Particle, shape: ParticleShape, color: str, dz: int, dt: int):
         # Draw error marker
         graph = self._experiment.particle_links_scratch() or self._experiment.particle_links()
         if graph is not None and particle in graph and "error" in graph.nodes[particle]:
             self._ax.plot(particle.x, particle.y, 'X', color='black', markeredgecolor='white',
-                 markersize=current_marker_size + 12, markeredgewidth=2)
+                 markersize=19 - abs(dz), markeredgewidth=2)
 
         # Draw particle
-        self._ax.plot(particle.x, particle.y, marker_style, color=color, markeredgecolor='black',
-                 markersize=current_marker_size, markeredgewidth=1)
+        if self._display_settings.show_shapes:
+            shape.draw2d(particle.x, particle.y, dz, dt, self._ax, color)
+        else:
+            shape.default_draw(particle.x, particle.y, dz, dt, self._ax, color)
         self.__drawn_particles.append(particle)
 
     def _draw_links(self, particle: Particle) -> int:
@@ -151,7 +164,7 @@ class AbstractImageVisualizer(Visualizer):
                 continue
             if linked_particle.time_point_number() < particle.time_point_number():
                 # Drawing to past
-                if not self._show_next_image:
+                if not self._display_settings.show_next_time_point:
                     self._ax.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], linestyle=line_style,
                                   color=core.COLOR_CELL_PREVIOUS, linewidth=line_width)
             else:
@@ -181,8 +194,11 @@ class AbstractImageVisualizer(Visualizer):
                             + max_str + ".")
         return {
             "View": [
-                ("Toggle showing next image (" + core.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + ")",
-                 self._toggle_showing_next_image),
+                ("Toggle showing next time point (" + _DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + ")",
+                    self._toggle_showing_next_time_point),
+                ("Toggle showing images (" + _DisplaySettings.KEY_SHOW_IMAGES.upper() + ")",
+                    self._toggle_showing_images),
+                ("Toggle showing shapes", self._toggle_showing_shapes)
             ],
             "Navigate": [
                 ("Above layer (Up)", lambda: self._move_in_z(1)),
@@ -203,8 +219,10 @@ class AbstractImageVisualizer(Visualizer):
             self._move_in_time(-1)
         elif event.key == "right":
             self._move_in_time(1)
-        elif event.key == core.KEY_SHOW_NEXT_IMAGE_ON_TOP:
-            self._toggle_showing_next_image()
+        elif event.key == _DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP:
+            self._toggle_showing_next_time_point()
+        elif event.key == _DisplaySettings.KEY_SHOW_IMAGES:
+            self._toggle_showing_images()
 
     def _on_command(self, command: str) -> bool:
         if command[0] == "t":
@@ -220,8 +238,16 @@ class AbstractImageVisualizer(Visualizer):
             return True
         return False
 
-    def _toggle_showing_next_image(self):
-        self._show_next_image = not self._show_next_image
+    def _toggle_showing_next_time_point(self):
+        self._display_settings.show_next_time_point = not self._display_settings.show_next_time_point
+        self.refresh_view()
+
+    def _toggle_showing_images(self):
+        self._display_settings.show_images = not self._display_settings.show_images
+        self.refresh_view()
+
+    def _toggle_showing_shapes(self):
+        self._display_settings.show_shapes = not self._display_settings.show_shapes
         self.refresh_view()
 
     def _move_in_z(self, dz: int):
@@ -253,6 +279,7 @@ class AbstractImageVisualizer(Visualizer):
         new_time_point_number = old_time_point_number + dt
         try:
             self._time_point, self._time_point_images = self.load_time_point(new_time_point_number)
+            self._move_in_z(0)  # Caps z to allowable range
             self.draw_view()
             self.update_status(self.__doc__)
         except KeyError:
@@ -271,8 +298,8 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     Editing: L shows an editor for links                    Other: S shows the detected shape, F the detected flow"""
 
     def __init__(self, window: Window, time_point_number: Optional[int] = None, z: int = 14,
-                 show_next_image: bool = False):
-        super().__init__(window, time_point_number=time_point_number, z=z, show_next_image=show_next_image)
+                 show_next_time_point: bool = False):
+        super().__init__(window, time_point_number=time_point_number, z=z, show_next_time_point=show_next_time_point)
 
     def _on_mouse_click(self, event: MouseEvent):
         if event.dblclick and event.button == 1:
@@ -356,7 +383,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         activate(track_visualizer)
 
     def _show_linking_errors(self, particle: Optional[Particle] = None):
-        from core import ErrorsVisualizer
+        from visualizer.errors_visualizer import ErrorsVisualizer
         warnings_visualizer = ErrorsVisualizer(self._window, particle)
         activate(warnings_visualizer)
 
@@ -386,12 +413,20 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         activate(CellDeathVisualizer(self._window, None))
 
     def __show_shape(self, particle: Particle):
-        image_stack = self._time_point_images if not self._show_next_image else self._experiment.get_image_stack(self._time_point)
+        image_stack = self._time_point_images if not self._show_next_time_point else self._experiment.get_image_stack(self._time_point)
         if image_stack is None:
             return  # No images loaded
         image = image_stack[int(particle.z)]
         x, y, r = int(particle.x), int(particle.y), 16
         image_local = image[y - r:y + r, x - r:x + r]
-        thresholded_image = hybrid_segmentation.perform(image_local)
-        popup_figure(lambda fig: fig.gca().imshow(thresholded_image))
+        result_image, ellipses = hybrid_segmentation.perform(image_local)
+
+        def show_segmentation(figure: Figure):
+            figure.gca().imshow(result_image)
+            for ellipse in ellipses:
+                figure.gca().add_artist(ellipse)
+
+
+        popup_figure(show_segmentation)
+
 

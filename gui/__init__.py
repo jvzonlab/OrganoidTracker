@@ -3,7 +3,8 @@ from tkinter import StringVar, ttk
 from tkinter.font import Font
 from typing import List, Dict, Any
 
-from matplotlib.backends.backend_tkagg import NavigationToolbar2TkAgg, FigureCanvasTkAgg
+from matplotlib.backends._backend_tk import NavigationToolbar2Tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 from core import Experiment
@@ -92,7 +93,7 @@ class Window:
                 ("Import JSON links...", lambda: action.load_links(self)),
                 ("Import Guizela's track format...", lambda: action.load_guizela_tracks(self)),
                 "-",
-                ("Export positions...", lambda: action.export_positions(self.get_experiment())),
+                ("Export positions and shapes...", lambda: action.export_positions_and_shapes(self.get_experiment())),
                 ("Export links...", lambda: action.export_links(self.get_experiment())),
                 "-",
                 ("Exit (Alt+F4)", lambda: action.ask_exit(self.__root)),
@@ -100,10 +101,6 @@ class Window:
             "Edit": [],  # This fixes the position of the edit menu
             "View": [
                 ("Toggle axis numbers", lambda: action.toggle_axis(self.get_figure())),
-            ],
-            "Image": [
-                ("Add z-averaging filter", lambda: action.add_z_averaging_filter(self)),
-                ("Remove all filters", lambda: action.remove_filters(self))
             ]
         }
 
@@ -161,14 +158,14 @@ def launch_window(experiment: Experiment) -> Window:
 
     # Add Matplotlib figure to frame
     mpl_canvas = FigureCanvasTkAgg(fig, master=main_frame)  # A tk.DrawingArea.
-    mpl_canvas.show()
+    mpl_canvas.draw()
     widget = mpl_canvas.get_tk_widget()
     widget.grid(row=2, column=0, sticky="we")  # Position of figure
     widget.bind("<Enter>", lambda e: widget.focus_set())  # Refocus on mouse enter
 
     toolbar_frame = ttk.Frame(main_frame)
     toolbar_frame.grid(row=0, column=0, sticky=(tkinter.W, tkinter.E))  # Positions of toolbar buttons
-    toolbar = NavigationToolbar2TkAgg(mpl_canvas, toolbar_frame)
+    toolbar = NavigationToolbar2Tk(mpl_canvas, toolbar_frame)
     toolbar.update()
 
     return window

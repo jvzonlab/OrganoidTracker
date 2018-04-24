@@ -2,7 +2,8 @@ from typing import Optional
 
 from networkx import Graph
 
-from core import errors, Experiment, Particle, cell, Score
+from core import Experiment, Particle, Score
+from linking import errors, cell_links
 
 
 def apply(experiment: Experiment, graph: Graph):
@@ -19,7 +20,7 @@ def apply(experiment: Experiment, graph: Graph):
             score = _get_highest_mother_score(experiment, particle)
             if score is None or score.is_unlikely_mother():
                 _set_error(graph, particle, errors.LOW_MOTHER_SCORE)
-            age = cell.get_age(graph, particle)
+            age = cell_links.get_age(graph, particle)
             if age is not None and age < 2:
                 _set_error(graph, particle, errors.YOUNG_MOTHER)
 

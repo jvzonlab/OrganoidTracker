@@ -31,5 +31,5 @@ def popup_figure(draw_function):
     draw_function(figure)
 
     mpl_canvas = FigureCanvasTkAgg(figure, master=popup)
-    mpl_canvas.show()
+    mpl_canvas.draw()
     mpl_canvas.get_tk_widget().grid(row=0, column=0, sticky="nesw")

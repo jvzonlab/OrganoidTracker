@@ -9,7 +9,6 @@ from core import Experiment
 from gui import Window
 from gui.dialog import message_cancellable
 from imaging import io, tifffolder
-from imaging.stacked_image import AveragingImageLoader
 from manual_tracking import links_extractor
 from visualizer import activate
 from visualizer.empty_visualizer import EmptyVisualizer
@@ -75,7 +74,7 @@ def load_positions(window: Window):
         return  # Cancelled
 
     try:
-        io.load_positions_from_json(experiment, cell_file)
+        io.load_positions_and_shapes_from_json(experiment, cell_file)
     except Exception as e:
         messagebox.showerror("Error loading positions",
                              "Failed to load positions.\n\n" + _error_message(e))
@@ -119,11 +118,11 @@ def load_guizela_tracks(window: Window):
     window.refresh()
 
 
-def export_positions(experiment: Experiment):
+def export_positions_and_shapes(experiment: Experiment):
     positions_file = filedialog.asksaveasfilename(title="Save positions as...", filetypes=(("JSON file", "*.json"),))
     if not positions_file:
         return  # Cancelled
-    io.save_positions_to_json(experiment, positions_file)
+    io.save_positions_and_shapes_to_json(experiment, positions_file)
 
 
 def export_links(experiment: Experiment):
@@ -137,22 +136,6 @@ def export_links(experiment: Experiment):
         return  # Cancelled
 
     io.save_links_to_json(links, links_file)
-
-
-def add_z_averaging_filter(window: Window):
-    experiment = window.get_experiment()
-    new_loader = AveragingImageLoader(experiment.get_image_loader())
-    experiment.set_image_loader(new_loader)
-    window.refresh()
-
-
-def remove_filters(window: Window):
-    experiment = window.get_experiment()
-    image_loader = experiment.get_image_loader()
-    while image_loader is not image_loader.unwrap():
-        image_loader = image_loader.unwrap()
-    experiment.set_image_loader(image_loader)
-    window.refresh()
 
 
 def _error_message(error: Exception):

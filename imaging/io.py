@@ -11,7 +11,7 @@ from pandas import DataFrame
 from core import Experiment, Particle, Score, Family, ScoredFamily
 
 
-def load_positions_from_json(experiment: Experiment, json_file_name: str):
+def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: str):
     """Loads all particle positions from a JSON file"""
     with open(json_file_name) as handle:
         time_points = json.load(handle)
@@ -86,12 +86,15 @@ def save_links_to_json(links: Graph, json_file_name: str):
         json.dump(data, handle, cls=_MyEncoder)
 
 
-def save_positions_to_json(experiment: Experiment, json_file_name: str):
+def save_positions_and_shapes_to_json(experiment: Experiment, json_file_name: str):
     """Saves a list of particles to disk."""
     data_structure = {}
     for time_point_number in range(experiment.first_time_point_number(), experiment.last_time_point_number() + 1):
         time_point = experiment.get_time_point(time_point_number)
-        particles = [(p.x, p.y, p.z) for p in time_point.particles()]
+        particles = []
+        for particle, shape in time_point.particles_and_shapes().items():
+            particles.append([particle.x, particle.y, particle.z] + shape.to_list())
+
         data_structure[str(time_point_number)] = particles
 
     _create_parent_directories(json_file_name)

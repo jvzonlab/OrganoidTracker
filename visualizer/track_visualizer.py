@@ -6,7 +6,7 @@ from networkx import Graph
 
 import core
 from core import Particle
-from imaging import cell
+from linking import cell_links
 from visualizer import Visualizer, activate
 from gui import Window
 
@@ -40,7 +40,7 @@ class TrackVisualizer(Visualizer):
         graph = self._experiment.particle_links()
         if graph is None:
             return ""
-        age = cell.get_age(graph, self._particle)
+        age = cell_links.get_age(graph, self._particle)
         if age is None:
             return "Age: born before measurements"
         return "Age: " + str(age)

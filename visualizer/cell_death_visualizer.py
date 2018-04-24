@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from core import Particle, Experiment
-from imaging import cell
+from linking import cell_links
 from visualizer.particle_list_visualizer import ParticleListVisualizer
 from gui import Window
 from linking_analysis import cell_death_finder
@@ -47,7 +47,7 @@ class CellDeathVisualizer(ParticleListVisualizer):
             return None
 
         try:
-            connections_scratch = cell.find_future_particles(scratch_graph, mother)
+            connections_scratch = cell_links.find_future_particles(scratch_graph, mother)
             return len(connections_scratch) == 0
         except KeyError:
             return False

@@ -3,8 +3,10 @@
 # that.
 import gui
 from config import ConfigFile
-from core import io, tifffolder, image_visualizer, Experiment
+from core import Experiment
+from imaging import io, tifffolder
 from linking_analysis import comparison
+from visualizer import image_visualizer
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
@@ -25,7 +27,7 @@ config.save_if_changed()
 print("Starting...")
 
 experiment = Experiment()
-io.load_positions_from_json(experiment, _positions_file)
+io.load_positions_and_shapes_from_json(experiment, _positions_file)
 io.load_links_and_scores_from_json(experiment, _automatic_links_file, links_are_scratch=True)
 experiment.particle_links(io.load_links_from_json(_baseline_links_file))
 

@@ -105,7 +105,6 @@ class Visualizer:
         self._window.register_event_handler("button_press_event", self._on_mouse_click)
         self._window.register_event_handler("refresh_event", self.refresh_view)
 
-
     def detach(self):
         self._window.unregister_event_handlers()
 

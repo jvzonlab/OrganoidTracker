@@ -35,10 +35,10 @@ tifffolder.load_images_from_folder(experiment, path.join(script_dir, _images_fol
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
 particle_file_abs = path.join(script_dir, _particles_file)
 if path.exists(particle_file_abs):
-    io.load_positions_from_json(experiment, particle_file_abs)
+    io.load_positions_and_shapes_from_json(experiment, particle_file_abs)
 else:
     detector.detect_particles_in_3d(experiment, _method, **_method_parameters)
-    io.save_positions_to_json(experiment, particle_file_abs)
+    io.save_positions_and_shapes_to_json(experiment, particle_file_abs)
 
 detection_visualizer.show(experiment, _method, _method_parameters)
 

@@ -143,7 +143,7 @@ def _perform_combinatorics(experiment: Experiment, graph: Graph, mothers_pick_am
     for mother in mothers:
         nearby_daughters[mother] = core.get_closest_n_particles(daughters, mother, 4, max_distance=parameters.max_distance)
 
-    scoring_system = RationalScoringSystem(parameters.intensity_detection_radius, parameters.shape_detection_radius)
+    scoring_system = RationalScoringSystem(parameters.intensity_detection_radius)
     best_family_stack = []
     best_family_stack_score = 0
     for picked_mothers in itertools.combinations(mothers, mothers_pick_amount):
