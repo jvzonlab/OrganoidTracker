@@ -1,4 +1,5 @@
 import tkinter
+from os import path
 from tkinter import StringVar, ttk
 from tkinter.font import Font
 from typing import List, Dict, Any
@@ -131,7 +132,7 @@ def launch_window(experiment: Experiment) -> Window:
     root = tkinter.Tk()
     root.geometry('800x700')
     root.title("Autotrack")
-    root.iconbitmap('gui/icon.ico')
+    root.iconbitmap(path.join(path.dirname(__file__), 'icon.ico'))
 
     title_text = StringVar()
     status_text = StringVar()
