@@ -113,11 +113,11 @@ def score_using_mother_shape(score: Score, time_point: TimePoint, mother: Partic
     mother_shape = time_point.get_shape(mother)
     if mother_shape.is_unknown():
         return  # Too close to edge
-    if not mother_shape.is_point_in_shape(0, 0):
+    if mother_shape.is_eccentric():
         score.mother_eccentric = 2
 
     # Calculate the isoperimetric quotient and ellipse of the largest area
-    area = mother_shape.area()
+    area = mother_shape.raw_area()
     perimeter = mother_shape.perimeter()
     isoperimetric_quotient = 4 * math.pi * area / perimeter ** 2 if perimeter > 0 else 0
     if isoperimetric_quotient < 0.4:
@@ -128,7 +128,7 @@ def score_using_mother_shape(score: Score, time_point: TimePoint, mother: Partic
         score.mother_shape = 1 - isoperimetric_quotient
 
     # Score ellipsis
-    if mother_shape.is_point_in_shape(0, 0):
+    if not mother_shape.is_eccentric():
         # Only try to score ellipsis if the mother position is inside the threshold
         # (Otherwise we got a very irregular shape of which the angle is unreliable)
         director = mother_shape.director(require_reliable=True)
@@ -161,8 +161,8 @@ def score_using_daughter_shapes(score: Score, time_point: TimePoint, daughter1: 
         return  # Too close to edge
 
     # Find contours with largest areas
-    area1 = daughter1_shape.area()
-    area2 = daughter2_shape.area()
+    area1 = daughter1_shape.raw_area()
+    area2 = daughter2_shape.raw_area()
     if min(area1, area2) / max(area1, area2) < 1/2:
         score.daughters_area = -1  # Size too dissimilar
 

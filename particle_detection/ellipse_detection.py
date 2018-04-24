@@ -19,6 +19,7 @@ def detect_for_all(experiment: Experiment, detection_radius: int):
             if thresholded is None:
                 continue  # Too close to edge of image
 
+            eccentric = thresholded[detection_radius, detection_radius] == 0
             contour_image, contours, hierarchy = cv2.findContours(thresholded, 1, 2)
             contour_index, area = __find_contour_with_largest_area(contours)
             if contour_index == -1 or area < 20:
@@ -30,7 +31,8 @@ def detect_for_all(experiment: Experiment, detection_radius: int):
                                          ellipse_height=ellipse[1][1],
                                          ellipse_angle=ellipse[2],
                                          original_area=area,
-                                         original_perimeter=cv2.arcLength(contours[contour_index], True))
+                                         original_perimeter=cv2.arcLength(contours[contour_index], True),
+                                         eccentric=eccentric)
             time_point.add_shaped_particle(particle, ellipse_shape)
 
 

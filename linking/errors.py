@@ -15,6 +15,7 @@ CELL_MERGE = 6
 POTENTIALLY_WRONG_DAUGHTERS = 7
 YOUNG_MOTHER = 8
 LOW_MOTHER_SCORE = 9
+SHRUNK_A_LOT = 10
 
 
 __info = {
@@ -26,7 +27,8 @@ __info = {
     CELL_MERGE: (Severity.ERROR, "Two cells merged together into this cell. This is impossible."),
     POTENTIALLY_WRONG_DAUGHTERS: (Severity.WARNING, "One of the two daughter cells is maybe wrong."),
     YOUNG_MOTHER: (Severity.ERROR, "This is most likely not a mother cell: it is a very young cell."),
-    LOW_MOTHER_SCORE: (Severity.WARNING, "This cell is probably not a mother cell.")
+    LOW_MOTHER_SCORE: (Severity.WARNING, "This cell is probably not a mother cell."),
+    SHRUNK_A_LOT: (Severity.WARNING, "This cell just shrank a lot in size. Please double-check."),
 }
 
 

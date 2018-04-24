@@ -21,7 +21,12 @@ class ParticleShape:
         marker_size = max(1, 7 - abs(dz) - abs(dt))
         area.plot(x, y, marker_style, color=color, markeredgecolor='black', markersize=marker_size, markeredgewidth=1)
 
-    def area(self) -> float:
+    def raw_area(self) -> float:
+        """Derived from raw detection."""
+        raise NotImplementedError()
+
+    def fitted_area(self) -> float:
+        """Derived from a fitted shape."""
         raise NotImplementedError()
 
     def perimeter(self) -> float:
@@ -31,8 +36,10 @@ class ParticleShape:
         """Returns True if there is no shape information available at all."""
         return False
 
-    def is_point_in_shape(self, local_x: float, local_y: float):
-        raise NotImplementedError()
+    def is_eccentric(self) -> bool:
+        """Returns True if the original shape does not touch the (0,0) point. This generally indicates that the shape
+        is either very strange (can happen in mother cells) or mis-detected."""
+        return False
 
     def director(self, require_reliable: bool = False) -> Optional[float]:
         """For (slightly) elongated shapes, this returns the main direction of that shape. The returned direction falls
@@ -52,7 +59,10 @@ class UnknownShape(ParticleShape):
     def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
         self.default_draw(x, y, dz, dt, area, color)
 
-    def area(self) -> float:
+    def raw_area(self) -> float:
+        return 0
+
+    def fitted_area(self) -> float:
         return 0
 
     def perimeter(self) -> float:
@@ -60,9 +70,6 @@ class UnknownShape(ParticleShape):
 
     def is_unknown(self) -> bool:
         return True
-
-    def is_point_in_shape(self, local_x: float, local_y: float) -> bool:
-        return False
 
     def to_list(self):
         return []
@@ -76,11 +83,12 @@ class EllipseShape(ParticleShape):
     _ellipse_height: float
     _ellipse_angle: float  # Degrees, 0 <= angle < 180
 
-    _original_perimeter: Optional[float]
-    _original_area: Optional[float]
+    _original_perimeter: float
+    _original_area: float
+    _eccentric: bool
 
     def __init__(self, ellipse_dx: float, ellipse_dy: float, ellipse_width: float, ellipse_height: float,
-                 ellipse_angle: float, original_perimeter: Optional[float]=None, original_area: Optional[float]=None):
+                 ellipse_angle: float, original_perimeter: float, original_area: float, eccentric: bool = False):
         self._ellipse_dx = ellipse_dx
         self._ellipse_dy = ellipse_dy
         self._ellipse_width = ellipse_width
@@ -89,6 +97,7 @@ class EllipseShape(ParticleShape):
 
         self._original_perimeter = original_perimeter
         self._original_area = original_area
+        self._eccentric = eccentric
 
     def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
         fill = dt == 0
@@ -99,10 +108,11 @@ class EllipseShape(ParticleShape):
                                 fill=fill, facecolor=color, edgecolor=edgecolor, linestyle="dashed", linewidth=1,
                                 alpha=alpha))
 
-    def area(self) -> float:
-        if self._original_area is None:
-            return math.pi * self._ellipse_width / 2 * self._ellipse_height / 2
+    def raw_area(self) -> float:
         return self._original_area
+
+    def fitted_area(self):
+        return math.pi * self._ellipse_width / 2 * self._ellipse_height / 2
 
     def perimeter(self) -> float:
         if self._original_perimeter is None:
@@ -118,28 +128,12 @@ class EllipseShape(ParticleShape):
             return None
         return self._ellipse_angle
 
-    def is_point_in_shape(self, local_x: float, local_y: float) -> float:
-        # tests if a point[local_x,local_y] is within boundaries defined by the ellipse of
-        # center[ellipse_dx,ellipse_dy], diameter ellipse_width ellipse_height, and tilted at ellipse-angle
-
-        angle = math.radians(self._ellipse_angle)
-        cos_a = math.cos(angle)
-        sin_a = math.sin(angle)
-        dd = self._ellipse_width / 2 * self._ellipse_width / 2
-        DD = self._ellipse_height / 2 * self._ellipse_height / 2
-
-        a = (cos_a * (local_x - self._ellipse_dx) + sin_a * (local_y - self._ellipse_dy)) ** 2
-        b = (sin_a * (local_x - self._ellipse_dx) - cos_a * (local_y - self._ellipse_dy)) ** 2
-        ellipse = (a / dd) + (b / DD)
-
-        if ellipse <= 1:
-            return True
-        else:
-            return False
+    def is_eccentric(self) -> bool:
+        return self._eccentric
 
     def to_list(self) -> List:
         return ["ellipse", self._ellipse_dx, self._ellipse_dy, self._ellipse_width, self._ellipse_height,
-                self._ellipse_angle, self._original_perimeter, self._original_area]
+                self._ellipse_angle, self._original_perimeter, self._original_area, bool(self._eccentric)]
 
 
 def from_list(list: List) -> ParticleShape:

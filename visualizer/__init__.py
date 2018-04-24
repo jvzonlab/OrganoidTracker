@@ -11,6 +11,15 @@ from core import Experiment, Particle, TimePoint
 from gui import Window
 
 
+class DisplaySettings:
+    show_next_time_point: bool = False
+    show_images: bool = True
+    show_shapes: bool = True
+
+    KEY_SHOW_NEXT_IMAGE_ON_TOP = "n"
+    KEY_SHOW_IMAGES = "i"
+
+
 class Visualizer:
     """A complete application for visualization of an experiment"""
     _experiment: Experiment

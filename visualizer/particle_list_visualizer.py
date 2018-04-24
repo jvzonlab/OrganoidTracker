@@ -7,7 +7,7 @@ from networkx import Graph
 import core
 from core import Particle
 from gui import Window
-from visualizer import Visualizer, activate
+from visualizer import Visualizer, activate, DisplaySettings
 
 
 class ParticleListVisualizer(Visualizer):
@@ -163,7 +163,7 @@ class ParticleListVisualizer(Visualizer):
             self._goto_previous()
         elif event.key == "right":
             self._goto_next()
-        elif event.key == core.KEY_SHOW_NEXT_IMAGE_ON_TOP:
+        elif event.key == DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP:
             self._show_next_image = not self._show_next_image
             self.draw_view()
 

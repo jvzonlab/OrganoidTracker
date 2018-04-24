@@ -11,7 +11,7 @@ from gui import launch_window, Window
 from gui.dialog import popup_figure, prompt_int, popup_error
 from linking import particle_flow
 from segmentation import hybrid_segmentation
-from visualizer import Visualizer, activate
+from visualizer import Visualizer, activate, DisplaySettings
 
 
 def show(experiment: Experiment):
@@ -21,13 +21,7 @@ def show(experiment: Experiment):
     activate(visualizer)
 
 
-class _DisplaySettings:
-    show_next_time_point: bool = False
-    show_images: bool = True
-    show_shapes: bool = True
 
-    KEY_SHOW_NEXT_IMAGE_ON_TOP = "n"
-    KEY_SHOW_IMAGES = "i"
 
 
 class AbstractImageVisualizer(Visualizer):
@@ -39,13 +33,13 @@ class AbstractImageVisualizer(Visualizer):
     _time_point_images: ndarray
     _z: int
     __drawn_particles: List[Particle]
-    _display_settings: _DisplaySettings
+    _display_settings: DisplaySettings
 
     def __init__(self, window: Window, time_point_number: Optional[int] = None, z: int = 14,
                  show_next_time_point: bool = False):
         super().__init__(window)
 
-        self._display_settings = _DisplaySettings()
+        self._display_settings = DisplaySettings()
         self._display_settings.show_next_time_point = show_next_time_point
         if time_point_number is None:
             time_point_number = window.get_experiment().first_time_point_number()
@@ -194,10 +188,10 @@ class AbstractImageVisualizer(Visualizer):
                             + max_str + ".")
         return {
             "View": [
-                ("Toggle showing next time point (" + _DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + ")",
-                    self._toggle_showing_next_time_point),
-                ("Toggle showing images (" + _DisplaySettings.KEY_SHOW_IMAGES.upper() + ")",
-                    self._toggle_showing_images),
+                ("Toggle showing next time point (" + DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + ")",
+                 self._toggle_showing_next_time_point),
+                ("Toggle showing images (" + DisplaySettings.KEY_SHOW_IMAGES.upper() + ")",
+                 self._toggle_showing_images),
                 ("Toggle showing shapes", self._toggle_showing_shapes)
             ],
             "Navigate": [
@@ -219,9 +213,9 @@ class AbstractImageVisualizer(Visualizer):
             self._move_in_time(-1)
         elif event.key == "right":
             self._move_in_time(1)
-        elif event.key == _DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP:
+        elif event.key == DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP:
             self._toggle_showing_next_time_point()
-        elif event.key == _DisplaySettings.KEY_SHOW_IMAGES:
+        elif event.key == DisplaySettings.KEY_SHOW_IMAGES:
             self._toggle_showing_images()
 
     def _on_command(self, command: str) -> bool:
@@ -413,7 +407,8 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         activate(CellDeathVisualizer(self._window, None))
 
     def __show_shape(self, particle: Particle):
-        image_stack = self._time_point_images if not self._show_next_time_point else self._experiment.get_image_stack(self._time_point)
+        image_stack = self._time_point_images if not self._display_settings.show_next_time_point \
+            else self._experiment.get_image_stack(self._time_point)
         if image_stack is None:
             return  # No images loaded
         image = image_stack[int(particle.z)]
