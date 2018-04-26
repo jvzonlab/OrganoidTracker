@@ -10,7 +10,7 @@ from core import Experiment, TimePoint, Particle, ParticleShape
 from gui import launch_window, Window
 from gui.dialog import popup_figure, prompt_int, popup_error
 from linking import particle_flow
-from segmentation import hybrid_segmentation
+from particle_detection import single_particle_detection
 from visualizer import Visualizer, activate, DisplaySettings
 
 
@@ -415,7 +415,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         image = image_stack[int(particle.z)]
         x, y, r = int(particle.x), int(particle.y), 16
         image_local = image[y - r:y + r, x - r:x + r]
-        result_image, ellipses = hybrid_segmentation.perform(image_local)
+        result_image, ellipses = single_particle_detection.perform(image_local)
 
         def show_segmentation(figure: Figure):
             figure.gca().imshow(result_image)
