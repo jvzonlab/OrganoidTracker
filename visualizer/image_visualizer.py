@@ -21,9 +21,6 @@ def show(experiment: Experiment):
     activate(visualizer)
 
 
-
-
-
 class AbstractImageVisualizer(Visualizer):
     """A generic image visualizer."""
 
@@ -188,11 +185,12 @@ class AbstractImageVisualizer(Visualizer):
                             + max_str + ".")
         return {
             "View": [
-                ("Toggle showing next time point (" + DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + ")",
+                ("Toggle showing two time points (" + DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + ")",
                  self._toggle_showing_next_time_point),
                 ("Toggle showing images (" + DisplaySettings.KEY_SHOW_IMAGES.upper() + ")",
                  self._toggle_showing_images),
-                ("Toggle showing shapes", self._toggle_showing_shapes)
+                ("Toggle showing morphology/shapes (" + DisplaySettings.KEY_SHOW_MORPHOLOGY.upper() + ")",
+                 self._toggle_showing_shapes)
             ],
             "Navigate": [
                 ("Above layer (Up)", lambda: self._move_in_z(1)),
@@ -217,6 +215,8 @@ class AbstractImageVisualizer(Visualizer):
             self._toggle_showing_next_time_point()
         elif event.key == DisplaySettings.KEY_SHOW_IMAGES:
             self._toggle_showing_images()
+        elif event.key == DisplaySettings.KEY_SHOW_MORPHOLOGY:
+            self._toggle_showing_shapes()
 
     def _on_command(self, command: str) -> bool:
         if command[0] == "t":
@@ -333,7 +333,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         options["View"] += [
             ("Linking differences (D)", self._show_linking_differences),
             ("Linking errors and warnings (E)", self._show_linking_errors),
-            ("Cell divisions (M)", self._show_mother_cells),
+            ("Cell divisions (/divisions)", self._show_mother_cells),
             ("Cell deaths (/deaths)", self._show_dead_cells),
         ]
         return options
@@ -345,9 +345,6 @@ class StandardImageVisualizer(AbstractImageVisualizer):
                 from visualizer.track_visualizer import TrackVisualizer
                 track_visualizer = TrackVisualizer(self._window, particle)
                 activate(track_visualizer)
-        elif event.key == "m":
-            particle = self._get_particle_at(event.xdata, event.ydata)
-            self._show_mother_cells(particle)
         elif event.key == "e":
             particle = self._get_particle_at(event.xdata, event.ydata)
             self._show_linking_errors(particle)
@@ -371,9 +368,9 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         else:
             super()._on_key_press(event)
 
-    def _show_mother_cells(self, particle: Optional[Particle] = None):
+    def _show_mother_cells(self):
         from visualizer.cell_division_visualizer import CellDivisionVisualizer
-        track_visualizer = CellDivisionVisualizer(self._window, particle)
+        track_visualizer = CellDivisionVisualizer(self._window)
         activate(track_visualizer)
 
     def _show_linking_errors(self, particle: Optional[Particle] = None):
@@ -395,9 +392,13 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         if command == "deaths":
             self._show_dead_cells()
             return True
+        if command == "divisions":
+            self._show_mother_cells()
+            return True
         if command == "help":
             self.update_status("Available commands:\n"
                                "/deaths - views cell deaths.\n"
+                               "/divisions - views cell divisions.\n"
                                "/t20 - jumps to time point 20 (also works for other time points")
             return True
         return super()._on_command(command)

@@ -18,6 +18,7 @@ class DisplaySettings:
 
     KEY_SHOW_NEXT_IMAGE_ON_TOP = "n"
     KEY_SHOW_IMAGES = "i"
+    KEY_SHOW_MORPHOLOGY = "m"
 
 
 class Visualizer:

@@ -84,7 +84,8 @@ class ParticleListVisualizer(Visualizer):
         self._show_image()
 
         current_particle = self._particle_list[self._current_particle_index]
-        self._draw_particle(current_particle)
+        shape = self._experiment.get_time_point(current_particle.time_point_number()).get_shape(current_particle)
+        shape.draw2d(current_particle.x, current_particle.y, 0, 0, self._ax, core.COLOR_CELL_CURRENT)
         self._draw_connections(self._experiment.particle_links(), current_particle)
         self._draw_connections(self._experiment.particle_links_scratch(), current_particle, line_style='dotted',
                                line_width=3)
@@ -99,31 +100,25 @@ class ParticleListVisualizer(Visualizer):
         self._ax.set_ylim(mother.y + 50, mother.y - 50)
         self._ax.set_autoscale_on(False)
 
-    def _draw_particle(self, particle: Particle, color=core.COLOR_CELL_CURRENT, size=7):
-        style = 's'
-        dz = abs(particle.time_point_number() - self._particle_list[self._current_particle_index].time_point_number())
-        if dz != 0:
-            style='o'
-            size -= dz
-        self._ax.plot(particle.x, particle.y, style, color=color, markeredgecolor='black', markersize=size,
-                      markeredgewidth=1)
-
     def _draw_connections(self, graph: Optional[Graph], main_particle: Particle, line_style:str = "solid",
-                          line_width:int = 1):
-        if graph is None:
+                          line_width: int = 1):
+        if graph is None or main_particle not in graph:
             return
-        try:
-            for connected_particle in graph[main_particle]:
-                color = core.COLOR_CELL_NEXT
-                if connected_particle.time_point_number() < main_particle.time_point_number():
-                    color = core.COLOR_CELL_PREVIOUS
-                    if self._show_next_image:
-                        continue  # Showing the previous position only makes things more confusing here
-                self._ax.plot([connected_particle.x, main_particle.x], [connected_particle.y, main_particle.y],
-                              color=color, linestyle=line_style, linewidth=line_width)
-                self._draw_particle(connected_particle, color=color, size=6)
-        except KeyError:
-            pass
+
+        for connected_particle in graph[main_particle]:
+            delta_time = 1
+            if connected_particle.time_point_number() < main_particle.time_point_number():
+                delta_time = -1
+                if self._show_next_image:
+                    continue  # Showing the previous position only makes things more confusing here
+
+            color = core.COLOR_CELL_NEXT if delta_time == 1 else core.COLOR_CELL_PREVIOUS
+            time_point = self._experiment.get_time_point(connected_particle.time_point_number())
+            particle_shape = time_point.get_shape(connected_particle)
+
+            self._ax.plot([connected_particle.x, main_particle.x], [connected_particle.y, main_particle.y],
+                          color=color, linestyle=line_style, linewidth=line_width)
+            particle_shape.draw2d(connected_particle.x, connected_particle.y, 0, delta_time, self._ax, color)
 
     def _show_image(self):
         mother = self._particle_list[self._current_particle_index]
