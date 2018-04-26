@@ -31,10 +31,8 @@ class TestIsoIntensityCurvature(unittest.TestCase):
         array = numpy.zeros((20, 25, 25), dtype=numpy.uint8)
         _add_3d_gaussian(array, intensity=90000, mean=(8, 10, 5), sd=(3, 4, 2))
         _add_3d_gaussian(array, intensity=80000, mean=(15, 11, 7), sd=(3, 4, 2))
-        tifffile.imsave("test.tif", array)  # Uncomment to view image
         out = numpy.empty_like(array)
         get_negative_gaussian_curvatures(array, ImageDerivatives(), out)
-        tifffile.imsave("curvatures.tif", out)  # Uncomment to view image
 
         # Check a few pixel intensities (remember, order is z, y, x)
         self.assertEquals(255, out[6, 12, 6])
