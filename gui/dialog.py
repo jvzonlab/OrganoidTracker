@@ -1,3 +1,6 @@
+import os
+import subprocess
+import sys
 import tkinter
 from tkinter import simpledialog, messagebox
 from tkinter.messagebox import Message
@@ -20,6 +23,10 @@ def popup_error(title: str, message: str):
     messagebox.showerror(title, message)
 
 
+def popup_message(title: str, message: str):
+    messagebox.showinfo(title, message)
+
+
 def popup_figure(draw_function):
     """Shows a popup screen with the image"""
     popup = tkinter.Toplevel()
@@ -28,8 +35,18 @@ def popup_figure(draw_function):
     popup.grid_rowconfigure(0, weight=1)
 
     figure = Figure(figsize=(7, 7), dpi=95)
+    mpl_canvas = FigureCanvasTkAgg(figure, master=popup)
     draw_function(figure)
 
-    mpl_canvas = FigureCanvasTkAgg(figure, master=popup)
     mpl_canvas.draw()
     mpl_canvas.get_tk_widget().grid(row=0, column=0, sticky="nesw")
+
+
+def open_file(filepath: str):
+    """Opens a file using the default application."""
+    if sys.platform.startswith('darwin'):
+        subprocess.call(('open', filepath))
+    elif os.name == 'nt':
+        os.startfile(filepath)
+    elif os.name == 'posix':
+        subprocess.call(('xdg-open', filepath))

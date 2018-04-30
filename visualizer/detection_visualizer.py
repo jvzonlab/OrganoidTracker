@@ -1,10 +1,15 @@
 from typing import Dict
 
 import matplotlib.pyplot as plt
+import numpy
 from matplotlib.backend_bases import KeyEvent
 from matplotlib.figure import Figure
+from tifffile import tifffile
 
-from gui import Window, launch_window
+from segmentation import iso_intensity_curvature
+
+from gui import Window, launch_window, dialog
+from segmentation.iso_intensity_curvature import ImageDerivatives
 from visualizer import activate
 from visualizer.image_visualizer import AbstractImageVisualizer
 from core import Experiment
@@ -33,6 +38,20 @@ class DetectionVisualizer(AbstractImageVisualizer):
         super().__init__(window)
         self._detection_parameters = detection_parameters
         self._detector = detector
+
+    def get_extra_menu_options(self):
+        return {
+            "View": [
+                ("Show iso-intensity segmentation...", self._segment_using_iso_intensity)
+            ]
+        }
+
+    def _segment_using_iso_intensity(self):
+        images = self.get_unedited_time_point_images()
+        out = numpy.zeros_like(images, dtype=numpy.uint8)
+        iso_intensity_curvature.get_negative_gaussian_curvatures(images, ImageDerivatives(), out, blur_radius=5)
+        tifffile.imshow(out)
+        plt.show()
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "d":

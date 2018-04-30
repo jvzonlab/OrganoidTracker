@@ -217,9 +217,6 @@ class TimePoint:
         particle.with_time_point_number(self._time_point_number)
         self._particles[particle] = particle_shape
 
-    def load_images(self, allow_cache=True) -> ndarray:
-        raise NotImplementedError()
-
     def mother_scores(self, mother: Optional[Particle] = None) -> Iterable[ScoredFamily]:
         """Gets all mother scores of either all putative mothers, or just the given mother (if any)."""
         for family, score in self._mother_scores.items():

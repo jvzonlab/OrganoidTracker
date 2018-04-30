@@ -24,42 +24,45 @@ class ImageDerivatives:
     d2image_dxdz: Optional[ndarray] = None
     d2image_dydz: Optional[ndarray] = None
 
+    def calculate(self, image_stack: ndarray, blur_radius: int):
+        """Calculates a variety of Sobel derivatives.
+        image_stack: 3D image
+        blur_radius: extended kernel size for Sobel derivative. Larger is more smoothing. Must be 1, 3, 5, or 7.
+        """
+        self.dimage_dx = self._sobel_x(image_stack, blur_radius, self.dimage_dx)
+        self.dimage_dy = self._sobel_y(image_stack, blur_radius, self.dimage_dy)
+        self.dimage_dz = self._sobel_z(image_stack, blur_radius, self.dimage_dz)
 
-    def calculate(self, image_stack: ndarray):
-        self.dimage_dx = self._sobel_x(image_stack, self.dimage_dx)
-        self.dimage_dy = self._sobel_y(image_stack, self.dimage_dy)
-        self.dimage_dz = self._sobel_z(image_stack, self.dimage_dz)
+        self.d2image_dxdx = self._sobel_x(self.dimage_dx, blur_radius, self.d2image_dxdx)
+        self.d2image_dydy = self._sobel_y(self.dimage_dy, blur_radius, self.d2image_dydy)
+        self.d2image_dzdz = self._sobel_z(self.dimage_dz, blur_radius, self.d2image_dzdz)
 
-        self.d2image_dxdx = self._sobel_x(self.dimage_dx, self.d2image_dxdx)
-        self.d2image_dydy = self._sobel_y(self.dimage_dy, self.d2image_dydy)
-        self.d2image_dzdz = self._sobel_z(self.dimage_dz, self.d2image_dzdz)
-
-        self.d2image_dxdy = self._sobel_y(self.dimage_dx, self.d2image_dxdy)
-        self.d2image_dxdz = self._sobel_z(self.dimage_dx, self.d2image_dxdz)
-        self.d2image_dydz = self._sobel_z(self.dimage_dy, self.d2image_dydz)
+        self.d2image_dxdy = self._sobel_y(self.dimage_dx, blur_radius, self.d2image_dxdy)
+        self.d2image_dxdz = self._sobel_z(self.dimage_dx, blur_radius, self.d2image_dxdz)
+        self.d2image_dydz = self._sobel_z(self.dimage_dy, blur_radius, self.d2image_dydz)
 
 
-    def _sobel_x(self, image_stack: ndarray, out: Optional[ndarray]) -> ndarray:
+    def _sobel_x(self, image_stack: ndarray, blur_radius: int, out: Optional[ndarray]) -> ndarray:
         if out is None:
             out = numpy.empty_like(image_stack, dtype=numpy.float32)
 
         slice_count = image_stack.shape[0]
         for z in range(slice_count):
-            cv2.Sobel(image_stack[z], cv2.CV_32F, 1, 0, ksize=5, dst=out[z], borderType=cv2.BORDER_CONSTANT)
+            cv2.Sobel(image_stack[z], cv2.CV_32F, 1, 0, ksize=blur_radius, dst=out[z], borderType=cv2.BORDER_CONSTANT)
 
         return out
 
-    def _sobel_y(self, image_stack: ndarray, out: Optional[ndarray]) -> ndarray:
+    def _sobel_y(self, image_stack: ndarray, blur_radius: int, out: Optional[ndarray]) -> ndarray:
         if out is None:
             out = numpy.empty_like(image_stack, dtype=numpy.float32)
 
         slice_count = image_stack.shape[0]
         for z in range(slice_count):
-            cv2.Sobel(image_stack[z], cv2.CV_32F, 0, 1, ksize=5, dst=out[z], borderType=cv2.BORDER_CONSTANT)
+            cv2.Sobel(image_stack[z], cv2.CV_32F, 0, 1, ksize=blur_radius, dst=out[z], borderType=cv2.BORDER_CONSTANT)
 
         return out
 
-    def _sobel_z(self, image_stack: ndarray, out: Optional[ndarray]) -> ndarray:
+    def _sobel_z(self, image_stack: ndarray, blur_radius: int, out: Optional[ndarray]) -> ndarray:
         # OpenCV does not provide us with a sobelZ derivative.
         # So we need to transpose the image first, and then do a sobel_x.
         #
@@ -82,27 +85,34 @@ class ImageDerivatives:
         else:
             transposed_out = numpy.empty(transposed.shape, dtype=numpy.float32)
 
-        self._sobel_x(transposed, transposed_out)
+        self._sobel_x(transposed, blur_radius, transposed_out)
         return transposed_out.transpose()
 
 
-def get_negative_gaussian_curvatures(image_stack: ndarray, derivatives: ImageDerivatives, out: ndarray):
+def get_negative_gaussian_curvatures(image_stack: ndarray, derivatives: ImageDerivatives, out: ndarray,
+                                     blur_radius: int = 5, dilate:bool = True):
     """Gets all positions with a negative Gaussian curvature of the iso-intensity surfaces. Those positions are marked
-    with 255, the others are set to 0."""
-    derivatives.calculate(image_stack)
+    with 255, the others are set to 0.
+    out: uint8 image"""
+    blurred = numpy.empty_like(image_stack)
+    for z in range(blurred.shape[0]):
+        cv2.GaussianBlur(image_stack[z], (blur_radius * 2 + 1, blur_radius * 2 + 1), 0, dst=blurred[z])
 
-    for z in range(image_stack.shape[0]):
-        for y in range(image_stack.shape[1]):
-            for x in range(image_stack.shape[2]):
-                value = _get_iic_of_point(derivatives, x, y, z)
-                if value < 0:
-                    value = 0
-                else:
-                    value = 255
-                out[z, y, x] = value
+    derivatives.calculate(blurred, blur_radius)
+
+    return_value = _get_iic(derivatives)
+
+    # Write to out
+    out.fill(255)
+    out[return_value < 0] = 0
+    if dilate:
+        dilation_kernel = numpy.ones((blur_radius, blur_radius), dtype=numpy.uint8)
+        for z in range(out.shape[0]):
+            out[z] = cv2.dilate(out[z], dilation_kernel, iterations=1)
+    image_stack[out == 0] = image_stack.max() / 5
 
 
-def _get_iic_of_point(derivatives: ImageDerivatives, x: int, y: int, z: int) -> float:
+def _get_iic(derivatives: ImageDerivatives) -> ndarray:
     """Calculates the minimal iso-intensity curvature. Algorithm described in Supplementary Information 2 of Toyoshima,
     Yu, et al. "Accurate Automatic Detection of Densely Distributed Cell Nuclei in 3D Space." PLoS computational biology
     12.6 (2016).
@@ -113,18 +123,18 @@ def _get_iic_of_point(derivatives: ImageDerivatives, x: int, y: int, z: int) -> 
     Some code has been commented out, as we do not use that code for our purposes. However, for comparison with
     literature, and for context, it is still useful.
     """
-    fx = derivatives.dimage_dx[z, y, x] + 0.00001
-    fy = derivatives.dimage_dy[z, y, x] + 0.00001
-    fz = derivatives.dimage_dz[z, y, x] + 0.00001
-    fxy = derivatives.d2image_dxdy[z, y, x] + 0.00001
-    fxz = derivatives.d2image_dxdz[z, y, x] + 0.00001
-    fyz = derivatives.d2image_dydz[z, y, x] + 0.00001
-    fxx = derivatives.d2image_dxdx[z, y, x] + 0.00001
-    fyy = derivatives.d2image_dydy[z, y, x] + 0.00001
-    fzz = derivatives.d2image_dzdz[z, y, x] + 0.00001
+    fx = derivatives.dimage_dx
+    fy = derivatives.dimage_dy
+    fz = derivatives.dimage_dz
+    fxy = derivatives.d2image_dxdy
+    fxz = derivatives.d2image_dxdz
+    fyz = derivatives.d2image_dydz
+    fxx = derivatives.d2image_dxdx
+    fyy = derivatives.d2image_dydy
+    fzz = derivatives.d2image_dzdz
 
     A = (fx**2 + fy**2 + fz**2) / (fz**2)
-    sqrtA_times_fz_topowerof_3 = math.sqrt(A) * fz**3
+    sqrtA_times_fz_topowerof_3 = numpy.sqrt(A) * fz**3
 
     # First fundamental coefficients of the surface
     # E = (fx**2 + fz**2) / (fz**2)

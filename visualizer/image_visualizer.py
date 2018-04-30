@@ -44,6 +44,14 @@ class AbstractImageVisualizer(Visualizer):
         self._time_point, self._time_point_images = self.load_time_point(time_point_number)
         self.__drawn_particles = []
 
+    def get_unedited_time_point_images(self):
+        """Gets the image stack of the current time point, even when currently both the current and next time point are
+        shown.
+        """
+        if self._display_settings.show_next_time_point:
+            # Images are mixed with next time point, so load some new ones
+            return self._experiment.get_image_stack(self._time_point)
+        return self._time_point_images
 
     def load_time_point(self, time_point_number: int) -> Tuple[TimePoint, ndarray]:
         time_point = self._experiment.get_time_point(time_point_number)
