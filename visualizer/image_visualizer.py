@@ -7,7 +7,7 @@ from numpy import ndarray
 
 import core
 from core import Experiment, TimePoint, Particle, ParticleShape
-from gui import launch_window, Window
+from gui import launch_window, Window, dialog
 from gui.dialog import popup_figure, prompt_int, popup_error
 from linking import particle_flow
 from particle_detection import single_particle_detection
@@ -369,6 +369,9 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             super()._on_key_press(event)
 
     def _show_cell_detector(self):
+        if self._experiment.get_image_stack(self._time_point) is None:
+            dialog.popup_error("No images", "There are no images loaded, so we cannot detect cells.")
+            return
         from visualizer.detection_visualizer import DetectionVisualizer
         activate(DetectionVisualizer(self._window, self._time_point.time_point_number(), self._z,
                                      self._display_settings))

@@ -26,6 +26,7 @@ def adaptive_threshold(image_8bit: ndarray, out: ndarray, block_size=51):
                               2, dst=out[z])
     background_removal(image_8bit, out)
 
+
 def advanced_threshold(image_8bit: ndarray, out: ndarray):
     adaptive_threshold(image_8bit, out)
 
