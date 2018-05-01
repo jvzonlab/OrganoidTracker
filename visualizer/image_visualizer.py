@@ -33,25 +33,15 @@ class AbstractImageVisualizer(Visualizer):
     _display_settings: DisplaySettings
 
     def __init__(self, window: Window, time_point_number: Optional[int] = None, z: int = 14,
-                 show_next_time_point: bool = False):
+                 display_settings: DisplaySettings = None):
         super().__init__(window)
 
-        self._display_settings = DisplaySettings()
-        self._display_settings.show_next_time_point = show_next_time_point
+        self._display_settings = DisplaySettings() if display_settings is None else display_settings
         if time_point_number is None:
             time_point_number = window.get_experiment().first_time_point_number()
         self._z = int(z)
         self._time_point, self._time_point_images = self.load_time_point(time_point_number)
         self.__drawn_particles = []
-
-    def get_unedited_time_point_images(self):
-        """Gets the image stack of the current time point, even when currently both the current and next time point are
-        shown.
-        """
-        if self._display_settings.show_next_time_point:
-            # Images are mixed with next time point, so load some new ones
-            return self._experiment.get_image_stack(self._time_point)
-        return self._time_point_images
 
     def load_time_point(self, time_point_number: int) -> Tuple[TimePoint, ndarray]:
         time_point = self._experiment.get_time_point(time_point_number)
@@ -300,8 +290,8 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     Editing: L shows an editor for links                    Other: S shows the detected shape, F the detected flow"""
 
     def __init__(self, window: Window, time_point_number: Optional[int] = None, z: int = 14,
-                 show_next_time_point: bool = False):
-        super().__init__(window, time_point_number=time_point_number, z=z, show_next_time_point=show_next_time_point)
+                 display_settings: Optional[DisplaySettings] = None):
+        super().__init__(window, time_point_number=time_point_number, z=z, display_settings=display_settings)
 
     def _on_mouse_click(self, event: MouseEvent):
         if event.dblclick and event.button == 1:
@@ -336,7 +326,9 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             options["View"] = []
 
         options["Edit"] = [
-            ("Links (L)", self._show_link_editor),
+            ("Links... (L)", self._show_link_editor),
+            "-",
+            ("Cell detection...", self._show_cell_detector)
         ]
         options["View"] += [
             ("Linking differences (D)", self._show_linking_differences),
@@ -375,6 +367,12 @@ class StandardImageVisualizer(AbstractImageVisualizer):
                                    str(particle_flow.get_flow_to_next(links, self._time_point, particle)))
         else:
             super()._on_key_press(event)
+
+    def _show_cell_detector(self):
+        from visualizer.detection_visualizer import DetectionVisualizer
+        activate(DetectionVisualizer(self._window, self._time_point.time_point_number(), self._z,
+                                     self._display_settings))
+
 
     def _show_mother_cells(self):
         from visualizer.cell_division_visualizer import CellDivisionVisualizer

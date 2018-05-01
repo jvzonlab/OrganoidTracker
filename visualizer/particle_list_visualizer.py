@@ -144,13 +144,14 @@ class ParticleListVisualizer(Visualizer):
 
         if self._current_particle_index < 0 or self._current_particle_index >= len(self._particle_list):
             # Don't know where to go
-            image_visualizer = StandardImageVisualizer(self._window,
-                                                       show_next_time_point=self._show_next_image)
+            image_visualizer = StandardImageVisualizer(self._window, display_settings=
+                                                       DisplaySettings(show_next_time_point=self._show_next_image))
         else:
             mother = self._particle_list[self._current_particle_index]
             image_visualizer = StandardImageVisualizer(self._window,
                                                        time_point_number=mother.time_point_number(), z=int(mother.z),
-                                                       show_next_time_point=self._show_next_image)
+                                                       display_settings=DisplaySettings(
+                                                           show_next_time_point=self._show_next_image))
         activate(image_visualizer)
 
     def _on_key_press(self, event: KeyEvent):

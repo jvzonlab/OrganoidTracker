@@ -103,13 +103,11 @@ def get_negative_gaussian_curvatures(image_stack: ndarray, derivatives: ImageDer
     return_value = _get_iic(derivatives)
 
     # Write to out
-    out.fill(255)
     out[return_value < 0] = 0
     if dilate:
         dilation_kernel = numpy.ones((blur_radius, blur_radius), dtype=numpy.uint8)
         for z in range(out.shape[0]):
             out[z] = cv2.dilate(out[z], dilation_kernel, iterations=1)
-    image_stack[out == 0] = image_stack.max() / 5
 
 
 def _get_iic(derivatives: ImageDerivatives) -> ndarray:

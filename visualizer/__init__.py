@@ -12,9 +12,14 @@ from gui import Window
 
 
 class DisplaySettings:
-    show_next_time_point: bool = False
-    show_images: bool = True
-    show_shapes: bool = True
+    show_next_time_point: bool
+    show_images: bool
+    show_shapes: bool
+
+    def __init__(self, show_next_time_point: bool = False, show_images: bool = True, show_shapes: bool = True):
+        self.show_next_time_point = show_next_time_point
+        self.show_images = show_images
+        self.show_shapes = show_shapes
 
     KEY_SHOW_NEXT_IMAGE_ON_TOP = "n"
     KEY_SHOW_IMAGES = "i"

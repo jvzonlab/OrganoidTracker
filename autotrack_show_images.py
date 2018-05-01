@@ -3,7 +3,9 @@
 
 import gui
 from config import ConfigFile
-from core import tifffolder, image_visualizer, Experiment
+from core import Experiment
+from imaging import tifffolder
+from visualizer import image_visualizer
 
 # PARAMETERS
 config = ConfigFile("image_viewer")
