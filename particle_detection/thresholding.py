@@ -17,7 +17,7 @@ def background_removal(orignal_image_8bit: ndarray, threshold: ndarray):
     threshold[orignal_image_8bit < absolute_thresh] = 0
 
 
-def adaptive_threshold(image_8bit: ndarray, out: ndarray, block_size=51):
+def adaptive_threshold(image_8bit: ndarray, out: ndarray, block_size: int):
     """A simple, adaptive threshold. Intensities below 10% are removed, as well as intensities that fall below an
     adaptive Gaussian threshold.
     """
@@ -27,8 +27,8 @@ def adaptive_threshold(image_8bit: ndarray, out: ndarray, block_size=51):
     background_removal(image_8bit, out)
 
 
-def advanced_threshold(image_8bit: ndarray, out: ndarray):
-    adaptive_threshold(image_8bit, out)
+def advanced_threshold(image_8bit: ndarray, out: ndarray, block_size: int):
+    adaptive_threshold(image_8bit, out, block_size)
 
     curvature_out = numpy.full_like(image_8bit, 255, dtype=numpy.uint8)
     iso_intensity_curvature.get_negative_gaussian_curvatures(image_8bit, ImageDerivatives(), curvature_out)
@@ -36,39 +36,6 @@ def advanced_threshold(image_8bit: ndarray, out: ndarray):
 
     fill_threshold(out)
     background_removal(image_8bit, out)
-    erode_threshold(out)
-
-
-def open_threshold(threshold: ndarray):
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-    temp = numpy.empty_like(threshold[0])
-    for z in range(threshold.shape[0]):
-        cv2.morphologyEx(threshold[z], cv2.MORPH_OPEN, kernel, dst=temp)
-        threshold[z] = temp
-
-
-def dilate_threshold(threshold: ndarray):
-    kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (5, 5))
-    temp = numpy.empty_like(threshold[0])
-    for z in range(threshold.shape[0]):
-        cv2.dilate(threshold[z], kernel, dst=temp)
-        threshold[z] = temp
-
-
-def erode_threshold(threshold: ndarray):
-    kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
-    temp = numpy.empty_like(threshold[0])
-    for z in range(threshold.shape[0]):
-        cv2.erode(threshold[z], kernel, dst=temp, iterations=1)
-        threshold[z] = temp
-
-
-def close_threshold(threshold: ndarray):
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
-    temp = numpy.empty_like(threshold[0])
-    for z in range(threshold.shape[0]):
-        cv2.morphologyEx(threshold[z], cv2.MORPH_CLOSE, kernel, dst=temp)
-        threshold[z] = temp
 
 
 def fill_threshold(threshold: ndarray):

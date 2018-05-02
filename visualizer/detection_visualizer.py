@@ -18,6 +18,10 @@ class DetectionVisualizer(AbstractImageVisualizer):
     Press N to show the next and current time point together in a single image (red=next time point, green=current)
     """
 
+    threshold_block_size = 51
+    sampling = (2, 0.32, 0.32)
+    minimal_size = (3, 20, 20)
+
     color_map = "gray"
 
     def __init__(self, window: Window, time_point_number: int, z: int, display_settings: DisplaySettings):
@@ -62,7 +66,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
     def _basic_threshold(self):
         images = thresholding.image_to_8bit(self._experiment.get_image_stack(self._time_point))
         out = numpy.empty_like(images, dtype=numpy.uint8)
-        thresholding.adaptive_threshold(images, out)
+        thresholding.adaptive_threshold(images, out, self.threshold_block_size)
 
         self._time_point_to_rgb()
         self._time_point_images[:, :, :, 1] = out
@@ -72,7 +76,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
     def _advanced_threshold(self):
         images = thresholding.image_to_8bit(self._experiment.get_image_stack(self._time_point))
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
-        thresholding.advanced_threshold(images, threshold)
+        thresholding.advanced_threshold(images, threshold, self.threshold_block_size)
 
         self._time_point_to_rgb()
         self._time_point_images[:, :, :, 1] = threshold
@@ -84,16 +88,16 @@ class DetectionVisualizer(AbstractImageVisualizer):
 
         images = thresholding.image_to_8bit(self._experiment.get_image_stack(self._time_point))
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
-        thresholding.advanced_threshold(images, threshold)
+        thresholding.advanced_threshold(images, threshold, self.threshold_block_size)
         self._time_point_images = threshold
         self.draw_view()
 
         distance_transform = numpy.empty_like(images, dtype=numpy.float64)
-        watershedding.distance_transform(threshold, distance_transform)
+        watershedding.distance_transform(threshold, distance_transform, self.sampling)
         self._time_point_images = distance_transform
         self.draw_view()
 
-        self._time_point_images = watershedding.watershed_maxima(threshold, distance_transform)
+        self._time_point_images = watershedding.watershed_maxima(threshold, distance_transform, self.minimal_size)
         self.color_map = watershedding.COLOR_MAP
         self.draw_view()
 
