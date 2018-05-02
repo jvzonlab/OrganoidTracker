@@ -29,6 +29,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
 
     def get_extra_menu_options(self):
         return {
+            **super().get_extra_menu_options(),
             "View": [
                 "-",
                 ("Show original images (T)", self.reset_view),
