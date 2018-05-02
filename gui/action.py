@@ -2,6 +2,7 @@ import re
 import tkinter
 from os import path
 from tkinter import filedialog, messagebox
+from typing import Optional
 
 from matplotlib.figure import Figure
 
@@ -47,23 +48,39 @@ def load_images(window: Window):
     if not message_cancellable("Image loading", "Images are expected to be 3D grayscale TIF files. Each TIF file "
                                "represents a single time point.\n\n"
                                "Please select the TIF file of the first time point. The file name of the image must "
-                               "contain \"t01\", \"t001\" or longer in the file name."):
+                               "contain \"t1\", \"t01\", \"_1.\" or similar in the file name."):
         return  # Cancelled
-    full_path = filedialog.askopenfilename(title="Select first image file", filetypes=(("TIF file", "*.tif"),))
+    full_path = filedialog.askopenfilename(title="Select first image file", filetypes=(
+        ("TIF file", "*.tif"),
+        ("TIFF file", "*.tiff")))
     if not full_path:
         return  # Cancelled
     directory, file_name = path.split(full_path)
-    counting_part = re.search('t0+1', file_name)
-    if counting_part is None:
+    file_name_pattern = _find_pattern(file_name)
+    if file_name_pattern is None:
         messagebox.showerror("Could not read file pattern", "Could not find 't01' (or similar) in the file name \"" +
-                             file_name + "\". Make sure you selected the first image.")
+                         file_name + "\". Make sure you selected the first image.")
         return
-    start, end = counting_part.start(0), counting_part.end(0)
-    file_name_pattern = file_name[0:start] + "t%0" + str(end - start - 1) + "d" + file_name[end:]
 
     # Load and show images
     tifffolder.load_images_from_folder(window.get_experiment(), directory, file_name_pattern)
     window.refresh()
+
+
+def _find_pattern(file_name: str) -> Optional[str]:
+    # Support t001
+    counting_part = re.search('t0*1', file_name)
+    if counting_part is not None:
+        start, end = counting_part.start(0), counting_part.end(0)
+        return file_name[0:start] + "t%0" + str(end - start - 1) + "d" + file_name[end:]
+
+    # Support _001.
+    counting_part = re.search('_0*1\.', file_name)
+    if counting_part is not None:
+        start, end = counting_part.start(0), counting_part.end(0)
+        return file_name[0:start] + "_%0" + str(end - start - 2) + "d." + file_name[end:]
+
+    return None
 
 
 def load_positions(window: Window):
