@@ -35,15 +35,17 @@ class DetectionVisualizer(AbstractImageVisualizer):
         return {
             **super().get_extra_menu_options(),
             "View": [
-                "-",
-                ("Show original images (T)", self.reset_view),
-                ("Show basic threshold", self._basic_threshold),
-                ("Add iso-intensity segmentation", self._segment_using_iso_intensity),
-                ("Show advanced threshold (T)", self._advanced_threshold),
-                "-",
-                ("Perform cell detection", self._show_analysis),
+                ("Show original images (T)", self.refresh_view),
                 "-",
                 ("Exit this view (/exit)", self._show_main_view)
+            ],
+            "Threshold": [
+                ("Show basic threshold", self._basic_threshold),
+                ("Add iso-intensity segmentation", self._segment_using_iso_intensity),
+                ("Show advanced threshold (T)", self._advanced_threshold)
+            ],
+            "Detection": [
+                ("Detect cells at this time point", self._show_analysis)
             ]
         }
 
@@ -84,7 +86,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
         self.draw_view()
 
     def _show_analysis(self):
-        self.reset_view()
+        self.refresh_view()
 
         images = thresholding.image_to_8bit(self._experiment.get_image_stack(self._time_point))
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
@@ -115,7 +117,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
         self._time_point_images[:, :, :, 2] = self._time_point_images[:, :, :, 0]
 
     def _segment_using_iso_intensity(self):
-        images = self._experiment.get_image_stack(self._time_point)
+        images = thresholding.image_to_8bit(self._experiment.get_image_stack(self._time_point))
         out = numpy.full_like(images, 255, dtype=numpy.uint8)
         iso_intensity_curvature.get_negative_gaussian_curvatures(images, ImageDerivatives(), out)
 
@@ -128,13 +130,13 @@ class DetectionVisualizer(AbstractImageVisualizer):
         if event.key == "t":
             if len(self._time_point_images.shape) == 4:
                 # Reset view
-                self.reset_view()
+                self.refresh_view()
             else:
                 # Show advanced threshold
                 self._advanced_threshold()
             return
         super()._on_key_press(event)
 
-    def reset_view(self):
+    def refresh_view(self):
         self.color_map = DetectionVisualizer.color_map
-        self.refresh_view()
+        super().refresh_view()
