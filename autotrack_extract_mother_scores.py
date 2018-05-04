@@ -2,7 +2,8 @@
 simple nearest-neighbor linking. The data is compared with data of the actual mothers.
 """
 from config import ConfigFile
-from core import io, tifffolder, Experiment
+from imaging import io, tifffolder
+from core import Experiment
 from linking import linker_for_experiment, mother_finder
 from linking.rational_scoring_system import RationalScoringSystem
 from linking_analysis import scores_dataframe
@@ -27,7 +28,7 @@ _baseline_links = io.load_links_from_json(_baseline_links_file)
 
 print("Starting...")
 experiment = Experiment()
-io.load_positions_from_json(experiment, _positions_file)
+io.load_positions_and_shapes_from_json(experiment, _positions_file)
 experiment.particle_links(_baseline_links)
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
