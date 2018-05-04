@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Compares two linking results. The baseline links are assumed to be 100% correct, any deviations from that are
 # counted as errors. Solid lines in the figures represent the correct linking result, dotted lines any deviations from
 # that.

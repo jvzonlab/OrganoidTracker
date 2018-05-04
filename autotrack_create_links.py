@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from config import ConfigFile
 from core import Experiment
 from imaging import io, tifffolder

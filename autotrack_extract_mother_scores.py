@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """Script for testing the mother scoring system. Output a CSV file with the scores of all putative mothers, based on
 simple nearest-neighbor linking. The data is compared with data of the actual mothers.
 """

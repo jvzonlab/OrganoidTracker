@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """Starts an empty window."""
 from core import Experiment
 from gui import launch_window, mainloop

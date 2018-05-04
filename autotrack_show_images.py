@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Small visualization tool. Keeps only one TIFF file in memory at a time, so it should start up fast and have a
 # reasonable low memory footprint.
 

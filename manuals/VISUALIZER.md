@@ -1,53 +1,20 @@
-The visualizer
-==============
+Autotrack manual
+================
 
-The visualizer is used in many scripts to visualize data. It can also be used to make modifications to the data.
+Navigating around
+-----------------
+The program consists of a menu bar, a title area, a figure area and a status/help area. The contents of all of these
+depends on what you're doing. If you enter the cell detection screen, then methods relevant to cell detection will be
+shown.
 
-The image viewer
-----------------
-The arrow keys allow you to switch to other photos. The left and right keys move backward and forward in time,
-respectively. The up and down keys move up and down in the z-direction, respectively.
+The program is highly keyboard-dependent, although there are also menu options available for everything. I prefer using
+the keyboard shortcuts myself, but for people new to this program that is of course no options.
 
-If you need to jump to a time point far away, it is best to use a command. Type `/t30` and then `ENTER`  to go to time
-point number 30.
+For most keyboard shortcuts, a menu option is available. For shortcuts where that wasn't possible (for example because
+you need to place your mouse above a cell), an explanation text was added to the status/help area.
 
-Press `N` to view both the next and current time point in a single image. The next time point is drawn in red, the
-current in green. Any overlap between the cells at the different time point therefore results in a lime color.
+Many shortcuts consist of a single letter: if you press `E`. the errors and warnings screen is opened. For some other
+shortcuts, you need to type a bit more: `/deaths` + `ENTER` for example opens up a list of all cell deaths.
 
-Press `T` to view the track of a single cell. You will end up in a separate view, where you can see the cell trajectory
-10 points forward or backwards in time. Double-click on any particle to focus on that particle instead. Press `T` again
-to go back to the normal view.
-
-Press `M` to jump to the mother view. Here you get an overview of all cell divisions found during the experiment. The
-left and right arrow keys can now be used to jump to the next or previous cell division. Press `M` again to exit the
-mother view and return to the normal view.
-
-Press `E` to go to the errors and warnings view. All errors and warnings reported during the analysis are shown here.
-Use the left and right arrow keys to jump to the next or previous error. After you have fixed an error (for example by
-changing the linking data, see next section), or after you have made sure that the error was in error, press `DELETE` to
-delete an error. Press `E` again to leave this view, and go back to the normal view.
-
-Press `D` to go to a view that displays all differences between two sets of links between the cells in time. In this
-view, use the left and right arrow keys to jump to the next or previous error. Press `D` again to exit this view.
-
-Press `F` to view information on the flow field: the direction in which cells are going. Press `S` to view how the shape
-of the cell is recognized. Double-click a cell to view the mother score of a cell.
-
-The link editor
----------------
-Links are the connections between cells at different time points.
-
-Press `L` to jump to an editor for the particle links. Here you need to select two cells. Cells can be selected by
-double-clicking them. Then press `INSERT` to insert a link between cells, or `DELETE` to delete a link between two
-cells.
-
-Dotted lines show the current links, while straight lines show the situation from before you made changes.
-Once you are happy with your changes, type `/commit` + `ENTER`. This will update the straight lines to match the
-positions of the dotted lines. Type `/export <file name.json>` to export your changes to a file.
-
-If you are not happy with your changes, type `/revert`. This will remove any uncommitted changes, and bring you back to
-the state indicated by the straight lines. If you have already committed your changes, the only option is to close the
-application without saving.
-
-Press `L` again to exit the link editor and go back to the image viewer. Note that all committed changes will
-immediately show up in all other views, like the cell division viewer and the track viewer.
+The best way to get used to the program is to just try things. As long as you do not overwrite existing data, nothing
+can go wrong.

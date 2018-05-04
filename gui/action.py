@@ -1,4 +1,5 @@
 import re
+import sys
 import tkinter
 from os import path
 from tkinter import filedialog, messagebox
@@ -7,7 +8,7 @@ from typing import Optional
 from matplotlib.figure import Figure
 
 from core import Experiment
-from gui import Window
+from gui import Window, dialog
 from gui.dialog import message_cancellable
 from imaging import io, tifffolder
 from manual_tracking import links_extractor
@@ -157,3 +158,13 @@ def export_links(experiment: Experiment):
 
 def _error_message(error: Exception):
     return str(type(error).__name__) + ": " + str(error)
+
+
+def show_manual():
+    dialog.open_file(path.join(path.dirname(path.abspath(sys.argv[0])), "manuals", "VISUALIZER.pdf"))
+
+def about_the_program():
+    dialog.popup_message("About", "Cell detection and linking.\n\n"
+                                  "Originally developed by Rutger Kok in February - July 2018. Copyright AMOLF.\n\n"
+                                  "Various open source packages are used - see their licences, which"
+                                  " you have agreed to when you used Anaconda to install them.")

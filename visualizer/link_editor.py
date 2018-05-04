@@ -44,10 +44,20 @@ class LinkEditor(AbstractImageVisualizer):
         return "Link editing"
 
     def get_extra_menu_options(self):
+        inherited = super().get_extra_menu_options()
+        if "Navigate" not in inherited:
+            inherited["Navigate"] = []
+        inherited["View"] = [] if "View" not in inherited else inherited["View"] + ["-"]
         return {
+            "Edit": [
+                ("Commit dotted lines (/commit)", self._commit),
+                ("Revert dotted lines (/revert)", self._revert)
+            ],
             "View": [
+                *inherited["View"],
                 ("Exit this view (L)", self._exit)
-            ]
+            ],
+            "Navigate": inherited["Navigate"]
         }
 
     def _draw_extra(self):
@@ -107,6 +117,20 @@ class LinkEditor(AbstractImageVisualizer):
                                                    time_point_number=self._time_point.time_point_number(), z=self._z)
         activate(image_visualizer)
 
+    def _commit(self):
+        our_links = self._experiment.particle_links_scratch()
+        self._experiment.particle_links(our_links.copy())
+        self._has_uncommitted_changes = False
+        self.draw_view()
+        self._update_status("Committed all changes.")
+
+    def _revert(self):
+        old_links = self._experiment.particle_links()
+        self._experiment.particle_links_scratch(old_links.copy())
+        self._has_uncommitted_changes = False
+        self.draw_view()
+        self._update_status("Reverted all uncommitted changes.")
+
     def _check_selection(self) -> bool:
         if self._selected1 is None or self._selected2 is None:
             self._update_status("Need to select two particles first")
@@ -122,18 +146,10 @@ class LinkEditor(AbstractImageVisualizer):
 
     def _on_command(self, command: str):
         if command == "commit":
-            our_links = self._experiment.particle_links_scratch()
-            self._experiment.particle_links(our_links.copy())
-            self._has_uncommitted_changes = False
-            self.draw_view()
-            self._update_status("Committed all changes.")
+            self._commit()
             return True
         if command == "revert":
-            old_links = self._experiment.particle_links()
-            self._experiment.particle_links_scratch(old_links.copy())
-            self._has_uncommitted_changes = False
-            self.draw_view()
-            self._update_status("Reverted all uncommitted changes.")
+            self._revert()
             return True
         if command == "exit":
             self._exit()

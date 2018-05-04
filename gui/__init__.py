@@ -90,12 +90,16 @@ class Window:
     def setup_menu(self, extra_items: Dict[str, any]):
         """Update the main menu of the window to contain the given options."""
         menu_items = self._get_default_menu()
+        self._add_menu_items(menu_items, extra_items)
+        self._add_menu_items(menu_items, self._get_default_menu_last())
+        _update_menu(self.__menu, menu_items)
+
+    def _add_menu_items(self, menu_items, extra_items):
         for name, values in extra_items.items():
             if name in menu_items:
                 menu_items[name] = menu_items[name] + values
             else:
                 menu_items[name] = values
-        _update_menu(self.__menu, menu_items)
 
     def _get_default_menu(self):
         from gui import action
@@ -110,13 +114,26 @@ class Window:
                 ("Import Guizela's track format...", lambda: action.load_guizela_tracks(self)),
                 "-",
                 ("Export positions and shapes...", lambda: action.export_positions_and_shapes(self.get_experiment())),
-                ("Export links...", lambda: action.export_links(self.get_experiment())),
-                "-",
-                ("Exit (Alt+F4)", lambda: action.ask_exit(self.__root)),
+                ("Export links...", lambda: action.export_links(self.get_experiment()))
             ],
             "Edit": [],  # This fixes the position of the edit menu
             "View": [
-                ("Toggle axis numbers", lambda: action.toggle_axis(self.get_figure())),
+                ("Toggle showing axis numbers", lambda: action.toggle_axis(self.get_figure())),
+            ]
+        }
+
+    def _get_default_menu_last(self):
+        """Some additional options added after all the options from the visualizer are added."""
+        from gui import action
+
+        return {
+            "File": [
+                "-",
+                ("Exit (Alt+F4)", lambda: action.ask_exit(self.__root)),
+            ],
+            "Help": [
+                ("Contents...", action.show_manual),
+                ("About", action.about_the_program),
             ]
         }
 

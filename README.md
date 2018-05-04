@@ -44,55 +44,6 @@ For Windows, I created `.bat` files. As a result, you can run the scripts simply
 (You can even leave out the `.bat` extension if you want.) The first time you run any script, it will ask
 for some parameters, which are then saved to a configuration file.
    
-For now, we have the following scripts:
+See the [manuals] folder for the actual documentation of the scripts.
 
-
-autotrack_visualize_and_edit.py
--------------------------------
-Generic data visualization tool that does not do any calculations first. Loads images from TIFF files, positions and
-tracks from JSON files. In [the manuals folder](manuals/VISUALIZER.md) a manual is available. This program can be used
-to edit positional and linking data.
-
-
-autotrack_show_images.py
-------------------------
-Stripped down version of the visualizer that only shows the images, no positions or links.
-
-
-track_manually.py
------------------
-Code by Guizela, modified by Rutger. This script is used to manually track the particles. In
-[the manuals folder](manuals/TRACK_MANUALLY.md) a short manual is available.
-
-
-autotrack_convert_from_manual.py
---------------------------------
-Extracts the positions from the above manually obtained data. This throws away all trajectory information, which is on
-purpose, as our linking algorithm should be able to reconstruct it. See the file itself for instructions.
-
-
-link_nearest_neighbors.py
--------------------------
-Simple nearest neighbor-linking.
-
-
-autotrack_create_links.py
--------------------------
-Nearest neighbor linking with some error corrections afterwards.
-
-1. IF a cell is dead (has no future positions), nearby cells are checked. If a cell appears to be newborn, it will
-   be connected to the dead cell instead.
-2. If a cell appears to be a mother cell (has two linked positions in the next timepoint), a scoring system is used to
-   give it a mother cell. If a nearby cell has a higher mother score, that cell becomes the mother instead.
-
-
-autotrack_compare_links.py
---------------------------
-Assists in comparing two linking results. The "scratchpad" links are shown as dotted lines, the "verified" links as
-solid lines.
-
-
-detect_cells_*.py
------------------
-Several detectors using (slightly) different algorithms to extract cell positions. The detector can also show insights
-into the algorithm and display earlier results.
+[manuals]: manuals/MAIN.md
