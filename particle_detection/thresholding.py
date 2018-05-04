@@ -12,9 +12,19 @@ def image_to_8bit(image: ndarray):
 
 
 def background_removal(orignal_image_8bit: ndarray, threshold: ndarray):
-    """Sets all elements below 10% of 255 to zero."""
+    """A simple background removal using two algoritms"""
+
+    # Remove everything below 10%
     absolute_thresh = int(0.1 * 255)
     threshold[orignal_image_8bit < absolute_thresh] = 0
+
+    # Remove using Triangle method
+    blur = numpy.empty_like(orignal_image_8bit[0])
+    otsu_thresh = numpy.empty_like(orignal_image_8bit[0])
+    for z in range(orignal_image_8bit.shape[0]):
+        cv2.GaussianBlur(orignal_image_8bit[z], (5, 5), 0, dst=blur)
+        cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_TRIANGLE, dst=otsu_thresh)
+        threshold[z] &= otsu_thresh
 
 
 def adaptive_threshold(image_8bit: ndarray, out: ndarray, block_size: int):
@@ -28,6 +38,7 @@ def adaptive_threshold(image_8bit: ndarray, out: ndarray, block_size: int):
 
 
 def advanced_threshold(image_8bit: ndarray, out: ndarray, block_size: int):
+    """Adaptive threshold + removal of negative curvatures + filling of holes"""
     adaptive_threshold(image_8bit, out, block_size)
 
     curvature_out = numpy.full_like(image_8bit, 255, dtype=numpy.uint8)
@@ -39,12 +50,14 @@ def advanced_threshold(image_8bit: ndarray, out: ndarray, block_size: int):
 
 
 def fill_threshold(threshold: ndarray):
+    """Filling of all holes."""
     temp = numpy.empty_like(threshold[0])
     for z in range(threshold.shape[0]):
         _fill_threshold_2d(threshold[z], temp)
 
 
 def _fill_threshold_2d(threshold: ndarray, temp_for_floodfill: ndarray):
+    """Filling of all holes in a single 2D plane."""
     # https://www.learnopencv.com/filling-holes-in-an-image-using-opencv-python-c/
     temp_for_floodfill[:] = threshold
 
@@ -53,8 +66,8 @@ def _fill_threshold_2d(threshold: ndarray, temp_for_floodfill: ndarray):
     h, w = threshold.shape[:2]
     mask = numpy.zeros((h + 2, w + 2), numpy.uint8)
 
-    # Floodfill from point (0, 0) = top left
-    cv2.floodFill(temp_for_floodfill, mask, (0, 0), 255)
+    # Floodfill from point (w-1, h-1) = bottom right
+    cv2.floodFill(temp_for_floodfill, mask, (w - 1, h - 1), 255)
 
     # Invert floodfilled image, combine with threshold
     im_floodfill_inv = cv2.bitwise_not(temp_for_floodfill)
