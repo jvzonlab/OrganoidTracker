@@ -3,6 +3,7 @@ from typing import Optional
 
 import tifffile
 from numpy import ndarray
+import numpy
 
 from core import Experiment, ImageLoader, TimePoint
 
@@ -45,5 +46,15 @@ class TiffImageLoader(ImageLoader):
             return None
         with tifffile.TiffFile(file_name, movie=True) as f:
             # noinspection PyTypeChecker
-            return f.asarray(maxworkers=None)  # maxworkers=None makes image loader work on half of all cores
+            array = f.asarray(maxworkers=None)  # maxworkers=None makes image loader work on half of all cores
+            if array.shape[-1] == 3 or array.shape[-1] == 4:
+                # Convert RGB to grayscale
+                array = numpy.dot(array[...,:3], [0.299, 0.587, 0.114])
+            if len(array.shape) == 3:
+                return array
+            if len(array.shape) == 2:  # Support for 2d images
+                outer = numpy.empty((1, *array.shape), dtype=array.dtype)
+                outer[0] = array
+                return outer
+            return None
 
