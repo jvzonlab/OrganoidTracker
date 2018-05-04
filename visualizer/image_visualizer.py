@@ -376,7 +376,6 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         activate(DetectionVisualizer(self._window, self._time_point.time_point_number(), self._z,
                                      self._display_settings))
 
-
     def _show_mother_cells(self):
         from visualizer.cell_division_visualizer import CellDivisionVisualizer
         track_visualizer = CellDivisionVisualizer(self._window)
