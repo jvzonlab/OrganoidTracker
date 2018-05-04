@@ -37,10 +37,20 @@ class LinkEditor(AbstractImageVisualizer):
             else:
                 experiment.particle_links_scratch(baseline_graph.copy())
 
-    def get_title(self, errors: int) -> str:
+    def _get_figure_title(self, errors: int) -> str:
         return "Editing time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
 
-    def draw_extra(self):
+    def _get_window_title(self) -> str:
+        return "Link editing"
+
+    def get_extra_menu_options(self):
+        return {
+            "View": [
+                ("Exit this view (L)", self._exit)
+            ]
+        }
+
+    def _draw_extra(self):
         self._draw_highlight(self._selected1)
         self._draw_highlight(self._selected2)
 
@@ -60,7 +70,7 @@ class LinkEditor(AbstractImageVisualizer):
             return
         new_selection = self._get_particle_at(event.xdata, event.ydata)
         if new_selection is None:
-            self.update_status("Cannot find a particle here")
+            self._update_status("Cannot find a particle here")
             return
         if new_selection == self._selected1:
             self._selected1 = None  # Deselect
@@ -70,40 +80,43 @@ class LinkEditor(AbstractImageVisualizer):
             self._selected1 = self._selected2
             self._selected2 = new_selection
         self.draw_view()
-        self.update_status("Selected:\n        " + str(self._selected2) + "\n        " + str(self._selected1))
+        self._update_status("Selected:\n        " + str(self._selected2) + "\n        " + str(self._selected1))
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "insert":
             if self._check_selection():
                 self._experiment.particle_links_scratch().add_edge(self._selected1, self._selected2)
                 self._after_modification()
-                self.update_status("Added link")
+                self._update_status("Added link")
         elif event.key == "delete":
             if self._check_selection():
                 try:
                     self._experiment.particle_links_scratch().remove_edge(self._selected1, self._selected2)
                     self._after_modification()
-                    self.update_status("Removed link")
+                    self._update_status("Removed link")
                 except NetworkXError:
-                    self.update_status("Cannot delete link: there was no link between selected particles")
+                    self._update_status("Cannot delete link: there was no link between selected particles")
         elif event.key == "l":
-            from core import StandardImageVisualizer
-            image_visualizer = StandardImageVisualizer(self._window,
-                                                       time_point_number=self._time_point.time_point_number(), z=self._z)
-            activate(image_visualizer)
+            self._exit()
         else:
             super()._on_key_press(event)
 
+    def _exit(self):
+        from visualizer.image_visualizer import StandardImageVisualizer
+        image_visualizer = StandardImageVisualizer(self._window,
+                                                   time_point_number=self._time_point.time_point_number(), z=self._z)
+        activate(image_visualizer)
+
     def _check_selection(self) -> bool:
         if self._selected1 is None or self._selected2 is None:
-            self.update_status("Need to select two particles first")
+            self._update_status("Need to select two particles first")
             return False
         delta_time_point_number = abs(self._selected1.time_point_number() - self._selected2.time_point_number())
         if delta_time_point_number == 0:
-            self.update_status("Cannot link two cells from the same time point together")
+            self._update_status("Cannot link two cells from the same time point together")
             return False
         if delta_time_point_number > 5:
-            self.update_status("Cannot link two cells together that are"  + str(delta_time_point_number) + " time points apart")
+            self._update_status("Cannot link two cells together that are" + str(delta_time_point_number) + " time points apart")
             return False
         return True
 
@@ -113,20 +126,23 @@ class LinkEditor(AbstractImageVisualizer):
             self._experiment.particle_links(our_links.copy())
             self._has_uncommitted_changes = False
             self.draw_view()
-            self.update_status("Committed all changes.")
+            self._update_status("Committed all changes.")
             return True
         if command == "revert":
             old_links = self._experiment.particle_links()
             self._experiment.particle_links_scratch(old_links.copy())
             self._has_uncommitted_changes = False
             self.draw_view()
-            self.update_status("Reverted all uncommitted changes.")
+            self._update_status("Reverted all uncommitted changes.")
+            return True
+        if command == "exit":
+            self._exit()
             return True
         if command.startswith("export "):
             self._export_links(filename=command[7:].strip())
             return True
         if command == "help":
-            self.update_status("/commit - commits all changes, so that they cannot be reverted\n"
+            self._update_status("/commit - commits all changes, so that they cannot be reverted\n"
                                "/revert - reverst all uncommitted changes\n"
                                "/export - exports all committed changes to a file")
             return True
@@ -134,15 +150,15 @@ class LinkEditor(AbstractImageVisualizer):
 
     def _export_links(self, filename: str):
         if self._has_uncommitted_changes:
-            self.update_status("There are uncommitted changes. /commit or /revert them first.")
+            self._update_status("There are uncommitted changes. /commit or /revert them first.")
             return
         if len(filename) == 0:
-            self.update_status("Please give a file name to save to")
+            self._update_status("Please give a file name to save to")
             return
         if not filename.endswith(".json"):
             filename += ".json"
         io.save_links_to_json(self._experiment.particle_links(), filename)
-        self.update_status("Saved committed links to " + filename)
+        self._update_status("Saved committed links to " + filename)
 
     def _after_modification(self):
         graph = self._experiment.particle_links_scratch()

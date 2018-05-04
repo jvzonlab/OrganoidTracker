@@ -21,5 +21,8 @@ class EmptyVisualizer(Visualizer):
 
     def draw_view(self):
         self._clear_axis()
-        self._window.set_title("Empty project. Use the File menu to import data.")
+        self._window.set_figure_title("Empty project. Use the File menu to import data.")
         self._fig.canvas.draw()
+
+    def _get_window_title(self):
+        return "New project"

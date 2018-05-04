@@ -74,9 +74,9 @@ class ParticleListVisualizer(Visualizer):
         self._clear_axis()
         if self._current_particle_index < 0 or self._current_particle_index >= len(self._particle_list):
             if len(self._particle_list) == 0:
-                self._window.set_title(self.get_message_no_particles())
+                self._window.set_figure_title(self.get_message_no_particles())
             else:
-                self._window.set_title(self.get_message_press_right())
+                self._window.set_figure_title(self.get_message_press_right())
             plt.draw()
             return
 
@@ -89,7 +89,7 @@ class ParticleListVisualizer(Visualizer):
         self._draw_connections(self._experiment.particle_links(), current_particle)
         self._draw_connections(self._experiment.particle_links_scratch(), current_particle, line_style='dotted',
                                line_width=3)
-        self._window.set_title(self.get_title(self._particle_list, self._current_particle_index))
+        self._window.set_figure_title(self.get_title(self._particle_list, self._current_particle_index))
 
         self._fig.canvas.draw()
         ParticleListVisualizer.__last_index_per_class[type(self)] = self._current_particle_index
@@ -168,7 +168,7 @@ class ParticleListVisualizer(Visualizer):
             self.goto_full_image()
             return True
         if command == "help":
-            self.update_status("Available commands:\n"
+            self._update_status("Available commands:\n"
                                "/exit - Exits this view, and goes back to the main view.")
             return True
         return super()._on_command(command)

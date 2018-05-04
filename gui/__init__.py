@@ -2,7 +2,7 @@ import tkinter
 from os import path
 from tkinter import StringVar, ttk
 from tkinter.font import Font
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from matplotlib.backends._backend_tk import NavigationToolbar2Tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -11,6 +11,7 @@ from matplotlib.figure import Figure
 from core import Experiment
 from gui import dialog
 
+APP_NAME = "Autotrack"
 
 class Window:
     """The model for a window."""
@@ -55,18 +56,30 @@ class Window:
         self.setup_menu(dict())
 
     def get_figure(self) -> Figure:
+        """Gets the Matplotlib figure."""
         return self.__fig
 
     def set_status(self, text: str):
+        """Sets the small text below the figure."""
         self.__status_text.set(text)
 
-    def set_title(self, text: str):
+    def set_figure_title(self, text: str):
+        """Sets the big text above the main figure."""
         self.__title_text.set(text)
 
+    def set_window_title(self, text: Optional[str]):
+        """Sets the title of the window, prefixed by APP_NAME. Use None as the title to just sown APP_NAME."""
+        if text is None:
+            self.__root.title(APP_NAME)
+        else:
+            self.__root.title(APP_NAME + " - " + text)
+
     def get_experiment(self) -> Experiment:
+        """Gets the experiment that is being shown."""
         return self.__experiment
 
     def set_experiment(self, experiment: Experiment):
+        """Replaces the experiment that is being shown. You'll likely want to call refresh() after calling this."""
         self.__experiment = experiment
 
     def refresh(self):
@@ -75,6 +88,7 @@ class Window:
             self.__refresh_handler()
 
     def setup_menu(self, extra_items: Dict[str, any]):
+        """Update the main menu of the window to contain the given options."""
         menu_items = self._get_default_menu()
         for name, values in extra_items.items():
             if name in menu_items:
@@ -142,7 +156,7 @@ def launch_window(experiment: Experiment) -> Window:
     # Create empty window
     root = tkinter.Tk()
     root.geometry('800x700')
-    root.title("Autotrack")
+    root.title(APP_NAME)
     root.iconbitmap(path.join(path.dirname(__file__), 'icon.ico'))
 
     title_text = StringVar()

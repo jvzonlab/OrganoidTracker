@@ -39,11 +39,12 @@ class AbstractImageVisualizer(Visualizer):
         self._display_settings = DisplaySettings() if display_settings is None else display_settings
         if time_point_number is None:
             time_point_number = window.get_experiment().first_time_point_number()
+        self._time_point, self._time_point_images = self._load_time_point(time_point_number)
         self._z = int(z)
-        self._time_point, self._time_point_images = self.load_time_point(time_point_number)
+        self._clamp_z()
         self.__drawn_particles = []
 
-    def load_time_point(self, time_point_number: int) -> Tuple[TimePoint, ndarray]:
+    def _load_time_point(self, time_point_number: int) -> Tuple[TimePoint, ndarray]:
         time_point = self._experiment.get_time_point(time_point_number)
         if self._display_settings.show_images:
             time_point_images = self.create_image(time_point, self._display_settings.show_next_time_point)
@@ -56,9 +57,9 @@ class AbstractImageVisualizer(Visualizer):
         self._clear_axis()
         self.__drawn_particles.clear()
         self._draw_image()
-        errors = self.draw_particles()
-        self.draw_extra()
-        self._window.set_title(self.get_title(errors))
+        errors = self._draw_particles()
+        self._draw_extra()
+        self._window.set_figure_title(self._get_figure_title(errors))
 
         self._fig.canvas.draw()
 
@@ -66,16 +67,16 @@ class AbstractImageVisualizer(Visualizer):
         if self._time_point_images is not None:
             self._ax.imshow(self._time_point_images[self._z], cmap="gray")
 
-    def get_title(self, errors: int) -> str:
+    def _get_figure_title(self, errors: int) -> str:
         title = "Time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
         if errors != 0:
             title += " (changes: " + str(errors) + ")"
         return title
 
-    def draw_extra(self):
+    def _draw_extra(self):
         pass # Subclasses can override this
 
-    def draw_particles(self) -> int:
+    def _draw_particles(self) -> int:
         """Draws particles and links. Returns the amount of non-equal links in the image"""
 
         # Draw particles
@@ -223,10 +224,10 @@ class AbstractImageVisualizer(Visualizer):
                 new_time_point_number = int(time_point_str.strip())
                 self._move_to_time(new_time_point_number)
             except ValueError:
-                self.update_status("Cannot read number: " + time_point_str)
+                self._update_status("Cannot read number: " + time_point_str)
             return True
         if command == "help":
-            self.update_status("/t20: Jump to time point 20 (also works for other time points)")
+            self._update_status("/t20: Jump to time point 20 (also works for other time points)")
             return True
         return False
 
@@ -246,34 +247,37 @@ class AbstractImageVisualizer(Visualizer):
         old_z = self._z
         self._z += dz
 
+        self._clamp_z()
+
+        if self._z != old_z:
+            self.draw_view()
+
+    def _clamp_z(self):
         if self._z < 0:
             self._z = 0
         if self._time_point_images is not None and self._z >= len(self._time_point_images):
             self._z = len(self._time_point_images) - 1
 
-        if self._z != old_z:
-            self.draw_view()
-
     def _move_to_time(self, new_time_point_number: int) -> bool:
         try:
-            self._time_point, self._time_point_images = self.load_time_point(new_time_point_number)
+            self._time_point, self._time_point_images = self._load_time_point(new_time_point_number)
             self.draw_view()
-            self.update_status("Moved to time point " + str(new_time_point_number) + "!")
+            self._update_status("Moved to time point " + str(new_time_point_number) + "!")
             return True
         except KeyError:
-            self.update_status("Unknown time point: " + str(new_time_point_number) + " (range is "
-                               + str(self._experiment.first_time_point_number()) + " to "
-                               + str(self._experiment.last_time_point_number()) + ", inclusive)")
+            self._update_status("Unknown time point: " + str(new_time_point_number) + " (range is "
+                                + str(self._experiment.first_time_point_number()) + " to "
+                                + str(self._experiment.last_time_point_number()) + ", inclusive)")
             return False
 
     def _move_in_time(self, dt: int):
         old_time_point_number = self._time_point.time_point_number()
         new_time_point_number = old_time_point_number + dt
         try:
-            self._time_point, self._time_point_images = self.load_time_point(new_time_point_number)
+            self._time_point, self._time_point_images = self._load_time_point(new_time_point_number)
             self._move_in_z(0)  # Caps z to allowable range
             self.draw_view()
-            self.update_status(self.__doc__)
+            self._update_status(self.__doc__)
         except KeyError:
             pass
 
@@ -314,9 +318,9 @@ class StandardImageVisualizer(AbstractImageVisualizer):
                     + str(scored_family.score.total()) + "\n"
             displayed_items += 1
         if text:
-            self.update_status("Possible cell division scores:\n" + text)
+            self._update_status("Possible cell division scores:\n" + text)
         else:
-            self.update_status("No cell division scores found")
+            self._update_status("No cell division scores found")
 
     def get_extra_menu_options(self):
         options = super().get_extra_menu_options()
@@ -361,10 +365,10 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             particle = self._get_particle_at(event.xdata, event.ydata)
             links = self._experiment.particle_links_scratch()
             if particle is not None and links is not None:
-                self.update_status("Flow toward previous frame: " +
-                                   str(particle_flow.get_flow_to_previous(links, self._time_point, particle)) +
+                self._update_status("Flow toward previous frame: " +
+                                    str(particle_flow.get_flow_to_previous(links, self._time_point, particle)) +
                                    "\nFlow towards next frame: " +
-                                   str(particle_flow.get_flow_to_next(links, self._time_point, particle)))
+                                    str(particle_flow.get_flow_to_next(links, self._time_point, particle)))
         else:
             super()._on_key_press(event)
 
@@ -392,7 +396,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         activate(differences_visualizer)
 
     def _show_link_editor(self):
-        from linking_analysis.link_editor import LinkEditor
+        from visualizer.link_editor import LinkEditor
         link_editor = LinkEditor(self._window, time_point_number=self._time_point.time_point_number(), z=self._z)
         activate(link_editor)
 
@@ -404,7 +408,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             self._show_mother_cells()
             return True
         if command == "help":
-            self.update_status("Available commands:\n"
+            self._update_status("Available commands:\n"
                                "/deaths - views cell deaths.\n"
                                "/divisions - views cell divisions.\n"
                                "/t20 - jumps to time point 20 (also works for other time points")

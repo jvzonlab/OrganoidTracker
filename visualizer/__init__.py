@@ -70,7 +70,8 @@ class Visualizer:
         """Draws the view, forcing to reload any cached data."""
         self.draw_view()
 
-    def update_status(self, text: Union[str, bytes], redraw=True):
+    def _update_status(self, text: Union[str, bytes], redraw=True):
+        """Updates the status of the window."""
         self._window.set_status(str(text))
 
     def _on_key_press_raw(self, event: KeyEvent):
@@ -80,7 +81,7 @@ class Visualizer:
             if event.key == '/':
                 # Staring command mode
                 self._pending_command_text = ""
-                self.update_status("/")
+                self._update_status("/")
                 return
             try:
                 self._on_key_press(event)
@@ -95,13 +96,13 @@ class Visualizer:
                     return
                 try:
                     if not self._on_command(text):
-                        self.update_status("Unknown command: " + text + ". Type /help for help.")
+                        self._update_status("Unknown command: " + text + ". Type /help for help.")
                 except Exception as e:
                     dialog.popup_exception(e)
             elif event.key == 'escape':
                 # Exit typing command
                 self._pending_command_text = None
-                self.update_status(self.__doc__)
+                self._update_status(self.__doc__)
             else:
                 if event.key == 'backspace':
                     if len(self._pending_command_text) > 0:
@@ -110,7 +111,7 @@ class Visualizer:
                     pass  # Pressing "shift", "control", "left", etc.
                 else:
                     self._pending_command_text += event.key
-                self.update_status("/" + self._pending_command_text)
+                self._update_status("/" + self._pending_command_text)
 
     def _on_key_press(self, event: KeyEvent):
         pass
@@ -123,12 +124,17 @@ class Visualizer:
 
     def attach(self):
         self._window.setup_menu(self.get_extra_menu_options())
+        self._window.set_window_title(self._get_window_title())
         self._window.register_event_handler("key_press_event", self._on_key_press_raw)
         self._window.register_event_handler("button_press_event", self._on_mouse_click)
         self._window.register_event_handler("refresh_event", self.refresh_view)
 
     def detach(self):
         self._window.unregister_event_handlers()
+
+    def _get_window_title(self) -> Optional[str]:
+        """Called to query what the window title should be."""
+        return None
 
     def get_extra_menu_options(self) -> Dict[str, List]:
         return {}
@@ -180,5 +186,5 @@ def activate(visualizer: Visualizer) -> None:
     __active_visualizer = visualizer
     __active_visualizer.attach()
     __active_visualizer.draw_view()
-    __active_visualizer.update_status(__active_visualizer.__doc__)
+    __active_visualizer._update_status(__active_visualizer.__doc__)
 

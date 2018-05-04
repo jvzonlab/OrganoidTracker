@@ -2,7 +2,7 @@ import mahotas
 import numpy
 from matplotlib.backend_bases import KeyEvent
 
-from gui import Window
+from gui import Window, dialog
 from particle_detection import thresholding, watershedding
 from segmentation import iso_intensity_curvature
 from segmentation.iso_intensity_curvature import ImageDerivatives
@@ -29,7 +29,11 @@ class DetectionVisualizer(AbstractImageVisualizer):
         super().__init__(window, time_point_number, z, display_settings)
 
     def _draw_image(self):
-        self._ax.imshow(self._time_point_images[self._z], cmap=self.color_map)
+        if self._time_point_images is not None:
+            self._ax.imshow(self._time_point_images[self._z], cmap=self.color_map)
+
+    def _get_window_title(self) -> str:
+        return "Cell detection"
 
     def get_extra_menu_options(self):
         return {
@@ -54,7 +58,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
             self._show_main_view()
             return True
         if command == "help":
-            self.update_status("Available commands:\n"
+            self._update_status("Available commands:\n"
                                "/exit - Return to main view\.n"
                                "/t30 - Jump to time point 30. Also works for other time points.")
 
@@ -66,7 +70,11 @@ class DetectionVisualizer(AbstractImageVisualizer):
         activate(v)
 
     def _basic_threshold(self):
-        images = thresholding.image_to_8bit(self._experiment.get_image_stack(self._time_point))
+        images = self._experiment.get_image_stack(self._time_point)
+        if images is None:
+            dialog.popup_error("Failed to apply threshold", "Cannot show threshold - no images loaded.")
+            return
+        images = thresholding.image_to_8bit(images)
         out = numpy.empty_like(images, dtype=numpy.uint8)
         thresholding.adaptive_threshold(images, out, self.threshold_block_size)
 
@@ -76,7 +84,11 @@ class DetectionVisualizer(AbstractImageVisualizer):
         self.draw_view()
 
     def _advanced_threshold(self):
-        images = thresholding.image_to_8bit(self._experiment.get_image_stack(self._time_point))
+        images = self._experiment.get_image_stack(self._time_point)
+        if images is None:
+            dialog.popup_error("Failed to apply threshold", "Cannot show threshold - no images loaded.")
+            return
+        images = thresholding.image_to_8bit(images)
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
         thresholding.advanced_threshold(images, threshold, self.threshold_block_size)
 
@@ -88,7 +100,11 @@ class DetectionVisualizer(AbstractImageVisualizer):
     def _show_analysis(self):
         self.refresh_view()
 
-        images = thresholding.image_to_8bit(self._experiment.get_image_stack(self._time_point))
+        images = self._experiment.get_image_stack(self._time_point)
+        if images is None:
+            dialog.popup_error("Failed to detect cells", "Cannot detect cells - no images loaded.")
+            return
+        images = thresholding.image_to_8bit(images)
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
         thresholding.advanced_threshold(images, threshold, self.threshold_block_size)
         self._time_point_images = threshold
@@ -117,7 +133,12 @@ class DetectionVisualizer(AbstractImageVisualizer):
         self._time_point_images[:, :, :, 2] = self._time_point_images[:, :, :, 0]
 
     def _segment_using_iso_intensity(self):
-        images = thresholding.image_to_8bit(self._experiment.get_image_stack(self._time_point))
+        images = self._experiment.get_image_stack(self._time_point)
+        if images is None:
+            dialog.popup_error("Failed to perform detection", "Cannot detect negative Gaussian curvatures of "
+                                                              "iso-intensity planes - no images loaded.")
+            return
+        images = thresholding.image_to_8bit(images)
         out = numpy.full_like(images, 255, dtype=numpy.uint8)
         iso_intensity_curvature.get_negative_gaussian_curvatures(images, ImageDerivatives(), out)
 
