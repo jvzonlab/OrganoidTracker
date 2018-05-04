@@ -8,7 +8,7 @@ from matplotlib.figure import Figure, Axes
 
 import core
 from core import Experiment, Particle, TimePoint
-from gui import Window
+from gui import Window, dialog
 
 
 class DisplaySettings:
@@ -82,15 +82,22 @@ class Visualizer:
                 self._pending_command_text = ""
                 self.update_status("/")
                 return
-            self._on_key_press(event)
+            try:
+                self._on_key_press(event)
+            except Exception as e:
+                dialog.popup_exception(e)
         else:
             if event.key == 'enter':
                 # Finish typing command
                 text = self._pending_command_text
                 self._pending_command_text = None
-                if len(text) > 0:
+                if len(text) == 0:
+                    return
+                try:
                     if not self._on_command(text):
                         self.update_status("Unknown command: " + text + ". Type /help for help.")
+                except Exception as e:
+                    dialog.popup_exception(e)
             elif event.key == 'escape':
                 # Exit typing command
                 self._pending_command_text = None

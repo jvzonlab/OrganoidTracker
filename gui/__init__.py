@@ -9,6 +9,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 from core import Experiment
+from gui import dialog
 
 
 class Window:
@@ -118,8 +119,18 @@ def _update_menu(menu_bar: tkinter.Menu, menu_items: Dict[str, any]):
             if dropdown_item == "-":
                 menu.add_separator()
                 continue
-            menu.add_command(label=dropdown_item[0], command=dropdown_item[1])
+            menu.add_command(label=dropdown_item[0], command=_with_safeguard(dropdown_item[1]))
         menu_bar.add_cascade(label=menu_name, menu=menu)
+
+
+def _with_safeguard(action):
+    """Adds an exception handler to the specified lambda action"""
+    def safeguard():
+        try:
+            action()
+        except Exception as e:
+            dialog.popup_exception(e)
+    return safeguard
 
 
 def launch_window(experiment: Experiment) -> Window:

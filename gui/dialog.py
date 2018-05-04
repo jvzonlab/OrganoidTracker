@@ -2,6 +2,7 @@ import os
 import subprocess
 import sys
 import tkinter
+import traceback
 from tkinter import simpledialog, messagebox
 from tkinter.messagebox import Message
 
@@ -21,6 +22,12 @@ def message_cancellable(title: str, message: str) -> bool:
 
 def popup_error(title: str, message: str):
     messagebox.showerror(title, message)
+
+
+def popup_exception(exception: BaseException):
+    traceback.print_tb(exception.__traceback__)
+    popup_error("Internal error", "An error occured.\n" + str(exception) + "\nSee console for technical details.")
+
 
 
 def popup_message(title: str, message: str):
