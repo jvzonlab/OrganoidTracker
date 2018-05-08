@@ -1,5 +1,7 @@
-import mahotas
+import cv2
+
 import numpy
+from numpy import ndarray
 from matplotlib.backend_bases import KeyEvent
 
 from gui import Window, dialog
@@ -12,20 +14,17 @@ from visualizer.image_visualizer import AbstractImageVisualizer
 
 class DetectionVisualizer(AbstractImageVisualizer):
     """Visualizer specialized in displaying particle positions.
-    Use the left/right arrow keys to move in time.
-    Use the up/down arrow keys to move in the z-direction
-    Press D to perform 2D detection in this time point, showing intermediate results.
-    Press N to show the next and current time point together in a single image (red=next time point, green=current)
     """
 
     threshold_block_size = 51
     sampling = (2, 0.32, 0.32)
-    minimal_size = (3, 20, 20)
+    minimal_size = (3, 11, 11)
 
     color_map = "gray"
 
     def __init__(self, window: Window, time_point_number: int, z: int, display_settings: DisplaySettings):
         display_settings.show_next_time_point = False
+        display_settings.show_shapes = False
         super().__init__(window, time_point_number, z, display_settings)
 
     def _draw_image(self):
@@ -49,7 +48,9 @@ class DetectionVisualizer(AbstractImageVisualizer):
                 ("Show advanced threshold (T)", self._advanced_threshold)
             ],
             "Detection": [
-                ("Detect cells at this time point", self._show_analysis)
+                ("Detect cells", self._detect_cells),
+                ("Detect cells using existing points", self._detect_cells_using_particles),
+                ("Detect contours", self._detect_contours),
             ]
         }
 
@@ -84,11 +85,10 @@ class DetectionVisualizer(AbstractImageVisualizer):
         self.draw_view()
 
     def _advanced_threshold(self):
-        images = self._experiment.get_image_stack(self._time_point)
+        images = self._get_8bit_images()
         if images is None:
             dialog.popup_error("Failed to apply threshold", "Cannot show threshold - no images loaded.")
             return
-        images = thresholding.image_to_8bit(images)
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
         thresholding.advanced_threshold(images, threshold, self.threshold_block_size)
 
@@ -97,27 +97,87 @@ class DetectionVisualizer(AbstractImageVisualizer):
         self._time_point_images[:, :, :, 2] = threshold
         self.draw_view()
 
-    def _show_analysis(self):
-        self.refresh_view()
-
+    def _get_8bit_images(self):
         images = self._experiment.get_image_stack(self._time_point)
+        if images is not None:
+            return thresholding.image_to_8bit(images)
+        return None
+
+    def _draw_images(self, image_stack: ndarray, color_map=None):
+        self._time_point_images = image_stack
+        self.color_map = color_map if color_map is not None else DetectionVisualizer.color_map
+        self.draw_view()
+
+    def _detect_cells(self):
+        self.refresh_view()
+        images = self._get_8bit_images()
         if images is None:
             dialog.popup_error("Failed to detect cells", "Cannot detect cells - no images loaded.")
             return
-        images = thresholding.image_to_8bit(images)
+
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
         thresholding.advanced_threshold(images, threshold, self.threshold_block_size)
-        self._time_point_images = threshold
-        self.draw_view()
+        self._draw_images(threshold)
 
         distance_transform = numpy.empty_like(images, dtype=numpy.float64)
         watershedding.distance_transform(threshold, distance_transform, self.sampling)
-        self._time_point_images = distance_transform
-        self.draw_view()
+        self._draw_images(distance_transform)
 
-        self._time_point_images = watershedding.watershed_maxima(threshold, distance_transform, self.minimal_size)
-        self.color_map = watershedding.COLOR_MAP
-        self.draw_view()
+        watershed = watershedding.watershed_maxima(threshold, distance_transform, self.minimal_size)
+        self._draw_images(watershed, watershedding.COLOR_MAP)
+
+    def _detect_cells_using_particles(self):
+        if len(self._time_point.particles()) == 0:
+            dialog.popup_error("Failed to detect cells", "Cannot detect cells - no particle positions loaded.")
+            return
+        images = self._get_8bit_images()
+        if images is None:
+            dialog.popup_error("Failed to detect cells", "Cannot detect cells - no images loaded.")
+            return
+
+        self.refresh_view()
+
+        threshold = numpy.empty_like(images, dtype=numpy.uint8)
+        thresholding.advanced_threshold(images, threshold, self.threshold_block_size)
+        self._draw_images(threshold)
+
+        # Labelling, calculate distance to label
+        labels = numpy.empty_like(images, dtype=numpy.uint16)
+        watershedding.create_labels(self._time_point.particles(), labels)
+        labels_inv = numpy.full_like(images, 255, dtype=numpy.uint8)
+        labels_inv[labels != 0] = 0
+        distance_transform_to_labels = numpy.empty_like(images, dtype=numpy.float64)
+        watershedding.distance_transform(labels_inv, distance_transform_to_labels, self.sampling)
+        distance_transform_to_labels[distance_transform_to_labels > 4] = 4
+        distance_transform_to_labels = 4 - distance_transform_to_labels
+
+        # Distance transform to edge and labels
+        distance_transform = numpy.empty_like(images, dtype=numpy.float64)
+        watershedding.distance_transform(threshold, distance_transform, self.sampling)
+        watershedding.smooth(distance_transform)
+        distance_transform += distance_transform_to_labels
+        self._draw_images(distance_transform)
+
+        watershed = watershedding.watershed_labels(threshold, distance_transform.max() - distance_transform, labels)
+        watershedding.remove_big_labels(watershed)
+        self._draw_images(watershed, watershedding.COLOR_MAP)
+
+    def _detect_contours(self):
+        self.refresh_view()
+        images = self._get_8bit_images()
+        if images is None:
+            dialog.popup_error("Failed to detect cells", "Cannot detect cells - no images loaded.")
+            return
+
+        threshold = numpy.empty_like(images, dtype=numpy.uint8)
+        thresholding.advanced_threshold(images, threshold, self.threshold_block_size)
+        self._draw_images(threshold)
+
+        im2, contours, hierarchy = cv2.findContours(threshold[self._z], cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        threshold[self._z] = 0
+        for contour in contours:
+            cv2.drawContours(threshold[self._z], [contour], 0, 255, 2)
+        self._draw_images(threshold)
 
     def _time_point_to_rgb(self):
         """If the time point image is a black-and-white image, it is converted to RGB"""

@@ -179,6 +179,8 @@ class AbstractImageVisualizer(Visualizer):
             max_str = str(self._experiment.last_time_point_number())
             given = prompt_int("Time point", "Which time point do you want to go to? (" + min_str + "-" + max_str
                                + ", inclusive)")
+            if given is None:
+                return
             if not self._move_to_time(given):
                 popup_error("Out of range", "Oops, time point " + str(given) + " is outside the range " + min_str + "-"
                             + max_str + ".")
@@ -261,6 +263,7 @@ class AbstractImageVisualizer(Visualizer):
     def _move_to_time(self, new_time_point_number: int) -> bool:
         try:
             self._time_point, self._time_point_images = self._load_time_point(new_time_point_number)
+            self._move_in_z(0)  # Caps z to allowable range
             self.draw_view()
             self._update_status("Moved to time point " + str(new_time_point_number) + "!")
             return True

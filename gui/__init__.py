@@ -1,3 +1,4 @@
+import sys
 import tkinter
 from os import path
 from tkinter import StringVar, ttk
@@ -174,7 +175,7 @@ def launch_window(experiment: Experiment) -> Window:
     root = tkinter.Tk()
     root.geometry('800x700')
     root.title(APP_NAME)
-    root.iconbitmap(path.join(path.dirname(__file__), 'icon.ico'))
+    root.iconbitmap(path.join(path.dirname(path.abspath(sys.argv[0])), 'gui', 'icon.ico'))
 
     title_text = StringVar()
     status_text = StringVar()

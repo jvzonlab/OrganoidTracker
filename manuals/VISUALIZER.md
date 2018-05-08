@@ -4,8 +4,8 @@ Autotrack manual
 Navigating around
 -----------------
 The program consists of a menu bar, a title area, a figure area and a status/help area. The contents of all of these
-depends on what you're doing. If you enter the cell detection screen, then methods relevant to cell detection will be
-shown.
+depends on what you're doing. If you enter the cell detection view, then methods relevant to cell detection will be
+shown. You can always go back to the main view using `View -> Exit this view`.
 
 The program is highly keyboard-dependent, although there are also menu options available for everything. I prefer using
 the keyboard shortcuts myself, but for people new to this program that is of course no options.
