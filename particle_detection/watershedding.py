@@ -80,3 +80,10 @@ def remove_big_labels(labeled: ndarray):
     sizes = mahotas.labeled.labeled_size(labeled)
     too_big = numpy.where(sizes > numpy.median(sizes) * 10)
     labeled[:] = mahotas.labeled.remove_regions(labeled, too_big, inplace=False)
+
+
+def smooth(image_stack: ndarray, distance_transform_smooth_size: int):
+    temp = numpy.empty_like(image_stack[0])
+    for z in range(image_stack.shape[0]):
+        cv2.GaussianBlur(image_stack[z], (distance_transform_smooth_size, distance_transform_smooth_size), 0, dst=temp)
+        image_stack[z] = temp

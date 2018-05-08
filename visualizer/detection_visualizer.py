@@ -5,7 +5,7 @@ from numpy import ndarray
 from matplotlib.backend_bases import KeyEvent
 
 from gui import Window, dialog
-from particle_detection import thresholding, watershedding
+from particle_detection import thresholding, watershedding, missed_cell_finder
 from segmentation import iso_intensity_curvature
 from segmentation.iso_intensity_curvature import ImageDerivatives
 from visualizer import activate, DisplaySettings
@@ -19,6 +19,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
     threshold_block_size = 51
     sampling = (2, 0.32, 0.32)
     minimal_size = (3, 11, 11)
+    distance_transform_smooth_size = 21
 
     color_map = "gray"
 
@@ -125,6 +126,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
 
         watershed = watershedding.watershed_maxima(threshold, distance_transform, self.minimal_size)
         self._draw_images(watershed, watershedding.COLOR_MAP)
+        self._print_missed_cells(watershed)
 
     def _detect_cells_using_particles(self):
         if len(self._time_point.particles()) == 0:
@@ -144,23 +146,28 @@ class DetectionVisualizer(AbstractImageVisualizer):
         # Labelling, calculate distance to label
         labels = numpy.empty_like(images, dtype=numpy.uint16)
         watershedding.create_labels(self._time_point.particles(), labels)
-        labels_inv = numpy.full_like(images, 255, dtype=numpy.uint8)
-        labels_inv[labels != 0] = 0
-        distance_transform_to_labels = numpy.empty_like(images, dtype=numpy.float64)
-        watershedding.distance_transform(labels_inv, distance_transform_to_labels, self.sampling)
-        distance_transform_to_labels[distance_transform_to_labels > 4] = 4
-        distance_transform_to_labels = 4 - distance_transform_to_labels
+        distance_transform_to_labels = self._get_distances_to_labels(images, labels)
 
         # Distance transform to edge and labels
         distance_transform = numpy.empty_like(images, dtype=numpy.float64)
         watershedding.distance_transform(threshold, distance_transform, self.sampling)
-        watershedding.smooth(distance_transform)
+        watershedding.smooth(distance_transform, self.distance_transform_smooth_size)
         distance_transform += distance_transform_to_labels
         self._draw_images(distance_transform)
 
         watershed = watershedding.watershed_labels(threshold, distance_transform.max() - distance_transform, labels)
         watershedding.remove_big_labels(watershed)
         self._draw_images(watershed, watershedding.COLOR_MAP)
+        self._print_missed_cells(watershed)
+
+    def _get_distances_to_labels(self, images, labels):
+        labels_inv = numpy.full_like(images, 255, dtype=numpy.uint8)
+        labels_inv[labels != 0] = 0
+        distance_transform_to_labels = numpy.empty_like(images, dtype=numpy.float64)
+        watershedding.distance_transform(labels_inv, distance_transform_to_labels, self.sampling)
+        distance_transform_to_labels[distance_transform_to_labels > 4] = 4
+        distance_transform_to_labels = 4 - distance_transform_to_labels
+        return distance_transform_to_labels
 
     def _detect_contours(self):
         self.refresh_view()
@@ -221,3 +228,11 @@ class DetectionVisualizer(AbstractImageVisualizer):
     def refresh_view(self):
         self.color_map = DetectionVisualizer.color_map
         super().refresh_view()
+
+    def _print_missed_cells(self, watershed: ndarray):
+        particles = self._time_point.particles()
+        if len(particles) == 0:
+            return
+        errors = missed_cell_finder.find_undetected_particles(watershed, particles)
+        for particle, error in errors.items():
+            print("Error at " + str(particle) + ": " + str(error))
