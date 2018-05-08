@@ -1,8 +1,11 @@
 """Attempt at edge detection. Doesn't work so well."""
+from typing import Tuple
 
 import cv2
 import numpy
 from numpy import ndarray
+
+from particle_detection import watershedding
 from segmentation import iso_intensity_curvature
 from segmentation.iso_intensity_curvature import ImageDerivatives
 
@@ -37,9 +40,17 @@ def adaptive_threshold(image_8bit: ndarray, out: ndarray, block_size: int):
     background_removal(image_8bit, out)
 
 
-def advanced_threshold(image_8bit: ndarray, out: ndarray, block_size: int):
-    """Adaptive threshold + removal of negative curvatures + filling of holes"""
+def watershedded_threshold(image_8bit: ndarray, out: ndarray, block_size: int, watershed_size: Tuple[int, int, int]):
     adaptive_threshold(image_8bit, out, block_size)
+
+    watershedding.smooth(image_8bit, int(block_size / 2))
+    watershed, lines = watershedding.watershed_maxima(out, image_8bit, watershed_size)
+    _open(lines)
+    out[lines != 0] = 0
+
+
+def advanced_threshold(image_8bit: ndarray, out: ndarray, block_size: int, watershed_size: Tuple[int, int, int]):
+    watershedded_threshold(image_8bit, out, block_size, watershed_size)
 
     curvature_out = numpy.full_like(image_8bit, 255, dtype=numpy.uint8)
     iso_intensity_curvature.get_negative_gaussian_curvatures(image_8bit, ImageDerivatives(), curvature_out)
@@ -47,6 +58,16 @@ def advanced_threshold(image_8bit: ndarray, out: ndarray, block_size: int):
 
     fill_threshold(out)
     background_removal(image_8bit, out)
+
+
+def _open(threshold: ndarray):
+    kernel = numpy.ones((3, 3), numpy.uint8)
+    temp_in = numpy.empty_like(threshold[0], dtype=numpy.uint8)
+    temp_out = temp_in.copy()
+    for z in range(threshold.shape[0]):
+        temp_in[:] = threshold[z]
+        cv2.morphologyEx(temp_in, cv2.MORPH_OPEN, kernel, dst=temp_out)
+        threshold[z] = temp_out
 
 
 def fill_threshold(threshold: ndarray):

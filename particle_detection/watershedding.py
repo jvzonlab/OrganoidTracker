@@ -1,14 +1,13 @@
-import cv2
 import random
 from typing import Tuple, Collection
 
+import cv2
 import mahotas
-
-from numpy import ndarray
-from scipy.ndimage import morphology
-import numpy
 import matplotlib.cm
 import matplotlib.colors
+import numpy
+from numpy import ndarray
+from scipy.ndimage import morphology
 
 from core import Particle
 
@@ -41,20 +40,20 @@ def distance_transform(threshold: ndarray, out: ndarray, sampling: Tuple[float, 
     morphology.distance_transform_edt(threshold, sampling=sampling, distances=out)
 
 
-def watershed_maxima(threshold: ndarray, distance_transform: ndarray, minimal_size: Tuple[int, int, int]) -> ndarray:
-    """Performs a watershed transformation o nthe distance_transform image, using its regional maxima as seeds. Then,
-    all pixels that fall outside of the threshold are removed."""
+def watershed_maxima(threshold: ndarray, intensities: ndarray, minimal_size: Tuple[int, int, int]
+                     ) -> Tuple[ndarray, ndarray]:
+    """Performs a watershed transformation on the intensity image, using its regional maxima as seeds and flowing
+    towards lower intensities."""
     kernel = numpy.ones(minimal_size)
-    maxima = mahotas.morph.regmax(distance_transform, Bc=kernel)
+    maxima = mahotas.morph.regmax(intensities, Bc=kernel)
     spots, n_spots = mahotas.label(maxima, Bc=kernel)
     print("Found " + str(n_spots) + " particles")
-    surface = (distance_transform.max() - distance_transform)
+    surface = (intensities.max() - intensities)
     return watershed_labels(threshold, surface, spots)
 
 
 def create_labels(particles: Collection[Particle], output: ndarray):
-    """Performs a watershed transform on the distance_transform image, using the particles as seeds. Then, all pixels
-    that fall outside of the threshold are removed.
+    """Creates a label image using the given labels. This image can be used for a watershed transform, for example.
     particles: list of particles, must have x/y/z in range of the output image
     output: integer image, which will contain the labels"""
     i = 1
@@ -67,12 +66,14 @@ def create_labels(particles: Collection[Particle], output: ndarray):
                              str((output.shape[2], output.shape[1], output.shape[0])) + ".")
 
 
-def watershed_labels(threshold: ndarray, surface: ndarray, label_image: ndarray) -> ndarray:
+def watershed_labels(threshold: ndarray, surface: ndarray, label_image: ndarray) -> Tuple[ndarray, ndarray]:
+    """Performs a watershed on the given surface, using the labels in label_image. Pixels that fall outside the given
+    threshold are removed afterwards."""
     # label_image: 0 is background, others are labels.
-    areas: ndarray = mahotas.cwatershed(surface, label_image)
+    areas, lines = mahotas.cwatershed(surface, label_image, return_lines=True)
     areas[threshold == 0] = 0
     areas[:, 0, 0] = areas.max()
-    return areas
+    return areas, lines
 
 
 def remove_big_labels(labeled: ndarray):

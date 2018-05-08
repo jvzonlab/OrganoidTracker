@@ -44,9 +44,9 @@ class DetectionVisualizer(AbstractImageVisualizer):
                 ("Exit this view (/exit)", self._show_main_view)
             ],
             "Threshold": [
-                ("Show basic threshold", self._basic_threshold),
-                ("Add iso-intensity segmentation", self._segment_using_iso_intensity),
-                ("Show advanced threshold (T)", self._advanced_threshold)
+                ("Basic threshold", self._basic_threshold),
+                ("With watershed segmentation", self._watershedded_threshold),
+                ("With iso-intensity curvature segmentation (T)", self._advanced_threshold)
             ],
             "Detection": [
                 ("Detect cells", self._detect_cells),
@@ -72,13 +72,25 @@ class DetectionVisualizer(AbstractImageVisualizer):
         activate(v)
 
     def _basic_threshold(self):
-        images = self._experiment.get_image_stack(self._time_point)
+        images = self._get_8bit_images()
         if images is None:
             dialog.popup_error("Failed to apply threshold", "Cannot show threshold - no images loaded.")
             return
-        images = thresholding.image_to_8bit(images)
         out = numpy.empty_like(images, dtype=numpy.uint8)
         thresholding.adaptive_threshold(images, out, self.threshold_block_size)
+
+        self._time_point_to_rgb()
+        self._time_point_images[:, :, :, 1] = out
+        self._time_point_images[:, :, :, 2] = out
+        self.draw_view()
+
+    def _watershedded_threshold(self):
+        images = self._get_8bit_images()
+        if images is None:
+            dialog.popup_error("Failed to apply threshold", "Cannot show threshold - no images loaded.")
+            return
+        out = numpy.empty_like(images, dtype=numpy.uint8)
+        thresholding.watershedded_threshold(images, out, self.threshold_block_size, self.minimal_size)
 
         self._time_point_to_rgb()
         self._time_point_images[:, :, :, 1] = out
@@ -91,7 +103,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
             dialog.popup_error("Failed to apply threshold", "Cannot show threshold - no images loaded.")
             return
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
-        thresholding.advanced_threshold(images, threshold, self.threshold_block_size)
+        thresholding.advanced_threshold(images, threshold, self.threshold_block_size, self.minimal_size)
 
         self._time_point_to_rgb()
         self._time_point_images[:, :, :, 1] = threshold
@@ -117,14 +129,14 @@ class DetectionVisualizer(AbstractImageVisualizer):
             return
 
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
-        thresholding.advanced_threshold(images, threshold, self.threshold_block_size)
+        thresholding.advanced_threshold(images, threshold, self.threshold_block_size, self.minimal_size)
         self._draw_images(threshold)
 
         distance_transform = numpy.empty_like(images, dtype=numpy.float64)
         watershedding.distance_transform(threshold, distance_transform, self.sampling)
         self._draw_images(distance_transform)
 
-        watershed = watershedding.watershed_maxima(threshold, distance_transform, self.minimal_size)
+        watershed = watershedding.watershed_maxima(threshold, distance_transform, self.minimal_size)[0]
         self._draw_images(watershed, watershedding.COLOR_MAP)
         self._print_missed_cells(watershed)
 
@@ -155,7 +167,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
         distance_transform += distance_transform_to_labels
         self._draw_images(distance_transform)
 
-        watershed = watershedding.watershed_labels(threshold, distance_transform.max() - distance_transform, labels)
+        watershed = watershedding.watershed_labels(threshold, distance_transform.max() - distance_transform, labels)[0]
         watershedding.remove_big_labels(watershed)
         self._draw_images(watershed, watershedding.COLOR_MAP)
         self._print_missed_cells(watershed)
@@ -177,7 +189,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
             return
 
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
-        thresholding.advanced_threshold(images, threshold, self.threshold_block_size)
+        thresholding.advanced_threshold(images, threshold, self.threshold_block_size, self.minimal_size)
         self._draw_images(threshold)
 
         im2, contours, hierarchy = cv2.findContours(threshold[self._z], cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -198,21 +210,6 @@ class DetectionVisualizer(AbstractImageVisualizer):
         self._time_point_images[:, :, :, 0] = old / old.max() * 255
         self._time_point_images[:, :, :, 1] = self._time_point_images[:, :, :, 0]
         self._time_point_images[:, :, :, 2] = self._time_point_images[:, :, :, 0]
-
-    def _segment_using_iso_intensity(self):
-        images = self._experiment.get_image_stack(self._time_point)
-        if images is None:
-            dialog.popup_error("Failed to perform detection", "Cannot detect negative Gaussian curvatures of "
-                                                              "iso-intensity planes - no images loaded.")
-            return
-        images = thresholding.image_to_8bit(images)
-        out = numpy.full_like(images, 255, dtype=numpy.uint8)
-        iso_intensity_curvature.get_negative_gaussian_curvatures(images, ImageDerivatives(), out)
-
-        self._time_point_to_rgb()
-        self._time_point_images[:, :, :, 1] = self._time_point_images[:, :, :, 1] & out
-        self._time_point_images[:, :, :, 2] = self._time_point_images[:, :, :, 2] & out
-        self.draw_view()
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "t":
