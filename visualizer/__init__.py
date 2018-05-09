@@ -1,6 +1,6 @@
 """A bunch of visualizers, all based on Matplotlib. (The fact that TkInter is also used is abstracted away.)"""
 
-from typing import Iterable, Optional, Union, Dict, List
+from typing import Iterable, Optional, Union, Dict, List, Any
 
 import numpy
 from matplotlib.backend_bases import KeyEvent, MouseEvent
@@ -8,7 +8,7 @@ from matplotlib.figure import Figure, Axes
 
 import core
 from core import Experiment, Particle, TimePoint
-from gui import Window, dialog
+from gui import Window, dialog, Task
 
 
 class DisplaySettings:
@@ -61,6 +61,19 @@ class Visualizer:
             self._ax.set_xlim(*xlim)
             self._ax.set_ylim(*ylim)
             self._ax.set_autoscale_on(False)
+
+    def async(self, runnable, result_handler):
+        """Creates a callable that runs the given runnable on a worker thread."""
+        class MyTask(Task):
+            def run(self):
+                return runnable()
+
+            def on_finished(self, result: Any):
+                result_handler(result)
+
+        def internal():
+            self._window.run_async(MyTask())
+        return internal
 
     def draw_view(self):
         """Draws the view."""

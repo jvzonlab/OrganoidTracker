@@ -1,6 +1,8 @@
 import sys
+import threading
 import tkinter
 from os import path
+from queue import Queue
 from tkinter import StringVar, ttk
 from tkinter.font import Font
 from typing import List, Dict, Any, Optional
@@ -11,12 +13,15 @@ from matplotlib.figure import Figure
 
 from core import Experiment
 from gui import dialog
+from gui.threading import Scheduler, Task
 
 APP_NAME = "Autotrack"
+
 
 class Window:
     """The model for a window."""
     __root: tkinter.Tk
+    __scheduler: Scheduler
 
     __fig: Figure
     __status_text: StringVar
@@ -36,6 +41,9 @@ class Window:
         self.__status_text = status_text
         self.__title_text = title_text
         self.__event_handler_ids = []
+
+        self.__scheduler = Scheduler(root)
+        self.__scheduler.start()
 
     def register_event_handler(self, event: str, action):
         """Registers an event handler. Supported events:
@@ -94,6 +102,10 @@ class Window:
         self._add_menu_items(menu_items, extra_items)
         self._add_menu_items(menu_items, self._get_default_menu_last())
         _update_menu(self.__menu, menu_items)
+
+    def run_async(self, task: Task):
+        """Runs the given task on a worker thread."""
+        self.__scheduler.add_task(task)
 
     def _add_menu_items(self, menu_items, extra_items):
         for name, values in extra_items.items():

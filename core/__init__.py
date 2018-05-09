@@ -14,6 +14,18 @@ COLOR_CELL_PREVIOUS = "blue"
 COLOR_CELL_CURRENT = "lime"
 
 
+class UserError(Exception):
+    """Used for errors that are not the fault of the programmer, but of the user."""
+
+    title: str
+    body: str
+
+    def __init__(self, title: str, message: str):
+        super().__init__(title + "\n" + message)
+        self.title = title
+        self.body = message
+
+
 class Particle:
     """A detected particle. Only the 3D + time position is stored here, see the ParticleShape class for the shape."""
     x: float
