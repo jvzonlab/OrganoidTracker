@@ -148,11 +148,13 @@ class DetectionVisualizer(AbstractImageVisualizer):
             return
 
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
-        thresholding.advanced_threshold(images, threshold, self.threshold_block_size)
+        thresholding.advanced_threshold(images, threshold, self.threshold_block_size, self.minimal_size)
 
         # Labelling, calculate distance to label
+        particles = self._time_point.particles()
         labels = numpy.empty_like(images, dtype=numpy.uint16)
-        watershedding.create_labels(self._time_point.particles(), labels)
+        labels_count = len(particles)
+        watershedding.create_labels(particles, labels)
         distance_transform_to_labels = self._get_distances_to_labels(images, labels)
 
         # Distance transform to edge and labels
@@ -161,8 +163,8 @@ class DetectionVisualizer(AbstractImageVisualizer):
         watershedding.smooth(distance_transform, self.distance_transform_smooth_size)
         distance_transform += distance_transform_to_labels
 
-        watershed = watershedding.watershed_labels(threshold, distance_transform.max() - distance_transform, labels)[0]
-        watershedding.remove_big_labels(watershed)
+        watershed = watershedding.watershed_labels(threshold, distance_transform.max() - distance_transform,
+                                                   labels, labels_count)[0]
         self._print_missed_cells(watershed)
         return watershed
 

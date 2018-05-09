@@ -49,7 +49,7 @@ def watershed_maxima(threshold: ndarray, intensities: ndarray, minimal_size: Tup
     spots, n_spots = mahotas.label(maxima, Bc=kernel)
     print("Found " + str(n_spots) + " particles")
     surface = (intensities.max() - intensities)
-    return watershed_labels(threshold, surface, spots)
+    return watershed_labels(threshold, surface, spots, n_spots)
 
 
 def create_labels(particles: Collection[Particle], output: ndarray):
@@ -66,21 +66,29 @@ def create_labels(particles: Collection[Particle], output: ndarray):
                              str((output.shape[2], output.shape[1], output.shape[0])) + ".")
 
 
-def watershed_labels(threshold: ndarray, surface: ndarray, label_image: ndarray) -> Tuple[ndarray, ndarray]:
-    """Performs a watershed on the given surface, using the labels in label_image. Pixels that fall outside the given
-    threshold are removed afterwards."""
-    # label_image: 0 is background, others are labels.
+def watershed_labels(threshold: ndarray, surface: ndarray, label_image: ndarray, label_count: int) -> Tuple[ndarray, ndarray]:
+    """Performs a watershed on the given surface, using the labels in label_image. The watershed will respect the
+    threshold: black pixels in threshold are not watershedded.
+    threshold: 0 is background, other values are foreground
+    surface: float image, watershed goes from lower values to higher values
+    label_image: 0 is unlabeled, 1, 2 etc are labels
+    label_count: the amount of labels (excluding the background)"""
+
+    # Give areas outside the threshold a temporary label to avoid watershedding them
+    new_label = label_count + 1
+    label_image[threshold == 0] = new_label
+
     areas, lines = mahotas.cwatershed(surface, label_image, return_lines=True)
-    areas[threshold == 0] = 0
+    areas[areas == new_label] = 0  # And remove the temporary label again
     areas[:, 0, 0] = areas.max()
     return areas, lines
 
 
-def remove_big_labels(labeled: ndarray):
-    """Removes all labels 10x larger than the average."""
-    sizes = mahotas.labeled.labeled_size(labeled)
-    too_big = numpy.where(sizes > numpy.median(sizes) * 10)
-    labeled[:] = mahotas.labeled.remove_regions(labeled, too_big, inplace=False)
+# def remove_big_labels(labeled: ndarray):
+#     """Removes all labels 10x larger than the average."""
+#     sizes = mahotas.labeled.labeled_size(labeled)
+#     too_big = numpy.where(sizes > numpy.median(sizes) * 10)
+#     labeled[:] = mahotas.labeled.remove_regions(labeled, too_big, inplace=False)
 
 
 def smooth(image_stack: ndarray, distance_transform_smooth_size: int):
