@@ -6,8 +6,6 @@ from matplotlib.backend_bases import KeyEvent
 
 from gui import Window, dialog
 from particle_detection import thresholding, watershedding, missed_cell_finder
-from segmentation import iso_intensity_curvature
-from segmentation.iso_intensity_curvature import ImageDerivatives
 from visualizer import activate, DisplaySettings
 from visualizer.image_visualizer import AbstractImageVisualizer
 

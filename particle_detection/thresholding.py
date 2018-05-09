@@ -43,8 +43,11 @@ def adaptive_threshold(image_8bit: ndarray, out: ndarray, block_size: int):
 def watershedded_threshold(image_8bit: ndarray, out: ndarray, block_size: int, watershed_size: Tuple[int, int, int]):
     adaptive_threshold(image_8bit, out, block_size)
 
-    watershedding.smooth(image_8bit, int(block_size / 2))
-    watershed, lines = watershedding.watershed_maxima(out, image_8bit, watershed_size)
+    if watershed_size > image_8bit.shape:
+        return  # Cannot watershed
+    smoothed = image_8bit.copy()
+    watershedding.smooth(smoothed, int(block_size / 2))
+    watershed, lines = watershedding.watershed_maxima(out, smoothed, watershed_size)
     _open(lines)
     out[lines != 0] = 0
 

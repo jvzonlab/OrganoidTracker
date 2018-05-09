@@ -53,8 +53,7 @@ class TiffImageLoader(ImageLoader):
             if len(array.shape) == 3:
                 return array
             if len(array.shape) == 2:  # Support for 2d images
-                outer = numpy.empty((1, *array.shape), dtype=array.dtype)
-                outer[0] = array
+                outer = numpy.array((array,))
                 return outer
             return None
 
