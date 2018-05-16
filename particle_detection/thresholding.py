@@ -5,7 +5,7 @@ import cv2
 import numpy
 from numpy import ndarray
 
-from particle_detection import watershedding
+from particle_detection import watershedding, smoothing
 from segmentation import iso_intensity_curvature
 from segmentation.iso_intensity_curvature import ImageDerivatives
 
@@ -40,20 +40,19 @@ def adaptive_threshold(image_8bit: ndarray, out: ndarray, block_size: int):
     background_removal(image_8bit, out)
 
 
-def watershedded_threshold(image_8bit: ndarray, out: ndarray, block_size: int, watershed_size: Tuple[int, int, int]):
+def watershedded_threshold(image_8bit: ndarray, image_8bit_smoothed: ndarray, out: ndarray, block_size: int, watershed_size: Tuple[int, int, int]):
     adaptive_threshold(image_8bit, out, block_size)
 
     if watershed_size > image_8bit.shape:
         return  # Cannot watershed
-    smoothed = image_8bit.copy()
-    watershedding.smooth(smoothed, int(block_size / 2))
-    watershed, lines = watershedding.watershed_maxima(out, smoothed, watershed_size)
+
+    watershed, lines = watershedding.watershed_maxima(out, image_8bit_smoothed, watershed_size)
     _open(lines)
     out[lines != 0] = 0
 
 
-def advanced_threshold(image_8bit: ndarray, out: ndarray, block_size: int, watershed_size: Tuple[int, int, int]):
-    watershedded_threshold(image_8bit, out, block_size, watershed_size)
+def advanced_threshold(image_8bit: ndarray, image_8bit_smoothed: ndarray, out: ndarray, block_size: int, watershed_size: Tuple[int, int, int]):
+    watershedded_threshold(image_8bit, image_8bit_smoothed, out, block_size, watershed_size)
 
     curvature_out = numpy.full_like(image_8bit, 255, dtype=numpy.uint8)
     iso_intensity_curvature.get_negative_gaussian_curvatures(image_8bit, ImageDerivatives(), curvature_out)

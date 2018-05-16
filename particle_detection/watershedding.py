@@ -68,11 +68,12 @@ def create_labels(particles: Collection[Particle], output: ndarray):
 
 def watershed_labels(threshold: ndarray, surface: ndarray, label_image: ndarray, label_count: int) -> Tuple[ndarray, ndarray]:
     """Performs a watershed on the given surface, using the labels in label_image. The watershed will respect the
-    threshold: black pixels in threshold are not watershedded.
-    threshold: 0 is background, other values are foreground
+    threshold: Black (0) is background, rest is foreground. Black pixels in threshold are not watershedded.
     surface: float image, watershed goes from lower values to higher values
     label_image: 0 is unlabeled, 1, 2 etc are labels
-    label_count: the amount of labels (excluding the background)"""
+    label_count: the amount of labels (excluding the background)
+    return: Two images, one being a label image, the other being the watershed boundaries.
+    """
 
     # Give areas outside the threshold a temporary label to avoid watershedding them
     new_label = label_count + 1
@@ -91,8 +92,3 @@ def watershed_labels(threshold: ndarray, surface: ndarray, label_image: ndarray,
 #     labeled[:] = mahotas.labeled.remove_regions(labeled, too_big, inplace=False)
 
 
-def smooth(image_stack: ndarray, distance_transform_smooth_size: int):
-    temp = numpy.empty_like(image_stack[0])
-    for z in range(image_stack.shape[0]):
-        cv2.GaussianBlur(image_stack[z], (distance_transform_smooth_size, distance_transform_smooth_size), 0, dst=temp)
-        image_stack[z] = temp

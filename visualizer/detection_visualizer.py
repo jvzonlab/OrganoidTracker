@@ -1,4 +1,5 @@
 from time import sleep
+from typing import Any
 
 import cv2
 
@@ -8,7 +9,7 @@ from matplotlib.backend_bases import KeyEvent
 
 from core import UserError
 from gui import Window, dialog
-from particle_detection import thresholding, watershedding, missed_cell_finder
+from particle_detection import thresholding, watershedding, missed_cell_finder, smoothing, gaussian_fit
 from visualizer import activate, DisplaySettings
 from visualizer.image_visualizer import AbstractImageVisualizer
 
@@ -40,14 +41,14 @@ class DetectionVisualizer(AbstractImageVisualizer):
         return {
             **super().get_extra_menu_options(),
             "View": [
-                ("Show original images (T)", self.refresh_view),
+                ("Show original images (R)", self.refresh_view),
                 "-",
                 ("Exit this view (/exit)", self._show_main_view)
             ],
             "Threshold": [
                 ("Basic threshold", self._basic_threshold),
                 ("With watershed segmentation", self.async(self._get_watershedded_threshold, self._display_threshold)),
-                ("With iso-intensity curvature segmentation (T)", self.async(self._get_advanced_threshold,
+                ("With iso-intensity curvature segmentation", self.async(self._get_advanced_threshold,
                                                                              self._display_threshold)),
             ],
             "Detection": [
@@ -55,6 +56,10 @@ class DetectionVisualizer(AbstractImageVisualizer):
                 ("Detect cells using existing points", self.async(self._get_detected_cells_using_particles,
                                                                   self._display_watershed)),
                 ("Detect contours", self.async(self._get_detected_contours, self._display_threshold)),
+            ],
+            "Reconstruction": [
+                ("Reconstruct cells using existing points", self.async(self._get_reconstruction_using_particles,
+                                                                       self._display_image))
             ]
         }
 
@@ -88,8 +93,9 @@ class DetectionVisualizer(AbstractImageVisualizer):
         images = self._get_8bit_images()
         if images is None:
             raise UserError("Failed to apply threshold", "Cannot show threshold - no images loaded.")
+        images_smoothed = smoothing.get_smoothed(images, int(self.threshold_block_size / 2))
         out = numpy.empty_like(images, dtype=numpy.uint8)
-        thresholding.watershedded_threshold(images, out, self.threshold_block_size, self.minimal_size)
+        thresholding.watershedded_threshold(images, images_smoothed, out, self.threshold_block_size, self.minimal_size)
 
         return out
 
@@ -103,8 +109,9 @@ class DetectionVisualizer(AbstractImageVisualizer):
         images = self._get_8bit_images()
         if images is None:
             raise UserError("Failed to apply threshold", "Cannot show threshold - no images loaded.")
+        images_smoothed = smoothing.get_smoothed(images, int(self.threshold_block_size / 2))
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
-        thresholding.advanced_threshold(images, threshold, self.threshold_block_size, self.minimal_size)
+        thresholding.advanced_threshold(images, images_smoothed, threshold, self.threshold_block_size, self.minimal_size)
 
         return threshold
 
@@ -128,8 +135,9 @@ class DetectionVisualizer(AbstractImageVisualizer):
             dialog.popup_error("Failed to detect cells", "Cannot detect cells - no images loaded.")
             return
 
+        images_smoothed = smoothing.get_smoothed(images, int(self.threshold_block_size / 2))
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
-        thresholding.advanced_threshold(images, threshold, self.threshold_block_size, self.minimal_size)
+        thresholding.advanced_threshold(images, images_smoothed, threshold, self.threshold_block_size, self.minimal_size)
 
         distance_transform = numpy.empty_like(images, dtype=numpy.float64)
         watershedding.distance_transform(threshold, distance_transform, self.sampling)
@@ -138,7 +146,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
         self._print_missed_cells(watershed)
         return watershed
 
-    def _get_detected_cells_using_particles(self):
+    def _get_detected_cells_using_particles(self, return_intermediate: bool = False) -> Any:
         if len(self._time_point.particles()) == 0:
             dialog.popup_error("Failed to detect cells", "Cannot detect cells - no particle positions loaded.")
             return
@@ -147,8 +155,9 @@ class DetectionVisualizer(AbstractImageVisualizer):
             dialog.popup_error("Failed to detect cells", "Cannot detect cells - no images loaded.")
             return
 
+        images_smoothed = smoothing.get_smoothed(images, int(self.threshold_block_size / 2))
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
-        thresholding.advanced_threshold(images, threshold, self.threshold_block_size, self.minimal_size)
+        thresholding.advanced_threshold(images, images_smoothed, threshold, self.threshold_block_size, self.minimal_size)
 
         # Labelling, calculate distance to label
         particles = self._time_point.particles()
@@ -160,13 +169,22 @@ class DetectionVisualizer(AbstractImageVisualizer):
         # Distance transform to edge and labels
         distance_transform = numpy.empty_like(images, dtype=numpy.float64)
         watershedding.distance_transform(threshold, distance_transform, self.sampling)
-        watershedding.smooth(distance_transform, self.distance_transform_smooth_size)
+        smoothing.smooth(distance_transform, self.distance_transform_smooth_size)
         distance_transform += distance_transform_to_labels
 
         watershed = watershedding.watershed_labels(threshold, distance_transform.max() - distance_transform,
                                                    labels, labels_count)[0]
         self._print_missed_cells(watershed)
+
+        if return_intermediate:
+            return images, images_smoothed, watershed
         return watershed
+
+    def _get_reconstruction_using_particles(self):
+        images, images_smoothed, watershed = self._get_detected_cells_using_particles(return_intermediate=True)
+        reconstructed = numpy.empty_like(images)
+        gaussian_fit.fit_gaussians(images_smoothed, watershed, None, reconstructed)
+        return reconstructed
 
     def _get_distances_to_labels(self, images, labels):
         labels_inv = numpy.full_like(images, 255, dtype=numpy.uint8)
@@ -183,8 +201,9 @@ class DetectionVisualizer(AbstractImageVisualizer):
             dialog.popup_error("Failed to detect cells", "Cannot detect cells - no images loaded.")
             return
 
+        images_smoothed = smoothing.get_smoothed(images, int(self.threshold_block_size / 2))
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
-        thresholding.advanced_threshold(images, threshold, self.threshold_block_size, self.minimal_size)
+        thresholding.advanced_threshold(images, images_smoothed, threshold, self.threshold_block_size, self.minimal_size)
 
         im2, contours, hierarchy = cv2.findContours(threshold[self._z], cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         threshold[self._z] = 0
@@ -206,14 +225,9 @@ class DetectionVisualizer(AbstractImageVisualizer):
         self._time_point_images[:, :, :, 2] = self._time_point_images[:, :, :, 0]
 
     def _on_key_press(self, event: KeyEvent):
-        if event.key == "t":
-            if len(self._time_point_images.shape) == 4:
-                # Reset view
-                self.refresh_view()
-            else:
-                # Show advanced threshold
-                self._advanced_threshold()
-            return
+        if event.key == "r":
+            # Reset view
+            self.refresh_view()
         super()._on_key_press(event)
 
     def refresh_view(self):
