@@ -2,10 +2,11 @@ import scipy.optimize
 import numpy, numpy.linalg
 from numpy import ndarray
 import mahotas.labeled
-from typing import List
+from typing import List, Tuple, Iterable, Union, Optional
 
 
 class Gaussian:
+    """A Gaussian function (also called a normal distribution) in 3D."""
     max: float
     mu_x: float
     mu_y: float
@@ -66,14 +67,155 @@ class Gaussian:
             image_view[pos_zyx_offset] += _gaussian_3d_single(pos_xyz, self.max, mu, covariance_matrix_inversed)
 
 
-def fit_gaussians(blurred_image: ndarray, watershedded_image: ndarray, buffer_image: ndarray, out: ndarray):
-    gaussians = _initial_gaussians(blurred_image, watershedded_image)
-    out.fill(0)
-    for gaussian in gaussians:
-        gaussian.add_to_image(out)
+def _gaussian_3d_single(pos: ndarray, a: float, mu: ndarray, cov_inv: ndarray):
+    """Returns the value of the given Gaussian at the specified position.
+    pos: xyz position to get the value at, a: maximum value of the Gaussian, mu: xyz mean position of the Gaussian,
+    cov_inv: covariance matrix."""
+    return a * numpy.exp(-1 / 2 * ((pos - mu) @ cov_inv @ (pos - mu)))
 
 
-def _initial_gaussians(blurred_image: ndarray, watershedded_image: ndarray,) -> List[Gaussian]:
+class Fitting:
+    """A class used to fit multiple Gaussians at once to an image. Everything happens in 3D.
+
+    The class stores a list of Gaussians. Then, during a fit, several of the parameters of the Gaussian are changed,
+    such that the Gaussians better resemble the reference image.
+
+    The fit requires input values and output values, which are the pixel positions and values, respectively. The
+    parameters are the Gaussian parameters, i.e. their mean, covariance matrix and prefactor. Scipy wants all of these
+    values in 1D, so we have to massage our data a bit to get our 3D images in that format. Numpy's ravel() function is
+    really useful for that.
+    """
+    _gaussians: List[Gaussian]
+    _reference_image: ndarray  # Original measurement data
+    _model_image: ndarray  # Output of drawing all Gaussians on an empty image
+    _model_needs_redraw: bool = True  # True when the model_image is not updated for changes to the Gaussians
+
+    def __init__(self, gaussians: List[Gaussian], reference_image: ndarray, scratch_image: ndarray):
+        self._gaussians = gaussians
+        self._reference_image = reference_image
+        self._model_image = scratch_image
+        if reference_image.shape != scratch_image.shape:
+            raise ValueError("Shapes of reference and scratch image are not equal")
+
+    # INTERNAL MEAN FITTING FUNCTIONS
+
+    def _update_means(self, xyz_positions: Union[Tuple[float, ...], ndarray]):
+        """Updates the positions of the Gaussians in this class using a list of x,y,z values."""
+        for i in range(0, len(xyz_positions), 3):
+            gaussian = self._gaussians[int(i / 3)]
+            gaussian.mu_x = xyz_positions[i]
+            gaussian.mu_y = xyz_positions[i + 1]
+            gaussian.mu_z = xyz_positions[i + 2]
+        self._model_needs_redraw = True
+
+    def _fit_means_func(self, image_size: Tuple[int, int, int], *gaussian_positions):
+        """Called by scipy to perform the fitting."""
+        self._update_means(gaussian_positions)
+
+        image = numpy.empty(image_size, dtype=numpy.uint8)
+        for gaussian in self._gaussians:
+            gaussian.add_to_image(image)
+        return image.ravel()
+
+    def _get_means(self) -> List[float]:
+        positions = []
+        for gaussian in self._gaussians:
+            positions.append(gaussian.mu_x)
+            positions.append(gaussian.mu_y)
+            positions.append(gaussian.mu_z)
+        return positions
+
+    # INTERNAL COVARIANCE FITTING FUNCTIONS
+
+    def _update_covariances(self, covariances: Union[Tuple[float, ...], ndarray]):
+        """Updates the positions of the Gaussians in this class using a list of x,y,z values."""
+        for i in range(0, len(covariances), 6):
+            gaussian = self._gaussians[int(i / 6)]
+            gaussian.cov_xx = covariances[i]
+            gaussian.cov_yy = covariances[i + 1]
+            gaussian.cov_zz = covariances[i + 2]
+            gaussian.cov_xy = covariances[i + 3]
+            gaussian.cov_xz = covariances[i + 4]
+            gaussian.cov_yz = covariances[i + 5]
+        self._model_needs_redraw = True
+
+    def _fit_covariances_func(self, image_size: Tuple[int, int, int], *gaussian_covariances):
+        """Called by scipy to perform the fitting."""
+        self._update_covariances(gaussian_covariances)
+
+        image = numpy.empty(image_size, dtype=numpy.uint8)
+        for gaussian in self._gaussians:
+            gaussian.add_to_image(image)
+        value = image.ravel()
+        print("Resulting image length: " + str(len(value)) + " from " + str(image.shape))
+        return value
+
+    def _get_covariances(self) -> List[float]:
+        positions = []
+        for gaussian in self._gaussians:
+            positions.append(gaussian.cov_xx)
+            positions.append(gaussian.cov_yy)
+            positions.append(gaussian.cov_zz)
+            positions.append(gaussian.cov_xy)
+            positions.append(gaussian.cov_xz)
+            positions.append(gaussian.cov_yz)
+        return positions
+
+    # OTHER PLUMBING
+
+    def _draw(self, exluded: Optional[Gaussian] = None):
+        if not self._model_needs_redraw:
+            return  # Already up-to-date, no need to redraw
+        self._model_image.fill(0)
+        for gaussian in self._gaussians:
+            if gaussian != exluded:
+                gaussian.add_to_image(self._model_image)
+        self._model_needs_redraw = False
+
+    def _get_positions(self) -> Tuple[ndarray, ndarray, ndarray]:
+        """Gets the x,y,z positions in iteration order."""
+        x = numpy.arange(0, self._reference_image.shape[2])
+        y = numpy.arange(0, self._reference_image.shape[1])
+        z = numpy.arange(0, self._reference_image.shape[0])
+        x, y, z = numpy.meshgrid(x, y, z)
+        return x, y, z
+
+    def get_loss(self) -> int:
+        """Gets the so-called loss, which is the squared difference between the reference data and the fitted data."""
+        self._draw()
+        loss = 0
+        for position in numpy.ndindex(self._reference_image):
+            loss += (self._reference_image[position] - self._model_image[position]) ** 2
+        return loss
+
+    def get_image(self) -> ndarray:
+        """Gets access to the image as drawn by the Gaussians. Note that this method does not return a copy, so the
+        image can be changed later if you continue fitting."""
+        self._draw()
+        return self._model_image
+
+    # PUBLIC FITTING FUNCTIONS
+
+    def fit_means(self):
+        # noinspection PyTypeChecker
+        optimized_means, uncertainty_covariance = scipy.optimize.curve_fit(
+            self._fit_means_func, self._reference_image.shape, self._reference_image.ravel(), p0=self._get_means())
+        self._update_means(optimized_means)
+
+    def fit_covariance(self):
+        print("Fitting covariance...")
+        positions = self._reference_image.shape
+        reference = self._reference_image.ravel()
+        covariances = self._get_covariances()
+        print("Positions:" + str(positions) + " Reference image: " + str(len(reference)) + " Parameters: " + str(len(covariances)))
+        # noinspection PyTypeChecker
+        optimized_covariances, uncertainty_covariance = scipy.optimize.curve_fit(
+            self._fit_covariances_func, self._reference_image.shape, reference, p0=covariances)
+        print("Done!")
+        self._update_covariances(optimized_covariances)
+
+
+def _initial_gaussians(blurred_image: ndarray, watershedded_image: ndarray) -> List[Gaussian]:
     gaussians = []
     centers = mahotas.center_of_mass(blurred_image, watershedded_image)
     for i in range(1, centers.shape[0]):
@@ -82,36 +224,15 @@ def _initial_gaussians(blurred_image: ndarray, watershedded_image: ndarray,) -> 
             continue
         x, y, z = center[2], center[1], center[0]
         max = blurred_image[int(z), int(y), int(x)]
-        gaussians.append(Gaussian(max, x, y, z, cov_xx=10, cov_yy=10, cov_zz=2,
+        gaussians.append(Gaussian(max, x, y, z, cov_xx=20, cov_yy=20, cov_zz=2,
                                   cov_xy=0, cov_xz=0, cov_yz=0))
     return gaussians
 
 
-def gaussian_3d(positions, a, mu_x, mu_y, mu_z, cov_xx, cov_yy, cov_zz, cov_xy, cov_xz, cov_yz):
-    """Gets the value of the Gaussian at the given position.
-    positions: [[z,y,x],[z,y,x],[z,y,x],...]
-    a: prefactor, represents the intensity at mu
-    mu: center position (or mean of a Gaussian distribution)
-    cov_xx, cov_yy, cov_zz: widths (or standard deviations of a Gaussian distribution)
-    cov_xy, cov_xz, cov_yz: skew in the given directions
+def intialize_fit(blurred_image: ndarray, watershedded_image: ndarray, buffer_image: ndarray) -> Fitting:
+    """Extracts some initial Gaussians from a Watershed result so that they can be fitted."""
+    gaussians = _initial_gaussians(blurred_image, watershedded_image)
+    return Fitting(gaussians, blurred_image, buffer_image)
 
-    All the cov variables together form a covariance matrix.
-    """
-    mu = numpy.array([mu_x, mu_y, mu_z])
-    covariance_matrix = numpy.array([
-        [cov_xx, cov_xy, cov_xz],
-        [cov_xy, cov_yy, cov_yz],
-        [cov_xz, cov_yz, cov_zz]
-    ])
-    covariance_matrix_inversed = numpy.linalg.inv(covariance_matrix)
-
-    output = numpy.empty(positions.shape[0], dtype=numpy.uint8)
-    for i in range(output.shape[0]):
-        pos = positions[i][::-1]  # positions is z, y, x, so change that to x, y, z using ::-1
-        output[i] = _gaussian_3d_single(pos, a, mu, covariance_matrix_inversed)
-    return output
-
-def _gaussian_3d_single(pos: ndarray, a: float, mu: ndarray, cov_inv: ndarray):
-    return a * numpy.exp(-1/2 * ((pos - mu) @ cov_inv @ (pos - mu)))
 
 #scipy.optimize.curve_fit(gaussian_3d)

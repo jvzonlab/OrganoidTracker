@@ -1,5 +1,5 @@
 from time import sleep
-from typing import Any
+from typing import Any, Tuple
 
 import cv2
 
@@ -7,7 +7,7 @@ import numpy
 from numpy import ndarray
 from matplotlib.backend_bases import KeyEvent
 
-from core import UserError
+from core import UserError, Particle
 from gui import Window, dialog
 from particle_detection import thresholding, watershedding, missed_cell_finder, smoothing, gaussian_fit
 from visualizer import activate, DisplaySettings
@@ -37,6 +37,9 @@ class DetectionVisualizer(AbstractImageVisualizer):
     def _get_window_title(self) -> str:
         return "Cell detection"
 
+    def _draw_error(self, particle: Particle, dz: int):
+        pass  # Don't draw linking errors here, they are not interesting in this view
+
     def get_extra_menu_options(self):
         return {
             **super().get_extra_menu_options(),
@@ -59,7 +62,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
             ],
             "Reconstruction": [
                 ("Reconstruct cells using existing points", self.async(self._get_reconstruction_using_particles,
-                                                                       self._display_image))
+                                                                       self._display_two_images))
             ]
         }
 
@@ -126,6 +129,13 @@ class DetectionVisualizer(AbstractImageVisualizer):
         self.color_map = color_map if color_map is not None else DetectionVisualizer.color_map
         self.draw_view()
 
+    def _display_two_images(self, image_stacks: Tuple[ndarray, ndarray]):
+        self._time_point_to_rgb()
+        self._time_point_images[:, :, :, 0] = image_stacks[0]
+        self._time_point_images[:, :, :, 1] = image_stacks[1]
+        self._time_point_images[:, :, :, 2] = 0
+        self.draw_view()
+
     def _display_watershed(self, image_stack: ndarray):
         self._display_image(image_stack, watershedding.COLOR_MAP)
 
@@ -180,11 +190,12 @@ class DetectionVisualizer(AbstractImageVisualizer):
             return images, images_smoothed, watershed
         return watershed
 
-    def _get_reconstruction_using_particles(self):
+    def _get_reconstruction_using_particles(self) -> Tuple[ndarray, ndarray]:
         images, images_smoothed, watershed = self._get_detected_cells_using_particles(return_intermediate=True)
         reconstructed = numpy.empty_like(images)
-        gaussian_fit.fit_gaussians(images_smoothed, watershed, None, reconstructed)
-        return reconstructed
+        fitting = gaussian_fit.intialize_fit(images_smoothed, watershed, reconstructed)
+        fitting.fit_covariance()
+        return images_smoothed, fitting.get_image()
 
     def _get_distances_to_labels(self, images, labels):
         labels_inv = numpy.full_like(images, 255, dtype=numpy.uint8)
