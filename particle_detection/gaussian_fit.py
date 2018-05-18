@@ -66,6 +66,13 @@ class Gaussian:
             pos_xyz[2] = pos_zyx_offset[0] + start_z
             image_view[pos_zyx_offset] += _gaussian_3d_single(pos_xyz, self.max, mu, covariance_matrix_inversed)
 
+    def __repr__(self):
+        vars = dict(self.__dict__)
+        del vars["_draw_xrange"]
+        del vars["_draw_yrange"]
+        del vars["_draw_zrange"]
+        return "Gaussian(**" + repr(vars) + ")"
+
 
 def _gaussian_3d_single(pos: ndarray, a: float, mu: ndarray, cov_inv: ndarray):
     """Returns the value of the given Gaussian at the specified position.
@@ -127,48 +134,26 @@ class Fitting:
 
     # INTERNAL COVARIANCE FITTING FUNCTIONS
 
-    def _update_covariances(self, covariances: Union[Tuple[float, ...], ndarray]):
-        """Updates the positions of the Gaussians in this class using a list of x,y,z values."""
-        for i in range(0, len(covariances), 6):
-            gaussian = self._gaussians[int(i / 6)]
-            gaussian.cov_xx = covariances[i]
-            gaussian.cov_yy = covariances[i + 1]
-            gaussian.cov_zz = covariances[i + 2]
-            gaussian.cov_xy = covariances[i + 3]
-            gaussian.cov_xz = covariances[i + 4]
-            gaussian.cov_yz = covariances[i + 5]
-        self._model_needs_redraw = True
-
-    def _fit_covariances_func(self, image_size: Tuple[int, int, int], *gaussian_covariances):
+    def _fit_covariances_func(self, gaussian: Gaussian, cov_xx, cov_yy, cov_zz, cov_xy, cov_xz, cov_yz):
         """Called by scipy to perform the fitting."""
-        self._update_covariances(gaussian_covariances)
+        gaussian.cov_xx = cov_xx
+        gaussian.cov_yy = cov_yy
+        gaussian.cov_zz = cov_zz
+        gaussian.cov_xy = cov_xy
+        gaussian.cov_xz = cov_xz
+        gaussian.cov_yz = cov_yz
 
-        image = numpy.empty(image_size, dtype=numpy.uint8)
-        for gaussian in self._gaussians:
-            gaussian.add_to_image(image)
+        image = self._model_image.astype(dtype=numpy.float64)
+        gaussian.add_to_image(image)
         value = image.ravel()
-        print("Resulting image length: " + str(len(value)) + " from " + str(image.shape))
         return value
-
-    def _get_covariances(self) -> List[float]:
-        positions = []
-        for gaussian in self._gaussians:
-            positions.append(gaussian.cov_xx)
-            positions.append(gaussian.cov_yy)
-            positions.append(gaussian.cov_zz)
-            positions.append(gaussian.cov_xy)
-            positions.append(gaussian.cov_xz)
-            positions.append(gaussian.cov_yz)
-        return positions
 
     # OTHER PLUMBING
 
-    def _draw(self, exluded: Optional[Gaussian] = None):
-        if not self._model_needs_redraw:
-            return  # Already up-to-date, no need to redraw
+    def _draw(self, excluded: Optional[Gaussian] = None):
         self._model_image.fill(0)
         for gaussian in self._gaussians:
-            if gaussian != exluded:
+            if gaussian != excluded:
                 gaussian.add_to_image(self._model_image)
         self._model_needs_redraw = False
 
@@ -182,7 +167,8 @@ class Fitting:
 
     def get_loss(self) -> int:
         """Gets the so-called loss, which is the squared difference between the reference data and the fitted data."""
-        self._draw()
+        if self._model_needs_redraw:
+            self._draw()
         loss = 0
         for position in numpy.ndindex(self._reference_image):
             loss += (self._reference_image[position] - self._model_image[position]) ** 2
@@ -191,7 +177,8 @@ class Fitting:
     def get_image(self) -> ndarray:
         """Gets access to the image as drawn by the Gaussians. Note that this method does not return a copy, so the
         image can be changed later if you continue fitting."""
-        self._draw()
+        if self._model_needs_redraw:
+            self._draw()
         return self._model_image
 
     # PUBLIC FITTING FUNCTIONS
@@ -204,15 +191,28 @@ class Fitting:
 
     def fit_covariance(self):
         print("Fitting covariance...")
-        positions = self._reference_image.shape
-        reference = self._reference_image.ravel()
-        covariances = self._get_covariances()
-        print("Positions:" + str(positions) + " Reference image: " + str(len(reference)) + " Parameters: " + str(len(covariances)))
-        # noinspection PyTypeChecker
-        optimized_covariances, uncertainty_covariance = scipy.optimize.curve_fit(
-            self._fit_covariances_func, self._reference_image.shape, reference, p0=covariances)
-        print("Done!")
-        self._update_covariances(optimized_covariances)
+        for i in range(len(self._gaussians)):
+            gaussian = self._gaussians[i]
+            print("Picked Gaussian: " + str(gaussian))
+            self._draw(excluded=gaussian)
+            positions = self._reference_image.shape
+            reference = self._reference_image.ravel()
+            covariances = [gaussian.cov_xx, gaussian.cov_yy, gaussian.cov_zz, gaussian.cov_xy, gaussian.cov_xz, gaussian.cov_yz]
+            print("Positions:" + str(positions) + " Reference image: " + str(len(reference)) + " Parameters: " + str(len(covariances)))
+            # noinspection PyTypeChecker
+            optimized_covariances, uncertainty_covariance = scipy.optimize.curve_fit(
+                self._fit_covariances_func, gaussian, reference, p0=covariances)
+
+            gaussian.cov_xx = optimized_covariances[0]
+            gaussian.cov_yy = optimized_covariances[1]
+            gaussian.cov_zz = optimized_covariances[2]
+            gaussian.cov_xy = optimized_covariances[3]
+            gaussian.cov_xz = optimized_covariances[4]
+            gaussian.cov_yz = optimized_covariances[5]
+            self._model_needs_redraw = True
+            print("Done! Changed to " + str(gaussian))
+        print("All done!")
+
 
 
 def _initial_gaussians(blurred_image: ndarray, watershedded_image: ndarray) -> List[Gaussian]:

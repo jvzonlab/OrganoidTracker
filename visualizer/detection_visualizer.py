@@ -9,7 +9,7 @@ from matplotlib.backend_bases import KeyEvent
 
 from core import UserError, Particle
 from gui import Window, dialog
-from particle_detection import thresholding, watershedding, missed_cell_finder, smoothing, gaussian_fit
+from particle_detection import thresholding, watershedding, missed_cell_finder, smoothing, ellipsoid_fit
 from visualizer import activate, DisplaySettings
 from visualizer.image_visualizer import AbstractImageVisualizer
 
@@ -62,7 +62,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
             ],
             "Reconstruction": [
                 ("Reconstruct cells using existing points", self.async(self._get_reconstruction_using_particles,
-                                                                       self._display_two_images))
+                                                                       self._display_watershed))
             ]
         }
 
@@ -190,12 +190,11 @@ class DetectionVisualizer(AbstractImageVisualizer):
             return images, images_smoothed, watershed
         return watershed
 
-    def _get_reconstruction_using_particles(self) -> Tuple[ndarray, ndarray]:
-        images, images_smoothed, watershed = self._get_detected_cells_using_particles(return_intermediate=True)
-        reconstructed = numpy.empty_like(images)
-        fitting = gaussian_fit.intialize_fit(images_smoothed, watershed, reconstructed)
-        fitting.fit_covariance()
-        return images_smoothed, fitting.get_image()
+    def _get_reconstruction_using_particles(self) -> ndarray:
+        watershed = self._get_detected_cells_using_particles(return_intermediate=False)
+        reconstructed = numpy.empty_like(watershed)
+        ellipsoid_fit.perform_fit(watershed, reconstructed)
+        return reconstructed
 
     def _get_distances_to_labels(self, images, labels):
         labels_inv = numpy.full_like(images, 255, dtype=numpy.uint8)
