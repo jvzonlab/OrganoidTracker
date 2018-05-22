@@ -61,8 +61,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
                 ("Detect contours", self.async(self._get_detected_contours, self._display_threshold)),
             ],
             "Reconstruction": [
-                ("Reconstruct cells using existing points", self.async(self._get_reconstruction_using_particles,
-                                                                       self._display_watershed))
+                ("Reconstruct cells using existing points", self._get_reconstruction_using_particles)
             ]
         }
 
@@ -191,10 +190,9 @@ class DetectionVisualizer(AbstractImageVisualizer):
         return watershed
 
     def _get_reconstruction_using_particles(self) -> ndarray:
-        watershed = self._get_detected_cells_using_particles(return_intermediate=False)
-        reconstructed = numpy.empty_like(watershed)
-        ellipsoid_fit.perform_fit(watershed, reconstructed)
-        return reconstructed
+        from scratch import estimate_gmm_sklearn
+        images = self._get_8bit_images()
+        estimate_gmm_sklearn.perform(images, list(self._time_point.particles()))
 
     def _get_distances_to_labels(self, images, labels):
         labels_inv = numpy.full_like(images, 255, dtype=numpy.uint8)
