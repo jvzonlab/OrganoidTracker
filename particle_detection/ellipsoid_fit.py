@@ -19,6 +19,8 @@ class Ellipsoid:
         self._radii = radii.astype(dtype=numpy.float32)
         if numpy.any(numpy.isnan(self._radii)):
             raise ValueError("NaN in radii: " + str(radii))
+        if numpy.any(self._radii > 100):
+            raise ValueError(">100 in radii: " + str(radii))
         self._radii_squared = self._radii ** 2
         self._rotation_T = rotation.astype(dtype=numpy.float32).transpose()
 
@@ -37,15 +39,15 @@ class Ellipsoid:
             y = index[1] + offset_y
             z = index[0] + offset_z
 
-            if self.is_inside((x,y,z)):
+            if self.is_at_border((x, y, z)):
                 sub_image[index] = fill_color
 
-    def is_inside(self, x_y_z: Union[ndarray, Tuple[float, float, float]]):
+    def is_at_border(self, x_y_z: Union[ndarray, Tuple[float, float, float]]):
         translated_x_y_z = x_y_z - self._center
         rotated_x_y_z = self._rotation_T @ translated_x_y_z
         rotated_x_y_z_squared = rotated_x_y_z**2
         division = rotated_x_y_z_squared / self._radii_squared
-        return numpy.sum(division) <= 1
+        return abs(1 - numpy.sum(division)) < 0.1
 
 def perform_fit(watershedded_image: ndarray, buffer_image: ndarray):
     buffer_image.fill(0)
@@ -60,7 +62,7 @@ def perform_fit(watershedded_image: ndarray, buffer_image: ndarray):
         print("RADII: " + str(radii))
         print("EVECS: " + str(evecs))
         try:
-            Ellipsoid(center, radii, evecs).draw_to_image(buffer_image, i)
+            Ellipsoid(center, radii, evecs).draw_to_image(buffer_image, 255)
         except ValueError as e:
             print(e)
 

@@ -16,16 +16,16 @@ class TestEllipsoidFit(unittest.TestCase):
             [0, 0, 1]
         ]))
         # Test center position using both a tuple and a numpy array
-        self.assertTrue(ellipsoid.is_inside((3, 4, 5)))
-        self.assertTrue(ellipsoid.is_inside(numpy.array([3, 4, 5])))
+        self.assertTrue(ellipsoid.is_at_border((3, 4, 5)))
+        self.assertTrue(ellipsoid.is_at_border(numpy.array([3, 4, 5])))
 
         # Some points on the edge
-        self.assertTrue(ellipsoid.is_inside(numpy.array([1, 4, 5])))
-        self.assertTrue(ellipsoid.is_inside(numpy.array([5, 4, 5])))
+        self.assertTrue(ellipsoid.is_at_border(numpy.array([1, 4, 5])))
+        self.assertTrue(ellipsoid.is_at_border(numpy.array([5, 4, 5])))
 
         # A few points outside
-        self.assertFalse(ellipsoid.is_inside(numpy.array([0.8, 4, 5])))
-        self.assertFalse(ellipsoid.is_inside(numpy.array([5.2, 4, 5])))
+        self.assertFalse(ellipsoid.is_at_border(numpy.array([0.8, 4, 5])))
+        self.assertFalse(ellipsoid.is_at_border(numpy.array([5.2, 4, 5])))
 
     def test_inside_futher_away(self):
         ellipsoid = Ellipsoid(center=numpy.array([377.77169329, 181.91924289, 18.23983481]),
@@ -35,4 +35,4 @@ class TestEllipsoidFit(unittest.TestCase):
                                   [0.12658548, 0.16820979, 0.97758968],
                                   [-0.95208106, 0.29721578, 0.07214175]
                               ]))
-        self.assertTrue(ellipsoid.is_inside((377, 181, 18)))
+        self.assertTrue(ellipsoid.is_at_border((377, 181, 18)))
