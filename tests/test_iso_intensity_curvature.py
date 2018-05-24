@@ -32,7 +32,7 @@ class TestIsoIntensityCurvature(unittest.TestCase):
         array = numpy.zeros((20, 25, 25), dtype=numpy.uint8)
         _add_3d_gaussian(array, intensity=90000, mean=(8, 10, 5), sd=(3, 4, 2))
         _add_3d_gaussian(array, intensity=80000, mean=(15, 11, 7), sd=(3, 4, 2))
-        out = numpy.empty_like(array)
+        out = numpy.full_like(array, 255)
         get_negative_gaussian_curvatures(array, ImageDerivatives(), out, blur_radius=3)
 
         # Check a few pixel intensities (remember, order is z, y, x)
