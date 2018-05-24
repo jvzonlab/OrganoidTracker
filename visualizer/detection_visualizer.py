@@ -1,5 +1,5 @@
 from time import sleep
-from typing import Any, Tuple
+from typing import Any, Tuple, Optional
 
 import cv2
 
@@ -9,7 +9,7 @@ from matplotlib.backend_bases import KeyEvent
 
 from core import UserError, Particle
 from gui import Window, dialog
-from particle_detection import thresholding, watershedding, missed_cell_finder, smoothing, ellipsoid_fit
+from particle_detection import thresholding, watershedding, missed_cell_finder, smoothing, gaussian_fit
 from visualizer import activate, DisplaySettings
 from visualizer.image_visualizer import AbstractImageVisualizer
 
@@ -190,14 +190,18 @@ class DetectionVisualizer(AbstractImageVisualizer):
             return images, images_smoothed, watershed
         return watershed
 
-    def _get_reconstruction_using_particles(self) -> Tuple:
-        images, images_smoothed, watershed = self._get_detected_cells_using_particles(return_intermediate=True)
-        threshold = numpy.empty_like(images)
-        ones = numpy.ones_like(images)
-        thresholding.adaptive_threshold(images, threshold, self.threshold_block_size)
-        full_watershed = watershed#watershedding.watershed_labels(threshold, ones, watershed, watershed.max())[0]
-        ellipsoid_fit.perform_ellipsoid_fit(full_watershed, ones)
-        return images_smoothed, ones
+    def _get_reconstruction_using_particles(self) -> Optional[Tuple[ndarray, ndarray]]:
+        images = self._get_8bit_images()
+        if images is None:
+            dialog.popup_error("Failed to detect cells", "Cannot detect cells - no images loaded.")
+            return
+        smoothing.smooth(images, self.distance_transform_smooth_size)
+        gaussians = gaussian_fit.particles_to_gaussians(images, self._time_point.particles())
+        gaussians = gaussian_fit.perform_gaussian_mixture_fit(images, gaussians)
+        reconstructed_image = numpy.zeros_like(images, dtype=numpy.float32)
+        for gaussian in gaussians:
+            gaussian.draw(reconstructed_image)
+        return images, reconstructed_image
 
     def _get_distances_to_labels(self, images, labels):
         labels_inv = numpy.full_like(images, 255, dtype=numpy.uint8)

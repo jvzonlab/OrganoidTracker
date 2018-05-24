@@ -4,6 +4,8 @@ from numpy import ndarray
 import scipy.optimize
 import numpy
 
+from core import Particle
+
 
 class Gaussian:
     """A three-dimensional Gaussian function."""
@@ -65,15 +67,24 @@ class Gaussian:
     def __repr__(self):
         return "Gaussian(*" + repr(self.to_list()) + ")"
 
+def particles_to_gaussians(image: ndarray, particles: Iterable[Particle]) -> List[Gaussian]:
+    gaussians = []
+    for particle in particles:
+        intensity = image[int(particle.z), int(particle.y), int(particle.x)]
+        gaussians.append(Gaussian(intensity, particle.x, particle.y, particle.z, 15, 15, 3, 0, 0, 0))
+    return gaussians
+
 
 def _3d_gauss_multiple(pos: ndarray, *args):
     """Gaussian mixture model. Every Gaussian has 10 parameters: the first 10 args go to the first Gaussian (see
      _3d_gauss), argument 10 - 19 to the second, etc."""
+    print("Fitting: starting to calculate Gaussians")
     args_count = len(args)
     totals = numpy.zeros(pos.shape[0], dtype=numpy.float32)
     for i in range(0, args_count, 10):
         gaussian_params = args[i:i + 10]
         totals += _3d_gauss(pos, *gaussian_params)
+    print("Done calculating Gaussians")
     return totals
 
 
@@ -123,14 +134,7 @@ def add_noise(data: ndarray):
 def perform_gaussian_fit(original_image: ndarray, guess: Gaussian) -> Gaussian:
     """Fits a gaussian function to an image. original_image is a zyx-indexed image, guess is an initial starting point
     for the fit."""
-    xsize, ysize, zsize = original_image.shape[2], original_image.shape[1], original_image.shape[0]
-    pos = _get_positions(xsize, ysize, zsize)
-
-    image_1d = original_image.ravel()
-    # noinspection PyTypeChecker
-    coeff, var_matrix = scipy.optimize.curve_fit(_3d_gauss, pos, image_1d, p0=guess.to_list())
-
-    return Gaussian(*coeff)
+    return perform_gaussian_mixture_fit(original_image, [guess])[0]
 
 
 def perform_gaussian_mixture_fit(original_image: ndarray, guesses: Iterable[Gaussian]) -> List[Gaussian]:
@@ -142,8 +146,9 @@ def perform_gaussian_mixture_fit(original_image: ndarray, guesses: Iterable[Gaus
         parameters += guess.to_list()
 
     image_1d = original_image.ravel()
+    print("Starting the fit... " + str(len(parameters)) + " parameters, " + str(pos.shape[0]) + " pixels")
     coeff, var_matrix = scipy.optimize.curve_fit(_3d_gauss_multiple, pos, image_1d, p0=parameters)
-
+    print("Done!")
     gaussians = []
     for i in range(0, len(coeff), 10):
         gaussians.append(Gaussian(*coeff[i:i + 10]))

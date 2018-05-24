@@ -26,8 +26,7 @@ def popup_error(title: str, message: str):
 
 
 def popup_exception(exception: BaseException):
-    logging.exception(exception)
-    traceback.print_tb(exception.__traceback__)
+    traceback.print_exception(type(exception), exception, exception.__traceback__)
     popup_error("Internal error", "An error occured.\n" + str(exception) + "\nSee console for technical details.")
 
 
