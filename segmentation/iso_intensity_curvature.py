@@ -91,9 +91,9 @@ class ImageDerivatives:
 
 def get_negative_gaussian_curvatures(image_stack: ndarray, derivatives: ImageDerivatives, out: ndarray,
                                      blur_radius: int = 5, dilate:bool = True):
-    """Gets all positions with a negative Gaussian curvature of the iso-intensity surfaces. Those positions are marked
-    with 255, the others are set to 0.
-    out: uint8 image"""
+    """Sets all positions with negative iso-intensity curvature to zero in the out array.
+    out: a threshold array (uint8), 0 is outside threshold, 255 inside. May just be an array filled with 255 if you
+    don't have a threshold."""
     blurred = numpy.empty_like(image_stack)
     for z in range(blurred.shape[0]):
         cv2.GaussianBlur(image_stack[z], (blur_radius * 2 + 1, blur_radius * 2 + 1), 0, dst=blurred[z])
