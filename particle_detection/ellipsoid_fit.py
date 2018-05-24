@@ -2,8 +2,6 @@ from typing import Tuple, Union
 
 import numpy
 from numpy import ndarray
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
 
 
 class Ellipsoid:
@@ -42,14 +40,20 @@ class Ellipsoid:
             if self.is_at_border((x, y, z)):
                 sub_image[index] = fill_color
 
-    def is_at_border(self, x_y_z: Union[ndarray, Tuple[float, float, float]]):
+    def _evaluate(self, x_y_z: Union[ndarray, Tuple[float, float, float]]):
         translated_x_y_z = x_y_z - self._center
         rotated_x_y_z = self._rotation_T @ translated_x_y_z
-        rotated_x_y_z_squared = rotated_x_y_z**2
+        rotated_x_y_z_squared = rotated_x_y_z ** 2
         division = rotated_x_y_z_squared / self._radii_squared
-        return abs(1 - numpy.sum(division)) < 0.1
+        return numpy.sum(division)
 
-def perform_fit(watershedded_image: ndarray, buffer_image: ndarray):
+    def is_inside(self, x_y_z: Union[ndarray, Tuple[float, float, float]]):
+        return self._evaluate(x_y_z) <= 1
+
+    def is_at_border(self, x_y_z: Union[ndarray, Tuple[float, float, float]]):
+        return abs(1 - self._evaluate(x_y_z)) < 0.1
+
+def perform_ellipsoid_fit(watershedded_image: ndarray, buffer_image: ndarray):
     buffer_image.fill(0)
 
     area_count = watershedded_image.max()
@@ -67,40 +71,6 @@ def perform_fit(watershedded_image: ndarray, buffer_image: ndarray):
             print(e)
 
 
-
-def ellipsoid_plot(center, radii, rotation, ax, plotAxes=False, cageColor='b', cageAlpha=0.2):
-    """Plot an ellipsoid"""
-
-    u = numpy.linspace(0.0, 2.0 * numpy.pi, 100)
-    v = numpy.linspace(0.0, numpy.pi, 100)
-
-    # cartesian coordinates that correspond to the spherical angles:
-    x = radii[0] * numpy.outer(numpy.cos(u), numpy.sin(v))
-    y = radii[1] * numpy.outer(numpy.sin(u), numpy.sin(v))
-    z = radii[2] * numpy.outer(numpy.ones_like(u), numpy.cos(v))
-    # rotate accordingly
-    for i in range(len(x)):
-        for j in range(len(x)):
-            [x[i, j], y[i, j], z[i, j]] = numpy.dot([x[i, j], y[i, j], z[i, j]], rotation) + center
-
-    if plotAxes:
-        # make some purdy axes
-        axes = numpy.array([[radii[0], 0.0, 0.0],
-                         [0.0, radii[1], 0.0],
-                         [0.0, 0.0, radii[2]]])
-        # rotate accordingly
-        for i in range(len(axes)):
-            axes[i] = numpy.dot(axes[i], rotation)
-
-        # plot axes
-        for p in axes:
-            X3 = numpy.linspace(-p[0], p[0], 100) + center[0]
-            Y3 = numpy.linspace(-p[1], p[1], 100) + center[1]
-            Z3 = numpy.linspace(-p[2], p[2], 100) + center[2]
-            ax.plot(X3, Y3, Z3, color=cageColor)
-
-    # plot ellipsoid
-    ax.plot_wireframe(x, y, z, rstride=4, cstride=4, color=cageColor, alpha=cageAlpha)
 
 
 # Based on the MIT-licensed code by Aleksandr Bazhin

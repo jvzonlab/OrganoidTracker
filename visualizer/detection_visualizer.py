@@ -196,7 +196,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
         ones = numpy.ones_like(images)
         thresholding.adaptive_threshold(images, threshold, self.threshold_block_size)
         full_watershed = watershed#watershedding.watershed_labels(threshold, ones, watershed, watershed.max())[0]
-        ellipsoid_fit.perform_fit(full_watershed, ones)
+        ellipsoid_fit.perform_ellipsoid_fit(full_watershed, ones)
         return images_smoothed, ones
 
     def _get_distances_to_labels(self, images, labels):
