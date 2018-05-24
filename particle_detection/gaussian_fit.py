@@ -6,7 +6,7 @@ import numpy
 
 
 class Gaussian:
-    """A three-dimensional Gaussian."""
+    """A three-dimensional Gaussian function."""
 
     a: float
     mu_x: float
@@ -50,7 +50,7 @@ class Gaussian:
         return [self.a, self.mu_x, self.mu_y, self.mu_z, self.cov_xx, self.cov_yy, self.cov_zz, self.cov_xy,
                 self.cov_xz, self.cov_yz]
 
-    def almost_equal(self, other: "Gaussian", a_delta=10, mu_delta=1, cov_delta=1):
+    def almost_equal(self, other: "Gaussian", a_delta=10, mu_delta=1, cov_delta=1) -> bool:
         return abs(self.a - other.a) < a_delta and \
                abs(self.mu_x - other.mu_x) < mu_delta and \
                abs(self.mu_y - other.mu_y) < mu_delta and \
@@ -78,8 +78,7 @@ def _3d_gauss_multiple(pos: ndarray, *args):
 
 
 def _3d_gauss(pos: ndarray, a, mu_x, mu_y, mu_z, cov_xx, cov_yy, cov_zz, cov_xy, cov_xz, cov_yz) -> ndarray:
-    """
-    Calculates a 3D Gaussian for the given positions.
+    """Calculates a 3D Gaussian for the given positions.
     :param pos: Stack of vectors: [[x1, y1, z1], [x2, y2, z2], ...]. Can also be a single vector: [x, y, z].
     :param a: Intensity at mean position.
     :param mu_x: X of mean position.
@@ -122,6 +121,8 @@ def add_noise(data: ndarray):
 
 
 def perform_gaussian_fit(original_image: ndarray, guess: Gaussian) -> Gaussian:
+    """Fits a gaussian function to an image. original_image is a zyx-indexed image, guess is an initial starting point
+    for the fit."""
     xsize, ysize, zsize = original_image.shape[2], original_image.shape[1], original_image.shape[0]
     pos = _get_positions(xsize, ysize, zsize)
 
@@ -133,6 +134,7 @@ def perform_gaussian_fit(original_image: ndarray, guess: Gaussian) -> Gaussian:
 
 
 def perform_gaussian_mixture_fit(original_image: ndarray, guesses: Iterable[Gaussian]) -> List[Gaussian]:
+    """Fits multiple Gaussians to the image (a Gaussian Mixture Model). Initial seeds must be given."""
     xsize, ysize, zsize = original_image.shape[2], original_image.shape[1], original_image.shape[0]
     pos = _get_positions(xsize, ysize, zsize)
     parameters = []
