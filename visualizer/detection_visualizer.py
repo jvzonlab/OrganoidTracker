@@ -197,7 +197,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
             return
         smoothing.smooth(images, self.distance_transform_smooth_size)
         gaussians = gaussian_fit.particles_to_gaussians(images, self._time_point.particles())
-        gaussians = gaussian_fit.perform_gaussian_mixture_fit_splitted(images, gaussians)
+        gaussians = gaussian_fit.perform_gaussian_mixture_fit_lowres(images, gaussians)
         reconstructed_image = numpy.zeros_like(images, dtype=numpy.float32)
         for gaussian in gaussians:
             gaussian.draw(reconstructed_image)

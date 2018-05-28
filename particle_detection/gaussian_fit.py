@@ -1,3 +1,4 @@
+import cv2
 from typing import Tuple, List, Iterable
 
 from numpy import ndarray
@@ -70,6 +71,14 @@ class Gaussian:
         new_gaussian.mu_x += dx
         new_gaussian.mu_y += dy
         new_gaussian.mu_z += dz
+        return new_gaussian
+
+    def scaled(self, scale: float):
+        new_gaussian = Gaussian(*self.to_list())
+        new_gaussian.mu_x *= scale
+        new_gaussian.mu_y *= scale
+        new_gaussian.mu_z *= scale
+        # Todo: resize covariance matrix
         return new_gaussian
 
     def __repr__(self):
@@ -160,48 +169,11 @@ def perform_gaussian_mixture_fit(original_image: ndarray, guesses: Iterable[Gaus
         gaussians.append(Gaussian(*coeff[i:i + 10]))
     return gaussians
 
-def perform_gaussian_mixture_fit_splitted(original_image: ndarray, guesses: Iterable[Gaussian], square_size=(80,80,9), square_border=(20,20,3)):
-    fitted_cells = []
-
-    depth, height, width = original_image.shape
-    step_size_x = square_size[0] - 2 * square_border[0]
-    step_size_y = square_size[1] - 2 * square_border[1]
-    step_size_z = square_size[2] - 2 * square_border[2]
-    for z_min in range(0, depth - 2 * square_border[2], step_size_z):
-        z_max = min(depth, z_min + square_size[2])
-        padding_deep = 0 if z_min == 0 else square_border[2]
-        padding_high = 0 if z_max == depth else square_border[2]
-        guesses_z = [guess for guess in guesses if z_min <= guess.mu_z < z_max]
-        if len(guesses_z) == 0:
-            continue
-        for y_min in range(0, height - 2 * square_border[1], step_size_y):
-            y_max = min(height, y_min + square_size[1])
-            padding_top = 0 if y_min == 0 else square_border[1]
-            padding_bottom = 0 if y_max == height else square_border[1]
-            guesses_y = [guess for guess in guesses_z if y_min <= guess.mu_y < y_max]
-            if len(guesses_y) == 0:
-                continue
-            for x_min in range(0, width - 2 * square_border[0], step_size_x):
-                x_max = min(width, x_min + square_size[0])
-                padding_left = 0 if x_min == 0 else square_border[0]
-                padding_right = 0 if x_max == width else square_border[0]
-
-                # Here a single subimage is processed
-                # Look for all local guesses, translate their positions
-                local_guesses = [guess.translated(-x_min, -y_min, -z_min) for guess in guesses_y if
-                                 x_min <= guess.mu_x < x_max]
-                useful_indices = []  # Only guesses well within the bounds are considered
-                for i in range(len(local_guesses)):
-                    if padding_left < local_guesses[i].mu_x < square_size[0] - padding_right and \
-                            padding_top < local_guesses[i].mu_y < square_size[0] - padding_bottom and \
-                            padding_deep < local_guesses[i].mu_z < square_size[0] - padding_high:
-                        useful_indices.append(i)
-                if len(useful_indices) == 0:
-                    continue
-                image = original_image[z_min:z_max, y_min:y_max, x_min:x_max]
-                try:
-                    local_fitted = perform_gaussian_mixture_fit(image, local_guesses)
-                    [fitted_cells.append(local_fitted[i].translated(x_min, y_min, z_min)) for i in useful_indices]
-                except RuntimeError:
-                    print("Error!")
-    return fitted_cells
+def perform_gaussian_mixture_fit_lowres(original_image: ndarray, guesses: Iterable[Gaussian], square_size=(80,80,9), square_border=(20,20,3)):
+    new_size = 64
+    old_size = original_image.shape[1]
+    new_image = numpy.empty((original_image.shape[0], new_size, new_size), dtype=original_image.dtype)
+    for z in range(original_image.shape[0]):
+        cv2.resize(original_image[z], dst=new_image[z], dsize=(new_size, new_size), fx=0, fy=0, interpolation=cv2.INTER_AREA)
+    guesses = [guess.scaled(new_size / old_size) for guess in guesses]
+    return perform_gaussian_mixture_fit(original_image, guesses)
