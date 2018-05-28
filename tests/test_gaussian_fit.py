@@ -3,6 +3,8 @@ import unittest
 import numpy
 from particle_detection import gaussian_fit
 from particle_detection.gaussian_fit import Gaussian
+import tifffile
+import matplotlib.pyplot as plt
 
 
 class TestGaussianFit(unittest.TestCase):
@@ -25,7 +27,7 @@ class TestGaussianFit(unittest.TestCase):
     def test_two_separated_gaussians(self):
         # Create artificial image
         gaussian1 = Gaussian(200, mu_x=15, mu_y=20, mu_z=10, cov_xx=10, cov_yy=10, cov_zz=2, cov_xy=0, cov_xz=0,
-                            cov_yz=0)
+                             cov_yz=0)
         gaussian2 = Gaussian(200, mu_x=25, mu_y=15, mu_z=11, cov_xx=10, cov_yy=10, cov_zz=2, cov_xy=0, cov_xz=0,
                              cov_yz=0)
         image = numpy.zeros((20, 40, 40), dtype=numpy.float32)
@@ -60,14 +62,13 @@ class TestGaussianFit(unittest.TestCase):
         self.assertTrue(gaussian1.almost_equal(fitted1))
         self.assertTrue(gaussian2.almost_equal(fitted2))
 
-
     def test_ignore_third_gaussian(self):
         gaussian1 = Gaussian(200, mu_x=15, mu_y=20, mu_z=10, cov_xx=25, cov_yy=20, cov_zz=2, cov_xy=10, cov_xz=0,
                              cov_yz=0)
         gaussian2 = Gaussian(200, mu_x=22, mu_y=15, mu_z=11, cov_xx=12, cov_yy=30, cov_zz=2, cov_xy=2, cov_xz=0,
                              cov_yz=0)
         ignored_gaussian = Gaussian(200, mu_x=32, mu_y=15, mu_z=11, cov_xx=12, cov_yy=30, cov_zz=2, cov_xy=2, cov_xz=0,
-                             cov_yz=0)
+                                    cov_yz=0)
         image = numpy.zeros((20, 40, 40), dtype=numpy.float32)
         gaussian1.draw(image)
         gaussian2.draw(image)
@@ -82,3 +83,28 @@ class TestGaussianFit(unittest.TestCase):
         print(fitted1)
         self.assertTrue(gaussian1.almost_equal(fitted1, mu_delta=2, cov_delta=5))
         # The second Gaussian is hopeless - it is expanded to also cover the third Gaussian
+
+    def test_big_image(self):
+        return
+        gaussians = [
+            Gaussian(200, mu_x=100, mu_y=130, mu_z=9, cov_xx=225, cov_yy=400, cov_zz=3, cov_xy=10, cov_xz=0, cov_yz=0),
+            Gaussian(200, mu_x=80, mu_y=150, mu_z=12, cov_xx=225, cov_yy=400, cov_zz=3, cov_xy=2, cov_xz=-2, cov_yz=0),
+            Gaussian(200, mu_x=140, mu_y=100, mu_z=13, cov_xx=400, cov_yy=900, cov_zz=3, cov_xy=2, cov_xz=0, cov_yz=0)
+        ]
+        image = numpy.zeros((30, 512, 512), dtype=numpy.float32)
+        for gaussian in gaussians:
+            gaussian.draw(image)
+        tifffile.imshow(image, cmap="gray")
+        plt.show()
+
+        hints = [
+            Gaussian(200, mu_x=105, mu_y=135, mu_z=9, cov_xx=100, cov_yy=100, cov_zz=3, cov_xy=0, cov_xz=0, cov_yz=0),
+            Gaussian(200, mu_x=75, mu_y=155, mu_z=12, cov_xx=100, cov_yy=100, cov_zz=3, cov_xy=0, cov_xz=0, cov_yz=0),
+            Gaussian(200, mu_x=135, mu_y=105, mu_z=13, cov_xx=100, cov_yy=100, cov_zz=3, cov_xy=0, cov_xz=0, cov_yz=0)
+        ]
+        fitted = gaussian_fit.perform_gaussian_mixture_fit_splitted(image, hints)
+        image.fill(0)
+        for gaussian in fitted:
+            gaussian.draw(image)
+        tifffile.imshow(image, cmap="gray")
+        plt.show()
