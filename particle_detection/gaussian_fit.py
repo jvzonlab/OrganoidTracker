@@ -5,12 +5,13 @@ import networkx
 from numpy import ndarray
 import scipy.optimize
 import numpy
+from tifffile import tifffile
 
 from core import Particle
 from networkx import Graph
 
 from particle_detection import watershedding
-from particle_detection.ellipse import Ellipse, EllipseStack
+from particle_detection.ellipse import Ellipse, EllipseStack, EllipseCluster
 import matplotlib.pyplot as plt
 
 
@@ -185,12 +186,7 @@ def perform_gaussian_mixture_fit_from_watershed(watershed_image: ndarray, out: n
         color = watershedding.COLOR_ARRAY[i]
         color_opencv = color[0] * 255, color[1] * 255, color[2] * 255
 
-        first = True
-        for stack in stacks:
-            if first:
-                print("Group of " + str(len(stacks)) + " at " + str(stack))
-                first = False
-            stack.draw_to_image(out, color_opencv)
+        stacks.draw_to_image(out, color_opencv)
         i += 1
 
 
@@ -214,7 +210,7 @@ def _get_ellipse_stacks(watershed: ndarray) -> List[EllipseStack]:
     return ellipse_stacks
 
 
-def _get_overlapping_stacks(stacks: List[EllipseStack]) -> Iterable[Set[EllipseStack]]:
+def _get_overlapping_stacks(stacks: List[EllipseStack]) -> List[EllipseCluster]:
     cell_network = Graph()
     for stack in stacks:
         cell_network.add_node(stack)
@@ -225,7 +221,11 @@ def _get_overlapping_stacks(stacks: List[EllipseStack]) -> Iterable[Set[EllipseS
                 continue  # To be processed later
             if stack.intersects(other_stack):
                 cell_network.add_edge(stack, other_stack)
-    return networkx.connected_components(cell_network)
+
+    clusters = []
+    for cluster in networkx.connected_components(cell_network):
+        clusters.append(EllipseCluster(cluster))
+    return clusters
 
 def _find_contour_with_largest_area(contours) -> Tuple[int, float]:
     highest_area = 0
