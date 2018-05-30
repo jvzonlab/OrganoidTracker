@@ -1,13 +1,18 @@
 import cv2
-from typing import Tuple, List, Iterable
+from typing import Tuple, List, Iterable, Generator, Set
 
+import networkx
 from numpy import ndarray
 import scipy.optimize
 import numpy
 
 from core import Particle
-import tifffile
+from networkx import Graph
+
+from particle_detection import watershedding
+from particle_detection.ellipse import Ellipse, EllipseStack
 import matplotlib.pyplot as plt
+
 
 class Gaussian:
     """A three-dimensional Gaussian function."""
@@ -169,11 +174,66 @@ def perform_gaussian_mixture_fit(original_image: ndarray, guesses: Iterable[Gaus
         gaussians.append(Gaussian(*coeff[i:i + 10]))
     return gaussians
 
-def perform_gaussian_mixture_fit_lowres(original_image: ndarray, guesses: Iterable[Gaussian], square_size=(80,80,9), square_border=(20,20,3)):
-    new_size = 64
-    old_size = original_image.shape[1]
-    new_image = numpy.empty((original_image.shape[0], new_size, new_size), dtype=original_image.dtype)
-    for z in range(original_image.shape[0]):
-        cv2.resize(original_image[z], dst=new_image[z], dsize=(new_size, new_size), fx=0, fy=0, interpolation=cv2.INTER_AREA)
-    guesses = [guess.scaled(new_size / old_size) for guess in guesses]
-    return perform_gaussian_mixture_fit(original_image, guesses)
+
+def perform_gaussian_mixture_fit_from_watershed(watershed_image: ndarray, out: ndarray):
+    """GMM using watershed as seeds. out is a color image where the detected Gaussians can be drawn on."""
+    ellipse_stacks = _get_ellipse_stacks(watershed_image)
+    ellipse_stacks = _get_overlapping_stacks(ellipse_stacks)
+
+    i = 1
+    for stacks in ellipse_stacks:
+        color = watershedding.COLOR_ARRAY[i]
+        color_opencv = color[0] * 255, color[1] * 255, color[2] * 255
+
+        first = True
+        for stack in stacks:
+            if first:
+                print("Group of " + str(len(stacks)) + " at " + str(stack))
+                first = False
+            stack.draw_to_image(out, color_opencv)
+        i += 1
+
+
+def _get_ellipse_stacks(watershed: ndarray) -> List[EllipseStack]:
+    max = watershed.max()
+    buffer = numpy.empty_like(watershed, dtype=numpy.uint8)
+    ellipse_stacks = []
+    for i in range(1, max):
+        ellipse_stack = []
+        buffer.fill(0)
+        buffer[watershed == i] = 255
+        for z in range(buffer.shape[0]):
+            contour_image, contours, hierarchy = cv2.findContours(buffer[z], cv2.RETR_LIST, 2)
+            contour_index, area = _find_contour_with_largest_area(contours)
+            if contour_index == -1 or area < 40:
+                ellipse_stack.append(None)
+                continue  # No contours found
+            ellipse_pos, ellipse_size, ellipse_angle = cv2.fitEllipse(contours[contour_index])
+            ellipse_stack.append(Ellipse(ellipse_pos[0], ellipse_pos[1], ellipse_size[0] - 2, ellipse_size[1] - 2, ellipse_angle))
+        ellipse_stacks.append(EllipseStack(ellipse_stack))
+    return ellipse_stacks
+
+
+def _get_overlapping_stacks(stacks: List[EllipseStack]) -> Iterable[Set[EllipseStack]]:
+    cell_network = Graph()
+    for stack in stacks:
+        cell_network.add_node(stack)
+        for other_stack in stacks:
+            if other_stack is stack:
+                continue  # Ignore self-overlapping
+            if other_stack not in cell_network:
+                continue  # To be processed later
+            if stack.intersects(other_stack):
+                cell_network.add_edge(stack, other_stack)
+    return networkx.connected_components(cell_network)
+
+def _find_contour_with_largest_area(contours) -> Tuple[int, float]:
+    highest_area = 0
+    index_with_highest_area = -1
+    for i in range(len(contours)):
+        contour = contours[i]
+        area = cv2.contourArea(contour)
+        if area > highest_area:
+            highest_area = area
+            index_with_highest_area = i
+    return index_with_highest_area, highest_area

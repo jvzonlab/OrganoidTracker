@@ -73,6 +73,9 @@ class AbstractImageVisualizer(Visualizer):
             title += " (changes: " + str(errors) + ")"
         return title
 
+    def _must_show_other_time_points(self) -> bool:
+        return True
+
     def _draw_extra(self):
         pass # Subclasses can override this
 
@@ -83,8 +86,8 @@ class AbstractImageVisualizer(Visualizer):
         self._draw_particles_of_time_point(self._time_point)
 
         # Next time point
-        has_linking_data = self._experiment.particle_links() is not None \
-                           or self._experiment.particle_links_scratch() is not None
+        has_linking_data = self._must_show_other_time_points() and (self._experiment.particle_links() is not None
+                           or self._experiment.particle_links_scratch() is not None)
         if self._display_settings.show_next_time_point or has_linking_data:
             # Only draw particles of next/previous time point if there is linking data, or if we're forced to
             try:
@@ -102,8 +105,9 @@ class AbstractImageVisualizer(Visualizer):
 
         # Draw links
         errors = 0
-        for particle in self._time_point.particles():
-            errors += self._draw_links(particle)
+        if has_linking_data:
+            for particle in self._time_point.particles():
+                errors += self._draw_links(particle)
 
         return errors
 

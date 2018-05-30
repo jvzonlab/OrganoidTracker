@@ -43,6 +43,7 @@ class Window:
         self.__event_handler_ids = []
 
         self.__scheduler = Scheduler(root)
+        self.__scheduler.daemon = True
         self.__scheduler.start()
 
     def register_event_handler(self, event: str, action):

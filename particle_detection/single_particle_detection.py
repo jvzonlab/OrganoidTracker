@@ -3,7 +3,6 @@ import math
 
 import cv2
 import numpy
-from matplotlib.axis import Axis
 from matplotlib.patches import Ellipse
 from numpy import ndarray
 from typing import Tuple, List

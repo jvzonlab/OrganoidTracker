@@ -1,5 +1,5 @@
 import random
-from typing import Tuple, Collection
+from typing import Tuple, Collection, List
 
 import cv2
 import mahotas
@@ -12,7 +12,7 @@ from scipy.ndimage import morphology
 from core import Particle
 
 
-def _create_colormap():
+def _create_colormap() -> List[Tuple[float, float, float, float]]:
     many_colors = []
     many_colors += map(matplotlib.cm.get_cmap("prism"), range(256))
     many_colors += map(matplotlib.cm.get_cmap("cool"), range(256))
@@ -23,10 +23,11 @@ def _create_colormap():
     many_colors += map(matplotlib.cm.get_cmap("Spectral"), range(256))
     random.shuffle(many_colors)
     many_colors[0] = (0., 0., 0., 1.)  # We want a black background
-    return matplotlib.colors.ListedColormap(many_colors, name="random", N=2000)
+    return many_colors
 
 
-COLOR_MAP = _create_colormap()
+COLOR_ARRAY = _create_colormap()
+COLOR_MAP = matplotlib.colors.ListedColormap(COLOR_ARRAY, name="random", N=2000)
 
 
 def distance_transform(threshold: ndarray, out: ndarray, sampling: Tuple[float, float, float]):
