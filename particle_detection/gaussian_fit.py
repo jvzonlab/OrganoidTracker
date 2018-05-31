@@ -1,18 +1,16 @@
-import cv2
-from typing import Tuple, List, Iterable, Generator, Set
+from timeit import default_timer as timer
+from typing import Tuple, List, Iterable, Dict, Optional
 
+import cv2
 import networkx
-from numpy import ndarray
-import scipy.optimize
 import numpy
-from tifffile import tifffile
+import scipy.optimize
+from networkx import Graph
+from numpy import ndarray
 
 from core import Particle
-from networkx import Graph
-
 from particle_detection import watershedding
 from particle_detection.ellipse import Ellipse, EllipseStack, EllipseCluster
-import matplotlib.pyplot as plt
 
 
 class Gaussian:
@@ -41,26 +39,30 @@ class Gaussian:
         self.cov_xz = cov_xz
         self.cov_yz = cov_yz
 
-    def draw(self, image: ndarray):
+    def draw(self, image: ndarray, cached_gaussian: Optional[ndarray] = None):
+        """Draws a Gaussian to an image. Returns an array that can be passed again to this method (for these Gaussian
+         parameters) to quickly redraw the Gaussian."""
         offset_x = max(0, int(self.mu_x - 3 * self.cov_xx))
         offset_y = max(0, int(self.mu_y - 3 * self.cov_yy))
         offset_z = max(0, int(self.mu_z - 3 * self.cov_zz))
         max_x = min(image.shape[2], int(self.mu_x + 3 * self.cov_xx))
         max_y = min(image.shape[1], int(self.mu_y + 3 * self.cov_yy))
         max_z = min(image.shape[0], int(self.mu_z + 3 * self.cov_zz))
-        size_x, size_y, size_z = max_x - offset_x, max_y - offset_y, max_z - offset_z
 
-        pos = _get_positions(size_x, size_y, size_z)
-        gauss = _3d_gauss(pos, self.a, self.mu_x - offset_x, self.mu_y - offset_y, self.mu_z - offset_z,
-                          self.cov_xx, self.cov_yy, self.cov_zz, self.cov_xy, self.cov_xz, self.cov_yz)
-        gauss = gauss.reshape(size_z, size_y, size_x)
-        image[offset_z:max_z, offset_y:max_y, offset_x:max_x] += gauss
+        if cached_gaussian is None:
+            size_x, size_y, size_z = max_x - offset_x, max_y - offset_y, max_z - offset_z
+            pos = _get_positions(size_x, size_y, size_z)
+            gauss = _3d_gauss(pos, self.a, self.mu_x - offset_x, self.mu_y - offset_y, self.mu_z - offset_z,
+                              self.cov_xx, self.cov_yy, self.cov_zz, self.cov_xy, self.cov_xz, self.cov_yz)
+            cached_gaussian = gauss.reshape(size_z, size_y, size_x)
+        image[offset_z:max_z, offset_y:max_y, offset_x:max_x] += cached_gaussian
+        return cached_gaussian
 
     def to_list(self) -> List[float]:
         return [self.a, self.mu_x, self.mu_y, self.mu_z, self.cov_xx, self.cov_yy, self.cov_zz, self.cov_xy,
                 self.cov_xz, self.cov_yz]
 
-    def almost_equal(self, other: "Gaussian", a_delta=10, mu_delta=1, cov_delta=1) -> bool:
+    def almost_equal(self, other: "Gaussian", a_delta=10, mu_delta=1, cov_delta=2) -> bool:
         return abs(self.a - other.a) < a_delta and \
                abs(self.mu_x - other.mu_x) < mu_delta and \
                abs(self.mu_y - other.mu_y) < mu_delta and \
@@ -79,13 +81,14 @@ class Gaussian:
         new_gaussian.mu_z += dz
         return new_gaussian
 
-    def scaled(self, scale: float):
-        new_gaussian = Gaussian(*self.to_list())
-        new_gaussian.mu_x *= scale
-        new_gaussian.mu_y *= scale
-        new_gaussian.mu_z *= scale
-        # Todo: resize covariance matrix
-        return new_gaussian
+    def __eq__(self, other):
+        if isinstance(self, other.__class__):
+            return self.__dict__ == other.__dict__
+        return False
+
+    def __hash__(self):
+        return hash((self.a, self.mu_x, self.mu_y, self.mu_z, self.cov_xx, self.cov_yy, self.cov_zz, self.cov_xy,
+                self.cov_xz, self.cov_yz))
 
     def __repr__(self):
         return "Gaussian(*" + repr(self.to_list()) + ")"
@@ -98,15 +101,32 @@ def particles_to_gaussians(image: ndarray, particles: Iterable[Particle]) -> Lis
     return gaussians
 
 
-def _3d_gauss_multiple(pos: ndarray, *args):
-    """Gaussian mixture model. Every Gaussian has 10 parameters: the first 10 args go to the first Gaussian (see
-     _3d_gauss), argument 10 - 19 to the second, etc."""
-    args_count = len(args)
-    totals = numpy.zeros(pos.shape[0], dtype=numpy.float32)
-    for i in range(0, args_count, 10):
-        gaussian_params = args[i:i + 10]
-        totals += _3d_gauss(pos, *gaussian_params)
-    return totals
+class _ModelAndImageDifference:
+    _data_image: ndarray
+    _scratch_image: ndarray
+    _last_gaussians: Dict[Gaussian, ndarray]
+
+    def __init__(self, data_image: ndarray):
+        self._data_image = data_image.astype(numpy.float64)
+        self._scratch_image = numpy.empty_like(self._data_image)
+        self._last_gaussians = dict()
+
+    def difference_with_image(self, params) -> float:
+        last_gaussians_new = dict()
+
+        self._scratch_image.fill(0)
+        for i in range(0, len(params), 10):
+            gaussian_params = params[i:i + 10]
+            gaussian = Gaussian(*gaussian_params)
+            cached_image = self._last_gaussians.get(gaussian)
+            last_gaussians_new[gaussian] = gaussian.draw(self._scratch_image, cached_image)
+        self._last_gaussians = last_gaussians_new
+
+        self._scratch_image -= self._data_image
+        self._scratch_image **= 2
+        sum = self._scratch_image.sum()
+        #print("Difference: " +  '{0:.16f}'.format(sum) + ". Params: " + str(params))
+        return sum
 
 
 def _3d_gauss(pos: ndarray, a, mu_x, mu_y, mu_z, cov_xx, cov_yy, cov_zz, cov_xy, cov_xz, cov_yz) -> ndarray:
@@ -160,20 +180,26 @@ def perform_gaussian_fit(original_image: ndarray, guess: Gaussian) -> Gaussian:
 
 def perform_gaussian_mixture_fit(original_image: ndarray, guesses: Iterable[Gaussian]) -> List[Gaussian]:
     """Fits multiple Gaussians to the image (a Gaussian Mixture Model). Initial seeds must be given."""
-    xsize, ysize, zsize = original_image.shape[2], original_image.shape[1], original_image.shape[0]
-    pos = _get_positions(xsize, ysize, zsize)
-    parameters = []
-    for guess in guesses:
-        parameters += guess.to_list()
+    model_and_image_difference = _ModelAndImageDifference(original_image)
 
-    image_1d = original_image.ravel()
-    print("Starting the fit... " + str(len(parameters)) + " parameters, " + str(pos.shape[0]) + " pixels")
-    coeff, var_matrix = scipy.optimize.curve_fit(_3d_gauss_multiple, pos, image_1d, p0=parameters, maxfev=10000)
-    print("Done!")
-    gaussians = []
-    for i in range(0, len(coeff), 10):
-        gaussians.append(Gaussian(*coeff[i:i + 10]))
-    return gaussians
+    guesses_list = []
+    for guess in guesses:
+        guesses_list += guess.to_list()
+
+    start_time = timer()
+    result = scipy.optimize.minimize(model_and_image_difference.difference_with_image, guesses_list,
+                                     method='Powell', options={'ftol':0.001,'xtol':10})
+    end_time = timer()
+    print("Iterations: " + str(result.nfev) + "    Total time: " + str(end_time - start_time) + " seconds    Time per"
+          " iteration: " + str((end_time - start_time) / result.nfev) + " seconds")
+    if not result.success:
+        raise ValueError("Minimization failed: " + result.message)
+
+    result_gaussians = []
+    for i in range(0, len(result.x), 10):
+        gaussian_params = result.x[i:i + 10]
+        result_gaussians.append(Gaussian(*gaussian_params))
+    return result_gaussians
 
 
 def perform_gaussian_mixture_fit_from_watershed(watershed_image: ndarray, out: ndarray):

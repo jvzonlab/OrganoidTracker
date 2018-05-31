@@ -59,8 +59,9 @@ class TestGaussianFit(unittest.TestCase):
         hint2 = Gaussian(205, mu_x=22, mu_y=15, mu_z=11, cov_xx=1, cov_yy=1, cov_zz=1, cov_xy=0, cov_xz=0, cov_yz=0)
         fitted1, fitted2 = gaussian_fit.perform_gaussian_mixture_fit(image, [hint1, hint2])
 
-        self.assertTrue(gaussian1.almost_equal(fitted1))
-        self.assertTrue(gaussian2.almost_equal(fitted2))
+        self.assertTrue(gaussian1.almost_equal(fitted1, cov_delta=8))
+        self.assertTrue(gaussian2.almost_equal(fitted2, mu_delta=3, cov_delta=8))
+
 
     def test_ignore_third_gaussian(self):
         gaussian1 = Gaussian(200, mu_x=15, mu_y=20, mu_z=10, cov_xx=25, cov_yy=20, cov_zz=2, cov_xy=10, cov_xz=0,
@@ -79,13 +80,11 @@ class TestGaussianFit(unittest.TestCase):
         hint2 = Gaussian(205, mu_x=24, mu_y=15, mu_z=11, cov_xx=1, cov_yy=1, cov_zz=1, cov_xy=0, cov_xz=0, cov_yz=0)
         fitted1, fitted2 = gaussian_fit.perform_gaussian_mixture_fit(image, [hint1, hint2])
 
-        print(gaussian1)
-        print(fitted1)
-        self.assertTrue(gaussian1.almost_equal(fitted1, mu_delta=2, cov_delta=5))
+        self.assertTrue(gaussian1.almost_equal(fitted1, a_delta=10, mu_delta=2, cov_delta=9))
         # The second Gaussian is hopeless - it is expanded to also cover the third Gaussian
 
+    @unittest.skip("takes five minutes to execute")
     def test_big_image(self):
-        return
         gaussians = [
             Gaussian(200, mu_x=100, mu_y=130, mu_z=9, cov_xx=225, cov_yy=400, cov_zz=3, cov_xy=10, cov_xz=0, cov_yz=0),
             Gaussian(200, mu_x=80, mu_y=150, mu_z=12, cov_xx=225, cov_yy=400, cov_zz=3, cov_xy=2, cov_xz=-2, cov_yz=0),
@@ -94,17 +93,13 @@ class TestGaussianFit(unittest.TestCase):
         image = numpy.zeros((30, 512, 512), dtype=numpy.float32)
         for gaussian in gaussians:
             gaussian.draw(image)
-        tifffile.imshow(image, cmap="gray")
-        plt.show()
+        gaussian_fit.add_noise(image)
 
         hints = [
             Gaussian(200, mu_x=105, mu_y=135, mu_z=9, cov_xx=100, cov_yy=100, cov_zz=3, cov_xy=0, cov_xz=0, cov_yz=0),
             Gaussian(200, mu_x=75, mu_y=155, mu_z=12, cov_xx=100, cov_yy=100, cov_zz=3, cov_xy=0, cov_xz=0, cov_yz=0),
             Gaussian(200, mu_x=135, mu_y=105, mu_z=13, cov_xx=100, cov_yy=100, cov_zz=3, cov_xy=0, cov_xz=0, cov_yz=0)
         ]
-        fitted = gaussian_fit.perform_gaussian_mixture_fit_splitted(image, hints)
-        image.fill(0)
-        for gaussian in fitted:
-            gaussian.draw(image)
-        tifffile.imshow(image, cmap="gray")
-        plt.show()
+        fitted = gaussian_fit.perform_gaussian_mixture_fit(image, hints)
+        for i in range(len(fitted)):
+            self.assertTrue(fitted[i].almost_equal(gaussians[i], a_delta=80, mu_delta=10, cov_delta=150))
