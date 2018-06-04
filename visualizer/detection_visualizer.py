@@ -1,5 +1,5 @@
 from time import sleep
-from typing import Any, Tuple, Optional
+from typing import Any, Tuple, Optional, Union
 
 import cv2
 
@@ -67,7 +67,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
                 ("Reconstruct basic threshold using existing points", self.async(self._get_reconstruction_of_basic_threshold,
                                                                        self._display_watershed)),
                 ("Reconstruct cells using existing points", self.async(self._get_reconstruction_using_particles,
-                                                                       self._display_watershed))
+                                                                       self._display_image))
             ]
         }
 
@@ -197,21 +197,25 @@ class DetectionVisualizer(AbstractImageVisualizer):
             return images, images_smoothed, watershed
         return watershed
 
-    def _get_reconstruction_of_basic_threshold(self) -> ndarray:
+    def _get_reconstruction_of_basic_threshold(self, return_intermediate=False) -> Union[ndarray, Tuple[ndarray, ndarray]]:
         images, images_smoothed, watershed = self._get_detected_cells_using_particles(return_intermediate=True)
 
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
         thresholding.adaptive_threshold(images_smoothed, threshold, self.threshold_block_size)
 
         ones = numpy.ones_like(images, dtype=numpy.uint8)
-        return watershedding.watershed_labels(threshold, ones, watershed, watershed.max())[0]
+        watershed = watershedding.watershed_labels(threshold, ones, watershed, watershed.max())[0]
+        if return_intermediate:
+            return images, watershed
+        return watershed
 
     def _get_reconstruction_using_particles(self) -> ndarray:
-        watershed = self._get_reconstruction_of_basic_threshold()
+        images, watershed = self._get_reconstruction_of_basic_threshold(return_intermediate=True)
 
-        self._time_point_to_rgb()
-        result = self._time_point_images
-        gaussian_fit.perform_gaussian_mixture_fit_from_watershed(watershed, result)
+        result = numpy.empty_like(images, dtype=numpy.uint8)
+        gaussian_fit.perform_gaussian_mixture_fit_from_watershed(images, watershed, result,
+                                                                 self._time_point.particles(),
+                                                                 11)
         return result
 
     def _get_distances_to_labels(self, images, labels):
