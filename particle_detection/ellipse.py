@@ -7,6 +7,8 @@ from shapely.geometry.polygon import LinearRing
 from numpy import ndarray
 from typing import List, Tuple, Optional
 
+from particle_detection.gaussian import Gaussian
+
 
 def _max(a: Optional[int], b: Optional[int]) -> int:
     if a is None:
@@ -77,6 +79,9 @@ class Ellipse:
         cv2.ellipse(target, ((self._x + dx, self._y + dy), (self._width, self._height), self._angle),
                     color=color, thickness=thickness)
 
+    def get_pos(self) -> Tuple[float, float]:
+        return self._x, self._y
+
     def __repr__(self):
         return "Ellipse(" + str(self._x) + ", " + str(self._y) + ", " + str(self._width) + ", " + str(
             self._height) + ", " + str(self._angle) + ")"
@@ -137,6 +142,25 @@ class EllipseStack:
             return "Stack, first is " + str(ellipse) + " at z=" + str(z)
         return "Stack, empty"
 
+    def to_gaussian(self, image_for_intensities: ndarray) -> Optional[Gaussian]:
+        total_x, total_y, total_z, count = 0, 0, 0, 0
+        for z in range(len(self._stack)):
+            ellipse = self._stack[z]
+            if ellipse is None:
+                continue
+
+            x, y = ellipse.get_pos()
+            total_x += x
+            total_y += y
+            total_z += z
+            count += 1
+        if count == 0:
+            return None
+        x = total_x / count
+        y = total_y / count
+        z = total_z / count
+        return Gaussian(image_for_intensities[int(z), int(y), int(x)], x, y, z, 50, 50, 2, 0, 0, 0)
+
 
 class EllipseCluster:
     """Multiple stacks of ellipses that are so close to each other that a Gaussian mixture model is necessary."""
@@ -146,15 +170,28 @@ class EllipseCluster:
     def __init__(self, stacks: List[EllipseStack]):
         self._stacks = list(stacks)
 
-    def get_image_for_fit(self) -> Optional[ndarray]:
+    def get_image_for_fit(self, original_image: ndarray, padding: int = 4) -> Tuple[int, int, int, Optional[ndarray]]:
+        """Gets all pixels in the original image that belong to the given cell(s). These pixels can then be fitted to a
+        Gaussian."""
         min_x, min_y, min_z, max_x, max_y, max_z = self._get_bounds()
         if min_x is None:
-            return None
-        dx, dy, dz= max_x - min_x + 1, max_y - min_y + 1, max_z - min_z + 1
+            return 0, 0, 0, None
+        min_x = max(0, min_x - padding)
+        min_y = max(0, min_y - padding)
+        max_x = min(original_image.shape[2], max_x + padding + 1)
+        max_y = min(original_image.shape[1], max_y + padding + 1)
+        max_z = min(original_image.shape[0], max_z + 1)
+
+        dx, dy, dz= max_x - min_x, max_y - min_y, max_z - min_z
         threshold_image = numpy.zeros((dz, dy, dx), dtype=numpy.uint8)
         for stack in self._stacks:
             stack.draw_to_image(threshold_image, 255, -min_x, -min_y, -min_z, filled=True)
-        return threshold_image
+        original_image_cropped = numpy.copy(original_image[min_z:max_z, min_y:max_y, min_x:max_x])
+        if original_image_cropped.shape != threshold_image.shape:
+            raise ValueError("Error in shape")
+        original_image_cropped &= threshold_image
+
+        return min_x, min_y, min_z, original_image_cropped
 
     def _get_bounds(self):
         min_x, min_y, min_z = None, None, None
@@ -172,3 +209,7 @@ class EllipseCluster:
     def draw_to_image(self, out: ndarray, color, filled=False):
         for stack in self._stacks:
             stack.draw_to_image(out, color, filled=filled)
+
+    def guess_gaussians(self, image_for_intensities: ndarray) -> List[Gaussian]:
+
+        return [stack.to_gaussian(image_for_intensities) for stack in self._stacks]

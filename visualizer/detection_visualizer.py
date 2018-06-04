@@ -212,10 +212,8 @@ class DetectionVisualizer(AbstractImageVisualizer):
     def _get_reconstruction_using_particles(self) -> ndarray:
         images, watershed = self._get_reconstruction_of_basic_threshold(return_intermediate=True)
 
-        result = numpy.empty_like(images, dtype=numpy.uint8)
-        gaussian_fit.perform_gaussian_mixture_fit_from_watershed(images, watershed, result,
-                                                                 self._time_point.particles(),
-                                                                 11)
+        result = numpy.zeros_like(images, dtype=numpy.float64)
+        gaussian_fit.perform_gaussian_mixture_fit_from_watershed(images, watershed, result, 11)
         return result
 
     def _get_distances_to_labels(self, images, labels):

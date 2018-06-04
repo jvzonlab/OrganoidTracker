@@ -9,89 +9,12 @@ from networkx import Graph
 from numpy import ndarray
 
 from core import Particle
-from particle_detection import watershedding, smoothing
+from particle_detection import smoothing
 from particle_detection.ellipse import Ellipse, EllipseStack, EllipseCluster
+import tifffile
+import matplotlib.pyplot as plt
 
-
-class Gaussian:
-    """A three-dimensional Gaussian function."""
-
-    a: float
-    mu_x: float
-    mu_y: float
-    mu_z: float
-    cov_xx: float
-    cov_yy: float
-    cov_zz: float
-    cov_xy: float
-    cov_xz: float
-    cov_yz: float
-
-    def __init__(self, a, mu_x, mu_y, mu_z, cov_xx, cov_yy, cov_zz, cov_xy, cov_xz, cov_yz):
-        self.a = a
-        self.mu_x = mu_x
-        self.mu_y = mu_y
-        self.mu_z = mu_z
-        self.cov_xx = cov_xx
-        self.cov_yy = cov_yy
-        self.cov_zz = cov_zz
-        self.cov_xy = cov_xy
-        self.cov_xz = cov_xz
-        self.cov_yz = cov_yz
-
-    def draw(self, image: ndarray, cached_gaussian: Optional[ndarray] = None):
-        """Draws a Gaussian to an image. Returns an array that can be passed again to this method (for these Gaussian
-         parameters) to quickly redraw the Gaussian."""
-        offset_x = max(0, int(self.mu_x - 3 * self.cov_xx))
-        offset_y = max(0, int(self.mu_y - 3 * self.cov_yy))
-        offset_z = max(0, int(self.mu_z - 3 * self.cov_zz))
-        max_x = min(image.shape[2], int(self.mu_x + 3 * self.cov_xx))
-        max_y = min(image.shape[1], int(self.mu_y + 3 * self.cov_yy))
-        max_z = min(image.shape[0], int(self.mu_z + 3 * self.cov_zz))
-
-        if cached_gaussian is None:
-            size_x, size_y, size_z = max_x - offset_x, max_y - offset_y, max_z - offset_z
-            pos = _get_positions(size_x, size_y, size_z)
-            gauss = _3d_gauss(pos, self.a, self.mu_x - offset_x, self.mu_y - offset_y, self.mu_z - offset_z,
-                              self.cov_xx, self.cov_yy, self.cov_zz, self.cov_xy, self.cov_xz, self.cov_yz)
-            cached_gaussian = gauss.reshape(size_z, size_y, size_x)
-        image[offset_z:max_z, offset_y:max_y, offset_x:max_x] += cached_gaussian
-        return cached_gaussian
-
-    def to_list(self) -> List[float]:
-        return [self.a, self.mu_x, self.mu_y, self.mu_z, self.cov_xx, self.cov_yy, self.cov_zz, self.cov_xy,
-                self.cov_xz, self.cov_yz]
-
-    def almost_equal(self, other: "Gaussian", a_delta=10, mu_delta=1, cov_delta=2) -> bool:
-        return abs(self.a - other.a) < a_delta and \
-               abs(self.mu_x - other.mu_x) < mu_delta and \
-               abs(self.mu_y - other.mu_y) < mu_delta and \
-               abs(self.mu_z - other.mu_z) < mu_delta and \
-               abs(self.cov_xx - other.cov_xx) < cov_delta and \
-               abs(self.cov_yy - other.cov_yy) < cov_delta and \
-               abs(self.cov_zz - other.cov_zz) < cov_delta and \
-               abs(self.cov_xy - other.cov_xy) < cov_delta and \
-               abs(self.cov_xz - other.cov_xz) < cov_delta and \
-               abs(self.cov_yz - other.cov_yz) < cov_delta
-
-    def translated(self, dx: float, dy: float, dz: float) -> "Gaussian":
-        new_gaussian = Gaussian(*self.to_list())
-        new_gaussian.mu_x += dx
-        new_gaussian.mu_y += dy
-        new_gaussian.mu_z += dz
-        return new_gaussian
-
-    def __eq__(self, other):
-        if isinstance(self, other.__class__):
-            return self.__dict__ == other.__dict__
-        return False
-
-    def __hash__(self):
-        return hash((self.a, self.mu_x, self.mu_y, self.mu_z, self.cov_xx, self.cov_yy, self.cov_zz, self.cov_xy,
-                self.cov_xz, self.cov_yz))
-
-    def __repr__(self):
-        return "Gaussian(*" + repr(self.to_list()) + ")"
+from particle_detection.gaussian import Gaussian
 
 
 def particles_to_gaussians(image: ndarray, particles: Iterable[Particle]) -> List[Gaussian]:
@@ -128,40 +51,6 @@ class _ModelAndImageDifference:
         sum = self._scratch_image.sum()
         print("Difference: " +  '{0:.16f}'.format(sum) + ". Params: " + str(params))
         return sum
-
-
-def _3d_gauss(pos: ndarray, a, mu_x, mu_y, mu_z, cov_xx, cov_yy, cov_zz, cov_xy, cov_xz, cov_yz) -> ndarray:
-    """Calculates a 3D Gaussian for the given positions.
-    :param pos: Stack of vectors: [[x1, y1, z1], [x2, y2, z2], ...]. Can also be a single vector: [x, y, z].
-    :param a: Intensity at mean position.
-    :param mu_x: X of mean position.
-    :param cov_xx: Entry in covariance matrix.
-    :return: Gaussian intensities for all given vectors: [I1, I2, ...]
-    """
-    pos = pos[..., numpy.newaxis]  # From list of vectors to list of column vectors
-    mu = numpy.array([[mu_x], [mu_y], [mu_z]])  # A column vector
-    covariance_matrix = numpy.array([
-        [cov_xx, cov_xy, cov_xz],
-        [cov_xy, cov_yy, cov_yz],
-        [cov_xz, cov_yz, cov_zz]
-    ])
-    cov_inv = numpy.linalg.inv(covariance_matrix)
-
-    pos_mu = pos - mu
-    transpose_axes = (0, 2, 1) if len(pos_mu.shape) == 3 else (1, 0)
-    pos_mu_T = numpy.transpose(pos_mu, transpose_axes)
-
-    return a * numpy.exp(-1 / 2 * (pos_mu_T @ cov_inv @ pos_mu).ravel())
-
-
-def _get_positions(xsize: int, ysize: int, zsize: int) -> ndarray:
-    """Creates a list of x/y/z positions: [[x1,y1,z1],[x2,y2,z2],...]. The order of the positions is such that these
-    represent the x,y,z coords of the elements of zyx_array.ravel()."""
-    x = numpy.arange(xsize)
-    y = numpy.arange(ysize)
-    z = numpy.arange(zsize)
-    y, z, x = numpy.meshgrid(y, z, x)
-    return numpy.column_stack([x.ravel(), y.ravel(), z.ravel()])
 
 
 def add_noise(data: ndarray):
@@ -204,25 +93,28 @@ def perform_gaussian_mixture_fit(original_image: ndarray, guesses: Iterable[Gaus
 
 
 def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image: ndarray, out: ndarray,
-                                                particles: Iterable[Particle], smooth_size: int):
+                                                blur_radius: int):
     """GMM using watershed as seeds. out is a color image where the detected Gaussians can be drawn on."""
+    ellipse_stacks = _get_ellipse_stacks(watershed_image)
+    ellipse_clusters = _get_overlapping_stacks(ellipse_stacks)
 
-    # Out is a threshold
-    out.fill(255)
-    out[watershed_image == 0] = 0
-    _dilate(out)
+    start_time = timer()
+    for cluster in ellipse_clusters:
+        offset_x, offset_y, offset_z, cropped_image = cluster.get_image_for_fit(image, blur_radius)
+        if cropped_image is None:
+            continue
+        smoothing.smooth(cropped_image, blur_radius)
+        gaussians = cluster.guess_gaussians(image)
 
-    image[out == 0] = 0
-    out[...] = image
-    smoothing.smooth(out, smooth_size)
+        gaussians = [gaussian.translated(-offset_x, -offset_y, -offset_z) for gaussian in gaussians]
+        gaussians = perform_gaussian_mixture_fit(cropped_image, gaussians)
+        gaussians = [gaussian.translated(offset_x, offset_y, offset_z) for gaussian in gaussians]
 
-    fitted = perform_gaussian_mixture_fit(out, particles_to_gaussians(out, particles))
-    canvas = numpy.zeros(image.shape, dtype=numpy.float64)
-    for fit in fitted:
-        fit.draw(canvas)
-    canvas.clip(0, 255, out=canvas)
-    out[...] = canvas.astype(numpy.uint8)
-    print(fitted)
+        for gaussian in gaussians:
+            gaussian.draw(out)
+    end_time = timer()
+    print("Whole fitting process took " + str(end_time - start_time) + " seconds.")
+    return out
 
 
 def _dilate(image_3d: ndarray):
