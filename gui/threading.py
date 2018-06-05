@@ -5,6 +5,7 @@ from threading import Thread
 from typing import Optional, Any
 
 from core import UserError
+from core.concurrent import ConcurrentSet
 
 
 class Task:
@@ -49,6 +50,7 @@ class Scheduler(Thread):
     and the task will be executed on a worker thread."""
 
     _task_queue: Queue  # Queue[Task]
+    _running_tasks: ConcurrentSet
     _finished_queue: Queue  # Queue[_CompletedTask]
     _tk_root: tkinter.Tk
 
@@ -57,15 +59,19 @@ class Scheduler(Thread):
         self._tk_root = tk_root
         self._task_queue = Queue(maxsize=1)
         self._finished_queue = Queue()
+        self._running_tasks = ConcurrentSet()
 
         self._check_for_results_on_gui_thread()
 
     def add_task(self, task: Task):
-        try:
-            self._task_queue.put_nowait(task)
-        except queue.Full:
-            task.on_error(UserError("Another task is running", "Another task is already running. "
-                                                               "Please wait for it to finish."))
+        if len(self._running_tasks) == 0:
+            try:
+                self._task_queue.put_nowait(task)
+                return
+            except queue.Full:
+                pass
+        task.on_error(UserError("Another task is running", "Another task is already running. "
+                                                           "Please wait for it to finish."))
 
     def _check_for_results_on_gui_thread(self):
         try:
@@ -80,8 +86,15 @@ class Scheduler(Thread):
         """Long running method that processes pending tasks. Do not call, let Python call it."""
         while True:
             task: Task = self._task_queue.get(block=True, timeout=None)
+            self._running_tasks.add(task)
             try:
                 result = task.run()
                 self._finished_queue.put(_CompletedTask(task, result=result))
             except Exception as e:
                 self._finished_queue.put(_CompletedTask(task, error=e))
+            finally:
+                self._running_tasks.remove(task)
+
+    def has_active_tasks(self) -> bool:
+        """Gets whether there are currently tasks being run or scheduled to run."""
+        return len(self._running_tasks) > 0 or self._task_queue.qsize() > 0

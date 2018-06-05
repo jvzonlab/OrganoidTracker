@@ -151,6 +151,10 @@ class Window:
             ]
         }
 
+    def has_active_tasks(self) -> bool:
+        """Gets whether there are currently tasks being run or scheduled to run."""
+        return self.__scheduler.has_active_tasks()
+
 
 def _update_menu(menu_bar: tkinter.Menu, menu_items: Dict[str, any]):
     from gui import action

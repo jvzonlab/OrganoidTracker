@@ -10,6 +10,8 @@ from tkinter.messagebox import Message
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
+from core import UserError
+
 
 def prompt_int(title: str, question: str) -> int:
     return simpledialog.askinteger(title, question)
@@ -26,6 +28,9 @@ def popup_error(title: str, message: str):
 
 
 def popup_exception(exception: BaseException):
+    if isinstance(exception, UserError):
+        popup_error(exception.title, exception.body)
+        return
     traceback.print_exception(type(exception), exception, exception.__traceback__)
     popup_error("Internal error", "An error occured.\n" + str(exception) + "\nSee console for technical details.")
 

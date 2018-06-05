@@ -186,11 +186,17 @@ class Visualizer:
         search_position = Particle(x, y, z)
         return core.get_closest_particle(particles, search_position, ignore_z=ignore_z, max_distance=max_distance)
 
+    def get_window(self):
+        return self._window
+
 
 __active_visualizer = None # Reference to prevent event handler from being garbage collected
 
 
 def activate(visualizer: Visualizer) -> None:
+    if visualizer.get_window().has_active_tasks():
+        raise core.UserError("Running a task", "Please wait until the current task has been finished before switching"
+                                               " to another window.")
     global __active_visualizer
     if __active_visualizer is not None:
         # Unregister old event handlers
