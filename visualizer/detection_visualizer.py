@@ -166,12 +166,10 @@ class DetectionVisualizer(AbstractImageVisualizer):
 
     def _get_detected_cells_using_particles(self, return_intermediate: bool = False) -> Any:
         if len(self._time_point.particles()) == 0:
-            dialog.popup_error("Failed to detect cells", "Cannot detect cells - no particle positions loaded.")
-            return
+            raise UserError("Failed to detect cells", "Cannot detect cells - no particle positions loaded.")
         images = self._get_8bit_images()
         if images is None:
-            dialog.popup_error("Failed to detect cells", "Cannot detect cells - no images loaded.")
-            return
+            raise UserError("Failed to detect cells", "Cannot detect cells - no images loaded.")
 
         images_smoothed = smoothing.get_smoothed(images, int(self.threshold_block_size / 2))
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
