@@ -9,12 +9,15 @@ def find_undetected_particles(labeled_image: ndarray, particles: Iterable[Partic
     used_ids = dict()
     found_errors = dict()
     for particle in particles:
-        id = labeled_image[int(particle.z), int(particle.y), int(particle.x)]
-        if id == 0:
-            found_errors[particle] = "Missed"
-            continue
-        if id in used_ids:
-            found_errors[particle] = "Merged with " + str(used_ids[id])
-            continue
-        used_ids[id] = particle
+        try:
+            id = labeled_image[int(particle.z), int(particle.y), int(particle.x)]
+            if id == 0:
+                found_errors[particle] = "Missed"
+                continue
+            if id in used_ids:
+                found_errors[particle] = "Merged with " + str(used_ids[id])
+                continue
+            used_ids[id] = particle
+        except IndexError:
+            found_errors[particle] = "Outside image"
     return found_errors

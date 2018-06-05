@@ -237,6 +237,10 @@ class TimePoint:
                     continue
             yield ScoredFamily(family, score)
 
+    def remove_particles(self):
+        """Removes al particles from this time point."""
+        self._particles.clear()
+
 
 class ImageLoader:
     """Responsible for loading all images in an experiment."""

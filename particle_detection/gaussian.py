@@ -29,9 +29,12 @@ class Gaussian:
         self.cov_xz = cov_xz
         self.cov_yz = cov_yz
 
-    def draw(self, image: ndarray, cached_gaussian: Optional[ndarray] = None):
+    def draw(self, image: ndarray, cached_gaussian: Optional[ndarray] = None) -> Optional[ndarray]:
         """Draws a Gaussian to an image. Returns an array that can be passed again to this method (for these Gaussian
          parameters) to quickly redraw the Gaussian."""
+        if self.cov_xx < 0 or self.cov_yy < 0 or self.cov_zz < 0:
+            return
+
         offset_x = max(0, int(self.mu_x - 3 * self.cov_xx))
         offset_y = max(0, int(self.mu_y - 3 * self.cov_yy))
         offset_z = max(0, int(self.mu_z - 3 * self.cov_zz))

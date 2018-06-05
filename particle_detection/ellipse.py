@@ -170,17 +170,19 @@ class EllipseCluster:
     def __init__(self, stacks: List[EllipseStack]):
         self._stacks = list(stacks)
 
-    def get_image_for_fit(self, original_image: ndarray, padding: int = 4) -> Tuple[int, int, int, Optional[ndarray]]:
+    def get_image_for_fit(self, original_image: ndarray, padding_xy: int = 4, padding_z: int = 1
+                          ) -> Tuple[int, int, int, Optional[ndarray]]:
         """Gets all pixels in the original image that belong to the given cell(s). These pixels can then be fitted to a
         Gaussian."""
         min_x, min_y, min_z, max_x, max_y, max_z = self._get_bounds()
         if min_x is None:
             return 0, 0, 0, None
-        min_x = max(0, min_x - padding)
-        min_y = max(0, min_y - padding)
-        max_x = min(original_image.shape[2], max_x + padding + 1)
-        max_y = min(original_image.shape[1], max_y + padding + 1)
-        max_z = min(original_image.shape[0], max_z + 1)
+        min_x = max(0, min_x - padding_xy)
+        min_y = max(0, min_y - padding_xy)
+        min_z = max(0, min_z - padding_z)
+        max_x = min(original_image.shape[2], max_x + padding_xy + 1)
+        max_y = min(original_image.shape[1], max_y + padding_xy + 1)
+        max_z = min(original_image.shape[0], max_z + padding_z + 1)
 
         dx, dy, dz= max_x - min_x, max_y - min_y, max_z - min_z
         threshold_image = numpy.zeros((dz, dy, dx), dtype=numpy.uint8)

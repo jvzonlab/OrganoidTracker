@@ -92,12 +92,13 @@ def perform_gaussian_mixture_fit(original_image: ndarray, guesses: Iterable[Gaus
     return result_gaussians
 
 
-def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image: ndarray, out: ndarray,
-                                                blur_radius: int):
-    """GMM using watershed as seeds. out is a color image where the detected Gaussians can be drawn on."""
+def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image: ndarray, blur_radius: int
+                                                ) -> List[Gaussian]:
+    """GMM using watershed as seeds. The watershed is used to fit as few Gaussians at the same time as possible."""
     ellipse_stacks = _get_ellipse_stacks(watershed_image)
     ellipse_clusters = _get_overlapping_stacks(ellipse_stacks)
 
+    all_gaussians = []
     start_time = timer()
     for cluster in ellipse_clusters:
         offset_x, offset_y, offset_z, cropped_image = cluster.get_image_for_fit(image, blur_radius)
@@ -108,13 +109,11 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
 
         gaussians = [gaussian.translated(-offset_x, -offset_y, -offset_z) for gaussian in gaussians]
         gaussians = perform_gaussian_mixture_fit(cropped_image, gaussians)
-        gaussians = [gaussian.translated(offset_x, offset_y, offset_z) for gaussian in gaussians]
-
         for gaussian in gaussians:
-            gaussian.draw(out)
+            all_gaussians.append(gaussian.translated(offset_x, offset_y, offset_z))
     end_time = timer()
     print("Whole fitting process took " + str(end_time - start_time) + " seconds.")
-    return out
+    return all_gaussians
 
 
 def _dilate(image_3d: ndarray):

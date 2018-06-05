@@ -1,5 +1,5 @@
 from time import sleep
-from typing import Any, Tuple, Optional, Union
+from typing import Any, Tuple, Optional, Union, List
 
 import cv2
 
@@ -10,6 +10,7 @@ from matplotlib.backend_bases import KeyEvent
 from core import UserError, Particle
 from gui import Window, dialog
 from particle_detection import thresholding, watershedding, missed_cell_finder, smoothing, gaussian_fit
+from particle_detection.gaussian import Gaussian
 from visualizer import activate, DisplaySettings
 from visualizer.image_visualizer import AbstractImageVisualizer
 
@@ -67,7 +68,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
                 ("Reconstruct basic threshold using existing points", self.async(self._get_reconstruction_of_basic_threshold,
                                                                        self._display_watershed)),
                 ("Reconstruct cells using existing points", self.async(self._get_reconstruction_using_particles,
-                                                                       self._display_image))
+                                                                       self._display_reconstruction))
             ]
         }
 
@@ -209,12 +210,22 @@ class DetectionVisualizer(AbstractImageVisualizer):
             return images, watershed
         return watershed
 
-    def _get_reconstruction_using_particles(self) -> ndarray:
+    def _get_reconstruction_using_particles(self) -> List[Gaussian]:
         images, watershed = self._get_reconstruction_of_basic_threshold(return_intermediate=True)
 
-        result = numpy.zeros_like(images, dtype=numpy.float64)
-        gaussian_fit.perform_gaussian_mixture_fit_from_watershed(images, watershed, result, 11)
-        return result
+        return gaussian_fit.perform_gaussian_mixture_fit_from_watershed(images, watershed, 11)
+
+    def _display_reconstruction(self, gaussians: List[Gaussian]):
+        self._time_point.remove_particles()
+        shape = self._time_point_images.shape  # May be 3D or 4D, depending on what was previously displayed
+        canvas = numpy.zeros((shape[0], shape[1], shape[2]), dtype=numpy.float64)
+
+        for gaussian in gaussians:
+            self._time_point.add_particle(Particle(gaussian.mu_x, gaussian.mu_y, gaussian.mu_z))
+            gaussian.draw(canvas)
+
+        self._display_image(canvas)
+
 
     def _get_distances_to_labels(self, images, labels):
         labels_inv = numpy.full_like(images, 255, dtype=numpy.uint8)
