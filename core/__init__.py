@@ -330,9 +330,9 @@ class Experiment:
         self._remove_from_graph(particle)
 
     def move_particle(self, old_position: Particle, position_new: Particle) -> bool:
-        """Moves the position of a particle, preserving shape and links. (So it's different from remove-and-readd.)
-        Throws ValueError when the particle is moved to another time point. If the new position has not time point
-        specified, it is set to the time point o the existing particle."""
+        """Moves the position of a particle, preserving any links. (So it's different from remove-and-readd.) The shape
+        of a particle is not preserved, though. Throws ValueError when the particle is moved to another time point. If
+        the new position has not time point specified, it is set to the time point o the existing particle."""
         position_new.with_time_point_number(old_position.time_point_number())  # Make sure both have the same time point
 
         # Replace also in linking graphs
@@ -347,9 +347,8 @@ class Experiment:
                 return False
 
         time_point = self.get_time_point(old_position.time_point_number())
-        shape = time_point.get_shape(old_position)
         time_point.detach_particle(old_position)
-        time_point.add_shaped_particle(position_new, shape)
+        time_point.add_particle(position_new)
         return True
 
 
