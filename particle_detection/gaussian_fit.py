@@ -16,6 +16,8 @@ import matplotlib.pyplot as plt
 
 from particle_detection.gaussian import Gaussian
 
+ELLIPSE_SHRINK_PIXELS = 2
+
 
 def particles_to_gaussians(image: ndarray, particles: Iterable[Particle]) -> List[Gaussian]:
     gaussians = []
@@ -135,11 +137,15 @@ def _get_ellipse_stacks(watershed: ndarray) -> List[EllipseStack]:
         for z in range(buffer.shape[0]):
             contour_image, contours, hierarchy = cv2.findContours(buffer[z], cv2.RETR_LIST, 2)
             contour_index, area = _find_contour_with_largest_area(contours)
-            if contour_index == -1 or area < 40:
+            if contour_index == -1 or len(contours[contour_index]) < 5:
                 ellipse_stack.append(None)
                 continue  # No contours found
             ellipse_pos, ellipse_size, ellipse_angle = cv2.fitEllipse(contours[contour_index])
-            ellipse_stack.append(Ellipse(ellipse_pos[0], ellipse_pos[1], ellipse_size[0] - 2, ellipse_size[1] - 2, ellipse_angle))
+            if ellipse_size[0] <= ELLIPSE_SHRINK_PIXELS or ellipse_size[1] <= ELLIPSE_SHRINK_PIXELS:
+                ellipse_stack.append(None)
+                continue  # Ellipse is too small
+            ellipse_stack.append(Ellipse(ellipse_pos[0], ellipse_pos[1], ellipse_size[0] - ELLIPSE_SHRINK_PIXELS,
+                                         ellipse_size[1] - ELLIPSE_SHRINK_PIXELS, ellipse_angle))
         ellipse_stacks.append(EllipseStack(ellipse_stack))
     return ellipse_stacks
 
