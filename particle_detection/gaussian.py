@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 import numpy
 from numpy import ndarray
@@ -50,6 +50,31 @@ class Gaussian:
             cached_gaussian = gauss.reshape(size_z, size_y, size_x)
         image[offset_z:max_z, offset_y:max_y, offset_x:max_x] += cached_gaussian
         return cached_gaussian
+
+    def draw_colored(self, image: ndarray, color: Tuple[float, float, float]) -> Optional[ndarray]:
+        """Draws a Gaussian to an image in the given color. The color must be an RGB color, with numbers ranging from
+        0 to 1. The Gaussian intensity is divided by 256, which should bring the Gaussian from the byte range [0..256]
+        into the standard float range [0...1]."""
+        if self.cov_xx < 0 or self.cov_yy < 0 or self.cov_zz < 0:
+            return
+
+        offset_x = max(0, int(self.mu_x - 3 * self.cov_xx))
+        offset_y = max(0, int(self.mu_y - 3 * self.cov_yy))
+        offset_z = max(0, int(self.mu_z - 3 * self.cov_zz))
+        max_x = min(image.shape[2], int(self.mu_x + 3 * self.cov_xx))
+        max_y = min(image.shape[1], int(self.mu_y + 3 * self.cov_yy))
+        max_z = min(image.shape[0], int(self.mu_z + 3 * self.cov_zz))
+
+        size_x, size_y, size_z = max_x - offset_x, max_y - offset_y, max_z - offset_z
+        pos = _get_positions(size_x, size_y, size_z)
+        gauss = _3d_gauss(pos, self.a / 256, self.mu_x - offset_x, self.mu_y - offset_y, self.mu_z - offset_z,
+                          self.cov_xx, self.cov_yy, self.cov_zz, self.cov_xy, self.cov_xz, self.cov_yz)
+        cached_gaussian = gauss.reshape(size_z, size_y, size_x)
+        image[offset_z:max_z, offset_y:max_y, offset_x:max_x, 0] += cached_gaussian * color[0]
+        image[offset_z:max_z, offset_y:max_y, offset_x:max_x, 1] += cached_gaussian * color[1]
+        image[offset_z:max_z, offset_y:max_y, offset_x:max_x, 2] += cached_gaussian * color[2]
+        return cached_gaussian
+
 
     def to_list(self) -> List[float]:
         return [self.a, self.mu_x, self.mu_y, self.mu_z, self.cov_xx, self.cov_yy, self.cov_zz, self.cov_xy,

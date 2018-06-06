@@ -216,12 +216,17 @@ class DetectionVisualizer(AbstractImageVisualizer):
     def _display_reconstruction(self, gaussians: List[Gaussian]):
         self._time_point.remove_particles()
         shape = self._time_point_images.shape  # May be 3D or 4D, depending on what was previously displayed
-        canvas = numpy.zeros((shape[0], shape[1], shape[2]), dtype=numpy.float64)
+        canvas = numpy.zeros((shape[0], shape[1], shape[2], 3), dtype=numpy.float64)
 
+        colors = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 0), (1, 0, 1), (0, 1, 1), (1, 1, 1)]
+        i = 0
         for gaussian in gaussians:
             self._time_point.add_particle(Particle(gaussian.mu_x, gaussian.mu_y, gaussian.mu_z))
-            gaussian.draw(canvas)
+            color = colors[i % len(colors)]
+            gaussian.draw_colored(canvas, color)
+            i += 1
 
+        canvas.clip(0, 1, out=canvas)
         self._display_image(canvas)
 
 

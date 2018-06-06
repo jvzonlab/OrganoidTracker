@@ -76,6 +76,9 @@ class Ellipse:
 
     def draw_to_image(self, target: ndarray, color, dx = 0, dy = 0, filled=False):
         thickness = -1 if filled else 2
+
+        # PyCharm cannot recognize signature of cv2.ellipse, so the warning is a false positive:
+        # noinspection PyArgumentList
         cv2.ellipse(target, ((self._x + dx, self._y + dy), (self._width, self._height), self._angle),
                     color=color, thickness=thickness)
 
