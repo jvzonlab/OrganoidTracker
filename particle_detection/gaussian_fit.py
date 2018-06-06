@@ -51,7 +51,7 @@ class _ModelAndImageDifference:
         self._scratch_image -= self._data_image
         self._scratch_image **= 2
         sum = self._scratch_image.sum()
-        print("Difference: " +  '{0:.16f}'.format(sum) + ". Params: " + str(params))
+        #print("Difference: " +  '{0:.16f}'.format(sum) + ". Params: " + str(params))
         return sum
 
 

@@ -214,7 +214,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
         return gaussian_fit.perform_gaussian_mixture_fit_from_watershed(images, watershed, 11)
 
     def _display_reconstruction(self, gaussians: List[Gaussian]):
-        self._time_point.remove_particles()
+        self._experiment.remove_particles(self._time_point)
         shape = self._time_point_images.shape  # May be 3D or 4D, depending on what was previously displayed
         canvas = numpy.zeros((shape[0], shape[1], shape[2], 3), dtype=numpy.float64)
 

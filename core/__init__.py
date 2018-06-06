@@ -4,6 +4,7 @@ An Experiment also stores an ImageLoader and up to two cell links networks (stor
 from operator import itemgetter
 from typing import List, Iterable, Optional, Dict, Set, Any, Union, AbstractSet
 
+import networkx
 from networkx import Graph
 from numpy import ndarray
 
@@ -43,7 +44,7 @@ class Particle:
         performance, as the expensive sqrt(..) function can be avoided."""
         return (self.x - other.x) ** 2 + (self.y - other.y) ** 2 + ((self.z - other.z) * z_factor) ** 2
 
-    def time_point_number(self):
+    def time_point_number(self) -> Optional[int]:
         return self._time_point_number
 
     def with_time_point_number(self, time_point_number: int):
@@ -237,9 +238,15 @@ class TimePoint:
                     continue
             yield ScoredFamily(family, score)
 
-    def remove_particles(self):
-        """Removes al particles from this time point."""
+    def detach_particles(self):
+        """Removes al particles from this time point, without removing them from the linking graphs. See also
+        Experiment.remove_particles."""
         self._particles.clear()
+
+    def detach_particle(self, particle: Particle):
+        """Removes a single particle. Raises KeyError if that particle was not in this time point. Does not remove a
+        particle from the linking graph. See also Experiment.remove_particle."""
+        del self._particles[particle]
 
 
 class ImageLoader:
@@ -317,6 +324,45 @@ class Experiment:
         """Adds a particle to the experiment. The particle must have a time point number specified."""
         time_point = self.get_or_add_time_point(particle.time_point_number())
         time_point.add_particle(particle)
+
+    def remove_particle(self, particle: Particle):
+        self.get_time_point(particle.time_point_number()).detach_particle(particle)
+        self._remove_from_graph(particle)
+
+    def move_particle(self, old_position: Particle, position_new: Particle) -> bool:
+        """Moves the position of a particle, preserving shape and links. (So it's different from remove-and-readd.)
+        Throws ValueError when the particle is moved to another time point. If the new position has not time point
+        specified, it is set to the time point o the existing particle."""
+        position_new.with_time_point_number(old_position.time_point_number())  # Make sure both have the same time point
+
+        # Replace also in linking graphs
+        mapping = {old_position: position_new}
+        if self._particle_links is not None and old_position in self._particle_links:
+            networkx.relabel_nodes(self._particle_links, mapping, copy=False)
+            if old_position in self._particle_links:
+                return False
+        if self._particle_links_baseline is not None and old_position in self._particle_links_baseline:
+            networkx.relabel_nodes(self._particle_links_baseline, mapping, copy=False)
+            if old_position in self._particle_links_baseline:
+                return False
+
+        time_point = self.get_time_point(old_position.time_point_number())
+        shape = time_point.get_shape(old_position)
+        time_point.detach_particle(old_position)
+        time_point.add_shaped_particle(position_new, shape)
+        return True
+
+
+    def _remove_from_graph(self, particle: Particle):
+        if self._particle_links is not None and particle in self._particle_links:
+            self._particle_links.remove_node(particle)
+        if self._particle_links_baseline is not None and particle in self._particle_links_baseline:
+            self._particle_links_baseline.remove_node(particle)
+
+    def remove_particles(self, time_point: TimePoint):
+        for particle in time_point.particles():
+            self._remove_from_graph(particle)
+        time_point.detach_particles()
 
     def get_time_point(self, time_point_number: int) -> TimePoint:
         """Gets the time point with the given number. Throws KeyError if no such time point exists."""

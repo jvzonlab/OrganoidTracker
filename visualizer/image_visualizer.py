@@ -341,6 +341,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
 
         options["Edit"] = [
             ("Links... (L)", self._show_link_editor),
+            ("Positions... (P)", self._show_position_editor),
             "-",
             ("Cell detection...", self._show_cell_detector)
         ]
@@ -367,6 +368,8 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             self._show_linking_differences(particle)
         elif event.key == "l":
             self._show_link_editor()
+        elif event.key == "p":
+            self._show_position_editor()
         elif event.key == "s":
             particle = self._get_particle_at(event.xdata, event.ydata)
             if particle is not None:
@@ -409,6 +412,12 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         from visualizer.link_editor import LinkEditor
         link_editor = LinkEditor(self._window, time_point_number=self._time_point.time_point_number(), z=self._z)
         activate(link_editor)
+
+    def _show_position_editor(self):
+        from visualizer.position_editor import PositionEditor
+        position_editor = PositionEditor(self._window, time_point_number=self._time_point.time_point_number(),
+                                         z=self._z)
+        activate(position_editor)
 
     def _on_command(self, command: str) -> bool:
         if command == "deaths":
