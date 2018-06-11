@@ -25,9 +25,10 @@ class AbstractImageVisualizer(Visualizer):
     """A generic image visualizer."""
 
     MAX_Z_DISTANCE: int = 3
+    DEFAULT_SIZE = (30, 500, 500)
 
-    _time_point: TimePoint
-    _time_point_images: ndarray
+    _time_point: TimePoint = None
+    _time_point_images: ndarray = None
     _z: int
     __drawn_particles: List[Particle]
     _display_settings: DisplaySettings
@@ -47,11 +48,21 @@ class AbstractImageVisualizer(Visualizer):
     def _load_time_point(self, time_point_number: int) -> Tuple[TimePoint, ndarray]:
         time_point = self._experiment.get_time_point(time_point_number)
         if self._display_settings.show_images:
-            time_point_images = self.create_image(time_point, self._display_settings.show_next_time_point)
+            if self._display_settings.show_reconstruction:
+                time_point_images = self.reconstruct_image(time_point, self._guess_image_size(time_point))
+            else:
+                time_point_images = self.load_image(time_point, self._display_settings.show_next_time_point)
         else:
             time_point_images = None
 
         return time_point, time_point_images
+
+    def _guess_image_size(self, time_point):
+        images_for_size = self._time_point_images
+        if images_for_size is None:
+            images_for_size = self.load_image(time_point, False)
+        size = images_for_size.shape if images_for_size is not None else self.DEFAULT_SIZE
+        return size
 
     def draw_view(self):
         self._clear_axis()
@@ -113,26 +124,30 @@ class AbstractImageVisualizer(Visualizer):
 
     def _draw_particles_of_time_point(self, time_point: TimePoint, color: str = core.COLOR_CELL_CURRENT):
         dt = time_point.time_point_number() - self._time_point.time_point_number()
-        for particle, shape in time_point.particles_and_shapes().items():
+        for particle in time_point.particles():
             dz = int(particle.z - self._z)
             if abs(dz) > self.MAX_Z_DISTANCE:
                 continue
 
             # Draw the particle itself (as a square or circle, depending on its depth)
-            self._draw_particle(particle, shape, color, dz, dt)
+            self._draw_particle(particle, color, dz, dt)
 
-    def _draw_particle(self, particle: Particle, shape: ParticleShape, color: str, dz: int, dt: int):
+    def _draw_particle(self, particle: Particle, color: str, dz: int, dt: int):
         # Draw error marker
         graph = self._experiment.particle_links_scratch() or self._experiment.particle_links()
         if graph is not None and particle in graph and "error" in graph.nodes[particle]:
             self._draw_error(particle, dz)
 
-        # Draw particle
-        if self._display_settings.show_shapes:
-            shape.draw2d(particle.x, particle.y, dz, dt, self._ax, color)
-        else:
-            shape.default_draw(particle.x, particle.y, dz, dt, self._ax, color)
+        # Draw particle marker
+        self._draw_particle_marker(particle.x, particle.y, dz, dt, color)
+
         self.__drawn_particles.append(particle)
+
+    def _draw_particle_marker(self, x: float, y: float, dz: int, dt: int, color: str):
+        marker_style = 's' if dz == 0 else 'o'
+        marker_size = max(1, 7 - abs(dz) - abs(dt))
+        self._ax.plot(x, y, marker_style, color=color, markeredgecolor='black', markersize=marker_size,
+                  markeredgewidth=1)
 
     def _draw_error(self, particle: Particle, dz: int):
         self._ax.plot(particle.x, particle.y, 'X', color='black', markeredgecolor='white',
@@ -197,8 +212,8 @@ class AbstractImageVisualizer(Visualizer):
                  self._toggle_showing_next_time_point),
                 ("Toggle showing images (" + DisplaySettings.KEY_SHOW_IMAGES.upper() + ")",
                  self._toggle_showing_images),
-                ("Toggle showing morphology/shapes (" + DisplaySettings.KEY_SHOW_MORPHOLOGY.upper() + ")",
-                 self._toggle_showing_shapes)
+                ("Toggle showing reconstruction (" + DisplaySettings.KEY_SHOW_RECONSTRUCTION.upper() + ")",
+                 self._toggle_showing_reconstruction)
             ],
             "Navigate": [
                 ("Above layer (Up)", lambda: self._move_in_z(1)),
@@ -223,8 +238,8 @@ class AbstractImageVisualizer(Visualizer):
             self._toggle_showing_next_time_point()
         elif event.key == DisplaySettings.KEY_SHOW_IMAGES:
             self._toggle_showing_images()
-        elif event.key == DisplaySettings.KEY_SHOW_MORPHOLOGY:
-            self._toggle_showing_shapes()
+        elif event.key == DisplaySettings.KEY_SHOW_RECONSTRUCTION:
+            self._toggle_showing_reconstruction()
 
     def _on_command(self, command: str) -> bool:
         if command[0] == "t":
@@ -248,8 +263,8 @@ class AbstractImageVisualizer(Visualizer):
         self._display_settings.show_images = not self._display_settings.show_images
         self.refresh_view()
 
-    def _toggle_showing_shapes(self):
-        self._display_settings.show_shapes = not self._display_settings.show_shapes
+    def _toggle_showing_reconstruction(self):
+        self._display_settings.show_reconstruction = not self._display_settings.show_reconstruction
         self.refresh_view()
 
     def _move_in_z(self, dz: int):

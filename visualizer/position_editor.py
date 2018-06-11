@@ -17,7 +17,7 @@ class PositionEditor(AbstractImageVisualizer):
     _selected: Optional[Particle] = None
 
     def __init__(self, window: Window, time_point_number: int = 1, z: int = 14):
-        super().__init__(window, time_point_number, z, DisplaySettings(show_shapes=False))
+        super().__init__(window, time_point_number, z, DisplaySettings(show_reconstruction=False))
 
     def get_extra_menu_options(self):
         parent = super().get_extra_menu_options()

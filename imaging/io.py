@@ -2,7 +2,7 @@
 import json
 from json import JSONEncoder
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import numpy
 from networkx import node_link_data, node_link_graph, Graph
@@ -11,12 +11,16 @@ from pandas import DataFrame
 from core import Experiment, Particle, Score, Family, ScoredFamily
 
 
-def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: str):
+def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: str,
+                                        min_time_point: Optional[int] = 0, max_time_point: Optional[int] = 5000):
     """Loads all particle positions from a JSON file"""
     with open(json_file_name) as handle:
         time_points = json.load(handle)
         for time_point, raw_particles in time_points.items():
-            experiment.add_particles_raw(int(time_point), raw_particles)
+            time_point = int(time_point)  # str -> int
+            if time_point < min_time_point or time_point > max_time_point:
+                continue
+            experiment.add_particles_raw(time_point, raw_particles)
 
 
 def load_links_and_scores_from_json(experiment: Experiment, json_file_name: str, links_are_scratch=False):
@@ -26,7 +30,7 @@ def load_links_and_scores_from_json(experiment: Experiment, json_file_name: str,
             raise ValueError
 
         # Read families
-        family_scores_list: List[ScoredFamily] = data["family_scores"] if "family_scores" in data else []
+        family_scores_list: List[ScoredFamily] = data.get("family_scores", [])
         for scored_family in family_scores_list:
             family = scored_family.family
             time_point = experiment.get_or_add_time_point(family.mother.time_point_number())

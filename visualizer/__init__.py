@@ -1,8 +1,9 @@
 """A bunch of visualizers, all based on Matplotlib. (The fact that TkInter is also used is abstracted away.)"""
 
-from typing import Iterable, Optional, Union, Dict, List, Any
+from typing import Iterable, Optional, Union, Dict, List, Any, Tuple
 
 import numpy
+from numpy import ndarray
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 from matplotlib.figure import Figure, Axes
 
@@ -14,16 +15,16 @@ from gui import Window, dialog, Task
 class DisplaySettings:
     show_next_time_point: bool
     show_images: bool
-    show_shapes: bool
+    show_reconstruction: bool
 
-    def __init__(self, show_next_time_point: bool = False, show_images: bool = True, show_shapes: bool = True):
+    def __init__(self, show_next_time_point: bool = False, show_images: bool = True, show_reconstruction: bool = False):
         self.show_next_time_point = show_next_time_point
         self.show_images = show_images
-        self.show_shapes = show_shapes
+        self.show_reconstruction = show_reconstruction
 
     KEY_SHOW_NEXT_IMAGE_ON_TOP = "n"
     KEY_SHOW_IMAGES = "i"
-    KEY_SHOW_MORPHOLOGY = "m"
+    KEY_SHOW_RECONSTRUCTION = "r"
 
 
 class Visualizer:
@@ -152,7 +153,7 @@ class Visualizer:
     def get_extra_menu_options(self) -> Dict[str, List]:
         return {}
 
-    def create_image(self, time_point: TimePoint, show_next_time_point: bool):
+    def load_image(self, time_point: TimePoint, show_next_time_point: bool) -> Optional[ndarray]:
         """Creates an image suitable for display purposes. IF show_next_time_point is set to True, then then a color
         image will be created with the next image in red, and the current image in green."""
         time_point_images = self._experiment.get_image_stack(time_point)
@@ -171,6 +172,16 @@ class Visualizer:
                 pass  # There is no next time point, ignore
             time_point_images = rgb_images / rgb_images.max()
         return time_point_images
+
+    def reconstruct_image(self, time_point: TimePoint, zyx_size: Tuple[int, int, int]) -> ndarray:
+        rgb_images = numpy.zeros((zyx_size[0], zyx_size[1], zyx_size[2], 3), dtype='float')
+        colors = [(1, 1, 1), (1, 1, 0), (1, 0, 1), (0, 1, 1), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
+        i = 0
+        for particle, shape in time_point.particles_and_shapes().items():
+            shape.draw3d_color(particle.x, particle.y, particle.z, 0, rgb_images, colors[i % len(colors)])
+            i += 1
+        rgb_images.clip(min=0, max=1, out=rgb_images)
+        return rgb_images
 
     @staticmethod
     def get_closest_particle(particles: Iterable[Particle], x: Optional[int], y: Optional[int], z: Optional[int], max_distance: int = 100000):

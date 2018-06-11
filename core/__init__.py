@@ -2,7 +2,7 @@
 which are placed in an Experiment. A TimePoint also stores scores of possible mother-daughter cell combinations.
 An Experiment also stores an ImageLoader and up to two cell links networks (stored as Graph objects)."""
 from operator import itemgetter
-from typing import List, Iterable, Optional, Dict, Set, Any, Union, AbstractSet
+from typing import List, Iterable, Optional, Dict, Set, Any, Union, AbstractSet, Tuple
 
 import networkx
 from networkx import Graph
@@ -249,12 +249,24 @@ class TimePoint:
         del self._particles[particle]
 
 
+class ImageResolution:
+    """Represents the resolution of a 3D image."""
+    pixel_size_zyx_um: Tuple[float, float, float]
+
+    def __init__(self, pixel_size_x_um: float, pixel_size_y_um: float, pixel_size_z_um: float):
+        self.pixel_size_zyx_um = (pixel_size_z_um, pixel_size_y_um, pixel_size_x_um)
+
+
 class ImageLoader:
     """Responsible for loading all images in an experiment."""
 
     def load_3d_image(self, time_point: TimePoint) -> Optional[ndarray]:
         """Loads an image, usually from disk. Returns None if there is no image for this time point."""
         return None
+
+    def get_resolution(self) -> ImageResolution:
+        """Gets the resolution of an image, or raises ValueError if unknown."""
+        raise ValueError()
 
     def unwrap(self) -> "ImageLoader":
         """If this loader is a wrapper around another loader, this method returns one loader below. Otherwise, it
@@ -267,7 +279,7 @@ class _CachedImageLoader(ImageLoader):
     """Wrapper that caches the last few loaded images."""
 
     _internal: ImageLoader
-    _image_cache: List
+    _image_cache: List[Tuple[int, ndarray]]
 
     def __init__(self, wrapped: ImageLoader):
         self._image_cache = []
@@ -288,6 +300,9 @@ class _CachedImageLoader(ImageLoader):
         image = self._internal.load_3d_image(time_point)
         self._add_to_cache(time_point_number, image)
         return image
+
+    def get_resolution(self):
+        return self._internal.get_resolution()
 
     def unwrap(self) -> ImageLoader:
         return self._internal
@@ -423,11 +438,11 @@ class Experiment:
             yield self.get_time_point(current_number)
             current_number += 1
 
-    def set_image_loader(self, image_loader: ImageLoader):
-        self._image_loader = _CachedImageLoader(image_loader)
-
-    def get_image_loader(self):
-        """Gets the image loader."""
+    def image_loader(self, image_loader: Optional[ImageLoader] = None):
+        """Gets/sets the image loader."""
+        if image_loader is not None:
+            self._image_loader = _CachedImageLoader(image_loader)
+            return image_loader
         return self._image_loader.unwrap()  # The single unwrap call removes the cache
 
     def get_image_stack(self, time_point: TimePoint) -> Optional[ndarray]:

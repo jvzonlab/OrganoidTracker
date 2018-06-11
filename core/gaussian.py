@@ -32,15 +32,18 @@ class Gaussian:
     def draw(self, image: ndarray, cached_gaussian: Optional[ndarray] = None) -> Optional[ndarray]:
         """Draws a Gaussian to an image. Returns an array that can be passed again to this method (for these Gaussian
          parameters) to quickly redraw the Gaussian."""
-        if self.cov_xx < 0 or self.cov_yy < 0 or self.cov_zz < 0:
-            return
+        if self.cov_xx < 0 or self.cov_yy < 0 or self.cov_zz < 0 \
+                or self.mu_x < 0 or self.mu_x > image.shape[2] \
+                or self.mu_y < 0 or self.mu_y > image.shape[1] \
+                or self.mu_z < 0 or self.mu_z > image.shape[0]:
+            return  # All invalid Gaussians
 
         offset_x = max(0, int(self.mu_x - 3 * self.cov_xx))
         offset_y = max(0, int(self.mu_y - 3 * self.cov_yy))
         offset_z = max(0, int(self.mu_z - 3 * self.cov_zz))
-        max_x = min(image.shape[2], int(self.mu_x + 3 * self.cov_xx))
-        max_y = min(image.shape[1], int(self.mu_y + 3 * self.cov_yy))
-        max_z = min(image.shape[0], int(self.mu_z + 3 * self.cov_zz))
+        max_x = min(image.shape[2], int(self.mu_x + 3 * self.cov_xx + 1))
+        max_y = min(image.shape[1], int(self.mu_y + 3 * self.cov_yy + 1))
+        max_z = min(image.shape[0], int(self.mu_z + 3 * self.cov_zz + 1))
 
         if cached_gaussian is None:
             size_x, size_y, size_z = max_x - offset_x, max_y - offset_y, max_z - offset_z

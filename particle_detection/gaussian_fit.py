@@ -11,20 +11,10 @@ from numpy import ndarray
 from core import Particle
 from particle_detection import smoothing
 from particle_detection.ellipse import Ellipse, EllipseStack, EllipseCluster
-import tifffile
-import matplotlib.pyplot as plt
 
-from particle_detection.gaussian import Gaussian
+from core.gaussian import Gaussian
 
 ELLIPSE_SHRINK_PIXELS = 2
-
-
-def particles_to_gaussians(image: ndarray, particles: Iterable[Particle]) -> List[Gaussian]:
-    gaussians = []
-    for particle in particles:
-        intensity = image[int(particle.z), int(particle.y), int(particle.x)]
-        gaussians.append(Gaussian(intensity, particle.x, particle.y, particle.z, 15, 15, 3, 0, 0, 0))
-    return gaussians
 
 
 class _ModelAndImageDifference:
@@ -51,7 +41,6 @@ class _ModelAndImageDifference:
         self._scratch_image -= self._data_image
         self._scratch_image **= 2
         sum = self._scratch_image.sum()
-        #print("Difference: " +  '{0:.16f}'.format(sum) + ". Params: " + str(params))
         return sum
 
 
@@ -78,12 +67,8 @@ def perform_gaussian_mixture_fit(original_image: ndarray, guesses: Iterable[Gaus
     for guess in guesses:
         guesses_list += guess.to_list()
 
-    start_time = timer()
     result = scipy.optimize.minimize(model_and_image_difference.difference_with_image, guesses_list,
                                      method='Powell', options={'ftol':0.001,'xtol':10})
-    end_time = timer()
-    print("Iterations: " + str(result.nfev) + "    Total time: " + str(end_time - start_time) + " seconds    Time per"
-          " iteration: " + str((end_time - start_time) / result.nfev) + " seconds")
     if not result.success:
         raise ValueError("Minimization failed: " + result.message)
 
@@ -100,7 +85,7 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
     ellipse_stacks = _get_ellipse_stacks(watershed_image)
     ellipse_clusters = _get_overlapping_stacks(ellipse_stacks)
 
-    all_gaussians = []
+    all_gaussians: List[Optional[Gaussian]] = [None] * len(ellipse_stacks)  # Initialize empty list
     start_time = timer()
     for cluster in ellipse_clusters:
         offset_x, offset_y, offset_z, cropped_image = cluster.get_image_for_fit(image, blur_radius)
@@ -108,11 +93,12 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
             continue
         smoothing.smooth(cropped_image, blur_radius)
         gaussians = cluster.guess_gaussians(image)
+        tags = cluster.get_tags()
 
         gaussians = [gaussian.translated(-offset_x, -offset_y, -offset_z) for gaussian in gaussians]
         gaussians = perform_gaussian_mixture_fit(cropped_image, gaussians)
-        for gaussian in gaussians:
-            all_gaussians.append(gaussian.translated(offset_x, offset_y, offset_z))
+        for i, gaussian in enumerate(gaussians):
+            all_gaussians[tags[i]] = gaussian.translated(offset_x, offset_y, offset_z)
     end_time = timer()
     print("Whole fitting process took " + str(end_time - start_time) + " seconds.")
     return all_gaussians
@@ -127,10 +113,11 @@ def _dilate(image_3d: ndarray):
 
 
 def _get_ellipse_stacks(watershed: ndarray) -> List[EllipseStack]:
-    max = watershed.max()
+    """Gets ellipse stacks from a watershed image. The stack tagged as nr. 0 is constructed from label 1, stack 1 from
+    label 2, etc."""
     buffer = numpy.empty_like(watershed, dtype=numpy.uint8)
     ellipse_stacks = []
-    for i in range(1, max):
+    for i in range(1, watershed.max() + 1):   # + 1 to ensure inclusive range
         ellipse_stack = []
         buffer.fill(0)
         buffer[watershed == i] = 255
@@ -146,7 +133,7 @@ def _get_ellipse_stacks(watershed: ndarray) -> List[EllipseStack]:
                 continue  # Ellipse is too small
             ellipse_stack.append(Ellipse(ellipse_pos[0], ellipse_pos[1], ellipse_size[0] - ELLIPSE_SHRINK_PIXELS,
                                          ellipse_size[1] - ELLIPSE_SHRINK_PIXELS, ellipse_angle))
-        ellipse_stacks.append(EllipseStack(ellipse_stack))
+        ellipse_stacks.append(EllipseStack(ellipse_stack, tag=i - 1))
     return ellipse_stacks
 
 
@@ -166,6 +153,7 @@ def _get_overlapping_stacks(stacks: List[EllipseStack]) -> List[EllipseCluster]:
     for cluster in networkx.connected_components(cell_network):
         clusters.append(EllipseCluster(cluster))
     return clusters
+
 
 def _find_contour_with_largest_area(contours) -> Tuple[int, float]:
     highest_area = 0

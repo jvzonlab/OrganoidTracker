@@ -4,10 +4,9 @@ from config import ConfigFile
 from core import Experiment
 from imaging import io, tifffolder
 from linking import link_fixer_casebycase, linker_for_experiment
-
-# PARAMETERS
 from linking.rational_scoring_system import RationalScoringSystem
 
+# PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("create_links")
 _images_folder = config.get_or_default("images_folder", "./", store_in_defaults=True)

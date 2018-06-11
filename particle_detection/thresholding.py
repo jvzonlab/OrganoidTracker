@@ -1,10 +1,11 @@
 """Attempt at edge detection. Doesn't work so well."""
-from typing import Tuple
+from typing import Tuple, Iterable
 
 import cv2
 import numpy
 from numpy import ndarray
 
+from core import Particle
 from particle_detection import watershedding, smoothing
 from segmentation import iso_intensity_curvature
 from segmentation.iso_intensity_curvature import ImageDerivatives
@@ -51,7 +52,8 @@ def watershedded_threshold(image_8bit: ndarray, image_8bit_smoothed: ndarray, ou
     out[lines != 0] = 0
 
 
-def advanced_threshold(image_8bit: ndarray, image_8bit_smoothed: ndarray, out: ndarray, block_size: int, watershed_size: Tuple[int, int, int]):
+def advanced_threshold(image_8bit: ndarray, image_8bit_smoothed: ndarray, out: ndarray, block_size: int,
+                       watershed_size: Tuple[int, int, int], particles: Iterable[Particle] = []):
     watershedded_threshold(image_8bit, image_8bit_smoothed, out, block_size, watershed_size)
 
     curvature_out = numpy.full_like(image_8bit, 255, dtype=numpy.uint8)
@@ -60,6 +62,12 @@ def advanced_threshold(image_8bit: ndarray, image_8bit_smoothed: ndarray, out: n
 
     fill_threshold(out)
     background_removal(image_8bit, out)
+    _draw_squares(particles, out)
+
+def _draw_squares(particles: Iterable[Particle], out: ndarray):
+    """Draws squares around the known particle positions, so that they are surely included in the threshold."""
+    for particle in particles:
+        out[int(particle.z), int(particle.y - 3):int(particle.y + 3), int(particle.x - 3):int(particle.x + 3)] = 255
 
 
 def _open(threshold: ndarray):

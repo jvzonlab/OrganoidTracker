@@ -1,8 +1,12 @@
+import cv2
 import math
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 from matplotlib.axes import Axes
 from matplotlib.patches import Ellipse
+from numpy import ndarray
+
+from core.gaussian import Gaussian
 
 
 class ParticleShape:
@@ -15,11 +19,25 @@ class ParticleShape:
         """
         raise NotImplementedError()
 
-    def default_draw(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
+    def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
+        """Draws a shape in 3d to a color image."""
+        raise NotImplementedError()
+
+    @staticmethod
+    def default_draw(x: float, y: float, dz: int, dt: int, area: Axes, color: str):
         """The default (point) representation of a shape. Implementation can fall back on this if they want."""
         marker_style = 's' if dz == 0 else 'o'
         marker_size = max(1, 7 - abs(dz) - abs(dt))
         area.plot(x, y, marker_style, color=color, markeredgecolor='black', markersize=marker_size, markeredgewidth=1)
+
+    @staticmethod
+    def default_draw3d_color(x: float, y: float, z: float, dt: int, image: ndarray,
+                             color: Tuple[float, float, float], radius_xy=5, radius_z=0):
+        min_x, min_y, min_z = int(x - radius_xy), int(y - radius_xy), int(z - radius_z)
+        max_x, max_y, max_z = int(x + radius_xy + 1), int(y + radius_xy + 1), int(z + radius_z + 1)
+        image[min_z:max_z, min_y:max_y, min_x:max_x, 0] = color[0]
+        image[min_z:max_z, min_y:max_y, min_x:max_x, 1] = color[1]
+        image[min_z:max_z, min_y:max_y, min_x:max_x, 2] = color[2]
 
     def raw_area(self) -> float:
         """Derived from raw detection."""
@@ -53,11 +71,17 @@ class ParticleShape:
         """Converts this shape to a list for serialization purposes. Convert back using from_list"""
         raise NotImplementedError()
 
+    def __repr__(self):
+        return "<" + type(self).__name__ + ">"
+
 
 class UnknownShape(ParticleShape):
 
     def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
         self.default_draw(x, y, dz, dt, area, color)
+
+    def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
+        self.default_draw3d_color(x, y, z, dt, image, color)
 
     def raw_area(self) -> float:
         return 0
@@ -76,7 +100,8 @@ class UnknownShape(ParticleShape):
 
 
 class EllipseShape(ParticleShape):
-    """Represents an ellipsoidal shape. The shape only stores 2D information."""
+    """Represents an ellipsoidal shape. The shape only stores 2D information. This class was previously used to store
+    some primitive shape information. The class is still present, so that you are able to load old data."""
     _ellipse_dx: float  # Offset from particle center
     _ellipse_dy: float  # Offset from particle center
     _ellipse_width: float  # Always smaller than height
@@ -108,6 +133,24 @@ class EllipseShape(ParticleShape):
                                 fill=fill, facecolor=color, edgecolor=edgecolor, linestyle="dashed", linewidth=1,
                                 alpha=alpha))
 
+    def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
+        if dt != 0:
+            return
+        min_z = max(0, int(z) - 4)
+        max_z = min(image.shape[0], int(z) + 4 + 1)
+        thickness = -1 if dt == 0 else 1  # thickness == -1 causes ellipse to be filled
+        for z_layer in range(min_z, max_z):
+            dz = abs(int(z) - z_layer) + 1
+            z_color = (color[0] / dz, color[1] / dz, color[2] / dz)
+            self._draw_to_image(image[z_layer], x, y, z_color, thickness)
+
+    def _draw_to_image(self, image_2d: ndarray, x: float, y: float, color: Tuple[float, float, float], thickness: int):
+        # PyCharm cannot recognize signature of cv2.ellipse, so the warning is a false positive:
+        # noinspection PyArgumentList
+        cv2.ellipse(image_2d, ((x + self._ellipse_dx, y + self._ellipse_dy),
+                                   (self._ellipse_width, self._ellipse_height), self._ellipse_angle),
+                    color=color, thickness=thickness)
+
     def raw_area(self) -> float:
         return self._original_area
 
@@ -136,10 +179,29 @@ class EllipseShape(ParticleShape):
                 self._ellipse_angle, self._original_perimeter, self._original_area, bool(self._eccentric)]
 
 
+class GaussianShape(ParticleShape):
+    """Represents a particle represented by a Gaussian shape."""
+    _gaussian: Gaussian
+
+    def __init__(self, gaussian: Gaussian):
+        self._gaussian = gaussian
+
+    def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
+        self.default_draw(x, y, dz, dt, area, color)
+
+    def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
+        self._gaussian.translated(x, y, z).draw_colored(image, color)
+
+    def to_list(self):
+        return ["gaussian", *self._gaussian.to_list()]
+
+
 def from_list(list: List) -> ParticleShape:
     if len(list) == 0:
         return UnknownShape()
     type = list[0]
     if type == "ellipse":
         return EllipseShape(*list[1:])
+    elif type == "gaussian":
+        return GaussianShape(Gaussian(*list[1:]))
     raise ValueError("Cannot deserialize " + str(list))

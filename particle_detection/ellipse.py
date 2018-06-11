@@ -7,7 +7,7 @@ from shapely.geometry.polygon import LinearRing
 from numpy import ndarray
 from typing import List, Tuple, Optional
 
-from particle_detection.gaussian import Gaussian
+from core.gaussian import Gaussian
 
 
 def _max(a: Optional[int], b: Optional[int]) -> int:
@@ -16,6 +16,7 @@ def _max(a: Optional[int], b: Optional[int]) -> int:
     if b is None:
         return a
     return a if a > b else b
+
 
 def _min(a: Optional[int], b: Optional[int]) -> int:
     if a is None:
@@ -35,7 +36,7 @@ class Ellipse:
     _polyline: ndarray
     _linear_ring: LinearRing
 
-    def __init__(self, x, y, width, height, angle):
+    def __init__(self, x: float, y: float, width: float, height: float, angle: float):
         self._x = x
         self._y = y
         self._width = width
@@ -91,11 +92,18 @@ class Ellipse:
 
 
 class EllipseStack:
-    """Multiple ellipses, each at their own z position."""
+    """Multiple ellipses, each at their own z position. A stack is tagged with a numeric id, which is useful to keep
+    track where an ellipse came from."""
     _stack: List[Ellipse]
+    _tag: int
 
-    def __init__(self, ellipses: List[Ellipse]):
+    def __init__(self, ellipses: List[Ellipse], tag: int):
         self._stack = ellipses
+        self._tag = tag
+
+    def get_tag(self) -> int:
+        """Gets a numeric of the ellipse. Useful for keeping track where the ellipse came from."""
+        return self._tag
 
     def draw_to_image(self, target: ndarray, color, dx=0, dy=0, dz=0, filled=False):
         for z in range(len(self._stack)):
@@ -145,7 +153,7 @@ class EllipseStack:
             return "Stack, first is " + str(ellipse) + " at z=" + str(z)
         return "Stack, empty"
 
-    def to_gaussian(self, image_for_intensities: ndarray) -> Optional[Gaussian]:
+    def _get_xyz(self) -> Tuple[Optional[int], Optional[int], Optional[int]]:
         total_x, total_y, total_z, count = 0, 0, 0, 0
         for z in range(len(self._stack)):
             ellipse = self._stack[z]
@@ -158,11 +166,34 @@ class EllipseStack:
             total_z += z
             count += 1
         if count == 0:
-            return None
+            return None, None, None
         x = total_x / count
         y = total_y / count
         z = total_z / count
-        return Gaussian(image_for_intensities[int(z), int(y), int(x)], x, y, z, 50, 50, 2, 0, 0, 0)
+        return int(x), int(y), int(z)
+
+    def to_gaussian(self, image_for_intensities: ndarray) -> Gaussian:
+        """Does an initial guess at the parameters for a Gaussian. Raises ValueError if no ellipse was fitted at any
+        z-layer."""
+        x, y, z = self._get_xyz()
+        if x is None:
+            raise ValueError("No ellipses were fitted, so cannot determine starting point for Gaussian")
+        if x < 0 or x >= image_for_intensities.shape[2] \
+                or y < 0 or y >= image_for_intensities.shape[1] \
+                or z < 0 or z >= image_for_intensities.shape[0]:
+            raise ValueError("Ellipses have center of mass outside the image")
+        return Gaussian(image_for_intensities[z, y, x], x, y, z, 50, 50, 2, 0, 0, 0)
+
+    def can_be_fitted(self, image_for_intensities: ndarray) -> bool:
+        """Checks if there are ellipses, and if their center of mass falls within the given image."""
+        x, y, z = self._get_xyz()
+        if x is None:
+            return True
+        if x < 0 or x >= image_for_intensities.shape[2] \
+                or y < 0 or y >= image_for_intensities.shape[1] \
+                or z < 0 or z >= image_for_intensities.shape[0]:
+            return False
+        return True
 
 
 class EllipseCluster:
@@ -216,5 +247,11 @@ class EllipseCluster:
             stack.draw_to_image(out, color, filled=filled)
 
     def guess_gaussians(self, image_for_intensities: ndarray) -> List[Gaussian]:
+        """Gets Gaussian functions, with the intensities from the image and the positions of the ellipses as starting
+        points."""
+        return [stack.to_gaussian(image_for_intensities) for stack in self._stacks
+                if stack.can_be_fitted(image_for_intensities)]
 
-        return [stack.to_gaussian(image_for_intensities) for stack in self._stacks]
+    def get_tags(self) -> List[int]:
+        """Gets the tags of all stacks. The returned order matches the order of self.guess_gaussians(...)"""
+        return [stack.get_tag() for stack in self._stacks]

@@ -30,6 +30,16 @@ COLOR_ARRAY = _create_colormap()
 COLOR_MAP = matplotlib.colors.ListedColormap(COLOR_ARRAY, name="random", N=2000)
 
 
+def distance_transform_to_labels(labels: ndarray, resolution: Tuple[float, float, float]):
+    """Returns an image where pixels closer to the labels are brighter."""
+    labels_inv = numpy.full_like(labels, 255, dtype=numpy.uint8)
+    labels_inv[labels != 0] = 0
+    distance_transform_to_labels = numpy.empty_like(labels, dtype=numpy.float64)
+    distance_transform(labels_inv, distance_transform_to_labels, resolution)
+    distance_transform_to_labels[distance_transform_to_labels > 4] = 4
+    distance_transform_to_labels = 4 - distance_transform_to_labels
+    return distance_transform_to_labels
+
 def distance_transform(threshold: ndarray, out: ndarray, sampling: Tuple[float, float, float]):
     """Performs a 3D distance transform: all white pixels in the threshold are replaced by intensities representing the
     distance from black pixels.
@@ -48,15 +58,14 @@ def watershed_maxima(threshold: ndarray, intensities: ndarray, minimal_size: Tup
     kernel = numpy.ones(minimal_size)
     maxima = mahotas.morph.regmax(intensities, Bc=kernel)
     spots, n_spots = mahotas.label(maxima, Bc=kernel)
-    print("Found " + str(n_spots) + " particles")
     surface = (intensities.max() - intensities)
     return watershed_labels(threshold, surface, spots, n_spots)
 
 
-def create_labels(particles: Collection[Particle], output: ndarray):
+def create_labels(particles: List[Particle], output: ndarray):
     """Creates a label image using the given labels. This image can be used for a watershed transform, for example.
     particles: list of particles, must have x/y/z in range of the output image
-    output: integer image, which will contain the labels"""
+    output: integer image, which will contain the labels. label 1 == particle 0, label 2 == particle 1, etc."""
     i = 1
     for particle in particles:
         try:

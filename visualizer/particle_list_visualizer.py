@@ -123,7 +123,7 @@ class ParticleListVisualizer(Visualizer):
     def _show_image(self):
         mother = self._particle_list[self._current_particle_index]
         time_point = self._experiment.get_time_point(mother.time_point_number())
-        image_stack = self.create_image(time_point, self._show_next_image)
+        image_stack = self.load_image(time_point, self._show_next_image)
         if image_stack is not None:
             self._ax.imshow(image_stack[int(mother.z)], cmap="gray")
 
