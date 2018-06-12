@@ -6,10 +6,11 @@ from networkx import Graph
 from numpy import ndarray
 
 import core
-from core import Experiment, TimePoint, Particle, ParticleShape
+from core import Experiment, TimePoint, Particle
 from gui import launch_window, Window, dialog
 from gui.dialog import popup_figure, prompt_int, popup_error
 from linking import particle_flow
+from linking_analysis import volume_and_intensity_graphs
 from particle_detection import single_particle_detection
 from visualizer import Visualizer, activate, DisplaySettings
 
@@ -365,6 +366,9 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             ("Linking errors and warnings (E)", self._show_linking_errors),
             ("Cell divisions (/divisions)", self._show_mother_cells),
             ("Cell deaths (/deaths)", self._show_dead_cells),
+            '-',
+            ("Cell volumes...", self._show_cell_volumes),
+            ("Cell intensities...", self._show_cell_intensities)
         ]
         return options
 
@@ -412,6 +416,16 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         from visualizer.cell_division_visualizer import CellDivisionVisualizer
         track_visualizer = CellDivisionVisualizer(self._window)
         activate(track_visualizer)
+
+    def _show_cell_volumes(self):
+        def draw(figure: Figure):
+            volume_and_intensity_graphs.plot_volumes(self._experiment, figure)
+        dialog.popup_figure(draw)
+
+    def _show_cell_intensities(self):
+        def draw(figure: Figure):
+            volume_and_intensity_graphs.plot_intensities(self._experiment, figure)
+        dialog.popup_figure(draw)
 
     def _show_linking_errors(self, particle: Optional[Particle] = None):
         from visualizer.errors_visualizer import ErrorsVisualizer

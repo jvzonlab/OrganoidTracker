@@ -4,9 +4,12 @@ import sys
 import tkinter
 import traceback
 import logging
-from tkinter import simpledialog, messagebox
+from collections import Callable
+from tkinter import simpledialog, messagebox, filedialog
 from tkinter.messagebox import Message
 
+import matplotlib
+from matplotlib.backend_bases import KeyEvent
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
@@ -39,17 +42,35 @@ def popup_message(title: str, message: str):
     messagebox.showinfo(title, message)
 
 
-def popup_figure(draw_function):
+def popup_figure(draw_function: Callable):
     """Shows a popup screen with the image"""
+    def save_handler(event: KeyEvent):
+        if event.key != "ctrl+s":
+            return
+        file_name = filedialog.asksaveasfilename(title="Save figure as...", filetypes=(
+                ("PNG file", "*.png"), ("PDF file", "*.pdf"), ("SVG file", "*.svg")))
+        if file_name is None:
+            return
+        figure.savefig(file_name)
+
     popup = tkinter.Toplevel()
     popup.title("Figure")
     popup.grid_columnconfigure(0, weight=1)
     popup.grid_rowconfigure(0, weight=1)
 
+    matplotlib.rcParams['font.family'] = 'serif'
+    matplotlib.rcParams['font.size'] = 11
+    matplotlib.rcParams['font.serif'] = ['Times New Roman', 'Times']
+
     figure = Figure(figsize=(7, 7), dpi=95)
     mpl_canvas = FigureCanvasTkAgg(figure, master=popup)
-    draw_function(figure)
+    try:
+        draw_function(figure)
+    except BaseException as e:
+        popup.destroy()
+        raise e
 
+    mpl_canvas.mpl_connect("key_press_event", save_handler)
     mpl_canvas.draw()
     mpl_canvas.get_tk_widget().grid(row=0, column=0, sticky="nesw")
 

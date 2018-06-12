@@ -236,6 +236,8 @@ class DetectionVisualizer(AbstractImageVisualizer):
         colors = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 0), (1, 0, 1), (0, 1, 1), (1, 1, 1)]
         i = 0
         for gaussian in gaussians:
+            if gaussian is None:
+                continue
             self._time_point.add_particle(Particle(gaussian.mu_x, gaussian.mu_y, gaussian.mu_z))
             color = colors[i % len(colors)]
             gaussian.draw_colored(canvas, color)

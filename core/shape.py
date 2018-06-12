@@ -74,6 +74,14 @@ class ParticleShape:
     def __repr__(self):
         return "<" + type(self).__name__ + ">"
 
+    def volume(self) -> float:
+        """Gets a 3-dimensional volume, in pixels^3"""
+        raise NotImplementedError()
+
+    def intensity(self) -> float:
+        """Gets the maximum intensity of the shape, on a scale of 0 to 1"""
+        raise NotImplementedError()
+
 
 class UnknownShape(ParticleShape):
 
@@ -192,8 +200,16 @@ class GaussianShape(ParticleShape):
     def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
         self._gaussian.translated(x, y, z).draw_colored(image, color)
 
-    def to_list(self):
+    def to_list(self) -> List:
         return ["gaussian", *self._gaussian.to_list()]
+
+    def volume(self) -> float:
+        """We take the volume of an ellipse with radii equal to the Gaussian variances."""
+        return 4/3 * math.pi * \
+               math.sqrt(self._gaussian.cov_xx) * math.sqrt(self._gaussian.cov_yy) * math.sqrt(self._gaussian.cov_zz)
+
+    def intensity(self) -> float:
+        return self._gaussian.a / 256
 
 
 def from_list(list: List) -> ParticleShape:

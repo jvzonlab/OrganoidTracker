@@ -222,7 +222,7 @@ def launch_window(experiment: Experiment) -> Window:
     mpl_canvas.draw()
     widget = mpl_canvas.get_tk_widget()
     widget.grid(row=2, column=0, sticky="we")  # Position of figure
-    widget.bind("<Enter>", lambda e: widget.focus_set())  # Refocus on mouse enter
+    widget.bind("<Enter>", lambda e: widget.focus_set() if _should_focus(widget) else ...)  # Refocus on mouse enter
 
     toolbar_frame = ttk.Frame(main_frame)
     toolbar_frame.grid(row=0, column=0, sticky=(tkinter.W, tkinter.E))  # Positions of toolbar buttons
@@ -230,6 +230,17 @@ def launch_window(experiment: Experiment) -> Window:
     toolbar.update()
 
     return window
+
+
+def _should_focus(widget) -> bool:
+    """Returns whether the widget should be focused on mouse hover, which is the case if the current window has
+    focus."""
+    focus_object = widget.focus_get()
+    if focus_object is None:
+        return False
+    if "toplevel" in str(widget.focus_get()):
+        return False
+    return True
 
 
 def mainloop():

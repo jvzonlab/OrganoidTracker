@@ -1,5 +1,5 @@
 import random
-from typing import Tuple, Collection, List
+from typing import Tuple, Collection, List, Iterable
 
 import cv2
 import mahotas
@@ -62,7 +62,7 @@ def watershed_maxima(threshold: ndarray, intensities: ndarray, minimal_size: Tup
     return watershed_labels(threshold, surface, spots, n_spots)
 
 
-def create_labels(particles: List[Particle], output: ndarray):
+def create_labels(particles: Iterable[Particle], output: ndarray):
     """Creates a label image using the given labels. This image can be used for a watershed transform, for example.
     particles: list of particles, must have x/y/z in range of the output image
     output: integer image, which will contain the labels. label 1 == particle 0, label 2 == particle 1, etc."""
