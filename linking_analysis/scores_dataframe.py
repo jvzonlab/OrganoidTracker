@@ -1,3 +1,4 @@
+"""Creates a Dataframe (a scientific table) from scored families, explaining how a score is built up."""
 from typing import List, Set
 
 import numpy

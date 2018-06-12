@@ -19,7 +19,7 @@ def background_removal(orignal_image_8bit: ndarray, threshold: ndarray):
     """A simple background removal using two algoritms"""
 
     # Remove everything below 10%
-    absolute_thresh = int(0.1 * 255)
+    absolute_thresh = int(0.01 * 255)
     threshold[orignal_image_8bit < absolute_thresh] = 0
 
     # Remove using Triangle method
