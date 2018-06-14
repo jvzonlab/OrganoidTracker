@@ -1,3 +1,4 @@
+"""Starting point for the Gaussian detector: from simple cell positions to full cell shapes."""
 from typing import Tuple
 
 import numpy

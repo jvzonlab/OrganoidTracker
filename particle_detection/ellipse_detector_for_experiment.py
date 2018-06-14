@@ -1,3 +1,6 @@
+"""The original shape detection code. Fast, simple and inaccurate. However, it provided some useful information for the
+linking algorithm. Because the linking algorithm has not yet been updated to use the new Gaussian detector, this code
+still remains in use."""
 import cv2
 from typing import Optional, Tuple
 

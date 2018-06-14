@@ -1,3 +1,5 @@
+"""Code for fitting cells to Gaussian functions."""
+
 from timeit import default_timer as timer
 from typing import Tuple, List, Iterable, Dict, Optional
 
@@ -96,9 +98,13 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
         tags = cluster.get_tags()
 
         gaussians = [gaussian.translated(-offset_x, -offset_y, -offset_z) for gaussian in gaussians]
-        gaussians = perform_gaussian_mixture_fit(cropped_image, gaussians)
-        for i, gaussian in enumerate(gaussians):
-            all_gaussians[tags[i]] = gaussian.translated(offset_x, offset_y, offset_z)
+        try:
+            gaussians = perform_gaussian_mixture_fit(cropped_image, gaussians)
+            for i, gaussian in enumerate(gaussians):
+                all_gaussians[tags[i]] = gaussian.translated(offset_x, offset_y, offset_z)
+        except ValueError:
+            print("Minimization failed for " + str(cluster))
+            continue
     end_time = timer()
     print("Whole fitting process took " + str(end_time - start_time) + " seconds.")
     return all_gaussians
