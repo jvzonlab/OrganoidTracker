@@ -62,7 +62,7 @@ def popup_figure(draw_function: Callable):
     matplotlib.rcParams['font.size'] = 11
     matplotlib.rcParams['font.serif'] = ['Times New Roman', 'Times']
 
-    figure = Figure(figsize=(7, 7), dpi=95)
+    figure = Figure(figsize=(7, 4.32), dpi=95)
     mpl_canvas = FigureCanvasTkAgg(figure, master=popup)
     try:
         draw_function(figure)
