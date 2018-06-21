@@ -29,7 +29,7 @@ def _get_intensity(experiment: Experiment, particle: Particle) -> Optional[float
         return None
 
 
-def plot_volumes(experiment: Experiment, figure: Figure, mi_start=0, line_count=1000, starting_time_point=50):
+def plot_volumes(experiment: Experiment, figure: Figure, mi_start=0, line_count=4000, starting_time_point=50):
     """Plots the volumes of all cells in time. T=0 represents a cell division."""
     _plot_mother_stat(experiment, figure, _get_volume, 'Cell volume (px$^3$)', mi_start, line_count,
                       starting_time_point)
@@ -57,11 +57,11 @@ def _plot_mother_stat(experiment: Experiment, figure: Figure, stat: GetStatistic
     axes.set_ylim(bottom=0, top=median(all_values) * 2)
     axes.set_xlabel('Time point')
     axes.set_ylabel(y_label)
-    if show_legend:
+    if False and show_legend:
         axes.legend()
 
 
-def plot_intensities(experiment: Experiment, figure: Figure, mi_start=0, line_count=5, starting_time_point=50):
+def plot_intensities(experiment: Experiment, figure: Figure, mi_start=0, line_count=4000, starting_time_point=50):
     """Plots the intensities of all cells in time. T=0 represents a cell division."""
     _plot_mother_stat(experiment, figure, _get_intensity, 'Cell intensity (A.U.)', mi_start, line_count,
                       starting_time_point)
@@ -75,7 +75,7 @@ def _data_into_past_until_division(experiment: Experiment, starting_point: Parti
     while particle is not None:
         y_value = func(experiment, particle)
         if y_value is not None:
-            x_values.append(particle.time_point_number() - starting_point.time_point_number())
+            x_values.append(particle.time_point_number())
             y_values.append(y_value)
 
         particle = _get_previous(particle, graph)

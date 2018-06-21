@@ -40,7 +40,7 @@ config.save_if_changed()
 # END OF PARAMETERS
 
 experiment = Experiment()
-print("Loading cell positions and shapes...")
+print("Loading cell positions...")
 io.load_positions_and_shapes_from_json(experiment, _positions_input_file, min_time_point=_min_time_point,
                                        max_time_point=_max_time_point)
 print("Discovering images...")
