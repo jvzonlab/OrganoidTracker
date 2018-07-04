@@ -75,7 +75,7 @@ def _data_into_past_until_division(experiment: Experiment, starting_point: Parti
     while particle is not None:
         y_value = func(experiment, particle)
         if y_value is not None:
-            x_values.append(particle.time_point_number())
+            x_values.append(particle.time_point_number() - starting_point.time_point_number())
             y_values.append(y_value)
 
         particle = _get_previous(particle, graph)
