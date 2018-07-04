@@ -1,9 +1,11 @@
+import cv2
 from typing import Optional, Iterable, List, Tuple
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 from matplotlib.figure import Figure
 from networkx import Graph
 from numpy import ndarray
+from tifffile import tifffile
 
 import core
 from core import Experiment, TimePoint, Particle
@@ -57,6 +59,15 @@ class AbstractImageVisualizer(Visualizer):
             time_point_images = None
 
         return time_point, time_point_images
+
+    def _export_images(self):
+        if self._time_point_images is None:
+            raise core.UserError("No images loaded", "Saving images failed: there are no images loaded")
+        file = dialog.prompt_save_file("Save 3D file as...", [("TIF file", "*.tif")])
+        if file is None:
+            return
+        images = cv2.convertScaleAbs(self._time_point_images, alpha=256 / self._time_point_images.max(), beta=0)
+        tifffile.imsave(file, images)
 
     def _guess_image_size(self, time_point):
         images_for_size = self._time_point_images
@@ -208,6 +219,9 @@ class AbstractImageVisualizer(Visualizer):
                 popup_error("Out of range", "Oops, time point " + str(given) + " is outside the range " + min_str + "-"
                             + max_str + ".")
         return {
+            "File": [
+                ("Export image...", self._export_images)
+            ],
             "View": [
                 ("Toggle showing two time points (" + DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + ")",
                  self._toggle_showing_next_time_point),

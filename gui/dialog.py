@@ -7,6 +7,7 @@ import logging
 from collections import Callable
 from tkinter import simpledialog, messagebox, filedialog
 from tkinter.messagebox import Message
+from typing import Tuple, List, Optional
 
 import matplotlib
 from matplotlib.backend_bases import KeyEvent
@@ -18,6 +19,14 @@ from core import UserError
 
 def prompt_int(title: str, question: str) -> int:
     return simpledialog.askinteger(title, question)
+
+
+def prompt_save_file(title: str, file_types: List[Tuple[str, str]]) -> Optional[str]:
+    """Shows a prompt that asks the user to save a file. Example:
+
+        prompt_save_file("Save as...", [("PNG file", "*.png"), ("JPEG file", "*.jpg")])
+    """
+    return filedialog.asksaveasfilename(title=title, filetypes=file_types)
 
 
 def message_cancellable(title: str, message: str) -> bool:
