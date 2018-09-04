@@ -8,7 +8,7 @@ import numpy
 from networkx import node_link_data, node_link_graph, Graph
 from pandas import DataFrame
 
-from core import Experiment, Particle, Score, Family, ScoredFamily
+from core import Experiment, Particle, Score, Family, ScoredFamily, shape
 
 
 def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: str,
@@ -16,11 +16,17 @@ def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: 
     """Loads all particle positions from a JSON file"""
     with open(json_file_name) as handle:
         time_points = json.load(handle)
-        for time_point, raw_particles in time_points.items():
-            time_point = int(time_point)  # str -> int
-            if time_point < min_time_point or time_point > max_time_point:
+        for time_point_number, raw_particles in time_points.items():
+            time_point_number = int(time_point_number)  # str -> int
+            if time_point_number < min_time_point or time_point_number > max_time_point:
                 continue
-            experiment.add_particles_raw(time_point, raw_particles)
+            time_point = experiment.get_or_add_time_point(time_point_number)
+            experiment.remove_particles(time_point)
+
+            for raw_particle in raw_particles:
+                particle = Particle(*raw_particle[0:3])
+                particle_shape = shape.from_list(raw_particle[3:])
+                time_point.add_shaped_particle(particle, particle_shape)
 
 
 def load_links_and_scores_from_json(experiment: Experiment, json_file_name: str, links_are_scratch=False):

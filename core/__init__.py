@@ -322,14 +322,6 @@ class Experiment:
     def __init__(self):
         self._time_points = {}
 
-    def add_particles_raw(self, time_point_number: int, raw_particles: List) -> None:
-        """Adds particles to a time_point."""
-        time_point = self.get_or_add_time_point(time_point_number)
-        for raw_particle in raw_particles:
-            particle = Particle(*raw_particle[0:3])
-            particle_shape = shape.from_list(raw_particle[3:])
-            time_point.add_shaped_particle(particle, particle_shape)
-
     def add_particle_raw(self, x: float, y: float, z: float, time_point_number: int):
         """Adds a single particle to the experiment, creating the time point if it does not exist yet."""
         time_point = self.get_or_add_time_point(time_point_number)
@@ -374,9 +366,18 @@ class Experiment:
             self._particle_links_baseline.remove_node(particle)
 
     def remove_particles(self, time_point: TimePoint):
+        """Removes the particles and links of a given time point."""
         for particle in time_point.particles():
             self._remove_from_graph(particle)
         time_point.detach_particles()
+
+    def remove_all_particles(self):
+        """Removes all particles and links in the experiment, so in all time points."""
+        for time_point in self._time_points.values():
+            time_point.detach_particles()
+
+        self._particle_links = None
+        self._particle_links_baseline = None
 
     def get_time_point(self, time_point_number: int) -> TimePoint:
         """Gets the time point with the given number. Throws KeyError if no such time point exists."""

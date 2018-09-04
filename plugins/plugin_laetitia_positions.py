@@ -41,6 +41,8 @@ def _import_file(experiment: Experiment, directory: str, file_name: str):
 
     time_point_number = int(match.group(1))  # Safe, as this group contains only numbers
     time_point = experiment.get_or_add_time_point(time_point_number)
+    experiment.remove_particles(time_point)
+
     coords = numpy.loadtxt(path.join(directory, file_name))
     for row in range(len(coords)):
         particle = Particle(coords[row, 2], coords[row, 1], coords[row, 0] / Z_OVERSCALED)

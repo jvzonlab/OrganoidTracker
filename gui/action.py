@@ -127,6 +127,7 @@ def load_guizela_tracks(window: Window):
     graph = links_extractor.extract_from_tracks(folder)
 
     experiment = window.get_experiment()
+    experiment.remove_all_particles()
     for particle in graph.nodes():
         experiment.add_particle(particle)
     if experiment.particle_links() is None:
