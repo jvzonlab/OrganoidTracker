@@ -9,7 +9,7 @@ from matplotlib.figure import Figure
 
 from core import Experiment
 from gui import Window, dialog
-from gui.dialog import message_cancellable
+from gui.dialog import popup_message_cancellable
 from imaging import io, tifffolder
 from manual_tracking import links_extractor
 from visualizer import activate
@@ -46,7 +46,7 @@ def new(window: Window):
 
 def load_images(window: Window):
     # Show an OK/cancel box, but with an INFO icon instead of a question mark
-    if not message_cancellable("Image loading", "Images are expected to be 3D grayscale TIF files. Each TIF file "
+    if not popup_message_cancellable("Image loading", "Images are expected to be 3D grayscale TIF files. Each TIF file "
                                "represents a single time point.\n\n"
                                "Please select the TIF file of the first time point. The file name of the image must "
                                "contain \"t1\", \"t01\", \"_1.\" or similar in the file name."):

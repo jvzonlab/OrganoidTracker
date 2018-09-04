@@ -1,8 +1,6 @@
 import sys
-import threading
 import tkinter
 from os import path
-from queue import Queue
 from tkinter import StringVar, ttk
 from tkinter.font import Font
 from typing import List, Dict, Any, Optional, Iterable
@@ -119,9 +117,9 @@ class Window:
         _merge_menu_items(menu_items, self._get_default_menu_last())
         _update_menu(self.__menu, menu_items)
 
-    def run_async(self, task: Task):
-        """Runs the given task on a worker thread."""
-        self.__scheduler.add_task(task)
+    def get_scheduler(self) -> Scheduler:
+        """Gets the scheduler, useful for registering background tasks"""
+        return self.__scheduler
 
     def install_plugins(self, plugins: Iterable[Plugin]):
         """Adds the given list of plugins to the list of active plugins."""
@@ -164,9 +162,6 @@ class Window:
             ]
         }
 
-    def has_active_tasks(self) -> bool:
-        """Gets whether there are currently tasks being run or scheduled to run."""
-        return self.__scheduler.has_active_tasks()
 
 def _merge_menu_items(menu_items: Dict, extra_items: Dict):
     """Merges two menu dictionaries into the first one."""
