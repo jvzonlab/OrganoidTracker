@@ -5,7 +5,7 @@ from os import path
 from queue import Queue
 from tkinter import StringVar, ttk
 from tkinter.font import Font
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Iterable
 
 from matplotlib.backends._backend_tk import NavigationToolbar2Tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -18,10 +18,22 @@ from gui.threading import Scheduler, Task
 APP_NAME = "Autotrack"
 
 
+class Plugin:
+    """
+    Represents a plugin. Plugins can add new data visualizers or provide support for more file types.
+    Instead of writing a plugin, you can also write a script that uses the classes in core and imaging.
+    """
+
+    def get_menu_items(self, window: "Window")-> Dict[str, List]:
+        """Used to add menu items that must always be visible."""
+        return {}
+
+
 class Window:
     """The model for a window."""
     __root: tkinter.Tk
     __scheduler: Scheduler
+    __plugins: List[Plugin]
 
     __fig: Figure
     __status_text: StringVar
@@ -41,6 +53,7 @@ class Window:
         self.__status_text = status_text
         self.__title_text = title_text
         self.__event_handler_ids = []
+        self.__plugins = []
 
         self.__scheduler = Scheduler(root)
         self.__scheduler.daemon = True
@@ -100,20 +113,20 @@ class Window:
     def setup_menu(self, extra_items: Dict[str, any]):
         """Update the main menu of the window to contain the given options."""
         menu_items = self._get_default_menu()
-        self._add_menu_items(menu_items, extra_items)
-        self._add_menu_items(menu_items, self._get_default_menu_last())
+        for plugin in self.__plugins:
+            _merge_menu_items(menu_items, plugin.get_menu_items(self))
+        _merge_menu_items(menu_items, extra_items)
+        _merge_menu_items(menu_items, self._get_default_menu_last())
         _update_menu(self.__menu, menu_items)
 
     def run_async(self, task: Task):
         """Runs the given task on a worker thread."""
         self.__scheduler.add_task(task)
 
-    def _add_menu_items(self, menu_items, extra_items):
-        for name, values in extra_items.items():
-            if name in menu_items:
-                menu_items[name] = menu_items[name] + values
-            else:
-                menu_items[name] = values
+    def install_plugins(self, plugins: Iterable[Plugin]):
+        """Adds the given list of plugins to the list of active plugins."""
+        for plugin in plugins:
+            self.__plugins.append(plugin)
 
     def _get_default_menu(self):
         from gui import action
@@ -154,6 +167,14 @@ class Window:
     def has_active_tasks(self) -> bool:
         """Gets whether there are currently tasks being run or scheduled to run."""
         return self.__scheduler.has_active_tasks()
+
+def _merge_menu_items(menu_items: Dict, extra_items: Dict):
+    """Merges two menu dictionaries into the first one."""
+    for name, values in extra_items.items():
+        if name in menu_items:
+            menu_items[name] = menu_items[name] + values
+        else:
+            menu_items[name] = values
 
 
 def _update_menu(menu_bar: tkinter.Menu, menu_items: Dict[str, any]):
