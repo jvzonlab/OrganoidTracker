@@ -44,20 +44,11 @@ class LinkEditor(AbstractImageVisualizer):
         return "Link editing"
 
     def get_extra_menu_options(self):
-        inherited = super().get_extra_menu_options()
-        if "Navigate" not in inherited:
-            inherited["Navigate"] = []
-        inherited["View"] = [] if "View" not in inherited else inherited["View"] + ["-"]
         return {
-            "Edit": [
-                ("Commit dotted lines (/commit)", self._commit),
-                ("Revert dotted lines (/revert)", self._revert)
-            ],
-            "View": [
-                *inherited["View"],
-                ("Exit this view (L)", self._exit)
-            ],
-            "Navigate": inherited["Navigate"]
+            **super().get_extra_menu_options(),
+            "Edit/Commit-Commit dotted lines (/commit)": self._commit,
+            "Edit/Commit-Revert dotted lines (/revert)": self._revert,
+            "View/Exit-Exit this view (L)": self._exit
         }
 
     def _draw_extra(self):

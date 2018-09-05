@@ -219,25 +219,19 @@ class AbstractImageVisualizer(Visualizer):
                 popup_error("Out of range", "Oops, time point " + str(given) + " is outside the range " + min_str + "-"
                             + max_str + ".")
         return {
-            "File": [
-                ("Export image...", self._export_images)
-            ],
-            "View": [
-                ("Toggle showing two time points (" + DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + ")",
-                 self._toggle_showing_next_time_point),
-                ("Toggle showing images (" + DisplaySettings.KEY_SHOW_IMAGES.upper() + ")",
-                 self._toggle_showing_images),
-                ("Toggle showing reconstruction (" + DisplaySettings.KEY_SHOW_RECONSTRUCTION.upper() + ")",
-                 self._toggle_showing_reconstruction)
-            ],
-            "Navigate": [
-                ("Above layer (Up)", lambda: self._move_in_z(1)),
-                ("Below layer (Down)", lambda: self._move_in_z(-1)),
-                '-',
-                ("Next time point (Right)", lambda: self._move_in_time(1)),
-                ("Previous time point (Left)", lambda: self._move_in_time(-1)),
-                ("Other time point... (/t*)", time_point_prompt)
-            ]
+            **super().get_extra_menu_options(),
+            "File/Export-Export image...": self._export_images,
+            "View/Toggle-Toggle showing two time points (" + DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + ")":
+                self._toggle_showing_next_time_point,
+            "View/Toggle-Toggle showing images (" + DisplaySettings.KEY_SHOW_IMAGES.upper() + ")":
+                self._toggle_showing_images,
+            "View/Toggle-Toggle showing reconstruction (" + DisplaySettings.KEY_SHOW_RECONSTRUCTION.upper() + ")":
+                self._toggle_showing_reconstruction,
+            "Navigate/Layer-Above layer (Up)": lambda: self._move_in_z(1),
+            "Navigate/Layer-Below layer (Down)": lambda: self._move_in_z(-1),
+            "Navigate/Time-Next time point (Right)": lambda: self._move_in_time(1),
+            "Navigate/Time-Previous time point (Left)": lambda: self._move_in_time(-1),
+            "Navigate/Time-Other time point... (/t*)": time_point_prompt
         }
 
     def _on_key_press(self, event: KeyEvent):
@@ -363,28 +357,18 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             self._update_status("No cell division scores found")
 
     def get_extra_menu_options(self):
-        options = super().get_extra_menu_options()
-        if "View" in options:
-            options["View"] += ["-"]
-        else:
-            options["View"] = []
-
-        options["Edit"] = [
-            ("Links... (L)", self._show_link_editor),
-            ("Positions... (P)", self._show_position_editor),
-            "-",
-            ("Cell detection...", self._show_cell_detector)
-        ]
-        options["View"] += [
-            ("Linking differences (D)", self._show_linking_differences),
-            ("Linking errors and warnings (E)", self._show_linking_errors),
-            ("Cell divisions (/divisions)", self._show_mother_cells),
-            ("Cell deaths (/deaths)", self._show_dead_cells),
-            '-',
-            ("Cell volumes...", self._show_cell_volumes),
-            ("Cell intensities...", self._show_cell_intensities)
-        ]
-        return options
+        return {
+            **super().get_extra_menu_options(),
+            "Edit/Manual-Links... (L)": self._show_link_editor,
+            "Edit/Manual-Positions... (P)": self._show_position_editor,
+            "Edit/Automatic-Cell detection...": self._show_cell_detector,
+            "View/Linking-Linking differences (D)": self._show_linking_differences,
+            "View/Linking-Linking errors and warnings (E)": self._show_linking_errors,
+            "View/Cell-Cell divisions (/divisions)": self._show_mother_cells,
+            "View/Cell-Cell deaths (/deaths)": self._show_dead_cells,
+            "View/Cell-Cell volumes...": self._show_cell_volumes,
+            "View/Cell-Cell intensities...": self._show_cell_intensities
+        }
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "t":

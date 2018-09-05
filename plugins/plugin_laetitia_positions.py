@@ -1,5 +1,5 @@
 import re
-from typing import Dict, List
+from typing import Dict, List, Any
 
 import numpy
 
@@ -11,12 +11,12 @@ import os
 Z_OVERSCALED = 6
 TIME_POINT_FROM_FILE_NAME = re.compile("t(\d+)")
 
-def get_menu_items(window: Window) -> Dict[str, List]:
+
+def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "File" : [
-            ("Import Laetitia's positions...", lambda: _import_laetitia_positions(window))
-        ]
+        "File/Import-Import Laetitia's positions...": lambda: _import_laetitia_positions(window)
     }
+
 
 def _import_laetitia_positions(window: Window):
     if not dialog.popup_message_cancellable("Instructions", "Choose the first file, which is the file ending with"

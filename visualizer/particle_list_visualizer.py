@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 
 import matplotlib.pyplot as plt
 from matplotlib.backend_bases import KeyEvent
@@ -33,15 +33,12 @@ class ParticleListVisualizer(Visualizer):
         self._current_particle_index = self._find_closest_particle_index(chosen_particle)
         self._show_next_image = show_next_image
 
-    def get_extra_menu_options(self) -> Dict[str, List]:
+    def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
-            "View": [
-                ("Exit this view (/exit)", lambda: self.goto_full_image()),
-            ],
-            "Navigate": [
-                ("Next (Right)", self._goto_next),
-                ("Previous (Left)", self._goto_previous),
-            ]
+            **super().get_extra_menu_options(),
+            "View/Exit-Exit this view (/exit)": lambda: self.goto_full_image(),
+            "Navigate/Time-Next (Right)": self._goto_next,
+            "Navigate/Time-Previous (Left)": self._goto_previous
         }
 
     def _find_closest_particle_index(self, particle: Optional[Particle]) -> int:

@@ -49,31 +49,21 @@ class DetectionVisualizer(AbstractImageVisualizer):
     def get_extra_menu_options(self):
         return {
             **super().get_extra_menu_options(),
-            "View": [
-                ("Show original images (R)", self.refresh_view),
-                "-",
-                ("Exit this view (/exit)", self._show_main_view)
-            ],
-            "Threshold": [
-                ("Basic threshold", self._basic_threshold),
-                ("With watershed segmentation", self.async(self._get_watershedded_threshold, self._display_threshold)),
-                ("With iso-intensity curvature segmentation", self.async(self._get_advanced_threshold,
-                                                                             self._display_threshold)),
-                '-',
-                ("Smoothed basic threshold", self.async(self._get_adaptive_smoothed_threshold, self._display_threshold))
-            ],
-            "Detection": [
-                ("Detect cells", self.async(self._get_detected_cells, self._display_watershed)),
-                ("Detect cells using existing points", self.async(self._get_detected_cells_using_particles,
-                                                                  self._display_watershed)),
-                ("Detect contours", self.async(self._get_detected_contours, self._display_threshold)),
-            ],
-            "Reconstruction": [
-                ("Reconstruct smoothed threshold using existing points", self.async(self._get_reconstruction_of_basic_threshold,
-                                                                       self._display_watershed)),
-                ("Reconstruct cells using existing points", self.async(self._get_reconstruction_using_particles,
-                                                                       self._display_reconstruction))
-            ]
+            "View/Show-Show original images (R)": self.refresh_view,
+            "View/Exit-Exit this view (/exit)": self._show_main_view,
+            "Threshold/Normal-Basic threshold": self._basic_threshold,
+            "Threshold/Normal-With watershed segmentation": self.async(self._get_watershedded_threshold, self._display_threshold),
+            "Threshold/Normal-With iso-intensity curvature segmentation": self.async(self._get_advanced_threshold,
+                                                                         self._display_threshold),
+            "Threshold/Smoothed-Smoothed basic threshold": self.async(self._get_adaptive_smoothed_threshold, self._display_threshold),
+            "Detection/Default-Detect cells": self.async(self._get_detected_cells, self._display_watershed),
+            "Detection/Default-Detect cells using existing points": self.async(self._get_detected_cells_using_particles,
+                                                              self._display_watershed),
+            "Detection/Default-Detect contours": self.async(self._get_detected_contours, self._display_threshold),
+            "Reconstruction/Default-Reconstruct smoothed threshold using existing points": self.async(self._get_reconstruction_of_basic_threshold,
+                                                                       self._display_watershed),
+            "Reconstruction/Default-Reconstruct cells using existing points": self.async(self._get_reconstruction_using_particles,
+                                                                       self._display_reconstruction)
         }
 
     def _on_command(self, command: str):
@@ -245,7 +235,6 @@ class DetectionVisualizer(AbstractImageVisualizer):
 
         canvas.clip(0, 1, out=canvas)
         self._display_image(canvas)
-
 
     def _get_detected_contours(self):
         images = self._get_8bit_images()

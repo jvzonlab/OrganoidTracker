@@ -150,7 +150,7 @@ class Visualizer:
         """Called to query what the window title should be."""
         return None
 
-    def get_extra_menu_options(self) -> Dict[str, List]:
+    def get_extra_menu_options(self) -> Dict[str, Any]:
         return {}
 
     def load_image(self, time_point: TimePoint, show_next_time_point: bool) -> Optional[ndarray]:

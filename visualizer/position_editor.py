@@ -20,16 +20,9 @@ class PositionEditor(AbstractImageVisualizer):
         super().__init__(window, time_point_number, z, DisplaySettings(show_reconstruction=False))
 
     def get_extra_menu_options(self):
-        parent = super().get_extra_menu_options()
-        view = parent.get("View", [])
-
         return {
-            **parent,
-            "View": [
-                *view,
-                '-',
-                ("Exit this view", self._exit_view)
-            ],
+            **super().get_extra_menu_options(),
+            "View/Exit-Exit this view": self._exit_view
         }
 
     def _on_key_press(self, event: KeyEvent):

@@ -3,7 +3,7 @@ import tkinter
 from os import path
 from tkinter import StringVar, ttk
 from tkinter.font import Font
-from typing import List, Dict, Any, Optional, Iterable
+from typing import List, Dict, Any, Optional, Iterable, Tuple
 
 from matplotlib.backends._backend_tk import NavigationToolbar2Tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -22,10 +22,16 @@ class Plugin:
     Instead of writing a plugin, you can also write a script that uses the classes in core and imaging.
     """
 
-    def get_menu_items(self, window: "Window")-> Dict[str, List]:
-        """Used to add menu items that must always be visible."""
-        return {}
+    def get_menu_items(self, window: "Window")-> Dict[str, Any]:
+        """
+        Used to add menu items that must always be visible. Example:
 
+            return {
+                "File/Import-Import my format...": lambda: my_code_here(),
+                "View/Analysis-Useful analysis screen here...": lambda: my_other_code_here()
+            }
+        """
+        return {}
 
 class Window:
     """The model for a window."""
@@ -112,9 +118,9 @@ class Window:
         """Update the main menu of the window to contain the given options."""
         menu_items = self._get_default_menu()
         for plugin in self.__plugins:
-            _merge_menu_items(menu_items, plugin.get_menu_items(self))
-        _merge_menu_items(menu_items, extra_items)
-        _merge_menu_items(menu_items, self._get_default_menu_last())
+            menu_items.update(plugin.get_menu_items(self))
+        menu_items.update(extra_items)
+        menu_items.update(_get_help_menu())  # This menu must come last
         _update_menu(self.__menu, menu_items)
 
     def get_scheduler(self) -> Scheduler:
@@ -126,65 +132,76 @@ class Window:
         for plugin in plugins:
             self.__plugins.append(plugin)
 
-    def _get_default_menu(self):
+    def _get_default_menu(self) -> Dict[str, Any]:
         from gui import action
 
         return {
-            "File": [
-                ("New project", lambda: action.new(self)),
-                "-",
-                ("Import images...", lambda: action.load_images(self)),
-                ("Import JSON positions and shapes...", lambda: action.load_positions(self)),
-                ("Import JSON links, scores and warnings...", lambda: action.load_links(self)),
-                ("Import Guizela's track format...", lambda: action.load_guizela_tracks(self)),
-                "-",
-                ("Export positions and shapes...", lambda: action.export_positions_and_shapes(self.get_experiment())),
-                ("Export links...", lambda: action.export_links(self.get_experiment()))
-            ],
-            "Edit": [],  # This fixes the position of the edit menu
-            "View": [
-                ("Toggle showing axis numbers", lambda: action.toggle_axis(self.get_figure())),
-            ]
-        }
-
-    def _get_default_menu_last(self):
-        """Some additional options added after all the options from the visualizer are added."""
-        from gui import action
-
-        return {
-            "File": [
-                "-",
-                ("Exit (Alt+F4)", lambda: action.ask_exit(self.__root)),
-            ],
-            "Help": [
-                ("Contents...", action.show_manual),
-                ("About", action.about_the_program),
-            ]
+            "File/New-New project...": lambda: action.new(self),
+            "File/Import-Import images...": lambda: action.load_images(self),
+            "File/Import-Import JSON positions and shapes...": lambda: action.load_positions(self),
+            "File/Import-Import JSON links, scores and warnings...": lambda: action.load_links(self),
+            "File/Import-Import Guizela's track format...": lambda: action.load_guizela_tracks(self),
+            "File/Export-Export positions and shapes...": lambda: action.export_positions_and_shapes(self.get_experiment()),
+            "File/Export-Export links...": lambda: action.export_links(self.get_experiment()),
+            "File/Exit-Exit (Alt+F4)": lambda: action.ask_exit(self.__root),
+            "View/Toggle-Toggle showing axis numbers": lambda: action.toggle_axis(self.get_figure()),
         }
 
 
-def _merge_menu_items(menu_items: Dict, extra_items: Dict):
-    """Merges two menu dictionaries into the first one."""
-    for name, values in extra_items.items():
-        if name in menu_items:
-            menu_items[name] = menu_items[name] + values
-        else:
-            menu_items[name] = values
+def _simple_menu_dict_to_nested(menu_items: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+    menu_tree = {   # Forced order of base menus - these must go first
+        "File": {}, "Edit": {}, "View": {}
+    }
+
+    for name, action in menu_items.items():
+        slash_index = name.index("/")
+        main_menu_name, sub_name = name[0:slash_index], name[slash_index + 1:]
+        dash_index = sub_name.index("-")
+        category_name, label = sub_name[0:dash_index], sub_name[dash_index + 1:]
+
+        if main_menu_name not in menu_tree:
+            menu_tree[main_menu_name] = dict()
+        categories = menu_tree[main_menu_name]
+        if category_name not in categories:
+            categories[category_name] = dict()
+        category = categories[category_name]
+        category[label] = action
+
+    return menu_tree
 
 
-def _update_menu(menu_bar: tkinter.Menu, menu_items: Dict[str, any]):
+def _get_help_menu() -> Dict[str, Any]:
     from gui import action
+
+    return {
+        "Help/Basic-Contents...": action.show_manual,
+        "Help/Basic-About": action.about_the_program,
+    }
+
+
+def _update_menu(menu_bar: tkinter.Menu, menu_items: Dict[str, Any]):
+    from gui import action
+
+    menu_tree = _simple_menu_dict_to_nested(menu_items)
+
     if len(menu_bar.children) > 0:
         menu_bar.delete(0, len(menu_bar.children))  # Remove old menu
-    for menu_name, dropdown_items in menu_items.items():
-        if len(dropdown_items) == 0:
-            continue
+
+    for menu_name, dropdown_items in menu_tree.items():
+        # Create each dropdown menu
+        if not dropdown_items:
+            continue  # Ignore empty menus
         menu = tkinter.Menu(menu_bar, tearoff=0)
-        for dropdown_item in dropdown_items:
-            if dropdown_item == "-":
+        first_category = True
+        for category_items in dropdown_items.values():
+            if not first_category:
                 menu.add_separator()
-                continue
-            menu.add_command(label=dropdown_item[0], command=_with_safeguard(dropdown_item[1]))
+            else:
+                first_category = False
+
+            for item_name, item_action in category_items.items():
+                menu.add_command(label=item_name, command=_with_safeguard(item_action))
+
         menu_bar.add_cascade(label=menu_name, menu=menu)
 
 
