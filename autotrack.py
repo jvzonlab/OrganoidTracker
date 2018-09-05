@@ -8,7 +8,7 @@ from visualizer import activate
 
 experiment = Experiment()
 window = launch_window(experiment)
-window.install_plugins(plugin_loader.load_plugins("plugins"))
+window.install_plugins(plugin_loader.load_plugins("autotrack_plugins"))
 visualizer = EmptyVisualizer(window)
 activate(visualizer)
 mainloop()
