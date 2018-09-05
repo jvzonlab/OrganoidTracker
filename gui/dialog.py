@@ -1,4 +1,5 @@
 import os as _os
+import re
 import subprocess as _subprocess
 import sys as _sys
 import tkinter as _tkinter
@@ -25,8 +26,15 @@ def prompt_save_file(title: str, file_types: List[Tuple[str, str]]) -> Optional[
     """Shows a prompt that asks the user to save a file. Example:
 
         prompt_save_file("Save as...", [("PNG file", "*.png"), ("JPEG file", "*.jpg")])
+
+    If the user does not write a file extension, then .png will become the default file extension in this case.
     """
-    return _filedialog.asksaveasfilename(title=title, filetypes=file_types)
+    default_extension = file_types[0][1]
+    if re.compile("^\*\.[A-Za-z0-9]+$").match(default_extension):
+        default_extension = default_extension[1:]
+    else:
+        default_extension = None
+    return _filedialog.asksaveasfilename(title=title, filetypes=file_types, defaultextension=default_extension)
 
 
 def prompt_load_file(title: str, file_types: List[Tuple[str, str]]) -> Optional[str]:
