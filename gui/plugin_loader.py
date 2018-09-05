@@ -22,6 +22,10 @@ def load_plugins(folder: str) -> List[Plugin]:
     """Loads the plugins in the given folder. The folder must follow the format "example/folder/structure". A plugin in
     "example/folder/structure/my_plugin.py" will then be loaded as the module "example.folder.structure.my_plugin".
     """
+    if not os.path.exists(folder):
+        print("No plugins folder found at " + os.path.abspath(folder))
+        return []
+
     module_prefix = folder.replace("/", ".")
     if not module_prefix.endswith("."):
         module_prefix += "."
