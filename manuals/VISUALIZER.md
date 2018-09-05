@@ -33,7 +33,7 @@ can go wrong.
 Plugin support
 --------------
 
-Any Python file you place in the `plugins` folder that has a name starting with `plugin_` (so for example
+Any Python file you place in the `autotrack_plugins` folder that has a name starting with `plugin_` (so for example
 `plugin_extra_images.py`) will automatically be loaded. A very minimal plugin looks like this:
 
     from gui import dialog
