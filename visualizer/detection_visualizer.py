@@ -26,16 +26,12 @@ class DetectionVisualizer(AbstractImageVisualizer):
     gaussian_fit_smooth_size = 11
     watershed_transform_smooth_size = 25
 
-    color_map = "gray"
+
 
     def __init__(self, window: Window, time_point_number: int, z: int, display_settings: DisplaySettings):
         display_settings.show_next_time_point = False
         display_settings.show_reconstruction = False
         super().__init__(window, time_point_number, z, display_settings)
-
-    def _draw_image(self):
-        if self._time_point_images is not None:
-            self._ax.imshow(self._time_point_images[self._z], cmap=self.color_map)
 
     def _get_window_title(self) -> str:
         return "Cell detection"
@@ -136,7 +132,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
 
     def _display_image(self, image_stack: ndarray, color_map=None):
         self._time_point_images = image_stack
-        self.color_map = color_map if color_map is not None else DetectionVisualizer.color_map
+        self._color_map = color_map if color_map is not None else AbstractImageVisualizer._color_map
         self.draw_view()
 
     def _display_two_images(self, image_stacks: Tuple[ndarray, ndarray]):
@@ -270,10 +266,6 @@ class DetectionVisualizer(AbstractImageVisualizer):
             # Reset view
             self.refresh_view()
         super()._on_key_press(event)
-
-    def refresh_view(self):
-        self.color_map = DetectionVisualizer.color_map
-        super().refresh_view()
 
     def _print_missed_cells(self, watershed: ndarray):
         particles = self._time_point.particles()

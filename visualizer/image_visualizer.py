@@ -1,8 +1,9 @@
 import cv2
-from typing import Optional, Iterable, List, Tuple
+from typing import Optional, Iterable, List, Tuple, Union
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 from matplotlib.figure import Figure
+from matplotlib.colors import Colormap
 from networkx import Graph
 from numpy import ndarray
 from tifffile import tifffile
@@ -36,6 +37,10 @@ class AbstractImageVisualizer(Visualizer):
     __drawn_particles: List[Particle]
     _display_settings: DisplaySettings
 
+    # The color map should typically not be transferred when switching to another viewer, so it is not part of the
+    # display_settings property
+    _color_map: Union[str, Colormap] = "gray"
+
     def __init__(self, window: Window, time_point_number: Optional[int] = None, z: int = 14,
                  display_settings: DisplaySettings = None):
         super().__init__(window)
@@ -66,7 +71,16 @@ class AbstractImageVisualizer(Visualizer):
         file = dialog.prompt_save_file("Save 3D file as...", [("TIF file", "*.tif")])
         if file is None:
             return
-        images = cv2.convertScaleAbs(self._time_point_images, alpha=256 / self._time_point_images.max(), beta=0)
+        flat_image = self._time_point_images.ravel()
+
+        image_shape = self._time_point_images.shape
+        if len(image_shape) == 3 and isinstance(self._color_map, Colormap):
+            # Convert grayscale image to colored using the stored color map
+            images: ndarray = self._color_map(flat_image, bytes=True)[:,0:3]
+            new_shape = (image_shape[0], image_shape[1], image_shape[2], 3)
+            images = images.reshape(new_shape)
+        else:
+            images = cv2.convertScaleAbs(self._time_point_images, alpha=256 / self._time_point_images.max(), beta=0)
         tifffile.imsave(file, images)
 
     def _guess_image_size(self, time_point):
@@ -88,7 +102,7 @@ class AbstractImageVisualizer(Visualizer):
 
     def _draw_image(self):
         if self._time_point_images is not None:
-            self._ax.imshow(self._time_point_images[self._z], cmap="gray")
+            self._ax.imshow(self._time_point_images[self._z], cmap=self._color_map)
 
     def _get_figure_title(self, errors: int) -> str:
         title = "Time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
@@ -305,6 +319,8 @@ class AbstractImageVisualizer(Visualizer):
             return False
 
     def _move_in_time(self, dt: int):
+        self._color_map = AbstractImageVisualizer._color_map
+
         old_time_point_number = self._time_point.time_point_number()
         new_time_point_number = old_time_point_number + dt
         try:
