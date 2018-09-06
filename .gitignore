@@ -4,6 +4,7 @@
 # Ignore Python caches
 __pycache__/
 .cache/
+.pytest_cache/
 
 # Ignore JSON files in the root of the project
 /*.json

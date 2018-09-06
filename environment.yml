@@ -1,13 +1,16 @@
-name: autotrack
+name: Autotrack
 channels:
   - conda-forge
   - defaults
 dependencies:
   - mahotas=1.4.4=py36h830ac7b_0
   - tifffile=0.15.1=py36_1
+  - atomicwrites=1.2.1=py36_0
+  - attrs=18.2.0=py36h28b3542_0
   - blas=1.0=mkl
   - ca-certificates=2018.03.07=0
   - certifi=2018.8.24=py36_1
+  - colorama=0.3.9=py36h029ae33_0
   - cycler=0.10.0=py36h009560c_0
   - decorator=4.3.0=py36_0
   - freetype=2.9.1=ha9979f8_1
@@ -25,6 +28,7 @@ dependencies:
   - mkl=2018.0.3=1
   - mkl_fft=1.0.4=py36h1e22a9b_1
   - mkl_random=1.0.1=py36h77b88f5_1
+  - more-itertools=4.3.0=py36_0
   - networkx=2.1=py36_0
   - numpy=1.15.1=py36ha559c80_0
   - numpy-base=1.15.1=py36h8128ebf_0
@@ -32,9 +36,12 @@ dependencies:
   - openssl=1.0.2p=hfa6e2cd_0
   - pandas=0.23.4=py36h830ac7b_0
   - pip=10.0.1=py36_0
+  - pluggy=0.7.1=py36h28b3542_0
+  - py=1.6.0=py36_0
   - py-opencv=3.4.1=py36h1b0d24d_3
   - pyparsing=2.2.0=py36_1
   - pyqt=5.9.2=py36ha878b3d_0
+  - pytest=3.7.4=py36_0
   - python=3.6.6=hea74fb7_0
   - python-dateutil=2.7.3=py36_0
   - pytz=2018.5=py36_0
