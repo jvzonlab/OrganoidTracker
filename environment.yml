@@ -1,4 +1,4 @@
-name: Autotrack
+name: autotrack
 channels:
   - conda-forge
   - defaults
