@@ -19,7 +19,7 @@ depends on what you're doing. If you enter the cell detection view, then methods
 shown. You can always go back to the main view using `View -> Exit this view`.
 
 The program is highly keyboard-dependent, although there are also menu options available for everything. I prefer using
-the keyboard shortcuts myself, but for people new to this program that is of course no options.
+the keyboard shortcuts myself, but for people new to this program that is of course no option.
 
 For most keyboard shortcuts, a menu option is available. For shortcuts where that wasn't possible (for example because
 you need to place your mouse above a cell), an explanation text was added to the status/help area.
