@@ -1,6 +1,6 @@
 """A bunch of visualizers, all based on Matplotlib. (The fact that TkInter is also used is abstracted away.)"""
 
-from typing import Iterable, Optional, Union, Dict, List, Any, Tuple
+from typing import Iterable, Optional, Union, Dict, Any, Tuple
 
 import numpy
 from numpy import ndarray
@@ -34,8 +34,6 @@ class Visualizer:
     _fig: Figure
     _ax: Axes
 
-    _pending_command_text: Optional[str]
-
     def __init__(self, window: Window):
         if not isinstance(window, Window):
             raise ValueError("window is not a Window")
@@ -43,8 +41,6 @@ class Visualizer:
         self._window = window
         self._fig = window.get_figure()
         self._ax = self._fig.gca()
-
-        self._pending_command_text = None
 
     def _clear_axis(self):
         """Clears the axis, except that zoom settings are preserved"""
@@ -89,46 +85,22 @@ class Visualizer:
         self._window.set_status(str(text))
 
     def _on_key_press_raw(self, event: KeyEvent):
-        # Records commands
-
-        if self._pending_command_text is None:
-            if event.key == '/':
-                # Staring command mode
-                self._pending_command_text = ""
-                self._update_status("/")
-                return
-            try:
-                self._on_key_press(event)
-            except Exception as e:
-                dialog.popup_exception(e)
-        else:
-            if event.key == 'enter':
-                # Finish typing command
-                text = self._pending_command_text
-                self._pending_command_text = None
-                if len(text) == 0:
-                    return
-                try:
-                    if not self._on_command(text):
-                        self._update_status("Unknown command: " + text + ". Type /help for help.")
-                except Exception as e:
-                    dialog.popup_exception(e)
-            elif event.key == 'escape':
-                # Exit typing command
-                self._pending_command_text = None
-                self._update_status(self.__doc__)
-            else:
-                if event.key == 'backspace':
-                    if len(self._pending_command_text) > 0:
-                        self._pending_command_text = self._pending_command_text[:-1]
-                elif len(event.key) > 1:
-                    pass  # Pressing "shift", "control", "left", etc.
-                else:
-                    self._pending_command_text += event.key
-                self._update_status("/" + self._pending_command_text)
+        """Calls _on_key_press, but catches all exceptions."""
+        try:
+            self._on_key_press(event)
+        except Exception as e:
+            dialog.popup_exception(e)
 
     def _on_key_press(self, event: KeyEvent):
         pass
+
+    def _on_command_raw(self, text: str):
+        """Executes a command, catches errors and shows a message if the command does not exist."""
+        try:
+            if not self._on_command(text):
+                self._update_status("Unknown command: " + text)
+        except Exception as e:
+            dialog.popup_exception(e)
 
     def _on_command(self, text: str) -> bool:
         return False
@@ -142,6 +114,7 @@ class Visualizer:
         self._window.register_event_handler("key_press_event", self._on_key_press_raw)
         self._window.register_event_handler("button_press_event", self._on_mouse_click)
         self._window.register_event_handler("refresh_event", self.refresh_view)
+        self._window.register_event_handler("command_event", self._on_command_raw)
 
     def detach(self):
         self._window.unregister_event_handlers()

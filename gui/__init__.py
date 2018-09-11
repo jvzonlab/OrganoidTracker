@@ -45,7 +45,8 @@ class Window:
     __experiment: Experiment
 
     __event_handler_ids: List[int]
-    __refresh_handler: Any = None
+    __refresh_handlers: List[Any]
+    __command_handlers: List[Any]
     __menu: tkinter.Menu
 
     def __init__(self, root: tkinter.Tk, menu: tkinter.Menu, figure: Figure, experiment: Experiment,
@@ -57,6 +58,8 @@ class Window:
         self.__status_text = status_text
         self.__title_text = title_text
         self.__event_handler_ids = []
+        self.__refresh_handlers = []
+        self.__command_handlers = []
         self.__plugins = []
 
         self.__scheduler = Scheduler(root)
@@ -68,9 +71,12 @@ class Window:
 
         * All matplotlib events.
         * "refresh_event" for when the figure needs to be redrawn.
+        * "command_event" for when a command is executed
         """
         if event == "refresh_event":
-            self.__refresh_handler = action
+            self.__refresh_handlers.append(action)
+        elif event == "command_event":
+            self.__command_handlers.append(action)
 
         self.__event_handler_ids.append(self.__fig.canvas.mpl_connect(event, action))
 
@@ -79,7 +85,8 @@ class Window:
         for id in self.__event_handler_ids:
             self.__fig.canvas.mpl_disconnect(id)
         self.__event_handler_ids = []
-        self.__refresh_handler = None
+        self.__refresh_handlers.clear()
+        self.__command_handlers.clear()
         self.setup_menu(dict())
 
     def get_figure(self) -> Figure:
@@ -111,8 +118,8 @@ class Window:
 
     def refresh(self):
         """Redraws the main figure."""
-        if self.__refresh_handler is not None:
-            self.__refresh_handler()
+        for refresh_handler in self.__refresh_handlers:
+            refresh_handler()
 
     def setup_menu(self, extra_items: Dict[str, any]):
         """Update the main menu of the window to contain the given options."""
@@ -146,6 +153,11 @@ class Window:
             "File/Exit-Exit (Alt+F4)": lambda: action.ask_exit(self.__root),
             "View/Toggle-Toggle showing axis numbers": lambda: action.toggle_axis(self.get_figure()),
         }
+
+    def execute_command(self, command: str):
+        """Calls all registered command handlers with the given argument. Used when a user entered a command."""
+        for command_handler in self.__command_handlers:
+            command_handler(command)
 
 
 def _simple_menu_dict_to_nested(menu_items: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
@@ -248,14 +260,26 @@ def launch_window(experiment: Experiment) -> Window:
     ttk.Label(main_frame, textvariable=title_text,
               font=Font(size=14, weight="bold"),
               padding=(0, 10, 0, 10)).grid(row=1, column=0, sticky="we")
-    ttk.Label(main_frame, textvariable=status_text).grid(row=3, column=0, sticky="we")
+    status_box = ttk.Label(main_frame, textvariable=status_text)
+    status_box.grid(row=3, column=0, sticky="we")
+
+    # Add command box
+    command_text = StringVar()
+    command_box = ttk.Entry(main_frame, textvariable=command_text)
+    command_box.grid(row=4, column=0, sticky="we")
+
+    command_box.bind("<FocusIn>", lambda e: command_box.select_range(0, tkinter.END))
 
     # Add Matplotlib figure to frame
     mpl_canvas = FigureCanvasTkAgg(fig, master=main_frame)  # A tk.DrawingArea.
     mpl_canvas.draw()
-    widget = mpl_canvas.get_tk_widget()
-    widget.grid(row=2, column=0, sticky="we")  # Position of figure
-    widget.bind("<Enter>", lambda e: widget.focus_set() if _should_focus(widget) else ...)  # Refocus on mouse enter
+    main_figure = mpl_canvas.get_tk_widget()
+    main_figure.grid(row=2, column=0, sticky="we")  # Position of figure
+    main_figure.bind("<Enter>", lambda e: main_figure.focus_set() if _should_focus(main_figure) else ...)  # Refocus on mouse enter
+    main_figure.bind("<KeyRelease-/>", lambda e: command_box.focus_set())
+
+    command_box.bind("<Escape>", lambda e: main_figure.focus_set())
+    command_box.bind("<Return>", lambda e: _handle_command(window, main_figure, command_text))
 
     toolbar_frame = ttk.Frame(main_frame)
     toolbar_frame.grid(row=0, column=0, sticky=(tkinter.W, tkinter.E))  # Positions of toolbar buttons
@@ -263,6 +287,14 @@ def launch_window(experiment: Experiment) -> Window:
     toolbar.update()
 
     return window
+
+
+def _handle_command(window: Window, main_figure: tkinter.Widget, command_var: StringVar):
+    """Empties the command box and executes the command."""
+    command = command_var.get()
+    command_var.set("")
+    main_figure.focus_set()
+    window.execute_command(command)
 
 
 def _should_focus(widget) -> bool:
