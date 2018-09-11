@@ -1,7 +1,6 @@
 """Code for fitting cells to Gaussian functions."""
-
-from timeit import default_timer as timer
 from typing import Tuple, List, Iterable, Dict, Optional
+from timeit import default_timer
 
 import cv2
 import networkx
@@ -10,7 +9,6 @@ import scipy.optimize
 from networkx import Graph
 from numpy import ndarray
 
-from core import Particle
 from particle_detection import smoothing
 from particle_detection.ellipse import Ellipse, EllipseStack, EllipseCluster
 
@@ -21,18 +19,31 @@ ELLIPSE_SHRINK_PIXELS = 2
 
 class _ModelAndImageDifference:
     _data_image: ndarray
-    _scratch_image: ndarray
+
+    # Some reusable images (to avoid allocating large new arrays)
+    _scratch_image: ndarray  # Used for drawing the Gaussians
+    _scratch_image_gradient: ndarray  # Used for drawing dG/dv, with v a parameters of a Gaussian
+
     _last_gaussians: Dict[Gaussian, ndarray]
 
     def __init__(self, data_image: ndarray):
         self._data_image = data_image.astype(numpy.float64)
         self._scratch_image = numpy.empty_like(self._data_image)
+        self._scratch_image_gradient = numpy.empty_like(self._data_image)
         self._last_gaussians = dict()
 
-    def difference_with_image(self, params) -> float:
-        last_gaussians_new = dict()
+    def difference_with_image(self, params: ndarray) -> float:
+        self._draw_gaussians_to_scratch_image(params)
 
+        self._scratch_image -= self._data_image
+        self._scratch_image **= 2
+        sum = self._scratch_image.sum()
+        return sum
+
+    def _draw_gaussians_to_scratch_image(self, params: ndarray):
+        # Makes self._scratch_image equal to ∑g(x)
         self._scratch_image.fill(0)
+        last_gaussians_new = dict()
         for i in range(0, len(params), 10):
             gaussian_params = params[i:i + 10]
             gaussian = Gaussian(*gaussian_params)
@@ -40,10 +51,25 @@ class _ModelAndImageDifference:
             last_gaussians_new[gaussian] = gaussian.draw(self._scratch_image, cached_image)
         self._last_gaussians = last_gaussians_new
 
+    def gradient(self, params: ndarray) -> ndarray:
+        """Calculates the gradient of self.difference_with_image for all of the possible parameters."""
+        # Calculate 2 * (−I(x) + ∑g(x))
+        self._draw_gaussians_to_scratch_image(params)
         self._scratch_image -= self._data_image
-        self._scratch_image **= 2
-        sum = self._scratch_image.sum()
-        return sum
+        self._scratch_image *= 2
+
+        # Multiply with one of the derivatives of one of the gradients
+        gradient_for_each_parameter = numpy.empty_like(params)
+        for gaussian_index in range(len(params) // 10):
+            param_pos = gaussian_index * 10
+            gaussian = Gaussian(*params[param_pos:param_pos + 10])
+            for gradient_nr in range(10):
+                # Every param gets its own gradient
+                self._scratch_image_gradient.fill(0)
+                gaussian.draw_gradient(self._scratch_image_gradient, gradient_nr)
+                self._scratch_image_gradient *= self._scratch_image
+                gradient_for_each_parameter[gaussian_index * 10 + gradient_nr] = self._scratch_image_gradient.sum()
+        return gradient_for_each_parameter
 
 
 def add_noise(data: ndarray):
@@ -70,7 +96,11 @@ def perform_gaussian_mixture_fit(original_image: ndarray, guesses: Iterable[Gaus
         guesses_list += guess.to_list()
 
     result = scipy.optimize.minimize(model_and_image_difference.difference_with_image, guesses_list,
-                                     method='Powell', options={'ftol':0.001,'xtol':10})
+                                     method='BFGS', jac=model_and_image_difference.gradient, options={'gtol': 2000})
+    #                                method = 'Newton-CG', jac = model_and_image_difference.gradient, options = {'disp': True, 'xtol': 0.1})
+    #                                method='Powell', options = {'ftol': 0.001, 'xtol': 10})
+    #                                method="Nelder-Mead", options = {'fatol': 0.1, 'xtol': 0.1, 'adaptive': False, 'disp': True})
+
     if not result.success:
         raise ValueError("Minimization failed: " + result.message)
 
@@ -88,7 +118,7 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
     ellipse_clusters = _get_overlapping_stacks(ellipse_stacks)
 
     all_gaussians: List[Optional[Gaussian]] = [None] * len(ellipse_stacks)  # Initialize empty list
-    start_time = timer()
+    start_time = default_timer()
     for cluster in ellipse_clusters:
         offset_x, offset_y, offset_z, cropped_image = cluster.get_image_for_fit(image, blur_radius)
         if cropped_image is None:
@@ -105,7 +135,7 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
         except ValueError:
             print("Minimization failed for " + str(cluster))
             continue
-    end_time = timer()
+    end_time = default_timer()
     print("Whole fitting process took " + str(end_time - start_time) + " seconds.")
     return all_gaussians
 

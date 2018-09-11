@@ -2,7 +2,7 @@ from pathlib import Path
 
 import numpy
 from scipy.ndimage import morphology
-from tifffile import tifffile
+import tifffile
 
 from core import Experiment
 from particle_detection import thresholding

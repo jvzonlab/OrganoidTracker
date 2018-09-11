@@ -41,8 +41,13 @@ def prompt_load_file(title: str, file_types: List[Tuple[str, str]]) -> Optional[
     """Shows a prompt that asks the user to open a file. Example:
 
         prompt_load_file("Choose an image", [("PNG file", "*.png"), ("JPEG file", "*.jpg")])
+
+        Returns None if the user pressed Cancel
     """
-    return _filedialog.askopenfilename(title=title, filetypes=file_types)
+    file = _filedialog.askopenfilename(title=title, filetypes=file_types)
+    if file == "":
+        return None
+    return file
 
 
 def popup_message_cancellable(title: str, message: str) -> bool:

@@ -1,4 +1,6 @@
+import cProfile
 import unittest
+from timeit import default_timer
 
 import numpy
 from particle_detection import gaussian_fit
@@ -20,8 +22,10 @@ class TestGaussianFit(unittest.TestCase):
 
         # Test if standard deviation is recovered (hint contains incorrect standard deviation on purpose)
         hint = Gaussian(205, mu_x=19, mu_y=19, mu_z=10, cov_xx=1, cov_yy=1, cov_zz=1, cov_xy=0, cov_xz=0, cov_yz=0)
+        start = default_timer()
         fitted = gaussian_fit.perform_gaussian_fit(image, hint)
-
+        end = default_timer()
+        print("TIME: ", end-start)
         self.assertTrue(gaussian.almost_equal(fitted))
 
     def test_two_separated_gaussians(self):
