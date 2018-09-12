@@ -35,9 +35,9 @@ class Particle:
     _time_point_number: Optional[int] = None
 
     def __init__(self, x: float, y: float, z: float):
-        self.x = x
-        self.y = y
-        self.z = z
+        self.x = float(x)
+        self.y = float(y)
+        self.z = float(z)
 
     def distance_squared(self, other: "Particle", z_factor: float = 5) -> float:
         """Gets the squared distance. Working with squared distances instead of normal ones gives a much better

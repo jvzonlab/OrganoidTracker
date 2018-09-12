@@ -49,6 +49,13 @@ def prompt_load_file(title: str, file_types: List[Tuple[str, str]]) -> Optional[
         return None
     return file
 
+def prompt_directory(title: str) -> Optional[str]:
+    """Shows a prompt that asks the user to select a directory. Returns None if the user pressed Cancel."""
+    directory = _filedialog.askdirectory(title=title)
+    if directory == "":
+        return None
+    return directory
+
 
 def popup_message_cancellable(title: str, message: str) -> bool:
     """Shows a dialog with Ok and Cancel buttons, but with an "i" sign instead of a "?"."""
