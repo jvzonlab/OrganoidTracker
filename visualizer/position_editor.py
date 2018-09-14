@@ -60,10 +60,9 @@ class PositionEditor(AbstractImageVisualizer):
 
         new_selection = self._get_particle_at(event.xdata, event.ydata)
         if new_selection is None:
+            self._selected = None  # Deselect any existing cell
             self._update_status("Cannot find a particle here")
-            return
-
-        if new_selection == self._selected:
+        elif new_selection == self._selected:
             self._selected = None  # Deselect
             self._update_status("Deselected " + str(new_selection))
         else:
