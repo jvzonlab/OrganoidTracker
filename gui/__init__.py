@@ -275,18 +275,16 @@ def launch_window(experiment: Experiment) -> Window:
     command_box = ttk.Entry(main_frame, textvariable=command_text)
     command_box.grid(row=4, column=0, sticky="we")
 
-    command_box.bind("<FocusIn>", lambda e: command_box.select_range(0, tkinter.END))
-
     # Add Matplotlib figure to frame
     mpl_canvas = FigureCanvasTkAgg(fig, master=main_frame)  # A tk.DrawingArea.
     mpl_canvas.draw()
     main_figure = mpl_canvas.get_tk_widget()
     main_figure.grid(row=2, column=0, sticky="we")  # Position of figure
     main_figure.bind("<Enter>", lambda e: main_figure.focus_set() if _should_focus(main_figure) else ...)  # Refocus on mouse enter
-    main_figure.bind("<KeyRelease-/>", lambda e: command_box.focus_set())
+    main_figure.bind("<KeyRelease-/>", lambda e: _commandbox_autofocus(command_box, command_text))
 
     command_box.bind("<Escape>", lambda e: main_figure.focus_set())
-    command_box.bind("<Return>", lambda e: _handle_command(window, main_figure, command_text))
+    command_box.bind("<Return>", lambda e: _commandbox_execute(window, main_figure, command_text))
 
     toolbar_frame = ttk.Frame(main_frame)
     toolbar_frame.grid(row=0, column=0, sticky=(tkinter.W, tkinter.E))  # Positions of toolbar buttons
@@ -296,15 +294,23 @@ def launch_window(experiment: Experiment) -> Window:
     return window
 
 
-def _handle_command(window: Window, main_figure: tkinter.Widget, command_var: StringVar):
+def _commandbox_autofocus(command_box: ttk.Entry, command_var: StringVar):
+    command_box.focus_set()
+    command_var.set("/")
+    command_box.icursor(1)
+
+
+def _commandbox_execute(window: Window, main_figure: tkinter.Widget, command_var: StringVar):
     """Empties the command box and executes the command."""
     command = command_var.get()
+    if command.startswith("/"):
+        command = command[1:]  # Strip off the command slash
     command_var.set("")
     main_figure.focus_set()
     window.execute_command(command)
 
 
-def _should_focus(widget) -> bool:
+def _should_focus(widget: tkinter.Widget) -> bool:
     """Returns whether the widget should be focused on mouse hover, which is the case if the current window has
     focus."""
     focus_object = widget.focus_get()
