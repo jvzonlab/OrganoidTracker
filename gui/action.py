@@ -51,9 +51,9 @@ def load_images(window: Window):
                                "Please select the TIF file of the first time point. The file name of the image must "
                                "contain \"t1\", \"t01\", \"_1.\" or similar in the file name."):
         return  # Cancelled
-    full_path = filedialog.askopenfilename(title="Select first image file", filetypes=(
+    full_path = dialog.prompt_load_file("Select first image file", [
         ("TIF file", "*.tif"),
-        ("TIFF file", "*.tiff")))
+        ("TIFF file", "*.tiff")])
     if not full_path:
         return  # Cancelled
     directory, file_name = path.split(full_path)
@@ -87,7 +87,7 @@ def _find_pattern(file_name: str) -> Optional[str]:
 def load_positions(window: Window):
     experiment = window.get_experiment()
 
-    cell_file = filedialog.askopenfilename(title="Select positions file", filetypes=(("JSON file", "*.json"),))
+    cell_file = dialog.prompt_load_file("Select positions file", [("JSON file", "*.json")])
     if not cell_file:
         return  # Cancelled
 
@@ -103,7 +103,7 @@ def load_positions(window: Window):
 def load_links(window: Window):
     experiment = window.get_experiment()
 
-    link_file = filedialog.askopenfilename(title="Select link file", filetypes=(("JSON file", "*.json"),))
+    link_file = dialog.prompt_load_file("Select link file", [("JSON file", "*.json")])
     if not link_file:
         return  # Cancelled
 
@@ -120,7 +120,7 @@ def load_links(window: Window):
 
 def load_guizela_tracks(window: Window):
     """Loads the tracks in Guizela's format."""
-    folder = filedialog.askdirectory()
+    folder = dialog.prompt_directory("Open folder with Guizela's tracks...")
     if not folder:
         return  # Cancelled
 
@@ -138,7 +138,7 @@ def load_guizela_tracks(window: Window):
 
 
 def export_positions_and_shapes(experiment: Experiment):
-    positions_file = filedialog.asksaveasfilename(title="Save positions as...", filetypes=(("JSON file", "*.json"),))
+    positions_file = dialog.prompt_save_file("Save positions as...", [("JSON file", "*.json")])
     if not positions_file:
         return  # Cancelled
     io.save_positions_and_shapes_to_json(experiment, positions_file)
