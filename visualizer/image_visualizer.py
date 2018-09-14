@@ -123,9 +123,10 @@ class AbstractImageVisualizer(Visualizer):
         self._draw_particles_of_time_point(self._time_point)
 
         # Next time point
-        has_linking_data = self._must_show_other_time_points() and (self._experiment.particle_links() is not None
-                           or self._experiment.particle_links_scratch() is not None)
-        if self._display_settings.show_next_time_point or has_linking_data:
+        can_show_other_time_points = self._must_show_other_time_points() and (
+                                         self._experiment.particle_links() is not None
+                                         or self._experiment.particle_links_scratch() is not None)
+        if self._display_settings.show_next_time_point or can_show_other_time_points:
             # Only draw particles of next/previous time point if there is linking data, or if we're forced to
             try:
                 self._draw_particles_of_time_point(self._experiment.get_next_time_point(self._time_point), color='red')
@@ -133,7 +134,7 @@ class AbstractImageVisualizer(Visualizer):
                 pass  # There is no next time point, ignore
 
         # Previous time point
-        if not self._display_settings.show_next_time_point and has_linking_data:
+        if not self._display_settings.show_next_time_point and can_show_other_time_points:
             try:
                 self._draw_particles_of_time_point(self._experiment.get_previous_time_point(self._time_point),
                                                    color='blue')
@@ -142,7 +143,7 @@ class AbstractImageVisualizer(Visualizer):
 
         # Draw links
         errors = 0
-        if has_linking_data:
+        if can_show_other_time_points:
             for particle in self._time_point.particles():
                 errors += self._draw_links(particle)
 
@@ -151,7 +152,7 @@ class AbstractImageVisualizer(Visualizer):
     def _draw_particles_of_time_point(self, time_point: TimePoint, color: str = core.COLOR_CELL_CURRENT):
         dt = time_point.time_point_number() - self._time_point.time_point_number()
         for particle in time_point.particles():
-            dz = int(particle.z - self._z)
+            dz = round(particle.z - self._z)
             if abs(dz) > self.MAX_Z_DISTANCE:
                 continue
 
