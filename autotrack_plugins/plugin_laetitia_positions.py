@@ -19,9 +19,9 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
 
 
 def _import_laetitia_positions(window: Window):
-    if not dialog.popup_message_cancellable("Instructions", "Choose the directory containing *.npy or *.txt files."):
+    if not dialog.popup_message_cancellable("Instructions", "Choose the directory containing the *.npy or *.txt files."):
         return
-    directory = dialog.prompt_directory("Choose file...")
+    directory = dialog.prompt_directory("Choose directory with positions files...")
     if directory is None:
         return
 
