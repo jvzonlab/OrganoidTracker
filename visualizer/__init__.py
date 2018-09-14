@@ -120,7 +120,7 @@ class Visualizer:
         self._window.unregister_event_handlers()
 
     def _get_window_title(self) -> Optional[str]:
-        """Called to query what the window title should be."""
+        """Called to query what the window title should be. This will be prefixed with the name of the program."""
         return None
 
     def get_extra_menu_options(self) -> Dict[str, Any]:

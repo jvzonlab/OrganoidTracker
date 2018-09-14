@@ -25,6 +25,9 @@ class PositionEditor(AbstractImageVisualizer):
             "View/Exit-Exit this view": self._exit_view
         }
 
+    def _get_window_title(self) -> str:
+        return "Positions editor"
+
     def _on_key_press(self, event: KeyEvent):
         if event.key == "insert":
             self._time_point.add_particle(Particle(event.xdata, event.ydata, self._z))
