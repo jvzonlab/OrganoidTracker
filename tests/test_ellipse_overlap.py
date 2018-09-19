@@ -1,6 +1,6 @@
 import unittest
 
-from particle_detection.ellipse import Ellipse
+from particle_detection.ellipse_cluster import Ellipse
 
 class TestFindNearestFew(unittest.TestCase):
 

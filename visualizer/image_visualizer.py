@@ -168,15 +168,9 @@ class AbstractImageVisualizer(Visualizer):
             self._draw_error(particle, dz)
 
         # Draw particle marker
-        self._draw_particle_marker(particle.x, particle.y, dz, dt, color)
+        self._time_point.get_shape(particle).draw2d(particle.x, particle.y, dz, dt, self._ax, color)
 
         self.__drawn_particles.append(particle)
-
-    def _draw_particle_marker(self, x: float, y: float, dz: int, dt: int, color: str):
-        marker_style = 's' if dz == 0 else 'o'
-        marker_size = max(1, 7 - abs(dz) - abs(dt))
-        self._ax.plot(x, y, marker_style, color=color, markeredgecolor='black', markersize=marker_size,
-                  markeredgewidth=1)
 
     def _draw_error(self, particle: Particle, dz: int):
         self._ax.plot(particle.x, particle.y, 'X', color='black', markeredgecolor='white',

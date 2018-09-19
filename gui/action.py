@@ -150,7 +150,7 @@ def export_links(experiment: Experiment):
         messagebox.showerror("No links", "Cannot export links; there are no links created.")
         return
 
-    links_file = filedialog.asksaveasfilename(title="Save links as...", filetypes=(("JSON file", "*.json"),))
+    links_file = dialog.prompt_save_file("Save links as...", [("JSON file", "*.json")])
     if not links_file:
         return  # Cancelled
 
@@ -163,6 +163,7 @@ def _error_message(error: Exception):
 
 def show_manual():
     dialog.open_file(path.join(path.dirname(path.abspath(sys.argv[0])), "manuals", "VISUALIZER.pdf"))
+
 
 def about_the_program():
     dialog.popup_message("About", "Cell detection and linking.\n\n"

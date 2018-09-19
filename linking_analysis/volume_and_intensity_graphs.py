@@ -20,6 +20,7 @@ def _get_volume(experiment: Experiment, particle: Particle) -> Optional[float]:
     except NotImplementedError:
         return None
 
+
 def _get_intensity(experiment: Experiment, particle: Particle) -> Optional[float]:
     time_point = experiment.get_time_point(particle.time_point_number())
     shape = time_point.get_shape(particle)

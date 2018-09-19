@@ -8,10 +8,9 @@ from config import ConfigFile
 from core import Experiment
 from imaging import io, tifffolder
 from manual_tracking import links_extractor
+from particle_detection import ellipse_detector_for_experiment
 
 # CONFIGURATION
-from particle_detection import ellipse_detection
-
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("convert_from_manual")
 _images_folder = config.get_or_default("images_folder", "./", store_in_defaults=True)
@@ -38,7 +37,7 @@ experiment.particle_links(graph)
 print("Performing rudimentary 2d shape detection...")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
-ellipse_detection.detect_for_all(experiment, _shape_detection_radius)
+ellipse_detector_for_experiment.detect_for_all(experiment, _shape_detection_radius)
 
 io.save_positions_and_shapes_to_json(experiment, _positions_file)
 io.save_links_to_json(graph, _links_file)

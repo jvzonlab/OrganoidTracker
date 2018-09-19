@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
-"""This script is used to detect the shapes of cells, starting from JSON position files and an image folder.
+"""This script is used to detect the shapes of cells, starting from JSON position files and an image folder. It gives a
+single multiveriate Gaussian as output for each image. This is more accurate than just fitting a stack of ellipses, as
+is done in another script. Unfortunately, this script is also much slower.
 
 Parameters: (all sizes are in pixels)
 
@@ -18,7 +20,7 @@ from particle_detection import gaussian_detector_for_experiment
 from core import Experiment, ImageResolution
 
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
-config = ConfigFile("detect_shapes")
+config = ConfigFile("detect_gaussian_shapes")
 _images_folder = config.get_or_default("images_folder", "./", store_in_defaults=True)
 _images_format = config.get_or_prompt("images_pattern", "What are the image file names? (Use %03d for a three digits "
                                                         "representing the time)", store_in_defaults=True)

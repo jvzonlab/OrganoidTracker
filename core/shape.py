@@ -6,6 +6,8 @@ from matplotlib.axes import Axes
 from matplotlib.patches import Ellipse
 from numpy import ndarray
 
+import core
+from core.ellipse import EllipseStack
 from core.gaussian import Gaussian
 
 
@@ -39,12 +41,8 @@ class ParticleShape:
         image[min_z:max_z, min_y:max_y, min_x:max_x, 1] = color[1]
         image[min_z:max_z, min_y:max_y, min_x:max_x, 2] = color[2]
 
-    def raw_area(self) -> float:
+    def area(self) -> float:
         """Derived from raw detection."""
-        raise NotImplementedError()
-
-    def fitted_area(self) -> float:
-        """Derived from a fitted shape."""
         raise NotImplementedError()
 
     def perimeter(self) -> float:
@@ -83,38 +81,10 @@ class ParticleShape:
         raise NotImplementedError()
 
 
-class UnknownShape(ParticleShape):
-
-    def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
-        self.default_draw(x, y, dz, dt, area, color)
-
-    def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
-        self.default_draw3d_color(x, y, z, dt, image, color)
-
-    def raw_area(self) -> float:
-        return 0
-
-    def fitted_area(self) -> float:
-        return 0
-
-    def perimeter(self) -> float:
-        return 0
-
-    def is_unknown(self) -> bool:
-        return True
-
-    def to_list(self):
-        return []
-
-
 class EllipseShape(ParticleShape):
     """Represents an ellipsoidal shape. The shape only stores 2D information. This class was previously used to store
     some primitive shape information. The class is still present, so that you are able to load old data."""
-    _ellipse_dx: float  # Offset from particle center
-    _ellipse_dy: float  # Offset from particle center
-    _ellipse_width: float  # Always smaller than height
-    _ellipse_height: float
-    _ellipse_angle: float  # Degrees, 0 <= angle < 180
+    _ellipse: core.ellipse.Ellipse
 
     _original_perimeter: float
     _original_area: float
@@ -122,11 +92,7 @@ class EllipseShape(ParticleShape):
 
     def __init__(self, ellipse_dx: float, ellipse_dy: float, ellipse_width: float, ellipse_height: float,
                  ellipse_angle: float, original_perimeter: float, original_area: float, eccentric: bool = False):
-        self._ellipse_dx = ellipse_dx
-        self._ellipse_dy = ellipse_dy
-        self._ellipse_width = ellipse_width
-        self._ellipse_height = ellipse_height
-        self._ellipse_angle = ellipse_angle
+        self._ellipse = core.ellipse.Ellipse(ellipse_dx, ellipse_dy, ellipse_width, ellipse_height, ellipse_angle)
 
         self._original_perimeter = original_perimeter
         self._original_area = original_area
@@ -136,8 +102,8 @@ class EllipseShape(ParticleShape):
         fill = dt == 0
         edgecolor = 'white' if fill else color
         alpha = max(0.1, 0.5 - abs(dz / 6))
-        area.add_artist(Ellipse(xy=(x + self._ellipse_dx, y + self._ellipse_dy),
-                                width=self._ellipse_width, height=self._ellipse_height, angle=self._ellipse_angle,
+        area.add_artist(Ellipse(xy=(x + self._ellipse.x, y + self._ellipse.y),
+                                width=self._ellipse.width, height=self._ellipse.height, angle=self._ellipse.angle,
                                 fill=fill, facecolor=color, edgecolor=edgecolor, linestyle="dashed", linewidth=1,
                                 alpha=alpha))
 
@@ -155,36 +121,53 @@ class EllipseShape(ParticleShape):
     def _draw_to_image(self, image_2d: ndarray, x: float, y: float, color: Tuple[float, float, float], thickness: int):
         # PyCharm cannot recognize signature of cv2.ellipse, so the warning is a false positive:
         # noinspection PyArgumentList
-        cv2.ellipse(image_2d, ((x + self._ellipse_dx, y + self._ellipse_dy),
-                                   (self._ellipse_width, self._ellipse_height), self._ellipse_angle),
+        cv2.ellipse(image_2d, ((x + self._ellipse.x, y + self._ellipse.y),
+                                   (self._ellipse.width, self._ellipse.height), self._ellipse.angle),
                     color=color, thickness=thickness)
 
-    def raw_area(self) -> float:
+    def area(self) -> float:
         return self._original_area
-
-    def fitted_area(self):
-        return math.pi * self._ellipse_width / 2 * self._ellipse_height / 2
 
     def perimeter(self) -> float:
         if self._original_perimeter is None:
-            # Source: https://www.mathsisfun.com/geometry/ellipse-perimeter.html (if offline, go to web.archive.org)
-            a = self._ellipse_width / 2
-            b = self._ellipse_height / 2
-            h = ((a - b) ** 2) / ((a + b) ** 2)
-            return math.pi * (a + b) * (1 + (1/4) * h + (1/64) * h + (1/256) * h)
+            return self._ellipse.perimeter()
         return self._original_perimeter
 
     def director(self, require_reliable: bool = False) -> Optional[float]:
-        if require_reliable and not self._ellipse_height / self._ellipse_width >= 1.2:
+        if require_reliable and not self._ellipse.height / self._ellipse.width >= 1.2:
             return None
-        return self._ellipse_angle
+        return self._ellipse.angle
 
     def is_eccentric(self) -> bool:
         return self._eccentric
 
     def to_list(self) -> List:
-        return ["ellipse", self._ellipse_dx, self._ellipse_dy, self._ellipse_width, self._ellipse_height,
-                self._ellipse_angle, self._original_perimeter, self._original_area, bool(self._eccentric)]
+        return ["ellipse", self._ellipse.x, self._ellipse.y, self._ellipse.width, self._ellipse.height,
+                self._ellipse.angle, self._original_perimeter, self._original_area, bool(self._eccentric)]
+
+
+class UnknownShape(ParticleShape):
+
+    def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
+        self.default_draw(x, y, dz, dt, area, color)
+
+    def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
+        self.default_draw3d_color(x, y, z, dt, image, color)
+
+    def area(self) -> float:
+        return 0
+
+    def fitted_area(self) -> float:
+        return 0
+
+    def perimeter(self) -> float:
+        return 0
+
+    def is_unknown(self) -> bool:
+        return True
+
+    def to_list(self):
+        return []
 
 
 class GaussianShape(ParticleShape):
@@ -204,12 +187,76 @@ class GaussianShape(ParticleShape):
         return ["gaussian", *self._gaussian.to_list()]
 
     def volume(self) -> float:
-        """We take the volume of an ellipse with radii equal to the Gaussian variances."""
+        """We take the volume of a 3D ellipse with radii equal to the Gaussian variances."""
         return 4/3 * math.pi * \
                math.sqrt(self._gaussian.cov_xx) * math.sqrt(self._gaussian.cov_yy) * math.sqrt(self._gaussian.cov_zz)
 
     def intensity(self) -> float:
         return self._gaussian.a / 256
+
+
+class EllipseStackShape(ParticleShape):
+    """A stack of ellipses. Fairly simple, but still a useful 3D representation of the particle shape."""
+
+    _ellipse_stack: EllipseStack
+    _center_ellipse: int  # Z position of the particle center
+
+    def __init__(self, ellipse_stack: EllipseStack, center_ellipse: int):
+        self._ellipse_stack = ellipse_stack
+        self._center_ellipse = center_ellipse
+
+    def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
+        self.default_draw(x, y, dz, dt, area, color)
+        fill = dt == 0
+        edgecolor = 'white' if fill else color
+        ellipse = self._ellipse_stack.get_ellipse(self._center_ellipse + dz)
+        if ellipse is None:
+            return
+
+        area.add_artist(Ellipse(xy=(x + ellipse.x, y + ellipse.y),
+                                width=ellipse.width, height=ellipse.height, angle=ellipse.angle, alpha=0.5,
+                                fill=fill, facecolor=color, edgecolor=edgecolor, linestyle="dashed", linewidth=1))
+
+    def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
+        lowest_ellipse_z = int(z) - self._center_ellipse
+        for layer_z in range(len(image)):
+            ellipse = self._ellipse_stack.get_ellipse(layer_z - lowest_ellipse_z)
+            if ellipse is not None:
+                ellipse.draw_to_image(image[layer_z], color)
+
+    def area(self) -> float:
+        """Simply returns the largest area of all the ellipses."""
+        largest_area = 0
+        for ellipse in self._ellipse_stack:
+            area = ellipse.area()
+            if area > largest_area:
+                largest_area = area
+        return largest_area
+
+    def perimeter(self) -> float:
+        """Simply returns the largest perimeter of all the ellipses."""
+        largest_perimeter = 0
+        for ellipse in self._ellipse_stack:
+            perimeter = ellipse.perimeter()
+            if perimeter > largest_perimeter:
+                largest_perimeter = perimeter
+        return largest_perimeter
+
+    def to_list(self) -> List:
+        list = ["ellipse_stack", self._center_ellipse]
+        for ellipse in self._ellipse_stack:
+            if ellipse is None:
+                list.append(None)
+            else:
+                list.append([ellipse.x, ellipse.y, ellipse.width, ellipse.height, ellipse.angle])
+        return list
+
+    def volume(self) -> float:
+        """Volume is in pixels, so we can just return the summed area of the ellipses."""
+        volume = 0
+        for ellipse in self._ellipse_stack:
+            volume += ellipse.area()
+        return volume
 
 
 def from_list(list: List) -> ParticleShape:
@@ -220,4 +267,12 @@ def from_list(list: List) -> ParticleShape:
         return EllipseShape(*list[1:])
     elif type == "gaussian":
         return GaussianShape(Gaussian(*list[1:]))
+    elif type == "ellipse_stack":
+        ellipses = []
+        for ellipse in list[2:]:
+            if ellipse is None:
+                ellipses.append(None)
+            else:
+                ellipses.append(core.ellipse.Ellipse(*ellipse))
+        return EllipseStackShape(EllipseStack(ellipses), list[1])
     raise ValueError("Cannot deserialize " + str(list))

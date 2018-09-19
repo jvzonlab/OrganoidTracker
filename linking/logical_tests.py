@@ -36,8 +36,7 @@ def apply(experiment: Experiment, graph: Graph):
             shape = experiment.get_time_point(particle.time_point_number()).get_shape(particle)
             if not shape.is_unknown() and not shape.is_eccentric() and len(future_particles) == 1:
                 past_shape = experiment.get_time_point(past_particle.time_point_number()).get_shape(past_particle)
-                if past_shape.raw_area() / (shape.raw_area() + 0.0001) > 1.7 and \
-                        past_shape.fitted_area() / (shape.fitted_area() + 0.0001) > 1.7:
+                if past_shape.area() / (shape.area() + 0.0001) > 1.7:
                     _set_error(graph, particle, errors.SHRUNK_A_LOT)
 
 

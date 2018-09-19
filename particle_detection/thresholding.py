@@ -64,10 +64,14 @@ def advanced_threshold(image_8bit: ndarray, image_8bit_smoothed: ndarray, out: n
     background_removal(image_8bit, out)
     _draw_squares(particles, out)
 
+
 def _draw_squares(particles: Iterable[Particle], out: ndarray):
     """Draws squares around the known particle positions, so that they are surely included in the threshold."""
     for particle in particles:
-        out[int(particle.z), int(particle.y - 3):int(particle.y + 3), int(particle.x - 3):int(particle.x + 3)] = 255
+        z = int(particle.z)
+        if z < 0 or z >= len(out):
+            continue
+        out[z, int(particle.y - 3):int(particle.y + 3), int(particle.x - 3):int(particle.x + 3)] = 255
 
 
 def _open(threshold: ndarray):

@@ -69,7 +69,10 @@ def create_labels(particles: Iterable[Particle], output: ndarray):
     i = 1
     for particle in particles:
         try:
-            output[int(particle.z), int(particle.y), int(particle.x)] = i
+            z = int(particle.z)
+            if z == -1 or z == output.shape[0]:
+                z = max(0, min(z, output.shape[0] - 1))  # Clamp z when particle is just above or below expected range
+            output[z, int(particle.y), int(particle.x)] = i
             i += 1
         except IndexError:
             raise ValueError("The images do not match the cells: " + str(particle) + " is outside the image of size " +
