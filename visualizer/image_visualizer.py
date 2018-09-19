@@ -154,18 +154,17 @@ class AbstractImageVisualizer(Visualizer):
     def _draw_particles_of_time_point(self, time_point: TimePoint, color: str = core.COLOR_CELL_CURRENT):
         dt = time_point.time_point_number() - self._time_point.time_point_number()
         for particle in time_point.particles():
-            dz = round(particle.z) - self._z
-            if abs(dz) > self.MAX_Z_DISTANCE:
-                continue
+            dz = self._z - round(particle.z)
 
             # Draw the particle itself (as a square or circle, depending on its depth)
             self._draw_particle(particle, color, dz, dt)
 
     def _draw_particle(self, particle: Particle, color: str, dz: int, dt: int):
         # Draw error marker
-        graph = self._experiment.particle_links_scratch() or self._experiment.particle_links()
-        if graph is not None and particle in graph and "error" in graph.nodes[particle]:
-            self._draw_error(particle, dz)
+        if abs(dz) <= self.MAX_Z_DISTANCE:
+            graph = self._experiment.particle_links_scratch() or self._experiment.particle_links()
+            if graph is not None and particle in graph and "error" in graph.nodes[particle]:
+                self._draw_error(particle, dz)
 
         # Draw particle marker
         self._time_point.get_shape(particle).draw2d(particle.x, particle.y, dz, dt, self._ax, color)

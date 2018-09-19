@@ -28,6 +28,8 @@ class ParticleShape:
     @staticmethod
     def default_draw(x: float, y: float, dz: int, dt: int, area: Axes, color: str):
         """The default (point) representation of a shape. Implementation can fall back on this if they want."""
+        if abs(dz) > 3:
+            return
         marker_style = 's' if dz == 0 else 'o'
         marker_size = max(1, 7 - abs(dz) - abs(dt))
         area.plot(x, y, marker_style, color=color, markeredgecolor='black', markersize=marker_size, markeredgewidth=1)
@@ -99,6 +101,8 @@ class EllipseShape(ParticleShape):
         self._eccentric = eccentric
 
     def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
+        if abs(dz) > 3:
+            return
         fill = dt == 0
         edgecolor = 'white' if fill else color
         alpha = max(0.1, 0.5 - abs(dz / 6))
