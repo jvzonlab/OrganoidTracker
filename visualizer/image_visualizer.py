@@ -1,3 +1,5 @@
+import math
+
 import cv2
 from typing import Optional, Iterable, List, Tuple, Union
 
@@ -152,7 +154,7 @@ class AbstractImageVisualizer(Visualizer):
     def _draw_particles_of_time_point(self, time_point: TimePoint, color: str = core.COLOR_CELL_CURRENT):
         dt = time_point.time_point_number() - self._time_point.time_point_number()
         for particle in time_point.particles():
-            dz = round(particle.z - self._z)
+            dz = round(particle.z) - self._z
             if abs(dz) > self.MAX_Z_DISTANCE:
                 continue
 
