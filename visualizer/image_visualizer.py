@@ -36,7 +36,7 @@ class AbstractImageVisualizer(Visualizer):
     _time_point: TimePoint = None
     _time_point_images: ndarray = None
     _z: int
-    __drawn_particles: List[Particle]
+    __particles_near_visible_layer: List[Particle]
     _display_settings: DisplaySettings
 
     # The color map should typically not be transferred when switching to another viewer, so it is not part of the
@@ -53,7 +53,7 @@ class AbstractImageVisualizer(Visualizer):
         self._time_point, self._time_point_images = self._load_time_point(time_point_number)
         self._z = int(z)
         self._clamp_z()
-        self.__drawn_particles = []
+        self.__particles_near_visible_layer = []
 
     def _load_time_point(self, time_point_number: int) -> Tuple[TimePoint, ndarray]:
         time_point = self._experiment.get_time_point(time_point_number)
@@ -94,7 +94,7 @@ class AbstractImageVisualizer(Visualizer):
 
     def draw_view(self):
         self._clear_axis()
-        self.__drawn_particles.clear()
+        self.__particles_near_visible_layer.clear()
         self._draw_image()
         errors = self._draw_particles()
         self._draw_extra()
@@ -160,19 +160,20 @@ class AbstractImageVisualizer(Visualizer):
             self._draw_particle(particle, color, dz, dt)
 
     def _draw_particle(self, particle: Particle, color: str, dz: int, dt: int):
-        # Draw error marker
         if abs(dz) <= self.MAX_Z_DISTANCE:
+            # Draw error marker
             graph = self._experiment.particle_links_scratch() or self._experiment.particle_links()
             if graph is not None and particle in graph and "error" in graph.nodes[particle]:
                 self._draw_error(particle, dz)
+
+            # Make particle selectable
+            self.__particles_near_visible_layer.append(particle)
 
         # Draw particle
         if self._display_settings.show_reconstruction:  # Showing a 3D reconstruction, so don't display a 2D one too
             core.shape.draw_marker_2d(particle.x, particle.y, dz, dt, self._ax, color)
         else:
             self._time_point.get_shape(particle).draw2d(particle.x, particle.y, dz, dt, self._ax, color)
-
-        self.__drawn_particles.append(particle)
 
     def _draw_error(self, particle: Particle, dz: int):
         self._ax.plot(particle.x, particle.y, 'X', color='black', markeredgecolor='white',
@@ -218,7 +219,7 @@ class AbstractImageVisualizer(Visualizer):
 
     def _get_particle_at(self, x: Optional[int], y: Optional[int]) -> Optional[Particle]:
         """Wrapper of get_closest_particle that makes use of the fact that we can lookup all particles ourselves."""
-        return self.get_closest_particle(self.__drawn_particles, x, y, None, max_distance=5)
+        return self.get_closest_particle(self.__particles_near_visible_layer, x, y, None, max_distance=5)
 
     def get_extra_menu_options(self):
         def time_point_prompt():
