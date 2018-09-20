@@ -90,9 +90,9 @@ def perform_gaussian_mixture_fit(original_image: ndarray, guesses: Iterable[Gaus
         guesses_list += guess.to_list()
 
     result = scipy.optimize.minimize(model_and_image_difference.difference_with_image, guesses_list,
-                                     method='BFGS', jac=model_and_image_difference.gradient, options={'gtol': 2000})
+    #                                 method='BFGS', jac=model_and_image_difference.gradient, options={'gtol': 2000})
     #                                method = 'Newton-CG', jac = model_and_image_difference.gradient, options = {'disp': True, 'xtol': 0.1})
-    #                                method='Powell', options = {'ftol': 0.001, 'xtol': 10})
+                                     method='Powell', options = {'ftol': 0.001, 'xtol': 10})
     #                                method="Nelder-Mead", options = {'fatol': 0.1, 'xtol': 0.1, 'adaptive': False, 'disp': True})
 
     if not result.success:
@@ -123,7 +123,6 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
 
         gaussians = [gaussian.translated(-offset_x, -offset_y, -offset_z) for gaussian in gaussians]
         try:
-            print("Fitting " + str(len(gaussians)) + " Gaussians at once to the image...")
             gaussians = perform_gaussian_mixture_fit(cropped_image, gaussians)
             for i, gaussian in enumerate(gaussians):
                 all_gaussians[tags[i]] = gaussian.translated(offset_x, offset_y, offset_z)
