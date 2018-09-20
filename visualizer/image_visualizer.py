@@ -166,8 +166,11 @@ class AbstractImageVisualizer(Visualizer):
             if graph is not None and particle in graph and "error" in graph.nodes[particle]:
                 self._draw_error(particle, dz)
 
-        # Draw particle marker
-        self._time_point.get_shape(particle).draw2d(particle.x, particle.y, dz, dt, self._ax, color)
+        # Draw particle
+        if self._display_settings.show_reconstruction:  # Showing a 3D reconstruction, so don't display a 2D one too
+            core.shape.draw_marker_2d(particle.x, particle.y, dz, dt, self._ax, color)
+        else:
+            self._time_point.get_shape(particle).draw2d(particle.x, particle.y, dz, dt, self._ax, color)
 
         self.__drawn_particles.append(particle)
 

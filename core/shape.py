@@ -26,15 +26,6 @@ class ParticleShape:
         raise NotImplementedError()
 
     @staticmethod
-    def default_draw(x: float, y: float, dz: int, dt: int, area: Axes, color: str):
-        """The default (point) representation of a shape. Implementation can fall back on this if they want."""
-        if abs(dz) > 3:
-            return
-        marker_style = 's' if dz == 0 else 'o'
-        marker_size = max(1, 7 - abs(dz) - abs(dt))
-        area.plot(x, y, marker_style, color=color, markeredgecolor='black', markersize=marker_size, markeredgewidth=1)
-
-    @staticmethod
     def default_draw3d_color(x: float, y: float, z: float, dt: int, image: ndarray,
                              color: Tuple[float, float, float], radius_xy=5, radius_z=0):
         min_x, min_y, min_z = int(x - radius_xy), int(y - radius_xy), int(z - radius_z)
@@ -153,7 +144,7 @@ class EllipseShape(ParticleShape):
 class UnknownShape(ParticleShape):
 
     def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
-        self.default_draw(x, y, dz, dt, area, color)
+        draw_marker_2d(x, y, dz, dt, area, color)
 
     def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
         self.default_draw3d_color(x, y, z, dt, image, color)
@@ -182,7 +173,7 @@ class GaussianShape(ParticleShape):
         self._gaussian = gaussian
 
     def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
-        self.default_draw(x, y, dz, dt, area, color)
+        draw_marker_2d(x, y, dz, dt, area, color)
 
     def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
         self._gaussian.translated(x, y, z).draw_colored(image, color)
@@ -210,7 +201,7 @@ class EllipseStackShape(ParticleShape):
         self._center_ellipse = center_ellipse
 
     def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
-        self.default_draw(x, y, dz, dt, area, color)
+        draw_marker_2d(x, y, dz, dt, area, color)
         fill = dt == 0
         edgecolor = 'white' if fill else color
         ellipse = self._ellipse_stack.get_ellipse(self._center_ellipse + dz)
@@ -226,7 +217,7 @@ class EllipseStackShape(ParticleShape):
         for layer_z in range(len(image)):
             ellipse = self._ellipse_stack.get_ellipse(layer_z - lowest_ellipse_z)
             if ellipse is not None:
-                ellipse.draw_to_image(image[layer_z], color)
+                ellipse.draw_to_image(image[layer_z], color, dx=x, dy=y, filled=True)
 
     def area(self) -> float:
         """Simply returns the largest area of all the ellipses."""
@@ -261,6 +252,15 @@ class EllipseStackShape(ParticleShape):
         for ellipse in self._ellipse_stack:
             volume += ellipse.area()
         return volume
+
+
+def draw_marker_2d(x: float, y: float, dz: int, dt: int, area: Axes, color: str):
+    """The default (point) representation of a shape. Implementation can fall back on this if they want."""
+    if abs(dz) > 3:
+        return
+    marker_style = 's' if dz == 0 else 'o'
+    marker_size = max(1, 7 - abs(dz) - abs(dt))
+    area.plot(x, y, marker_style, color=color, markeredgecolor='black', markersize=marker_size, markeredgewidth=1)
 
 
 def from_list(list: List) -> ParticleShape:
