@@ -80,7 +80,7 @@ class Visualizer:
         """Draws the view, forcing to reload any cached data."""
         self.draw_view()
 
-    def _update_status(self, text: Union[str, bytes], redraw=True):
+    def update_status(self, text: Union[str, bytes], redraw=True):
         """Updates the status of the window."""
         self._window.set_status(str(text))
 
@@ -98,7 +98,7 @@ class Visualizer:
         """Executes a command, catches errors and shows a message if the command does not exist."""
         try:
             if not self._on_command(text):
-                self._update_status("Unknown command: " + text)
+                self.update_status("Unknown command: " + text)
         except Exception as e:
             dialog.popup_exception(e)
 
@@ -125,6 +125,11 @@ class Visualizer:
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {}
+
+    def get_default_status(self) -> str:
+        """Gets the status normally used when moving between time points or between different visualizers. Use
+        update_status to set a special status."""
+        return str(self.__doc__)
 
     def load_image(self, time_point: TimePoint, show_next_time_point: bool) -> Optional[ndarray]:
         """Creates an image suitable for display purposes. IF show_next_time_point is set to True, then then a color
@@ -189,5 +194,5 @@ def activate(visualizer: Visualizer) -> None:
     __active_visualizer = visualizer
     __active_visualizer.attach()
     __active_visualizer.draw_view()
-    __active_visualizer._update_status(__active_visualizer.__doc__)
+    __active_visualizer.update_status(__active_visualizer.get_default_status())
 

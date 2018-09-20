@@ -165,7 +165,7 @@ class ParticleListVisualizer(Visualizer):
             self.goto_full_image()
             return True
         if command == "help":
-            self._update_status("Available commands:\n"
+            self.update_status("Available commands:\n"
                                "/exit - Exits this view, and goes back to the main view.")
             return True
         return super()._on_command(command)

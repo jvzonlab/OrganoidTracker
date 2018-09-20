@@ -71,7 +71,7 @@ class LinkEditor(AbstractImageVisualizer):
             return
         new_selection = self._get_particle_at(event.xdata, event.ydata)
         if new_selection is None:
-            self._update_status("Cannot find a particle here")
+            self.update_status("Cannot find a particle here")
             return
         if new_selection == self._selected1:
             self._selected1 = None  # Deselect
@@ -81,22 +81,22 @@ class LinkEditor(AbstractImageVisualizer):
             self._selected1 = self._selected2
             self._selected2 = new_selection
         self.draw_view()
-        self._update_status("Selected:\n        " + str(self._selected2) + "\n        " + str(self._selected1))
+        self.update_status("Selected:\n        " + str(self._selected2) + "\n        " + str(self._selected1))
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "insert":
             if self._check_selection():
                 self._experiment.particle_links_scratch().add_edge(self._selected1, self._selected2)
                 self._after_modification()
-                self._update_status("Added link")
+                self.update_status("Added link")
         elif event.key == "delete":
             if self._check_selection():
                 try:
                     self._experiment.particle_links_scratch().remove_edge(self._selected1, self._selected2)
                     self._after_modification()
-                    self._update_status("Removed link")
+                    self.update_status("Removed link")
                 except NetworkXError:
-                    self._update_status("Cannot delete link: there was no link between selected particles")
+                    self.update_status("Cannot delete link: there was no link between selected particles")
         elif event.key == "l":
             self._exit()
         else:
@@ -113,25 +113,25 @@ class LinkEditor(AbstractImageVisualizer):
         self._experiment.particle_links(our_links.copy())
         self._has_uncommitted_changes = False
         self.draw_view()
-        self._update_status("Committed all changes.")
+        self.update_status("Committed all changes.")
 
     def _revert(self):
         old_links = self._experiment.particle_links()
         self._experiment.particle_links_scratch(old_links.copy())
         self._has_uncommitted_changes = False
         self.draw_view()
-        self._update_status("Reverted all uncommitted changes.")
+        self.update_status("Reverted all uncommitted changes.")
 
     def _check_selection(self) -> bool:
         if self._selected1 is None or self._selected2 is None:
-            self._update_status("Need to select two particles first")
+            self.update_status("Need to select two particles first")
             return False
         delta_time_point_number = abs(self._selected1.time_point_number() - self._selected2.time_point_number())
         if delta_time_point_number == 0:
-            self._update_status("Cannot link two cells from the same time point together")
+            self.update_status("Cannot link two cells from the same time point together")
             return False
         if delta_time_point_number > 5:
-            self._update_status("Cannot link two cells together that are" + str(delta_time_point_number) + " time points apart")
+            self.update_status("Cannot link two cells together that are" + str(delta_time_point_number) + " time points apart")
             return False
         return True
 
@@ -149,7 +149,7 @@ class LinkEditor(AbstractImageVisualizer):
             self._export_links(filename=command[7:].strip())
             return True
         if command == "help":
-            self._update_status("/commit - commits all changes, so that they cannot be reverted\n"
+            self.update_status("/commit - commits all changes, so that they cannot be reverted\n"
                                "/revert - reverst all uncommitted changes\n"
                                "/export - exports all committed changes to a file")
             return True
@@ -157,15 +157,15 @@ class LinkEditor(AbstractImageVisualizer):
 
     def _export_links(self, filename: str):
         if self._has_uncommitted_changes:
-            self._update_status("There are uncommitted changes. /commit or /revert them first.")
+            self.update_status("There are uncommitted changes. /commit or /revert them first.")
             return
         if len(filename) == 0:
-            self._update_status("Please give a file name to save to")
+            self.update_status("Please give a file name to save to")
             return
         if not filename.endswith(".json"):
             filename += ".json"
         io.save_links_to_json(self._experiment.particle_links(), filename)
-        self._update_status("Saved committed links to " + filename)
+        self.update_status("Saved committed links to " + filename)
 
     def _after_modification(self):
         graph = self._experiment.particle_links_scratch()

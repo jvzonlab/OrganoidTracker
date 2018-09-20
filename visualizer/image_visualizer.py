@@ -264,16 +264,16 @@ class AbstractImageVisualizer(Visualizer):
             self._toggle_showing_reconstruction()
 
     def _on_command(self, command: str) -> bool:
-        if command[0] == "t":
+        if len(command) > 0 and command[0] == "t":
             time_point_str = command[1:]
             try:
                 new_time_point_number = int(time_point_str.strip())
                 self._move_to_time(new_time_point_number)
             except ValueError:
-                self._update_status("Cannot read number: " + time_point_str)
+                self.update_status("Cannot read number: " + time_point_str)
             return True
         if command == "help":
-            self._update_status("/t20: Jump to time point 20 (also works for other time points)")
+            self.update_status("/t20: Jump to time point 20 (also works for other time points)")
             return True
         return False
 
@@ -309,12 +309,12 @@ class AbstractImageVisualizer(Visualizer):
             self._time_point, self._time_point_images = self._load_time_point(new_time_point_number)
             self._move_in_z(0)  # Caps z to allowable range
             self.draw_view()
-            self._update_status("Moved to time point " + str(new_time_point_number) + "!")
+            self.update_status("Moved to time point " + str(new_time_point_number) + "!")
             return True
         except KeyError:
-            self._update_status("Unknown time point: " + str(new_time_point_number) + " (range is "
-                                + str(self._experiment.first_time_point_number()) + " to "
-                                + str(self._experiment.last_time_point_number()) + ", inclusive)")
+            self.update_status("Unknown time point: " + str(new_time_point_number) + " (range is "
+                               + str(self._experiment.first_time_point_number()) + " to "
+                               + str(self._experiment.last_time_point_number()) + ", inclusive)")
             return False
 
     def _move_in_time(self, dt: int):
@@ -326,7 +326,7 @@ class AbstractImageVisualizer(Visualizer):
             self._time_point, self._time_point_images = self._load_time_point(new_time_point_number)
             self._move_in_z(0)  # Caps z to allowable range
             self.draw_view()
-            self._update_status(self.__doc__)
+            self.update_status(self.get_default_status())
         except KeyError:
             pass
 
@@ -367,9 +367,9 @@ class StandardImageVisualizer(AbstractImageVisualizer):
                     + str(scored_family.score.total()) + "\n"
             displayed_items += 1
         if text:
-            self._update_status("Possible cell division scores:\n" + text)
+            self.update_status("Possible cell division scores:\n" + text)
         else:
-            self._update_status("No cell division scores found")
+            self.update_status("No cell division scores found")
 
     def get_extra_menu_options(self):
         return {
@@ -410,10 +410,10 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             particle = self._get_particle_at(event.xdata, event.ydata)
             links = self._experiment.particle_links_scratch()
             if particle is not None and links is not None:
-                self._update_status("Flow toward previous frame: " +
-                                    str(particle_flow.get_flow_to_previous(links, self._time_point, particle)) +
+                self.update_status("Flow toward previous frame: " +
+                                   str(particle_flow.get_flow_to_previous(links, self._time_point, particle)) +
                                    "\nFlow towards next frame: " +
-                                    str(particle_flow.get_flow_to_next(links, self._time_point, particle)))
+                                   str(particle_flow.get_flow_to_next(links, self._time_point, particle)))
         else:
             super()._on_key_press(event)
 
@@ -469,7 +469,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             self._show_mother_cells()
             return True
         if command == "help":
-            self._update_status("Available commands:\n"
+            self.update_status("Available commands:\n"
                                "/deaths - views cell deaths.\n"
                                "/divisions - views cell divisions.\n"
                                "/t20 - jumps to time point 20 (also works for other time points")

@@ -93,10 +93,10 @@ class ErrorsVisualizer(ParticleListVisualizer):
             logical_tests.apply(self._experiment, _get_links(self._experiment))
             self._particle_list = _get_problematic_particles(self._experiment)
             self.draw_view()
-            self._update_status("Checked links for errors")
+            self.update_status("Checked links for errors")
             return True
         if command == "help":
-            self._update_status("Available commands:\n"
+            self.update_status("Available commands:\n"
                                "/recheck - checks all links for obvious errors\n"
                                "/exit - exits this view")
             return True

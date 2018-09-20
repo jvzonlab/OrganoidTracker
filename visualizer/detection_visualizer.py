@@ -67,7 +67,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
             self._show_main_view()
             return True
         if command == "help":
-            self._update_status("Available commands:\n"
+            self.update_status("Available commands:\n"
                                "/exit - Return to main view\.n"
                                "/t30 - Jump to time point 30. Also works for other time points.")
 
