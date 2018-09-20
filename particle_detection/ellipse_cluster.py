@@ -1,14 +1,13 @@
+from typing import List, Tuple, Optional
+
 import cv2
 import networkx
-
 import numpy
 from networkx import Graph
 from numpy import ndarray
-from typing import List, Tuple, Optional
 
 from core.ellipse import EllipseStack, Ellipse
 from core.gaussian import Gaussian
-
 
 ELLIPSE_SHRINK_PIXELS = 2
 
@@ -132,10 +131,14 @@ def get_ellipse_stacks_from_watershed(watershed: ndarray) -> List[TaggedEllipseS
         for z in range(buffer.shape[0]):
             contour_image, contours, hierarchy = cv2.findContours(buffer[z], cv2.RETR_LIST, 2)
             contour_index, area = _find_contour_with_largest_area(contours)
-            if contour_index == -1 or len(contours[contour_index]) < 5:
+            if contour_index == -1:
                 ellipse_stack.append(None)
                 continue  # No contours found
-            ellipse_pos, ellipse_size, ellipse_angle = cv2.fitEllipse(contours[contour_index])
+            convex_contour = cv2.convexHull(contours[contour_index])
+            if len(convex_contour) < 5 or area < 10 * 10:
+                ellipse_stack.append(None)
+                continue  # Contour or area too small for proper fit
+            ellipse_pos, ellipse_size, ellipse_angle = cv2.fitEllipse(convex_contour)
             if ellipse_size[0] <= ELLIPSE_SHRINK_PIXELS or ellipse_size[1] <= ELLIPSE_SHRINK_PIXELS:
                 ellipse_stack.append(None)
                 continue  # Ellipse is too small
