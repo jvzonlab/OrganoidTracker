@@ -1,6 +1,7 @@
 """Some base classes. Quick overview: Particles (usually cells, but may also be artifacts) are placed in TimePoints,
 which are placed in an Experiment. A TimePoint also stores scores of possible mother-daughter cell combinations.
 An Experiment also stores an ImageLoader and up to two cell links networks (stored as Graph objects)."""
+import re
 from operator import itemgetter
 from typing import List, Iterable, Optional, Dict, Set, Any, Union, AbstractSet, Tuple
 
@@ -308,6 +309,37 @@ class _CachedImageLoader(ImageLoader):
         return self._internal
 
 
+class Name:
+    _automatic: bool = True  # Set to False when the user manually entered a name
+    _name: Optional[str] = None
+
+    def provide_automatic_name(self, name: Optional[str]):
+        if self._automatic:
+            # Allowed to replace one automatically generated name by another
+            self._name = name
+            return True
+        return False  # Don't allow to override a manually chosen name by some automatically generated name
+
+    def set_name(self, name: Optional[str]):
+        """Forcibly sets a name."""
+        self._automatic = False
+        self._name = name
+
+    def get_save_name(self):
+        """Gets a name that is safe for file saving. It does not contain characters like / or \\."""
+        return re.sub(r'[^A-Za-z0-9_\- ]+', '_', str(self))
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def __eq__(self, other):
+        """Checks if the name as returned by str(...) is equal. So an automatic name can match a manual name."""
+        return isinstance(other, Name) and str(self) == str(other)
+
+    def __str__(self):
+        name = self._name
+        return name if name is not None else "Unnamed"
+
 class Experiment:
     """A complete experiment, with many stacks of images collected over time. This class ultimately collects all
     details of the experiment."""
@@ -319,8 +351,11 @@ class Experiment:
     _last_time_point_number: Optional[int] = None
     _image_loader: ImageLoader = ImageLoader()
 
+    _name: Name
+
     def __init__(self):
         self._time_points = {}
+        self._name = Name()
 
     def add_particle_raw(self, x: float, y: float, z: float, time_point_number: int):
         """Adds a single particle to the experiment, creating the time point if it does not exist yet."""
@@ -357,7 +392,6 @@ class Experiment:
         time_point.detach_particle(old_position)
         time_point.add_particle(position_new)
         return True
-
 
     def _remove_from_graph(self, particle: Particle):
         if self._particle_links is not None and particle in self._particle_links:
@@ -449,6 +483,11 @@ class Experiment:
     def get_image_stack(self, time_point: TimePoint) -> Optional[ndarray]:
         """Gets a stack of all images for a time point, one for every z layer. Returns None if there is no image."""
         return self._image_loader.load_3d_image(time_point)
+
+    @property
+    def name(self) -> Name:
+        # Don't allow to replace the Name object
+        return self._name
 
 
 def get_closest_particle(particles: Iterable[Particle], search_position: Particle,

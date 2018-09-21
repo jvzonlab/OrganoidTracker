@@ -18,8 +18,20 @@ from matplotlib.figure import Figure
 from core import UserError
 
 
-def prompt_int(title: str, question: str) -> int:
+def prompt_int(title: str, question: str) -> Optional[int]:
+    """Asks the user to enter an integer. Returns None if the user pressed Cancel or closed the dialog box."""
     return _simpledialog.askinteger(title, question)
+
+
+def prompt_str(title: str, question: str, default: str = "") -> Optional[str]:
+    """Asks the user to enter a line of text. Returns None if the user pressed Cancel or closed the dialog box."""
+    return _simpledialog.askstring(title, question, initialvalue=default)
+
+
+def prompt_confirmation(title: str, question: str):
+    """Shows a OK/Cancel dialog box. Returns True if the user pressed OK, returns False if the user pressed Cancel or
+    simply closed the dialog box."""
+    return _messagebox.askokcancel(title, question)
 
 
 def prompt_save_file(title: str, file_types: List[Tuple[str, str]]) -> Optional[str]:
@@ -48,6 +60,7 @@ def prompt_load_file(title: str, file_types: List[Tuple[str, str]]) -> Optional[
     if file == "":
         return None
     return file
+
 
 def prompt_directory(title: str) -> Optional[str]:
     """Shows a prompt that asks the user to select a directory. Returns None if the user pressed Cancel."""
@@ -120,3 +133,4 @@ def open_file(filepath: str):
         _os.startfile(filepath)
     elif _os.name == 'posix':
         _subprocess.call(('xdg-open', filepath))
+

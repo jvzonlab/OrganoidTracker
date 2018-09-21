@@ -157,6 +157,7 @@ class Window:
             "File/Export-Export positions and shapes...": lambda: action.export_positions_and_shapes(self.get_experiment()),
             "File/Export-Export links...": lambda: action.export_links(self.get_experiment()),
             "File/Exit-Exit (Alt+F4)": lambda: action.ask_exit(self.__root),
+            "Edit/Experiment-Name of experiment...": lambda: action.rename_experiment(self),
             "View/Toggle-Toggle showing axis numbers": lambda: action.toggle_axis(self.get_figure()),
         }
 

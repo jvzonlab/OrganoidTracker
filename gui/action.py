@@ -170,3 +170,12 @@ def about_the_program():
                                   "Originally developed by Rutger Kok in February - July 2018. Copyright AMOLF.\n\n"
                                   "Various open source packages are used - see their licences, which"
                                   " you have agreed to when you used Anaconda to install them.")
+
+
+def rename_experiment(window: Window):
+    experiment = window.get_experiment()
+    name = dialog.prompt_str("Name of the experiment", "Enter a new name for the experiment.",
+                             default=str(experiment.name))
+    if name:
+        experiment.name.set_name(name)
+        window.set_status("Changed the name of the experiment to \"" + str(experiment.name) + "\".")

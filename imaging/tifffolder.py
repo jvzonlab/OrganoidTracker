@@ -16,6 +16,7 @@ def load_images_from_folder(experiment: Experiment, folder: str, file_name_forma
     if max_time_point is None:
         max_time_point = 5000
 
+    experiment.name.provide_automatic_name(path.basename(folder).replace("-stacks", ""))
     experiment.image_loader(TiffImageLoader(folder, file_name_format, resolution, min_time_point, max_time_point))
 
     # Create time points for all discovered image files
