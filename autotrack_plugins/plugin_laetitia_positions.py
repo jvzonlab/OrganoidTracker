@@ -1,9 +1,9 @@
 import re
-from typing import Dict, List, Any
+from typing import Dict, Any
 
 import numpy
 
-from core import Particle, Experiment, UserError
+from core import Particle, Experiment, UserError, TimePoint
 from gui import Window, dialog
 from os import path
 import os
@@ -15,14 +15,13 @@ TIME_POINT_FROM_FILE_NAME = re.compile("t(\d+)")
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "File/Import-Import Laetitia's positions...": lambda: _import_laetitia_positions(window)
+        "File/Import-Import positions in Laetitia's format...": lambda: _import_laetitia_positions(window),
+        "File/Export-Export positions in Laetitia's format...": lambda: _export_laetitia_positions(window)
     }
 
 
 def _import_laetitia_positions(window: Window):
-    # If the images have fewer layers than expected, then Laetitia's adds black layers to the image. We need to correct
-    # the particle z position for those added layers.
-    z_offset = int((_get_image_z_size(window.get_experiment()) - EXPECTED_Z_LAYERS) / 2)
+    z_offset = _get_z_offset(window.get_experiment())
 
     if not dialog.popup_message_cancellable("Instructions", "Choose the directory containing the *.npy or *.txt files."):
         return
@@ -36,6 +35,35 @@ def _import_laetitia_positions(window: Window):
     window.refresh()
 
 
+def _export_laetitia_positions(window: Window):
+    experiment = window.get_experiment()
+    z_offset = _get_z_offset(experiment)
+    directory = dialog.prompt_directory("Choose a directory to export the positions files to...")
+    if directory is None:
+        return
+    overwrite = False
+
+    for time_point in experiment.time_points():
+        file_name = experiment.name.get_save_name() + "t" + "{:03}".format(time_point.time_point_number()) + ".npy"
+        file_path = path.join(directory, file_name)
+        if path.exists(file_path) and not overwrite:
+            if dialog.prompt_confirmation("Directory not empty", "We're about to overwrite files, including "
+                                          + file_name + ". Is that OK?"
+                                          "\n\nExperiment: " + str(experiment.name)
+                                          + "\nDirectory: " + directory):
+                overwrite = True
+            else:
+                return
+        _export_file(time_point, file_path, z_offset)
+
+
+def _get_z_offset(experiment: Experiment) -> int:
+    """Laetitia adds black xy planes until the image has the expected number of z layers. We don't do that, so we need
+    to correct the particle z for this.
+    """
+    return int((_get_image_z_size(experiment) - EXPECTED_Z_LAYERS) / 2)
+
+
 def _get_image_z_size(experiment: Experiment) -> int:
     """Gets the number of Z layers in the images."""
     try:
@@ -47,7 +75,7 @@ def _get_image_z_size(experiment: Experiment) -> int:
         pass
 
     raise UserError("No images have been loaded", "Please load some images first. The size of the images needs to"
-                                                  " be known in order to correctly read Laetitia's file format.")
+                                                  " be known in order to correctly handle Laetitia's file format.")
 
 
 def _import_file(experiment: Experiment, directory: str, file_name: str, z_offset: int):
@@ -69,3 +97,19 @@ def _import_file(experiment: Experiment, directory: str, file_name: str, z_offse
         particle = Particle(coords[row, 2], coords[row, 1], (coords[row, 0] / Z_OVERSCALED) + z_offset)
 
         time_point.add_particle(particle)
+
+
+def _export_file(time_point: TimePoint, file_path: str, z_offset: int):
+    particles = time_point.particles()
+    if len(particles) == 0:
+        return
+    array = numpy.empty((len(particles), 3), dtype=numpy.int64)
+
+    row = 0
+    for particle in particles:
+        array[row, 2] = round(particle.x)
+        array[row, 1] = round(particle.y)
+        array[row, 0] = round((particle.z - z_offset) * Z_OVERSCALED)
+        row += 1
+
+    numpy.save(file_path, array)
