@@ -42,7 +42,7 @@ def _get_image_z_size(experiment: Experiment) -> int:
         first_time_point_number = experiment.first_time_point_number()
         image_stack = experiment.get_image_stack(experiment.get_time_point(first_time_point_number))
         if image_stack is not None:
-            return image_stack.size[0]
+            return len(image_stack)
     except ValueError:
         pass
 

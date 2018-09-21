@@ -9,7 +9,7 @@ from numpy import ndarray
 from core.ellipse import EllipseStack, Ellipse
 from core.gaussian import Gaussian
 
-ELLIPSE_SHRINK_PIXELS = 2
+ELLIPSE_SHRINK_PIXELS = 5
 
 
 def _max(a: Optional[int], b: Optional[int]) -> int:
@@ -66,7 +66,7 @@ class EllipseCluster:
     def __init__(self, stacks: List[TaggedEllipseStack]):
         self._stacks = list(stacks)
 
-    def get_image_for_fit(self, original_image: ndarray, padding_xy: int = 4, padding_z: int = 1
+    def get_image_for_fit(self, original_image: ndarray, padding_xy: int = 2 + ELLIPSE_SHRINK_PIXELS, padding_z: int = 1
                           ) -> Tuple[int, int, int, Optional[ndarray]]:
         """Gets all pixels in the original image that belong to the given cell(s). These pixels can then be fitted to a
         Gaussian."""
