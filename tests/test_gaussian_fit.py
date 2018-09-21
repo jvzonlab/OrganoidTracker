@@ -1,12 +1,9 @@
-import cProfile
 import unittest
 from timeit import default_timer
 
 import numpy
-from particle_detection import gaussian_fit
-from particle_detection.gaussian_fit import Gaussian
-import tifffile
-import matplotlib.pyplot as plt
+from autotrack.particle_detection import gaussian_fit
+from autotrack.particle_detection.gaussian_fit import Gaussian
 
 
 class TestGaussianFit(unittest.TestCase):

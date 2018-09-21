@@ -4,11 +4,11 @@
 # format. Just launch it
 
 
-from config import ConfigFile
-from core import Experiment
-from imaging import io, tifffolder
-from manual_tracking import links_extractor
-from particle_detection import ellipse_detector_for_experiment
+from autotrack.config import ConfigFile
+from autotrack.core import Experiment
+from autotrack.imaging import tifffolder, io
+from autotrack.manual_tracking import links_extractor
+from autotrack.particle_detection import ellipse_detector_for_experiment
 
 # CONFIGURATION
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
@@ -28,7 +28,7 @@ if config.save_if_changed():
 
 
 graph = links_extractor.extract_from_tracks(_tracks_folder, min_time_point=_min_time_point,
-                                                          max_time_point=_max_time_point)
+                                            max_time_point=_max_time_point)
 experiment = Experiment()
 for particle in graph.nodes():
     experiment.add_particle(particle)

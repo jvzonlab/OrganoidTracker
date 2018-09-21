@@ -3,12 +3,12 @@
 # Compares two linking results. The baseline links are assumed to be 100% correct, any deviations from that are
 # counted as errors. Solid lines in the figures represent the correct linking result, dotted lines any deviations from
 # that.
-import gui
-from config import ConfigFile
-from core import Experiment
-from imaging import io, tifffolder
-from linking_analysis import comparison
-from visualizer import image_visualizer
+from autotrack import gui
+from autotrack.config import ConfigFile
+from autotrack.core import Experiment
+from autotrack.imaging import tifffolder, io
+from autotrack.linking_analysis import comparison
+from autotrack.visualizer import image_visualizer
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)

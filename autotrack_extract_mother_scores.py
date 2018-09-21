@@ -3,12 +3,12 @@
 """Script for testing the mother scoring system. Output a CSV file with the scores of all putative mothers, based on
 simple nearest-neighbor linking. The data is compared with data of the actual mothers.
 """
-from config import ConfigFile
-from imaging import io, tifffolder
-from core import Experiment
-from linking import linker_for_experiment, mother_finder
-from linking.rational_scoring_system import RationalScoringSystem
-from linking_analysis import scores_dataframe
+from autotrack.config import ConfigFile
+from autotrack.imaging import tifffolder, io
+from autotrack.core import Experiment
+from autotrack.linking import linker_for_experiment, mother_finder
+from autotrack.linking import RationalScoringSystem
+from autotrack.linking_analysis import scores_dataframe
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
@@ -37,7 +37,7 @@ tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
 
 print("Discovering possible links using greedy nearest-neighbor...")
 possible_links = linker_for_experiment.nearest_neighbor(experiment, tolerance=2,
-                                                 min_time_point=_min_time_point, max_time_point=_max_time_point)
+                                                        min_time_point=_min_time_point, max_time_point=_max_time_point)
 experiment.particle_links_scratch(possible_links)
 
 print("Scoring all possible mothers")

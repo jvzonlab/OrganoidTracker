@@ -3,8 +3,8 @@ from typing import Dict, Any
 
 import numpy
 
-from core import Particle, Experiment, UserError, TimePoint
-from gui import Window, dialog
+from autotrack.core import Particle, Experiment, UserError, TimePoint
+from autotrack.gui import Window, dialog
 from os import path
 import os
 
@@ -48,9 +48,9 @@ def _export_laetitia_positions(window: Window):
         file_path = path.join(directory, file_name)
         if path.exists(file_path) and not overwrite:
             if dialog.prompt_confirmation("Directory not empty", "We're about to overwrite files, including "
-                                          + file_name + ". Is that OK?"
+                                                                 + file_name + ". Is that OK?"
                                           "\n\nExperiment: " + str(experiment.name)
-                                          + "\nDirectory: " + directory):
+                                                                 + "\nDirectory: " + directory):
                 overwrite = True
             else:
                 return

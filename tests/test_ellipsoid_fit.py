@@ -2,7 +2,7 @@ import unittest
 
 import numpy
 
-from particle_detection.ellipsoid_fit import Ellipsoid
+from autotrack.particle_detection.ellipsoid_fit import Ellipsoid
 
 
 class TestEllipsoidFit(unittest.TestCase):

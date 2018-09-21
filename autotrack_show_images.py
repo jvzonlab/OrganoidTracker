@@ -3,11 +3,11 @@
 # Small visualization tool. Keeps only one TIFF file in memory at a time, so it should start up fast and have a
 # reasonable low memory footprint.
 
-import gui
-from config import ConfigFile
-from core import Experiment
-from imaging import tifffolder
-from visualizer import image_visualizer
+from autotrack import gui
+from autotrack.config import ConfigFile
+from autotrack.core import Experiment
+from autotrack.imaging import tifffolder
+from autotrack.visualizer import image_visualizer
 
 # PARAMETERS
 config = ConfigFile("image_viewer")

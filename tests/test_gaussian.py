@@ -1,9 +1,7 @@
 import numpy
-import tifffile
 import unittest
-import matplotlib.pyplot as plt
 
-from core.gaussian import Gaussian
+from autotrack.core.gaussian import Gaussian
 
 
 class TestGaussians(unittest.TestCase):

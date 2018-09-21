@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-from config import ConfigFile
-from core import Experiment
-from imaging import io, tifffolder
-from linking import link_fixer_casebycase, linker_for_experiment
-from linking.rational_scoring_system import RationalScoringSystem
+from autotrack.config import ConfigFile
+from autotrack.core import Experiment
+from autotrack.imaging import tifffolder, io
+from autotrack.linking import linker_for_experiment
+from autotrack.linking import link_fixer_casebycase
+from autotrack.linking import RationalScoringSystem
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
@@ -31,7 +32,7 @@ tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
 print("Performing nearest-neighbor linking...")
 possible_links = linker_for_experiment.nearest_neighbor(experiment, tolerance=2,
-                                                       min_time_point=_min_time_point, max_time_point=_max_time_point)
+                                                        min_time_point=_min_time_point, max_time_point=_max_time_point)
 print("Improving links by analyzing local average movement...")
 possible_links = linker_for_experiment.nearest_neighbor_using_flow(experiment, possible_links,
                                                                    flow_detection_radius=_flow_detection_radius,

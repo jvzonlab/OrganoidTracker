@@ -1,7 +1,8 @@
 import time
 
-from core import Experiment, io, tifffolder
-from linking import link_fixer_combinatorics, linker_for_experiment, Parameters, mother_finder
+from autotrack.core import Experiment
+from autotrack.imaging import tifffolder, io
+from autotrack.linking import link_fixer_combinatorics, linker_for_experiment, Parameters, mother_finder
 
 # PARAMETERS
 _name = "multiphoton.organoids.17-07-28_weekend_H2B-mCherry.nd799xy08"
@@ -23,7 +24,7 @@ _parameters = Parameters(
 
 experiment = Experiment()
 print("Loading cell positions...")
-io.load_positions_from_json(experiment, _positions_file)
+io.load_positions_and_shapes_from_json(experiment, _positions_file)
 print("Discovering images...")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)

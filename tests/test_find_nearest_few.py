@@ -1,7 +1,7 @@
 import unittest
 
-from core import TimePoint, Particle
-from linking.find_nearest_neighbors import find_nearest_particles
+from autotrack.core import TimePoint, Particle
+from autotrack.linking.find_nearest_neighbors import find_nearest_particles
 
 
 class TestFindNearestFew(unittest.TestCase):

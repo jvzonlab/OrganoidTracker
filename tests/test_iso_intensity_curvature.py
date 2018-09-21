@@ -4,10 +4,8 @@ from typing import Tuple
 import math
 import numpy
 from numpy import ndarray
-from tifffile import tifffile
-import matplotlib.pyplot as plt
 
-from segmentation.iso_intensity_curvature import get_negative_gaussian_curvatures, ImageDerivatives
+from autotrack.segmentation.iso_intensity_curvature import get_negative_gaussian_curvatures, ImageDerivatives
 
 SQRT_OF_2PI = math.sqrt(2 * math.pi)
 

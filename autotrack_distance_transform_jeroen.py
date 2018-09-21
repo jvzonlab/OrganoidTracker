@@ -10,12 +10,12 @@ Parameters:
 - threshold_block_size: length and/or height of the 2d square used for the adaptive threshold (in pixels)
 - max_distance_um: the distance transform is capped at this value
 """
-from imaging import io, tifffolder
-from config import ConfigFile
-from particle_detection import distance_transformer_for_experiment
+from autotrack.imaging import tifffolder, io
+from autotrack.config import ConfigFile
+from autotrack.particle_detection import distance_transformer_for_experiment
 
 # PARAMETERS
-from core import Experiment, ImageResolution
+from autotrack.core import Experiment, ImageResolution
 
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("distance_transform_jeroen")

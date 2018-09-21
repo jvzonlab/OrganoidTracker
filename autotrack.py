@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 """Starts an empty window."""
-from core import Experiment
-from gui import launch_window, mainloop, plugin_loader
-from visualizer.empty_visualizer import EmptyVisualizer
-from visualizer import activate
+from autotrack.core import Experiment
+from autotrack.gui import launch_window, mainloop, plugin_loader
+from autotrack.visualizer.empty_visualizer import EmptyVisualizer
+from autotrack.visualizer import activate
 
 experiment = Experiment()
 window = launch_window(experiment)

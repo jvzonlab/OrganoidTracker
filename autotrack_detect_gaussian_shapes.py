@@ -12,12 +12,12 @@ Parameters: (all sizes are in pixels)
   already looks like Gaussians, the smaller this size can be
 - min_segmentation_distance: used for recognizing cell boundaries in a watershed transform
 """
-from imaging import io, tifffolder
-from config import ConfigFile
-from particle_detection import gaussian_detector_for_experiment
+from autotrack.imaging import tifffolder, io
+from autotrack.config import ConfigFile
+from autotrack.particle_detection import gaussian_detector_for_experiment
 
 # PARAMETERS
-from core import Experiment, ImageResolution
+from autotrack.core import Experiment, ImageResolution
 
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("detect_gaussian_shapes")

@@ -9,12 +9,12 @@ Parameters: (all sizes are in pixels)
 - distance_transform_smooth_size: smoothing size (must be odd) used for the distance transform
 - min_segmentation_distance: used for recognizing cell boundaries in a watershed transform
 """
-from imaging import io, tifffolder
-from config import ConfigFile
-from particle_detection import ellipse_stack_detector_for_experiment
+from autotrack.imaging import tifffolder, io
+from autotrack.config import ConfigFile
+from autotrack.particle_detection import ellipse_stack_detector_for_experiment
 
 # PARAMETERS
-from core import Experiment, ImageResolution
+from autotrack.core import Experiment, ImageResolution
 
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("detect_ellipse_shapes")
@@ -49,8 +49,8 @@ tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
 print("Running detection...")
 _min_segmentation_distance = (_min_segmentation_distance_x, _min_segmentation_distance_y, _min_segmentation_distance_z)
 ellipse_stack_detector_for_experiment.perform_for_experiment(experiment, threshold_block_size=_threshold_block_size,
-                                                        distance_transform_smooth_size=_distance_transform_smooth_size,
-                                                        minimal_distance=_min_segmentation_distance)
+                                                             distance_transform_smooth_size=_distance_transform_smooth_size,
+                                                             minimal_distance=_min_segmentation_distance)
 io.save_positions_and_shapes_to_json(experiment, _positions_output_file)
 
 

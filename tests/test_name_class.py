@@ -1,6 +1,6 @@
 import unittest
 
-from core import Name
+from autotrack.core import Name
 
 
 class TestNameClass(unittest.TestCase):

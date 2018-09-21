@@ -1,6 +1,6 @@
 import unittest
 
-from imaging import angles
+from autotrack.imaging import angles
 
 
 class TestAngles(unittest.TestCase):

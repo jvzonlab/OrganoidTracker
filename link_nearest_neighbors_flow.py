@@ -2,11 +2,15 @@
 # biological constraints are not taken into account.
 from matplotlib import pyplot
 
-from core import Experiment, io, tifffolder, image_visualizer
-from linking import linker_for_experiment, link_fixer
-from linking_analysis import comparison
+from autotrack.core import Experiment
+from autotrack.imaging import tifffolder, io
+from autotrack.linking import linker_for_experiment
+from autotrack.linking import link_fixer
+from autotrack.linking_analysis import comparison
 
 # PARAMETERS
+from autotrack.visualizer import image_visualizer
+
 _name = "multiphoton.organoids.17-07-28_weekend_H2B-mCherry.nd799xy08"
 _positions_file = "../Data/" + _name + "/Automatic analysis/Positions/Manual.json"
 _output_file = "../Data/" + _name + "/Automatic analysis/Links/Nearest neighbor.json"
@@ -22,7 +26,7 @@ _flow_cycles = 1  # Amount of times linker_for_experiment.nearest_neighbor_using
 
 experiment = Experiment()
 print("Loading cell positions...")
-io.load_positions_from_json(experiment, _positions_file)
+io.load_positions_and_shapes_from_json(experiment, _positions_file)
 print("Disovering images")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format, min_time_point=_min_time_point,
                                    max_time_point=_max_time_point)
