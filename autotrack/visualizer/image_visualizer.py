@@ -1,16 +1,16 @@
-import cv2
 from typing import Optional, Iterable, List, Tuple, Union
 
+import cv2
 from matplotlib.backend_bases import KeyEvent, MouseEvent
-from matplotlib.figure import Figure
 from matplotlib.colors import Colormap
+from matplotlib.figure import Figure
 from networkx import Graph
 from numpy import ndarray
 from tifffile import tifffile
 
 from autotrack import core
-from autotrack.core import Experiment, TimePoint, Particle
-from autotrack.gui import launch_window, Window
+from autotrack.core import Experiment, TimePoint, Particle, shape
+from autotrack.gui import launch_window, Window, dialog
 from autotrack.gui.dialog import popup_figure, prompt_int, popup_error
 from autotrack.linking import particle_flow
 from autotrack.linking_analysis import volume_and_intensity_graphs
@@ -76,7 +76,7 @@ class AbstractImageVisualizer(Visualizer):
         image_shape = self._time_point_images.shape
         if len(image_shape) == 3 and isinstance(self._color_map, Colormap):
             # Convert grayscale image to colored using the stored color map
-            images: ndarray = self._color_map(flat_image, bytes=True)[:,0:3]
+            images: ndarray = self._color_map(flat_image, bytes=True)[:, 0:3]
             new_shape = (image_shape[0], image_shape[1], image_shape[2], 3)
             images = images.reshape(new_shape)
         else:
@@ -114,7 +114,7 @@ class AbstractImageVisualizer(Visualizer):
         return True
 
     def _draw_extra(self):
-        pass # Subclasses can override this
+        pass  # Subclasses can override this
 
     def _draw_particles(self) -> int:
         """Draws particles and links. Returns the amount of non-equal links in the image"""
@@ -169,7 +169,7 @@ class AbstractImageVisualizer(Visualizer):
 
         # Draw particle
         if self._display_settings.show_reconstruction:  # Showing a 3D reconstruction, so don't display a 2D one too
-            autotrack.core.shape.draw_marker_2d(particle.x, particle.y, dz, dt, self._ax, color)
+            shape.draw_marker_2d(particle.x, particle.y, dz, dt, self._ax, color)
         else:
             self._time_point.get_shape(particle).draw2d(particle.x, particle.y, dz, dt, self._ax, color)
 
@@ -440,7 +440,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         dialog.popup_figure(draw)
 
     def _show_linking_errors(self, particle: Optional[Particle] = None):
-        from autotrack.visualizer import ErrorsVisualizer
+        from autotrack.visualizer.errors_visualizer import ErrorsVisualizer
         warnings_visualizer = ErrorsVisualizer(self._window, particle)
         activate(warnings_visualizer)
 

@@ -1,12 +1,12 @@
+import os
 import re
+from os import path
 from typing import Dict, Any
 
 import numpy
 
 from autotrack.core import Particle, Experiment, UserError, TimePoint
 from autotrack.gui import Window, dialog
-from os import path
-import os
 
 Z_OVERSCALED = 6.0
 EXPECTED_Z_LAYERS = 32
