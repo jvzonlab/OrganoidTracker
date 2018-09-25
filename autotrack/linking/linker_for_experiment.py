@@ -3,10 +3,10 @@ from networkx import Graph
 from autotrack import core
 from autotrack.core import Experiment, TimePoint, Particle
 from autotrack.linking import particle_flow
-from autotrack.linking import find_nearest_particles
+from autotrack.linking.find_nearest_neighbors import find_nearest_particles
 
 
-def nearest_neighbor(experiment: Experiment, tolerance: float = 1.0, min_time_point: int = 0, max_time_point: int = 5000) -> Graph:
+def nearest_neighbor(experiment: Experiment, tolerance: float = 1.0) -> Graph:
     """Simple nearest neighbour linking, keeping a list of potential candidates based on a given tolerance.
 
     A tolerance of 1.05 also links particles 5% from the closest particle. Note that if a tolerance higher than 1 is
@@ -16,27 +16,21 @@ def nearest_neighbor(experiment: Experiment, tolerance: float = 1.0, min_time_po
     """
     graph = Graph()
 
-    time_point_current = experiment.get_time_point(max(experiment.first_time_point_number(), min_time_point))
-    _add_nodes(graph, time_point_current)
+    time_point_previous = None
+    for time_point_current in experiment.time_points():
+        _add_nodes(graph, time_point_current)
 
-    try:
-        while time_point_current.time_point_number() < max_time_point:
-            time_point_previous = time_point_current
-
-            time_point_current = experiment.get_next_time_point(time_point_previous)
-            _add_nodes(graph, time_point_current)
+        if time_point_previous is not None:
             _add_nearest_edges(graph, time_point_previous, time_point_current, tolerance)
             _add_nearest_edges_extra(graph, time_point_previous, time_point_current, tolerance)
-    except KeyError:
-        # Done! No more time points remain
-        pass
+
+        time_point_previous = time_point_current
 
     print("Done creating nearest-neighbor links!")
     return graph
 
 
-def nearest_neighbor_using_flow(experiment: Experiment, initial_links: Graph, flow_detection_radius: int,
-                                min_time_point: int = 0, max_time_point: int = 5000) -> Graph:
+def nearest_neighbor_using_flow(experiment: Experiment, initial_links: Graph, flow_detection_radius: int) -> Graph:
     """A bit more advanced nearest-neighbor linking, that analysis the already-established links around a particle to
     decide in which direction a particle is going.
 
@@ -44,15 +38,8 @@ def nearest_neighbor_using_flow(experiment: Experiment, initial_links: Graph, fl
     """
     graph = _all_links_downgraded(initial_links)
 
-    time_point_current = experiment.get_time_point(max(experiment.first_time_point_number(), min_time_point))
-
-    try:
-        while time_point_current.time_point_number() < max_time_point:
-            time_point_current = experiment.get_next_time_point(time_point_current)
-            _find_nearest_edges_using_flow(graph, initial_links, time_point_current, flow_detection_radius)
-    except KeyError:
-        # Done! No more time points remain
-        pass
+    for time_point_current in experiment.time_points():
+        _find_nearest_edges_using_flow(graph, initial_links, time_point_current, flow_detection_radius)
 
     print("Done creating nearest-neighbor links using flow!")
     return graph

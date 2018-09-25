@@ -33,29 +33,9 @@ class ParticleShape:
         image[min_z:max_z, min_y:max_y, min_x:max_x, 1] = color[1]
         image[min_z:max_z, min_y:max_y, min_x:max_x, 2] = color[2]
 
-    def area(self) -> float:
-        """Derived from raw detection."""
-        raise NotImplementedError()
-
-    def perimeter(self) -> float:
-        raise NotImplementedError()
-
     def is_unknown(self) -> bool:
         """Returns True if there is no shape information available at all."""
         return False
-
-    def is_eccentric(self) -> bool:
-        """Returns True if the original shape does not touch the (0,0) point. This generally indicates that the shape
-        is either very strange (can happen in mother cells) or mis-detected."""
-        return False
-
-    def director(self, require_reliable: bool = False) -> Optional[float]:
-        """For (slightly) elongated shapes, this returns the main direction of that shape. The returned direction falls
-        within the range 0 <= direction < 180. For shapes that are very spherical, the returned number becomes quite
-        arbitrary. If require_reliable is set to True, then None is returned in this case."""
-        if require_reliable:
-            return None
-        return 0
 
     def to_list(self) -> List:
         """Converts this shape to a list for serialization purposes. Convert back using from_list"""
@@ -119,21 +99,8 @@ class EllipseShape(ParticleShape):
                                    (self._ellipse.width, self._ellipse.height), self._ellipse.angle),
                     color=color, thickness=thickness)
 
-    def area(self) -> float:
+    def volume(self) -> float:
         return self._original_area
-
-    def perimeter(self) -> float:
-        if self._original_perimeter is None:
-            return self._ellipse.perimeter()
-        return self._original_perimeter
-
-    def director(self, require_reliable: bool = False) -> Optional[float]:
-        if require_reliable and not self._ellipse.height / self._ellipse.width >= 1.2:
-            return None
-        return self._ellipse.angle
-
-    def is_eccentric(self) -> bool:
-        return self._eccentric
 
     def to_list(self) -> List:
         return ["ellipse", self._ellipse.x, self._ellipse.y, self._ellipse.width, self._ellipse.height,
@@ -148,13 +115,7 @@ class UnknownShape(ParticleShape):
     def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
         self.default_draw3d_color(x, y, z, dt, image, color)
 
-    def area(self) -> float:
-        return 0
-
-    def fitted_area(self) -> float:
-        return 0
-
-    def perimeter(self) -> float:
+    def volume(self) -> float:
         return 0
 
     def is_unknown(self) -> bool:
@@ -217,24 +178,6 @@ class EllipseStackShape(ParticleShape):
             ellipse = self._ellipse_stack.get_ellipse(layer_z - lowest_ellipse_z)
             if ellipse is not None:
                 ellipse.draw_to_image(image[layer_z], color, dx=x, dy=y, filled=True)
-
-    def area(self) -> float:
-        """Simply returns the largest area of all the ellipses."""
-        largest_area = 0
-        for ellipse in self._ellipse_stack:
-            area = ellipse.area()
-            if area > largest_area:
-                largest_area = area
-        return largest_area
-
-    def perimeter(self) -> float:
-        """Simply returns the largest perimeter of all the ellipses."""
-        largest_perimeter = 0
-        for ellipse in self._ellipse_stack:
-            perimeter = ellipse.perimeter()
-            if perimeter > largest_perimeter:
-                largest_perimeter = perimeter
-        return largest_perimeter
 
     def to_list(self) -> List:
         list = ["ellipse_stack", self._center_ellipse]

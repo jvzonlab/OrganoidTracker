@@ -35,9 +35,9 @@ def apply(experiment: Experiment, graph: Graph):
             # Check cell size
             past_particle = past_particles[0]
             shape = experiment.get_time_point(particle.time_point_number()).get_shape(particle)
-            if not shape.is_unknown() and not shape.is_eccentric() and len(future_particles) == 1:
+            if not shape.is_unknown() and len(future_particles) == 1:
                 past_shape = experiment.get_time_point(past_particle.time_point_number()).get_shape(past_particle)
-                if past_shape.area() / (shape.area() + 0.0001) > 1.7:
+                if past_shape.volume() / (shape.volume() + 0.0001) > 1.7:
                     _set_error(graph, particle, errors.SHRUNK_A_LOT)
 
 
