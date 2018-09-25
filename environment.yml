@@ -49,7 +49,7 @@ dependencies:
   - scipy=1.1.0=py36h4f6bf74_1
   - setuptools=40.2.0=py36_0
   - shapely=1.6.4=py36hc90234e_0
-  - sip=4.19.12=py36h6538335_0
+  - sip=4.19.8
   - six=1.11.0=py36_1
   - sqlite=3.24.0=h7602738_0
   - tornado=5.1=py36hfa6e2cd_0
