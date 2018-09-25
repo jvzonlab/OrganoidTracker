@@ -9,10 +9,10 @@ from networkx import Graph
 
 from autotrack.core import Particle, Experiment, Family
 from autotrack.linking import logical_tests, errors
-from autotrack.linking.link_fixer import downgrade_edges_pointing_to_past, find_preferred_links, find_preferred_past_particle, \
-    find_future_particles, remove_error, with_only_the_preferred_edges, add_mother_scores, fix_no_future_particle, \
-    get_closest_particle_having_a_sister, find_preferred_future_particles
-from autotrack.linking import MotherScoringSystem
+from autotrack.linking.link_fixer import downgrade_edges_pointing_to_past, find_preferred_links, \
+    find_preferred_past_particle, find_future_particles, remove_error, with_only_the_preferred_edges, add_mother_scores, \
+    fix_no_future_particle, get_closest_particle_having_a_sister, find_preferred_future_particles
+from autotrack.linking.scoring_system import MotherScoringSystem
 
 
 def prune_links(experiment: Experiment, graph: Graph, score_system: MotherScoringSystem) -> Graph:

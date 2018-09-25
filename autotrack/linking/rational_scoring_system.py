@@ -7,7 +7,7 @@ from autotrack.core import Experiment, Particle, Score, TimePoint
 from autotrack.imaging import angles, normalized_image
 from autotrack.imaging.normalized_image import ImageEdgeError
 from autotrack.linking.link_fixer import get_2d_image
-from autotrack.linking import MotherScoringSystem
+from autotrack.linking.scoring_system import MotherScoringSystem
 
 
 class RationalScoringSystem(MotherScoringSystem):
