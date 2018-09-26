@@ -60,14 +60,15 @@ class ConfigFile:
         except EOFError:
             # Happens when the user presses CTRL + C. Allow to try again
             exit(200)
+            return  # To keep Python linters from complaining that default_value may not be initialized on the next line
         return self.get_or_default(key, default_value, store_in_defaults=store_in_defaults)
 
-    def save_if_changed(self) -> bool:
+    def save_and_exit_if_changed(self):
         """Saves the configuration if it was changed. Returns True if the file was saved, False otherwise."""
         if not self.made_changes:
-            return False
+            return
         with open(self.FILE_NAME, 'w') as config_writing:
             self._config.write(config_writing)
-        return True
-
-
+        print("Configuration file was updated automatically. Please review the settings in the"
+              " [" + self._section_name + "] section to check if they are correct, then rerun this command.")
+        exit(301)

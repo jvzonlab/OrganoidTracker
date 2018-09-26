@@ -1,11 +1,27 @@
 name: autotrack
 channels:
+  - chaubold
   - conda-forge
   - defaults
 dependencies:
-  - mahotas=1.4.4=py36h830ac7b_0
-  - tifffile=0.15.1=py36_1
+  - dpct=1.2.post9=py36_0_g60a13b3
+  - lemon=1.2.4=vc14he1aa984_3
   - atomicwrites=1.2.1=py36_0
+  - boost=1.63.0=py36_vc14_5
+  - boost-cpp=1.63.0=vc14_2
+  - mahotas=1.4.4=py36h830ac7b_0
+  - more-itertools=4.3.0=py36_0
+  - networkx=2.1=py36_0
+  - openssl=1.0.2p=hfa6e2cd_0
+  - pandas=0.23.4=py36h830ac7b_0
+  - pip=10.0.1=py36_0
+  - pytest=3.7.4=py36_0
+  - setuptools=40.2.0=py36_0
+  - shapely=1.6.4=py36hc90234e_0
+  - sip=4.19.8=py36h6538335_0
+  - six=1.11.0=py36_1
+  - tifffile=0.15.1=py36_1
+  - wheel=0.31.1=py36_0
   - attrs=18.2.0=py36h28b3542_0
   - blas=1.0=mkl
   - ca-certificates=2018.03.07=0
@@ -28,33 +44,22 @@ dependencies:
   - mkl=2018.0.3=1
   - mkl_fft=1.0.4=py36h1e22a9b_1
   - mkl_random=1.0.1=py36h77b88f5_1
-  - more-itertools=4.3.0=py36_0
-  - networkx=2.1=py36_0
   - numpy=1.15.1=py36ha559c80_0
   - numpy-base=1.15.1=py36h8128ebf_0
   - opencv=3.4.1=py36h6fd60c2_3
-  - openssl=1.0.2p=hfa6e2cd_0
-  - pandas=0.23.4=py36h830ac7b_0
-  - pip=10.0.1=py36_0
   - pluggy=0.7.1=py36h28b3542_0
   - py=1.6.0=py36_0
   - py-opencv=3.4.1=py36h1b0d24d_3
   - pyparsing=2.2.0=py36_1
   - pyqt=5.9.2=py36ha878b3d_0
-  - pytest=3.7.4=py36_0
   - python=3.6.6=hea74fb7_0
   - python-dateutil=2.7.3=py36_0
   - pytz=2018.5=py36_0
   - qt=5.9.6=vc14h62aca36_0
   - scipy=1.1.0=py36h4f6bf74_1
-  - setuptools=40.2.0=py36_0
-  - shapely=1.6.4=py36hc90234e_0
-  - sip=4.19.8
-  - six=1.11.0=py36_1
   - sqlite=3.24.0=h7602738_0
   - tornado=5.1=py36hfa6e2cd_0
   - vc=14=h0510ff6_3
   - vs2015_runtime=14.0.25123=3
-  - wheel=0.31.1=py36_0
   - wincertstore=0.2=py36h7fe50ca_0
   - zlib=1.2.11=h8395fce_2

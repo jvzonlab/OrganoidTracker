@@ -23,7 +23,7 @@ _baseline_links_file = config.get_or_default("baseline_links_file", "Automatic a
 _output_file = config.get_or_default("ouput_csv_file", "Automatic analysis/Links/Scoring analysis.csv")
 _mitotic_radius = int(config.get_or_default("mitotic_radius", str(3)))
 _shape_detection_radius = int(config.get_or_default("shape_detection_radius", str(16)))
-config.save_if_changed()
+config.save_and_exit_if_changed()
 _baseline_links = io.load_links_from_json(_baseline_links_file)
 
 # END OF PARAMETERS

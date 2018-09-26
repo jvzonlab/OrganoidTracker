@@ -4,7 +4,6 @@ from autotrack.config import ConfigFile
 from autotrack.core import Experiment
 from autotrack.imaging import tifffolder, io
 from autotrack.linking import linker_for_experiment
-from autotrack.linking import link_fixer_casebycase
 from autotrack.linking.rational_scoring_system import RationalScoringSystem
 
 # PARAMETERS
@@ -19,7 +18,7 @@ _positions_file = config.get_or_default("positions_file", "Automatic analysis/Po
 _links_output_file = config.get_or_default("links_output_file", "Automatic analysis/Links/Smart nearest neighbor.json")
 _mitotic_radius = int(config.get_or_default("mitotic_radius", str(3)))
 _flow_detection_radius = int(config.get_or_default("flow_detection_radius", str(50)))
-config.save_if_changed()
+config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
 
@@ -36,7 +35,7 @@ possible_links = linker_for_experiment.nearest_neighbor_using_flow(experiment, p
                                                                    flow_detection_radius=_flow_detection_radius)
 print("Deciding on what links to use...")
 score_system = RationalScoringSystem(_mitotic_radius)
-link_result = link_fixer_casebycase.prune_links(experiment, possible_links, score_system)
+#link_result = link_fixer_casebycase.prune_links(experiment, possible_links, score_system)
 print("Writing results to file...")
 io.save_links_and_scores_to_json(experiment, link_result, _links_output_file)
 print("Done")

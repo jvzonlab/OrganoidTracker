@@ -21,8 +21,7 @@ _min_time_point = int(config.get_or_default("min_time_point", str(1), store_in_d
 _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_in_defaults=True))
 _positions_file = config.get_or_default("positions_file", "Automatic analysis/Positions/Manual.json")
 _links_file = config.get_or_default("links_file", "Automatic analysis/Links/Smart nearest neighbor.json")
-config.save_if_changed()
-
+config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
 print("Starting...")

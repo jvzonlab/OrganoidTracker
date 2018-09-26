@@ -22,8 +22,7 @@ _positions_file = config.get_or_default("positions_file", "Automatic analysis/Po
 _links_file = config.get_or_default("links_file", "Automatic analysis/Links/Manual.json")
 _tracks_folder = config.get_or_prompt("input_tracks_folder", "Please enter the name of the folder where the track_xxxxx.p files are stored:")
 _shape_detection_radius = int(config.get_or_default("shape_detection_radius", str(16)))
-if config.save_if_changed():
-    print("Note: the configuration file was changed. Starting script...")
+config.save_and_exit_if_changed()
 # END OF CONFIGURATION
 
 

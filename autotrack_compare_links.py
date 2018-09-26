@@ -22,7 +22,7 @@ _positions_file = config.get_or_default("positions_file", "Automatic analysis/Po
 _automatic_links_file = config.get_or_default("automatic_links_file",
                                               "Automatic analysis/Links/Smart nearest neighbor.json")
 _baseline_links_file = config.get_or_default("baseline_links_file", "Automatic analysis/Links/Manual.json")
-config.save_if_changed()
+config.save_and_exit_if_changed()
 
 # END OF PARAMETERS
 

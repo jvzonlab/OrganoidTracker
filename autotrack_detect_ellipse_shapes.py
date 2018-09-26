@@ -34,7 +34,7 @@ _distance_transform_smooth_size = int(config.get_or_default("distance_transform_
 _min_segmentation_distance_x = int(config.get_or_default("min_segmentation_distance_x", str(11)))
 _min_segmentation_distance_y = int(config.get_or_default("min_segmentation_distance_y", str(11)))
 _min_segmentation_distance_z = int(config.get_or_default("min_segmentation_distance_z", str(3)))
-config.save_if_changed()
+config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
 experiment = Experiment()

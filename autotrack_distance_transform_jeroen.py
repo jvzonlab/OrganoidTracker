@@ -32,7 +32,7 @@ _positions_input_file = config.get_or_default("positions_file", "Automatic analy
 _threshold_block_size = int(config.get_or_default("threshold_block_size", str(51)))
 _max_distance_um = float(config.get_or_default("max_distance_um", str(30)))
 _output_folder = config.get_or_default("output_folder", "Automatic analysis/Distance transformed images")
-config.save_if_changed()
+config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
 experiment = Experiment()

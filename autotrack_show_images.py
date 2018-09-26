@@ -15,7 +15,7 @@ _images_folder = config.get_or_prompt("images_folder", "In which folder are the 
                                                        "folder and use ../ for one level up.)", store_in_defaults=True)
 _images_format = config.get_or_prompt("images_pattern", "What are the image file names? (Use %03d for a three digits "
                                                         "representing the time)", store_in_defaults=True)
-config.save_if_changed()
+config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
 print("Starting...")

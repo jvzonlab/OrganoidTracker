@@ -122,7 +122,8 @@ class ParticleListVisualizer(Visualizer):
         time_point = self._experiment.get_time_point(mother.time_point_number())
         image_stack = self.load_image(time_point, self._show_next_image)
         if image_stack is not None:
-            self._ax.imshow(image_stack[int(mother.z)], cmap="gray")
+            z = max(0, min(int(mother.z), len(image_stack) - 1))
+            self._ax.imshow(image_stack[z], cmap="gray")
 
     def _goto_next(self):
         self._current_particle_index += 1
