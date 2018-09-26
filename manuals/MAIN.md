@@ -26,9 +26,6 @@ Command-line:
 * `autotrack_create_links.py` - uses a cell positions file to link cells from different time points together.
 * `autotrack_extract_mother_scores.py` - creates a CSV file, showing how the mother scores are built up.
 
-Other:
-* `track_manually.py` - graphical program written by Guizela to manually track cells. See [TRACK_MANUALLY] for details.
-
 The command-line scripts have documentation included inside themselves. The visual scripts are all essentially the same,
 and are documented in [VISUALIZER].
 

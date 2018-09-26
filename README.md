@@ -23,27 +23,19 @@ This installs all the required Python packages, and uninstalls all others. This 
 Running the scripts
 -------------------
 
-AT the moment, there are two types of scripts in this folder. The older ones need to be run like this:
+You can always run a script using the Python command from an Anaconda terminal:
 
-    python <script_name>.py
+    python <path/to/script_name>.py
 
-They need to be run from this folder. You'll need to edit the scripts beforehand to correct the paths
-inside them.
+Or, if you are fine with using your default Python 3 installation of your system, you can run the script as follows:
 
-Newer scripts (they have a name starting with `autotrack`) are easier to run. You can run them from any
-folder, and they don't need to be edited beforehand. However, you need to add this folder (the folder where
-this README file is stored) to the system PATH first. After you have done that, on Unix systems (Mac/Linux)
-you can run the scripts like this:
+    <path/to/script_name>.py
 
-    <script_name>.py
+On Windows, replace ".py" by ".bat" or simply leave out the extension altogether: (".bat" is one of the default file
+extensions). If you don't want to always type out the complete path to the script, then you need to add the Autotrack folder to your
+system's PATH.
 
-For Windows, I created `.bat` files. As a result, you can run the scripts simply by running:
-
-    <script_name>.bat
-
-(You can even leave out the `.bat` extension if you want.) The first time you run any script, it will ask
-for some parameters, which are then saved to a configuration file.
-   
-See the [manuals] folder for the actual documentation of the scripts.
+The documentation of the scripts is found on the first few lines. See also the [manuals] folder for some additional
+documentation.
 
 [manuals]: manuals/MAIN.md
