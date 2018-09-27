@@ -23,7 +23,7 @@ def nearest_neighbor(experiment: Experiment, tolerance: float = 1.0) -> Graph:
 
         if time_point_previous is not None:
             _add_nearest_edges(graph, experiment.particles, time_point_previous, time_point_current, tolerance)
-            _add_nearest_edges_extra(graph, time_point_previous, time_point_current, tolerance)
+            _add_nearest_edges_extra(graph, experiment.particles, time_point_previous, time_point_current, tolerance)
 
         time_point_previous = time_point_current
 

@@ -1,30 +1,71 @@
-from typing import Dict
+import dpct
+from pprint import pprint
+from typing import Dict, List
 
 from networkx import Graph
 
+from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
 
 
 class _ParticleToId:
-    __dict: Dict[Particle, int]
-    __next_id: int = 2
+    __particle_to_id: Dict[Particle, int]
+    __id_to_particle: List[Particle]
 
     def __init__(self):
-        self.__dict = dict()
+        self.__particle_to_id = dict()
+        self.__id_to_particle = [None, None]  # So the first particle will get index 2
 
-    def get(self, particle: Particle) -> int:
+    def id(self, particle: Particle) -> int:
         """Gets the id of the particle, or creates a new id of the particle doesn't have one yet"""
-        id = self.__dict.get(particle)
+        id = self.__particle_to_id.get(particle)
         if id is None:
-            id = self.__next_id
-            self.__next_id += 1
-            self.__dict[particle] = id
+            id = len(self.__id_to_particle)  # This will be the new id
+            self.__id_to_particle.append(particle)
+            self.__particle_to_id[particle] = id
         return id
 
+    def particle(self, id: int) -> Particle:
+        """Gets the particle with the given id. Throws IndexError for invalid ids."""
+        return self.__id_to_particle[id]
 
-def __create_dpct_graph(starting_links: Graph, min_time_point: int, max_time_point: int) -> Dict:
+
+def _to_graph(particle_ids: _ParticleToId, results: Dict) -> Graph:
+    graph = Graph()
+
+    # Add nodes
+    for entry in results["detectionResults"]:
+        if not entry["value"]:
+            continue  # Cell was not detected
+        particle = particle_ids.particle(entry["id"])
+        graph.add_node(particle)
+
+    # Add edges
+    for entry in results["linkingResults"]:
+        if not entry["value"]:
+            continue  # Link was not detected
+        particle1 = particle_ids.particle(entry["src"])
+        particle2 = particle_ids.particle(entry["dest"])
+        graph.add_edge(particle1, particle2)
+
+    return graph
+
+
+def run(experiment: Experiment, starting_links: Graph):
     particle_ids = _ParticleToId()
+    weights = {"weights": [
+        1,
+        1000, # features
+        1,
+        1,
+        1]}
+    input = _create_dpct_graph(particle_ids, starting_links,
+                               experiment.first_time_point_number(), experiment.last_time_point_number())
+    results = dpct.trackFlowBased(input, weights)
+    return _to_graph(particle_ids, results)
 
+
+def _create_dpct_graph(particle_ids: _ParticleToId, starting_links: Graph, min_time_point: int, max_time_point: int) -> Dict:
     segmentation_hypotheses = []
     particle: Particle
     for particle in starting_links.nodes:
@@ -32,7 +73,7 @@ def __create_dpct_graph(starting_links: Graph, min_time_point: int, max_time_poi
         disappearance_penalty = 50 if particle.time_point_number() < max_time_point else 0
 
         segmentation_hypotheses.append({
-            "id": particle_ids.get(particle),
+            "id": particle_ids.id(particle),
             "features": [[1.0], [0.0]],
             "divisionFeatures": [[0.0], [-5.0]],
             "appearanceFeatures": [[0], [appearance_penalty]],
@@ -50,9 +91,9 @@ def __create_dpct_graph(starting_links: Graph, min_time_point: int, max_time_poi
 
         distance_squared = particle1.distance_squared(particle2)
         linking_hypotheses.append({
-            "src": particle_ids.get(particle1),
-            "dest": particle_ids.get(particle2),
-            "features": [[0], [-distance_squared]]
+            "src": particle_ids.id(particle1),
+            "dest": particle_ids.id(particle2),
+            "features": [[0], [distance_squared]]
         })
 
     return {

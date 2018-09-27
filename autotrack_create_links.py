@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-
+from autotrack import gui
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
 from autotrack.imaging import tifffolder, io
-from autotrack.linking import linker_for_experiment
+from autotrack.linking import linker_for_experiment, dpct_linking
 from autotrack.linking.rational_scoring_system import RationalScoringSystem
+from autotrack.visualizer import image_visualizer
+
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
@@ -30,12 +32,16 @@ tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
 print("Performing nearest-neighbor linking...")
 possible_links = linker_for_experiment.nearest_neighbor(experiment, tolerance=2)
-print("Improving links by analyzing local average movement...")
-possible_links = linker_for_experiment.nearest_neighbor_using_flow(experiment, possible_links,
-                                                                   flow_detection_radius=_flow_detection_radius)
 print("Deciding on what links to use...")
 score_system = RationalScoringSystem(_mitotic_radius)
-#link_result = link_fixer_casebycase.prune_links(experiment, possible_links, score_system)
-print("Writing results to file...")
-io.save_links_and_scores_to_json(experiment, link_result, _links_output_file)
-print("Done")
+link_result = dpct_linking.run(experiment, possible_links)
+
+experiment.particle_links(link_result)
+
+image_visualizer.show(experiment)
+print("Done!")
+gui.mainloop()
+
+#print("Writing results to file...")
+#io.save_links_and_scores_to_json(experiment, link_result, _links_output_file)
+
