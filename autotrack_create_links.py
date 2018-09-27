@@ -36,6 +36,9 @@ print("Deciding on what links to use...")
 score_system = RationalScoringSystem(_mitotic_radius)
 link_result = dpct_linking.run(experiment, possible_links)
 
+experiment.remove_all_particles()
+for particle in link_result.nodes:
+    experiment.particles.add(particle)
 experiment.particle_links(link_result)
 
 image_visualizer.show(experiment)

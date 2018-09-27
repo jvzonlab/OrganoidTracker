@@ -7,7 +7,7 @@ from autotrack import gui
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
 from autotrack.imaging import tifffolder, io
-from autotrack.linking import linker_for_experiment
+from autotrack.linking import linker_for_experiment, link_util
 from autotrack.visualizer import image_visualizer
 
 # PARAMETERS
@@ -32,11 +32,13 @@ print("Discovering images...")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format, min_time_point=_min_time_point,
                                    max_time_point=_max_time_point)
 print("Starting link process...")
-results = linker_for_experiment.nearest_neighbor(experiment)
+results_all = linker_for_experiment.nearest_neighbor(experiment, tolerance=2)
+results = link_util.with_only_the_preferred_edges(results_all)
 print("Writing results to file...")
 io.save_links_to_json(results, _output_file)
 print("Visualizing...")
-experiment.particle_links_scratch(results)
+experiment.particle_links_scratch(results_all)
+experiment.particle_links(results)
 image_visualizer.show(experiment)
 print("Done!")
 gui.mainloop()

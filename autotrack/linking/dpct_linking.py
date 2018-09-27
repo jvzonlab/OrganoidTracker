@@ -54,11 +54,11 @@ def _to_graph(particle_ids: _ParticleToId, results: Dict) -> Graph:
 def run(experiment: Experiment, starting_links: Graph):
     particle_ids = _ParticleToId()
     weights = {"weights": [
-        1,
-        1000, # features
-        1,
-        1,
-        1]}
+        1,  # multiplier for linking features?
+        100,  # multiplier for detection of a cell - the higher, the more expensive to omit a cell
+        1,  # multiplier for division features - the higher, the cheaper it is to create a cell division
+        100,  # multiplier for appearance features - the higher, the more expensive it is to create a cell out of nothing
+        100]}  # multiplier for disappearance - the higher, the more expensive an end-of-lineage is
     input = _create_dpct_graph(particle_ids, starting_links,
                                experiment.first_time_point_number(), experiment.last_time_point_number())
     results = dpct.trackFlowBased(input, weights)
@@ -69,13 +69,13 @@ def _create_dpct_graph(particle_ids: _ParticleToId, starting_links: Graph, min_t
     segmentation_hypotheses = []
     particle: Particle
     for particle in starting_links.nodes:
-        appearance_penalty = 50 if particle.time_point_number() > min_time_point else 0
-        disappearance_penalty = 50 if particle.time_point_number() < max_time_point else 0
+        appearance_penalty = 1 if particle.time_point_number() > min_time_point else 0
+        disappearance_penalty = 1 if particle.time_point_number() < max_time_point else 0
 
         segmentation_hypotheses.append({
             "id": particle_ids.id(particle),
             "features": [[1.0], [0.0]],
-            "divisionFeatures": [[0.0], [-5.0]],
+            "divisionFeatures": [[0.0], [-1.0]],
             "appearanceFeatures": [[0], [appearance_penalty]],
             "disappearanceFeatures": [[0], [disappearance_penalty]],
             "timestep": [particle.time_point_number(), particle.time_point_number()]
