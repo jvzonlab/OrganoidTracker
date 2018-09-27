@@ -9,7 +9,9 @@ from numpy import ndarray
 from tifffile import tifffile
 
 from autotrack import core
-from autotrack.core import Experiment, TimePoint, Particle, shape
+from autotrack.core import TimePoint, shape
+from autotrack.core.experiment import Experiment
+from autotrack.core.particles import Particle
 from autotrack.gui import launch_window, Window, dialog
 from autotrack.gui.dialog import popup_figure, prompt_int, popup_error
 from autotrack.linking import particle_flow
@@ -144,14 +146,14 @@ class AbstractImageVisualizer(Visualizer):
         # Draw links
         errors = 0
         if can_show_other_time_points:
-            for particle in self._time_point.particles():
+            for particle in self._experiment.particles.of_time_point(self._time_point):
                 errors += self._draw_links(particle)
 
         return errors
 
     def _draw_particles_of_time_point(self, time_point: TimePoint, color: str = core.COLOR_CELL_CURRENT):
         dt = time_point.time_point_number() - self._time_point.time_point_number()
-        for particle in time_point.particles():
+        for particle in self._experiment.particles.of_time_point(time_point):
             dz = self._z - round(particle.z)
 
             # Draw the particle itself (as a square or circle, depending on its depth)
@@ -171,7 +173,7 @@ class AbstractImageVisualizer(Visualizer):
         if self._display_settings.show_reconstruction:  # Showing a 3D reconstruction, so don't display a 2D one too
             shape.draw_marker_2d(particle.x, particle.y, dz, dt, self._ax, color)
         else:
-            self._time_point.get_shape(particle).draw2d(particle.x, particle.y, dz, dt, self._ax, color)
+            self._experiment.particles.get_shape(particle).draw2d(particle.x, particle.y, dz, dt, self._ax, color)
 
     def _draw_error(self, particle: Particle, dz: int):
         self._ax.plot(particle.x, particle.y, 'X', color='black', markeredgecolor='white',
@@ -354,7 +356,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             super()._on_mouse_click(event)
 
     def __display_cell_division_scores(self, particle):
-        cell_divisions = list(self._time_point.mother_scores(particle))
+        cell_divisions = list(self._experiment.scores.of_mother(particle))
         cell_divisions.sort(key=lambda d: d.score.total(), reverse=True)
         displayed_items = 0
         text = ""
@@ -407,12 +409,13 @@ class StandardImageVisualizer(AbstractImageVisualizer):
                 self.__show_shape(particle)
         elif event.key == "f":
             particle = self._get_particle_at(event.xdata, event.ydata)
+            particles_of_time_point = self._experiment.particles.of_time_point(self._time_point)
             links = self._experiment.particle_links_scratch()
             if particle is not None and links is not None:
                 self.update_status("Flow toward previous frame: " +
-                                   str(particle_flow.get_flow_to_previous(links, self._time_point, particle)) +
+                                   str(particle_flow.get_flow_to_previous(links, particles_of_time_point, particle)) +
                                    "\nFlow towards next frame: " +
-                                   str(particle_flow.get_flow_to_next(links, self._time_point, particle)))
+                                   str(particle_flow.get_flow_to_next(links, particles_of_time_point, particle)))
         else:
             super()._on_key_press(event)
 

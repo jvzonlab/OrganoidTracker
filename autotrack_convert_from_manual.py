@@ -5,7 +5,7 @@
 
 
 from autotrack.config import ConfigFile
-from autotrack.core import Experiment
+from autotrack.core.experiment import Experiment
 from autotrack.imaging import tifffolder, io
 from autotrack.manual_tracking import links_extractor
 from autotrack.particle_detection import ellipse_detector_for_experiment

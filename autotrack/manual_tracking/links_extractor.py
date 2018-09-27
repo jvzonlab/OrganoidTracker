@@ -9,7 +9,7 @@ from typing import List
 import numpy
 from networkx import Graph
 
-from autotrack.core import Particle
+from autotrack.core.particles import Particle
 from autotrack.manual_tracking.track_lib import Track
 
 

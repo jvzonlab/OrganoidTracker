@@ -3,6 +3,7 @@ from typing import Optional, List, Tuple
 import numpy
 from numpy import ndarray
 
+
 class Gaussian:
     """A three-dimensional Gaussian function."""
 

@@ -9,7 +9,7 @@ from autotrack import gui
 from autotrack.config import ConfigFile
 from autotrack.imaging import tifffolder, io
 from autotrack.visualizer import image_visualizer
-from autotrack.core import Experiment
+from autotrack.core.experiment import Experiment
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)

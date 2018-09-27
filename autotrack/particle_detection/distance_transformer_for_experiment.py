@@ -4,7 +4,7 @@ import numpy
 from scipy.ndimage import morphology
 import tifffile
 
-from autotrack.core import Experiment
+from autotrack.core.experiment import Experiment
 from autotrack.particle_detection import thresholding
 from os import path
 
@@ -28,7 +28,7 @@ def perform_for_experiment(experiment: Experiment, output_folder: str, block_siz
 
         # Distance transform from cell positions
         threshold.fill(0)
-        for particle in time_point.particles():
+        for particle in experiment.particles.of_time_point(time_point):
             threshold[int(particle.z), int(particle.y), int(particle.x)] = 255
         morphology.distance_transform_edt(threshold.max() - threshold, sampling=sampling, distances=distances)
         distances[distances > max_distance] = max_distance

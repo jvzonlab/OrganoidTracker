@@ -1,4 +1,7 @@
-from autotrack.core import Experiment, Particle, Score
+
+from autotrack.core.experiment import Experiment
+from autotrack.core.particles import Particle
+from autotrack.core.score import Score
 
 
 class MotherScoringSystem:

@@ -3,7 +3,8 @@ from typing import Set, List
 
 from networkx import Graph
 
-from autotrack.core import Particle, Family
+from autotrack.core.particles import Particle
+from autotrack.core.score import Family
 
 
 def find_mothers(graph: Graph) -> Set[Particle]:

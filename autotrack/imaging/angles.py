@@ -1,7 +1,7 @@
 """Some helper function for calculations with angles."""
 import math
 
-from autotrack.core import Particle
+from autotrack.core.particles import Particle
 
 
 def direction_2d(particle1: Particle, particle2: Particle) -> float:
@@ -15,6 +15,7 @@ def difference(angle1: float, angle2: float) -> float:
     if difference >= 180:
         difference = 360 - difference
     return difference
+
 
 def direction_change(angle1: float, angle2: float) -> float:
     """Gets how many degrees you need to turn to reach angle2, starting from angle1. The result will be from -180 to
@@ -51,8 +52,3 @@ def mirrored(angle: float, mirror_angle: float) -> float:
         mirror_angle = flipped(mirror_angle)
         change = direction_change(angle, mirror_angle)
     return (mirror_angle + change) % 360
-
-
-def perpendicular(direction: float) -> float:
-    """Returns the given direction + 90. The returned direction is from 0 (inclusive) to 360 (exclusive)."""
-    return (direction + 90) % 360

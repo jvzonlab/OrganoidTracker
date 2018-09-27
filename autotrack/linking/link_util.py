@@ -1,14 +1,8 @@
-from typing import Iterable, Set, Optional
+from typing import Iterable, Set
 
-import numpy
 from networkx import Graph
 
-from autotrack import core
-from autotrack.core import Particle, Experiment, Family
-from autotrack.imaging import normalized_image
-from autotrack.imaging.normalized_image import ImageEdgeError
-from autotrack.linking import mother_finder, errors
-from autotrack.linking.scoring_system import MotherScoringSystem
+from autotrack.core.particles import Particle
 
 
 def find_preferred_links(graph: Graph, particle: Particle, linked_particles: Iterable[Particle]):

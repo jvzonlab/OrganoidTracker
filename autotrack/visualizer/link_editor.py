@@ -4,7 +4,7 @@ from matplotlib.backend_bases import KeyEvent, MouseEvent
 from networkx import Graph, NetworkXError
 
 from autotrack import core
-from autotrack.core import Particle
+from autotrack.core.particles import Particle
 from autotrack.gui import Window
 from autotrack.imaging import io
 from autotrack.visualizer.image_visualizer import AbstractImageVisualizer

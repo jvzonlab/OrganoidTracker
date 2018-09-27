@@ -1,9 +1,9 @@
-import math
-
 import numpy
 from numpy import ndarray
 
-from autotrack.core import Experiment, Particle, Score, TimePoint
+from autotrack.core.experiment import Experiment
+from autotrack.core.particles import Particle, ParticleCollection
+from autotrack.core.score import Score
 from autotrack.imaging import angles, normalized_image
 from autotrack.imaging.normalized_image import ImageEdgeError
 from autotrack.linking.scoring_system import MotherScoringSystem
@@ -48,7 +48,7 @@ class RationalScoringSystem(MotherScoringSystem):
             score_daughter_intensities(score, daughter1_intensities, daughter2_intensities,
                                                 daughter1_intensities_prev, daughter2_intensities_prev)
             score_daughter_distances(score, mother, daughter1, daughter2)
-            score_using_daughter_shapes(score, daughter_time_point, daughter1, daughter2)
+            score_using_daughter_shapes(score, experiment.particles, daughter1, daughter2)
             return score
         except ImageEdgeError:
             return Score()
@@ -113,12 +113,12 @@ def _score_daughter_sides(ellipse_angle: float, mother: Particle, daughter1: Par
     return 0
 
 
-def score_using_daughter_shapes(score: Score, time_point: TimePoint, daughter1: Particle, daughter2: Particle):
+def score_using_daughter_shapes(score: Score, particles: ParticleCollection, daughter1: Particle, daughter2: Particle):
     score.daughters_angles = 0
     score.daughters_volume = 0
 
-    daughter1_shape = time_point.get_shape(daughter1)
-    daughter2_shape = time_point.get_shape(daughter2)
+    daughter1_shape = particles.get_shape(daughter1)
+    daughter2_shape = particles.get_shape(daughter2)
 
     if daughter1_shape.is_unknown() or daughter2_shape.is_unknown():
         return  # Too close to edge

@@ -8,7 +8,7 @@ from typing import List, Dict, Any, Optional, Iterable
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
 
-from autotrack.core import Experiment
+from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog
 from autotrack.gui.threading import Scheduler
 

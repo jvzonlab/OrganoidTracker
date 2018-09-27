@@ -3,7 +3,8 @@ from typing import List, Optional, Tuple
 from matplotlib.backend_bases import KeyEvent
 from networkx import Graph
 
-from autotrack.core import Particle, Experiment
+from autotrack.core.experiment import Experiment
+from autotrack.core.particles import Particle
 from autotrack.gui import Window
 from autotrack.linking import errors, logical_tests
 from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer

@@ -13,9 +13,10 @@ from autotrack.imaging import tifffolder, io
 from autotrack.config import ConfigFile
 from autotrack.particle_detection import ellipse_stack_detector_for_experiment
 
-# PARAMETERS
-from autotrack.core import Experiment, ImageResolution
+from autotrack.core.image_loader import ImageResolution
+from autotrack.core.experiment import Experiment
 
+# PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("detect_ellipse_shapes")
 _images_folder = config.get_or_default("images_folder", "./", store_in_defaults=True)

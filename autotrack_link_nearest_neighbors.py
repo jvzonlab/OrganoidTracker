@@ -5,7 +5,7 @@ constraints are not taken into account.
 """
 from autotrack import gui
 from autotrack.config import ConfigFile
-from autotrack.core import Experiment
+from autotrack.core.experiment import Experiment
 from autotrack.imaging import tifffolder, io
 from autotrack.linking import linker_for_experiment
 from autotrack.visualizer import image_visualizer

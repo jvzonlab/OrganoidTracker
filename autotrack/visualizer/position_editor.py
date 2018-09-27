@@ -2,7 +2,7 @@ from typing import Optional
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 from autotrack import core
-from autotrack.core import Particle
+from autotrack.core.particles import Particle
 from autotrack.gui import Window
 from autotrack.visualizer import DisplaySettings, activate
 from autotrack.visualizer.image_visualizer import AbstractImageVisualizer
@@ -29,11 +29,12 @@ class PositionEditor(AbstractImageVisualizer):
         return "Positions editor"
 
     def get_default_status(self) -> str:
-        return str(self.__doc__).replace("{NUM}", str(len(self._time_point.particles())))
+        particles = self._experiment.particles.of_time_point(self._time_point)
+        return str(self.__doc__).replace("{NUM}", str(len(particles)))
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "insert":
-            self._time_point.add_particle(Particle(event.xdata, event.ydata, self._z))
+            self._experiment.particles.add(Particle(event.xdata, event.ydata, self._z).with_time_point(self._time_point))
             self.draw_view()
             self.update_status("Added cell at x,y,z = " + str(event.xdata) + "," + str(event.ydata) + "," + str(self._z))
         elif event.key == "delete":

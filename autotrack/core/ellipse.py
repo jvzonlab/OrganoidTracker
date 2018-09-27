@@ -1,11 +1,10 @@
 import math
+from typing import List, Tuple, Optional
 
 import cv2
-
 import numpy
-from shapely.geometry.polygon import LinearRing
 from numpy import ndarray
-from typing import List, Tuple, Optional, Iterable, Generic
+from shapely.geometry.polygon import LinearRing
 
 
 def _max(a: Optional[int], b: Optional[int]) -> int:

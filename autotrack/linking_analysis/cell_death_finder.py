@@ -2,7 +2,8 @@ from typing import Set
 
 from networkx import Graph
 
-from autotrack.core import Particle, Experiment
+from autotrack.core.experiment import Experiment
+from autotrack.core.particles import Particle
 
 
 def find_cell_deaths(experiment: Experiment, graph: Graph) -> Set[Particle]:

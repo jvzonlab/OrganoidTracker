@@ -5,7 +5,7 @@ import cv2
 import numpy
 from numpy import ndarray
 
-from autotrack.core import Particle
+from autotrack.core.particles import Particle
 from autotrack.particle_detection import watershedding
 from autotrack.segmentation import iso_intensity_curvature
 from autotrack.segmentation.iso_intensity_curvature import ImageDerivatives

@@ -6,9 +6,10 @@ from typing import Optional, Tuple
 
 import numpy
 
-from autotrack.core import Experiment, Particle
+from autotrack.core.experiment import Experiment
 from numpy import ndarray
 
+from autotrack.core.particles import Particle
 from autotrack.core.shape import EllipseShape
 
 
@@ -16,7 +17,7 @@ def detect_for_all(experiment: Experiment, detection_radius: int):
     for time_point in experiment.time_points():
         print("Working on time point " + str(time_point.time_point_number()))
         image_stack = experiment.get_image_stack(time_point)
-        for particle in time_point.particles():
+        for particle in experiment.particles.of_time_point(time_point):
             image = image_stack[int(particle.z)]
             thresholded = __get_threshold_for_shape(particle, image, detection_radius)
             if thresholded is None:
@@ -37,7 +38,7 @@ def detect_for_all(experiment: Experiment, detection_radius: int):
                                          original_area=area,
                                          original_perimeter=cv2.arcLength(contours[contour_index], True),
                                          eccentric=eccentric)
-            time_point.add_shaped_particle(particle, ellipse_shape)
+            experiment.particles.add(particle, ellipse_shape)
 
 
 def __get_threshold_for_shape(particle: Particle, full_image: ndarray, detection_radius: int) -> Optional[ndarray]:

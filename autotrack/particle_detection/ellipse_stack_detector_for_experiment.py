@@ -4,7 +4,8 @@ from typing import Tuple
 
 import numpy
 
-from autotrack.core import Experiment, TimePoint
+from autotrack.core import TimePoint
+from autotrack.core.experiment import Experiment
 from autotrack.core.shape import EllipseStackShape
 from autotrack.particle_detection import thresholding, watershedding, smoothing, ellipse_cluster
 
@@ -18,7 +19,7 @@ def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, thres
                             distance_transform_smooth_size: int, minimal_distance: Tuple[int, int, int]):
     print("Working on time point " + str(time_point.time_point_number()) + "...")
     # Acquire images
-    particles = list(time_point.particles())
+    particles = list(experiment.particles.of_time_point(time_point))
     images = experiment.get_image_stack(time_point)
     images = thresholding.image_to_8bit(images)
 
@@ -56,4 +57,4 @@ def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, thres
     for ellipse_stack in ellipse_stacks:
         particle = particles[ellipse_stack.get_tag()]
         shape = EllipseStackShape(ellipse_stack.get_stack().translated(-particle.x, -particle.y), int(particle.z))
-        time_point.add_shaped_particle(particle, shape)
+        experiment.particles.add(particle, shape)

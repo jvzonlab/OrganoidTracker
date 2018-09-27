@@ -1,11 +1,13 @@
 import os
 import re
 from os import path
-from typing import Dict, Any
+from typing import Dict, Any, AbstractSet
 
 import numpy
 
-from autotrack.core import Particle, Experiment, UserError, TimePoint
+from autotrack.core import UserError, TimePoint
+from autotrack.core.experiment import Experiment
+from autotrack.core.particles import Particle, ParticleCollection
 from autotrack.gui import Window, dialog
 
 Z_OVERSCALED = 6.0
@@ -54,7 +56,7 @@ def _export_laetitia_positions(window: Window):
                 overwrite = True
             else:
                 return
-        _export_file(time_point, file_path, z_offset)
+        _export_file(experiment.particles.of_time_point(time_point), file_path, z_offset)
 
 
 def _get_z_offset(experiment: Experiment) -> int:
@@ -96,11 +98,10 @@ def _import_file(experiment: Experiment, directory: str, file_name: str, z_offse
     for row in range(len(coords)):
         particle = Particle(coords[row, 2], coords[row, 1], (coords[row, 0] / Z_OVERSCALED) + z_offset)
 
-        time_point.add_particle(particle)
+        experiment.particles.add(particle.with_time_point(time_point))
 
 
-def _export_file(time_point: TimePoint, file_path: str, z_offset: int):
-    particles = time_point.particles()
+def _export_file(particles: AbstractSet[Particle], file_path: str, z_offset: int):
     if len(particles) == 0:
         return
     array = numpy.empty((len(particles), 3), dtype=numpy.int64)

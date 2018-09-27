@@ -3,7 +3,9 @@ from typing import Optional, Tuple, List, Callable
 from matplotlib.figure import Figure
 from networkx import Graph
 
-from autotrack.core import Particle, Experiment, UserError
+from autotrack.core import UserError
+from autotrack.core.experiment import Experiment
+from autotrack.core.particles import Particle
 from autotrack.linking import mother_finder
 from statistics import median
 
@@ -13,8 +15,7 @@ PointList = Tuple[List[float], List[float]]  # A list of x values and a list of 
 
 
 def _get_volume(experiment: Experiment, particle: Particle) -> Optional[float]:
-    time_point = experiment.get_time_point(particle.time_point_number())
-    shape = time_point.get_shape(particle)
+    shape = experiment.particles.get_shape(particle)
     try:
         return shape.volume()
     except NotImplementedError:
@@ -22,8 +23,7 @@ def _get_volume(experiment: Experiment, particle: Particle) -> Optional[float]:
 
 
 def _get_intensity(experiment: Experiment, particle: Particle) -> Optional[float]:
-    time_point = experiment.get_time_point(particle.time_point_number())
-    shape = time_point.get_shape(particle)
+    shape = experiment.particles.get_shape(particle)
     try:
         return shape.intensity()
     except NotImplementedError:

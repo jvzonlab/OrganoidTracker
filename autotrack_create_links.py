@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from autotrack.config import ConfigFile
-from autotrack.core import Experiment
+from autotrack.core.experiment import Experiment
 from autotrack.imaging import tifffolder, io
 from autotrack.linking import linker_for_experiment
 from autotrack.linking.rational_scoring_system import RationalScoringSystem

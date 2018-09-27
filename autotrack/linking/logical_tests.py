@@ -2,7 +2,9 @@ from typing import Optional, List
 
 from networkx import Graph
 
-from autotrack.core import Experiment, Particle, Score
+from autotrack.core.experiment import Experiment
+from autotrack.core.particles import Particle
+from autotrack.core.score import Score
 from autotrack.linking import errors
 from autotrack.linking import cell_links
 
@@ -34,9 +36,9 @@ def apply(experiment: Experiment, graph: Graph):
         else:  # len(past_particles) == 1
             # Check cell size
             past_particle = past_particles[0]
-            shape = experiment.get_time_point(particle.time_point_number()).get_shape(particle)
+            shape = experiment.particles.get_shape(particle)
             if not shape.is_unknown() and len(future_particles) == 1:
-                past_shape = experiment.get_time_point(past_particle.time_point_number()).get_shape(past_particle)
+                past_shape = experiment.particles.get_shape(past_particle)
                 if past_shape.volume() / (shape.volume() + 0.0001) > 1.7:
                     _set_error(graph, particle, errors.SHRUNK_A_LOT)
 
@@ -44,7 +46,7 @@ def apply(experiment: Experiment, graph: Graph):
 def _get_highest_mother_score(experiment: Experiment, particle: Particle) -> Optional[Score]:
     highest_score = None
     highest_score_num = -999
-    for scored_family in experiment.get_time_point(particle.time_point_number()).mother_scores(particle):
+    for scored_family in experiment.scores.of_time_point(particle.time_point()):
         score = scored_family.score
         score_num = score.total()
         if score_num > highest_score_num:

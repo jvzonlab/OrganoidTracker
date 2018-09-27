@@ -1,7 +1,8 @@
 from typing import Iterable, Dict
 
-from autotrack.core import Particle
 from numpy import ndarray
+
+from autotrack.core.particles import Particle
 
 
 def find_undetected_particles(labeled_image: ndarray, particles: Iterable[Particle]) -> Dict[Particle, str]:

@@ -2,7 +2,8 @@
 
 import operator
 
-from autotrack.core import Particle, TimePoint
+from autotrack.core import TimePoint
+from autotrack.core.particles import ParticleCollection, Particle
 
 
 class _NearestParticles:
@@ -39,7 +40,7 @@ class _NearestParticles:
         return [item[0] for item in items]
 
 
-def find_nearest_particles(search_in: TimePoint, around: Particle, tolerance: float):
+def find_nearest_particles(particles: ParticleCollection, search_in: TimePoint, around: Particle, tolerance: float):
     """Finds the particles nearest to the given particle.
 
     - search_in is the time_point to search in
@@ -52,7 +53,7 @@ def find_nearest_particles(search_in: TimePoint, around: Particle, tolerance: fl
     if tolerance < 1:
         raise ValueError()
     nearest_particles = _NearestParticles(tolerance)
-    for particle in search_in.particles():
+    for particle in particles.of_time_point(search_in):
         nearest_particles.add_candidate(particle, particle.distance_squared(around, z_factor=3))
     return nearest_particles.get_particles()
 

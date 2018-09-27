@@ -5,7 +5,9 @@ import tifffile
 from numpy import ndarray
 import numpy
 
-from autotrack.core import Experiment, ImageLoader, TimePoint, ImageResolution
+from autotrack.core import TimePoint
+from autotrack.core.image_loader import ImageLoader, ImageResolution
+from autotrack.core.experiment import Experiment
 
 
 def load_images_from_folder(experiment: Experiment, folder: str, file_name_format: str,

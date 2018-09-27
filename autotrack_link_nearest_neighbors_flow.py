@@ -6,7 +6,7 @@ that is not the nearest neighbor.
 """
 from autotrack import gui
 from autotrack.config import ConfigFile
-from autotrack.core import Experiment
+from autotrack.core.experiment import Experiment
 from autotrack.imaging import tifffolder, io
 from autotrack.linking import linker_for_experiment
 from autotrack.linking import link_util

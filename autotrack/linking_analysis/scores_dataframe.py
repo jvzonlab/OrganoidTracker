@@ -4,9 +4,9 @@ from typing import List, Set
 import numpy
 import pandas
 
-from autotrack.core import Experiment
-from autotrack.linking import Family
-from autotrack.linking import MotherScoringSystem, Score
+from autotrack.core.experiment import Experiment
+from autotrack.core.score import Family, Score
+from autotrack.linking.scoring_system import MotherScoringSystem
 
 
 def create(experiment: Experiment, putative_families: List[Family], scoring_system: MotherScoringSystem,

@@ -8,8 +8,10 @@ import numpy
 from networkx import node_link_data, node_link_graph, Graph
 from pandas import DataFrame
 
-from autotrack.core import Experiment, Particle, Score, Family, ScoredFamily
+from autotrack.core.experiment import Experiment
 from autotrack.core import shape
+from autotrack.core.particles import Particle
+from autotrack.core.score import ScoredFamily, Score, Family
 
 
 def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: str,
@@ -25,9 +27,9 @@ def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: 
             experiment.remove_particles(time_point)
 
             for raw_particle in raw_particles:
-                particle = Particle(*raw_particle[0:3])
+                particle = Particle(*raw_particle[0:3]).with_time_point_number(time_point_number)
                 particle_shape = shape.from_list(raw_particle[3:])
-                time_point.add_shaped_particle(particle, particle_shape)
+                experiment.particles.add(particle, particle_shape)
 
 
 def load_links_and_scores_from_json(experiment: Experiment, json_file_name: str, links_are_scratch=False):
@@ -41,7 +43,7 @@ def load_links_and_scores_from_json(experiment: Experiment, json_file_name: str,
         for scored_family in family_scores_list:
             family = scored_family.family
             time_point = experiment.get_or_add_time_point(family.mother.time_point_number())
-            time_point.mother_score(family, scored_family.score)
+            experiment.scores.set_family_score(family, scored_family.score)
 
         # Read graph
         link_data = data if "directed" in data else data["links"]
@@ -103,7 +105,7 @@ def save_positions_and_shapes_to_json(experiment: Experiment, json_file_name: st
     for time_point_number in range(experiment.first_time_point_number(), experiment.last_time_point_number() + 1):
         time_point = experiment.get_time_point(time_point_number)
         particles = []
-        for particle, shape in time_point.particles_and_shapes().items():
+        for particle, shape in experiment.particles.of_time_point_with_shapes(time_point).items():
             particles.append([particle.x, particle.y, particle.z] + shape.to_list())
 
         data_structure[str(time_point_number)] = particles
@@ -122,7 +124,7 @@ def save_links_and_scores_to_json(experiment: Experiment, links: Graph, json_fil
 
     families = []
     for time_point in experiment.time_points():
-        for scored_family in time_point.mother_scores():
+        for scored_family in experiment.scores.of_time_point(time_point):
             families.append(scored_family)
 
     final_data = {"links": links_for_json, "family_scores": families}

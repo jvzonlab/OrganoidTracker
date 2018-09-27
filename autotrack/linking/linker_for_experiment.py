@@ -1,7 +1,8 @@
 from networkx import Graph
 
-from autotrack import core
-from autotrack.core import Experiment, TimePoint, Particle
+from autotrack.core.particles import Particle, get_closest_particle, ParticleCollection
+from autotrack.core import TimePoint
+from autotrack.core.experiment import Experiment
 from autotrack.linking import particle_flow
 from autotrack.linking.find_nearest_neighbors import find_nearest_particles
 
@@ -18,10 +19,10 @@ def nearest_neighbor(experiment: Experiment, tolerance: float = 1.0) -> Graph:
 
     time_point_previous = None
     for time_point_current in experiment.time_points():
-        _add_nodes(graph, time_point_current)
+        _add_nodes(graph, experiment, time_point_current)
 
         if time_point_previous is not None:
-            _add_nearest_edges(graph, time_point_previous, time_point_current, tolerance)
+            _add_nearest_edges(graph, experiment.particles, time_point_previous, time_point_current, tolerance)
             _add_nearest_edges_extra(graph, time_point_previous, time_point_current, tolerance)
 
         time_point_previous = time_point_current
@@ -45,25 +46,25 @@ def nearest_neighbor_using_flow(experiment: Experiment, initial_links: Graph, fl
     return graph
 
 
-def _add_nodes(graph: Graph, time_point: TimePoint) -> None:
-    for particle in time_point.particles():
+def _add_nodes(graph: Graph, experiment: Experiment, time_point: TimePoint) -> None:
+    for particle in experiment.particles.of_time_point(time_point):
         graph.add_node(particle)
 
 
-def _add_nearest_edges(graph: Graph, time_point_previous: TimePoint, time_point_current: TimePoint, tolerance: float):
+def _add_nearest_edges(graph: Graph, particles: ParticleCollection, time_point_previous: TimePoint, time_point_current: TimePoint, tolerance: float):
     """Adds edges pointing towards previous time point, making the shortest one the preferred."""
-    for particle in time_point_current.particles():
-        nearby_list = find_nearest_particles(time_point_previous, particle, tolerance)
+    for particle in particles.of_time_point(time_point_current):
+        nearby_list = find_nearest_particles(particles, time_point_previous, particle, tolerance)
         preferred = True
         for nearby_particle in nearby_list:
             graph.add_edge(particle, nearby_particle, pref=preferred)
             preferred = False  # All remaining links are not preferred
 
 
-def _add_nearest_edges_extra(graph: Graph, time_point_current: TimePoint, time_point_next: TimePoint, tolerance: float):
+def _add_nearest_edges_extra(graph: Graph, particles: ParticleCollection, time_point_current: TimePoint, time_point_next: TimePoint, tolerance: float):
     """Adds edges to the next time point, which is useful if _add_edges missed some possible links."""
-    for particle in time_point_current.particles():
-        nearby_list = find_nearest_particles(time_point_next, particle, tolerance)
+    for particle in particles.of_time_point(time_point_current):
+        nearby_list = find_nearest_particles(particles, time_point_next, particle, tolerance)
         for nearby_particle in nearby_list:
             if not graph.has_edge(particle, nearby_particle):
                 graph.add_edge(particle, nearby_particle, pref=False)
@@ -78,15 +79,16 @@ def _all_links_downgraded(original_graph: Graph):
     return graph
 
 
-def _find_nearest_edges_using_flow(graph: Graph, initial_links: Graph, time_point: TimePoint,
-                                   flow_detection_radius: int):
-    for particle in time_point.particles():
+def _find_nearest_edges_using_flow(graph: Graph, particles: ParticleCollection, initial_links: Graph,
+                                   time_point: TimePoint, flow_detection_radius: int):
+    particles_of_time_point = particles.of_time_point(time_point)
+    for particle in particles_of_time_point:
         possible_connections = _find_past_particles(graph, particle)
         if len(possible_connections) == 0:
             continue
-        flow_x, flow_y, flow_z = particle_flow.get_flow_to_previous(initial_links, time_point, particle,
+        flow_x, flow_y, flow_z = particle_flow.get_flow_to_previous(initial_links, particles_of_time_point, particle,
                                                                     max_dx_and_dy=flow_detection_radius)
-        nearest = core.get_closest_particle(possible_connections,
+        nearest = get_closest_particle(possible_connections,
                                             Particle(particle.x + flow_x, particle.y + flow_y, particle.z + flow_z))
         graph[particle][nearest]["pref"] = True
 

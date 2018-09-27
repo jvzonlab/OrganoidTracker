@@ -7,7 +7,7 @@ from typing import Optional
 
 from matplotlib.figure import Figure
 
-from autotrack.core import Experiment
+from autotrack.core.experiment import Experiment
 from autotrack.gui import Window, dialog
 from autotrack.gui.dialog import popup_message_cancellable
 from autotrack.imaging import tifffolder, io

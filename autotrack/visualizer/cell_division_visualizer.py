@@ -1,6 +1,7 @@
 from typing import List, Optional
 
-from autotrack.core import Particle, Experiment
+from autotrack.core.experiment import Experiment
+from autotrack.core.particles import Particle
 from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
 from autotrack.gui import Window
 from autotrack.linking import mother_finder

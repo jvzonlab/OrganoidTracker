@@ -5,7 +5,7 @@ from matplotlib.backend_bases import KeyEvent
 from networkx import Graph
 
 from autotrack import core
-from autotrack.core import Particle
+from autotrack.core.particles import Particle, get_closest_particle
 from autotrack.gui import Window
 from autotrack.visualizer import Visualizer, activate, DisplaySettings
 
@@ -48,7 +48,7 @@ class ParticleListVisualizer(Visualizer):
             return self._particle_list.index(particle)
         except ValueError:
             # Try nearest particle
-            close_match = core.get_closest_particle(self._particle_list, particle, max_distance=100)
+            close_match = get_closest_particle(self._particle_list, particle, max_distance=100)
 
             if close_match is not None and close_match.time_point_number() == particle.time_point_number():
                 return self._particle_list.index(close_match)
@@ -81,7 +81,7 @@ class ParticleListVisualizer(Visualizer):
         self._show_image()
 
         current_particle = self._particle_list[self._current_particle_index]
-        shape = self._experiment.get_time_point(current_particle.time_point_number()).get_shape(current_particle)
+        shape = self._experiment.particles.get_shape(current_particle)
         shape.draw2d(current_particle.x, current_particle.y, 0, 0, self._ax, core.COLOR_CELL_CURRENT)
         self._draw_connections(self._experiment.particle_links(), current_particle)
         self._draw_connections(self._experiment.particle_links_scratch(), current_particle, line_style='dotted',
@@ -110,8 +110,7 @@ class ParticleListVisualizer(Visualizer):
                     continue  # Showing the previous position only makes things more confusing here
 
             color = core.COLOR_CELL_NEXT if delta_time == 1 else core.COLOR_CELL_PREVIOUS
-            time_point = self._experiment.get_time_point(connected_particle.time_point_number())
-            particle_shape = time_point.get_shape(connected_particle)
+            particle_shape = self._experiment.particles.get_shape(connected_particle)
 
             self._ax.plot([connected_particle.x, main_particle.x], [connected_particle.y, main_particle.y],
                           color=color, linestyle=line_style, linewidth=line_width)

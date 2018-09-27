@@ -3,8 +3,9 @@ from typing import Tuple
 
 import numpy
 
-from autotrack.core import Experiment, TimePoint, UnknownShape
-from autotrack.core.shape import GaussianShape
+from autotrack.core import TimePoint
+from autotrack.core.experiment import Experiment
+from autotrack.core.shape import GaussianShape, UnknownShape
 from autotrack.particle_detection import thresholding, watershedding, gaussian_fit, smoothing
 
 
@@ -18,7 +19,7 @@ def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, thres
                             gaussian_fit_smooth_size: int):
     print("Working on time point " + str(time_point.time_point_number()) + "...")
     # Acquire images
-    particles = list(time_point.particles())
+    particles = list(experiment.particles.of_time_point(time_point))
     images = experiment.get_image_stack(time_point)
     images = thresholding.image_to_8bit(images)
 
@@ -56,6 +57,6 @@ def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, thres
     for particle, gaussian in zip(particles, gaussians):
         shape = UnknownShape() if gaussian is None \
             else GaussianShape(gaussian.translated(-particle.x, -particle.y, -particle.z))
-        time_point.add_shaped_particle(particle, shape)
+        experiment.particles.add(particle, shape)
         if gaussian is None:
             print("Could not fit gaussian for " + str(particle))

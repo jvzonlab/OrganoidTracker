@@ -3,7 +3,8 @@ from typing import Iterable
 import networkx
 from networkx import Graph
 
-from autotrack.core import Particle, Experiment
+from autotrack.core.experiment import Experiment
+from autotrack.core.particles import Particle
 from autotrack.linking import mother_finder
 from autotrack.linking_analysis import cell_death_finder
 
@@ -66,8 +67,8 @@ def _print_edges(graph: Graph):
 def _print_links_differences(automatic_links: Graph, baseline_links: Graph):
     print("There are " + str(baseline_links.number_of_nodes()) + " cells and "+ str(baseline_links.number_of_edges())
           + " links in the baseline results.")
-    missed_links = networkx.difference(baseline_links, automatic_links);
-    made_up_links = networkx.difference(automatic_links, baseline_links);
+    missed_links = networkx.difference(baseline_links, automatic_links)
+    made_up_links = networkx.difference(automatic_links, baseline_links)
 
     print("There are " + str(networkx.number_of_edges(missed_links)) + " connections missed in the automatic results:")
     _print_edges(missed_links)

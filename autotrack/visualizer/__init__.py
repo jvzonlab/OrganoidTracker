@@ -8,7 +8,9 @@ from matplotlib.backend_bases import KeyEvent, MouseEvent
 from matplotlib.figure import Figure, Axes
 
 from autotrack import core
-from autotrack.core import Experiment, Particle, TimePoint
+from autotrack.core import TimePoint
+from autotrack.core.particles import Particle, get_closest_particle
+from autotrack.core.experiment import Experiment
 from autotrack.gui import Window, dialog
 from autotrack.gui.threading import Task
 
@@ -156,7 +158,7 @@ class Visualizer:
         rgb_images = numpy.zeros((zyx_size[0], zyx_size[1], zyx_size[2], 3), dtype='float')
         colors = [(1, 1, 1), (1, 1, 0), (1, 0, 1), (0, 1, 1), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
         i = 0
-        for particle, shape in time_point.particles_and_shapes().items():
+        for particle, shape in self._experiment.particles.of_time_point_with_shapes(time_point).items():
             shape.draw3d_color(particle.x, particle.y, particle.z, 0, rgb_images, colors[i % len(colors)])
             i += 1
         rgb_images.clip(min=0, max=1, out=rgb_images)
@@ -174,7 +176,7 @@ class Visualizer:
             z = 0
             ignore_z = True
         search_position = Particle(x, y, z)
-        return core.get_closest_particle(particles, search_position, ignore_z=ignore_z, max_distance=max_distance)
+        return get_closest_particle(particles, search_position, ignore_z=ignore_z, max_distance=max_distance)
 
     def get_window(self):
         return self._window

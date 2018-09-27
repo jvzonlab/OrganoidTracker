@@ -5,7 +5,7 @@ simple nearest-neighbor linking. The data is compared with data of the actual mo
 """
 from autotrack.config import ConfigFile
 from autotrack.imaging import tifffolder, io
-from autotrack.core import Experiment
+from autotrack.core.experiment import Experiment
 from autotrack.linking import linker_for_experiment, mother_finder
 from autotrack.linking import RationalScoringSystem
 from autotrack.linking_analysis import scores_dataframe

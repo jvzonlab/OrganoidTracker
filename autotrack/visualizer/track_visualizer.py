@@ -5,7 +5,7 @@ from matplotlib.backend_bases import KeyEvent, MouseEvent
 from networkx import Graph
 
 from autotrack import core
-from autotrack.core import Particle
+from autotrack.core.particles import Particle
 from autotrack.linking import cell_links
 from autotrack.visualizer import Visualizer, activate
 from autotrack.gui import Window

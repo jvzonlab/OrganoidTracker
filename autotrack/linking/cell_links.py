@@ -2,7 +2,7 @@ from typing import Optional, Iterable, Set
 
 from networkx import Graph
 
-from autotrack.core import Particle
+from autotrack.core.particles import Particle
 
 
 def get_age(graph: Graph, particle: Particle) -> Optional[int]:

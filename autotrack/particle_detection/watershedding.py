@@ -8,7 +8,7 @@ import numpy
 from numpy import ndarray
 from scipy.ndimage import morphology
 
-from autotrack.core import Particle
+from autotrack.core.particles import Particle
 
 
 def _create_colormap() -> List[Tuple[float, float, float, float]]:
@@ -38,6 +38,7 @@ def distance_transform_to_labels(labels: ndarray, resolution: Tuple[float, float
     distance_transform_to_labels[distance_transform_to_labels > 4] = 4
     distance_transform_to_labels = 4 - distance_transform_to_labels
     return distance_transform_to_labels
+
 
 def distance_transform(threshold: ndarray, out: ndarray, sampling: Tuple[float, float, float]):
     """Performs a 3D distance transform: all white pixels in the threshold are replaced by intensities representing the
