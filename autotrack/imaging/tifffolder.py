@@ -18,19 +18,23 @@ def load_images_from_folder(experiment: Experiment, folder: str, file_name_forma
     if max_time_point is None:
         max_time_point = 5000
 
-    experiment.name.provide_automatic_name(path.basename(folder).replace("-stacks", ""))
-    experiment.image_loader(TiffImageLoader(folder, file_name_format, resolution, min_time_point, max_time_point))
+    min_time_point = max(1, min_time_point)
 
     # Create time points for all discovered image files
-    time_point_number = max(1, min_time_point)
+    time_point_number = min_time_point
     while time_point_number <= max_time_point:
         file_name = path.join(folder, file_name_format % time_point_number)
 
         if not path.isfile(file_name):
             break
 
-        experiment.get_or_add_time_point(time_point_number)
         time_point_number += 1
+    max_time_point = time_point_number - 1  # Last actual image is attempted number - 1
+
+    experiment.name.provide_automatic_name(path.basename(folder).replace("-stacks", ""))
+    experiment.image_loader(TiffImageLoader(folder, file_name_format, resolution, min_time_point, max_time_point))
+
+
 
 
 class TiffImageLoader(ImageLoader):
@@ -38,8 +42,8 @@ class TiffImageLoader(ImageLoader):
     _folder: str
     _file_name_format: str
     _resolution: ImageResolution
-    _min_time_point: int
-    _max_time_point: int
+    _min_time_point: Optional[int]
+    _max_time_point: Optional[int]
 
     def __init__(self, folder: str, file_name_format: str, resolution: Optional[ImageResolution] = None,
                  min_time_point: Optional[int] = None, max_time_point: Optional[int] = None):
@@ -76,3 +80,9 @@ class TiffImageLoader(ImageLoader):
         if self._resolution is None:
             raise ValueError("Resolution not set")
         return self._resolution
+
+    def get_first_time_point(self) -> Optional[int]:
+        return self._min_time_point
+
+    def get_last_time_point(self) -> Optional[int]:
+        return self._max_time_point

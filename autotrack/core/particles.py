@@ -94,10 +94,16 @@ class _ParticlesAtTimePoint:
         particle from the linking graph. See also Experiment.remove_particle."""
         del self._particles[particle]
 
+    def is_empty(self):
+        """Returns True if there are no particles stored."""
+        return len(self._particles) == 0
+
 
 class ParticleCollection:
 
     _all_particles: Dict[int, _ParticlesAtTimePoint]
+    _min_time_point_number: Optional[int] = None
+    _max_time_point_number: Optional[int] = None
 
     def __init__(self):
         self._all_particles = dict()
@@ -113,23 +119,49 @@ class ParticleCollection:
         """Removes all particles for a given time point, if any."""
         if time_point.time_point_number() in self._all_particles:
             del self._all_particles[time_point.time_point_number()]
+            self._update_min_max_time_points_for_removal()
 
     def add(self, particle: Particle, shape: ParticleShape = UnknownShape()):
         """Adds a particle, optionally with the given shape. The particle must have a time point specified."""
         time_point_number = particle.time_point_number()
         if time_point_number is None:
             raise ValueError("Particle does not have a time point, so it cannot be added")
+
+        self._update_min_max_time_points_for_addition(time_point_number)
+
         particles_at_time_point = self._all_particles.get(time_point_number)
         if particles_at_time_point is None:
             particles_at_time_point = _ParticlesAtTimePoint()
             self._all_particles[time_point_number] = particles_at_time_point
         particles_at_time_point.add_shaped_particle(particle, shape)
 
+    def _update_min_max_time_points_for_addition(self, new_time_point_number: int):
+        """Bookkeeping: makes sure the min and max time points are updated when a new time point is added"""
+        if self._min_time_point_number is None or new_time_point_number < self._min_time_point_number:
+            self._min_time_point_number = new_time_point_number
+        if self._max_time_point_number is None or new_time_point_number > self._max_time_point_number:
+            self._max_time_point_number = new_time_point_number
+
+    def _update_min_max_time_points_for_removal(self):
+        """Bookkeeping: recalculates min and max time point if a time point was removed."""
+        # Reset min and max, then repopulate by readding all time points
+        self._min_time_point_number = None
+        self._max_time_point_number = None
+        for time_point_number in self._all_particles.keys():
+            self._update_min_max_time_points_for_addition(time_point_number)
+
     def detach_particle(self, particle: Particle):
         """Removes a particle from a time point."""
         particles_at_time_point = self._all_particles.get(particle.time_point_number())
-        if particles_at_time_point is not None:
-            particles_at_time_point.detach_particle(particle)
+        if particles_at_time_point is None:
+            return
+
+        particles_at_time_point.detach_particle(particle)
+
+        # Remove time point entirely
+        if particles_at_time_point.is_empty():
+            del self._all_particles[particle.time_point_number]
+            self._update_min_max_time_points_for_removal()
 
     def of_time_point_with_shapes(self, time_point: TimePoint) -> Dict[Particle, ParticleShape]:
         """Gets all particles and shapes of a time point. New particles must be added using self.add(...), not using
@@ -144,6 +176,14 @@ class ParticleCollection:
         if particles_at_time_point is None:
             return UnknownShape()
         return particles_at_time_point.get_shape(particle)
+
+    def get_first_time_point(self) -> Optional[int]:
+        """Gets the first time point that contains particles, or None if there are no particles stored."""
+        return self._min_time_point_number
+
+    def get_last_time_point(self) -> Optional[int]:
+        """Gets the last time point (inclusive) that contains particles, or None if there are no particles stored."""
+        return self._max_time_point_number
 
 
 def get_closest_particle(particles: Iterable[Particle], search_position: Particle,

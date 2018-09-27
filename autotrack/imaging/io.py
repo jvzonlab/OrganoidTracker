@@ -17,14 +17,13 @@ from autotrack.core.score import ScoredFamily, Score, Family
 def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: str,
                                         min_time_point: Optional[int] = 0, max_time_point: Optional[int] = 5000):
     """Loads all particle positions from a JSON file"""
+    experiment.remove_all_particles()
     with open(json_file_name) as handle:
         time_points = json.load(handle)
         for time_point_number, raw_particles in time_points.items():
             time_point_number = int(time_point_number)  # str -> int
             if time_point_number < min_time_point or time_point_number > max_time_point:
                 continue
-            time_point = experiment.get_or_add_time_point(time_point_number)
-            experiment.remove_particles(time_point)
 
             for raw_particle in raw_particles:
                 particle = Particle(*raw_particle[0:3]).with_time_point_number(time_point_number)
@@ -42,7 +41,6 @@ def load_links_and_scores_from_json(experiment: Experiment, json_file_name: str,
         family_scores_list: List[ScoredFamily] = data.get("family_scores", [])
         for scored_family in family_scores_list:
             family = scored_family.family
-            time_point = experiment.get_or_add_time_point(family.mother.time_point_number())
             experiment.scores.set_family_score(family, scored_family.score)
 
         # Read graph

@@ -31,6 +31,7 @@ def _import_laetitia_positions(window: Window):
     if directory is None:
         return
 
+    window.get_experiment().remove_all_particles()
     for file_name in os.listdir(directory):
         _import_file(window.get_experiment(), directory, file_name, z_offset)
 
@@ -86,8 +87,6 @@ def _import_file(experiment: Experiment, directory: str, file_name: str, z_offse
         return
 
     time_point_number = int(match.group(1))  # Safe, as this group contains only numbers
-    time_point = experiment.get_or_add_time_point(time_point_number)
-    experiment.remove_particles(time_point)  # Remove existing cells from this time point
 
     if file_name.endswith(".txt"):
         coords = numpy.loadtxt(path.join(directory, file_name))
@@ -98,7 +97,7 @@ def _import_file(experiment: Experiment, directory: str, file_name: str, z_offse
     for row in range(len(coords)):
         particle = Particle(coords[row, 2], coords[row, 1], (coords[row, 0] / Z_OVERSCALED) + z_offset)
 
-        experiment.particles.add(particle.with_time_point(time_point))
+        experiment.particles.add(particle.with_time_point_number(time_point_number))
 
 
 def _export_file(particles: AbstractSet[Particle], file_path: str, z_offset: int):

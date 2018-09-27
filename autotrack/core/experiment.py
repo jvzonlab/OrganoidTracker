@@ -42,24 +42,26 @@ class _CachedImageLoader(ImageLoader):
     def unwrap(self) -> ImageLoader:
         return self._internal
 
+    def get_first_time_point(self) -> Optional[int]:
+        return self._internal.get_first_time_point()
+
+    def get_last_time_point(self) -> Optional[int]:
+        return self._internal.get_last_time_point()
+
 
 class Experiment:
     """A complete experiment, with many stacks of images collected over time. This class ultimately collects all
     details of the experiment."""
 
-    _time_points: Dict[str, TimePoint]
     _particles: ParticleCollection
     _scores: ScoresCollection
     _particle_links: Optional[Graph] = None
     _particle_links_baseline: Optional[Graph] = None # Links that are assumed to be correct
-    _first_time_point_number: Optional[int] = None
-    _last_time_point_number: Optional[int] = None
     _image_loader: ImageLoader = ImageLoader()
 
     _name: Name
 
     def __init__(self):
-        self._time_points = {}
         self._name = Name()
         self._particles = ParticleCollection()
         self._scores = ScoresCollection()
@@ -120,35 +122,33 @@ class Experiment:
 
     def get_time_point(self, time_point_number: int) -> TimePoint:
         """Gets the time point with the given number. Throws KeyError if no such time point exists."""
-        return self._time_points[str(time_point_number)]
-
-    def get_or_add_time_point(self, time_point_number: int) -> TimePoint:
-        """Gets the time point with the given number. Creates the time point if it doesn't exist."""
-        if time_point_number is None:
-            raise ValueError("time_point_number is None")
-        try:
-            return self._time_points[str(time_point_number)]
-        except KeyError:
-            time_point = TimePoint(time_point_number)
-            self._time_points[str(time_point_number)] = time_point
-            self._update_time_point_statistics(time_point_number)
-            return time_point
-
-    def _update_time_point_statistics(self, new_time_point_number: int):
-        if self._first_time_point_number is None or self._first_time_point_number > new_time_point_number:
-            self._first_time_point_number = new_time_point_number
-        if self._last_time_point_number is None or self._last_time_point_number < new_time_point_number:
-            self._last_time_point_number = new_time_point_number
+        first = self.first_time_point_number()
+        last = self.last_time_point_number()
+        if first is None or last is None:
+            raise KeyError("No time points have been loaded yet")
+        if time_point_number < first or time_point_number > last:
+            raise KeyError("Time point out of bounds (was " + str(time_point_number) + ")")
+        return TimePoint(time_point_number)
 
     def first_time_point_number(self):
-        if self._first_time_point_number is None:
-            raise ValueError("No time_points exist")
-        return self._first_time_point_number
+        """Gets the first time point of the experiment where there is data (images and/or particles)."""
+        image_first = self._image_loader.get_first_time_point()
+        particle_first = self._particles.get_first_time_point()
+        if image_first is None:
+            return particle_first
+        if particle_first is None:
+            return image_first
+        return min(particle_first, image_first)
 
     def last_time_point_number(self):
-        if self._last_time_point_number is None:
-            raise ValueError("No time_points exist")
-        return self._last_time_point_number
+        """Gets the last time point (inclusive) of the experiment where there is data (images and/or particles)."""
+        image_last = self._image_loader.get_last_time_point()
+        particle_last = self._particles.get_last_time_point()
+        if image_last is None:
+            return particle_last
+        if particle_last is None:
+            return image_last
+        return max(particle_last, image_last)
 
     def get_previous_time_point(self, time_point: TimePoint) -> TimePoint:
         """Gets the time point directly before the given time point. Throws KeyError if the given time point is the last
@@ -175,6 +175,9 @@ class Experiment:
     def time_points(self) -> Iterable[TimePoint]:
         first_number = self.first_time_point_number()
         last_number = self.last_time_point_number()
+        if first_number is None or last_number is None:
+            return []
+
         current_number = first_number
         while current_number <= last_number:
             yield self.get_time_point(current_number)
