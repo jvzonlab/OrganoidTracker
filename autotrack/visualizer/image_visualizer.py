@@ -88,7 +88,7 @@ class AbstractImageVisualizer(Visualizer):
     def _guess_image_size(self, time_point):
         images_for_size = self._time_point_images
         if images_for_size is None:
-            images_for_size = self.load_image(time_point, False)
+            images_for_size = self.load_image(time_point, show_next_time_point=False)
         size = images_for_size.shape if images_for_size is not None else self.DEFAULT_SIZE
         return size
 
@@ -121,9 +121,6 @@ class AbstractImageVisualizer(Visualizer):
     def _draw_particles(self) -> int:
         """Draws particles and links. Returns the amount of non-equal links in the image"""
 
-        # Draw particles
-        self._draw_particles_of_time_point(self._time_point)
-
         # Next time point
         can_show_other_time_points = self._must_show_other_time_points() and (
                                          self._experiment.particle_links() is not None
@@ -142,6 +139,9 @@ class AbstractImageVisualizer(Visualizer):
                                                    color='blue')
             except KeyError:
                 pass  # There is no previous time point, ignore
+
+        # Current time point
+        self._draw_particles_of_time_point(self._time_point)
 
         # Draw links
         errors = 0
@@ -308,7 +308,7 @@ class AbstractImageVisualizer(Visualizer):
     def _move_to_time(self, new_time_point_number: int) -> bool:
         try:
             self._time_point, self._time_point_images = self._load_time_point(new_time_point_number)
-            self._move_in_z(0)  # Caps z to allowable range
+            self._clamp_z()  # Caps z to allowable range
             self.draw_view()
             self.update_status("Moved to time point " + str(new_time_point_number) + "!")
             return True
@@ -325,7 +325,7 @@ class AbstractImageVisualizer(Visualizer):
         new_time_point_number = old_time_point_number + dt
         try:
             self._time_point, self._time_point_images = self._load_time_point(new_time_point_number)
-            self._move_in_z(0)  # Caps z to allowable range
+            self._clamp_z()  # Caps z to allowable range
             self.draw_view()
             self.update_status(self.get_default_status())
         except KeyError:

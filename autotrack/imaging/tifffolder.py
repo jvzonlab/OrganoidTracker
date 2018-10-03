@@ -55,7 +55,7 @@ class TiffImageLoader(ImageLoader):
         self._min_time_point = min_time_point
         self._max_time_point = max_time_point
 
-    def load_3d_image(self, time_point: TimePoint) -> Optional[ndarray]:
+    def get_image_stack(self, time_point: TimePoint) -> Optional[ndarray]:
         if time_point.time_point_number() < self._min_time_point or\
                 time_point.time_point_number() > self._max_time_point:
             return None

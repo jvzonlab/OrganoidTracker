@@ -1,11 +1,12 @@
 import dpct
 from pprint import pprint
-from typing import Dict, List
+from typing import Dict, List, Iterable, Optional
 
 from networkx import Graph
 
 from autotrack.core.experiment import Experiment
-from autotrack.core.particles import Particle
+from autotrack.core.particles import Particle, ParticleCollection
+from autotrack.core.score import ScoresCollection, Score, ScoredFamily
 
 
 class _ParticleToId:
@@ -51,35 +52,41 @@ def _to_graph(particle_ids: _ParticleToId, results: Dict) -> Graph:
     return graph
 
 
-def run(experiment: Experiment, starting_links: Graph):
+def run(particles: ParticleCollection, starting_links: Graph, scores: ScoresCollection):
     particle_ids = _ParticleToId()
     weights = {"weights": [
         1,  # multiplier for linking features?
         100,  # multiplier for detection of a cell - the higher, the more expensive to omit a cell
-        1,  # multiplier for division features - the higher, the cheaper it is to create a cell division
+        50,  # multiplier for division features - the higher, the cheaper it is to create a cell division
         100,  # multiplier for appearance features - the higher, the more expensive it is to create a cell out of nothing
-        100]}  # multiplier for disappearance - the higher, the more expensive an end-of-lineage is
-    input = _create_dpct_graph(particle_ids, starting_links,
-                               experiment.first_time_point_number(), experiment.last_time_point_number())
+        100]}  # multipliler for disappearance - the higher, the more expensive an end-of-lineage is
+    input = _create_dpct_graph(particle_ids, starting_links, scores,
+                               particles.get_first_time_point(), particles.get_last_time_point())
     results = dpct.trackFlowBased(input, weights)
     return _to_graph(particle_ids, results)
 
 
-def _create_dpct_graph(particle_ids: _ParticleToId, starting_links: Graph, min_time_point: int, max_time_point: int) -> Dict:
+def _create_dpct_graph(particle_ids: _ParticleToId, starting_links: Graph, scores: ScoresCollection,
+                       min_time_point: int, max_time_point: int) -> Dict:
     segmentation_hypotheses = []
     particle: Particle
     for particle in starting_links.nodes:
         appearance_penalty = 1 if particle.time_point_number() > min_time_point else 0
         disappearance_penalty = 1 if particle.time_point_number() < max_time_point else 0
 
-        segmentation_hypotheses.append({
+        map = {
             "id": particle_ids.id(particle),
             "features": [[1.0], [0.0]],
-            "divisionFeatures": [[0.0], [-1.0]],
             "appearanceFeatures": [[0], [appearance_penalty]],
             "disappearanceFeatures": [[0], [disappearance_penalty]],
             "timestep": [particle.time_point_number(), particle.time_point_number()]
-        })
+        }
+
+        # Add division score
+        division_score = _max_score(scores.of_mother(particle))
+        if not division_score.is_unlikely_mother():
+            map["divisionFeatures"] = [[0], [-division_score.total()]]
+        segmentation_hypotheses.append(map)
 
     linking_hypotheses = []
     particle1: Particle
@@ -89,11 +96,12 @@ def _create_dpct_graph(particle_ids: _ParticleToId, starting_links: Graph, min_t
         if particle1.time_point_number() > particle2.time_point_number():
             particle1, particle2 = particle2, particle1
 
-        distance_squared = particle1.distance_squared(particle2)
+        link_penalty = particle1.distance_squared(particle2)
+        mother_score = _max_score(scores.of_mother(particle1))
         linking_hypotheses.append({
             "src": particle_ids.id(particle1),
             "dest": particle_ids.id(particle2),
-            "features": [[0], [distance_squared]]
+            "features": [[0], [link_penalty]]
         })
 
     return {
@@ -105,3 +113,21 @@ def _create_dpct_graph(particle_ids: _ParticleToId, starting_links: Graph, min_t
         "linkingHypotheses": linking_hypotheses
     }
 
+
+class _ZeroScore(Score):
+    def __setattr__(self, key, value):
+        raise RuntimeError("Cannot change the zero score")
+
+
+_ZERO_SCORE = _ZeroScore()
+
+
+def _max_score(scored_family: Iterable[ScoredFamily]) -> Score:
+    """Returns the highest score from the collection, or zero if the collection is empty."""
+    max_score = None
+    for family in scored_family:
+        if max_score is None or family.score.total() > max_score.total():
+            max_score = family.score
+    if max_score is None:
+        return _ZERO_SCORE
+    return max_score

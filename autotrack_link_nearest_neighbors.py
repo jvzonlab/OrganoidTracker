@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-"""Simple nearest-neighbor linking: every cell is linked to the nearest cell in the previous image. Physical and biological
-constraints are not taken into account.
+"""Simple nearest-neighbor linking: every cell is linked to the nearest cell in the previous image. Physical and
+biological constraints are not taken into account. The visualizer shows not only the nearest neighbors, but also other
+possible links: those alternative links are shown as dotted lines.
 """
 from autotrack import gui
 from autotrack.config import ConfigFile

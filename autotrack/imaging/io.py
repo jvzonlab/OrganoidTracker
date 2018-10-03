@@ -11,7 +11,7 @@ from pandas import DataFrame
 from autotrack.core.experiment import Experiment
 from autotrack.core import shape
 from autotrack.core.particles import Particle
-from autotrack.core.score import ScoredFamily, Score, Family
+from autotrack.core.score import ScoredFamily, Score, Family, ScoresCollection
 
 
 def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: str,
@@ -113,7 +113,7 @@ def save_positions_and_shapes_to_json(experiment: Experiment, json_file_name: st
         json.dump(data_structure, handle, cls=_MyEncoder)
 
 
-def save_links_and_scores_to_json(experiment: Experiment, links: Graph, json_file_name: str):
+def save_links_and_scores_to_json(links: Graph, scores: ScoresCollection, json_file_name: str):
     """1. Saves particle linking data to a JSON file. File follows the d3.js format, like the example here:
         http://bl.ocks.org/mbostock/4062045
     2. Saves mother scores to the same JSON file.
@@ -121,9 +121,8 @@ def save_links_and_scores_to_json(experiment: Experiment, links: Graph, json_fil
     links_for_json = node_link_data(links)
 
     families = []
-    for time_point in experiment.time_points():
-        for scored_family in experiment.scores.of_time_point(time_point):
-            families.append(scored_family)
+    for scored_family in scores.all_scored_families():
+        families.append(scored_family)
 
     final_data = {"links": links_for_json, "family_scores": families}
     _create_parent_directories(json_file_name)
@@ -141,15 +140,22 @@ def save_dataframe_to_csv(data_frame: DataFrame, csv_file_name: str):
         raise e
 
 
-def load_links_from_json(json_file_name: str) -> Graph:
+def load_links_from_json(json_file_name: str, min_time_point: int = 0, max_time_point: int = 5000) -> Graph:
+    """Loads all links from a file. Links that extend outside the allowed time points are removed."""
     with open(json_file_name) as handle:
         data = json.load(handle, object_hook=_my_decoder)
         if data is None:
             raise ValueError
         if "directed" not in data:
             data = data["links"]
-        graph = node_link_graph(data)
-        return graph
+
+        data["nodes"] = [entry for entry in data["nodes"]
+                         if min_time_point <= entry["id"].time_point_number() <= max_time_point]
+        data["links"] = [entry for entry in data["links"]
+                         if min_time_point <= entry["source"].time_point_number() <= max_time_point
+                         and min_time_point <= entry["target"].time_point_number() <= max_time_point]
+
+        return node_link_graph(data)
 
 
 def _create_parent_directories(file_name: str):

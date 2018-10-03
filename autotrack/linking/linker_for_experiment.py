@@ -54,7 +54,7 @@ def _add_nodes(graph: Graph, experiment: Experiment, time_point: TimePoint) -> N
 def _add_nearest_edges(graph: Graph, particles: ParticleCollection, time_point_previous: TimePoint, time_point_current: TimePoint, tolerance: float):
     """Adds edges pointing towards previous time point, making the shortest one the preferred."""
     for particle in particles.of_time_point(time_point_current):
-        nearby_list = find_nearest_particles(particles, time_point_previous, particle, tolerance)
+        nearby_list = find_nearest_particles(particles, time_point_previous, particle, tolerance, max_amount=5)
         preferred = True
         for nearby_particle in nearby_list:
             graph.add_edge(particle, nearby_particle, pref=preferred)
@@ -64,7 +64,7 @@ def _add_nearest_edges(graph: Graph, particles: ParticleCollection, time_point_p
 def _add_nearest_edges_extra(graph: Graph, particles: ParticleCollection, time_point_current: TimePoint, time_point_next: TimePoint, tolerance: float):
     """Adds edges to the next time point, which is useful if _add_edges missed some possible links."""
     for particle in particles.of_time_point(time_point_current):
-        nearby_list = find_nearest_particles(particles, time_point_next, particle, tolerance)
+        nearby_list = find_nearest_particles(particles, time_point_next, particle, tolerance, max_amount=5)
         for nearby_particle in nearby_list:
             if not graph.has_edge(particle, nearby_particle):
                 graph.add_edge(particle, nearby_particle, pref=False)

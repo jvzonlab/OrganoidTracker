@@ -2,8 +2,9 @@ import numpy
 from numpy import ndarray
 
 from autotrack.core.experiment import Experiment
+from autotrack.core.image_loader import ImageLoader
 from autotrack.core.particles import Particle, ParticleCollection
-from autotrack.core.score import Score
+from autotrack.core.score import Score, Family
 from autotrack.imaging import angles, normalized_image
 from autotrack.imaging.normalized_image import ImageEdgeError
 from autotrack.linking.scoring_system import MotherScoringSystem
@@ -16,12 +17,12 @@ class RationalScoringSystem(MotherScoringSystem):
     def __init__(self, mitotic_radius: int):
         self.mitotic_radius = mitotic_radius
 
-    def calculate(self, experiment: Experiment, mother: Particle, daughter1: Particle,
-                  daughter2: Particle) -> Score:
-        mother_time_point = experiment.get_time_point(mother.time_point_number())
-        daughter_time_point = experiment.get_time_point(daughter1.time_point_number())
-        mother_image_stack = experiment.get_image_stack(mother_time_point)
-        daughter_image_stack = experiment.get_image_stack(daughter_time_point)
+    def calculate(self, image_loader: ImageLoader, particle_shapes: ParticleCollection, family: Family) -> Score:
+        mother = family.mother
+        daughter1, daughter2 = family.daughters
+
+        mother_image_stack = image_loader.get_image_stack(mother.time_point())
+        daughter_image_stack = image_loader.get_image_stack(daughter1.time_point())
 
         mother_image = _get_2d_image(mother_image_stack, mother)
         mother_image_next = _get_2d_image(daughter_image_stack, mother)
@@ -48,7 +49,7 @@ class RationalScoringSystem(MotherScoringSystem):
             score_daughter_intensities(score, daughter1_intensities, daughter2_intensities,
                                                 daughter1_intensities_prev, daughter2_intensities_prev)
             score_daughter_distances(score, mother, daughter1, daughter2)
-            score_using_daughter_shapes(score, experiment.particles, daughter1, daughter2)
+            score_using_daughter_shapes(score, particle_shapes, daughter1, daughter2)
             return score
         except ImageEdgeError:
             return Score()
@@ -114,7 +115,6 @@ def _score_daughter_sides(ellipse_angle: float, mother: Particle, daughter1: Par
 
 
 def score_using_daughter_shapes(score: Score, particles: ParticleCollection, daughter1: Particle, daughter2: Particle):
-    score.daughters_angles = 0
     score.daughters_volume = 0
 
     daughter1_shape = particles.get_shape(daughter1)
@@ -123,11 +123,11 @@ def score_using_daughter_shapes(score: Score, particles: ParticleCollection, dau
     if daughter1_shape.is_unknown() or daughter2_shape.is_unknown():
         return  # Too close to edge
 
-    # Find contours with largest areas
     volume1 = daughter1_shape.volume()
     volume2 = daughter2_shape.volume()
-    if min(volume1, volume2) / max(volume1, volume2) < 1/2:
-        score.daughters_volume = -1  # Size too dissimilar
+    score.daughters_volume = min(volume1, volume2) / max(volume1, volume2)
+    if score.daughters_volume < 0.75:
+        score.daughters_volume = 0  # Almost surely not two daughter cells
 
 
 def _get_2d_image(image_stack: ndarray, particle: Particle) -> ndarray:

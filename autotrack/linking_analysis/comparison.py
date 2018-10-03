@@ -10,9 +10,15 @@ from autotrack.linking_analysis import cell_death_finder
 
 
 def print_differences(experiment: Experiment):
-    _print_links_differences(experiment.particle_links_scratch(), experiment.particle_links())
-    _print_mother_differences(experiment.particle_links_scratch(), experiment.particle_links())
-    _print_death_differences(experiment)
+    scratch_links = experiment.particle_links_scratch().copy()
+    baseline_links = experiment.particle_links().copy()
+
+    scratch_links.add_nodes_from(baseline_links.nodes)
+    #baseline_links.add_nodes_from(scratch_links.nodes)
+
+    _print_links_differences(scratch_links, baseline_links)
+    _print_mother_differences(scratch_links, baseline_links)
+    _print_death_differences(scratch_links, baseline_links, experiment.last_time_point_number())
 
 
 def _print_mother_differences(automatic_links: Graph, baseline_links: Graph):
@@ -28,9 +34,9 @@ def _print_mother_differences(automatic_links: Graph, baseline_links: Graph):
     _print_cells([family.mother for family in made_up_families])
 
 
-def _print_death_differences(experiment: Experiment):
-    baseline_deaths = set(cell_death_finder.find_cell_deaths(experiment, experiment.particle_links()))
-    automatic_deaths = set(cell_death_finder.find_cell_deaths(experiment, experiment.particle_links_scratch()))
+def _print_death_differences(automatic_links: Graph, baseline_links: Graph, last_time_point_number: int):
+    baseline_deaths = set(cell_death_finder.find_cell_deaths(baseline_links, last_time_point_number))
+    automatic_deaths = set(cell_death_finder.find_cell_deaths(automatic_links, last_time_point_number))
 
     missed_deaths = baseline_deaths.difference(automatic_deaths)
     made_up_deaths = automatic_deaths.difference(baseline_deaths)

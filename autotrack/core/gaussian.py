@@ -54,9 +54,12 @@ class Gaussian:
         gauss = _3d_gauss(pos, self.a / 256, self.mu_x - offset_x, self.mu_y - offset_y, self.mu_z - offset_z,
                           self.cov_xx, self.cov_yy, self.cov_zz, self.cov_xy, self.cov_xz, self.cov_yz)
         cached_gaussian = gauss.reshape(size_z, size_y, size_x)
-        image[offset_z:max_z, offset_y:max_y, offset_x:max_x, 0] += cached_gaussian * color[0]
-        image[offset_z:max_z, offset_y:max_y, offset_x:max_x, 1] += cached_gaussian * color[1]
-        image[offset_z:max_z, offset_y:max_y, offset_x:max_x, 2] += cached_gaussian * color[2]
+        if color[0] > 0:
+            image[offset_z:max_z, offset_y:max_y, offset_x:max_x, 0] += cached_gaussian * color[0]
+        if color[1] > 0:
+            image[offset_z:max_z, offset_y:max_y, offset_x:max_x, 1] += cached_gaussian * color[1]
+        if color[2] > 0:
+            image[offset_z:max_z, offset_y:max_y, offset_x:max_x, 2] += cached_gaussian * color[2]
         return cached_gaussian
 
     def _draw_anything(self, image: ndarray, draw_function, cached_result: Optional[ndarray] = None):

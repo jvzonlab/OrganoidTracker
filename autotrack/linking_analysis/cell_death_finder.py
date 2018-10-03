@@ -6,9 +6,8 @@ from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
 
 
-def find_cell_deaths(experiment: Experiment, graph: Graph) -> Set[Particle]:
+def find_cell_deaths(graph: Graph, last_time_point_number: int) -> Set[Particle]:
     """Returns a set of all cells that appear as dead in the experiment."""
-    last_time_point_number = experiment.last_time_point_number()
     dead_cells = set()
 
     for particle in graph.nodes():

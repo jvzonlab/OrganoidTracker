@@ -19,6 +19,10 @@ def _get_differences(experiment: Experiment) -> List[Particle]:
     # pick a an arbitrary particle at the link, and add that to the list. (But only if the other particle was not
     # already in the list.)
     all_differences = set()
+
+    scratch_links.add_nodes_from(base_links)
+    base_links.add_nodes_from(scratch_links)
+
     only_in_scratch = networkx.difference(scratch_links, base_links)
     only_in_base = networkx.difference(base_links, scratch_links)
     for particle1, particle2 in only_in_scratch.edges():

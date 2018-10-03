@@ -7,7 +7,7 @@ from autotrack.config import ConfigFile
 from autotrack.imaging import tifffolder, io
 from autotrack.core.experiment import Experiment
 from autotrack.linking import linker_for_experiment, mother_finder
-from autotrack.linking import RationalScoringSystem
+from autotrack.linking.rational_scoring_system import RationalScoringSystem
 from autotrack.linking_analysis import scores_dataframe
 
 # PARAMETERS
@@ -24,20 +24,21 @@ _output_file = config.get_or_default("ouput_csv_file", "Automatic analysis/Links
 _mitotic_radius = int(config.get_or_default("mitotic_radius", str(3)))
 _shape_detection_radius = int(config.get_or_default("shape_detection_radius", str(16)))
 config.save_and_exit_if_changed()
-_baseline_links = io.load_links_from_json(_baseline_links_file)
 
 # END OF PARAMETERS
 
 print("Starting...")
 experiment = Experiment()
-io.load_positions_and_shapes_from_json(experiment, _positions_file)
+io.load_positions_and_shapes_from_json(experiment, _positions_file,
+                                       min_time_point=_min_time_point, max_time_point=_max_time_point)
+_baseline_links = io.load_links_from_json(_baseline_links_file,
+                                          min_time_point=_min_time_point, max_time_point=_max_time_point)
 experiment.particle_links(_baseline_links)
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
 
 print("Discovering possible links using greedy nearest-neighbor...")
-possible_links = linker_for_experiment.nearest_neighbor(experiment, tolerance=2,
-                                                        min_time_point=_min_time_point, max_time_point=_max_time_point)
+possible_links = linker_for_experiment.nearest_neighbor(experiment, tolerance=2)
 experiment.particle_links_scratch(possible_links)
 
 print("Scoring all possible mothers")

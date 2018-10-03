@@ -5,7 +5,11 @@ from tkinter import StringVar, ttk
 from tkinter.font import Font
 from typing import List, Dict, Any, Optional, Iterable
 
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+try:
+    from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
+except ImportError:
+    from matplotlib.backends.backend_tkagg import NavigationToolbar2TkAgg as NavigationToolbar2Tk
 from matplotlib.figure import Figure
 
 from autotrack.core.experiment import Experiment

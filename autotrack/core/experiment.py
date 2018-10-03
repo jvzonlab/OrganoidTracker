@@ -25,21 +25,21 @@ class _CachedImageLoader(ImageLoader):
             self._image_cache.pop(0)
         self._image_cache.append((time_point_number, image))
 
-    def load_3d_image(self, time_point: TimePoint) -> Optional[ndarray]:
+    def get_image_stack(self, time_point: TimePoint) -> Optional[ndarray]:
         time_point_number = time_point.time_point_number()
         for entry in self._image_cache:
             if entry[0] == time_point_number:
                 return entry[1]
 
         # Cache miss
-        image = self._internal.load_3d_image(time_point)
+        image = self._internal.get_image_stack(time_point)
         self._add_to_cache(time_point_number, image)
         return image
 
     def get_resolution(self):
         return self._internal.get_resolution()
 
-    def unwrap(self) -> ImageLoader:
+    def uncached(self) -> ImageLoader:
         return self._internal
 
     def get_first_time_point(self) -> Optional[int]:
@@ -54,7 +54,7 @@ class Experiment:
     details of the experiment."""
 
     _particles: ParticleCollection
-    _scores: ScoresCollection
+    scores: ScoresCollection
     _particle_links: Optional[Graph] = None
     _particle_links_baseline: Optional[Graph] = None # Links that are assumed to be correct
     _image_loader: ImageLoader = ImageLoader()
@@ -64,7 +64,7 @@ class Experiment:
     def __init__(self):
         self._name = Name()
         self._particles = ParticleCollection()
-        self._scores = ScoresCollection()
+        self.scores = ScoresCollection()
 
     def add_particle_raw(self, x: float, y: float, z: float, time_point_number: int):
         """Adds a single particle to the experiment, creating the time point if it does not exist yet."""
@@ -186,13 +186,13 @@ class Experiment:
     def image_loader(self, image_loader: Optional[ImageLoader] = None):
         """Gets/sets the image loader."""
         if image_loader is not None:
-            self._image_loader = _CachedImageLoader(image_loader)
+            self._image_loader = _CachedImageLoader(image_loader.uncached())
             return image_loader
-        return self._image_loader.unwrap()  # The single unwrap call removes the cache
+        return self._image_loader
 
     def get_image_stack(self, time_point: TimePoint) -> Optional[ndarray]:
         """Gets a stack of all images for a time point, one for every z layer. Returns None if there is no image."""
-        return self._image_loader.load_3d_image(time_point)
+        return self._image_loader.get_image_stack(time_point)
 
     @property
     def particles(self) -> ParticleCollection:
@@ -203,8 +203,3 @@ class Experiment:
     def name(self) -> Name:
         # Don't allow to replace the Name object
         return self._name
-
-    @property
-    def scores(self) -> ScoresCollection:
-        # Don't allow to replace the scores object
-        return self._scores

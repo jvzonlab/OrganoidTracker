@@ -31,7 +31,8 @@ print("Starting...")
 experiment = Experiment()
 io.load_positions_and_shapes_from_json(experiment, _positions_file)
 io.load_links_and_scores_from_json(experiment, _automatic_links_file, links_are_scratch=True)
-experiment.particle_links(io.load_links_from_json(_baseline_links_file))
+experiment.particle_links(io.load_links_from_json(_baseline_links_file,
+                                                  min_time_point=_min_time_point, max_time_point=_max_time_point))
 
 comparison.print_differences(experiment)
 

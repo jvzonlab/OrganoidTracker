@@ -15,7 +15,7 @@ class ImageResolution:
 class ImageLoader:
     """Responsible for loading all images in an experiment."""
 
-    def load_3d_image(self, time_point: TimePoint) -> Optional[ndarray]:
+    def get_image_stack(self, time_point: TimePoint) -> Optional[ndarray]:
         """Loads an image, usually from disk. Returns None if there is no image for this time point."""
         return None
 
@@ -23,9 +23,9 @@ class ImageLoader:
         """Gets the resolution of an image, or raises ValueError if unknown."""
         raise ValueError()
 
-    def unwrap(self) -> "ImageLoader":
-        """If this loader is a wrapper around another loader, this method returns one loader below. Otherwise, it
-        returns self.
+    def uncached(self) -> "ImageLoader":
+        """If this loader is a caching wrapper around another loader, this method returns one loader below. Otherwise,
+        it returns self.
         """
         return self
 

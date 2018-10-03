@@ -34,19 +34,25 @@ class _NearestParticles:
             if its_distance_squared > max_allowed_distance_squared:
                 del self._nearest[particle]
 
-    def get_particles(self):
+    def get_particles(self, max_amount: int):
         """Gets the found particles."""
         items = sorted(self._nearest.items(), key=operator.itemgetter(1))
-        return [item[0] for item in items]
+        particles = [item[0] for item in items]
+        if len(particles) > max_amount:
+            return particles[0:max_amount]
+        return particles
 
 
-def find_nearest_particles(particles: ParticleCollection, search_in: TimePoint, around: Particle, tolerance: float):
+def find_nearest_particles(particles: ParticleCollection, search_in: TimePoint, around: Particle, tolerance: float,
+                           max_amount: int = 1000):
     """Finds the particles nearest to the given particle.
 
     - search_in is the time_point to search in
     - around is the particle to search around
     - tolerance is a number that influences how much particles other than the nearest are included. A tolerance of 1.05
       makes particles that are 5% further than the nearest also included.
+    - max_amount if the maximum amount of returned particles. If there are more particles within the tolerance, then
+      only the nearest particles are returned.
 
     Returns a list of the nearest particles, ordered from closest to furthest
     """
@@ -55,5 +61,5 @@ def find_nearest_particles(particles: ParticleCollection, search_in: TimePoint, 
     nearest_particles = _NearestParticles(tolerance)
     for particle in particles.of_time_point(search_in):
         nearest_particles.add_candidate(particle, particle.distance_squared(around, z_factor=3))
-    return nearest_particles.get_particles()
+    return nearest_particles.get_particles(max_amount)
 

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
+from os import path
+
 from autotrack import gui
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
 from autotrack.imaging import tifffolder, io
-from autotrack.linking import linker_for_experiment, dpct_linking
+from autotrack.linking import linker_for_experiment, dpct_linking, mother_finder
 from autotrack.linking.rational_scoring_system import RationalScoringSystem
 from autotrack.visualizer import image_visualizer
 
@@ -18,6 +20,7 @@ _min_time_point = int(config.get_or_default("min_time_point", str(1), store_in_d
 _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_in_defaults=True))
 _positions_file = config.get_or_default("positions_file", "Automatic analysis/Positions/Manual.json")
 _links_output_file = config.get_or_default("links_output_file", "Automatic analysis/Links/Smart nearest neighbor.json")
+_baseline_links = config.get_or_default("baseline_links", "Automatic analysis/Links/Manual.json")
 _mitotic_radius = int(config.get_or_default("mitotic_radius", str(3)))
 _flow_detection_radius = int(config.get_or_default("flow_detection_radius", str(50)))
 config.save_and_exit_if_changed()
@@ -32,19 +35,25 @@ tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
 print("Performing nearest-neighbor linking...")
 possible_links = linker_for_experiment.nearest_neighbor(experiment, tolerance=2)
-print("Deciding on what links to use...")
+print("Calculating scores of possible mothers...")
 score_system = RationalScoringSystem(_mitotic_radius)
-link_result = dpct_linking.run(experiment, possible_links)
+scores = mother_finder.calculates_scores(experiment.image_loader(), experiment.particles, possible_links, score_system)
+print("Deciding on what links to use...")
+link_result = dpct_linking.run(experiment.particles, possible_links, scores)
 
-experiment.remove_all_particles()
-for particle in link_result.nodes:
-    experiment.particles.add(particle)
-experiment.particle_links(link_result)
 
-image_visualizer.show(experiment)
+
+print("Writing results to file...")
+io.save_links_and_scores_to_json(link_result, scores, _links_output_file)
+
 print("Done!")
+# experiment.remove_all_particles()
+# for particle in link_result.nodes:
+#     experiment.particles.add(particle)
+if path.exists(_baseline_links):
+    experiment.particle_links(io.load_links_from_json(_baseline_links,
+                                                      min_time_point=_min_time_point, max_time_point=_max_time_point))
+experiment.particle_links_scratch(link_result)
+experiment.scores = scores
+image_visualizer.show(experiment)
 gui.mainloop()
-
-#print("Writing results to file...")
-#io.save_links_and_scores_to_json(experiment, link_result, _links_output_file)
-
