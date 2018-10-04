@@ -1,6 +1,5 @@
 from typing import List, Optional, Dict, Any
 
-import matplotlib.pyplot as plt
 from matplotlib.backend_bases import KeyEvent
 from networkx import Graph
 
@@ -74,7 +73,6 @@ class ParticleListVisualizer(Visualizer):
                 self._window.set_figure_title(self.get_message_no_particles())
             else:
                 self._window.set_figure_title(self.get_message_press_right())
-            plt.draw()
             return
 
         self._zoom_to_cell()
