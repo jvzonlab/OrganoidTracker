@@ -29,7 +29,7 @@ def _get_differences(experiment: Experiment) -> List[Particle]:
         if not particle2 in all_differences:
             all_differences.add(particle1)
     for particle1, particle2 in only_in_base.edges():
-        if not particle2 in all_differences:
+        if particle2 not in all_differences:
             all_differences.add(particle1)
     return list(all_differences)
 

@@ -1,4 +1,5 @@
 import dpct
+import math
 from pprint import pprint
 from typing import Dict, List, Iterable, Optional
 
@@ -56,18 +57,25 @@ def run(particles: ParticleCollection, starting_links: Graph, scores: ScoresColl
     particle_ids = _ParticleToId()
     weights = {"weights": [
         1,  # multiplier for linking features?
-        100,  # multiplier for detection of a cell - the higher, the more expensive to omit a cell
-        50,  # multiplier for division features - the higher, the cheaper it is to create a cell division
-        100,  # multiplier for appearance features - the higher, the more expensive it is to create a cell out of nothing
-        100]}  # multipliler for disappearance - the higher, the more expensive an end-of-lineage is
-    input = _create_dpct_graph(particle_ids, starting_links, scores,
+        150,  # multiplier for detection of a cell - the higher, the more expensive to omit a cell
+        30,  # multiplier for division features - the higher, the cheaper it is to create a cell division
+        150,  # multiplier for appearance features - the higher, the more expensive it is to create a cell out of nothing
+        100]}  # multiplier for disappearance - the higher, the more expensive an end-of-lineage is
+    input = _create_dpct_graph(particle_ids, starting_links, scores, particles,
                                particles.get_first_time_point(), particles.get_last_time_point())
     results = dpct.trackFlowBased(input, weights)
     return _to_graph(particle_ids, results)
 
 
+def _scores_involving(daughter: Particle, scores: Iterable[ScoredFamily]) -> Iterable[ScoredFamily]:
+    """Gets all scores where the given particle plays the role as a daughter in the given score."""
+    for score in scores:
+        if daughter in score.family.daughters:
+            yield score
+
+
 def _create_dpct_graph(particle_ids: _ParticleToId, starting_links: Graph, scores: ScoresCollection,
-                       min_time_point: int, max_time_point: int) -> Dict:
+                       shapes: ParticleCollection, min_time_point: int, max_time_point: int) -> Dict:
     segmentation_hypotheses = []
     particle: Particle
     for particle in starting_links.nodes:
@@ -76,9 +84,9 @@ def _create_dpct_graph(particle_ids: _ParticleToId, starting_links: Graph, score
 
         map = {
             "id": particle_ids.id(particle),
-            "features": [[1.0], [0.0]],
-            "appearanceFeatures": [[0], [appearance_penalty]],
-            "disappearanceFeatures": [[0], [disappearance_penalty]],
+            "features": [[1.0], [0.0]],  # Assigning a detection to zero cells costs 1, using it is free
+            "appearanceFeatures": [[0], [appearance_penalty]],  # Using an appearance is expensive
+            "disappearanceFeatures": [[0], [disappearance_penalty]],  # Using a dissappearance is expensive
             "timestep": [particle.time_point_number(), particle.time_point_number()]
         }
 
@@ -96,12 +104,20 @@ def _create_dpct_graph(particle_ids: _ParticleToId, starting_links: Graph, score
         if particle1.time_point_number() > particle2.time_point_number():
             particle1, particle2 = particle2, particle1
 
+        volume1, volume2 = shapes.get_shape(particle1).volume(), shapes.get_shape(particle2).volume()
         link_penalty = particle1.distance_squared(particle2)
+
         mother_score = _max_score(scores.of_mother(particle1))
+        if mother_score.is_unlikely_mother():
+            link_penalty += math.sqrt(abs(volume1 - volume2))
+        else:
+            link_penalty /= 10
         linking_hypotheses.append({
             "src": particle_ids.id(particle1),
             "dest": particle_ids.id(particle2),
-            "features": [[0], [link_penalty]]
+            "features": [[0],  # Sending zero cells through the link costs nothing
+                         [link_penalty]  # Sending one cell through the link costs this
+                         ]
         })
 
     return {

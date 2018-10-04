@@ -96,8 +96,10 @@ def score_mother_intensities(score: Score, mother_intensities: ndarray, mother_i
     max_value_next = numpy.max(mother_intensities_next)
     if max_value / (max_value_next + 0.0001) > 2:  # +0.0001 protects against division by zero
         score.mother_intensity_delta = 1
-    else:
+    elif max_value / (max_value_next + 0.0001) > 1.5:
         score.mother_intensity_delta = 0
+    else:  # Intensity was almost constant over time (or even decreased), surely not a mother
+        score.mother_intensity_delta = -1
 
 
 def _score_daughter_sides(ellipse_angle: float, mother: Particle, daughter1: Particle,

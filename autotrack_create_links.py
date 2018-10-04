@@ -47,6 +47,7 @@ print("Writing results to file...")
 io.save_links_and_scores_to_json(link_result, scores, _links_output_file)
 
 print("Done!")
+exit()
 # experiment.remove_all_particles()
 # for particle in link_result.nodes:
 #     experiment.particles.add(particle)
