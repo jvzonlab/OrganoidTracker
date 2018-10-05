@@ -1,3 +1,4 @@
+import math
 from typing import Optional, List, Tuple
 
 import numpy
@@ -42,12 +43,12 @@ class Gaussian:
         if self.cov_xx < 0 or self.cov_yy < 0 or self.cov_zz < 0:
             return
 
-        offset_x = max(0, int(self.mu_x - 3 * self.cov_xx))
-        offset_y = max(0, int(self.mu_y - 3 * self.cov_yy))
-        offset_z = max(0, int(self.mu_z - 3 * self.cov_zz))
-        max_x = min(image.shape[2], int(self.mu_x + 3 * self.cov_xx))
-        max_y = min(image.shape[1], int(self.mu_y + 3 * self.cov_yy))
-        max_z = min(image.shape[0], int(self.mu_z + 3 * self.cov_zz))
+        offset_x = max(0, int(self.mu_x - 3 * math.sqrt(self.cov_xx)))
+        offset_y = max(0, int(self.mu_y - 3 * math.sqrt(self.cov_yy)))
+        offset_z = max(0, int(self.mu_z - 3 * math.sqrt(self.cov_zz)))
+        max_x = min(image.shape[2], int(self.mu_x + 3 * math.sqrt(self.cov_xx)))
+        max_y = min(image.shape[1], int(self.mu_y + 3 * math.sqrt(self.cov_yy)))
+        max_z = min(image.shape[0], int(self.mu_z + 3 * math.sqrt(self.cov_zz)))
 
         size_x, size_y, size_z = max_x - offset_x, max_y - offset_y, max_z - offset_z
         pos = _get_positions(size_x, size_y, size_z)
@@ -69,12 +70,12 @@ class Gaussian:
                 or self.mu_z < 0 or self.mu_z > image.shape[0]:
             return  # All invalid Gaussians
 
-        offset_x = max(0, int(self.mu_x - 3 * self.cov_xx))
-        offset_y = max(0, int(self.mu_y - 3 * self.cov_yy))
-        offset_z = max(0, int(self.mu_z - 3 * self.cov_zz))
-        max_x = min(image.shape[2], int(self.mu_x + 3 * self.cov_xx + 1))
-        max_y = min(image.shape[1], int(self.mu_y + 3 * self.cov_yy + 1))
-        max_z = min(image.shape[0], int(self.mu_z + 3 * self.cov_zz + 1))
+        offset_x = max(0, int(self.mu_x - 3 * math.sqrt(self.cov_xx)))
+        offset_y = max(0, int(self.mu_y - 3 * math.sqrt(self.cov_yy)))
+        offset_z = max(0, int(self.mu_z - 3 * math.sqrt(self.cov_zz)))
+        max_x = min(image.shape[2], int(self.mu_x + 3 * math.sqrt(self.cov_xx)))
+        max_y = min(image.shape[1], int(self.mu_y + 3 * math.sqrt(self.cov_yy)))
+        max_z = min(image.shape[0], int(self.mu_z + 3 * math.sqrt(self.cov_zz)))
 
         if cached_result is None:
             # Need to calculate
@@ -130,7 +131,8 @@ class Gaussian:
 
 
 def _get_positions(xsize: int, ysize: int, zsize: int) -> ndarray:
-    """Creates a list of x/y/z positions: [[x1,y1,z1],[x2,y2,z2],...]. Every possible position in the image is returned."""
+    """Creates a list of x/y/z positions: [[x1,y1,z1],[x2,y2,z2],...]. Every possible position in the image is returned.
+    """
     x = numpy.arange(xsize)
     y = numpy.arange(ysize)
     z = numpy.arange(zsize)
