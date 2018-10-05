@@ -83,10 +83,13 @@ class _ParticlesAtTimePoint:
             return UnknownShape()
         return shape
 
-    def add_shaped_particle(self, particle: Particle, particle_shape: ParticleShape):
-        """Adds a particle to this time point. If the particle was already added, its shape is replaced. Throws
-        ValueError if the particle belongs to another time point. If the particle belongs to no time point, it is
-        attached to this time point."""
+    def add_particle(self, particle: Particle, particle_shape: Optional[ParticleShape]):
+        """Adds a particle to this time point. If the particle was already added, but a shape was provided, its shape is
+        replaced."""
+        if particle_shape is None:
+            if particle in self._particles:
+                return  # Don't overwrite known shape with an unknown shape.
+            particle_shape = UnknownShape()  # Don't use None as value in the dict
         self._particles[particle] = particle_shape
 
     def detach_particle(self, particle: Particle):
@@ -121,7 +124,7 @@ class ParticleCollection:
             del self._all_particles[time_point.time_point_number()]
             self._update_min_max_time_points_for_removal()
 
-    def add(self, particle: Particle, shape: ParticleShape = UnknownShape()):
+    def add(self, particle: Particle, shape: Optional[ParticleShape] = None):
         """Adds a particle, optionally with the given shape. The particle must have a time point specified."""
         time_point_number = particle.time_point_number()
         if time_point_number is None:
@@ -133,7 +136,7 @@ class ParticleCollection:
         if particles_at_time_point is None:
             particles_at_time_point = _ParticlesAtTimePoint()
             self._all_particles[time_point_number] = particles_at_time_point
-        particles_at_time_point.add_shaped_particle(particle, shape)
+        particles_at_time_point.add_particle(particle, shape)
 
     def _update_min_max_time_points_for_addition(self, new_time_point_number: int):
         """Bookkeeping: makes sure the min and max time points are updated when a new time point is added"""
