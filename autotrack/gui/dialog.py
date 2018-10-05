@@ -46,7 +46,10 @@ def prompt_save_file(title: str, file_types: List[Tuple[str, str]]) -> Optional[
         default_extension = default_extension[1:]
     else:
         default_extension = None
-    return _filedialog.asksaveasfilename(title=title, filetypes=file_types, defaultextension=default_extension)
+    file_name = _filedialog.asksaveasfilename(title=title, filetypes=file_types, defaultextension=default_extension)
+    if not file_name:
+        return None
+    return file_name
 
 
 def prompt_load_file(title: str, file_types: List[Tuple[str, str]]) -> Optional[str]:
