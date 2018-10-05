@@ -1,11 +1,8 @@
-
-import math
 from typing import Optional
 
+import cv2
 import numpy
 from numpy import ndarray
-import cv2
-import matplotlib.pyplot as plt
 
 
 class ImageDerivatives:

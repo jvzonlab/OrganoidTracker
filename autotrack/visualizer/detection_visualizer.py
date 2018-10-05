@@ -27,8 +27,6 @@ class DetectionVisualizer(AbstractImageVisualizer):
     gaussian_fit_smooth_size = 11
     watershed_transform_smooth_size = 25
 
-
-
     def __init__(self, window: Window, time_point_number: int, z: int, display_settings: DisplaySettings):
         display_settings.show_next_time_point = False
         display_settings.show_reconstruction = False
@@ -49,18 +47,22 @@ class DetectionVisualizer(AbstractImageVisualizer):
             "View/Show-Show original images (R)": self.refresh_view,
             "View/Exit-Exit this view (/exit)": self._show_main_view,
             "Threshold/Normal-Basic threshold": self._basic_threshold,
-            "Threshold/Normal-With watershed segmentation": self.async(self._get_watershedded_threshold, self._display_threshold),
+            "Threshold/Normal-With watershed segmentation": self.async(self._get_watershedded_threshold,
+                                                                       self._display_threshold),
             "Threshold/Normal-With iso-intensity curvature segmentation": self.async(self._get_advanced_threshold,
-                                                                         self._display_threshold),
-            "Threshold/Smoothed-Smoothed basic threshold": self.async(self._get_adaptive_smoothed_threshold, self._display_threshold),
+                                                                                     self._display_threshold),
+            "Threshold/Smoothed-Smoothed basic threshold": self.async(self._get_adaptive_smoothed_threshold,
+                                                                      self._display_threshold),
             "Detection/Default-Detect cells": self.async(self._get_detected_cells, self._display_watershed),
             "Detection/Default-Detect cells using existing points": self.async(self._get_detected_cells_using_particles,
-                                                              self._display_watershed),
+                                                                               self._display_watershed),
             "Detection/Default-Detect contours": self.async(self._get_detected_contours, self._display_threshold),
-            "Reconstruction/Default-Reconstruct smoothed threshold using existing points": self.async(self._get_reconstruction_of_basic_threshold,
-                                                                       self._display_watershed),
-            "Reconstruction/Default-Reconstruct cells using existing points": self.async(self._get_reconstruction_using_particles,
-                                                                       self._display_reconstruction)
+            "Reconstruction/Default-Reconstruct smoothed threshold using existing points": self.async(
+                self._get_reconstruction_of_basic_threshold,
+                self._display_watershed),
+            "Reconstruction/Default-Reconstruct cells using existing points": self.async(
+                self._get_reconstruction_using_particles,
+                self._display_reconstruction)
         }
 
     def _on_command(self, command: str):
@@ -155,7 +157,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
         images_smoothed = smoothing.get_smoothed(images, self.watershed_transform_smooth_size)
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
         thresholding.advanced_threshold(images, images_smoothed, threshold, self.threshold_block_size,
-                                        self.minimal_size, self._time_point.particles())
+                                        self.minimal_size, self._experiment.particles.of_time_point(self._time_point))
 
         distance_transform = numpy.empty_like(images, dtype=numpy.float64)
         watershedding.distance_transform(threshold, distance_transform, self.resolution)
@@ -167,7 +169,8 @@ class DetectionVisualizer(AbstractImageVisualizer):
         return watershed
 
     def _get_detected_cells_using_particles(self, return_intermediate: bool = False) -> Any:
-        if len(self._time_point.particles()) == 0:
+        particles = self._experiment.particles.of_time_point(self._time_point)
+        if len(particles) == 0:
             raise UserError("Failed to detect cells", "Cannot detect cells - no particle positions loaded.")
         images = self._get_8bit_images()
         if images is None:
@@ -178,7 +181,6 @@ class DetectionVisualizer(AbstractImageVisualizer):
         thresholding.advanced_threshold(images, images_smoothed, threshold, self.threshold_block_size, self.minimal_size)
 
         # Labelling, calculate distance to label
-        particles = self._time_point.particles()
         labels = numpy.empty_like(images, dtype=numpy.uint16)
         labels_count = len(particles)
         watershedding.create_labels(particles, labels)
@@ -225,7 +227,8 @@ class DetectionVisualizer(AbstractImageVisualizer):
         for gaussian in gaussians:
             if gaussian is None:
                 continue
-            self._time_point.add_particle(Particle(gaussian.mu_x, gaussian.mu_y, gaussian.mu_z))
+            self._experiment.add_particle(
+                Particle(gaussian.mu_x, gaussian.mu_y, gaussian.mu_z).with_time_point(self._time_point))
             color = colors[i % len(colors)]
             gaussian.draw_colored(canvas, color)
             i += 1
@@ -269,7 +272,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
         super()._on_key_press(event)
 
     def _print_missed_cells(self, watershed: ndarray):
-        particles = self._time_point.particles()
+        particles = self._experiment.particles.of_time_point(self._time_point)
         if len(particles) == 0:
             return
         errors = missed_cell_finder.find_undetected_particles(watershed, particles)
