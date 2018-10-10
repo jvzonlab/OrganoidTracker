@@ -68,11 +68,15 @@ def score_daughter_intensities(score: Score, daughter1_intensities: ndarray, dau
 
     # Daughter cells must have almost the same intensity
     score.daughters_intensity_difference = -abs(daughter1_average - daughter2_average) / 2
-    score.daughters_intensity_delta = 0
+    score.daughters_intensity_delta = 1
     if daughter1_average / (daughter1_average_prev + 0.0001) > 2:
         score.daughters_intensity_delta += 1
+    elif daughter1_average / (daughter1_average_prev + 0.0001) < 1:
+        score.daughters_intensity_delta -= 1
     if daughter2_average / (daughter2_average_prev + 0.0001) > 2:
         score.daughters_intensity_delta += 1
+    elif daughter2_average / (daughter2_average_prev + 0.0001) < 1:
+        score.daughters_intensity_delta -= 1
 
 
 def score_mother_intensities(score: Score, mother_intensities: ndarray, mother_intensities_next: ndarray):
@@ -87,7 +91,7 @@ def score_mother_intensities(score: Score, mother_intensities: ndarray, mother_i
     mean_value_next = numpy.nanmean(mother_intensities_next)
     if mean_value / (mean_value_next + 0.0001) > 2:  # +0.0001 protects against division by zero
         score.mother_intensity_delta = 1
-    elif mean_value / (mean_value_next + 0.0001) > 1.5:
+    elif mean_value / (mean_value_next + 0.0001) > 1.4:
         score.mother_intensity_delta = 0
     else:  # Intensity was almost constant over time (or even decreased), surely not a mother
         score.mother_intensity_delta = -1
