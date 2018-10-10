@@ -105,13 +105,12 @@ def _create_dpct_graph(particle_ids: _ParticleToId, starting_links: Graph, score
             particle1, particle2 = particle2, particle1
 
         volume1, volume2 = shapes.get_shape(particle1).volume(), shapes.get_shape(particle2).volume()
-        link_penalty = particle1.distance_squared(particle2)
+        link_penalty = math.sqrt(particle1.distance_squared(particle2))
+        link_penalty += abs(volume1 - volume2) ** (1 / 3)
 
         mother_score = _max_score(scores.of_mother(particle1))
-        if mother_score.is_unlikely_mother():
-            link_penalty += math.sqrt(abs(volume1 - volume2))
-        else:
-            link_penalty /= 10
+        if not mother_score.is_unlikely_mother():
+            link_penalty /= 2
         linking_hypotheses.append({
             "src": particle_ids.id(particle1),
             "dest": particle_ids.id(particle2),
