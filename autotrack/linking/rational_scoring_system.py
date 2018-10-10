@@ -15,10 +15,6 @@ class _ImageEdgeError(Exception):
 
 class RationalScoringSystem(MotherScoringSystem):
     """Rationally-designed score system."""
-    mitotic_radius: int  # Used to detect max/min intensity of a cell. Can be a few pixels, just to suppress noise
-
-    def __init__(self, mitotic_radius: int):
-        self.mitotic_radius = mitotic_radius
 
     def calculate(self, image_loader: ImageLoader, particle_shapes: ParticleCollection, family: Family) -> Score:
         mother = family.mother

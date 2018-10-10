@@ -21,7 +21,6 @@ _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_i
 _positions_file = config.get_or_default("positions_file", "Automatic analysis/Positions/Manual.json")
 _baseline_links_file = config.get_or_default("baseline_links_file", "Automatic analysis/Links/Manual.json")
 _output_file = config.get_or_default("ouput_csv_file", "Automatic analysis/Links/Scoring analysis.csv")
-_mitotic_radius = int(config.get_or_default("mitotic_radius", str(3)))
 _shape_detection_radius = int(config.get_or_default("shape_detection_radius", str(16)))
 config.save_and_exit_if_changed()
 
@@ -42,7 +41,7 @@ possible_links = linker_for_experiment.nearest_neighbor(experiment, tolerance=2)
 experiment.particle_links_scratch(possible_links)
 
 print("Scoring all possible mothers")
-scoring_system = RationalScoringSystem(_mitotic_radius)
+scoring_system = RationalScoringSystem()
 real_families = set(mother_finder.find_families(_baseline_links, warn_on_many_daughters=True))
 putative_families = mother_finder.find_families(possible_links, warn_on_many_daughters=False)
 dataframe = scores_dataframe.create(experiment, putative_families, scoring_system, real_families)
