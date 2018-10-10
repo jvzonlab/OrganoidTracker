@@ -1,4 +1,7 @@
+import matplotlib.pyplot
+
 import numpy
+import tifffile
 from numpy import ndarray
 
 from autotrack.core.image_loader import ImageLoader
@@ -40,7 +43,7 @@ class RationalScoringSystem(MotherScoringSystem):
             score_daughter_intensities(score, daughter1_intensities, daughter2_intensities,
                                        daughter1_intensities_prev, daughter2_intensities_prev)
             score_daughter_distances(score, mother, daughter1, daughter2)
-            score_using_daughter_shapes(score, particle_shapes, daughter1, daughter2)
+            score_using_volumes(score, particle_shapes, mother, daughter1, daughter2)
             return score
         except _ImageEdgeError:
             print("No score for " + str(mother) + ": outside image")
@@ -111,8 +114,15 @@ def _score_daughter_sides(ellipse_angle: float, mother: Particle, daughter1: Par
     return 0
 
 
-def score_using_daughter_shapes(score: Score, particles: ParticleCollection, daughter1: Particle, daughter2: Particle):
+def score_using_volumes(score: Score, particles: ParticleCollection, mother: Particle, daughter1: Particle, daughter2: Particle):
     score.daughters_volume = 0
+
+    mother_shape = particles.get_shape(mother)
+
+    if mother_shape.is_unknown():
+        score.mothers_volume = 2  # Unknown volume, so particle has an irregular shape. Likely a mother cell
+    else:
+        score.mothers_volume = 0
 
     daughter1_shape = particles.get_shape(daughter1)
     daughter2_shape = particles.get_shape(daughter2)
@@ -125,7 +135,8 @@ def score_using_daughter_shapes(score: Score, particles: ParticleCollection, dau
     score.daughters_volume = min(volume1, volume2) / max(volume1, volume2)
     if score.daughters_volume < 0.75:
         score.daughters_volume = 0  # Almost surely not two daughter cells
-
+    if mother_shape.volume() / (volume1 + volume2 + 0.0001) > 0.95:
+        score.mothers_volume = 1
 
 def _get_nucleus_image(image_stack: ndarray, mask: Mask) -> ndarray:
     """Gets the 2D image belonging to the particle. If the particle lays just above or below the image stack, the
