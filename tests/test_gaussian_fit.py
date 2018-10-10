@@ -63,7 +63,6 @@ class TestGaussianFit(unittest.TestCase):
         self.assertTrue(gaussian1.almost_equal(fitted1, cov_delta=8))
         self.assertTrue(gaussian2.almost_equal(fitted2, mu_delta=3, cov_delta=8))
 
-
     def test_ignore_third_gaussian(self):
         gaussian1 = Gaussian(200, mu_x=15, mu_y=20, mu_z=10, cov_xx=25, cov_yy=20, cov_zz=2, cov_xy=10, cov_xz=0,
                              cov_yz=0)
@@ -84,7 +83,7 @@ class TestGaussianFit(unittest.TestCase):
         self.assertTrue(gaussian1.almost_equal(fitted1, a_delta=10, mu_delta=2, cov_delta=9))
         # The second Gaussian is hopeless - it is expanded to also cover the third Gaussian
 
-    @unittest.skip("takes five minutes to execute")
+    @unittest.skip("takes one minute to execute")
     def test_big_image(self):
         gaussians = [
             Gaussian(200, mu_x=100, mu_y=130, mu_z=9, cov_xx=225, cov_yy=400, cov_zz=3, cov_xy=10, cov_xz=0, cov_yz=0),
@@ -103,4 +102,4 @@ class TestGaussianFit(unittest.TestCase):
         ]
         fitted = gaussian_fit.perform_gaussian_mixture_fit(image, hints)
         for i in range(len(fitted)):
-            self.assertTrue(fitted[i].almost_equal(gaussians[i], a_delta=80, mu_delta=10, cov_delta=150))
+            self.assertTrue(fitted[i].almost_equal(gaussians[i], a_delta=100, mu_delta=10, cov_delta=150))

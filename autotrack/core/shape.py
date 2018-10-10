@@ -1,6 +1,6 @@
 import cv2
 import math
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Any
 
 from matplotlib.axes import Axes
 from matplotlib.patches import Ellipse as mpl_Ellipse
@@ -8,6 +8,7 @@ from numpy import ndarray
 
 from autotrack.core.ellipse import EllipseStack, Ellipse
 from autotrack.core.gaussian import Gaussian
+from autotrack.core.mask import Mask
 
 
 class ParticleShape:
@@ -52,6 +53,12 @@ class ParticleShape:
         """Gets the maximum intensity of the shape, on a scale of 0 to 1"""
         raise NotImplementedError()
 
+    def draw_mask(self, mask: Mask, x: float, y: float, z: float):
+        """Draws a mask on the given drawing area."""
+        mask.set_bounds_around(x, y, z, 20, 20, 0)
+        mask_array = mask.get_mask_array()
+        cv2.circle(mask_array[0], (int(x - mask.offset_x), int(y - mask.offset_y)), color=1, radius=20, thickness=cv2.FILLED)
+
 
 class EllipseShape(ParticleShape):
     """Represents an ellipsoidal shape. The shape only stores 2D information. This class was previously used to store
@@ -63,9 +70,13 @@ class EllipseShape(ParticleShape):
     _eccentric: bool
 
     def __init__(self, ellipse_dx: float, ellipse_dy: float, ellipse_width: float, ellipse_height: float,
-                 ellipse_angle: float, original_perimeter: float, original_area: float, eccentric: bool = False):
+                 ellipse_angle: float, original_perimeter: float = -1, original_area: float = -1, eccentric: bool = False):
         self._ellipse = Ellipse(ellipse_dx, ellipse_dy, ellipse_width, ellipse_height, ellipse_angle)
 
+        if original_perimeter == -1:
+            original_perimeter = self._ellipse.perimeter()
+        if original_area == -1:
+            original_perimeter = self._ellipse.area()
         self._original_perimeter = original_perimeter
         self._original_area = original_area
         self._eccentric = eccentric
@@ -92,12 +103,18 @@ class EllipseShape(ParticleShape):
             z_color = (color[0] / dz, color[1] / dz, color[2] / dz)
             self._draw_to_image(image[z_layer], x, y, z_color, thickness)
 
-    def _draw_to_image(self, image_2d: ndarray, x: float, y: float, color: Tuple[float, float, float], thickness: int):
+    def _draw_to_image(self, image_2d: ndarray, x: float, y: float, color: Any, thickness: int):
         # PyCharm cannot recognize signature of cv2.ellipse, so the warning is a false positive:
         # noinspection PyArgumentList
         cv2.ellipse(image_2d, ((x + self._ellipse.x, y + self._ellipse.y),
                                    (self._ellipse.width, self._ellipse.height), self._ellipse.angle),
                     color=color, thickness=thickness)
+
+    def draw_mask(self, mask: Mask, x: float, y: float, z: float):
+        min_x, min_y, max_x, max_y = self._ellipse.get_rectangular_bounds()
+        mask.set_bounds_exact(x + min_x, y + min_y, z, x + max_x, y + max_y, z + 1)
+        mask_array = mask.get_mask_array()
+        self._ellipse.draw_to_image(mask_array[int(z - mask.offset_z)], 1, dx=x - mask.offset_x, dy=y - mask.offset_y, filled=True)
 
     def volume(self) -> float:
         return self._original_area
@@ -145,6 +162,11 @@ class GaussianShape(ParticleShape):
         """We take the volume of a 3D ellipse with radii equal to the Gaussian variances."""
         return 4/3 * math.pi * \
                math.sqrt(self._gaussian.cov_xx) * math.sqrt(self._gaussian.cov_yy) * math.sqrt(self._gaussian.cov_zz)
+
+    def draw_mask(self, mask: Mask, x: float, y: float, z: float):
+        drawing_gaussian = self._gaussian.translated(x, y, z)
+        mask.set_bounds(drawing_gaussian.get_bounds())
+        drawing_gaussian.translated(-mask.offset_x, -mask.offset_y, -mask.offset_z).draw_ellipsoid(mask.get_mask_array())
 
     def intensity(self) -> float:
         return self._gaussian.a / 256

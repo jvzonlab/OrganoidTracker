@@ -4,6 +4,8 @@ from typing import Optional, List, Tuple
 import numpy
 from numpy import ndarray
 
+from autotrack.core.bounding_box import BoundingBox
+
 
 class Gaussian:
     """A three-dimensional Gaussian function."""
@@ -36,6 +38,22 @@ class Gaussian:
          parameters) to quickly redraw the Gaussian."""
         return self._draw_anything(image, _3d_gauss, cached_gaussian)
 
+    def draw_ellipsoid(self, image: ndarray, cached_gaussian: Optional[ndarray] = None) -> Optional[ndarray]:
+        """Draws a 3d ellipsoid to the given image. The image can be a boolean image to construct a mask."""
+        return self._draw_anything(image, _3d_ellipsoid, cached_gaussian)
+
+    def get_bounds(self) -> BoundingBox:
+        """Gets the bounding box of this Gaussian function as min_x,min_y,min_z, max_x,max_y,max_z."""
+        return BoundingBox(
+            int(self.mu_x - 3 * math.sqrt(self.cov_xx)),
+            int(self.mu_y - 3 * math.sqrt(self.cov_yy)),
+            int(self.mu_z - 3 * math.sqrt(self.cov_zz)),
+
+            int(self.mu_x + 3 * math.sqrt(self.cov_xx)),
+            int(self.mu_y + 3 * math.sqrt(self.cov_yy)),
+            int(self.mu_z + 3 * math.sqrt(self.cov_zz))
+        )
+
     def draw_colored(self, image: ndarray, color: Tuple[float, float, float]) -> Optional[ndarray]:
         """Draws a Gaussian to an image in the given color. The color must be an RGB color, with numbers ranging from
         0 to 1. The Gaussian intensity is divided by 256, which should bring the Gaussian from the byte range [0..256]
@@ -43,14 +61,15 @@ class Gaussian:
         if self.cov_xx < 0 or self.cov_yy < 0 or self.cov_zz < 0:
             return
 
-        offset_x = max(0, int(self.mu_x - 3 * math.sqrt(self.cov_xx)))
-        offset_y = max(0, int(self.mu_y - 3 * math.sqrt(self.cov_yy)))
-        offset_z = max(0, int(self.mu_z - 3 * math.sqrt(self.cov_zz)))
-        max_x = min(image.shape[2], int(self.mu_x + 3 * math.sqrt(self.cov_xx)))
-        max_y = min(image.shape[1], int(self.mu_y + 3 * math.sqrt(self.cov_yy)))
-        max_z = min(image.shape[0], int(self.mu_z + 3 * math.sqrt(self.cov_zz)))
-
+        bounds = self.get_bounds()
+        offset_x = max(0, bounds.min_x)
+        offset_y = max(0, bounds.min_y)
+        offset_z = max(0, bounds.min_z)
+        max_x = min(image.shape[2], bounds.max_x)
+        max_y = min(image.shape[1], bounds.max_y)
+        max_z = min(image.shape[0], bounds.max_z)
         size_x, size_y, size_z = max_x - offset_x, max_y - offset_y, max_z - offset_z
+
         pos = _get_positions(size_x, size_y, size_z)
         gauss = _3d_gauss(pos, self.a / 256, self.mu_x - offset_x, self.mu_y - offset_y, self.mu_z - offset_z,
                           self.cov_xx, self.cov_yy, self.cov_zz, self.cov_xy, self.cov_xz, self.cov_yz)
@@ -70,12 +89,13 @@ class Gaussian:
                 or self.mu_z < 0 or self.mu_z > image.shape[0]:
             return  # All invalid Gaussians
 
-        offset_x = max(0, int(self.mu_x - 3 * math.sqrt(self.cov_xx)))
-        offset_y = max(0, int(self.mu_y - 3 * math.sqrt(self.cov_yy)))
-        offset_z = max(0, int(self.mu_z - 3 * math.sqrt(self.cov_zz)))
-        max_x = min(image.shape[2], int(self.mu_x + 3 * math.sqrt(self.cov_xx)))
-        max_y = min(image.shape[1], int(self.mu_y + 3 * math.sqrt(self.cov_yy)))
-        max_z = min(image.shape[0], int(self.mu_z + 3 * math.sqrt(self.cov_zz)))
+        bounds = self.get_bounds()
+        offset_x = max(0, bounds.min_x)
+        offset_y = max(0, bounds.min_y)
+        offset_z = max(0, bounds.min_z)
+        max_x = min(image.shape[2], bounds.max_x)
+        max_y = min(image.shape[1], bounds.max_y)
+        max_z = min(image.shape[0], bounds.max_z)
 
         if cached_result is None:
             # Need to calculate
@@ -163,6 +183,26 @@ def _3d_gauss(pos: ndarray, a, mu_x, mu_y, mu_z, cov_xx, cov_yy, cov_zz, cov_xy,
     pos_mu_T = numpy.transpose(pos_mu, transpose_axes)
 
     return a * numpy.exp(-1 / 2 * (pos_mu_T @ cov_inv @ pos_mu).ravel())
+
+
+def _3d_ellipsoid(pos: ndarray, a, mu_x, mu_y, mu_z, cov_xx, cov_yy, cov_zz, cov_xy, cov_xz, cov_yz, cutoff=0.2) -> ndarray:
+    """Returns an ellipse with roughly the same shape as a Gaussian. All places where the intensity >= 20% of the
+    maximum are set to True, the others to False.
+    """
+    pos = pos[..., numpy.newaxis]  # From list of vectors to list of column vectors
+    mu = numpy.array([[mu_x], [mu_y], [mu_z]])  # A column vector
+    covariance_matrix = numpy.array([
+        [cov_xx, cov_xy, cov_xz],
+        [cov_xy, cov_yy, cov_yz],
+        [cov_xz, cov_yz, cov_zz]
+    ])
+    cov_inv = numpy.linalg.inv(covariance_matrix)
+
+    pos_mu = pos - mu
+    transpose_axes = (0, 2, 1) if len(pos_mu.shape) == 3 else (1, 0)
+    pos_mu_T = numpy.transpose(pos_mu, transpose_axes)
+
+    return (pos_mu_T @ cov_inv @ pos_mu).ravel() < -2 * numpy.log(cutoff)
 
 
 # Partial derivatives of the above function

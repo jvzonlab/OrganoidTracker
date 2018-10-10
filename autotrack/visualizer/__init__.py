@@ -158,12 +158,9 @@ class Visualizer:
         rgb_images = numpy.zeros((zyx_size[0], zyx_size[1], zyx_size[2], 3), dtype='float')
         colors = [(1, 1, 1), (1, 1, 0), (1, 0, 1), (0, 1, 1), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
         i = 0
-        start = default_timer()
         for particle, shape in self._experiment.particles.of_time_point_with_shapes(time_point).items():
             shape.draw3d_color(particle.x, particle.y, particle.z, 0, rgb_images, colors[i % len(colors)])
             i += 1
-        end = default_timer()
-        print("Drawing took ", end-start)
         rgb_images.clip(min=0, max=1, out=rgb_images)
         return rgb_images
 

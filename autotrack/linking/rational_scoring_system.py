@@ -1,13 +1,16 @@
 import numpy
 from numpy import ndarray
 
-from autotrack.core.experiment import Experiment
 from autotrack.core.image_loader import ImageLoader
+from autotrack.core.mask import create_mask_for, Mask
 from autotrack.core.particles import Particle, ParticleCollection
 from autotrack.core.score import Score, Family
-from autotrack.imaging import angles, normalized_image
-from autotrack.imaging.normalized_image import ImageEdgeError
+from autotrack.imaging import angles
 from autotrack.linking.scoring_system import MotherScoringSystem
+
+
+class _ImageEdgeError(Exception):
+    pass
 
 
 class RationalScoringSystem(MotherScoringSystem):
@@ -24,34 +27,27 @@ class RationalScoringSystem(MotherScoringSystem):
         mother_image_stack = image_loader.get_image_stack(mother.time_point())
         daughter_image_stack = image_loader.get_image_stack(daughter1.time_point())
 
-        mother_image = _get_2d_image(mother_image_stack, mother)
-        mother_image_next = _get_2d_image(daughter_image_stack, mother)
-        daughter1_image = _get_2d_image(daughter_image_stack, daughter1)
-        daughter2_image = _get_2d_image(daughter_image_stack, daughter2)
-        daughter1_image_prev = _get_2d_image(mother_image_stack, daughter1)
-        daughter2_image_prev = _get_2d_image(mother_image_stack, daughter2)
+        mother_mask = _get_mask(mother_image_stack, mother, particle_shapes)
+        daughter1_mask = _get_mask(daughter_image_stack, daughter1, particle_shapes)
+        daughter2_mask = _get_mask(daughter_image_stack, daughter2, particle_shapes)
 
         try:
-            mother_intensities = normalized_image.get_square(mother_image, mother.x, mother.y, self.mitotic_radius)
-            mother_intensities_next = normalized_image.get_square(mother_image_next, mother.x, mother.y,
-                                                                  self.mitotic_radius)
-            daughter1_intensities = normalized_image.get_square(daughter1_image, daughter1.x, daughter1.y,
-                                                                self.mitotic_radius)
-            daughter2_intensities = normalized_image.get_square(daughter2_image, daughter2.x, daughter2.y,
-                                                                self.mitotic_radius)
-            daughter1_intensities_prev = normalized_image.get_square(daughter1_image_prev, daughter1.x, daughter1.y,
-                                                                     self.mitotic_radius)
-            daughter2_intensities_prev = normalized_image.get_square(daughter2_image_prev, daughter2.x, daughter2.y,
-                                                                     self.mitotic_radius)
+            mother_intensities = _get_nucleus_image(mother_image_stack, mother_mask)
+            mother_intensities_next = _get_nucleus_image(daughter_image_stack, mother_mask)
+            daughter1_intensities = _get_nucleus_image(daughter_image_stack, daughter1_mask)
+            daughter2_intensities = _get_nucleus_image(daughter_image_stack, daughter2_mask)
+            daughter1_intensities_prev = _get_nucleus_image(mother_image_stack, daughter1_mask)
+            daughter2_intensities_prev = _get_nucleus_image(mother_image_stack, daughter2_mask)
 
             score = Score()
             score_mother_intensities(score, mother_intensities, mother_intensities_next)
             score_daughter_intensities(score, daughter1_intensities, daughter2_intensities,
-                                                daughter1_intensities_prev, daughter2_intensities_prev)
+                                       daughter1_intensities_prev, daughter2_intensities_prev)
             score_daughter_distances(score, mother, daughter1, daughter2)
             score_using_daughter_shapes(score, particle_shapes, daughter1, daughter2)
             return score
-        except ImageEdgeError:
+        except _ImageEdgeError:
+            print("No score for " + str(mother) + ": outside image")
             return Score()
 
 
@@ -69,10 +65,10 @@ def score_daughter_distances(score: Score, mother: Particle, daughter1: Particle
 def score_daughter_intensities(score: Score, daughter1_intensities: ndarray, daughter2_intensities: ndarray,
                                daughter1_intensities_prev: ndarray, daughter2_intensities_prev: ndarray):
     """Daughter cells must have almost the same intensity"""
-    daughter1_average = numpy.average(daughter1_intensities)
-    daughter2_average = numpy.average(daughter2_intensities)
-    daughter1_average_prev = numpy.average(daughter1_intensities_prev)
-    daughter2_average_prev = numpy.average(daughter2_intensities_prev)
+    daughter1_average = numpy.nanmean(daughter1_intensities)
+    daughter2_average = numpy.nanmean(daughter2_intensities)
+    daughter1_average_prev = numpy.nanmean(daughter1_intensities_prev)
+    daughter2_average_prev = numpy.nanmean(daughter2_intensities_prev)
 
     # Daughter cells must have almost the same intensity
     score.daughters_intensity_difference = -abs(daughter1_average - daughter2_average) / 2
@@ -87,16 +83,15 @@ def score_mother_intensities(score: Score, mother_intensities: ndarray, mother_i
     """Mother cell must have high intensity """
 
     # Intensity and contrast
-    min_value = numpy.min(mother_intensities)
-    max_value = numpy.max(mother_intensities)
-    score.mother_intensity = 1 if max_value > 0.7 else 0  # The higher intensity, the better: the DNA is concentrated
-    score.mother_contrast = 0.5 if max_value - min_value > 0.4 else 0  # High contrast is also desirable
+    mean_value = numpy.nanmean(mother_intensities)
+    variance_value = numpy.nanvar(mother_intensities)
+    score.mother_contrast = variance_value * 10
 
     # Change of intensity (we use the max, as mothers often have both bright spots and darker spots near their center)
-    max_value_next = numpy.max(mother_intensities_next)
-    if max_value / (max_value_next + 0.0001) > 2:  # +0.0001 protects against division by zero
+    mean_value_next = numpy.nanmean(mother_intensities_next)
+    if mean_value / (mean_value_next + 0.0001) > 2:  # +0.0001 protects against division by zero
         score.mother_intensity_delta = 1
-    elif max_value / (max_value_next + 0.0001) > 1.5:
+    elif mean_value / (mean_value_next + 0.0001) > 1.5:
         score.mother_intensity_delta = 0
     else:  # Intensity was almost constant over time (or even decreased), surely not a mother
         score.mother_intensity_delta = -1
@@ -132,12 +127,17 @@ def score_using_daughter_shapes(score: Score, particles: ParticleCollection, dau
         score.daughters_volume = 0  # Almost surely not two daughter cells
 
 
-def _get_2d_image(image_stack: ndarray, particle: Particle) -> ndarray:
+def _get_nucleus_image(image_stack: ndarray, mask: Mask) -> ndarray:
     """Gets the 2D image belonging to the particle. If the particle lays just above or below the image stack, the
     nearest image is returned."""
-    z = int(particle.z)
-    if z == len(image_stack):
-        z = len(image_stack) - 1
-    if z == -1:
-        z = 0
-    return image_stack[z]
+    try:
+        return mask.create_masked_and_normalized_image(image_stack)
+    except ValueError:
+        raise _ImageEdgeError()
+
+
+def _get_mask(image_stack: ndarray, particle: Particle, shapes: ParticleCollection) -> Mask:
+    shape = shapes.get_shape(particle)
+    mask = create_mask_for(image_stack)
+    shape.draw_mask(mask, particle.x, particle.y, particle.z)
+    return mask
