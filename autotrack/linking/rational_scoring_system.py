@@ -1,19 +1,14 @@
 import matplotlib.pyplot
 
 import numpy
-import tifffile
 from numpy import ndarray
 
 from autotrack.core.image_loader import ImageLoader
-from autotrack.core.mask import create_mask_for, Mask
+from autotrack.core.mask import create_mask_for, Mask, OutsideImageError
 from autotrack.core.particles import Particle, ParticleCollection
 from autotrack.core.score import Score, Family
 from autotrack.imaging import angles
 from autotrack.linking.scoring_system import MotherScoringSystem
-
-
-class _ImageEdgeError(Exception):
-    pass
 
 
 class RationalScoringSystem(MotherScoringSystem):
@@ -45,7 +40,7 @@ class RationalScoringSystem(MotherScoringSystem):
             score_daughter_distances(score, mother, daughter1, daughter2)
             score_using_volumes(score, particle_shapes, mother, daughter1, daughter2)
             return score
-        except _ImageEdgeError:
+        except OutsideImageError:
             print("No score for " + str(mother) + ": outside image")
             return Score()
 
@@ -141,10 +136,7 @@ def score_using_volumes(score: Score, particles: ParticleCollection, mother: Par
 def _get_nucleus_image(image_stack: ndarray, mask: Mask) -> ndarray:
     """Gets the 2D image belonging to the particle. If the particle lays just above or below the image stack, the
     nearest image is returned."""
-    try:
-        return mask.create_masked_and_normalized_image(image_stack)
-    except ValueError:
-        raise _ImageEdgeError()
+    return mask.create_masked_and_normalized_image(image_stack)
 
 
 def _get_mask(image_stack: ndarray, particle: Particle, shapes: ParticleCollection) -> Mask:

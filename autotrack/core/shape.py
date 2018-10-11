@@ -57,7 +57,8 @@ class ParticleShape:
         """Draws a mask on the given drawing area."""
         mask.set_bounds_around(x, y, z, 20, 20, 0)
         mask_array = mask.get_mask_array()
-        cv2.circle(mask_array[0], (int(x - mask.offset_x), int(y - mask.offset_y)), color=1, radius=20, thickness=cv2.FILLED)
+        if len(mask_array) == 1:
+            cv2.circle(mask_array[0], (int(x - mask.offset_x), int(y - mask.offset_y)), color=1, radius=20, thickness=cv2.FILLED)
 
 
 class EllipseShape(ParticleShape):

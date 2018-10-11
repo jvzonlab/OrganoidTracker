@@ -132,7 +132,7 @@ class _ScoresOfTimePoint:
                     continue
             yield ScoredFamily(family, score)
 
-class ScoresCollection:
+class ScoreCollection:
     _all_scores: Dict[int, _ScoresOfTimePoint]
 
     def __init__(self):

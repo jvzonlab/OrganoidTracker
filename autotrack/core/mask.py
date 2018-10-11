@@ -7,6 +7,11 @@ from numpy import ndarray
 from autotrack.core.bounding_box import BoundingBox
 
 
+class OutsideImageError(Exception):
+    """Thrown when a mask falls completely outside an image."""
+    pass
+
+
 class Mask(ABC):
     """Class used for drawing and applying masks."""
 
@@ -91,16 +96,23 @@ class _SingleMask(Mask):
 
     def get_mask_array(self):
         if self._mask is None:
-            self._mask = numpy.zeros((self._max_z - self._offset_z, self._max_y - self._offset_y,
-                                      self._max_x - self._offset_x), dtype=numpy.uint8)
+            size_x = self._max_x - self._offset_x
+            size_y = self._max_y - self._offset_y
+            size_z = self._max_z - self._offset_z
+            if size_x <= 0 or size_y <= 0 or size_z <= 0:
+                raise OutsideImageError()  # Attempting to create mask of size 0
+            self._mask = numpy.zeros((size_z, size_y, size_x), dtype=numpy.uint8)
         return self._mask
 
     def create_masked_and_normalized_image(self, image_stack: ndarray) -> ndarray:
-        # Create normalized subimage
+        """Create normalized subimage. Throws OutsideImageError when the mask is fully outside the image."""
         image_for_masking = image_stack[self._offset_z:self._max_z,
                             self._offset_y:self._max_y,
                             self._offset_x:self._max_x].astype(dtype=numpy.float32)
-        image_for_masking /= image_for_masking.max()
+        try:
+            image_for_masking /= image_for_masking.max()
+        except ValueError:
+            raise OutsideImageError()
 
         # Crop mask to same size as subimage
         mask = self._mask[0:image_for_masking.shape[0], 0:image_for_masking.shape[1], 0:image_for_masking.shape[2]]

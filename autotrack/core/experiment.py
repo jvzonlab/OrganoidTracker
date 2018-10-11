@@ -7,7 +7,7 @@ from numpy import ndarray
 from autotrack.core import TimePoint, Name
 from autotrack.core.image_loader import ImageLoader
 from autotrack.core.particles import Particle, ParticleCollection
-from autotrack.core.score import ScoresCollection
+from autotrack.core.score import ScoreCollection
 
 
 class _CachedImageLoader(ImageLoader):
@@ -54,7 +54,7 @@ class Experiment:
     details of the experiment."""
 
     _particles: ParticleCollection
-    scores: ScoresCollection
+    scores: ScoreCollection
     _particle_links: Optional[Graph] = None
     _particle_links_baseline: Optional[Graph] = None # Links that are assumed to be correct
     _image_loader: ImageLoader = ImageLoader()
@@ -64,7 +64,7 @@ class Experiment:
     def __init__(self):
         self._name = Name()
         self._particles = ParticleCollection()
-        self.scores = ScoresCollection()
+        self.scores = ScoreCollection()
 
     def add_particle_raw(self, x: float, y: float, z: float, time_point_number: int):
         """Adds a single particle to the experiment, creating the time point if it does not exist yet."""
@@ -133,7 +133,7 @@ class Experiment:
     def first_time_point_number(self):
         """Gets the first time point of the experiment where there is data (images and/or particles)."""
         image_first = self._image_loader.get_first_time_point()
-        particle_first = self._particles.get_first_time_point()
+        particle_first = self._particles.first_time_point_number()
         if image_first is None:
             return particle_first
         if particle_first is None:
@@ -143,7 +143,7 @@ class Experiment:
     def last_time_point_number(self):
         """Gets the last time point (inclusive) of the experiment where there is data (images and/or particles)."""
         image_last = self._image_loader.get_last_time_point()
-        particle_last = self._particles.get_last_time_point()
+        particle_last = self._particles.last_time_point_number()
         if image_last is None:
             return particle_last
         if particle_last is None:

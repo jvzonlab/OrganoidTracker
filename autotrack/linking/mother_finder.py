@@ -6,7 +6,7 @@ from networkx import Graph
 from autotrack.core.experiment import Experiment
 from autotrack.core.image_loader import ImageLoader
 from autotrack.core.particles import Particle, ParticleCollection
-from autotrack.core.score import Family, ScoresCollection
+from autotrack.core.score import Family, ScoreCollection
 from autotrack.linking.scoring_system import MotherScoringSystem
 
 
@@ -50,9 +50,9 @@ def find_families(graph: Graph, warn_on_many_daughters = True) -> List[Family]:
 
 
 def calculates_scores(image_loader: ImageLoader, particles: ParticleCollection, graph: Graph,
-                      scoring_system: MotherScoringSystem) -> ScoresCollection:
+                      scoring_system: MotherScoringSystem) -> ScoreCollection:
     """Finds all families in the given links and calculates their scores."""
-    scores = ScoresCollection()
+    scores = ScoreCollection()
     families = find_families(graph, warn_on_many_daughters=False)
     i = 0
     for family in families:

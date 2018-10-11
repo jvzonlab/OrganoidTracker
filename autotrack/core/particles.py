@@ -180,11 +180,11 @@ class ParticleCollection:
             return UnknownShape()
         return particles_at_time_point.get_shape(particle)
 
-    def get_first_time_point(self) -> Optional[int]:
+    def first_time_point_number(self) -> Optional[int]:
         """Gets the first time point that contains particles, or None if there are no particles stored."""
         return self._min_time_point_number
 
-    def get_last_time_point(self) -> Optional[int]:
+    def last_time_point_number(self) -> Optional[int]:
         """Gets the last time point (inclusive) that contains particles, or None if there are no particles stored."""
         return self._max_time_point_number
 

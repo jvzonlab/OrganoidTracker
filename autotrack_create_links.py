@@ -7,6 +7,7 @@ from autotrack.core.experiment import Experiment
 from autotrack.imaging import tifffolder, io
 from autotrack.linking import linker_for_experiment, dpct_linking, mother_finder
 from autotrack.linking.rational_scoring_system import RationalScoringSystem
+from autotrack.linking_analysis import logical_tests
 from autotrack.visualizer import image_visualizer
 
 
@@ -37,9 +38,8 @@ score_system = RationalScoringSystem()
 scores = mother_finder.calculates_scores(experiment.image_loader(), experiment.particles, possible_links, score_system)
 print("Deciding on what links to use...")
 link_result = dpct_linking.run(experiment.particles, possible_links, scores)
-
-
-
+print("Checking results for common errors...")
+logical_tests.apply(scores, experiment.particles, link_result)
 print("Writing results to file...")
 io.save_links_and_scores_to_json(link_result, scores, _links_output_file)
 

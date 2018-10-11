@@ -6,7 +6,7 @@ from networkx import Graph
 from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
 from autotrack.gui import Window
-from autotrack.linking import errors, logical_tests
+from autotrack.linking_analysis import errors, logical_tests
 from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
 
 

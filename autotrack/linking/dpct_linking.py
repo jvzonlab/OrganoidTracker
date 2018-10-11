@@ -7,7 +7,7 @@ from networkx import Graph
 
 from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle, ParticleCollection
-from autotrack.core.score import ScoresCollection, Score, ScoredFamily
+from autotrack.core.score import ScoreCollection, Score, ScoredFamily
 
 
 class _ParticleToId:
@@ -53,7 +53,7 @@ def _to_graph(particle_ids: _ParticleToId, results: Dict) -> Graph:
     return graph
 
 
-def run(particles: ParticleCollection, starting_links: Graph, scores: ScoresCollection):
+def run(particles: ParticleCollection, starting_links: Graph, scores: ScoreCollection):
     particle_ids = _ParticleToId()
     weights = {"weights": [
         1,  # multiplier for linking features?
@@ -62,7 +62,7 @@ def run(particles: ParticleCollection, starting_links: Graph, scores: ScoresColl
         150,  # multiplier for appearance features - the higher, the more expensive it is to create a cell out of nothing
         100]}  # multiplier for disappearance - the higher, the more expensive an end-of-lineage is
     input = _create_dpct_graph(particle_ids, starting_links, scores, particles,
-                               particles.get_first_time_point(), particles.get_last_time_point())
+                               particles.first_time_point_number(), particles.last_time_point_number())
     results = dpct.trackFlowBased(input, weights)
     return _to_graph(particle_ids, results)
 
@@ -74,7 +74,7 @@ def _scores_involving(daughter: Particle, scores: Iterable[ScoredFamily]) -> Ite
             yield score
 
 
-def _create_dpct_graph(particle_ids: _ParticleToId, starting_links: Graph, scores: ScoresCollection,
+def _create_dpct_graph(particle_ids: _ParticleToId, starting_links: Graph, scores: ScoreCollection,
                        shapes: ParticleCollection, min_time_point: int, max_time_point: int) -> Dict:
     segmentation_hypotheses = []
     particle: Particle

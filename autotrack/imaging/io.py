@@ -11,7 +11,7 @@ from pandas import DataFrame
 from autotrack.core.experiment import Experiment
 from autotrack.core import shape
 from autotrack.core.particles import Particle
-from autotrack.core.score import ScoredFamily, Score, Family, ScoresCollection
+from autotrack.core.score import ScoredFamily, Score, Family, ScoreCollection
 
 
 def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: str,
@@ -113,7 +113,7 @@ def save_positions_and_shapes_to_json(experiment: Experiment, json_file_name: st
         json.dump(data_structure, handle, cls=_MyEncoder)
 
 
-def save_links_and_scores_to_json(links: Graph, scores: ScoresCollection, json_file_name: str):
+def save_links_and_scores_to_json(links: Graph, scores: ScoreCollection, json_file_name: str):
     """1. Saves particle linking data to a JSON file. File follows the d3.js format, like the example here:
         http://bl.ocks.org/mbostock/4062045
     2. Saves mother scores to the same JSON file.
