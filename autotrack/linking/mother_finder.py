@@ -33,7 +33,7 @@ def find_families(graph: Graph, warn_on_many_daughters = True) -> List[Family]:
 
     for particle in graph.nodes():
         linked_particles = graph[particle]
-        future_particles = {p for p in linked_particles if p.time_point_number() > particle.time_point_number()}
+        future_particles = {p for p in linked_particles if p.time_point_number() == particle.time_point_number() + 1}
         if len(future_particles) < 2:
             continue
         if warn_on_many_daughters:

@@ -7,7 +7,7 @@ from autotrack.linking import particle_flow
 from autotrack.linking.find_nearest_neighbors import find_nearest_particles
 
 
-def nearest_neighbor(experiment: Experiment, tolerance: float = 1.0) -> Graph:
+def nearest_neighbor(experiment: Experiment, tolerance: float = 1.0, over_previous: bool = False) -> Graph:
     """Simple nearest neighbour linking, keeping a list of potential candidates based on a given tolerance.
 
     A tolerance of 1.05 also links particles 5% from the closest particle. Note that if a tolerance higher than 1 is
@@ -18,13 +18,18 @@ def nearest_neighbor(experiment: Experiment, tolerance: float = 1.0) -> Graph:
     graph = Graph()
 
     time_point_previous = None
+    time_point_over_previous = None
     for time_point_current in experiment.time_points():
         _add_nodes(graph, experiment, time_point_current)
 
         if time_point_previous is not None:
             _add_nearest_edges(graph, experiment.particles, time_point_previous, time_point_current, tolerance)
             _add_nearest_edges_extra(graph, experiment.particles, time_point_previous, time_point_current, tolerance)
+        if over_previous and time_point_over_previous is not None:
+            _add_nearest_edges(graph, experiment.particles, time_point_over_previous, time_point_current, tolerance)
+            _add_nearest_edges_extra(graph, experiment.particles, time_point_over_previous, time_point_current, tolerance)
 
+        time_point_over_previous = time_point_previous
         time_point_previous = time_point_current
 
     print("Done creating nearest-neighbor links!")

@@ -32,7 +32,7 @@ print("Discovering images...")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
 print("Performing nearest-neighbor linking...")
-possible_links = linker_for_experiment.nearest_neighbor(experiment, tolerance=2)
+possible_links = linker_for_experiment.nearest_neighbor(experiment, tolerance=2, over_previous=True)
 print("Calculating scores of possible mothers...")
 score_system = RationalScoringSystem()
 scores = mother_finder.calculates_scores(experiment.image_loader(), experiment.particles, possible_links, score_system)
