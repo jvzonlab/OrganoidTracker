@@ -21,11 +21,11 @@ class RationalScoringSystem(MotherScoringSystem):
         mother_image_stack = image_loader.get_image_stack(mother.time_point())
         daughter_image_stack = image_loader.get_image_stack(daughter1.time_point())
 
-        mother_mask = _get_mask(mother_image_stack, mother, particle_shapes)
-        daughter1_mask = _get_mask(daughter_image_stack, daughter1, particle_shapes)
-        daughter2_mask = _get_mask(daughter_image_stack, daughter2, particle_shapes)
-
         try:
+            mother_mask = _get_mask(mother_image_stack, mother, particle_shapes)
+            daughter1_mask = _get_mask(daughter_image_stack, daughter1, particle_shapes)
+            daughter2_mask = _get_mask(daughter_image_stack, daughter2, particle_shapes)
+
             mother_intensities = _get_nucleus_image(mother_image_stack, mother_mask)
             mother_intensities_next = _get_nucleus_image(daughter_image_stack, mother_mask)
             daughter1_intensities = _get_nucleus_image(daughter_image_stack, daughter1_mask)
@@ -115,9 +115,9 @@ def score_using_volumes(score: Score, particles: ParticleCollection, mother: Par
     mother_shape = particles.get_shape(mother)
 
     if mother_shape.is_unknown():
-        score.mothers_volume = 2  # Unknown volume, so particle has an irregular shape. Likely a mother cell
+        score.mother_volume = 2  # Unknown volume, so particle has an irregular shape. Likely a mother cell
     else:
-        score.mothers_volume = 0
+        score.mother_volume = 0
 
     daughter1_shape = particles.get_shape(daughter1)
     daughter2_shape = particles.get_shape(daughter2)
@@ -131,7 +131,7 @@ def score_using_volumes(score: Score, particles: ParticleCollection, mother: Par
     if score.daughters_volume < 0.75:
         score.daughters_volume = 0  # Almost surely not two daughter cells
     if mother_shape.volume() / (volume1 + volume2 + 0.0001) > 0.95:
-        score.mothers_volume = 1
+        score.mother_volume = 0.5  # We have a mother cell, or maybe just a big cell
 
 def _get_nucleus_image(image_stack: ndarray, mask: Mask) -> ndarray:
     """Gets the 2D image belonging to the particle. If the particle lays just above or below the image stack, the
