@@ -21,7 +21,6 @@ _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_i
 _positions_file = config.get_or_default("positions_file", "Automatic analysis/Positions/Manual.json")
 _baseline_links_file = config.get_or_default("baseline_links_file", "Automatic analysis/Links/Manual.json")
 _output_file = config.get_or_default("ouput_csv_file", "Automatic analysis/Links/Scoring analysis.csv")
-_shape_detection_radius = int(config.get_or_default("shape_detection_radius", str(16)))
 config.save_and_exit_if_changed()
 
 # END OF PARAMETERS
