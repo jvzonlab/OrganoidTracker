@@ -38,7 +38,7 @@ class LinkEditor(AbstractImageVisualizer):
                 experiment.particle_links_scratch(baseline_graph.copy())
 
     def _get_figure_title(self, errors: int) -> str:
-        return "Editing time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
+        return "Editing links of time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
 
     def _get_window_title(self) -> str:
         return "Link editing"
@@ -48,6 +48,7 @@ class LinkEditor(AbstractImageVisualizer):
             **super().get_extra_menu_options(),
             "Edit/Commit-Commit dotted lines (/commit)": self._commit,
             "Edit/Commit-Revert dotted lines (/revert)": self._revert,
+            "Edit/Manual-Positions... (P)": self._show_position_editor,
             "View/Exit-Exit this view (L)": self._exit
         }
 
@@ -99,6 +100,8 @@ class LinkEditor(AbstractImageVisualizer):
                     self.update_status("Cannot delete link: there was no link between selected particles")
         elif event.key == "l":
             self._exit()
+        elif event.key == "p":
+            self._show_position_editor()
         else:
             super()._on_key_press(event)
 
@@ -175,3 +178,9 @@ class LinkEditor(AbstractImageVisualizer):
         self._selected2 = None
         self._has_uncommitted_changes = True
         self.draw_view()
+
+    def _show_position_editor(self):
+        from autotrack.visualizer.position_editor import PositionEditor
+        position_editor = PositionEditor(self._window, time_point_number=self._time_point.time_point_number(),
+                                         z=self._z)
+        activate(position_editor)

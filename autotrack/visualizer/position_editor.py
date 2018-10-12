@@ -22,11 +22,15 @@ class PositionEditor(AbstractImageVisualizer):
     def get_extra_menu_options(self):
         return {
             **super().get_extra_menu_options(),
-            "View/Exit-Exit this view": self._exit_view
+            "Edit/Manual-Links... (L)": self._show_link_editor,
+            "View/Exit-Exit this view (P)": self._exit_view
         }
 
     def _get_window_title(self) -> str:
         return "Positions editor"
+
+    def _get_figure_title(self, errors: int) -> str:
+        return "Editing positions of time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
 
     def get_default_status(self) -> str:
         particles = self._experiment.particles.of_time_point(self._time_point)
@@ -43,6 +47,8 @@ class PositionEditor(AbstractImageVisualizer):
             self._try_move(event.xdata, event.ydata)
         elif event.key == "p":
             self._exit_view()
+        elif event.key == "l":
+            self._show_link_editor()
         else:
             super()._on_key_press(event)
 
@@ -111,3 +117,8 @@ class PositionEditor(AbstractImageVisualizer):
         image_visualizer = StandardImageVisualizer(self._window, time_point_number=self._time_point.time_point_number(),
                                                    z=self._z, display_settings=self._display_settings)
         activate(image_visualizer)
+
+    def _show_link_editor(self):
+        from autotrack.visualizer.link_editor import LinkEditor
+        link_editor = LinkEditor(self._window, time_point_number=self._time_point.time_point_number(), z=self._z)
+        activate(link_editor)
