@@ -107,11 +107,9 @@ def _create_dpct_graph(particle_ids: _ParticleToId, starting_links: Graph, score
         volume1, volume2 = shapes.get_shape(particle1).volume(), shapes.get_shape(particle2).volume()
         link_penalty = math.sqrt(particle1.distance_squared(particle2))
         link_penalty += abs(volume1 - volume2) ** (1 / 3)
-        if particle2.time_point_number() - particle1.time_point_number() > 1:
-            # If we are skipping time points, penalize
-            link_penalty *= 5 * (particle2.time_point_number() - particle1.time_point_number())
 
-        mother_score = _max_score(scores.of_mother(particle1))
+        mother_score = _max_score(_scores_involving(particle2, scores.of_mother(particle1)))
+
         if not mother_score.is_unlikely_mother():
             link_penalty /= 2
         linking_hypotheses.append({

@@ -3,6 +3,7 @@ import matplotlib.pyplot
 import numpy
 from numpy import ndarray
 
+from autotrack.core import TimePoint
 from autotrack.core.image_loader import ImageLoader
 from autotrack.core.mask import create_mask_for, Mask, OutsideImageError
 from autotrack.core.particles import Particle, ParticleCollection
@@ -38,6 +39,7 @@ class RationalScoringSystem(MotherScoringSystem):
             score_daughter_intensities(score, daughter1_intensities, daughter2_intensities,
                                        daughter1_intensities_prev, daughter2_intensities_prev)
             score_daughter_distances(score, mother, daughter1, daughter2)
+            score_using_shapes(score, particle_shapes, mother, daughter1, daughter2)
             score_using_volumes(score, particle_shapes, mother, daughter1, daughter2)
             return score
         except OutsideImageError:
@@ -66,7 +68,7 @@ def score_daughter_intensities(score: Score, daughter1_intensities: ndarray, dau
 
     # Daughter cells must have almost the same intensity
     score.daughters_intensity_difference = -abs(daughter1_average - daughter2_average) / 2
-    score.daughters_intensity_delta = 1
+    score.daughters_intensity_delta = 0
     if daughter1_average / (daughter1_average_prev + 0.0001) > 2:
         score.daughters_intensity_delta += 1
     elif daughter1_average / (daughter1_average_prev + 0.0001) < 1:
@@ -95,18 +97,27 @@ def score_mother_intensities(score: Score, mother_intensities: ndarray, mother_i
         score.mother_intensity_delta = -1
 
 
-def _score_daughter_sides(ellipse_angle: float, mother: Particle, daughter1: Particle,
-                          daughter2: Particle) -> float:
-    ellipse_angle_perpendicular = (ellipse_angle + 90) % 360
+def score_using_shapes(score: Score, particles: ParticleCollection, mother: Particle, daughter1: Particle,
+                       daughter2: Particle):
+    return
+    score.mother_shape = 0
 
-    # These angles are from 0 to 180, where 90 is completely aligned with the director of the ellipse
-    daughter1_angle = angles.difference(angles.direction_2d(mother, daughter1), ellipse_angle_perpendicular)
-    daughter2_angle = angles.difference(angles.direction_2d(mother, daughter2), ellipse_angle_perpendicular)
+    # Zoom in on mother
+    mother_shape = particles.get_shape(mother)
+    if mother_shape.is_unknown():
+        return  # Too close to edge
+    mother_ellipse = mother_shape.ellipse()
 
-    if (daughter1_angle < 90 and daughter2_angle < 90) or (daughter1_angle > 90 and daughter2_angle > 90):
-        return -1  # Two daughters on the same side, punish
-
-    return 0
+    # Calculate the isoperimetric quotient and ellipse of the largest area
+    area = mother_ellipse.area()
+    perimeter = mother_ellipse.perimeter()
+    isoperimetric_quotient = 4 * numpy.pi * area / perimeter ** 2 if perimeter > 0 else 0
+    if isoperimetric_quotient < 0.8:
+        # Relatively clear case of being a mother, give a bonus
+        score.mother_shape = 2
+    else:
+        # Just use a normal scoring system
+        score.mother_shape = 1 - isoperimetric_quotient
 
 
 def score_using_volumes(score: Score, particles: ParticleCollection, mother: Particle, daughter1: Particle, daughter2: Particle):
@@ -131,7 +142,8 @@ def score_using_volumes(score: Score, particles: ParticleCollection, mother: Par
     if score.daughters_volume < 0.75:
         score.daughters_volume = 0  # Almost surely not two daughter cells
     if mother_shape.volume() / (volume1 + volume2 + 0.0001) > 0.95:
-        score.mother_volume = 0.5  # We have a mother cell, or maybe just a big cell
+        score.mother_volume = 1  # We have a mother cell, or maybe just a big cell
+
 
 def _get_nucleus_image(image_stack: ndarray, mask: Mask) -> ndarray:
     """Gets the 2D image belonging to the particle. If the particle lays just above or below the image stack, the

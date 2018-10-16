@@ -2,6 +2,7 @@ import cv2
 import math
 from typing import Optional, List, Tuple, Any
 
+import numpy
 from matplotlib.axes import Axes
 from matplotlib.patches import Ellipse as mpl_Ellipse
 from numpy import ndarray
@@ -51,6 +52,10 @@ class ParticleShape:
 
     def intensity(self) -> float:
         """Gets the maximum intensity of the shape, on a scale of 0 to 1"""
+        raise NotImplementedError()
+
+    def ellipse(self) -> Ellipse:
+        """Gets an ellipse describing the shape. Any 3D info is lost."""
         raise NotImplementedError()
 
     def draw_mask(self, mask: Mask, x: float, y: float, z: float):
@@ -120,6 +125,9 @@ class EllipseShape(ParticleShape):
     def volume(self) -> float:
         return self._original_area
 
+    def ellipse(self) -> Ellipse:
+        return self._ellipse
+
     def to_list(self) -> List:
         return ["ellipse", self._ellipse.x, self._ellipse.y, self._ellipse.width, self._ellipse.height,
                 self._ellipse.angle, self._original_perimeter, self._original_area, bool(self._eccentric)]
@@ -151,6 +159,16 @@ class GaussianShape(ParticleShape):
         self._gaussian = gaussian
 
     def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
+        dz = int(dz - self._gaussian.mu_z)
+        if abs(dz) > 3 or dt != 0:
+            return
+        ellipse = self.ellipse()
+        fill = False
+        alpha = max(0.1, 0.5 - abs(dz / 6))
+        area.add_artist(mpl_Ellipse(xy=(x + ellipse.x, y + ellipse.y),
+                                    width=ellipse.width, height=ellipse.height, angle=ellipse.angle,
+                                    fill=fill, edgecolor=color, linestyle="dashed", linewidth=2,
+                                    alpha=alpha))
         draw_marker_2d(x, y, dz, dt, area, color)
 
     def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
@@ -171,6 +189,12 @@ class GaussianShape(ParticleShape):
 
     def intensity(self) -> float:
         return self._gaussian.a / 256
+
+    def ellipse(self) -> Ellipse:
+        return self._gaussian.to_ellipse()
+
+    def __repr__(self):
+        return "GaussianShape(" + repr(self._gaussian) + ")"
 
 
 class EllipseStackShape(ParticleShape):
@@ -217,6 +241,9 @@ class EllipseStackShape(ParticleShape):
         for ellipse in self._ellipse_stack:
             volume += ellipse.area()
         return volume
+
+    def ellipse(self) -> Ellipse:
+        return self._ellipse_stack[self._center_ellipse]
 
 
 def draw_marker_2d(x: float, y: float, dz: int, dt: int, area: Axes, color: str):

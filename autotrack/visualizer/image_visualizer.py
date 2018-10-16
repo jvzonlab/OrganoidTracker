@@ -170,8 +170,8 @@ class AbstractImageVisualizer(Visualizer):
             # Make particle selectable
             self.__particles_near_visible_layer.append(particle)
 
-            # Draw links
-            link_changes = self._draw_links(particle)
+        # Draw links
+        link_changes = self._draw_links(particle)
 
         # Draw particle
         if self._display_settings.show_reconstruction:  # Showing a 3D reconstruction, so don't display a 2D one too
@@ -221,8 +221,9 @@ class AbstractImageVisualizer(Visualizer):
             # past to the future (so it is skipping this time point)
             link_dt = particle_dt + linked_particle_dt
 
-            if abs(linked_particle.z - self._z) > self.MAX_Z_DISTANCE\
-                    and abs(particle.z - self._z) > self.MAX_Z_DISTANCE:
+            min_display_z = min(linked_particle.z, particle.z) - self.MAX_Z_DISTANCE
+            max_display_z = max(linked_particle.z, particle.z) + self.MAX_Z_DISTANCE
+            if self._z < min_display_z or self._z > max_display_z:
                 continue
             if link_dt < 0:
                 # Drawing to past
@@ -390,11 +391,11 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         displayed_items = 0
         text = ""
         for scored_family in cell_divisions:
-            if displayed_items >= 4:
+            if displayed_items >= 2:
                 text += "... and " + str(len(cell_divisions) - displayed_items) + " more"
                 break
             text += str(displayed_items + 1) + ". " + str(scored_family.family) + ", score: " \
-                    + str(scored_family.score.total()) + "\n"
+                    + str(scored_family.score).replace(",", ",\n\t") + "\n"
             displayed_items += 1
         if text:
             self.update_status("Possible cell division scores:\n" + text)

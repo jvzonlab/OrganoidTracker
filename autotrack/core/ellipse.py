@@ -22,6 +22,7 @@ def _min(a: Optional[int], b: Optional[int]) -> int:
         return a
     return a if a < b else b
 
+
 class Ellipse:
     """An ellipse, with a method to test intersections. The class is immutable."""
     _x: float
@@ -39,6 +40,8 @@ class Ellipse:
         self._width = width
         self._height = height
         self._angle = angle
+        if height < width:
+            raise ValueError("height < width, this is not allowed")
 
     def intersects(self, other: "Ellipse") -> bool:
         """Tests if this ellipse intersects another ellipse."""
@@ -123,6 +126,10 @@ class Ellipse:
         b = self._height / 2
         h = ((a - b) ** 2) / ((a + b) ** 2)
         return math.pi * (a + b) * (1 + (1 / 4) * h + (1 / 64) * h + (1 / 256) * h)
+
+    def is_elongated(self):
+        """Checks if the width is significantly larger than the height."""
+        return self._width / self._height > 1.2
 
     def translated(self, dx, dy):
         """Gets an ellipse translated in the x/y direction. Does not modify this stack."""
