@@ -26,36 +26,41 @@ def _view_cell_cycle_length(window: Window):
 
 
 def _draw_cell_cycle_length(figure: Figure, links: Graph):
-    division_times = list()
-    next_division_times = list()
+    previous_cycle_durations = list()
+    cycle_durations = list()
 
     # Find all families and their next division
     for family in mother_finder.find_families(links):
+        previous_cycle_duration = cell_cycle.get_age(links, family.mother)
+        if previous_cycle_duration is None:
+            continue
+
         division_time = family.mother.time_point_number()
         for daughter in family.daughters:
             next_division = cell_cycle.get_next_division(links, daughter)
             if next_division is None:
                 continue
-            division_times.append(division_time)
-            next_division_times.append(next_division.mother.time_point_number())
+            cycle_duration = next_division.mother.time_point_number() - division_time
+            previous_cycle_durations.append(previous_cycle_duration)
+            cycle_durations.append(cycle_duration)
 
     # Convert to numpy, get statistics
-    division_times = numpy.array(division_times, dtype=numpy.int32)
-    next_division_times = numpy.array(next_division_times, dtype=numpy.int32)
-    plot_limit = next_division_times.max() * 1.1
+    previous_cycle_durations = numpy.array(previous_cycle_durations, dtype=numpy.int32)
+    cycle_durations = numpy.array(cycle_durations, dtype=numpy.int32)
+    plot_limit = cycle_durations.max() * 1.1
 
-    slope, intercept, r_value, p_value, std_err = linregress(x=division_times, y=next_division_times)
+    slope, intercept, r_value, p_value, std_err = linregress(x=previous_cycle_durations, y=cycle_durations)
     r_squared = r_value ** 2
 
     axes = figure.gca()
     axes.plot([0, plot_limit], [intercept, intercept + slope * plot_limit], color="gray")  # Regression line
-    axes.scatter(x=division_times, y=next_division_times, color="black")  # The data
+    axes.scatter(x=previous_cycle_durations, y=cycle_durations, color="black")  # The data
     axes.text(plot_limit * 0.05, intercept - 5,
               f'$T_{{daughter}} = {slope:.3} \cdot T_{{mother}} + {intercept:.3}$\n$(R^2 = {r_squared:.4})$',
               va="top")
     axes.set_xlim(0, plot_limit)
     axes.set_ylim(0, plot_limit)
-    axes.set_title("Time of division versus time of next division")
+    axes.set_title("Length of mother cell cycle versus length of daughter cell cycle")
     axes.set_aspect('equal', adjustable='box')
     axes.set_xlabel("$T_{mother}$")
     axes.set_ylabel("$T_{daughter}$")
