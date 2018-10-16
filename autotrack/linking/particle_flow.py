@@ -4,7 +4,7 @@ import numpy
 from networkx import Graph
 
 from autotrack.core.particles import Particle
-from autotrack.linking.link_util import find_preferred_past_particle, find_preferred_future_particles
+from autotrack.linking.existing_connections import find_preferred_past_particle, find_preferred_future_particles
 
 
 def get_flow_to_previous(graph: Graph, particles: Iterable[Particle], center: Particle,

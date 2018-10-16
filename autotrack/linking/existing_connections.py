@@ -25,10 +25,10 @@ def find_preferred_past_particle(graph: Graph, particle: Particle):
     # the one most likely connection one step in the past
     previous_positions = find_preferred_links(graph, particle, find_past_particles(graph, particle))
     if len(previous_positions) == 0:
-        print("Error at " + str(particle) + ": cell popped up out of nothing")
+        # No previous position
         return None
     if len(previous_positions) > 1:
-        print("Error at " + str(particle) + ": cell originated from two different cells")
+        # Multiple previous positions
         return None
     return previous_positions.pop()
 
@@ -42,16 +42,3 @@ def find_future_particles(graph: Graph, particle: Particle) -> Set[Particle]:
 
 def find_preferred_future_particles(graph: Graph, particle: Particle) -> Set[Particle]:
     return find_preferred_links(graph, particle, find_future_particles(graph, particle))
-
-
-def with_only_the_preferred_edges(old_graph: Graph):
-    graph = Graph()
-    for node, data in old_graph.nodes(data=True):
-        if not isinstance(node, Particle):
-            raise ValueError("Found a node that was not a particle: " + str(node))
-        graph.add_node(node, **data)
-
-    for particle_1, particle_2, data in old_graph.edges(data=True):
-        if data["pref"]:
-            graph.add_edge(particle_1, particle_2)
-    return graph

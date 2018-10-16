@@ -34,7 +34,7 @@ tifffolder.load_images_from_folder(experiment, _images_folder, _images_format, m
                                    max_time_point=_max_time_point)
 print("Starting link process...")
 results_all = linker_for_experiment.nearest_neighbor(experiment, tolerance=2)
-results = link_util.with_only_the_preferred_edges(results_all)
+results = linker_for_experiment.with_only_the_preferred_edges(results_all)
 print("Writing results to file...")
 io.save_links_to_json(results, _output_file)
 print("Visualizing...")

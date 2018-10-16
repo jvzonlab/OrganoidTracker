@@ -43,8 +43,8 @@ for i in range(_flow_cycles):
     print("Preforming average flow-based corrections, iteration " + str(i) + "...")
     results = linker_for_experiment.nearest_neighbor_using_flow(experiment, results,
                                                                 flow_detection_radius=_flow_detection_radius)
-results = link_util.with_only_the_preferred_edges(results)
-results_nearest_neighbor = link_util.with_only_the_preferred_edges(results_nearest_neighbor)
+results = linker_for_experiment.with_only_the_preferred_edges(results)
+results_nearest_neighbor = linker_for_experiment.with_only_the_preferred_edges(results_nearest_neighbor)
 print("Writing results to file...")
 io.save_links_to_json(results, _output_file)
 print("Visualizing..")

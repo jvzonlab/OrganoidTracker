@@ -15,7 +15,7 @@ from matplotlib.backend_bases import KeyEvent
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
-from autotrack.core import UserError
+from autotrack.core import UserError, Name
 
 
 def prompt_int(title: str, question: str) -> Optional[int]:
@@ -95,13 +95,13 @@ def popup_message(title: str, message: str):
     _messagebox.showinfo(title, message)
 
 
-def popup_figure(draw_function: _Callable):
+def popup_figure(name: Name, draw_function: _Callable):
     """Shows a popup screen with the image"""
     def save_handler(event: KeyEvent):
         if event.key != "ctrl+s":
             return
-        file_name = _filedialog.asksaveasfilename(title="Save figure as...", filetypes=(
-                ("PNG file", "*.png"), ("PDF file", "*.pdf"), ("SVG file", "*.svg")))
+        file_name = _filedialog.asksaveasfilename(title="Save figure as...", initialfile=name.get_save_name(),
+                    filetypes=(("PNG file", "*.png"), ("PDF file", "*.pdf"), ("SVG file", "*.svg")))
         if file_name is None:
             return
         figure.savefig(file_name)
@@ -114,8 +114,9 @@ def popup_figure(draw_function: _Callable):
     _matplotlib.rcParams['font.family'] = 'serif'
     _matplotlib.rcParams['font.size'] = 11
     _matplotlib.rcParams['font.serif'] = ['Times New Roman', 'Times']
+    _matplotlib.rcParams['mathtext.fontset'] = 'stix'
 
-    figure = Figure(figsize=(3.5, 3), dpi=95, tight_layout=True)
+    figure = Figure(figsize=(5.5, 5), dpi=95, tight_layout=True)
     mpl_canvas = FigureCanvasTkAgg(figure, master=popup)
     try:
         draw_function(figure)

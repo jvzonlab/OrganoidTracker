@@ -433,10 +433,6 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             self._show_link_editor()
         elif event.key == "p":
             self._show_position_editor()
-        elif event.key == "s":
-            particle = self._get_particle_at(event.xdata, event.ydata)
-            if particle is not None:
-                self.__show_shape(particle)
         elif event.key == "f":
             particle = self._get_particle_at(event.xdata, event.ydata)
             particles_of_time_point = self._experiment.particles.of_time_point(self._time_point)
@@ -465,12 +461,12 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     def _show_cell_volumes(self):
         def draw(figure: Figure):
             volume_and_intensity_graphs.plot_volumes(self._experiment, figure)
-        dialog.popup_figure(draw)
+        dialog.popup_figure(self._experiment.name, draw)
 
     def _show_cell_intensities(self):
         def draw(figure: Figure):
             volume_and_intensity_graphs.plot_intensities(self._experiment, figure)
-        dialog.popup_figure(draw)
+        dialog.popup_figure(self._experiment.name, draw)
 
     def _show_linking_errors(self, particle: Optional[Particle] = None):
         from autotrack.visualizer.errors_visualizer import ErrorsVisualizer
@@ -511,23 +507,5 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     def _show_dead_cells(self):
         from autotrack.visualizer.cell_death_visualizer import CellDeathVisualizer
         activate(CellDeathVisualizer(self._window, None))
-
-    def __show_shape(self, particle: Particle):
-        image_stack = self._time_point_images if not self._display_settings.show_next_time_point \
-            else self._experiment.get_image_stack(self._time_point)
-        if image_stack is None:
-            return  # No images loaded
-        image = image_stack[int(particle.z)]
-        x, y, r = int(particle.x), int(particle.y), 16
-        image_local = image[y - r:y + r, x - r:x + r]
-        result_image, ellipses = single_particle_detection.perform(image_local)
-
-        def show_segmentation(figure: Figure):
-            figure.gca().imshow(result_image)
-            for ellipse in ellipses:
-                figure.gca().add_artist(ellipse)
-
-
-        popup_figure(show_segmentation)
 
 

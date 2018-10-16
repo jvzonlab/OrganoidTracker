@@ -51,6 +51,20 @@ def nearest_neighbor_using_flow(experiment: Experiment, initial_links: Graph, fl
     return graph
 
 
+def with_only_the_preferred_edges(old_graph: Graph):
+    """Returns a new graph that only contains the links with a "pref" attribute."""
+    graph = Graph()
+    for node, data in old_graph.nodes(data=True):
+        if not isinstance(node, Particle):
+            raise ValueError("Found a node that was not a particle: " + str(node))
+        graph.add_node(node, **data)
+
+    for particle_1, particle_2, data in old_graph.edges(data=True):
+        if data["pref"]:
+            graph.add_edge(particle_1, particle_2)
+    return graph
+
+
 def _add_nodes(graph: Graph, experiment: Experiment, time_point: TimePoint) -> None:
     for particle in experiment.particles.of_time_point(time_point):
         graph.add_node(particle)
