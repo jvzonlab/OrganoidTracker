@@ -4,7 +4,7 @@ from networkx import Graph
 
 from autotrack.core.particles import Particle, ParticleCollection
 from autotrack.core.score import Score, ScoreCollection
-from autotrack.linking import cell_links
+from autotrack.linking import cell_cycle
 from autotrack.linking_analysis import errors
 
 
@@ -22,7 +22,7 @@ def apply(scores: ScoreCollection, particles: ParticleCollection, graph: Graph):
             score = _get_highest_mother_score(scores, particle)
             if score is None or score.is_unlikely_mother():
                 _set_error(graph, particle, errors.LOW_MOTHER_SCORE)
-            age = cell_links.get_age(graph, particle)
+            age = cell_cycle.get_age(graph, particle)
             if age is not None and age < 5:
                 _set_error(graph, particle, errors.YOUNG_MOTHER)
 

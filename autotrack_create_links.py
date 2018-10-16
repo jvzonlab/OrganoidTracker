@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
-from os import path
 
-from autotrack import gui
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
 from autotrack.imaging import tifffolder, io
 from autotrack.linking import linker_for_experiment, dpct_linking, mother_finder
 from autotrack.linking.rational_scoring_system import RationalScoringSystem
 from autotrack.linking_analysis import logical_tests
-from autotrack.visualizer import image_visualizer
-
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)

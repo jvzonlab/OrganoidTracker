@@ -68,7 +68,7 @@ def score_daughter_intensities(score: Score, daughter1_intensities: ndarray, dau
 
     # Daughter cells must have almost the same intensity
     score.daughters_intensity_difference = -abs(daughter1_average - daughter2_average) / 2
-    score.daughters_intensity_delta = 0
+    score.daughters_intensity_delta = 1
     if daughter1_average / (daughter1_average_prev + 0.0001) > 2:
         score.daughters_intensity_delta += 1
     elif daughter1_average / (daughter1_average_prev + 0.0001) < 1:
