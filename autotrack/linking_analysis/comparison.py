@@ -10,11 +10,8 @@ from autotrack.linking_analysis import cell_death_finder
 
 
 def print_differences(experiment: Experiment):
-    scratch_links = experiment.particle_links_scratch().copy()
-    baseline_links = experiment.particle_links().copy()
-
-    scratch_links.add_nodes_from(baseline_links.nodes)
-    #baseline_links.add_nodes_from(scratch_links.nodes)
+    scratch_links = experiment.links.scratch
+    baseline_links = experiment.links.baseline
 
     _print_links_differences(scratch_links, baseline_links)
     _print_mother_differences(scratch_links, baseline_links)

@@ -18,7 +18,7 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
 
 def _view_cell_cycle_length(window: Window):
     experiment = window.get_experiment()
-    links = experiment.particle_links() if experiment.particle_links() is not None else experiment.particle_links_scratch()
+    links = experiment.links.get_baseline_else_scratch()
     if links is None:
         raise UserError("No links specified", "No links were loaded. Cannot plot anything.")
 

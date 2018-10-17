@@ -6,6 +6,7 @@
 from autotrack import gui
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
+from autotrack.core.links import LinkType
 from autotrack.imaging import tifffolder, io
 from autotrack.linking_analysis import comparison
 from autotrack.visualizer import image_visualizer
@@ -31,9 +32,10 @@ print("Starting...")
 experiment = Experiment()
 io.load_positions_and_shapes_from_json(experiment, _positions_file,
                                        min_time_point=_min_time_point, max_time_point=_max_time_point)
-io.load_links_and_scores_from_json(experiment, _automatic_links_file, links_are_scratch=True)
-experiment.particle_links(io.load_links_from_json(_baseline_links_file,
-                                                  min_time_point=_min_time_point, max_time_point=_max_time_point))
+io.load_linking_result(experiment, _automatic_links_file, LinkType.SCRATCH)
+experiment.links.set_links(LinkType.BASELINE, io.load_links_from_json(_baseline_links_file,
+                                                                      min_time_point=_min_time_point,
+                                                                      max_time_point=_max_time_point))
 
 comparison.print_differences(experiment)
 

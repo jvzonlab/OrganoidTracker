@@ -6,6 +6,7 @@ from numpy import ndarray
 
 from autotrack.core import TimePoint, Name
 from autotrack.core.image_loader import ImageLoader
+from autotrack.core.links import ParticleLinks, LinkType
 from autotrack.core.particles import Particle, ParticleCollection
 from autotrack.core.score import ScoreCollection
 
@@ -55,16 +56,15 @@ class Experiment:
 
     _particles: ParticleCollection
     scores: ScoreCollection
-    _particle_links: Optional[Graph] = None
-    _particle_links_baseline: Optional[Graph] = None # Links that are assumed to be correct
+    _links: ParticleLinks
     _image_loader: ImageLoader = ImageLoader()
-
     _name: Name
 
     def __init__(self):
         self._name = Name()
         self._particles = ParticleCollection()
         self.scores = ScoreCollection()
+        self._links = ParticleLinks()
 
     def add_particle_raw(self, x: float, y: float, z: float, time_point_number: int):
         """Adds a single particle to the experiment, creating the time point if it does not exist yet."""
@@ -78,7 +78,7 @@ class Experiment:
 
     def remove_particle(self, particle: Particle):
         self._particles.detach_particle(particle)
-        self._remove_from_graph(particle)
+        self._links.remove_links_of_particle(particle)
 
     def move_particle(self, old_position: Particle, position_new: Particle) -> bool:
         """Moves the position of a particle, preserving any links. (So it's different from remove-and-readd.) The shape
@@ -86,48 +86,34 @@ class Experiment:
         the new position has not time point specified, it is set to the time point o the existing particle."""
         position_new.with_time_point_number(old_position.time_point_number())  # Make sure both have the same time point
 
-        # Replace also in linking graphs
-        mapping = {old_position: position_new}
-        if self._particle_links is not None and old_position in self._particle_links:
-            networkx.relabel_nodes(self._particle_links, mapping, copy=False)
-            if old_position in self._particle_links:
-                return False
-        if self._particle_links_baseline is not None and old_position in self._particle_links_baseline:
-            networkx.relabel_nodes(self._particle_links_baseline, mapping, copy=False)
-            if old_position in self._particle_links_baseline:
-                return False
+        # Replace in linking graphs
+        self._links.replace_particle(old_position, position_new)
 
-        time_point = self.get_time_point(old_position.time_point_number())
+        # Replace in particle collection
         self._particles.detach_particle(old_position)
         self._particles.add(position_new)
         return True
 
-    def _remove_from_graph(self, particle: Particle):
-        if self._particle_links is not None and particle in self._particle_links:
-            self._particle_links.remove_node(particle)
-        if self._particle_links_baseline is not None and particle in self._particle_links_baseline:
-            self._particle_links_baseline.remove_node(particle)
-
     def remove_particles(self, time_point: TimePoint):
         """Removes the particles and links of a given time point."""
         for particle in self._particles.of_time_point(time_point):
-            self._remove_from_graph(particle)
+            self._links.remove_links_of_particle(particle)
         self._particles.detach_all_for_time_point(time_point)
 
     def remove_all_particles(self):
         """Removes all particles and links in the experiment, so in all time points."""
         self._particles = ParticleCollection()
-        self._particle_links = None
-        self._particle_links_baseline = None
+        self._links.remove_all_links()
+        self.scores = ScoreCollection()
 
     def get_time_point(self, time_point_number: int) -> TimePoint:
-        """Gets the time point with the given number. Throws KeyError if no such time point exists."""
+        """Gets the time point with the given number. Throws ValueError if no such time point exists."""
         first = self.first_time_point_number()
         last = self.last_time_point_number()
         if first is None or last is None:
-            raise KeyError("No time points have been loaded yet")
+            raise ValueError("No time points have been loaded yet")
         if time_point_number < first or time_point_number > last:
-            raise KeyError("Time point out of bounds (was " + str(time_point_number) + ")")
+            raise ValueError("Time point out of bounds (was " + str(time_point_number) + ")")
         return TimePoint(time_point_number)
 
     def first_time_point_number(self):
@@ -160,18 +146,6 @@ class Experiment:
          time point."""
         return self.get_time_point(time_point.time_point_number() + 1)
 
-    def particle_links_scratch(self, network: Optional[Graph] = None) -> Optional[Graph]:
-        """Gets or sets the particle linking results. It is not possible to replace exising results."""
-        if network is not None:
-            self._particle_links = network
-        return self._particle_links
-
-    def particle_links(self, network: Optional[Graph] = None) -> Optional[Graph]:
-        """Gets or sets a particle linking result **that is known to be correct**."""
-        if network is not None:
-            self._particle_links_baseline = network
-        return self._particle_links_baseline
-
     def time_points(self) -> Iterable[TimePoint]:
         first_number = self.first_time_point_number()
         last_number = self.last_time_point_number()
@@ -183,7 +157,7 @@ class Experiment:
             yield self.get_time_point(current_number)
             current_number += 1
 
-    def image_loader(self, image_loader: Optional[ImageLoader] = None):
+    def image_loader(self, image_loader: Optional[ImageLoader] = None) -> ImageLoader:
         """Gets/sets the image loader."""
         if image_loader is not None:
             self._image_loader = _CachedImageLoader(image_loader.uncached())
@@ -203,3 +177,9 @@ class Experiment:
     def name(self) -> Name:
         # Don't allow to replace the Name object
         return self._name
+
+    @property
+    def links(self) -> ParticleLinks:
+        """Gets all links between the particles of different time points."""
+        # Don't allow to replace the ParticleLinks object
+        return self._links

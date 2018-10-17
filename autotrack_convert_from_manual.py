@@ -6,6 +6,7 @@
 
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
+from autotrack.core.links import LinkType
 from autotrack.imaging import tifffolder, io
 from autotrack.manual_tracking import links_extractor
 from autotrack.particle_detection import ellipse_detector_for_experiment
@@ -31,7 +32,7 @@ graph = links_extractor.extract_from_tracks(_tracks_folder, min_time_point=_min_
 experiment = Experiment()
 for particle in graph.nodes():
     experiment.add_particle(particle)
-experiment.particle_links(graph)
+experiment.links.set_links(LinkType.BASELINE, graph)
 
 print("Performing rudimentary 2d shape detection...")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,

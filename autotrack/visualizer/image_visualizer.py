@@ -125,15 +125,13 @@ class AbstractImageVisualizer(Visualizer):
         link_changes = 0
 
         # Next time point
-        can_show_other_time_points = self._must_show_other_time_points() and (
-                                         self._experiment.particle_links() is not None
-                                         or self._experiment.particle_links_scratch() is not None)
+        can_show_other_time_points = self._must_show_other_time_points() and self._experiment.links.has_links()
         if self._display_settings.show_next_time_point or can_show_other_time_points:
             # Only draw particles of next/previous time point if there is linking data, or if we're forced to
             try:
                 link_changes += self._draw_particles_of_time_point(
                     self._experiment.get_next_time_point(self._time_point), color='red')
-            except KeyError:
+            except ValueError:
                 pass  # There is no next time point, ignore
 
         # Previous time point
@@ -141,7 +139,7 @@ class AbstractImageVisualizer(Visualizer):
             try:
                 link_changes += self._draw_particles_of_time_point(
                     self._experiment.get_previous_time_point(self._time_point), color='blue')
-            except KeyError:
+            except ValueError:
                 pass  # There is no previous time point, ignore
 
         # Current time point
@@ -163,7 +161,7 @@ class AbstractImageVisualizer(Visualizer):
         link_changes = 0
         if abs(dz) <= self.MAX_Z_DISTANCE:
             # Draw error marker
-            graph = self._experiment.particle_links_scratch() or self._experiment.particle_links()
+            graph = self._experiment.links.get_scratch_else_baseline()
             if graph is not None and particle in graph and "error" in graph.nodes[particle]:
                 self._draw_error(particle, dz)
 
@@ -188,8 +186,8 @@ class AbstractImageVisualizer(Visualizer):
         """Draws links between the particles. Returns 1 if there is 1 error: the baseline links don't match the actual
         links.
         """
-        links_normal = self._get_links(self._experiment.particle_links_scratch(), particle)
-        links_base = self._get_links(self._experiment.particle_links(), particle)
+        links_normal = self._get_links(self._experiment.links.scratch, particle)
+        links_base = self._get_links(self._experiment.links.baseline, particle)
         if particle.time_point_number() > self._time_point.time_point_number():
             # Draw links that go to past
             links_normal = [p for p in links_normal if p.time_point_number() < particle.time_point_number()]
@@ -208,7 +206,7 @@ class AbstractImageVisualizer(Visualizer):
         self._draw_given_links(particle, links_base)
 
         # Check for errors
-        if self._experiment.particle_links_scratch() is not None and self._experiment.particle_links() is not None:
+        if self._experiment.links.can_compare_links():
             if links_base != links_normal:
                 return 1
         return 0
@@ -436,7 +434,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         elif event.key == "f":
             particle = self._get_particle_at(event.xdata, event.ydata)
             particles_of_time_point = self._experiment.particles.of_time_point(self._time_point)
-            links = self._experiment.particle_links_scratch()
+            links = self._experiment.links.get_scratch_else_baseline()
             if particle is not None and links is not None:
                 self.update_status("Flow toward previous frame: " +
                                    str(particle_flow.get_flow_to_previous(links, particles_of_time_point, particle)) +

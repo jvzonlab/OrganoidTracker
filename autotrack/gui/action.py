@@ -7,7 +7,9 @@ from typing import Optional
 
 from matplotlib.figure import Figure
 
+from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
+from autotrack.core.links import LinkType
 from autotrack.gui import Window, dialog
 from autotrack.gui.dialog import popup_message_cancellable
 from autotrack.imaging import tifffolder, io
@@ -84,7 +86,27 @@ def _find_pattern(file_name: str) -> Optional[str]:
     return None
 
 
-def load_positions(window: Window):
+def load_tracking_data(window: Window):
+    file_name = dialog.prompt_load_file("Select data file", [
+        (io.FILE_EXTENSION.upper() + " file", "*." + io.FILE_EXTENSION),
+        ("Detection or linking files", "*.json")])
+    if file_name is None:
+        return  # Cancelled
+
+    try:
+        new_experiment = io.load_data_file(file_name)
+    except ValueError as e:
+        messagebox.showerror("Error loading data file",
+                             "Failed to load data file.\n\n" + _error_message(e))
+    else:
+        # Transfer image loader from old experiment
+        new_experiment.image_loader(window.get_experiment().image_loader())
+
+        window.set_experiment(new_experiment)
+        window.refresh()
+
+
+def add_positions(window: Window):
     experiment = window.get_experiment()
 
     cell_file = dialog.prompt_load_file("Select positions file", [("JSON file", "*.json")])
@@ -93,32 +115,31 @@ def load_positions(window: Window):
 
     try:
         io.load_positions_and_shapes_from_json(experiment, cell_file)
-    except Exception as e:
-        messagebox.showerror("Error loading positions",
-                             "Failed to load positions.\n\n" + _error_message(e))
+    except ValueError as e:
+        raise UserError("Error loading positions",
+                        "Failed to load positions.\n\n" + _error_message(e))
     else:
         window.refresh()
 
 
-def load_links(window: Window):
+def add_links(window: Window):
     experiment = window.get_experiment()
 
     link_file = dialog.prompt_load_file("Select link file", [("JSON file", "*.json")])
     if not link_file:
         return  # Cancelled
 
-    set_as_main = experiment.particle_links() is None
     try:
-        io.load_links_and_scores_from_json(experiment, str(link_file), links_are_scratch=not set_as_main)
-    except Exception as e:
-        messagebox.showerror("Error loading links", "Failed to load links. Are you sure that is a valid JSON links"
-                                                    " file? Are the corresponding cell positions loaded?\n\n"
-                                                    + _error_message(e))
+        io.load_linking_result(experiment, str(link_file), LinkType.BASELINE)
+    except ValueError as e:
+        raise UserError("Error loading links", "Failed to load links. Are you sure that is a valid JSON links"
+                                               " file? Are the corresponding cell positions loaded?\n\n"
+                                               + _error_message(e))
     else:
         window.refresh()
 
 
-def load_guizela_tracks(window: Window):
+def add_guizela_tracks(window: Window):
     """Loads the tracks in Guizela's format."""
     folder = dialog.prompt_directory("Open folder with Guizela's tracks...")
     if not folder:
@@ -127,13 +148,9 @@ def load_guizela_tracks(window: Window):
     graph = links_extractor.extract_from_tracks(folder)
 
     experiment = window.get_experiment()
-    experiment.remove_all_particles()
     for particle in graph.nodes():
         experiment.add_particle(particle)
-    if experiment.particle_links() is None:
-        experiment.particle_links(graph)
-    else:
-        experiment.particle_links_scratch(graph)
+    experiment.links.add_links(LinkType.BASELINE, graph)
     window.refresh()
 
 
@@ -145,7 +162,7 @@ def export_positions_and_shapes(experiment: Experiment):
 
 
 def export_links(experiment: Experiment):
-    links = experiment.particle_links()
+    links = experiment.links.baseline
     if not links:
         messagebox.showerror("No links", "Cannot export links; there are no links created.")
         return
@@ -155,6 +172,15 @@ def export_links(experiment: Experiment):
         return  # Cancelled
 
     io.save_links_to_json(links, links_file)
+
+
+def save_tracking_data(experiment: Experiment):
+    data_file = dialog.prompt_save_file("Save data as...", [
+        (io.FILE_EXTENSION.upper() + " file", "*." + io.FILE_EXTENSION)])
+    if not data_file:
+        return  # Cancelled
+
+    io.save_data_to_json(experiment, data_file)
 
 
 def _error_message(error: Exception):

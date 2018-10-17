@@ -30,14 +30,14 @@ class TrackVisualizer(Visualizer):
 
         self._draw_particle(self._particle, color=core.COLOR_CELL_CURRENT, size=7)
 
-        self._draw_network(self._experiment.particle_links_scratch(), line_style='dotted', line_width=3, max_distance=1)
-        self._draw_network(self._experiment.particle_links())
+        self._draw_network(self._experiment.links.scratch, line_style='dotted', line_width=3, max_distance=1)
+        self._draw_network(self._experiment.links.baseline)
 
         plt.title("Tracks of " + str(self._particle) + "\n" + self._get_cell_age_str())
         self._fig.canvas.draw()
 
     def _get_cell_age_str(self) -> str:
-        graph = self._experiment.particle_links()
+        graph = self._experiment.links.get_baseline_else_scratch()
         if graph is None:
             return ""
         age = cell_links.get_age(graph, self._particle)

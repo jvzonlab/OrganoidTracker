@@ -22,15 +22,7 @@ def _get_problematic_particles(experiment: Experiment) -> List[Particle]:
 
 
 def _get_links(experiment: Experiment) -> Optional[Graph]:
-    scratch_graph = experiment.particle_links_scratch()
-    if scratch_graph is not None:
-        return scratch_graph
-    official_graph = experiment.particle_links()
-    if official_graph is None:
-        return None
-    scratch_graph = official_graph.copy()
-    experiment.particle_links_scratch(scratch_graph)
-    return scratch_graph
+    return experiment.links.get_baseline_else_scratch()
 
 
 class ErrorsVisualizer(ParticleListVisualizer):
@@ -62,7 +54,7 @@ class ErrorsVisualizer(ParticleListVisualizer):
             "\n" + message + "\n" + str(particle)
 
     def _get_warning_info(self, particle: Particle) -> Tuple[str, str, bool]:
-        graph = self._experiment.particle_links_scratch()
+        graph = self._experiment.links.get_scratch_else_baseline()
         data = graph.nodes[particle]
         is_edited = "edited" in data and data["edited"]
         if "error" in data:
@@ -74,7 +66,7 @@ class ErrorsVisualizer(ParticleListVisualizer):
         if self._current_particle_index < 0 or self._current_particle_index >= len(self._particle_list):
             return
         particle = self._particle_list[self._current_particle_index]
-        self._experiment.particle_links_scratch().add_node(particle, error=None, warning=None)
+        self._experiment.links.scratch.add_node(particle, error=None, warning=None)
         self._particle_list.remove(particle)
         if self._current_particle_index >= len(self._particle_list):
             self._current_particle_index -= 1  # Deleted last particle, go back to previous

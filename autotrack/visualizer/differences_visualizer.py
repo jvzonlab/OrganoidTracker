@@ -10,8 +10,8 @@ from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
 
 
 def _get_differences(experiment: Experiment) -> List[Particle]:
-    base_links = experiment.particle_links()
-    scratch_links = experiment.particle_links_scratch()
+    base_links = experiment.links.baseline
+    scratch_links = experiment.links.scratch
     if scratch_links is None or base_links is None:
         return []
 

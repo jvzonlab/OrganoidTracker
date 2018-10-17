@@ -4,6 +4,7 @@ from matplotlib.backend_bases import KeyEvent, MouseEvent
 from networkx import Graph, NetworkXError
 
 from autotrack import core
+from autotrack.core.links import LinkType
 from autotrack.core.particles import Particle
 from autotrack.gui import Window
 from autotrack.imaging import io
@@ -29,13 +30,15 @@ class LinkEditor(AbstractImageVisualizer):
 
         # Check if graph exists
         experiment = window.get_experiment()
-        graph = experiment.particle_links_scratch()
+        graph = experiment.links.scratch
         if graph is None:
-            baseline_graph = experiment.particle_links()
+            baseline_graph = experiment.links.baseline
             if baseline_graph is None:
-                experiment.particle_links_scratch(Graph())
+                # No links at all, start
+                experiment.links.add_links(LinkType.SCRATCH, Graph())
             else:
-                experiment.particle_links_scratch(baseline_graph.copy())
+                # Only baseline links, add scratch links
+                experiment.links.add_links(LinkType.SCRATCH, baseline_graph.copy())
 
     def _get_figure_title(self, errors: int) -> str:
         return "Editing links of time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
@@ -87,13 +90,13 @@ class LinkEditor(AbstractImageVisualizer):
     def _on_key_press(self, event: KeyEvent):
         if event.key == "insert":
             if self._check_selection():
-                self._experiment.particle_links_scratch().add_edge(self._selected1, self._selected2)
+                self._experiment.links.scratch.add_edge(self._selected1, self._selected2)
                 self._after_modification()
                 self.update_status("Added link")
         elif event.key == "delete":
             if self._check_selection():
                 try:
-                    self._experiment.particle_links_scratch().remove_edge(self._selected1, self._selected2)
+                    self._experiment.links.scratch.remove_edge(self._selected1, self._selected2)
                     self._after_modification()
                     self.update_status("Removed link")
                 except NetworkXError:
@@ -112,15 +115,15 @@ class LinkEditor(AbstractImageVisualizer):
         activate(image_visualizer)
 
     def _commit(self):
-        our_links = self._experiment.particle_links_scratch()
-        self._experiment.particle_links(our_links.copy())
+        our_links = self._experiment.links.scratch
+        self._experiment.links.set_links(LinkType.BASELINE, our_links.copy())
         self._has_uncommitted_changes = False
         self.draw_view()
         self.update_status("Committed all changes.")
 
     def _revert(self):
-        old_links = self._experiment.particle_links()
-        self._experiment.particle_links_scratch(old_links.copy())
+        old_links = self._experiment.links.baseline
+        self._experiment.links.set_links(LinkType.SCRATCH, old_links.copy())
         self._has_uncommitted_changes = False
         self.draw_view()
         self.update_status("Reverted all uncommitted changes.")
@@ -167,11 +170,11 @@ class LinkEditor(AbstractImageVisualizer):
             return
         if not filename.endswith(".json"):
             filename += ".json"
-        io.save_links_to_json(self._experiment.particle_links(), filename)
+        io.save_links_to_json(self._experiment.links.baseline, filename)
         self.update_status("Saved committed links to " + filename)
 
     def _after_modification(self):
-        graph = self._experiment.particle_links_scratch()
+        graph = self._experiment.links.scratch
         graph.add_node(self._selected1, edited=True)  # Mark as edited, so that warnings displayer knows this
         graph.add_node(self._selected2, edited=True)
         self._selected1 = None

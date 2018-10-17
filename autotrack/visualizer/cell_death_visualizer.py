@@ -2,17 +2,17 @@ from typing import List, Optional
 
 from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
-from autotrack.linking import cell_links
+from autotrack.linking.existing_connections import find_future_particles
 from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
 from autotrack.gui import Window
 from autotrack.linking_analysis import cell_death_finder
 
 
 def _get_deaths(experiment: Experiment) -> List[Particle]:
-    graph = experiment.particle_links()
+    graph = experiment.links.get_baseline_else_scratch()
     if graph is None:
         return []
-    all_deaths = list(cell_death_finder.find_cell_deaths(experiment, graph))
+    all_deaths = list(cell_death_finder.find_cell_deaths(graph, experiment.last_time_point_number()))
     return all_deaths
 
 
@@ -42,13 +42,13 @@ class CellDeathVisualizer(ParticleListVisualizer):
 
     def _was_recognized(self, mother: Particle) -> Optional[bool]:
         """Gets if a death was correctly recognized by the scratch graph. Returns None if there is no scratch graph."""
-        main_graph = self._experiment.particle_links()
-        scratch_graph = self._experiment.particle_links_scratch()
+        main_graph = self._experiment.links.baseline
+        scratch_graph = self._experiment.links.scratch
         if main_graph is None or scratch_graph is None:
             return None
 
         try:
-            connections_scratch = cell_links.find_future_particles(scratch_graph, mother)
+            connections_scratch = find_future_particles(scratch_graph, mother)
             return len(connections_scratch) == 0
         except KeyError:
             return False

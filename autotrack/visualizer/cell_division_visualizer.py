@@ -9,7 +9,7 @@ from autotrack.linking import cell_links
 
 
 def _get_mothers(experiment: Experiment) -> List[Particle]:
-    graph = experiment.particle_links()
+    graph = experiment.links.get_baseline_else_scratch()
     if graph is None:
         return []
     all_mothers = list(mother_finder.find_mothers(graph))
@@ -41,8 +41,8 @@ class CellDivisionVisualizer(ParticleListVisualizer):
 
     def _was_recognized(self, mother: Particle) -> Optional[bool]:
         """Gets if a mother was correctly recognized by the scratch graph. Returns None if there is no scratch graph."""
-        main_graph = self._experiment.particle_links()
-        scratch_graph = self._experiment.particle_links_scratch()
+        main_graph = self._experiment.links.baseline
+        scratch_graph = self._experiment.links.scratch
         if main_graph is None or scratch_graph is None:
             return None
 

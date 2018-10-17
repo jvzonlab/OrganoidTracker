@@ -17,7 +17,7 @@ TIME_POINT_FROM_FILE_NAME = re.compile("t(\d+)")
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "File/Import-Import positions in Laetitia's format...": lambda: _import_laetitia_positions(window),
+        "Edit/Add-Add positions in Laetitia's format...": lambda: _import_laetitia_positions(window),
         "File/Export-Export positions in Laetitia's format...": lambda: _export_laetitia_positions(window)
     }
 
@@ -31,7 +31,6 @@ def _import_laetitia_positions(window: Window):
     if directory is None:
         return
 
-    window.get_experiment().remove_all_particles()
     for file_name in os.listdir(directory):
         _import_file(window.get_experiment(), directory, file_name, z_offset)
 

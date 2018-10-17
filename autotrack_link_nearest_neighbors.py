@@ -7,6 +7,7 @@ possible links: those alternative links are shown as dotted lines.
 from autotrack import gui
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
+from autotrack.core.links import LinkType
 from autotrack.imaging import tifffolder, io
 from autotrack.linking import linker_for_experiment, link_util
 from autotrack.visualizer import image_visualizer
@@ -38,8 +39,8 @@ results = linker_for_experiment.with_only_the_preferred_edges(results_all)
 print("Writing results to file...")
 io.save_links_to_json(results, _output_file)
 print("Visualizing...")
-experiment.particle_links_scratch(results_all)
-experiment.particle_links(results)
+experiment.links.add_links(LinkType.SCRATCH, results_all)
+experiment.links.add_links(LinkType.BASELINE, results)
 image_visualizer.show(experiment)
 print("Done!")
 gui.mainloop()

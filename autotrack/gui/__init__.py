@@ -154,14 +154,16 @@ class Window:
 
         return {
             "File/New-New project...": lambda: action.new(self),
-            "File/Import-Import images...": lambda: action.load_images(self),
-            "File/Import-Import JSON positions and shapes...": lambda: action.load_positions(self),
-            "File/Import-Import JSON links, scores and warnings...": lambda: action.load_links(self),
-            "File/Import-Import Guizela's track format...": lambda: action.load_guizela_tracks(self),
-            "File/Export-Export positions and shapes...": lambda: action.export_positions_and_shapes(self.get_experiment()),
-            "File/Export-Export links...": lambda: action.export_links(self.get_experiment()),
+            "File/SaveLoad-Load images...": lambda: action.load_images(self),
+            "File/SaveLoad-Load tracking data...": lambda: action.load_tracking_data(self),
+            "File/SaveLoad-Save tracking data...": lambda: action.save_tracking_data(self.get_experiment()),
+            "File/Export-Export detection data only...": lambda: action.export_positions_and_shapes(self.get_experiment()),
+            "File/Export-Export linking data only...": lambda: action.export_links(self.get_experiment()),
             "File/Exit-Exit (Alt+F4)": lambda: action.ask_exit(self.__root),
-            "Edit/Experiment-Name of experiment...": lambda: action.rename_experiment(self),
+            "Edit/Add-Add positions and shapes...": lambda: action.add_positions(self),
+            "Edit/Add-Add links, scores and warnings...": lambda: action.add_links(self),
+            "Edit/Add-Add positions and links from Guizela's format...": lambda: action.add_guizela_tracks(self),
+            "Edit/Experiment-Rename experiment...": lambda: action.rename_experiment(self),
             "View/Toggle-Toggle showing axis numbers": lambda: action.toggle_axis(self.get_figure()),
         }
 

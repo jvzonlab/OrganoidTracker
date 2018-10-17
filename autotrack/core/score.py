@@ -132,6 +132,7 @@ class _ScoresOfTimePoint:
                     continue
             yield ScoredFamily(family, score)
 
+
 class ScoreCollection:
     _all_scores: Dict[int, _ScoresOfTimePoint]
 
@@ -145,6 +146,11 @@ class ScoreCollection:
             scores_of_time_point = _ScoresOfTimePoint()
             self._all_scores[family.mother.time_point_number()] = scores_of_time_point
         scores_of_time_point.mother_score(family, score)
+
+    def add_scored_families(self, scored_families: Iterable[ScoredFamily]):
+        """Adds all scored families to the score collection."""
+        for scored_family in scored_families:
+            self.set_family_score(scored_family.family, scored_family.score)
 
     def of_time_point(self, time_point: TimePoint) -> Iterable[ScoredFamily]:
         """Gets the scores of all mother cells in a time point."""

@@ -7,6 +7,7 @@ from os import path
 
 from autotrack import gui
 from autotrack.config import ConfigFile
+from autotrack.core.links import LinkType
 from autotrack.imaging import tifffolder, io
 from autotrack.visualizer import image_visualizer
 from autotrack.core.experiment import Experiment
@@ -31,7 +32,7 @@ if path.exists(_positions_file):
     io.load_positions_and_shapes_from_json(experiment, _positions_file,
                                            min_time_point=_min_time_point, max_time_point=_max_time_point)
 if path.exists(_links_file):
-    io.load_links_and_scores_from_json(experiment, _links_file, links_are_scratch=False)
+    io.load_linking_result(experiment, _links_file, LinkType.BASELINE)
 
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
