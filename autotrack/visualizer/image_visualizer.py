@@ -4,7 +4,6 @@ import cv2
 import numpy
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 from matplotlib.colors import Colormap
-from matplotlib.figure import Figure
 from networkx import Graph
 from numpy import ndarray
 from tifffile import tifffile
@@ -16,8 +15,6 @@ from autotrack.core.particles import Particle
 from autotrack.gui import launch_window, Window, dialog
 from autotrack.gui.dialog import popup_figure, prompt_int, popup_error
 from autotrack.linking import particle_flow
-from autotrack.linking_analysis import volume_and_intensity_graphs
-from autotrack.particle_detection import single_particle_detection
 from autotrack.visualizer import Visualizer, activate, DisplaySettings
 
 
@@ -403,8 +400,8 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     def get_extra_menu_options(self):
         return {
             **super().get_extra_menu_options(),
-            "Edit/Manual-Links... (L)": self._show_link_editor,
-            "Edit/Manual-Positions... (P)": self._show_position_editor,
+            "Edit/Manual-Manually edit links... (L)": self._show_link_editor,
+            "Edit/Manual-Manually edit positions... (P)": self._show_position_editor,
             "Edit/Automatic-Cell detection...": self._show_cell_detector,
             "View/Linking-Linking differences (D)": self._show_linking_differences,
             "View/Linking-Linking errors and warnings (E)": self._show_linking_errors,
@@ -455,16 +452,6 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         from autotrack.visualizer.cell_division_visualizer import CellDivisionVisualizer
         track_visualizer = CellDivisionVisualizer(self._window)
         activate(track_visualizer)
-
-    def _show_cell_volumes(self):
-        def draw(figure: Figure):
-            volume_and_intensity_graphs.plot_volumes(self._experiment, figure)
-        dialog.popup_figure(self._experiment.name, draw)
-
-    def _show_cell_intensities(self):
-        def draw(figure: Figure):
-            volume_and_intensity_graphs.plot_intensities(self._experiment, figure)
-        dialog.popup_figure(self._experiment.name, draw)
 
     def _show_linking_errors(self, particle: Optional[Particle] = None):
         from autotrack.visualizer.errors_visualizer import ErrorsVisualizer

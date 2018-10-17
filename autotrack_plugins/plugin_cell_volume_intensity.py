@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, List, Callable
+from typing import Optional, Tuple, List, Callable, Dict, Any
 
 from matplotlib.figure import Figure
 from networkx import Graph
@@ -6,12 +6,34 @@ from networkx import Graph
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
+from autotrack.gui import dialog, Window
 from autotrack.linking import mother_finder
 from statistics import median
 
 
 GetStatistic = Callable[[Experiment, Particle], float]  # A function that gets some statistic of a cell, like its volume
 PointList = Tuple[List[float], List[float]]  # A list of x values and a list of y values
+
+
+def get_menu_items(window: Window) -> Dict[str, Any]:
+    return {
+        "Graph/Cell cycle-Cell volumes over time...": lambda: _show_cell_volumes(window),
+        "Graph/Cell cycle-Cell intensities over time...": lambda: _show_cell_intensities(window)
+    }
+
+
+def _show_cell_volumes(window: Window):
+    def draw(figure: Figure):
+        _plot_volumes(window.get_experiment(), figure)
+
+    dialog.popup_figure(window.get_experiment().name, draw)
+
+
+def _show_cell_intensities(window: Window):
+    def draw(figure: Figure):
+        _plot_intensities(window.get_experiment(), figure)
+
+    dialog.popup_figure(window.get_experiment().name, draw)
 
 
 def _get_volume(experiment: Experiment, particle: Particle) -> Optional[float]:
@@ -30,7 +52,7 @@ def _get_intensity(experiment: Experiment, particle: Particle) -> Optional[float
         return None
 
 
-def plot_volumes(experiment: Experiment, figure: Figure, mi_start=0, line_count=5, starting_time_point=50):
+def _plot_volumes(experiment: Experiment, figure: Figure, mi_start=0, line_count=300, starting_time_point=50):
     """Plots the volumes of all cells in time. T=0 represents a cell division."""
     _plot_mother_stat(experiment, figure, _get_volume, 'Cell volume (px$^3$)', mi_start, line_count,
                       starting_time_point)
@@ -63,7 +85,7 @@ def _plot_mother_stat(experiment: Experiment, figure: Figure, stat: GetStatistic
         axes.legend()
 
 
-def plot_intensities(experiment: Experiment, figure: Figure, mi_start=0, line_count=5, starting_time_point=50):
+def _plot_intensities(experiment: Experiment, figure: Figure, mi_start=0, line_count=300, starting_time_point=50):
     """Plots the intensities of all cells in time. T=0 represents a cell division."""
     _plot_mother_stat(experiment, figure, _get_intensity, 'Cell intensity (A.U.)', mi_start, line_count,
                       starting_time_point)
