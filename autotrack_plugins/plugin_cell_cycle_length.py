@@ -54,7 +54,7 @@ def _draw_cell_cycle_length(figure: Figure, links: Graph):
 
     axes = figure.gca()
     axes.plot([0, plot_limit], [intercept, intercept + slope * plot_limit], color="gray")  # Regression line
-    axes.scatter(x=previous_cycle_durations, y=cycle_durations, color="black")  # The data
+    axes.scatter(x=previous_cycle_durations, y=cycle_durations, color="black", alpha=0.4, s=9)  # The data
     axes.text(plot_limit * 0.05, intercept - 5,
               f'$T_{{daughter}} = {slope:.3} \cdot T_{{mother}} + {intercept:.3}$\n$(R^2 = {r_squared:.4})$',
               va="top")
