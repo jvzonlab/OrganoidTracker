@@ -12,7 +12,7 @@ from autotrack.linking import mother_finder, cell_cycle
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Graph/Cell cycle-View cell cycle lengths...": lambda: _view_cell_cycle_length(window)
+        "Graph/Cell cycle-Lengths of cell cycles...": lambda: _view_cell_cycle_length(window)
     }
 
 

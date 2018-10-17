@@ -406,9 +406,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             "View/Linking-Linking differences (D)": self._show_linking_differences,
             "View/Linking-Linking errors and warnings (E)": self._show_linking_errors,
             "View/Cell-Cell divisions (/divisions)": self._show_mother_cells,
-            "View/Cell-Cell deaths (/deaths)": self._show_dead_cells,
-            "View/Cell-Cell volumes...": self._show_cell_volumes,
-            "View/Cell-Cell intensities...": self._show_cell_intensities
+            "View/Cell-Cell deaths (/deaths)": self._show_dead_cells
         }
 
     def _on_key_press(self, event: KeyEvent):
