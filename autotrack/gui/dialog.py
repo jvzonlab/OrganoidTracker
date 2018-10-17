@@ -34,7 +34,8 @@ def prompt_confirmation(title: str, question: str):
     return _messagebox.askokcancel(title, question)
 
 
-def prompt_save_file(title: str, file_types: List[Tuple[str, str]]) -> Optional[str]:
+def prompt_save_file(title: str, file_types: List[Tuple[str, str]], suggested_name: Optional[Name] = None
+                     ) -> Optional[str]:
     """Shows a prompt that asks the user to save a file. Example:
 
         prompt_save_file("Save as...", [("PNG file", "*.png"), ("JPEG file", "*.jpg")])
@@ -46,7 +47,9 @@ def prompt_save_file(title: str, file_types: List[Tuple[str, str]]) -> Optional[
         default_extension = default_extension[1:]
     else:
         default_extension = None
-    file_name = _filedialog.asksaveasfilename(title=title, filetypes=file_types, defaultextension=default_extension)
+    suggested_name_str = suggested_name.get_save_name() if suggested_name is not None else None
+    file_name = _filedialog.asksaveasfilename(title=title, filetypes=file_types, defaultextension=default_extension,
+                                              initialfile=suggested_name_str)
     if not file_name:
         return None
     return file_name
@@ -57,8 +60,15 @@ def prompt_load_file(title: str, file_types: List[Tuple[str, str]]) -> Optional[
 
         prompt_load_file("Choose an image", [("PNG file", "*.png"), ("JPEG file", "*.jpg")])
 
-        Returns None if the user pressed Cancel
+    Returns None if the user pressed Cancel. This function automatically adds an "All supported files" option.
     """
+    if len(file_types) > 1:
+        # Create option "All supported file types"
+        extensions = []
+        for name, extension in file_types:
+            extensions.append(extension)
+        file_types = [("All supported file types", ";".join(extensions))] + file_types
+
     file = _filedialog.askopenfilename(title=title, filetypes=file_types)
     if file == "":
         return None
@@ -100,8 +110,8 @@ def popup_figure(name: Name, draw_function: _Callable):
     def save_handler(event: KeyEvent):
         if event.key != "ctrl+s":
             return
-        file_name = _filedialog.asksaveasfilename(title="Save figure as...", initialfile=name.get_save_name(),
-                    filetypes=(("PNG file", "*.png"), ("PDF file", "*.pdf"), ("SVG file", "*.svg")))
+        file_name = prompt_save_file("Save figure as...", [
+            ("PNG file", "*.png"), ("PDF file", "*.pdf"), ("SVG file", "*.svg")], suggested_name=name)
         if file_name is None:
             return
         figure.savefig(file_name)
