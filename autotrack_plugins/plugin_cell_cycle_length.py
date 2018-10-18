@@ -1,9 +1,9 @@
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
 
 import numpy
 from matplotlib.figure import Figure
 from networkx import Graph
-from scipy.stats import linregress
+from numpy import ndarray
 
 from autotrack.core import UserError
 from autotrack.gui import Window, dialog
@@ -23,6 +23,23 @@ def _view_cell_cycle_length(window: Window):
         raise UserError("No links specified", "No links were loaded. Cannot plot anything.")
 
     dialog.popup_figure(experiment.name, lambda fig: _draw_cell_cycle_length(fig, links))
+
+
+def _calculate_moving_average(x_values: ndarray, y_values: ndarray, window_size: int = 21) -> Tuple[ndarray, ndarray]:
+    """Simply moving average calculating for the given x and y values."""
+    extend = window_size / 2
+
+    x_min = x_values.min() - 1
+    x_max = x_values.max() + 2
+
+    x_moving_average = numpy.arange(x_min, x_max + 1)
+    y_moving_average = numpy.empty_like(x_moving_average)
+    for i in range(len(x_moving_average)):
+        # Construct a boolean area on which x values to use
+        x = x_moving_average[i]
+        used_y_values = y_values[(x_values >= x - extend) & (x_values <= x + extend)]
+        y_moving_average[i] = used_y_values.mean()
+    return x_moving_average, y_moving_average
 
 
 def _draw_cell_cycle_length(figure: Figure, links: Graph):
@@ -49,18 +66,19 @@ def _draw_cell_cycle_length(figure: Figure, links: Graph):
     cycle_durations = numpy.array(cycle_durations, dtype=numpy.int32)
     plot_limit = cycle_durations.max() * 1.1
 
-    slope, intercept, r_value, p_value, std_err = linregress(x=previous_cycle_durations, y=cycle_durations)
-    r_squared = r_value ** 2
+    window_size = 21
+    x_moving_average, y_moving_average = _calculate_moving_average(previous_cycle_durations, cycle_durations,
+                                                                   window_size=window_size)
 
     axes = figure.gca()
-    axes.plot([0, plot_limit], [intercept, intercept + slope * plot_limit], color="gray")  # Regression line
-    axes.scatter(x=previous_cycle_durations, y=cycle_durations, color="black", alpha=0.4, s=9)  # The data
-    axes.text(plot_limit * 0.05, intercept - 5,
-              f'$T_{{daughter}} = {slope:.3} \cdot T_{{mother}} + {intercept:.3}$\n$(R^2 = {r_squared:.4})$',
-              va="top")
+    axes.plot(numpy.arange(plot_limit), color="orange", label="$T_{mother} = T_{daughter}$ line")
+    axes.plot(x_moving_average, y_moving_average, color="blue", linewidth=2,
+              label=f"Moving average ({window_size} time points)")
+    axes.scatter(x=previous_cycle_durations, y=cycle_durations, color="black", alpha=0.4, s=25, lw=0)
     axes.set_xlim(0, plot_limit)
     axes.set_ylim(0, plot_limit)
     axes.set_title("Length of mother cell cycle versus length of daughter cell cycle")
     axes.set_aspect('equal', adjustable='box')
-    axes.set_xlabel("$T_{mother}$")
-    axes.set_ylabel("$T_{daughter}$")
+    axes.set_xlabel("$T_{mother}$ (time points)")
+    axes.set_ylabel("$T_{daughter}$ (time points)")
+    axes.legend(loc="lower right")
