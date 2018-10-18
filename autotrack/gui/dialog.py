@@ -64,9 +64,9 @@ def prompt_load_file(title: str, file_types: List[Tuple[str, str]]) -> Optional[
     """
     if len(file_types) > 1:
         # Create option "All supported file types"
-        extensions = []
+        extensions = set()
         for name, extension in file_types:
-            extensions.append(extension)
+            extensions.add(extension)
         file_types = [("All supported file types", ";".join(extensions))] + file_types
 
     file = _filedialog.askopenfilename(title=title, filetypes=file_types)

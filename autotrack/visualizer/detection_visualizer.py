@@ -53,15 +53,13 @@ class DetectionVisualizer(AbstractImageVisualizer):
                                                                                      self._display_threshold),
             "Threshold/Smoothed-Smoothed basic threshold": self.async(self._get_adaptive_smoothed_threshold,
                                                                       self._display_threshold),
-            "Detection/Default-Detect cells": self.async(self._get_detected_cells, self._display_watershed),
-            "Detection/Default-Detect cells using existing points": self.async(self._get_detected_cells_using_particles,
-                                                                               self._display_watershed),
-            "Detection/Default-Detect contours": self.async(self._get_detected_contours, self._display_threshold),
-            "Reconstruction/Default-Reconstruct smoothed threshold using existing points": self.async(
-                self._get_reconstruction_of_basic_threshold,
+            "Reconstruction/Default-Reconstruct normal treshold": self.async(self._get_threshold_reconstruction,
+                                                                             self._display_watershed),
+            "Reconstruction/Default-Reconstruct smoothed threshold": self.async(
+                self._get_smoothed_threshold_reconstruction,
                 self._display_watershed),
-            "Reconstruction/Default-Reconstruct cells using existing points": self.async(
-                self._get_reconstruction_using_particles,
+            "Reconstruction/Default-Reconstruct original image": self.async(
+                self._get_image_reconstruction,
                 self._display_reconstruction)
         }
 
@@ -148,27 +146,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
     def _display_watershed(self, image_stack: ndarray):
         self._display_image(image_stack, watershedding.COLOR_MAP)
 
-    def _get_detected_cells(self, return_intermediate: bool = False):
-        images = self._get_8bit_images()
-        if images is None:
-            dialog.popup_error("Failed to detect cells", "Cannot detect cells - no images loaded.")
-            return
-
-        images_smoothed = smoothing.get_smoothed(images, self.watershed_transform_smooth_size)
-        threshold = numpy.empty_like(images, dtype=numpy.uint8)
-        thresholding.advanced_threshold(images, images_smoothed, threshold, self.threshold_block_size,
-                                        self.minimal_size, self._experiment.particles.of_time_point(self._time_point))
-
-        distance_transform = numpy.empty_like(images, dtype=numpy.float64)
-        watershedding.distance_transform(threshold, distance_transform, self.resolution)
-
-        watershed = watershedding.watershed_maxima(threshold, distance_transform, self.minimal_size)[0]
-        self._print_missed_cells(watershed)
-        if return_intermediate:
-            return images, images_smoothed, watershed
-        return watershed
-
-    def _get_detected_cells_using_particles(self, return_intermediate: bool = False) -> Any:
+    def _get_threshold_reconstruction(self, return_intermediate: bool = False) -> Any:
         particles = self._experiment.particles.of_time_point(self._time_point)
         if len(particles) == 0:
             raise UserError("Failed to detect cells", "Cannot detect cells - no particle positions loaded.")
@@ -200,8 +178,8 @@ class DetectionVisualizer(AbstractImageVisualizer):
             return images, images_smoothed, watershed
         return watershed
 
-    def _get_reconstruction_of_basic_threshold(self, return_intermediate=False) -> Union[ndarray, Tuple[ndarray, ndarray]]:
-        images, images_smoothed, watershed = self._get_detected_cells_using_particles(return_intermediate=True)
+    def _get_smoothed_threshold_reconstruction(self, return_intermediate=False) -> Union[ndarray, Tuple[ndarray, ndarray]]:
+        images, images_smoothed, watershed = self._get_threshold_reconstruction(return_intermediate=True)
 
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
         thresholding.adaptive_threshold(images_smoothed, threshold, self.threshold_block_size)
@@ -212,8 +190,8 @@ class DetectionVisualizer(AbstractImageVisualizer):
             return images, watershed
         return watershed
 
-    def _get_reconstruction_using_particles(self) -> List[Gaussian]:
-        images, watershed = self._get_reconstruction_of_basic_threshold(return_intermediate=True)
+    def _get_image_reconstruction(self) -> List[Gaussian]:
+        images, watershed = self._get_smoothed_threshold_reconstruction(return_intermediate=True)
 
         return gaussian_fit.perform_gaussian_mixture_fit_from_watershed(images, watershed, self.gaussian_fit_smooth_size)
 
@@ -235,22 +213,6 @@ class DetectionVisualizer(AbstractImageVisualizer):
 
         canvas.clip(0, 1, out=canvas)
         self._display_image(canvas)
-
-    def _get_detected_contours(self):
-        images = self._get_8bit_images()
-        if images is None:
-            dialog.popup_error("Failed to detect cells", "Cannot detect cells - no images loaded.")
-            return
-
-        images_smoothed = smoothing.get_smoothed(images, self.watershed_transform_smooth_size)
-        threshold = numpy.empty_like(images, dtype=numpy.uint8)
-        thresholding.advanced_threshold(images, images_smoothed, threshold, self.threshold_block_size, self.minimal_size)
-
-        im2, contours, hierarchy = cv2.findContours(threshold[self._z], cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        threshold[self._z] = 0
-        for contour in contours:
-            cv2.drawContours(threshold[self._z], [contour], 0, 255, 2)
-        return threshold
 
     def _time_point_to_rgb(self):
         """If the time point image is a black-and-white image, it is converted to RGB"""

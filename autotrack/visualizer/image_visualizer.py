@@ -337,7 +337,7 @@ class AbstractImageVisualizer(Visualizer):
             self.draw_view()
             self.update_status("Moved to time point " + str(new_time_point_number) + "!")
             return True
-        except KeyError:
+        except ValueError:
             self.update_status("Unknown time point: " + str(new_time_point_number) + " (range is "
                                + str(self._experiment.first_time_point_number()) + " to "
                                + str(self._experiment.last_time_point_number()) + ", inclusive)")
@@ -353,7 +353,7 @@ class AbstractImageVisualizer(Visualizer):
             self._clamp_z()  # Caps z to allowable range
             self.draw_view()
             self.update_status(self.get_default_status())
-        except KeyError:
+        except ValueError:
             pass
 
     def refresh_view(self):
