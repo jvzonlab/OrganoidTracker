@@ -1,4 +1,4 @@
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, List
 
 import numpy
 from matplotlib.figure import Figure
@@ -25,21 +25,31 @@ def _view_cell_cycle_length(window: Window):
     dialog.popup_figure(experiment.name, lambda fig: _draw_cell_cycle_length(fig, links))
 
 
-def _calculate_moving_average(x_values: ndarray, y_values: ndarray, window_size: int = 21) -> Tuple[ndarray, ndarray]:
-    """Simply moving average calculating for the given x and y values."""
+def _calculate_moving_average(x_values: ndarray, y_values: ndarray, window_size: int = 21
+                              ) -> Tuple[ndarray, ndarray, ndarray]:
+    """Simply moving average calculating for the given x and y values. Returns x, mean y and standard deviation y
+    values."""
     extend = window_size / 2
 
-    x_min = x_values.min() - 1
-    x_max = x_values.max() + 2
+    x_min = x_values.min()
+    x_max = x_values.max()
 
-    x_moving_average = numpy.arange(x_min, x_max + 1)
-    y_moving_average = numpy.empty_like(x_moving_average)
-    for i in range(len(x_moving_average)):
+    x_moving_average = list()
+    y_moving_average = list()
+    y_moving_average_stdev = list()
+    for x in range(int(x_min), int(x_max) + 1):
         # Construct a boolean area on which x values to use
-        x = x_moving_average[i]
         used_y_values = y_values[(x_values >= x - extend) & (x_values <= x + extend)]
-        y_moving_average[i] = used_y_values.mean()
-    return x_moving_average, y_moving_average
+
+        if len(used_y_values) < 2:
+            continue
+        x_moving_average.append(x)
+        y_moving_average.append(used_y_values.mean())
+        y_moving_average_stdev.append(numpy.std(used_y_values, ddof=1))
+
+    return numpy.array(x_moving_average, dtype=numpy.float32),\
+           numpy.array(y_moving_average, dtype=numpy.float32),\
+           numpy.array(y_moving_average_stdev, dtype=numpy.float32)
 
 
 def _draw_cell_cycle_length(figure: Figure, links: Graph):
@@ -66,14 +76,16 @@ def _draw_cell_cycle_length(figure: Figure, links: Graph):
     cycle_durations = numpy.array(cycle_durations, dtype=numpy.int32)
     plot_limit = cycle_durations.max() * 1.1
 
-    window_size = 21
-    x_moving_average, y_moving_average = _calculate_moving_average(previous_cycle_durations, cycle_durations,
-                                                                   window_size=window_size)
+    window_size = 11
+    x_moving_average, y_moving_average, y_moving_average_stdev \
+        = _calculate_moving_average(previous_cycle_durations, cycle_durations, window_size=window_size)
 
     axes = figure.gca()
     axes.plot(numpy.arange(plot_limit), color="orange", label="$T_{mother} = T_{daughter}$ line")
     axes.plot(x_moving_average, y_moving_average, color="blue", linewidth=2,
               label=f"Moving average ({window_size} time points)")
+    axes.fill_between(x_moving_average, y_moving_average - y_moving_average_stdev,
+                      y_moving_average + y_moving_average_stdev, color="blue", alpha=0.2)
     axes.scatter(x=previous_cycle_durations, y=cycle_durations, color="black", alpha=0.4, s=25, lw=0)
     axes.set_xlim(0, plot_limit)
     axes.set_ylim(0, plot_limit)
