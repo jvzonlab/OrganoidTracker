@@ -9,7 +9,7 @@ from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
 from autotrack.core.links import LinkType
 from autotrack.imaging import tifffolder, io
-from autotrack.linking import linker_for_experiment, link_util
+from autotrack.linking import linker_for_experiment
 from autotrack.visualizer import image_visualizer
 
 # PARAMETERS
