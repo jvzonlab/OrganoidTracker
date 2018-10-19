@@ -32,7 +32,6 @@ class DisplaySettings:
 
 class Visualizer:
     """A complete application for visualization of an experiment"""
-    _experiment: Experiment
     _window: Window
     _fig: Figure
     _ax: Axes
@@ -40,10 +39,15 @@ class Visualizer:
     def __init__(self, window: Window):
         if not isinstance(window, Window):
             raise ValueError("window is not a Window")
-        self._experiment = window.get_experiment()
         self._window = window
         self._fig = window.get_figure()
         self._ax = self._fig.gca()
+
+    @property
+    def _experiment(self) -> Experiment:
+        """By making this a dynamic property (instead of just using self._experiment = window.get_experiment()), its
+        value is always up-to-date, even if window.set_experiment(...) is called."""
+        return self._window.get_experiment()
 
     def _clear_axis(self):
         """Clears the axis, except that zoom settings are preserved"""
