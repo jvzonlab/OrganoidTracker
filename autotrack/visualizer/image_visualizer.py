@@ -155,7 +155,6 @@ class AbstractImageVisualizer(Visualizer):
         return link_changes
 
     def _draw_particle(self, particle: Particle, color: str, dz: int, dt: int) -> int:
-        link_changes = 0
         if abs(dz) <= self.MAX_Z_DISTANCE:
             # Draw error marker
             graph = self._experiment.links.get_scratch_else_baseline()
@@ -405,7 +404,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             "Edit/Automatic-Cell detection...": self._show_cell_detector,
             "View/Linking-Linking differences (D)": self._show_linking_differences,
             "View/Linking-Linking errors and warnings (E)": self._show_linking_errors,
-            "View/Cell-Cell divisions (/divisions)": self._show_mother_cells,
+            "View/Cell-Cell divisions (M)": self._show_mother_cells,
             "View/Cell-Cell deaths (/deaths)": self._show_dead_cells
         }
 
@@ -422,6 +421,8 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         elif event.key == "d":
             particle = self._get_particle_at(event.xdata, event.ydata)
             self._show_linking_differences(particle)
+        elif event.key == "m":
+            self._show_mother_cells()
         elif event.key == "l":
             self._show_link_editor()
         elif event.key == "p":

@@ -1,11 +1,13 @@
 from typing import List, Optional
 
+from matplotlib.backend_bases import KeyEvent
+
 from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
+from autotrack.linking.existing_connections import find_future_particles
 from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
 from autotrack.gui import Window
 from autotrack.linking import mother_finder
-from autotrack.linking import cell_links
 
 
 def _get_mothers(experiment: Experiment) -> List[Particle]:
@@ -39,6 +41,12 @@ class CellDivisionVisualizer(ParticleListVisualizer):
         return "Mother " + str(self._current_particle_index + 1) + "/" + str(len(self._particle_list))\
                + recognized_str + "\n" + str(mother)
 
+    def _on_key_press(self, event: KeyEvent):
+        if event.key == "m":
+            self.goto_full_image()
+        else:
+            super()._on_key_press(event)
+
     def _was_recognized(self, mother: Particle) -> Optional[bool]:
         """Gets if a mother was correctly recognized by the scratch graph. Returns None if there is no scratch graph."""
         main_graph = self._experiment.links.baseline
@@ -47,8 +55,8 @@ class CellDivisionVisualizer(ParticleListVisualizer):
             return None
 
         try:
-            connections_main = cell_links.find_future_particles(main_graph, mother)
-            connections_scratch = cell_links.find_future_particles(scratch_graph, mother)
+            connections_main = find_future_particles(main_graph, mother)
+            connections_scratch = find_future_particles(scratch_graph, mother)
             return connections_main == connections_scratch
         except KeyError:
             return False
