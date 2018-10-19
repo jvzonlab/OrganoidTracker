@@ -36,7 +36,8 @@ def apply(scores: ScoreCollection, particles: ParticleCollection, graph: Graph):
             # Check cell size
             past_particle = past_particles[0]
             shape = particles.get_shape(particle)
-            if not shape.is_unknown() and len(future_particles) == 1:
+            future_particles_of_past_particle = _get_future_particles(graph, past_particle)
+            if not shape.is_unknown() and len(future_particles_of_past_particle) == 1:
                 past_shape = particles.get_shape(past_particle)
                 if past_shape.volume() / (shape.volume() + 0.0001) > 3:
                     _set_error(graph, particle, errors.SHRUNK_A_LOT)
