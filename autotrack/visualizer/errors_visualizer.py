@@ -22,7 +22,7 @@ def _get_problematic_particles(experiment: Experiment) -> List[Particle]:
 
 
 def _get_links(experiment: Experiment) -> Optional[Graph]:
-    return experiment.links.get_baseline_else_scratch()
+    return experiment.links.get_scratch_else_baseline()
 
 
 class ErrorsVisualizer(ParticleListVisualizer):
