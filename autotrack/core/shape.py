@@ -51,12 +51,12 @@ class ParticleShape:
         raise NotImplementedError()
 
     def intensity(self) -> float:
-        """Gets the maximum intensity of the shape, on a scale of 0 to 1"""
-        raise NotImplementedError()
+        """Gets the maximum intensity of the shape, on a scale of 0 to 1. Raises ValueError() if unknown."""
+        raise ValueError()
 
     def ellipse(self) -> Ellipse:
         """Gets an ellipse describing the shape. Any 3D info is lost."""
-        raise NotImplementedError()
+        return Ellipse(0, 0, 20, 20, 0)
 
     def draw_mask(self, mask: Mask, x: float, y: float, z: float):
         """Draws a mask on the given drawing area."""
@@ -159,12 +159,12 @@ class GaussianShape(ParticleShape):
         self._gaussian = gaussian
 
     def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
-        dz = int(dz - self._gaussian.mu_z)
+        dz_for_gaussian = int(dz - self._gaussian.mu_z)
         if abs(dz) > 3 or dt != 0:
             return
         ellipse = self.ellipse()
         fill = False
-        alpha = max(0.1, 0.5 - abs(dz / 6))
+        alpha = max(0.1, 0.5 - abs(dz_for_gaussian / 6))
         area.add_artist(mpl_Ellipse(xy=(x + ellipse.x, y + ellipse.y),
                                     width=ellipse.width, height=ellipse.height, angle=ellipse.angle,
                                     fill=fill, edgecolor=color, linestyle="dashed", linewidth=2,
@@ -191,7 +191,10 @@ class GaussianShape(ParticleShape):
         return self._gaussian.a / 256
 
     def ellipse(self) -> Ellipse:
-        return self._gaussian.to_ellipse()
+        ellipse = self._gaussian.to_ellipse()
+        if max(ellipse.width, ellipse.height) / min(ellipse.width, ellipse.height) > 1000:
+            return super().ellipse()  # Cannot draw this ellipse
+        return ellipse
 
     def __repr__(self):
         return "GaussianShape(" + repr(self._gaussian) + ")"
