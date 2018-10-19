@@ -71,6 +71,10 @@ def _draw_cell_cycle_length(figure: Figure, links: Graph):
             previous_cycle_durations.append(previous_cycle_duration)
             cycle_durations.append(cycle_duration)
 
+    if len(cycle_durations) == 0:
+        raise UserError("No cell cycles found", "The linking data contains no sequences of two complete cell cycles. "
+                                                "Therefore, we cannot plot anything.")
+
     # Convert to numpy, get statistics
     previous_cycle_durations = numpy.array(previous_cycle_durations, dtype=numpy.int32)
     cycle_durations = numpy.array(cycle_durations, dtype=numpy.int32)
