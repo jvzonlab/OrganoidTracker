@@ -53,8 +53,15 @@ class Mask(ABC):
         raise NotImplementedError()
 
     def create_masked_and_normalized_image(self, image_stack: ndarray):
-        """Creates a copy of the given image with all pixels not in the mask set to 0 (black)."""
+        """Create normalized subimage (floating point numbers from 0 to 1). Throws OutsideImageError when the mask is
+        fully outside the image. Pixels outside the mask are set to NaN."""
         raise NotImplementedError()
+
+    def create_masked_image(self, image_stack: ndarray):
+        """Create subimage where all pixels outside the mask are set to 0. Raises OutsideImageError if the mask is fully
+        outside the given image."""
+        raise NotImplementedError()
+
 
 
 class _SingleMask(Mask):
@@ -105,7 +112,6 @@ class _SingleMask(Mask):
         return self._mask
 
     def create_masked_and_normalized_image(self, image_stack: ndarray) -> ndarray:
-        """Create normalized subimage. Throws OutsideImageError when the mask is fully outside the image."""
         image_for_masking = image_stack[self._offset_z:self._max_z,
                             self._offset_y:self._max_y,
                             self._offset_x:self._max_x].astype(dtype=numpy.float32)
@@ -119,6 +125,21 @@ class _SingleMask(Mask):
 
         # Apply mask
         image_for_masking[mask == 0] = numpy.NAN
+        return image_for_masking
+
+    def create_masked_image(self, image_stack: ndarray):
+        image_for_masking: ndarray = image_stack[self._offset_z:self._max_z,
+                            self._offset_y:self._max_y,
+                            self._offset_x:self._max_x]
+        if image_for_masking.size == 0:
+            raise OutsideImageError()
+        image_for_masking = image_for_masking.copy()
+
+        # Crop mask to same size as subimage
+        mask = self._mask[0:image_for_masking.shape[0], 0:image_for_masking.shape[1], 0:image_for_masking.shape[2]]
+
+        # Apply mask
+        image_for_masking[mask == 0] = 0
         return image_for_masking
 
 
