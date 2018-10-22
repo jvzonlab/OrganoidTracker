@@ -27,12 +27,10 @@ config.save_and_exit_if_changed()
 # END OF CONFIGURATION
 
 
-graph = links_extractor.extract_from_tracks(_tracks_folder, min_time_point=_min_time_point,
-                                            max_time_point=_max_time_point)
+print("Loading data using Guizela's format")
 experiment = Experiment()
-for particle in graph.nodes():
-    experiment.add_particle(particle)
-experiment.links.set_links(LinkType.BASELINE, graph)
+links_extractor.add_data_to_experiment(experiment, _tracks_folder, min_time_point=_min_time_point,
+                                   max_time_point=_max_time_point)
 
 print("Performing rudimentary 2d shape detection...")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,

@@ -89,7 +89,8 @@ def _find_pattern(file_name: str) -> Optional[str]:
 def load_tracking_data(window: Window):
     file_name = dialog.prompt_load_file("Select data file", [
         (io.FILE_EXTENSION.upper() + " file", "*." + io.FILE_EXTENSION),
-        ("Detection or linking files", "*.json")])
+        ("Detection or linking files", "*.json"),
+        ("Guizela's tracking files", "*.p")])
     if file_name is None:
         return  # Cancelled
 
@@ -145,12 +146,7 @@ def add_guizela_tracks(window: Window):
     if not folder:
         return  # Cancelled
 
-    graph = links_extractor.extract_from_tracks(folder)
-
-    experiment = window.get_experiment()
-    for particle in graph.nodes():
-        experiment.add_particle(particle)
-    experiment.links.add_links(LinkType.BASELINE, graph)
+    links_extractor.add_data_to_experiment(window.get_experiment(), folder)
     window.refresh()
 
 

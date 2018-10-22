@@ -9,12 +9,14 @@ from typing import List
 import numpy
 from networkx import Graph
 
+from autotrack.core.experiment import Experiment
+from autotrack.core.links import LinkType
 from autotrack.core.particles import Particle
 from autotrack.manual_tracking.track_lib import Track
 
 
-def extract_from_tracks(tracks_dir: str, min_time_point: int = 0, max_time_point: int = 5000) -> Graph:
-    """Extracts all positions from the track files in tracks_dir, saves them to output_dir"""
+def _load_links(tracks_dir: str, min_time_point: int = 0, max_time_point: int = 5000) -> Graph:
+    """Extracts all positions and links from the track files in tracks_dir, returns them as a Graph."""
 
     _fix_python_path_for_pickle()
     graph = Graph()
@@ -23,6 +25,14 @@ def extract_from_tracks(tracks_dir: str, min_time_point: int = 0, max_time_point
     _read_lineage_file(tracks_dir, graph, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
 
     return graph
+
+
+def add_data_to_experiment(experiment: Experiment, tracks_dir: str, min_time_point: int = 0, max_time_point: int = 500):
+    """Adds all particles and links from the given folder to the experiment."""
+    graph = _load_links(tracks_dir, min_time_point, max_time_point)
+    for particle in graph.nodes():
+        experiment.add_particle(particle)
+    experiment.links.add_links(LinkType.BASELINE, graph)
 
 
 def _read_track_files(tracks_dir: str, graph: Graph, min_time_point: int = 0, max_time_point: int = 5000) -> List[Track]:

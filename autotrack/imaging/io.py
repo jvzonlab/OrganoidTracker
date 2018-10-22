@@ -1,5 +1,6 @@
 """Classes for expressing the positions of particles"""
 import json
+import os
 from json import JSONEncoder
 from pathlib import Path
 from typing import List, Optional, Dict, Any
@@ -26,11 +27,22 @@ def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: 
         _parse_shape_format(experiment, time_points, min_time_point, max_time_point)
 
 
+def _load_guizela_data_file(file_name: str, min_time_point: int, max_time_point: int) -> Experiment:
+    """Starting from a random *.p file in a directory, this loads all data according to Guizela's format from that
+    directory."""
+    experiment = Experiment()
+    from autotrack.manual_tracking import links_extractor
+    links_extractor.add_data_to_experiment(experiment, os.path.dirname(file_name), min_time_point, max_time_point)
+    return experiment
+
+
 def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int = 5000) -> Experiment:
     """Loads some kind of data file. This should support all data formats of our research group. Raises ValueError if
     the file fails to load."""
     if file_name.lower().endswith("." + FILE_EXTENSION) or file_name.lower().endswith(".json"):
         return _load_json_data_file(file_name, min_time_point, max_time_point)
+    elif file_name.lower().endswith(".p"):
+        return _load_guizela_data_file(file_name, min_time_point, max_time_point)
     else:
         raise ValueError("Cannot load data from file " + file_name)
 
