@@ -48,7 +48,7 @@ def _get_intensity(experiment: Experiment, particle: Particle) -> Optional[float
     shape = experiment.particles.get_shape(particle)
     try:
         return shape.intensity()
-    except NotImplementedError:
+    except ValueError:
         return None
 
 
