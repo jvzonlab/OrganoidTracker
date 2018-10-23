@@ -2,8 +2,10 @@ from typing import List, Dict, Optional, Tuple
 
 import numpy
 from scipy import interpolate
+from scipy.spatial import distance
 
 from autotrack.core import TimePoint
+from autotrack.core.particles import Particle
 
 
 class Path:
@@ -56,6 +58,58 @@ class Path:
         y_values = points[1]
         return x_values, y_values
 
+    def get_path_position_2d(self, particle: Particle):
+        """Gets the closest position on the path. The position is returned in pixels from the path start."""
+        x_values, y_values = self.get_interpolation_2d()
+
+        # Find out which line segment is closest by
+        min_distance_to_line = None
+        closest_line_index = None  # 1 for the first line, etc. Line 1 is from point 0 to point 1.
+        for i in range(1, len(x_values)):
+            line_x1 = x_values[i - 1]
+            line_y1 = y_values[i - 1]
+            line_x2 = x_values[i]
+            line_y2 = y_values[i]
+            distance = _distance_to_line_segment(line_x1, line_y1, line_x2, line_y2, particle.x, particle.y)
+            if min_distance_to_line is None or distance < min_distance_to_line:
+                min_distance_to_line = distance
+                closest_line_index = i
+
+        # Calculate length to beginning of line segment
+        combined_length_of_previous_lines = 0
+        for i in range(1, closest_line_index):
+            combined_length_of_previous_lines += _distance(x_values[i], y_values[i], x_values[i - 1], y_values[i - 1])
+
+        # Calculate length on line segment
+        distance_to_start_of_line = _distance(x_values[closest_line_index - 1], y_values[closest_line_index - 1],
+                                              particle.x, particle.y)
+        distance_on_line = numpy.sqrt(distance_to_start_of_line**2 - min_distance_to_line**2)
+
+        return combined_length_of_previous_lines + distance_on_line
+
+    def path_position_to_xy(self, path_position: float) -> Optional[Tuple[float, float]]:
+        """Given a path position, this returns the corresponding x and y coordinates. Returns None for positions outside
+        of the line."""
+        if path_position < 0:
+            return None
+        line_index = 1
+        x_values, y_values = self.get_interpolation_2d()
+
+        while True:
+            line_length = _distance(x_values[line_index - 1], y_values[line_index - 1],
+                                    x_values[line_index], y_values[line_index])
+            if path_position < line_length:
+                line_dx = x_values[line_index] - x_values[line_index - 1]
+                line_dy = y_values[line_index] - y_values[line_index - 1]
+                travelled_fraction = path_position / line_length
+                return x_values[line_index - 1] + line_dx * travelled_fraction, \
+                       y_values[line_index - 1] + line_dy * travelled_fraction
+
+            path_position -= line_length
+            line_index += 1
+            if line_index >= len(x_values):
+                return None
+
     def get_direction_marker(self) -> str:
         """Returns a char thar represents the general direction of this path: ">", "<", "^" or "v". The (0,0) coord
         is assumed to be in the top left."""
@@ -69,6 +123,26 @@ class Path:
         else:
             # More vertical movement
             return "^" if dy < 0 else "v"
+
+
+def _distance(x1, y1, x2, y2):
+    """Distance between two points."""
+    return numpy.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+
+def _distance_squared(vx, vy, wx, wy):
+    return (vx - wx)**2 + (vy - wy)**2
+
+
+def _distance_to_line_segment(line_x1, line_y1, line_x2, line_y2, point_x, point_y):
+    """Distance from point to a line defined by the points (line_x1, line_y1) and (line_x2, line_y2)."""
+    l2 = _distance_squared(line_x1, line_y1, line_x2, line_y2)
+    if l2 == 0:
+         return _distance_squared(point_x, point_y, line_x1, line_y1)
+    t = ((point_x - line_x1) * (line_x2 - line_x1) + (point_y - line_y1) * (line_y2 - line_y1)) / l2
+    t = max(0, min(1, t))
+    return _distance(point_x, point_y,
+                             line_x1 + t * (line_x2 - line_x1), line_y1 + t * (line_y2 - line_y1))
 
 
 class PathCollection:
