@@ -50,7 +50,7 @@ def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, thres
     threshold = numpy.empty_like(images, dtype=numpy.uint8)
     thresholding.adaptive_threshold(images_smoothed, threshold, threshold_block_size)
     ones = numpy.ones_like(images, dtype=numpy.uint8)
-    watershed = watershedding.watershed_labels(threshold, ones, watershed, watershed.max())[0]
+    watershed = watershedding.watershed_labels(threshold, ones, watershed, watershed.max())[0].astype(numpy.int32)
 
     # Finally use that for fitting
     gaussians = gaussian_fit.perform_gaussian_mixture_fit_from_watershed(images, watershed, gaussian_fit_smooth_size)

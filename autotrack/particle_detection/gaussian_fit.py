@@ -1,15 +1,19 @@
 """Code for fitting cells to Gaussian functions."""
-from typing import List, Iterable, Dict, Optional
+
 from timeit import default_timer
+from typing import List, Iterable, Dict, Optional
 
 import cv2
+import mahotas
 import numpy
 import scipy.optimize
 from numpy import ndarray
 
+from autotrack.core.bounding_box import bounding_box_from_mahotas, BoundingBox
+from autotrack.core.gaussian import Gaussian
+from autotrack.core.mask import create_mask_for
 from autotrack.particle_detection import smoothing, ellipse_cluster
 
-from autotrack.core.gaussian import Gaussian
 
 class _ModelAndImageDifference:
     _data_image: ndarray
@@ -105,33 +109,72 @@ def perform_gaussian_mixture_fit(original_image: ndarray, guesses: Iterable[Gaus
     return result_gaussians
 
 
-def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image: ndarray, blur_radius: int
-                                                ) -> List[Gaussian]:
+def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image: ndarray, blur_radius: int) -> List[Gaussian]:
     """GMM using watershed as seeds. The watershed is used to fit as few Gaussians at the same time as possible."""
+    start_time = default_timer()
+
+    # Using ellipses to check which cell overlap
     ellipse_stacks = ellipse_cluster.get_ellipse_stacks_from_watershed(watershed_image)
-    ellipse_clusters = ellipse_cluster.find_overlapping_stacks(ellipse_stacks)
+    clusters = ellipse_cluster.find_overlapping_stacks(ellipse_stacks)
+
+    # Find out where the particles are
+    bounding_boxes = mahotas.labeled.bbox(watershed_image.astype(numpy.int32))
+    particle_centers = mahotas.center_of_mass(image, watershed_image)
 
     all_gaussians: List[Optional[Gaussian]] = [None] * len(ellipse_stacks)  # Initialize empty list
-    start_time = default_timer()
-    for cluster in ellipse_clusters:
-        offset_x, offset_y, offset_z, cropped_image = cluster.get_image_for_fit(image, blur_radius)
-        if cropped_image is None:
-            continue
-        smoothing.smooth(cropped_image, blur_radius)
-        gaussians = cluster.guess_gaussians(image)
-        tags = cluster.get_tags()
 
+    for cluster in clusters:
+        # To keep the fitting procedure easy, we try to fit as few cells at the same time as possible
+        # Only overlapping nuclei should be fit together. Overlap is detected using ellipses.
+        cell_ids = cluster.get_tags()
+        bounding_box = _merge_bounding_boxes(bounding_boxes, cell_ids)
+        bounding_box.expand(x=blur_radius, y=blur_radius, z=0)
+
+        mask = create_mask_for(image)
+        mask.set_bounds(bounding_box)
+        if mask.has_zero_volume():
+            continue
+
+        gaussians = []
+        for cell_id in cell_ids:
+            mask.add_from_labeled(watershed_image, cell_id + 1)  # Background is 0, so cell 0 uses color 1
+
+            center_zyx = particle_centers[cell_id + 1]
+            intensity = image[int(center_zyx[0]), int(center_zyx[1]), int(center_zyx[2])]
+            gaussians.append(Gaussian(intensity, center_zyx[2], center_zyx[1], center_zyx[0], 50, 50, 2, 0, 0, 0))
+        mask.dilate_xy(blur_radius // 2)
+        cropped_image = mask.create_masked_image(image)
+        smoothing.smooth(cropped_image, blur_radius)
+
+        offset_x, offset_y, offset_z = bounding_box.min_x, bounding_box.min_y, bounding_box.min_z
         gaussians = [gaussian.translated(-offset_x, -offset_y, -offset_z) for gaussian in gaussians]
         try:
             gaussians = perform_gaussian_mixture_fit(cropped_image, gaussians)
             for i, gaussian in enumerate(gaussians):
-                all_gaussians[tags[i]] = gaussian.translated(offset_x, offset_y, offset_z)
+                all_gaussians[cell_ids[i]] = gaussian.translated(offset_x, offset_y, offset_z)
         except ValueError:
             print("Minimization failed for " + str(cluster))
             continue
     end_time = default_timer()
     print("Whole fitting process took " + str(end_time - start_time) + " seconds.")
     return all_gaussians
+
+
+def _merge_bounding_boxes(all_boxes: ndarray, cell_ids: List[int]) -> BoundingBox:
+    """Creates a bounding box object that encompasses the bounding boxes of all the given cells."""
+    combined_bounding_box = None
+    for cell_id in cell_ids:
+        bounding_box = all_boxes[cell_id + 1]  # Background is 0, so cell 0 uses color 1
+        if combined_bounding_box is None:
+            combined_bounding_box = bounding_box
+            continue
+        combined_bounding_box[0] = min(combined_bounding_box[0], bounding_box[0])
+        combined_bounding_box[1] = max(combined_bounding_box[1], bounding_box[1])
+        combined_bounding_box[2] = min(combined_bounding_box[2], bounding_box[2])
+        combined_bounding_box[3] = max(combined_bounding_box[3], bounding_box[3])
+        combined_bounding_box[4] = min(combined_bounding_box[4], bounding_box[4])
+        combined_bounding_box[5] = max(combined_bounding_box[5], bounding_box[5])
+    return bounding_box_from_mahotas(combined_bounding_box)
 
 
 def _dilate(image_3d: ndarray):
