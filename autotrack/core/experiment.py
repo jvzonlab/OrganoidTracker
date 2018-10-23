@@ -8,6 +8,7 @@ from autotrack.core import TimePoint, Name
 from autotrack.core.image_loader import ImageLoader
 from autotrack.core.links import ParticleLinks, LinkType
 from autotrack.core.particles import Particle, ParticleCollection
+from autotrack.core.path import PathCollection
 from autotrack.core.score import ScoreCollection
 
 
@@ -54,16 +55,19 @@ class Experiment:
     """A complete experiment, with many stacks of images collected over time. This class ultimately collects all
     details of the experiment."""
 
+    # Note: none of the fields may be None after __init__ is called
     _particles: ParticleCollection
     scores: ScoreCollection
     _links: ParticleLinks
     _image_loader: ImageLoader = ImageLoader()
     _name: Name
+    paths: PathCollection
 
     def __init__(self):
         self._name = Name()
         self._particles = ParticleCollection()
         self.scores = ScoreCollection()
+        self.paths = PathCollection()
         self._links = ParticleLinks()
 
     def add_particle_raw(self, x: float, y: float, z: float, time_point_number: int):

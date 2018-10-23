@@ -95,6 +95,7 @@ class AbstractImageVisualizer(Visualizer):
         self.__particles_near_visible_layer.clear()
         self._draw_image()
         errors = self._draw_particles()
+        self._draw_path()
         self._draw_extra()
         self._window.set_figure_title(self._get_figure_title(errors))
 
@@ -240,6 +241,19 @@ class AbstractImageVisualizer(Visualizer):
             return network[particle]
         except KeyError:
             return []
+
+    def _draw_path(self):
+        """Draws the path, which is usually the crypt axis."""
+        path = self._experiment.paths.of_time_point(self._time_point)
+        if path is None:
+            return
+
+        dz = abs(path.get_z() - self._z)
+        marker = path.get_direction_marker()
+        linewidth = 3 if dz == 0 else 1
+        self._ax.plot(*path.get_interpolation_2d(), color=core.COLOR_CELL_CURRENT, linewidth=linewidth)
+        self._ax.plot(*path.get_points_2d(), linewidth=0, marker=marker, markerfacecolor=core.COLOR_CELL_CURRENT,
+                      markeredgecolor="black", markersize=max(7, 12 - dz))
 
     def _get_particle_at(self, x: Optional[int], y: Optional[int]) -> Optional[Particle]:
         """Wrapper of get_closest_particle that makes use of the fact that we can lookup all particles ourselves."""

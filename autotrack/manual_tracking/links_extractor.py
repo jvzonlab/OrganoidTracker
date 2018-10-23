@@ -9,9 +9,11 @@ from typing import List
 import numpy
 from networkx import Graph
 
+from autotrack.core import TimePoint
 from autotrack.core.experiment import Experiment
 from autotrack.core.links import LinkType
 from autotrack.core.particles import Particle
+from autotrack.core.path import PathCollection, Path
 from autotrack.manual_tracking.track_lib import Track
 
 
@@ -27,12 +29,34 @@ def _load_links(tracks_dir: str, min_time_point: int = 0, max_time_point: int = 
     return graph
 
 
+def _load_crypt_axis(tracks_dir: str, paths: PathCollection, min_time_point: int, max_time_point: int):
+    """Loads the axis of the crypt and saves it as a Path to the experiment."""
+    _fix_python_path_for_pickle()
+    file = os.path.join(tracks_dir, "crypt_axes.p")
+    if not os.path.exists(file):
+        print("No crypt axes file at " + file)
+        return  # No crypt axis stored
+
+    print("Reading crypt axes file")
+    with open(file, 'rb') as file_handle:
+        axes = pickle.load(file_handle, encoding="latin1")
+        for axis in axes:
+            if axis.t < min_time_point or axis.t > max_time_point:
+                continue
+
+            path = Path()
+            for position in axis.x:  # axis.x == [[x,y,z],[x,y,z],[x,y,z],...]
+                path.add_point(position[0], position[1], position[2])
+            paths.set_path(TimePoint(axis.t), path)
+
+
 def add_data_to_experiment(experiment: Experiment, tracks_dir: str, min_time_point: int = 0, max_time_point: int = 500):
     """Adds all particles and links from the given folder to the experiment."""
     graph = _load_links(tracks_dir, min_time_point, max_time_point)
     for particle in graph.nodes():
         experiment.add_particle(particle)
     experiment.links.add_links(LinkType.BASELINE, graph)
+    _load_crypt_axis(tracks_dir, experiment.paths, min_time_point, max_time_point)
 
 
 def _read_track_files(tracks_dir: str, graph: Graph, min_time_point: int = 0, max_time_point: int = 5000) -> List[Track]:
