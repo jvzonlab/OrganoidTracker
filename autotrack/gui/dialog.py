@@ -105,13 +105,13 @@ def popup_message(title: str, message: str):
     _messagebox.showinfo(title, message)
 
 
-def popup_figure(name: Name, draw_function: _Callable):
+def popup_figure(save_name: Name, draw_function: _Callable):
     """Shows a popup screen with the image"""
     def save_handler(event: KeyEvent):
         if event.key != "ctrl+s":
             return
         file_name = prompt_save_file("Save figure as...", [
-            ("PNG file", "*.png"), ("PDF file", "*.pdf"), ("SVG file", "*.svg")], suggested_name=name)
+            ("PNG file", "*.png"), ("PDF file", "*.pdf"), ("SVG file", "*.svg")], suggested_name=save_name)
         if file_name is None:
             return
         figure.savefig(file_name)
