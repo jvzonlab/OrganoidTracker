@@ -6,7 +6,7 @@ from networkx import Graph
 
 from autotrack import core
 from autotrack.core.particles import Particle
-from autotrack.linking import cell_links
+from autotrack.linking import cell_cycle
 from autotrack.visualizer import Visualizer, activate
 from autotrack.gui import Window
 
@@ -40,7 +40,7 @@ class TrackVisualizer(Visualizer):
         graph = self._experiment.links.get_baseline_else_scratch()
         if graph is None:
             return ""
-        age = cell_links.get_age(graph, self._particle)
+        age = cell_cycle.get_age(graph, self._particle)
         if age is None:
             return "Age: born before measurements"
         return "Age: " + str(age)
