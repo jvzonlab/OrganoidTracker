@@ -20,7 +20,6 @@ class TestEllipsoidFit(unittest.TestCase):
         self.assertEquals(">", path.get_direction_marker())
         self.assertEquals([0, 10, 20], path.get_points_2d()[0])  # Checks if x coords match
         self.assertEquals(15, path.get_path_position_2d(Particle(15, 0, 0)))  # Test a position on the path
-        self.assertEquals(25, path.get_path_position_2d(Particle(25, 0, 0)))  # Test a position beyond the path
         self.assertEquals(19, path.get_path_position_2d(Particle(19, 3, 3)))  # Test a position next to the path
 
     def test_vertical_path(self):

@@ -1,8 +1,6 @@
 import unittest
 
 import numpy
-import tifffile
-import matplotlib.pyplot
 
 from autotrack.core.gaussian import Gaussian
 from autotrack.core.mask import create_mask_for
@@ -22,10 +20,8 @@ class TestMasks(unittest.TestCase):
 
         self.assertTrue(numpy.isnan(masked_image[0, 0, 0]))  # NaN values are used in corners
 
-        tifffile.imshow(masked_image)
-        matplotlib.pyplot.show()
         # This point (at the center of the ellipse) must not be masked out
-        self.assertFalse(numpy.isnan(masked_image[2 - mask.offset_z, 15 - mask.offset_y, 15 - mask.offset_x]))
+        self.assertFalse(numpy.isnan(masked_image[1 - mask.offset_z, 23 - mask.offset_y, 25 - mask.offset_x]))
 
     def test_ellipse(self):
         numpy.random.seed(12)
