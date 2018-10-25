@@ -1,8 +1,7 @@
 from typing import Any, Tuple, Union, List
 
-import cv2
-
 import numpy
+import tifffile
 from numpy import ndarray
 from matplotlib.backend_bases import KeyEvent
 
@@ -110,8 +109,11 @@ class DetectionVisualizer(AbstractImageVisualizer):
         if images is None:
             raise UserError("Failed to apply threshold", "Cannot show threshold - no images loaded.")
         images_smoothed = smoothing.get_smoothed(images, self.watershed_transform_smooth_size)
+        particles = list(self._experiment.particles.of_time_point(self._time_point))
+
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
-        thresholding.advanced_threshold(images, images_smoothed, threshold, self.threshold_block_size, self.minimal_size)
+        thresholding.advanced_threshold(images, images_smoothed, threshold, self.threshold_block_size,
+                                        self.minimal_size, particles)
 
         return threshold
 
@@ -147,22 +149,23 @@ class DetectionVisualizer(AbstractImageVisualizer):
         self._display_image(image_stack, watershedding.COLOR_MAP)
 
     def _get_threshold_reconstruction(self, return_intermediate: bool = False) -> Any:
-        particles = self._experiment.particles.of_time_point(self._time_point)
+        particles = list(self._experiment.particles.of_time_point(self._time_point))
         if len(particles) == 0:
             raise UserError("Failed to detect cells", "Cannot detect cells - no particle positions loaded.")
         images = self._get_8bit_images()
         if images is None:
             raise UserError("Failed to detect cells", "Cannot detect cells - no images loaded.")
 
+        # Create a threshold
         images_smoothed = smoothing.get_smoothed(images, self.watershed_transform_smooth_size)
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
-        thresholding.advanced_threshold(images, images_smoothed, threshold, self.threshold_block_size, self.minimal_size)
+        thresholding.advanced_threshold(images, images_smoothed, threshold, self.threshold_block_size,
+                                        self.minimal_size, particles)
 
         # Labelling, calculate distance to label
-        labels = numpy.empty_like(images, dtype=numpy.uint16)
-        labels_count = len(particles)
-        watershedding.create_labels(particles, labels)
-        distance_transform_to_labels = watershedding.distance_transform_to_labels(labels, self.resolution)
+        label_image = numpy.empty_like(images, dtype=numpy.uint16)
+        watershedding.create_labels(particles, label_image)
+        distance_transform_to_labels = watershedding.distance_transform_to_labels(label_image, self.resolution)
 
         # Distance transform to edge and labels
         distance_transform = numpy.empty_like(images, dtype=numpy.float64)
@@ -170,8 +173,9 @@ class DetectionVisualizer(AbstractImageVisualizer):
         smoothing.smooth(distance_transform, self.distance_transform_smooth_size)
         distance_transform += distance_transform_to_labels
 
+        # Perform the watershed on the rough threshold
         watershed = watershedding.watershed_labels(threshold, distance_transform.max() - distance_transform,
-                                                   labels, labels_count)[0]
+                                                   label_image, len(particles))[0]
         self._print_missed_cells(watershed)
 
         if return_intermediate:
@@ -181,11 +185,12 @@ class DetectionVisualizer(AbstractImageVisualizer):
     def _get_smoothed_threshold_reconstruction(self, return_intermediate=False) -> Union[ndarray, Tuple[ndarray, ndarray]]:
         images, images_smoothed, watershed = self._get_threshold_reconstruction(return_intermediate=True)
 
+        # Create a basic threshold for better reconstruction of cell shape
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
         thresholding.adaptive_threshold(images_smoothed, threshold, self.threshold_block_size)
-
         ones = numpy.ones_like(images, dtype=numpy.uint8)
         watershed = watershedding.watershed_labels(threshold, ones, watershed, watershed.max())[0]
+
         if return_intermediate:
             return images, watershed
         return watershed

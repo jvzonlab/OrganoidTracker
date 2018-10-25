@@ -31,9 +31,9 @@ def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, thres
                                     particles)
 
     # Labelling, calculate distance to label
+    resolution = experiment.image_loader().get_resolution()
     label_image = numpy.empty_like(images, dtype=numpy.uint16)
     watershedding.create_labels(particles, label_image)
-    resolution = experiment.image_loader().get_resolution()
     distance_transform_to_labels = watershedding.distance_transform_to_labels(label_image, resolution.pixel_size_zyx_um)
 
     # Distance transform to edge, combine with distance transform to labels
@@ -42,7 +42,7 @@ def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, thres
     smoothing.smooth(distance_transform, distance_transform_smooth_size)
     distance_transform += distance_transform_to_labels
 
-    # Watershed again
+    # Perform the watershed on the rough threshold
     watershed = watershedding.watershed_labels(threshold, distance_transform.max() - distance_transform,
                                                label_image, len(particles))[0]
 

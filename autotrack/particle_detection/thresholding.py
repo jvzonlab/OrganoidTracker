@@ -53,7 +53,7 @@ def watershedded_threshold(image_8bit: ndarray, image_8bit_smoothed: ndarray, ou
 
 
 def advanced_threshold(image_8bit: ndarray, image_8bit_smoothed: ndarray, out: ndarray, block_size: int,
-                       watershed_size: Tuple[int, int, int], particles: Iterable[Particle] = []):
+                       watershed_size: Tuple[int, int, int], particles: Iterable[Particle]):
     watershedded_threshold(image_8bit, image_8bit_smoothed, out, block_size, watershed_size)
 
     curvature_out = numpy.full_like(image_8bit, 255, dtype=numpy.uint8)
