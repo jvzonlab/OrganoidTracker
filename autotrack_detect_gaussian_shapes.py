@@ -35,7 +35,7 @@ _positions_output_file = config.get_or_default("positions_and_fit_output_file", 
 
 _threshold_block_size = int(config.get_or_default("threshold_block_size", str(51)))
 _distance_transform_smooth_size = int(config.get_or_default("distance_transform_smooth_size", str(21)))
-_gaussian_fit_smooth_size = int(config.get_or_default("gaussian_fit_smooth_size", str(11)))
+_gaussian_fit_smooth_size = int(config.get_or_default("gaussian_fit_smooth_size", str(7)))
 _min_segmentation_distance_x = int(config.get_or_default("min_segmentation_distance_x", str(11)))
 _min_segmentation_distance_y = int(config.get_or_default("min_segmentation_distance_y", str(11)))
 _min_segmentation_distance_z = int(config.get_or_default("min_segmentation_distance_z", str(3)))

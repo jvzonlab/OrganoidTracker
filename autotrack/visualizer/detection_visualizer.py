@@ -24,7 +24,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
 
     threshold_block_size = 51
     distance_transform_smooth_size = 21
-    gaussian_fit_smooth_size = 11
+    gaussian_fit_smooth_size = 7
     watershed_transform_smooth_size = 25
 
     def __init__(self, window: Window, time_point_number: int, z: int, display_settings: DisplaySettings):
