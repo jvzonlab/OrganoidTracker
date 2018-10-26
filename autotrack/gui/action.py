@@ -13,7 +13,7 @@ from autotrack.core.links import LinkType
 from autotrack.gui import Window, dialog
 from autotrack.gui.dialog import popup_message_cancellable
 from autotrack.imaging import tifffolder, io
-from autotrack.manual_tracking import links_extractor
+from autotrack.manual_tracking import data_exporter, data_importer
 from autotrack.visualizer import activate
 from autotrack.visualizer.empty_visualizer import EmptyVisualizer
 
@@ -146,7 +146,7 @@ def add_guizela_tracks(window: Window):
     if not folder:
         return  # Cancelled
 
-    links_extractor.add_data_to_experiment(window.get_experiment(), folder)
+    data_importer.add_data_to_experiment(window.get_experiment(), folder)
     window.refresh()
 
 
@@ -160,14 +160,25 @@ def export_positions_and_shapes(experiment: Experiment):
 def export_links(experiment: Experiment):
     links = experiment.links.baseline
     if not links:
-        messagebox.showerror("No links", "Cannot export links; there are no links created.")
-        return
+        raise UserError("No links", "Cannot export links; there are no links created.")
 
     links_file = dialog.prompt_save_file("Save links as...", [("JSON file", "*.json")])
     if not links_file:
         return  # Cancelled
 
     io.save_links_to_json(links, links_file)
+
+
+def export_links_guizela(experiment: Experiment):
+    links = experiment.links.baseline
+    if not links:
+        raise UserError("No links", "Cannot export links; there are no links created.")
+
+    links_folder = dialog.prompt_save_file("Save links as...", [("Folder", "*")])
+    if not links_folder:
+        return  # Cancelled
+
+    data_exporter.export_links(links, links_folder)
 
 
 def save_tracking_data(experiment: Experiment):
