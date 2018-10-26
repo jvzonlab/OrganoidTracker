@@ -4,8 +4,6 @@ import numpy
 
 from autotrack.core.particles import Particle
 from autotrack.core.path import Path
-from autotrack.particle_detection.ellipsoid_fit import Ellipsoid
-import matplotlib.pyplot as plt
 
 
 class TestEllipsoidFit(unittest.TestCase):

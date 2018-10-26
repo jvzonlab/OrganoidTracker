@@ -6,10 +6,8 @@
 
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import LinkType
 from autotrack.imaging import tifffolder, io
-from autotrack.manual_tracking import links_extractor
-from autotrack.particle_detection import ellipse_detector_for_experiment
+from autotrack.manual_tracking import data_importer
 
 # CONFIGURATION
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
@@ -22,22 +20,20 @@ _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_i
 _positions_file = config.get_or_default("positions_file", "Automatic analysis/Positions/Manual.json")
 _links_file = config.get_or_default("links_file", "Automatic analysis/Links/Manual.json")
 _tracks_folder = config.get_or_prompt("input_tracks_folder", "Please enter the name of the folder where the track_xxxxx.p files are stored:")
-_shape_detection_radius = int(config.get_or_default("shape_detection_radius", str(16)))
 config.save_and_exit_if_changed()
 # END OF CONFIGURATION
 
 
 print("Loading data using Guizela's format")
 experiment = Experiment()
-links_extractor.add_data_to_experiment(experiment, _tracks_folder, min_time_point=_min_time_point,
+data_importer.add_data_to_experiment(experiment, _tracks_folder, min_time_point=_min_time_point,
                                    max_time_point=_max_time_point)
 
 print("Performing rudimentary 2d shape detection...")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
-ellipse_detector_for_experiment.detect_for_all(experiment, _shape_detection_radius)
 
 io.save_positions_and_shapes_to_json(experiment, _positions_file)
-io.save_links_to_json(graph, _links_file)
+io.save_links_to_json(experiment.links.baseline, _links_file)
 
 print("Done!")

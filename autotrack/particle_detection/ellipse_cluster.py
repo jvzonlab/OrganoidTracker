@@ -28,19 +28,6 @@ def _min(a: Optional[int], b: Optional[int]) -> int:
     return a if a < b else b
 
 
-def ellipse_stack_to_gaussian(stack: EllipseStack, image_for_intensities: ndarray) -> Gaussian:
-    """Does an initial guess at the parameters for a Gaussian. Raises ValueError if no ellipse was fitted at any
-    z-layer."""
-    x, y, z = stack.get_mean_position()
-    if x is None:
-        raise ValueError("No ellipses were fitted, so cannot determine starting point for Gaussian")
-    if x < 0 or x >= image_for_intensities.shape[2] \
-            or y < 0 or y >= image_for_intensities.shape[1] \
-            or z < 0 or z >= image_for_intensities.shape[0]:
-        raise ValueError("Ellipses have center of mass outside the image")
-    return Gaussian(image_for_intensities[z, y, x], x, y, z, 50, 50, 2, 0, 0, 0)
-
-
 class TaggedEllipseStack:
     """A stack of ellipses is tagged here with a numeric id, which is useful to keep track from which watershed area an
     ellipse came from."""
@@ -107,12 +94,6 @@ class EllipseCluster:
     def draw_to_image(self, out: ndarray, color, filled=False):
         for stack in self._stacks:
             stack.get_stack().draw_to_image(out, color, filled=filled)
-
-    def guess_gaussians(self, image_for_intensities: ndarray) -> List[Gaussian]:
-        """Gets Gaussian functions, with the intensities from the image and the positions of the ellipses as starting
-        points."""
-        return [ellipse_stack_to_gaussian(stack.get_stack(), image_for_intensities) for stack in self._stacks
-                if stack.get_stack().can_be_fitted(image_for_intensities)]
 
     def get_tags(self) -> List[int]:
         """Gets the tags of all stacks. The returned order matches the order of self.guess_gaussians(...)"""
