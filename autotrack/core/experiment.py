@@ -117,7 +117,7 @@ class Experiment:
         if first is None or last is None:
             raise ValueError("No time points have been loaded yet")
         if time_point_number < first or time_point_number > last:
-            raise ValueError("Time point out of bounds (was " + str(time_point_number) + ")")
+            raise ValueError(f"Time point out of bounds (was: {time_point_number}, first: {first}, last: {last})")
         return TimePoint(time_point_number)
 
     def first_time_point_number(self):
@@ -187,3 +187,10 @@ class Experiment:
         """Gets all links between the particles of different time points."""
         # Don't allow to replace the ParticleLinks object
         return self._links
+
+    @property
+    def division_lookahead_time_points(self):
+        """Where there no divisions found because a cell really didn't divide, or did the experiment simply end before
+        the cell divided? If the experiment continues for at least this many time points, then we can safely assume that
+         the cell did not divide."""
+        return 100
