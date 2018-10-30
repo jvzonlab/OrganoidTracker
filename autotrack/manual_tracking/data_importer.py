@@ -25,6 +25,7 @@ def _load_links(tracks_dir: str, min_time_point: int = 0, max_time_point: int = 
 
     tracks = _read_track_files(tracks_dir, graph, min_time_point=min_time_point, max_time_point=max_time_point)
     _read_lineage_file(tracks_dir, graph, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
+    _read_deaths_file(tracks_dir, graph, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
 
     return graph
 
@@ -34,7 +35,6 @@ def _load_crypt_axis(tracks_dir: str, paths: PathCollection, min_time_point: int
     _fix_python_path_for_pickle()
     file = os.path.join(tracks_dir, "crypt_axes.p")
     if not os.path.exists(file):
-        print("No crypt axes file at " + file)
         return  # No crypt axis stored
 
     print("Reading crypt axes file")
@@ -104,6 +104,27 @@ def _read_lineage_file(tracks_dir: str, graph: Graph, tracks: List[Track], min_t
 
             graph.add_edge(mother_last_snapshot, child_1_first_snapshot)
             graph.add_edge(mother_last_snapshot, child_2_first_snapshot)
+
+
+def _read_deaths_file(tracks_dir: str, links: Graph, tracks_by_id: List[Track], min_time_point: int,
+                      max_time_point: int):
+    """Adds all marked cell deaths to the linking network."""
+    _fix_python_path_for_pickle()
+    file = os.path.join(tracks_dir, "dead_cells.p")
+    if not os.path.exists(file):
+        return  # No crypt axis stored
+
+    print("Reading cell deaths file")
+    with open(file, 'rb') as file_handle:
+        dead_track_numbers = pickle.load(file_handle, encoding="latin1")
+        for dead_track_number in dead_track_numbers:
+            track = tracks_by_id[dead_track_number]
+            last_particle_time = track.t[-1]
+            if last_particle_time < min_time_point or last_particle_time > max_time_point:
+                continue
+            last_particle_position = track.x[-1]
+            last_particle = Particle(*last_particle_position).with_time_point_number(last_particle_time)
+            links.add_node(last_particle, dead=True)
 
 
 def _get_cell_in_time_point(track: Track, time_point_number: int) -> Particle:

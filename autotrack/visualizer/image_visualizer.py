@@ -419,7 +419,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             "View/Linking-Linking differences (D)": self._show_linking_differences,
             "View/Linking-Linking errors and warnings (E)": self._show_linking_errors,
             "View/Cell-Cell divisions (M)": self._show_mother_cells,
-            "View/Cell-Cell deaths (/deaths)": self._show_dead_cells
+            "View/Cell-Track ends and cell deaths (/deaths)": self._show_dead_cells
         }
 
     def _on_key_press(self, event: KeyEvent):
@@ -503,7 +503,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         return super()._on_command(command)
 
     def _show_dead_cells(self):
-        from autotrack.visualizer.cell_death_visualizer import CellDeathVisualizer
-        activate(CellDeathVisualizer(self._window, None))
+        from autotrack.visualizer.cell_death_visualizer import CellTrackEndVisualizer
+        activate(CellTrackEndVisualizer(self._window, None))
 
 

@@ -32,8 +32,8 @@ def _print_mother_differences(automatic_links: Graph, baseline_links: Graph):
 
 
 def _print_death_differences(automatic_links: Graph, baseline_links: Graph, last_time_point_number: int):
-    baseline_deaths = set(cell_death_finder.find_cell_deaths(baseline_links, last_time_point_number))
-    automatic_deaths = set(cell_death_finder.find_cell_deaths(automatic_links, last_time_point_number))
+    baseline_deaths = set(cell_death_finder.find_ended_tracks(baseline_links, last_time_point_number))
+    automatic_deaths = set(cell_death_finder.find_ended_tracks(automatic_links, last_time_point_number))
 
     missed_deaths = baseline_deaths.difference(automatic_deaths)
     made_up_deaths = automatic_deaths.difference(baseline_deaths)
