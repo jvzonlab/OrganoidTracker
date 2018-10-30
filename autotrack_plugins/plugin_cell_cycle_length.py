@@ -28,7 +28,7 @@ def _view_cell_cycle_length(window: Window):
     if links is None:
         raise UserError("No links specified", "No links were loaded. Cannot plot anything.")
 
-    third_variable_getter = _CellFateVar(experiment, links)
+    third_variable_getter = _ThirdVar()
 
     dialog.popup_figure(experiment.name, lambda fig: _draw_cell_cycle_length(fig, links, third_variable_getter))
 
