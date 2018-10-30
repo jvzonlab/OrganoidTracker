@@ -17,7 +17,6 @@ _images_format = config.get_or_prompt("images_pattern", "What are the image file
 _min_time_point = int(config.get_or_default("min_time_point", str(1), store_in_defaults=True))
 _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_in_defaults=True))
 _positions_file = config.get_or_default("positions_file", "Automatic analysis/Positions/Manual.json")
-_baseline_links_file = config.get_or_default("baseline_links", "Automatic analysis/Links/Manual.json")
 _links_output_file = config.get_or_default("links_output_file", "Automatic analysis/Links/Smart nearest neighbor.json")
 config.save_and_exit_if_changed()
 # END OF PARAMETERS
@@ -32,8 +31,7 @@ tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
 print("Performing nearest-neighbor linking...")
 possible_links = linker_for_experiment.nearest_neighbor(experiment, tolerance=2, over_previous=False)
 print("Calculating scores of possible mothers...")
-ground_thruth = io.load_links_from_json(_baseline_links_file)
-score_system = CheatingScoringSystem(mother_finder.find_families(ground_thruth))
+score_system = RationalScoringSystem()
 scores = mother_finder.calculates_scores(experiment.image_loader(), experiment.particles, possible_links, score_system)
 print("Deciding on what links to use...")
 link_result = dpct_linking.run(experiment.particles, possible_links, scores)

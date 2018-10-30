@@ -5,28 +5,40 @@ import numpy
 import pandas
 
 from autotrack.core.experiment import Experiment
+from autotrack.core.particles import Particle
 from autotrack.core.score import Family, Score
 from autotrack.linking.scoring_system import MotherScoringSystem
 
 
 def create(experiment: Experiment, putative_families: List[Family], scoring_system: MotherScoringSystem,
-           actual_families: Set[Family]):
+           actual_mothers: Set[Particle]):
     tryout_score = _score(experiment, putative_families[0], scoring_system)
     keys = ["mother"] + tryout_score.keys() + ["total_score", "is_actual_mother"]
-    data = numpy.zeros([len(putative_families), len(keys)], dtype=numpy.object)
 
-    for i in range(len(putative_families)):
+    scores_of_mother = dict()
+    i = 0
+    for family in putative_families:
         if i % 50 == 0:
             print("Working on putative family " + str(i) + "/" + str(len(putative_families)))
 
-        family = putative_families[i]
         score = _score(experiment, family, scoring_system)
-        data[i, 0] = str(family)
+        previous_score = scores_of_mother.get(family.mother)
+        if previous_score is None or previous_score.total() < score.total():
+            scores_of_mother[family.mother] = score
+        i += 1
+
+    i = 0
+    data = numpy.zeros([len(scores_of_mother), len(keys)], dtype=numpy.object)
+    for mother, score in scores_of_mother.items():
+        if not isinstance(mother, Particle):
+            print(mother)
+        data[i, 0] = str(mother)
         for j in range(1, len(keys) - 2):
             key = keys[j]
             data[i, j] = score.get(key)
         data[i, len(keys) - 2] = score.total()
-        data[i, len(keys) - 1] = 1 if family in actual_families else 0
+        data[i, len(keys) - 1] = 1 if mother in actual_mothers else 0
+        i += 1
 
     return pandas.DataFrame(data=data, columns=_table_names(keys))
 

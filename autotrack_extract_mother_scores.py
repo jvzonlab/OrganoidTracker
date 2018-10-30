@@ -42,9 +42,9 @@ experiment.links.set_links(LinkType.SCRATCH, possible_links)
 
 print("Scoring all possible mothers")
 scoring_system = RationalScoringSystem()
-real_families = set(mother_finder.find_families(_baseline_links, warn_on_many_daughters=True))
+real_mothers = set(mother_finder.find_mothers(_baseline_links))
 putative_families = mother_finder.find_families(possible_links, warn_on_many_daughters=False)
-dataframe = scores_dataframe.create(experiment, putative_families, scoring_system, real_families)
+dataframe = scores_dataframe.create(experiment, putative_families, scoring_system, real_mothers)
 io.save_dataframe_to_csv(dataframe, _output_file)
 
 print("Done!")

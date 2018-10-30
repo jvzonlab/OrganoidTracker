@@ -35,7 +35,7 @@ class RationalScoringSystem(MotherScoringSystem):
             daughter2_intensities_prev = _get_nucleus_image(mother_image_stack, daughter2_mask)
 
             score = Score()
-            score_mother_intensities(score, mother_intensities, mother_intensities_next)
+            score_mother_intensities(score, mother, mother_intensities, mother_intensities_next)
             score_daughter_intensities(score, daughter1_intensities, daughter2_intensities,
                                        daughter1_intensities_prev, daughter2_intensities_prev)
             score_daughter_distances(score, mother, daughter1, daughter2)
@@ -79,12 +79,16 @@ def score_daughter_intensities(score: Score, daughter1_intensities: ndarray, dau
         score.daughters_intensity_delta -= 1
 
 
-def score_mother_intensities(score: Score, mother_intensities: ndarray, mother_intensities_next: ndarray):
+def score_mother_intensities(score: Score, mother: Particle, mother_intensities: ndarray, mother_intensities_next: ndarray):
     """Mother cell must have high intensity """
 
     # Intensity and contrast
     mean_value = numpy.nanmean(mother_intensities)
     variance_value = numpy.nanvar(mother_intensities)
+    if numpy.isnan(mean_value) or numpy.isnan(variance_value):
+        score.mother_contrast = 0
+        score.mother_intensity_delta = 0
+        return
     score.mother_contrast = variance_value * 10
 
     # Change of intensity (we use the max, as mothers often have both bright spots and darker spots near their center)
