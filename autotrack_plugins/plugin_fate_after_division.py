@@ -1,19 +1,14 @@
 from typing import Dict, Any, Optional, List
 
 from matplotlib.figure import Figure
-from matplotlib.ticker import FuncFormatter
 from networkx import Graph
 
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
-from autotrack.core.particles import Particle
 from autotrack.gui import Window, dialog
 from autotrack.linking import cell_cycle, mother_finder
-
-# Were no divisions found because a cell really didn't divide, or did the experiment simply end before the cell divided?
-# If the experiment continues for at least this many time points, then we can safely assume that the cell did not
-# divide.
-_DIVISION_LOOKAHEAD = 100
+from autotrack.linking_analysis import cell_fates
+from autotrack.linking_analysis.cell_fates import CellFate
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -28,14 +23,12 @@ def _show_chance_of_division(experiment: Experiment):
         raise UserError("No linking data found", "For this graph on cell divisions, it is required to have the cell"
                                                  " links loaded.")
 
-    max_time_point_number = experiment.last_time_point_number()
-
-    dialog.popup_figure(experiment.name, lambda figure: _draw_histogram(figure, links, max_time_point_number))
+    dialog.popup_figure(experiment.name, lambda figure: _draw_histogram(experiment, figure, links))
 
 
-def _draw_histogram(figure: Figure, links: Graph, max_time_point_number: int):
+def _draw_histogram(experiment: Experiment, figure: Figure, links: Graph):
     time_points_per_bin = 10
-    bins = _classify_cell_divisions(links, time_points_per_bin, max_time_point_number)
+    bins = _classify_cell_divisions(experiment, links, time_points_per_bin)
     if len(bins) == 0:
         raise UserError("No cell cycles found",
                         "The linking data contains no full cell cycles, so we cannot plot anything.")
@@ -66,18 +59,6 @@ def _draw_histogram(figure: Figure, links: Graph, max_time_point_number: int):
     axes.set_xticks(range(x_start, x_end, time_points_per_bin))
 
 
-def _will_divide(graph: Graph, particle: Particle, max_time_point_number: int) -> Optional[bool]:
-    """Checks if a cell will undergo a division later in the experiment. Returns None if not sure, because we are near
-    the end of the experiment. max_time_point_number is the number of the last time point in the experiment."""
-    next_division = cell_cycle.get_next_division(graph, particle)
-    if next_division is None:
-        # Did the experiment end, or did the cell really stop dividing?
-        if particle.time_point_number() + _DIVISION_LOOKAHEAD > max_time_point_number:
-            return None  # We are not sure
-        return False  # Cell with not divide
-    return True  # Cell will divide in the future
-
-
 class _Bin:
     """A single bin in the histogram."""
     _dividing_count: int = 0
@@ -101,19 +82,19 @@ class _Bin:
     def total_number_of_cells(self):
         return self._dividing_count + self._nondividing_count + self._unknown_count
 
-    def add_data_point(self, will_divide: Optional[bool]):
-        if will_divide is None:
-            self._unknown_count += 1
-        elif will_divide:
+    def add_data_point(self, cell_fate: CellFate):
+        if cell_fate == CellFate.NON_DIVIDING:
+            self._nondividing_count += 1
+        elif cell_fate == CellFate.WILL_DIVIDE:
             self._dividing_count += 1
         else:
-            self._nondividing_count += 1
+            self._unknown_count += 1
 
     def is_empty(self):
         return self.total_number_of_cells() == 0
 
 
-def _classify_cell_divisions(links: Graph, time_points_per_bin: int, max_time_point_number: int) -> List[_Bin]:
+def _classify_cell_divisions(experiment: Experiment, links: Graph, time_points_per_bin: int) -> List[_Bin]:
     """Classifies each cell division in the data: is it the last cell division in a lineage, or will there be more after
     this? The cell divisions are returned in bins. No empty bins are returned."""
     bins = list()
@@ -129,6 +110,6 @@ def _classify_cell_divisions(links: Graph, time_points_per_bin: int, max_time_po
         bin = bins[bin_index]
 
         for daughter in cell_division.daughters:
-            will_divide = _will_divide(links, daughter, max_time_point_number)
-            bin.add_data_point(will_divide)
+            cell_fate = cell_fates.get_fate(experiment, links, daughter)
+            bin.add_data_point(cell_fate)
     return [bin for bin in bins if not bin.is_empty()]
