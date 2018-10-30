@@ -3,7 +3,7 @@ import json
 import os
 from json import JSONEncoder
 from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import List, Dict, Any
 
 import numpy
 from networkx import node_link_data, node_link_graph, Graph
@@ -31,8 +31,8 @@ def _load_guizela_data_file(file_name: str, min_time_point: int, max_time_point:
     """Starting from a random *.p file in a directory, this loads all data according to Guizela's format from that
     directory."""
     experiment = Experiment()
-    from autotrack.manual_tracking import links_extractor
-    links_extractor.add_data_to_experiment(experiment, os.path.dirname(file_name), min_time_point, max_time_point)
+    from autotrack.manual_tracking import data_importer
+    data_importer.add_data_to_experiment(experiment, os.path.dirname(file_name), min_time_point, max_time_point)
     return experiment
 
 
