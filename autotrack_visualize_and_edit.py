@@ -20,19 +20,15 @@ _images_format = config.get_or_prompt("images_pattern", "What are the image file
                                                         "representing the time)", store_in_defaults=True)
 _min_time_point = int(config.get_or_default("min_time_point", str(1), store_in_defaults=True))
 _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_in_defaults=True))
-_positions_file = config.get_or_default("positions_file", "Automatic analysis/Positions/Manual.json")
-_links_file = config.get_or_default("links_file", "Automatic analysis/Links/Smart nearest neighbor.json")
+_data_file = config.get_or_default("data_file", "Automatic analysis/Positions/Manual.json")
 config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
 print("Starting...")
 
 experiment = Experiment()
-if path.exists(_positions_file):
-    io.load_positions_and_shapes_from_json(experiment, _positions_file,
-                                           min_time_point=_min_time_point, max_time_point=_max_time_point)
-if path.exists(_links_file):
-    io.load_linking_result(experiment, _links_file, LinkType.BASELINE)
+if path.exists(_data_file):
+    experiment = io.load_data_file(_data_file, _min_time_point, _max_time_point)
 
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)

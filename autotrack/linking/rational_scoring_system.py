@@ -39,7 +39,6 @@ class RationalScoringSystem(MotherScoringSystem):
             score_daughter_intensities(score, daughter1_intensities, daughter2_intensities,
                                        daughter1_intensities_prev, daughter2_intensities_prev)
             score_daughter_distances(score, mother, daughter1, daughter2)
-            score_using_shapes(score, particle_shapes, mother, daughter1, daughter2)
             score_using_volumes(score, particle_shapes, mother, daughter1, daughter2)
             return score
         except OutsideImageError:
@@ -101,38 +100,14 @@ def score_mother_intensities(score: Score, mother: Particle, mother_intensities:
         score.mother_intensity_delta = -1
 
 
-def score_using_shapes(score: Score, particles: ParticleCollection, mother: Particle, daughter1: Particle,
-                       daughter2: Particle):
-    return
-    score.mother_shape = 0
-
-    # Zoom in on mother
-    mother_shape = particles.get_shape(mother)
-    if mother_shape.is_unknown():
-        return  # Too close to edge
-    mother_ellipse = mother_shape.ellipse()
-
-    # Calculate the isoperimetric quotient and ellipse of the largest area
-    area = mother_ellipse.area()
-    perimeter = mother_ellipse.perimeter()
-    isoperimetric_quotient = 4 * numpy.pi * area / perimeter ** 2 if perimeter > 0 else 0
-    if isoperimetric_quotient < 0.8:
-        # Relatively clear case of being a mother, give a bonus
-        score.mother_shape = 2
-    else:
-        # Just use a normal scoring system
-        score.mother_shape = 1 - isoperimetric_quotient
-
-
 def score_using_volumes(score: Score, particles: ParticleCollection, mother: Particle, daughter1: Particle, daughter2: Particle):
     score.daughters_volume = 0
 
     mother_shape = particles.get_shape(mother)
 
+    score.mother_volume = -10
     if mother_shape.is_unknown():
-        score.mother_volume = 2  # Unknown volume, so particle has an irregular shape. Likely a mother cell
-    else:
-        score.mother_volume = 0
+        return
 
     daughter1_shape = particles.get_shape(daughter1)
     daughter2_shape = particles.get_shape(daughter2)
@@ -146,7 +121,7 @@ def score_using_volumes(score: Score, particles: ParticleCollection, mother: Par
     if score.daughters_volume < 0.75:
         score.daughters_volume = 0  # Almost surely not two daughter cells
     if mother_shape.volume() / (volume1 + volume2 + 0.0001) > 0.95:
-        score.mother_volume = 1  # We have a mother cell, or maybe just a big cell
+        score.mother_volume = 0  # We have a mother cell, or maybe just a big cell
 
 
 def _get_nucleus_image(image_stack: ndarray, mask: Mask) -> ndarray:

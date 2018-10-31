@@ -56,7 +56,7 @@ def _to_graph(particle_ids: _ParticleToId, results: Dict) -> Graph:
 def run(particles: ParticleCollection, starting_links: Graph, scores: ScoreCollection):
     particle_ids = _ParticleToId()
     weights = {"weights": [
-        1,  # multiplier for linking features?
+        10,  # multiplier for linking features?
         150,  # multiplier for detection of a cell - the higher, the more expensive to omit a cell
         30,  # multiplier for division features - the higher, the cheaper it is to create a cell division
         150,  # multiplier for appearance features - the higher, the more expensive it is to create a cell out of nothing

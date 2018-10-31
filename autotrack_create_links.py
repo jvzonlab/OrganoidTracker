@@ -2,11 +2,11 @@
 
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
+from autotrack.core.links import LinkType
 from autotrack.imaging import tifffolder, io
 from autotrack.linking import linker_for_experiment, dpct_linking, mother_finder
-from autotrack.linking.cheating_score_system import CheatingScoringSystem
 from autotrack.linking.rational_scoring_system import RationalScoringSystem
-from autotrack.linking_analysis import logical_tests
+from autotrack.linking_analysis import logical_tests, links_postprocessor
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
@@ -17,7 +17,8 @@ _images_format = config.get_or_prompt("images_pattern", "What are the image file
 _min_time_point = int(config.get_or_default("min_time_point", str(1), store_in_defaults=True))
 _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_in_defaults=True))
 _positions_file = config.get_or_default("positions_file", "Automatic analysis/Positions/Manual.json")
-_links_output_file = config.get_or_default("links_output_file", "Automatic analysis/Links/Smart nearest neighbor.json")
+_margin_xy = int(config.get_or_default("margin_xy", str(50)))
+_links_output_file = config.get_or_default("output_file", "Automatic analysis/Links/Smart nearest neighbor.json")
 config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
@@ -37,7 +38,11 @@ print("Deciding on what links to use...")
 link_result = dpct_linking.run(experiment.particles, possible_links, scores)
 print("Checking results for common errors...")
 logical_tests.apply(scores, experiment.particles, link_result)
+print("Applying final touches...")
+experiment.links.set_links(LinkType.SCRATCH, link_result)
+experiment.scores = scores
+links_postprocessor.postprocess(experiment, margin_xy=_margin_xy)
 print("Writing results to file...")
-io.save_links_and_scores_to_json(link_result, scores, _links_output_file)
+io.save_data_to_json(experiment, _links_output_file)
 
 print("Done!")

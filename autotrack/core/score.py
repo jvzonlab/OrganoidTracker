@@ -49,11 +49,11 @@ class Score:
 
     def is_likely_mother(self):
         """Uses a simple threshold to check whether it is likely that this mother is a mother cell."""
-        return self.total() > 4
+        return self.total() > 5
 
     def is_unlikely_mother(self):
         """Uses a simple threshold to check whether it is likely that this mother is a mother cell."""
-        return self.total() <= 2
+        return self.total() <= 3
 
     def __str__(self):
         return str(self.total()) + " (based on " + str(self.__dict__["scores"]) + ")"
