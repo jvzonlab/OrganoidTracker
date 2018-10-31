@@ -159,6 +159,8 @@ class GaussianShape(ParticleShape):
         self._gaussian = gaussian
 
     def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
+        draw_marker_2d(x, y, dz, dt, area, color)
+
         dz_for_gaussian = int(dz - self._gaussian.mu_z)
         if abs(dz) > 3 or dt != 0:
             return
@@ -169,7 +171,7 @@ class GaussianShape(ParticleShape):
                                     width=ellipse.width, height=ellipse.height, angle=ellipse.angle,
                                     fill=fill, edgecolor=color, linestyle="dashed", linewidth=2,
                                     alpha=alpha))
-        draw_marker_2d(x, y, dz, dt, area, color)
+
 
     def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
         self._gaussian.translated(x, y, z).draw_colored(image, color)

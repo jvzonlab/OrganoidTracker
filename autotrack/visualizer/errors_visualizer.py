@@ -66,7 +66,7 @@ class ErrorsVisualizer(ParticleListVisualizer):
         if self._current_particle_index < 0 or self._current_particle_index >= len(self._particle_list):
             return
         particle = self._particle_list[self._current_particle_index]
-        self._experiment.links.scratch.add_node(particle, error=None, warning=None)
+        self._experiment.links.get_scratch_else_baseline().add_node(particle, error=None, warning=None)
         self._particle_list.remove(particle)
         if self._current_particle_index >= len(self._particle_list):
             self._current_particle_index -= 1  # Deleted last particle, go back to previous

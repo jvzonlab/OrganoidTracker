@@ -377,9 +377,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     """Cell and image viewer
 
     Moving: left/right moves in time, up/down in the z-direction and type '/t30' + ENTER to jump to time point 30
-    Viewing: N shows next frame in red, current in green and T shows trajectory of cell under the mouse cursor
-    Cell lists: M shows mother cells, E shows detected errors and D shows differences between two loaded data sets
-    Editing: L shows an editor for links                    Other: S shows the detected shape, F the detected flow"""
+    Press F to show the detected particle flow, press V to view the detected particle volume"""
 
     def __init__(self, window: Window, time_point_number: Optional[int] = None, z: int = 14,
                  display_settings: Optional[DisplaySettings] = None):
@@ -441,7 +439,17 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             self._show_link_editor()
         elif event.key == "p":
             self._show_position_editor()
-        elif event.key == "f":
+        elif event.key == "v":  # show volume info
+            particle = self._get_particle_at(event.xdata, event.ydata)
+            if particle is None:
+                self.update_status("No particle at mouse position")
+                return
+            shape = self._experiment.particles.get_shape(particle)
+            try:
+                self.update_status(f"Volume of {particle} is {shape.volume():.2f} px3")
+            except NotImplementedError:
+                self.update_status(f"The {particle} has no volume information stored")
+        elif event.key == "f":  # show flow info
             particle = self._get_particle_at(event.xdata, event.ydata)
             particles_of_time_point = self._experiment.particles.of_time_point(self._time_point)
             links = self._experiment.links.get_scratch_else_baseline()
