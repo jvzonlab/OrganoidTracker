@@ -7,6 +7,7 @@ from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
 from autotrack.gui import Window
 from autotrack.linking_analysis import errors, logical_tests
+from autotrack.visualizer import DisplaySettings, activate
 from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
 
 
@@ -75,6 +76,8 @@ class ErrorsVisualizer(ParticleListVisualizer):
     def _on_key_press(self, event: KeyEvent):
         if event.key == "e":
             self.goto_full_image()
+        elif event.key == "c":
+            self._edit_data()
         elif event.key == "delete":
             self._delete_warning()
         else:
@@ -93,3 +96,16 @@ class ErrorsVisualizer(ParticleListVisualizer):
                                "/exit - exits this view")
             return True
         return super()._on_command(command)
+
+    def _edit_data(self):
+        from autotrack.visualizer.link_and_position_editor import LinkAndPositionEditor
+
+        if self._current_particle_index < 0 or self._current_particle_index >= len(self._particle_list):
+            # Don't know where to go
+            data_editor = LinkAndPositionEditor(self._window)
+        else:
+            mother = self._particle_list[self._current_particle_index]
+            data_editor = LinkAndPositionEditor(self._window,
+                                                time_point_number=mother.time_point_number(),
+                                                z=int(mother.z))
+        activate(data_editor)

@@ -411,8 +411,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     def get_extra_menu_options(self):
         return {
             **super().get_extra_menu_options(),
-            "Edit/Manual-Manually edit links... (L)": self._show_link_editor,
-            "Edit/Manual-Manually edit positions... (P)": self._show_position_editor,
+            "Edit/Manual-Manually change data... (C)": self._show_data_editor,
             "Edit/Automatic-Cell detection...": self._show_cell_detector,
             "View/Linking-Linking differences (D)": self._show_linking_differences,
             "View/Linking-Linking errors and warnings (E)": self._show_linking_errors,
@@ -435,10 +434,8 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             self._show_linking_differences(particle)
         elif event.key == "m":
             self._show_mother_cells()
-        elif event.key == "l":
-            self._show_link_editor()
-        elif event.key == "p":
-            self._show_position_editor()
+        elif event.key == "c":
+            self._show_data_editor()
         elif event.key == "v":  # show volume info
             particle = self._get_particle_at(event.xdata, event.ydata)
             if particle is None:
@@ -484,16 +481,11 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         differences_visualizer = DifferencesVisualizer(self._window, particle)
         activate(differences_visualizer)
 
-    def _show_link_editor(self):
-        from autotrack.visualizer.link_editor import LinkEditor
-        link_editor = LinkEditor(self._window, time_point_number=self._time_point.time_point_number(), z=self._z)
-        activate(link_editor)
-
-    def _show_position_editor(self):
-        from autotrack.visualizer.position_editor import PositionEditor
-        position_editor = PositionEditor(self._window, time_point_number=self._time_point.time_point_number(),
-                                         z=self._z)
-        activate(position_editor)
+    def _show_data_editor(self):
+        from autotrack.visualizer.link_and_position_editor import LinkAndPositionEditor
+        editor = LinkAndPositionEditor(self._window, time_point_number=self._time_point.time_point_number(),
+                                       z=self._z)
+        activate(editor)
 
     def _on_command(self, command: str) -> bool:
         if command == "deaths":

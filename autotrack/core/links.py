@@ -127,3 +127,10 @@ class ParticleLinks:
             self._synchronize_nodes()
         else:
             raise ValueError("Unknown link type: " + str(type))
+
+    def add_particle(self, particle: Particle):
+        """Adds the particle as a node to both linking graphs."""
+        if self._scratch is not None:
+            self._scratch.add_node(particle)
+        if self._baseline is not None:
+            self._baseline.add_node(particle)

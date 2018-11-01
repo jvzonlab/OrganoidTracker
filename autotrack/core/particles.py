@@ -188,6 +188,13 @@ class ParticleCollection:
         """Gets the last time point (inclusive) that contains particles, or None if there are no particles stored."""
         return self._max_time_point_number
 
+    def exists(self, particle: Particle) -> bool:
+        """Returns whether the given particle is part of the experiment."""
+        particles_at_time_point = self._all_particles.get(particle.time_point_number())
+        if particles_at_time_point is None:
+            return False
+        return particle in particles_at_time_point.particles()
+
 
 def get_closest_particle(particles: Iterable[Particle], search_position: Particle,
                          ignore_z: bool = False, max_distance: int = 100000) -> Optional[Particle]:
