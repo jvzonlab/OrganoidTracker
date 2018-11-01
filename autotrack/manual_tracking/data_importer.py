@@ -14,6 +14,8 @@ from autotrack.core.experiment import Experiment
 from autotrack.core.links import LinkType
 from autotrack.core.particles import Particle
 from autotrack.core.path import PathCollection, Path
+from autotrack.linking_analysis import linking_markers
+from autotrack.linking_analysis.linking_markers import EndMarker
 from autotrack.manual_tracking.track_lib import Track
 
 
@@ -124,7 +126,7 @@ def _read_deaths_file(tracks_dir: str, links: Graph, tracks_by_id: List[Track], 
                 continue
             last_particle_position = track.x[-1]
             last_particle = Particle(*last_particle_position).with_time_point_number(last_particle_time)
-            links.add_node(last_particle, dead=True)
+            linking_markers.set_track_end_marker(links, last_particle, EndMarker.DEAD)
 
 
 def _get_cell_in_time_point(track: Track, time_point_number: int) -> Particle:

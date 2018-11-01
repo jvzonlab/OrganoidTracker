@@ -171,3 +171,13 @@ class ScoreCollection:
         for scores_of_time_point in self._all_scores.values():
             yield from scores_of_time_point.mother_scores()
 
+    def of_family(self, family: Family) -> Optional[Score]:
+        """Gets the score of a given family."""
+        scores_of_time_point = self._all_scores.get(family.mother.time_point_number())
+        if scores_of_time_point is None:
+            return None
+        try:
+            return scores_of_time_point.mother_score(family)
+        except KeyError:
+            return None
+

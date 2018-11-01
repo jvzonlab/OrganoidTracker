@@ -3,9 +3,10 @@ from typing import List, Optional
 from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
 from autotrack.linking.existing_connections import find_future_particles
+from autotrack.linking_analysis.linking_markers import EndMarker
 from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
 from autotrack.gui import Window
-from autotrack.linking_analysis import cell_death_finder
+from autotrack.linking_analysis import cell_death_finder, linking_markers
 
 
 def _get_end_of_tracks(experiment: Experiment) -> List[Particle]:
@@ -34,13 +35,15 @@ class CellTrackEndVisualizer(ParticleListVisualizer):
 
     def get_title(self, all_cells: List[Particle], cell_index: int):
         cell = all_cells[cell_index]
-        recognized_str = ""
-        if self._is_actual_death(cell):
-            recognized_str = "    (cell death)"
-        if self._is_in_scratch_data(cell) is False:
-            recognized_str = "    (NOT IN SCRATCH DATA)"
+        end_reason = self._get_end_cause(cell)
+
+        description = ""
+        if end_reason is not None:
+            description = "    (" + end_reason.get_display_name() + ")"
+        if not self._is_in_scratch_data(cell):
+            description = "    (NOT IN SCRATCH DATA)"
         return "Track end " + str(self._current_particle_index + 1) + "/" + str(len(self._particle_list))\
-               + recognized_str + "\n" + str(cell)
+               + description + "\n" + str(cell)
 
     def _is_in_scratch_data(self, particle: Particle) -> Optional[bool]:
         """Gets if a death was correctly recognized by the scratch graph. Returns None if there is no scratch graph."""
@@ -55,6 +58,6 @@ class CellTrackEndVisualizer(ParticleListVisualizer):
         except KeyError:
             return False
 
-    def _is_actual_death(self, particle: Particle) -> bool:
+    def _get_end_cause(self, particle: Particle) -> Optional[EndMarker]:
         links = self._experiment.links.get_baseline_else_scratch()
-        return cell_death_finder.is_actual_death(links, particle)
+        return linking_markers.get_track_end_marker(particle, links)

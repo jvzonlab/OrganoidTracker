@@ -1,5 +1,5 @@
 import collections
-from typing import Optional, Deque, List
+from typing import Optional, Deque, List, Tuple, Iterable
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent, LocationEvent
 from networkx import Graph
@@ -10,6 +10,7 @@ from autotrack.core.links import LinkType
 from autotrack.core.particles import Particle
 from autotrack.core.shape import ParticleShape
 from autotrack.gui import Window
+from autotrack.linking_analysis import logical_tests
 from autotrack.visualizer import DisplaySettings, activate
 from autotrack.visualizer.image_visualizer import AbstractImageVisualizer
 
@@ -62,11 +63,13 @@ class _InsertLinkAction(_Action):
             links.add_node(self.particle2)
 
         links.add_edge(self.particle1, self.particle2)
+        logical_tests.apply_on(experiment, self.particle1, self.particle2)
         return f"Inserted link between {self.particle1} and {self.particle2}"
 
     def undo(self, experiment: Experiment):
         links = experiment.links.scratch
         links.remove_edge(self.particle1, self.particle2)
+        logical_tests.apply_on(experiment, self.particle1, self.particle2)
         return f"Removed link between {self.particle1} and {self.particle2}"
 
 
@@ -99,15 +102,19 @@ class _InsertParticleAction(_Action):
         experiment.add_particle(self.particle)
         for linked_particle in self.linked_particles:
             experiment.links.scratch.add_edge(self.particle, linked_particle)
+        logical_tests.apply_on(experiment, self.particle, *self.linked_particles)
+
         return_value = f"Added {self.particle}"
         if len(self.linked_particles) > 1:
             return_value += " with connections to " + (" and ".join((str(p) for p in self.linked_particles)))
         if len(self.linked_particles) == 1:
             return_value += f" with a connection to {self.linked_particles[0]}"
+
         return return_value + "."
 
     def undo(self, experiment: Experiment):
         experiment.remove_particle(self.particle)
+        logical_tests.apply_on(experiment, *self.linked_particles)
         return f"Removed {self.particle}"
 
 
@@ -145,11 +152,14 @@ class LinkAndPositionEditor(AbstractImageVisualizer):
     _undo_queue: Deque[_Action]
     _redo_queue: Deque[_Action]
 
-    def __init__(self, window: Window, time_point_number: int = 1, z: int = 14):
+    def __init__(self, window: Window, time_point_number: int = 1, z: int = 14,
+                 selected_particle: Optional[Particle] = None):
         super().__init__(window, time_point_number, z, DisplaySettings(show_reconstruction=False))
 
         self._undo_queue = collections.deque(maxlen=50)
         self._redo_queue = collections.deque(maxlen=50)
+
+        self._selected1 = selected_particle
 
         _initialize_links(self._experiment)
 
