@@ -8,6 +8,7 @@ from autotrack import core
 from autotrack.core.experiment import Experiment
 from autotrack.core.links import LinkType
 from autotrack.core.particles import Particle
+from autotrack.core.shape import ParticleShape
 from autotrack.gui import Window
 from autotrack.visualizer import DisplaySettings, activate
 from autotrack.visualizer.image_visualizer import AbstractImageVisualizer
@@ -110,6 +111,30 @@ class _InsertParticleAction(_Action):
         return f"Removed {self.particle}"
 
 
+class _MoveParticleAction(_Action):
+    """Used to move a particle"""
+
+    old_position: Particle
+    old_shape: ParticleShape
+    new_position: Particle
+
+    def __init__(self, old_position: Particle, old_shape: ParticleShape, new_position: Particle):
+        if old_position.time_point_number() != new_position.time_point_number():
+            raise ValueError(f"{old_position} and {new_position} are in different time points")
+        self.old_position = old_position
+        self.old_shape = old_shape
+        self.new_position = new_position
+
+    def do(self, experiment: Experiment):
+        experiment.move_particle(self.old_position, self.new_position)
+        return f"Moved {self.old_position} to {self.new_position}"
+
+    def undo(self, experiment: Experiment):
+        experiment.move_particle(self.new_position, self.old_position)
+        experiment.particles.add(self.old_position, self.old_shape)
+        return f"Moved {self.new_position} back to {self.old_position}"
+
+
 class LinkAndPositionEditor(AbstractImageVisualizer):
     """Editor for cell links and positions. Use the Insert key to insert new cells or links, and Delete to delete
      them."""
@@ -201,17 +226,30 @@ class LinkAndPositionEditor(AbstractImageVisualizer):
         elif event.key == "insert":
             self._try_insert(event)
         elif event.key == "delete":
-            if self._selected1 is None:
-                self.update_status("You need to select a cell first")
-            elif self._selected2 is None:  # Delete cell and its links
-                old_links = list(self._experiment.links.scratch[self._selected1])
-                self._perform_action(_ReverseAction(_InsertParticleAction(self._selected1, old_links)))
-            elif self._experiment.links.scratch.has_edge(self._selected1, self._selected2): # Delete link between cells
-                self._perform_action(_ReverseAction(_InsertLinkAction(self._selected1, self._selected2)))
+            self._try_delete()
+        elif event.key == "shift":
+            if self._selected1 is None or self._selected2 is not None:
+                self.update_status("You need to have exactly one cell selected in order to move a cell.")
+            elif self._selected1.time_point() != self._time_point:
+                self.update_status(f"Cannot move {self._selected1} to this time point.")
             else:
-                self.update_status("No link found between the two particles - nothing to delete")
+                old_shape = self._experiment.particles.get_shape(self._selected1)
+                new_position = Particle(event.xdata, event.ydata, self._z).with_time_point(self._time_point)
+                self._perform_action(_MoveParticleAction(self._selected1, old_shape, new_position))
+                self._selected1 = new_position
         else:
             super()._on_key_press(event)
+
+    def _try_delete(self):
+        if self._selected1 is None:
+            self.update_status("You need to select a cell first")
+        elif self._selected2 is None:  # Delete cell and its links
+            old_links = list(self._experiment.links.scratch[self._selected1])
+            self._perform_action(_ReverseAction(_InsertParticleAction(self._selected1, old_links)))
+        elif self._experiment.links.scratch.has_edge(self._selected1, self._selected2):  # Delete link between cells
+            self._perform_action(_ReverseAction(_InsertLinkAction(self._selected1, self._selected2)))
+        else:
+            self.update_status("No link found between the two particles - nothing to delete")
 
     def _show_linking_errors(self, particle: Optional[Particle] = None):
         from autotrack.visualizer.errors_visualizer import ErrorsVisualizer
