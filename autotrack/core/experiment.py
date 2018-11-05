@@ -5,7 +5,7 @@ from networkx import Graph
 from numpy import ndarray
 
 from autotrack.core import TimePoint, Name
-from autotrack.core.image_loader import ImageLoader
+from autotrack.core.image_loader import ImageLoader, ImageResolution
 from autotrack.core.links import ParticleLinks, LinkType
 from autotrack.core.particles import Particle, ParticleCollection
 from autotrack.core.path import PathCollection
@@ -38,9 +38,6 @@ class _CachedImageLoader(ImageLoader):
         self._add_to_cache(time_point_number, image)
         return image
 
-    def get_resolution(self):
-        return self._internal.get_resolution()
-
     def uncached(self) -> ImageLoader:
         return self._internal
 
@@ -62,6 +59,7 @@ class Experiment:
     _image_loader: ImageLoader = ImageLoader()
     _name: Name
     paths: PathCollection
+    _image_resolution: ImageResolution
 
     def __init__(self):
         self._name = Name()
@@ -173,6 +171,26 @@ class Experiment:
     def get_image_stack(self, time_point: TimePoint) -> Optional[ndarray]:
         """Gets a stack of all images for a time point, one for every z layer. Returns None if there is no image."""
         return self._image_loader.get_image_stack(time_point)
+
+    def image_resolution(self, *args: Optional[ImageResolution]):
+        """Gets or sets the image resolution. Throws ValueError if you try to get the resolution when none has been set.
+
+        Set the image resolution:
+        >>> self.image_resolution(ImageResolution(0.32, 0.32, 0.32, 12))
+
+        Get the image resolution:
+        >>> self.image_resolution()
+
+        Delete the image resolution:
+        >>> self.image_resolution(None)
+        """
+        if len(args) == 1:
+            self._image_resolution = args[0]
+        if len(args) > 1:
+            raise ValueError(f"Too many args: {args}")
+        if self._image_resolution is None:
+            raise ValueError("No resolution was set")
+        return self._image_resolution
 
     @property
     def particles(self) -> ParticleCollection:

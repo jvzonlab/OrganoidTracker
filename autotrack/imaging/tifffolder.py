@@ -11,8 +11,7 @@ from autotrack.core.experiment import Experiment
 
 
 def load_images_from_folder(experiment: Experiment, folder: str, file_name_format: str,
-                            min_time_point: Optional[int] = None, max_time_point: Optional[int] = None,
-                            resolution: Optional[ImageResolution] = None):
+                            min_time_point: Optional[int] = None, max_time_point: Optional[int] = None):
     if min_time_point is None:
         min_time_point = 1
     if max_time_point is None:
@@ -32,26 +31,22 @@ def load_images_from_folder(experiment: Experiment, folder: str, file_name_forma
     max_time_point = time_point_number - 1  # Last actual image is attempted number - 1
 
     experiment.name.provide_automatic_name(path.basename(folder).replace("-stacks", ""))
-    experiment.image_loader(TiffImageLoader(folder, file_name_format, resolution, min_time_point, max_time_point))
-
-
+    experiment.image_loader(TiffImageLoader(folder, file_name_format, min_time_point, max_time_point))
 
 
 class TiffImageLoader(ImageLoader):
 
     _folder: str
     _file_name_format: str
-    _resolution: ImageResolution
     _min_time_point: Optional[int]
     _max_time_point: Optional[int]
 
-    def __init__(self, folder: str, file_name_format: str, resolution: Optional[ImageResolution] = None,
-                 min_time_point: Optional[int] = None, max_time_point: Optional[int] = None):
+    def __init__(self, folder: str, file_name_format: str, min_time_point: Optional[int] = None,
+                 max_time_point: Optional[int] = None):
         """Creates a loader for multi-page TIFF files. file_name_format is a format string (so containing something
         like %03d), accepting one parameter representing the time point number."""
         self._folder = folder
         self._file_name_format = file_name_format
-        self._resolution = resolution
         self._min_time_point = min_time_point
         self._max_time_point = max_time_point
 
@@ -75,11 +70,6 @@ class TiffImageLoader(ImageLoader):
                 outer = numpy.array((array,))
                 return outer
             return None
-
-    def get_resolution(self):
-        if self._resolution is None:
-            raise ValueError("Resolution not set")
-        return self._resolution
 
     def get_first_time_point(self) -> Optional[int]:
         return self._min_time_point

@@ -7,9 +7,11 @@ from autotrack.core import TimePoint
 class ImageResolution:
     """Represents the resolution of a 3D image."""
     pixel_size_zyx_um: Tuple[float, float, float]
+    time_point_interval_m: float  # Time between time points in minutes
 
-    def __init__(self, pixel_size_x_um: float, pixel_size_y_um: float, pixel_size_z_um: float):
+    def __init__(self, pixel_size_x_um: float, pixel_size_y_um: float, pixel_size_z_um: float, time_point_interval_m: float):
         self.pixel_size_zyx_um = (pixel_size_z_um, pixel_size_y_um, pixel_size_x_um)
+        self.time_point_interval_m = time_point_interval_m
 
 
 class ImageLoader:
@@ -18,10 +20,6 @@ class ImageLoader:
     def get_image_stack(self, time_point: TimePoint) -> Optional[ndarray]:
         """Loads an image, usually from disk. Returns None if there is no image for this time point."""
         return None
-
-    def get_resolution(self) -> ImageResolution:
-        """Gets the resolution of an image, or raises ValueError if unknown."""
-        raise ValueError()
 
     def uncached(self) -> "ImageLoader":
         """If this loader is a caching wrapper around another loader, this method returns one loader below. Otherwise,

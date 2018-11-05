@@ -11,6 +11,7 @@ from pandas import DataFrame
 
 from autotrack.core.experiment import Experiment
 from autotrack.core import shape, TimePoint
+from autotrack.core.image_loader import ImageResolution
 from autotrack.core.links import LinkType
 from autotrack.core.particles import Particle, ParticleCollection
 from autotrack.core.score import ScoredFamily, Score, Family, ScoreCollection
@@ -82,6 +83,13 @@ def _load_json_data_file(file_name: str, min_time_point: int, max_time_point: in
             for particle in baseline_links.nodes():
                 experiment.add_particle(particle)
             experiment.links.set_links(LinkType.BASELINE, baseline_links)
+
+        if "image_resolution" in data:
+            x_res = data["image_resolution"]["x_um"]
+            y_res = data["image_resolution"]["y_um"]
+            z_res = data["image_resolution"]["z_um"]
+            t_res = data["image_resolution"]["t_m"]
+            experiment.image_resolution(ImageResolution(x_res, y_res, z_res, t_res))
     return experiment
 
 
@@ -229,6 +237,16 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
     scored_families = list(experiment.scores.all_scored_families())
     if len(scored_families) > 0:
         save_data["family_scores"] = scored_families
+
+    # Save image resolution
+    try:
+        resolution = experiment.image_resolution()
+        save_data["image_resolution"] = {"x_um": resolution.pixel_size_zyx_um[2],
+                                         "y_um": resolution.pixel_size_zyx_um[1],
+                                         "z_um": resolution.pixel_size_zyx_um[0],
+                                         "t_m": resolution.pixel_size_zyx_um[0]}
+    except ValueError:
+        pass
 
     _create_parent_directories(json_file_name)
     with open(json_file_name, 'w') as handle:

@@ -28,6 +28,7 @@ _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_i
 _pixel_size_x_um = float(config.get_or_default("pixel_size_x_um", str(0.32), store_in_defaults=True))
 _pixel_size_y_um = float(config.get_or_default("pixel_size_y_um", str(0.32), store_in_defaults=True))
 _pixel_size_z_um = float(config.get_or_default("pixel_size_z_um", str(2), store_in_defaults=True))
+_time_point_duration_m = float(config.get_or_default("time_point_duration_m", str(12), store_in_defaults=True))
 _positions_input_file = config.get_or_default("positions_file", "Automatic analysis/Positions/Manual.json")
 
 _threshold_block_size = int(config.get_or_default("threshold_block_size", str(51)))
@@ -41,10 +42,10 @@ print("Loading cell positions...")
 io.load_positions_and_shapes_from_json(experiment, _positions_input_file, min_time_point=_min_time_point,
                                        max_time_point=_max_time_point)
 print("Discovering images...")
-resolution = ImageResolution(_pixel_size_x_um, _pixel_size_y_um, _pixel_size_z_um)
+resolution = ImageResolution(_pixel_size_x_um, _pixel_size_y_um, _pixel_size_z_um, _time_point_duration_m)
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
-                                   min_time_point=_min_time_point, max_time_point=_max_time_point,
-                                   resolution=resolution)
+                                   min_time_point=_min_time_point, max_time_point=_max_time_point)
+experiment.image_resolution(resolution)
 print("Running detection...")
 distance_transformer_for_experiment.perform_for_experiment(experiment, _output_folder, _threshold_block_size,
                                                            _max_distance_um)

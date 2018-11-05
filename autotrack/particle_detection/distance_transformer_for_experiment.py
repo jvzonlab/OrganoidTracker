@@ -10,7 +10,7 @@ from os import path
 
 
 def perform_for_experiment(experiment: Experiment, output_folder: str, block_size: int = 1, max_distance: float = 1000):
-    sampling = experiment.image_loader().get_resolution().pixel_size_zyx_um
+    sampling = experiment.image_resolution().pixel_size_zyx_um
     Path(output_folder).mkdir(parents=True, exist_ok=True)
     for time_point in experiment.time_points():
         print("Working on time point " + str(time_point.time_point_number()) + "...")
