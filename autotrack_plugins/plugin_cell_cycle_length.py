@@ -29,8 +29,13 @@ def _view_cell_cycle_length(window: Window):
         raise UserError("No links specified", "No links were loaded. Cannot plot anything.")
 
     third_variable_getter = _ThirdVar()
+    try:
+        time_point_duration_h = experiment.image_resolution().time_point_interval_m / 60
+    except ValueError:
+        raise UserError("No resolution set", "The resolution of the images was not set. Cannot plot anything.")
 
-    dialog.popup_figure(experiment.name, lambda fig: _draw_cell_cycle_length(fig, links, third_variable_getter))
+    dialog.popup_figure(experiment.name, lambda fig: _draw_cell_cycle_length(fig, links, time_point_duration_h,
+                                                                             third_variable_getter))
 
 
 class _ThirdVar:
@@ -38,12 +43,13 @@ class _ThirdVar:
         return 1
 
     def show_average(self) -> bool:
-        return True
+        return False
 
     def get_cmap(self) -> str:
         return "Greys"
 
     def get_colobar_label(self) -> Optional[str]:
+        """If this is None, then no color or color bar is used: the the Third Variable will essentiaally be ignored."""
         return None
 
 
@@ -129,7 +135,8 @@ def _calculate_moving_average(x_values: ndarray, y_values: ndarray, window_size:
            numpy.array(y_moving_average_stdev, dtype=numpy.float32)
 
 
-def _draw_cell_cycle_length(figure: Figure, links: Graph, third_variable_getter: _ThirdVar):
+def _draw_cell_cycle_length(figure: Figure, links: Graph, time_point_duration_h: float,
+                            third_variable_getter: _ThirdVar):
     previous_cycle_durations = list()
     cycle_durations = list()
     third_variables = list()  # Used for color, can be z position
@@ -155,33 +162,36 @@ def _draw_cell_cycle_length(figure: Figure, links: Graph, third_variable_getter:
                                                 "Therefore, we cannot plot anything.")
 
     # Convert to numpy, get statistics
-    previous_cycle_durations = numpy.array(previous_cycle_durations, dtype=numpy.int32)
-    cycle_durations = numpy.array(cycle_durations, dtype=numpy.int32)
+    previous_cycle_durations = numpy.array(previous_cycle_durations, dtype=numpy.int32) * time_point_duration_h
+    cycle_durations = numpy.array(cycle_durations, dtype=numpy.int32) * time_point_duration_h
     third_variables = numpy.array(third_variables, dtype=numpy.float32)
-    plot_limit = cycle_durations.max() * 1.1
+    plot_start = min(cycle_durations.min(), previous_cycle_durations.min()) / 2
+    plot_limit = max(previous_cycle_durations.max(), cycle_durations.max()) * 1.1
 
     window_size = 11
     x_moving_average, y_moving_average, y_moving_average_stdev \
         = _calculate_moving_average(previous_cycle_durations, cycle_durations, window_size=window_size)
 
     axes = figure.gca()
-    axes.plot(numpy.arange(plot_limit), color="orange", label="$T_{mother} = T_{daughter}$ line")
+    axes.plot(numpy.arange(plot_start, plot_limit), numpy.arange(plot_start, plot_limit), color="orange",
+              label="Equal durations line")
     if third_variable_getter.show_average():
         axes.plot(x_moving_average, y_moving_average, color="blue", linewidth=2,
                   label=f"Moving average ({window_size} time points)")
         axes.fill_between(x_moving_average, y_moving_average - y_moving_average_stdev,
                           y_moving_average + y_moving_average_stdev, color="blue", alpha=0.2)
 
-    scatterplot= axes.scatter(x=previous_cycle_durations, y=cycle_durations, c=third_variables, s=25, lw=1,
-                              cmap=third_variable_getter.get_cmap(), edgecolors="black")
     if third_variable_getter.get_colobar_label() is not None:
+        scatterplot = axes.scatter(x=previous_cycle_durations, y=cycle_durations, c=third_variables, s=25, lw=1,
+                                   cmap=third_variable_getter.get_cmap(), edgecolors="black")
         divider = make_axes_locatable(axes)
         axes_on_right = divider.append_axes("right", size="5%", pad=0.1)
         figure.colorbar(scatterplot, cax=axes_on_right).set_label(third_variable_getter.get_colobar_label())
-    axes.set_xlim(0, plot_limit)
-    axes.set_ylim(0, plot_limit)
-    axes.set_title("Length of mother cell cycle versus length of daughter cell cycle")
+    else:
+        axes.scatter(x=previous_cycle_durations, y=cycle_durations, c="black", s=9, lw=0, alpha=0.7)
+    axes.set_xlim(plot_start, plot_limit)
+    axes.set_ylim(plot_start, plot_limit)
     axes.set_aspect('equal', adjustable='box')
-    axes.set_xlabel("$T_{mother}$ (time points)")
-    axes.set_ylabel("$T_{daughter}$ (time points)")
+    axes.set_xlabel("Duration of cell cycle of mother (h)")
+    axes.set_ylabel("Duration of cell cycle of daughter (h)")
     axes.legend(loc="lower right")
