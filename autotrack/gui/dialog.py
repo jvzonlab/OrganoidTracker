@@ -139,6 +139,11 @@ def popup_figure(save_name: Name, draw_function: _Callable):
     mpl_canvas.get_tk_widget().grid(row=0, column=0, sticky="nesw")
 
 
+def popup_yesno_question(title: str, message: str) -> bool:
+    """Asks a Yes/No question. Returns True if the user pressed Yes and False otherwise."""
+    return _messagebox.askyesno(title, message)
+
+
 def open_file(filepath: str):
     """Opens a file using the default application."""
     if _sys.platform.startswith('darwin'):
@@ -147,4 +152,3 @@ def open_file(filepath: str):
         _os.startfile(filepath)
     elif _os.name == 'posix':
         _subprocess.call(('xdg-open', filepath))
-

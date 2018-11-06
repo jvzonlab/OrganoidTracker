@@ -177,8 +177,15 @@ def export_links_guizela(experiment: Experiment):
     links_folder = dialog.prompt_save_file("Save links as...", [("Folder", "*")])
     if not links_folder:
         return  # Cancelled
+    comparisons_folder = None
+    if dialog.popup_yesno_question("Track ids",
+                                   "Do you want to reuse existing track ids? This is useful for comparing data.\n\n If"
+                                   " yes, then you will be asked to select the folder containing the existing tracks."):
+        comparisons_folder = dialog.prompt_directory("Select folder with track ids to reuse")
+        if not comparisons_folder:
+            return
 
-    data_exporter.export_links(links, links_folder)
+    data_exporter.export_links(links, links_folder, comparisons_folder)
 
 
 def save_tracking_data(experiment: Experiment):
