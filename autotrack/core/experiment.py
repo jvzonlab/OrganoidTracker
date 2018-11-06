@@ -59,7 +59,7 @@ class Experiment:
     _image_loader: ImageLoader = ImageLoader()
     _name: Name
     paths: PathCollection
-    _image_resolution: ImageResolution
+    _image_resolution: Optional[ImageResolution] = None
 
     def __init__(self):
         self._name = Name()
