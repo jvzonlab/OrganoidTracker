@@ -59,6 +59,7 @@ def get_error_marker(links: Graph, particle: Particle) -> Optional[Error]:
 def set_error_marker(links: Graph, particle: Particle, error: Optional[Error]):
     """Sets an error marker for the given particle."""
     if error is None:
-        del links.nodes[particle]["error"]
+        if "error" in links.nodes[particle]:
+            del links.nodes[particle]["error"]
     else:
         links.nodes[particle]["error"] = error.value
