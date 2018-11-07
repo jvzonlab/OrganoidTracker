@@ -68,6 +68,7 @@ class ErrorsVisualizer(ParticleListVisualizer):
 
     _problematic_lineages: List[_LineageWithErrors]
     _lineage_index: int = 0
+    _total_number_of_warnings: int
 
     def __init__(self, window: Window, start_particle: Optional[Particle]):
         self._problematic_lineages = _get_problematic_particles(window.get_experiment())
@@ -75,6 +76,7 @@ class ErrorsVisualizer(ParticleListVisualizer):
         particles = []
         if len(self._problematic_lineages) > 0:
             particles = self._problematic_lineages[self._lineage_index].errored_particles
+        self._total_number_of_warnings = sum((len(lineage.errored_particles) for lineage in self._problematic_lineages))
         super().__init__(window,
                          chosen_particle=start_particle,
                          all_particles=particles)
@@ -98,7 +100,8 @@ class ErrorsVisualizer(ParticleListVisualizer):
         particle = particle_list[current_particle_index]
         error = linking_markers.get_error_marker(self._experiment.links.get_scratch_else_baseline(), particle)
         return f"{error.get_severity().name} {current_particle_index + 1} / {len(particle_list)} "\
-            f" of lineage {self._lineage_index + 1} / {len(self._problematic_lineages)}" +\
+            f" of lineage {self._lineage_index + 1} / {len(self._problematic_lineages)} " \
+               f"  ({self._total_number_of_warnings} warnings in total)" +\
             "\n" + error.get_message() + "\n" + str(particle)
 
     def _on_key_press(self, event: KeyEvent):
