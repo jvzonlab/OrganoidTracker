@@ -2,36 +2,41 @@ import os as _os
 import re
 import subprocess as _subprocess
 import sys as _sys
-import tkinter as _tkinter
-import tkinter.filedialog as _filedialog
-import tkinter.messagebox as _messagebox
-import tkinter.simpledialog as _simpledialog
 import traceback as _traceback
 from typing import Tuple, List, Optional
 
 from collections import Callable as _Callable
 import matplotlib as _matplotlib
+from PyQt5.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow
 from matplotlib.backend_bases import KeyEvent
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 from autotrack.core import UserError, Name
 
 
+def _window() -> QWidget:
+    return QApplication.topLevelWidgets()[0]
+
+
 def prompt_int(title: str, question: str) -> Optional[int]:
     """Asks the user to enter an integer. Returns None if the user pressed Cancel or closed the dialog box."""
-    return _simpledialog.askinteger(title, question)
+    result, ok = QInputDialog.getInt(_window(), title, question)
+    return result if ok else None
 
 
 def prompt_str(title: str, question: str, default: str = "") -> Optional[str]:
     """Asks the user to enter a line of text. Returns None if the user pressed Cancel or closed the dialog box."""
-    return _simpledialog.askstring(title, question, initialvalue=default)
+    text, ok = QInputDialog.getText(_window(), title, question, text=default)
+    return text if ok else None
 
 
 def prompt_confirmation(title: str, question: str):
     """Shows a OK/Cancel dialog box. Returns True if the user pressed OK, returns False if the user pressed Cancel or
     simply closed the dialog box."""
-    return _messagebox.askokcancel(title, question)
+    result = QMessageBox.question(_window(), title, question, QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Cancel)
+    return result == QMessageBox.Ok
 
 
 def prompt_save_file(title: str, file_types: List[Tuple[str, str]], suggested_name: Optional[Name] = None
@@ -40,16 +45,11 @@ def prompt_save_file(title: str, file_types: List[Tuple[str, str]], suggested_na
 
         prompt_save_file("Save as...", [("PNG file", "*.png"), ("JPEG file", "*.jpg")])
 
-    If the user does not write a file extension, then .png will become the default file extension in this case.
+    If the user does not write a file extension, then the file extension will be added automatically.
     """
-    default_extension = file_types[0][1]
-    if re.compile("^\*\.[A-Za-z0-9]+$").match(default_extension):
-        default_extension = default_extension[1:]
-    else:
-        default_extension = None
-    suggested_name_str = suggested_name.get_save_name() if suggested_name is not None else None
-    file_name = _filedialog.asksaveasfilename(title=title, filetypes=file_types, defaultextension=default_extension,
-                                              initialfile=suggested_name_str)
+    file_types_str = ";;".join((name + "(" + extension + ")" for name, extension in file_types))
+
+    file_name, _ = QFileDialog.getSaveFileName(_window(), title, "", file_types_str)
     if not file_name:
         return None
     return file_name
@@ -68,16 +68,17 @@ def prompt_load_file(title: str, file_types: List[Tuple[str, str]]) -> Optional[
         for name, extension in file_types:
             extensions.add(extension)
         file_types = [("All supported file types", ";".join(extensions))] + file_types
+    file_types_str = ";;".join((name + "("+extension+ ")" for name, extension in file_types))
 
-    file = _filedialog.askopenfilename(title=title, filetypes=file_types)
-    if file == "":
+    file_name, _ = QFileDialog.getOpenFileName(_window(), title, "", file_types_str)
+    if not file_name:
         return None
-    return file
+    return file_name
 
 
 def prompt_directory(title: str) -> Optional[str]:
     """Shows a prompt that asks the user to select a directory. Returns None if the user pressed Cancel."""
-    directory = _filedialog.askdirectory(title=title)
+    directory = QFileDialog.getExistingDirectory(_window(), title, "")
     if directory == "":
         return None
     return directory
@@ -85,12 +86,12 @@ def prompt_directory(title: str) -> Optional[str]:
 
 def popup_message_cancellable(title: str, message: str) -> bool:
     """Shows a dialog with Ok and Cancel buttons, but with an "i" sign instead of a "?"."""
-    box = _messagebox.Message(title=title, icon=_messagebox.INFO, type=_messagebox.OKCANCEL,message=message).show()
-    return str(box) == _messagebox.OK
+    result = QMessageBox.information(_window(), title, message, QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Cancel)
+    return result == QMessageBox.Ok
 
 
 def popup_error(title: str, message: str):
-    _messagebox.showerror(title, message)
+    QMessageBox.critical(_window(), title, message, QMessageBox.Ok, QMessageBox.Ok)
 
 
 def popup_exception(exception: BaseException):
@@ -102,24 +103,43 @@ def popup_exception(exception: BaseException):
 
 
 def popup_message(title: str, message: str):
-    _messagebox.showinfo(title, message)
+    QMessageBox.information(_window(), title, message, QMessageBox.Ok, QMessageBox.Ok)
+
+
+_open_popups = []
+
+
+class _Popup(QMainWindow):
+    _figure: Figure
+    _save_name: Name
+
+    def __init__(self, figure: Figure, save_name: Name):
+        super().__init__()
+
+        self._figure = figure
+        figure_widget = FigureCanvasQTAgg(figure)
+        self.setWindowTitle("Figure")
+        self.setCentralWidget(figure_widget)
+        figure_widget.mpl_connect("key_press_event", self._save_handler)
+        figure_widget.draw()
+        self.show()
+
+    def _save_handler(self, event: KeyEvent):
+        if event.key != "ctrl+s":
+            return
+        file_name = prompt_save_file("Save figure as...", [
+            ("PNG file", "*.png"), ("PDF file", "*.pdf"), ("SVG file", "*.svg")], suggested_name=self._save_name.get_save_name())
+        if file_name is None:
+            return
+        self._figure.savefig(file_name)
+
+    def closeEvent(self, event):
+        _open_popups.remove(self)
+        event.accept()
 
 
 def popup_figure(save_name: Name, draw_function: _Callable):
     """Shows a popup screen with the image"""
-    def save_handler(event: KeyEvent):
-        if event.key != "ctrl+s":
-            return
-        file_name = prompt_save_file("Save figure as...", [
-            ("PNG file", "*.png"), ("PDF file", "*.pdf"), ("SVG file", "*.svg")], suggested_name=save_name)
-        if file_name is None:
-            return
-        figure.savefig(file_name)
-
-    popup = _tkinter.Toplevel()
-    popup.title("Figure")
-    popup.grid_columnconfigure(0, weight=1)
-    popup.grid_rowconfigure(0, weight=1)
 
     _matplotlib.rcParams['font.family'] = 'serif'
     _matplotlib.rcParams['font.size'] = 11
@@ -127,21 +147,18 @@ def popup_figure(save_name: Name, draw_function: _Callable):
     _matplotlib.rcParams['mathtext.fontset'] = 'stix'
 
     figure = Figure(figsize=(5.5, 5), dpi=95, tight_layout=True)
-    mpl_canvas = FigureCanvasTkAgg(figure, master=popup)
     try:
         draw_function(figure)
     except BaseException as e:
-        popup.destroy()
         raise e
-
-    mpl_canvas.mpl_connect("key_press_event", save_handler)
-    mpl_canvas.draw()
-    mpl_canvas.get_tk_widget().grid(row=0, column=0, sticky="nesw")
+    global _open_popups
+    _open_popups.append(_Popup(figure, save_name))
 
 
-def popup_yesno_question(title: str, message: str) -> bool:
+def prompt_yes_no(title: str, message: str) -> bool:
     """Asks a Yes/No question. Returns True if the user pressed Yes and False otherwise."""
-    return _messagebox.askyesno(title, message)
+    result = QMessageBox.question(_window(), title, message, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+    return result == QMessageBox.Yes
 
 
 def open_file(filepath: str):

@@ -74,6 +74,7 @@ class Scheduler(Thread):
                                                            "Please wait for it to finish."))
 
     def _check_for_results_on_gui_thread(self):
+        return
         try:
             while True:
                 result: _CompletedTask = self._finished_queue.get(block = False)

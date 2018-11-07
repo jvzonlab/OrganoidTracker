@@ -1,15 +1,11 @@
 import sys
-import tkinter
 from os import path
-from tkinter import StringVar, ttk
-from tkinter.font import Font
 from typing import List, Dict, Any, Optional, Iterable
 
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-try:
-    from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
-except ImportError:
-    from matplotlib.backends.backend_tkagg import NavigationToolbar2TkAgg as NavigationToolbar2Tk
+from PyQt5 import QtWidgets
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow, QMenuBar, QMenu, QAction, QVBoxLayout, QLabel, QLineEdit
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
 from matplotlib.figure import Figure
 
 from autotrack.core.experiment import Experiment
@@ -36,24 +32,25 @@ class Plugin:
         """
         return {}
 
+
 class Window:
     """The model for a window."""
-    __root: tkinter.Tk
+    __root: QMainWindow
     __scheduler: Scheduler
     __plugins: List[Plugin]
 
     __fig: Figure
-    __status_text: StringVar
-    __title_text: StringVar
+    __status_text: QLabel
+    __title_text: QLabel
     __experiment: Experiment
 
     __event_handler_ids: List[int]
     __refresh_handlers: List[Any]
     __command_handlers: List[Any]
-    __menu: tkinter.Menu
+    __menu: QMenuBar
 
-    def __init__(self, root: tkinter.Tk, menu: tkinter.Menu, figure: Figure, experiment: Experiment,
-                 title_text: StringVar, status_text: StringVar):
+    def __init__(self, root: QMainWindow, menu: QMenuBar, figure: Figure, experiment: Experiment,
+                 title_text: QLabel, status_text: QLabel):
         self.__root = root
         self.__menu = menu
         self.__fig = figure
@@ -105,18 +102,18 @@ class Window:
             text = "\n" + text
             line_count += 1
 
-        self.__status_text.set(text)
+        self.__status_text.setText(text)
 
     def set_figure_title(self, text: str):
         """Sets the big text above the main figure."""
-        self.__title_text.set(text)
+        self.__title_text.setText(text)
 
     def set_window_title(self, text: Optional[str]):
         """Sets the title of the window, prefixed by APP_NAME. Use None as the title to just sown APP_NAME."""
         if text is None:
-            self.__root.title(APP_NAME)
+            self.__root.setWindowTitle(APP_NAME)
         else:
-            self.__root.title(APP_NAME + " - " + text)
+            self.__root.setWindowTitle(APP_NAME + " - " + text)
 
     def get_experiment(self) -> Experiment:
         """Gets the experiment that is being shown."""
@@ -138,7 +135,7 @@ class Window:
             menu_items.update(plugin.get_menu_items(self))
         menu_items.update(extra_items)
         menu_items.update(_get_help_menu())  # This menu must come last
-        _update_menu(self.__menu, menu_items)
+        _update_menu(self.__root, self.__menu, menu_items)
 
     def get_scheduler(self) -> Scheduler:
         """Gets the scheduler, useful for registering background tasks"""
@@ -205,30 +202,29 @@ def _get_help_menu() -> Dict[str, Any]:
     }
 
 
-def _update_menu(menu_bar: tkinter.Menu, menu_items: Dict[str, Any]):
+def _update_menu(q_window: QMainWindow, menu_bar: QMenuBar, menu_items: Dict[str, Any]):
     from autotrack.gui import action
 
     menu_tree = _simple_menu_dict_to_nested(menu_items)
 
-    if len(menu_bar.children) > 0:
-        menu_bar.delete(0, len(menu_bar.children))  # Remove old menu
+    menu_bar.clear()  # Remove old menu bar
 
     for menu_name, dropdown_items in menu_tree.items():
         # Create each dropdown menu
         if not dropdown_items:
             continue  # Ignore empty menus
-        menu = tkinter.Menu(menu_bar, tearoff=0)
+        menu = menu_bar.addMenu(menu_name)
         first_category = True
         for category_items in dropdown_items.values():
             if not first_category:
-                menu.add_separator()
+                menu.addSeparator()
             else:
                 first_category = False
 
             for item_name, item_action in category_items.items():
-                menu.add_command(label=item_name, command=_with_safeguard(item_action))
-
-        menu_bar.add_cascade(label=menu_name, menu=menu)
+                action = QAction(item_name, q_window)
+                action.triggered.connect(_with_safeguard(item_action))
+                menu.addAction(action)
 
 
 def _with_safeguard(action):
@@ -245,91 +241,88 @@ def launch_window(experiment: Experiment) -> Window:
     """Launches a window with an empty figure. Doesn't start the main loop yet. Use and activate a visualizer to add
     some interactiveness."""
     # Create matplotlib figure
-    fig = Figure(figsize=(7, 6), dpi=95)
+    fig = Figure(figsize=(12, 12), dpi=95)
 
     # Create empty window
-    root = tkinter.Tk()
-    root.geometry('800x700')
-    root.title(APP_NAME)
-    root.iconbitmap(path.join(path.dirname(path.abspath(sys.argv[0])), 'autotrack', 'gui', 'icon.ico'))
+    root = QApplication.instance()
+    if not root:
+        root = QApplication(sys.argv)
+    q_window = QMainWindow()
+    q_window.setBaseSize(800, 700)
+    q_window.setWindowTitle(APP_NAME)
+    q_window.setWindowIcon(QIcon(path.join(path.dirname(path.abspath(sys.argv[0])), 'autotrack', 'gui', 'icon.ico')))
 
-    title_text = StringVar()
-    status_text = StringVar()
-    menu = tkinter.Menu()
-    window = Window(root, menu, fig, experiment, title_text, status_text)
-
-    window.setup_menu(dict())  # This draws the menu
-    root.config(menu=menu)
-
-    root.grid_columnconfigure(1, weight=1)
-    root.grid_rowconfigure(1, weight=1)
+    menu = q_window.menuBar()
 
     # Initialize main grid
-    main_frame = ttk.Frame(root)
-    main_frame.grid(column=1, row=1, sticky="nesw")
-    main_frame.columnconfigure(0, weight=1)
-    main_frame.rowconfigure(2, weight=1)
+    main_frame = QtWidgets.QWidget()
+    q_window.setCentralWidget(main_frame)
+    vertical_boxes = QVBoxLayout(main_frame)
 
-    # Add title and status bar
-    ttk.Label(main_frame, textvariable=title_text,
-              font=Font(size=14, weight="bold"),
-              padding=(0, 10, 0, 10)).grid(row=1, column=0, sticky="we")
-    status_box = ttk.Label(main_frame, textvariable=status_text)
-    status_box.grid(row=3, column=0, sticky="we")
-
-    # Add command box
-    command_text = StringVar()
-    command_box = ttk.Entry(main_frame, textvariable=command_text)
-    command_box.grid(row=4, column=0, sticky="we")
+    # Add title
+    title = QLabel()
+    vertical_boxes.addWidget(title)
 
     # Add Matplotlib figure to frame
-    mpl_canvas = FigureCanvasTkAgg(fig, master=main_frame)  # A tk.DrawingArea.
-    mpl_canvas.draw()
-    main_figure = mpl_canvas.get_tk_widget()
-    main_figure.grid(row=2, column=0, sticky="we")  # Position of figure
-    main_figure.bind("<Enter>", lambda e: main_figure.focus_set() if _should_focus(main_figure) else ...)  # Refocus on mouse enter
-    main_figure.bind("<KeyRelease-/>", lambda e: _commandbox_autofocus(command_box, command_text))
+    mpl_canvas = FigureCanvasQTAgg(fig)  # A tk.DrawingArea.
+    vertical_boxes.addWidget(mpl_canvas)
 
-    command_box.bind("<Escape>", lambda e: main_figure.focus_set())
-    command_box.bind("<Return>", lambda e: _commandbox_execute(window, main_figure, command_text))
+    # Add status bar
+    status_box = QLabel()
+    vertical_boxes.addWidget(status_box)
 
-    toolbar_frame = ttk.Frame(main_frame)
-    toolbar_frame.grid(row=0, column=0, sticky=(tkinter.W, tkinter.E))  # Positions of toolbar buttons
-    toolbar = NavigationToolbar2Tk(mpl_canvas, toolbar_frame)
-    toolbar.update()
+    # Add command box
+    command_box = QLineEdit()
+    vertical_boxes.addWidget(command_box)
 
+    # main_figure = mpl_canvas.get_tk_widget()
+    # main_figure.grid(row=2, column=0, sticky="we")  # Position of figure
+    # main_figure.bind("<Enter>", lambda e: main_figure.focus_set() if _should_focus(main_figure) else ...)  # Refocus on mouse enter
+    # main_figure.bind("<KeyRelease-/>", lambda e: _commandbox_autofocus(command_box, command_text))
+    #
+    # command_box.bind("<Escape>", lambda e: main_figure.focus_set())
+    # command_box.bind("<Return>", lambda e: _commandbox_execute(window, main_figure, command_text))
+
+    toolbar = NavigationToolbar2QT(mpl_canvas, q_window)
+    q_window.addToolBar(toolbar)
+
+    window = Window(q_window, menu, fig, experiment, title, status_box)
+
+    window.setup_menu(dict())  # This draws the menu
+
+    q_window.show()
     return window
 
 
-def _commandbox_autofocus(command_box: ttk.Entry, command_var: StringVar):
-    command_box.focus_set()
-    command_var.set("/")
-    command_box.icursor(1)
-
-
-def _commandbox_execute(window: Window, main_figure: tkinter.Widget, command_var: StringVar):
-    """Empties the command box and executes the command."""
-    command = command_var.get()
-    if command.startswith("/"):
-        command = command[1:]  # Strip off the command slash
-    command_var.set("")
-    main_figure.focus_set()
-    window.execute_command(command)
-
-
-def _should_focus(widget: tkinter.Widget) -> bool:
-    """Returns whether the widget should be focused on mouse hover, which is the case if the current window has
-    focus."""
-    focus_object = widget.focus_get()
-    if focus_object is None:
-        return False
-    if "toplevel" in str(widget.focus_get()):
-        return False
-    return True
+# def _commandbox_autofocus(command_box: ttk.Entry, command_var: StringVar):
+#     command_box.focus_set()
+#     command_var.set("/")
+#     command_box.icursor(1)
+#
+#
+# def _commandbox_execute(window: Window, main_figure: tkinter.Widget, command_var: StringVar):
+#     """Empties the command box and executes the command."""
+#     command = command_var.get()
+#     if command.startswith("/"):
+#         command = command[1:]  # Strip off the command slash
+#     command_var.set("")
+#     main_figure.focus_set()
+#     window.execute_command(command)
+#
+#
+# def _should_focus(widget: tkinter.Widget) -> bool:
+#     """Returns whether the widget should be focused on mouse hover, which is the case if the current window has
+#     focus."""
+#     focus_object = widget.focus_get()
+#     if focus_object is None:
+#         return False
+#     if "toplevel" in str(widget.focus_get()):
+#         return False
+#     return True
 
 
 def mainloop():
     """Starts the main loop."""
-    tkinter.mainloop()
+    sys.exit(QApplication.instance().exec_())
 
 

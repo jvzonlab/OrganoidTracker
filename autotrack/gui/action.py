@@ -1,10 +1,9 @@
 import re
 import sys
-import tkinter
 from os import path
-from tkinter import messagebox
 from typing import Optional
 
+from PyQt5.QtWidgets import QApplication
 from matplotlib.figure import Figure
 
 from autotrack.core import UserError
@@ -18,12 +17,11 @@ from autotrack.visualizer import activate
 from autotrack.visualizer.empty_visualizer import EmptyVisualizer
 
 
-def ask_exit(root: tkinter.Tk):
+def ask_exit():
     """Exits the main window."""
-    if messagebox.askyesno("Confirmation",
-                           "Are you sure you want to quit the program? Any unsaved changes will be lost."):
-        root.quit()
-        root.destroy()
+    if dialog.prompt_yes_no("Confirmation",
+                            "Are you sure you want to quit the program? Any unsaved changes will be lost."):
+        QApplication.quit()
 
 
 def toggle_axis(figure: Figure):
@@ -39,8 +37,8 @@ def toggle_axis(figure: Figure):
 
 def new(window: Window):
     """Starts a new experiment."""
-    if messagebox.askyesno("Confirmation",
-                           "Are you sure you want to start a new project? Any unsaved changed will be lost."):
+    if dialog.prompt_yes_no("Confirmation",
+                            "Are you sure you want to start a new project? Any unsaved changed will be lost."):
         window.set_experiment(Experiment())
         visualizer = EmptyVisualizer(window)
         activate(visualizer)
@@ -61,8 +59,8 @@ def load_images(window: Window):
     directory, file_name = path.split(full_path)
     file_name_pattern = _find_pattern(file_name)
     if file_name_pattern is None:
-        messagebox.showerror("Could not read file pattern", "Could not find 't01' (or similar) in the file name \"" +
-                         file_name + "\". Make sure you selected the first image.")
+        dialog.popup_error("Could not read file pattern", "Could not find 't01' (or similar) in the file name \"" +
+                           file_name + "\". Make sure you selected the first image.")
         return
 
     # Load and show images
@@ -178,7 +176,7 @@ def export_links_guizela(experiment: Experiment):
     if not links_folder:
         return  # Cancelled
     comparisons_folder = None
-    if dialog.popup_yesno_question("Track ids",
+    if dialog.prompt_yes_no("Track ids",
                                    "Do you want to reuse existing track ids? This is useful for comparing data.\n\n If"
                                    " yes, then you will be asked to select the folder containing the existing tracks."):
         comparisons_folder = dialog.prompt_directory("Select folder with track ids to reuse")
