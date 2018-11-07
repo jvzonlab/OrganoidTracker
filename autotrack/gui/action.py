@@ -17,10 +17,13 @@ from autotrack.visualizer import activate
 from autotrack.visualizer.empty_visualizer import EmptyVisualizer
 
 
-def ask_exit():
-    """Exits the main window."""
-    if dialog.prompt_yes_no("Confirmation",
-                            "Are you sure you want to quit the program? Any unsaved changes will be lost."):
+def ask_exit(experiment: Experiment):
+    """Exits the main window, after asking if the user wants to save."""
+    answer = dialog.prompt_yes_no_cancel("Confirmation", "Do you want to save your changes first?")
+    if answer.is_yes():
+        if save_tracking_data(experiment):
+            QApplication.quit()
+    elif answer.is_no():
         QApplication.quit()
 
 
@@ -186,13 +189,14 @@ def export_links_guizela(experiment: Experiment):
     data_exporter.export_links(links, links_folder, comparisons_folder)
 
 
-def save_tracking_data(experiment: Experiment):
+def save_tracking_data(experiment: Experiment) -> bool:
     data_file = dialog.prompt_save_file("Save data as...", [
         (io.FILE_EXTENSION.upper() + " file", "*." + io.FILE_EXTENSION)])
     if not data_file:
-        return  # Cancelled
+        return False # Cancelled
 
     io.save_data_to_json(experiment, data_file)
+    return True
 
 
 def _error_message(error: Exception):

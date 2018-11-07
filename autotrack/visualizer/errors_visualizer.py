@@ -15,25 +15,30 @@ from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
 class _LineageWithErrors:
     start: Particle
     errored_particles: List[Particle]
+    contains_crumb: bool = False  # The particle the user has selected is called the "crumb"
 
     def __init__(self, start: Particle):
         self.start = start
         self.errored_particles = []
 
 
-def _get_problematic_particles(experiment: Experiment) -> List[_LineageWithErrors]:
+def _get_problematic_particles(experiment: Experiment, crumb: Optional[Particle]) -> List[_LineageWithErrors]:
     graph = experiment.links.get_scratch_else_baseline()
     lineages_with_errors = []
     for starting_cell in cell_appearance_finder.find_appeared_cells(graph):
         lineage = _LineageWithErrors(starting_cell)
-        _find_errors_in_lineage(graph, lineage, starting_cell)
+        _find_errors_in_lineage(graph, lineage, starting_cell, crumb)
         if len(lineage.errored_particles) > 0:
             lineages_with_errors.append(lineage)
     return lineages_with_errors
 
 
-def _find_errors_in_lineage(graph: Graph, lineage: _LineageWithErrors, particle: Particle):
+def _find_errors_in_lineage(graph: Graph, lineage: _LineageWithErrors, particle: Particle, crumb: Optional[Particle]):
     while True:
+        if particle == crumb:
+            print("Found crumb")
+            lineage.contains_crumb = True
+
         error = linking_markers.get_error_marker(graph, particle)
         if error is not None:
             lineage.errored_particles.append(particle)
@@ -42,7 +47,7 @@ def _find_errors_in_lineage(graph: Graph, lineage: _LineageWithErrors, particle:
         if len(future_particles) > 1:
             # Branch out
             for future_particle in future_particles:
-                _find_errors_in_lineage(graph, lineage, future_particle)
+                _find_errors_in_lineage(graph, lineage, future_particle, crumb)
             return
         if len(future_particles) < 1:
             # Stop
@@ -51,12 +56,11 @@ def _find_errors_in_lineage(graph: Graph, lineage: _LineageWithErrors, particle:
         particle = future_particles.pop()
 
 
-def _find_lineage_index_with_particle(start_particle: Optional[Particle], lineages: List[_LineageWithErrors]):
+def _find_lineage_index_with_crumb(lineages: List[_LineageWithErrors]):
     """Attempts to find the given particle in the lineages. Returns 0 if the particle is None or not in the lineages."""
-    if start_particle is None:
-        return 0
     for index, lineage in enumerate(lineages):
-        if start_particle in lineage.errored_particles:
+        if lineage.contains_crumb:
+            print("Crumb in lineage", index)
             return index
     return 0
 
@@ -71,8 +75,8 @@ class ErrorsVisualizer(ParticleListVisualizer):
     _total_number_of_warnings: int
 
     def __init__(self, window: Window, start_particle: Optional[Particle]):
-        self._problematic_lineages = _get_problematic_particles(window.get_experiment())
-        self._lineage_index = _find_lineage_index_with_particle(start_particle, self._problematic_lineages)
+        self._problematic_lineages = _get_problematic_particles(window.get_experiment(), start_particle)
+        self._lineage_index = _find_lineage_index_with_crumb(self._problematic_lineages)
         particles = []
         if len(self._problematic_lineages) > 0:
             particles = self._problematic_lineages[self._lineage_index].errored_particles
@@ -93,8 +97,8 @@ class ErrorsVisualizer(ParticleListVisualizer):
         return "No warnings or errors found. Hurray?"
 
     def get_message_press_right(self):
-        return "No warnings or errors found at mouse position." \
-               "\nPress the right arrow key to view the first warning in the sample."
+        return "No warnings or errors found in lineage." \
+               "\nPress the right arrow key to view the first warning in the experiment."
 
     def get_title(self, particle_list: List[Particle], current_particle_index: int):
         particle = particle_list[current_particle_index]

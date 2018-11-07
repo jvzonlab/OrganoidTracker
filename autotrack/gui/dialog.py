@@ -1,5 +1,4 @@
 import os as _os
-import re
 import subprocess as _subprocess
 import sys as _sys
 import traceback as _traceback
@@ -11,14 +10,13 @@ from PyQt5 import QtCore
 from PyQt5.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow
 from matplotlib.backend_bases import KeyEvent
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 from autotrack.core import UserError, Name
 
 
 def _window() -> QWidget:
-    return QApplication.topLevelWidgets()[0]
+    return QApplication.activeWindow()
 
 
 def prompt_int(title: str, question: str) -> Optional[int]:
@@ -156,6 +154,29 @@ def prompt_yes_no(title: str, message: str) -> bool:
     return result == QMessageBox.Yes
 
 
+class PromptAnswer:
+    _answer: int
+
+    def __init__(self, answer: int):
+        self._answer = answer
+
+    def is_yes(self):
+        return self._answer == QMessageBox.Yes
+
+    def is_no(self):
+        return self._answer == QMessageBox.No
+
+    def is_cancel(self):
+        return self._answer == QMessageBox.Cancel
+
+
+def prompt_yes_no_cancel(title: str, message: str) -> PromptAnswer:
+    """Asks a yes/no/cancel question."""
+    result = QMessageBox.question(_window(), title, message, QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
+                                  QMessageBox.Cancel)
+    return PromptAnswer(result)
+
+
 def open_file(filepath: str):
     """Opens a file using the default application."""
     if _sys.platform.startswith('darwin'):
@@ -164,3 +185,5 @@ def open_file(filepath: str):
         _os.startfile(filepath)
     elif _os.name == 'posix':
         _subprocess.call(('xdg-open', filepath))
+
+
