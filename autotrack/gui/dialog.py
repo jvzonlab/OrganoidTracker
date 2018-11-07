@@ -7,6 +7,7 @@ from typing import Tuple, List, Optional
 
 from collections import Callable as _Callable
 import matplotlib as _matplotlib
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow
 from matplotlib.backend_bases import KeyEvent
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
@@ -106,23 +107,22 @@ def popup_message(title: str, message: str):
     QMessageBox.information(_window(), title, message, QMessageBox.Ok, QMessageBox.Ok)
 
 
-_open_popups = []
-
-
 class _Popup(QMainWindow):
     _figure: Figure
     _save_name: Name
 
-    def __init__(self, figure: Figure, save_name: Name):
-        super().__init__()
+    def __init__(self, parent: QWidget, figure: Figure, save_name: Name):
+        super().__init__(parent)
 
         self._figure = figure
         figure_widget = FigureCanvasQTAgg(figure)
+        figure_widget.setParent(self)
         self.setWindowTitle("Figure")
         self.setCentralWidget(figure_widget)
         figure_widget.mpl_connect("key_press_event", self._save_handler)
         figure_widget.draw()
         self.show()
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
     def _save_handler(self, event: KeyEvent):
         if event.key != "ctrl+s":
@@ -132,10 +132,6 @@ class _Popup(QMainWindow):
         if file_name is None:
             return
         self._figure.savefig(file_name)
-
-    def closeEvent(self, event):
-        _open_popups.remove(self)
-        event.accept()
 
 
 def popup_figure(save_name: Name, draw_function: _Callable):
@@ -151,8 +147,7 @@ def popup_figure(save_name: Name, draw_function: _Callable):
         draw_function(figure)
     except BaseException as e:
         raise e
-    global _open_popups
-    _open_popups.append(_Popup(figure, save_name))
+    _Popup(_window(), figure, save_name)
 
 
 def prompt_yes_no(title: str, message: str) -> bool:

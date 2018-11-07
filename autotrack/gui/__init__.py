@@ -1,10 +1,13 @@
 import sys
+from functools import partial
 from os import path
-from typing import List, Dict, Any, Optional, Iterable
+from typing import List, Dict, Any, Optional, Iterable, Callable
 
 from PyQt5 import QtWidgets
-from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon, QKeyEvent
 from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow, QMenuBar, QMenu, QAction, QVBoxLayout, QLabel, QLineEdit
+from matplotlib.backend_bases import KeyEvent
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
 from matplotlib.figure import Figure
 
@@ -171,6 +174,21 @@ class Window:
             command_handler(command)
 
 
+class _CommandBox(QLineEdit):
+    enter_handler: Callable = None
+    escape_handler: Callable = None
+
+    def keyPressEvent(self, event: QKeyEvent):
+        key = event.key()
+        if key == Qt.Key_Enter or key == Qt.Key_Return:
+            self.enter_handler(self.text())
+            self.setText("")
+        elif key == Qt.Key_Escape:
+            self.escape_handler()
+        else:
+            super().keyPressEvent(event)
+
+
 def _simple_menu_dict_to_nested(menu_items: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
     menu_tree = {   # Forced order of base menus - these must go first
         "File": {}, "Edit": {}, "View": {}
@@ -255,38 +273,37 @@ def launch_window(experiment: Experiment) -> Window:
     menu = q_window.menuBar()
 
     # Initialize main grid
-    main_frame = QtWidgets.QWidget()
+    main_frame = QtWidgets.QWidget(parent=q_window)
     q_window.setCentralWidget(main_frame)
     vertical_boxes = QVBoxLayout(main_frame)
 
     # Add title
-    title = QLabel()
+    title = QLabel(parent=main_frame)
     vertical_boxes.addWidget(title)
 
     # Add Matplotlib figure to frame
     mpl_canvas = FigureCanvasQTAgg(fig)  # A tk.DrawingArea.
+    mpl_canvas.setParent(main_frame)
+    mpl_canvas.setFocusPolicy(Qt.ClickFocus)
+    mpl_canvas.setFocus()
     vertical_boxes.addWidget(mpl_canvas)
 
     # Add status bar
-    status_box = QLabel()
+    status_box = QLabel(parent=main_frame)
     vertical_boxes.addWidget(status_box)
 
     # Add command box
-    command_box = QLineEdit()
+    command_box = _CommandBox(parent=main_frame)
     vertical_boxes.addWidget(command_box)
 
-    # main_figure = mpl_canvas.get_tk_widget()
-    # main_figure.grid(row=2, column=0, sticky="we")  # Position of figure
-    # main_figure.bind("<Enter>", lambda e: main_figure.focus_set() if _should_focus(main_figure) else ...)  # Refocus on mouse enter
-    # main_figure.bind("<KeyRelease-/>", lambda e: _commandbox_autofocus(command_box, command_text))
-    #
-    # command_box.bind("<Escape>", lambda e: main_figure.focus_set())
-    # command_box.bind("<Return>", lambda e: _commandbox_execute(window, main_figure, command_text))
+    mpl_canvas.mpl_connect("key_release_event", partial(_commandbox_autofocus, command_box=command_box))
 
     toolbar = NavigationToolbar2QT(mpl_canvas, q_window)
     q_window.addToolBar(toolbar)
 
     window = Window(q_window, menu, fig, experiment, title, status_box)
+    command_box.escape_handler = lambda: mpl_canvas.setFocus()
+    command_box.enter_handler = partial(_commandbox_execute, window=window, main_figure=mpl_canvas)
 
     window.setup_menu(dict())  # This draws the menu
 
@@ -294,31 +311,19 @@ def launch_window(experiment: Experiment) -> Window:
     return window
 
 
-# def _commandbox_autofocus(command_box: ttk.Entry, command_var: StringVar):
-#     command_box.focus_set()
-#     command_var.set("/")
-#     command_box.icursor(1)
-#
-#
-# def _commandbox_execute(window: Window, main_figure: tkinter.Widget, command_var: StringVar):
-#     """Empties the command box and executes the command."""
-#     command = command_var.get()
-#     if command.startswith("/"):
-#         command = command[1:]  # Strip off the command slash
-#     command_var.set("")
-#     main_figure.focus_set()
-#     window.execute_command(command)
-#
-#
-# def _should_focus(widget: tkinter.Widget) -> bool:
-#     """Returns whether the widget should be focused on mouse hover, which is the case if the current window has
-#     focus."""
-#     focus_object = widget.focus_get()
-#     if focus_object is None:
-#         return False
-#     if "toplevel" in str(widget.focus_get()):
-#         return False
-#     return True
+def _commandbox_execute(command: str, window: Window, main_figure: QWidget):
+    if command.startswith("/"):
+        command = command[1:]  # Strip off the command slash
+    main_figure.setFocus()
+    window.execute_command(command)
+
+
+def _commandbox_autofocus(event: KeyEvent, command_box: QLineEdit):
+    """Switches focus to command box if "/" is pressed while the figure is in focus."""
+    if event.key == "/":
+        command_box.setFocus()
+        command_box.setText("/")
+        command_box.setCursorPosition(1)
 
 
 def mainloop():

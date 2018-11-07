@@ -4,6 +4,9 @@ from queue import Queue
 from threading import Thread
 from typing import Optional, Any
 
+from PyQt5.QtCore import QTimer
+from PyQt5.QtWidgets import QWidget
+
 from autotrack.core import UserError
 from autotrack.core.concurrent import ConcurrentSet
 
@@ -52,16 +55,16 @@ class Scheduler(Thread):
     _task_queue: Queue  # Queue[Task]
     _running_tasks: ConcurrentSet
     _finished_queue: Queue  # Queue[_CompletedTask]
-    _tk_root: tkinter.Tk
 
-    def __init__(self, tk_root: tkinter.Tk):
+    def __init__(self, qt_parent: QWidget):
         super().__init__()
-        self._tk_root = tk_root
         self._task_queue = Queue(maxsize=1)
         self._finished_queue = Queue()
         self._running_tasks = ConcurrentSet()
 
-        self._check_for_results_on_gui_thread()
+        timer = QTimer(qt_parent)
+        timer.timeout.connect(self._check_for_results_on_gui_thread)
+        timer.start(100)
 
     def add_task(self, task: Task):
         if len(self._running_tasks) == 0:
@@ -74,14 +77,13 @@ class Scheduler(Thread):
                                                            "Please wait for it to finish."))
 
     def _check_for_results_on_gui_thread(self):
-        return
         try:
             while True:
                 result: _CompletedTask = self._finished_queue.get(block = False)
                 result.handle()
         except queue.Empty:
-            # Check again after a while
-            self._tk_root.after(100, self._check_for_results_on_gui_thread)
+            # Ignore, will check again after a while
+            pass
 
     def run(self):
         """Long running method that processes pending tasks. Do not call, let Python call it."""
