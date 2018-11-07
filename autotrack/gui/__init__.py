@@ -3,7 +3,7 @@ from functools import partial
 from os import path
 from typing import List, Dict, Any, Optional, Iterable, Callable
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QKeyEvent
 from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow, QMenuBar, QMenu, QAction, QVBoxLayout, QLabel, QLineEdit
@@ -279,6 +279,7 @@ def launch_window(experiment: Experiment) -> Window:
 
     # Add title
     title = QLabel(parent=main_frame)
+    title.setStyleSheet("font-size: 16pt; font-weight: bold")
     vertical_boxes.addWidget(title)
 
     # Add Matplotlib figure to frame
