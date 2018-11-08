@@ -139,6 +139,10 @@ class ScoreCollection:
     def __init__(self):
         self._all_scores = dict()
 
+    def has_scores(self) -> bool:
+        """Returns True if there are any scores registered."""
+        return len(self._all_scores) > 0
+
     def set_family_score(self, family: Family, score: Score):
         """Sets the score of the given family to the given value."""
         scores_of_time_point = self._all_scores.get(family.mother.time_point_number())

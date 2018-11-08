@@ -27,16 +27,18 @@ def get_error(links: Graph, particle: Particle, scores: ScoreCollection, particl
             and linking_markers.get_track_end_marker(links, particle) is None:
         return Error.NO_FUTURE_POSITION
     elif len(future_particles) == 2:
-        score = scores.of_family(Family(particle, *future_particles))
-        if score is None or score.is_unlikely_mother():
-            return Error.LOW_MOTHER_SCORE
+        if scores.has_scores():
+            score = scores.of_family(Family(particle, *future_particles))
+            if score is None or score.is_unlikely_mother():
+                return Error.LOW_MOTHER_SCORE
         age = cell_cycle.get_age(links, particle)
         if age is not None and age < 5:
             return Error.YOUNG_MOTHER
 
     past_particles = _get_past_particles(links, particle)
     if len(past_particles) == 0:
-        if particle.time_point_number() > particles.first_time_point_number():
+        if particle.time_point_number() > particles.first_time_point_number() \
+                and linking_markers.get_track_start_marker(links, particle) is None:
             return Error.NO_PAST_POSITION
     elif len(past_particles) >= 2:
         return Error.CELL_MERGE
