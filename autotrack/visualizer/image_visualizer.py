@@ -1,4 +1,4 @@
-from typing import Optional, Iterable, List, Tuple, Union, Set
+from typing import Optional, Iterable, List, Tuple, Union, Set, Dict, Any
 
 import cv2
 import numpy
@@ -48,13 +48,12 @@ class AbstractImageVisualizer(Visualizer):
         self._display_settings = DisplaySettings() if display_settings is None else display_settings
         if time_point_number is None:
             time_point_number = window.get_experiment().first_time_point_number()
-        self._time_point, self._time_point_images = self._load_time_point(time_point_number)
         self._z = int(z)
-        self._clamp_z()
+        self._load_time_point(TimePoint(time_point_number))
         self.__particles_near_visible_layer = []
 
-    def _load_time_point(self, time_point_number: int) -> Tuple[TimePoint, ndarray]:
-        time_point = self._experiment.get_time_point(time_point_number)
+    def _load_time_point(self, time_point: TimePoint):
+        """Loads the images and other data of the time point."""
         if self._display_settings.show_images:
             if self._display_settings.show_reconstruction:
                 time_point_images = self.reconstruct_image(time_point, self._guess_image_size(time_point))
@@ -63,7 +62,9 @@ class AbstractImageVisualizer(Visualizer):
         else:
             time_point_images = None
 
-        return time_point, time_point_images
+        self._time_point = time_point
+        self._time_point_images = time_point_images
+        self._clamp_z()
 
     def _export_images(self):
         if self._time_point_images is None:
@@ -259,7 +260,7 @@ class AbstractImageVisualizer(Visualizer):
         """Wrapper of get_closest_particle that makes use of the fact that we can lookup all particles ourselves."""
         return self.get_closest_particle(self.__particles_near_visible_layer, x, y, None, max_distance=5)
 
-    def get_extra_menu_options(self):
+    def get_extra_menu_options(self) -> Dict[str, Any]:
         def time_point_prompt():
             min_str = str(self._experiment.first_time_point_number())
             max_str = str(self._experiment.last_time_point_number())
@@ -345,8 +346,7 @@ class AbstractImageVisualizer(Visualizer):
 
     def _move_to_time(self, new_time_point_number: int) -> bool:
         try:
-            self._time_point, self._time_point_images = self._load_time_point(new_time_point_number)
-            self._clamp_z()  # Caps z to allowable range
+            self._load_time_point(TimePoint(new_time_point_number))
             self.draw_view()
             self.update_status("Moved to time point " + str(new_time_point_number) + "!")
             return True
@@ -362,8 +362,7 @@ class AbstractImageVisualizer(Visualizer):
         old_time_point_number = self._time_point.time_point_number()
         new_time_point_number = old_time_point_number + dt
         try:
-            self._time_point, self._time_point_images = self._load_time_point(new_time_point_number)
-            self._clamp_z()  # Caps z to allowable range
+            self._load_time_point(TimePoint(new_time_point_number))
             self.draw_view()
             self.update_status(self.get_default_status())
         except ValueError:
@@ -415,6 +414,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             "Edit/Automatic-Cell detection...": self._show_cell_detector,
             "View/Linking-Linking differences (D)": self._show_linking_differences,
             "View/Linking-Linking errors and warnings (E)": self._show_linking_errors,
+            "View/Linking-Lineage errors and warnings (L)": self._show_lineage_errors,
             "View/Cell-Cell divisions (M)": self._show_mother_cells,
             "View/Cell-Track ends and cell deaths (/deaths)": self._show_dead_cells
         }
@@ -436,6 +436,8 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             self._show_mother_cells()
         elif event.key == "c":
             self._show_data_editor()
+        elif event.key == "l":
+            self._show_lineage_errors()
         elif event.key == "v":  # show volume info
             particle = self._get_particle_at(event.xdata, event.ydata)
             if particle is None:
@@ -485,6 +487,12 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         from autotrack.visualizer.link_and_position_editor import LinkAndPositionEditor
         editor = LinkAndPositionEditor(self._window, time_point_number=self._time_point.time_point_number(),
                                        z=self._z)
+        activate(editor)
+
+    def _show_lineage_errors(self):
+        from autotrack.visualizer.lineages_visualizer import LineageErrorsVisualizer
+        editor = LineageErrorsVisualizer(self._window, time_point_number=self._time_point.time_point_number(),
+                                         z=self._z)
         activate(editor)
 
     def _on_command(self, command: str) -> bool:

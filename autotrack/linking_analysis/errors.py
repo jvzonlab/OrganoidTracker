@@ -57,5 +57,3 @@ def _get_message(error: Error) -> str:
         return __info[error][1]
     except KeyError:
         return "Unknown error code " + str(error)
-
-
