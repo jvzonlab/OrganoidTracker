@@ -163,7 +163,7 @@ class ParticleCollection:
 
         # Remove time point entirely
         if particles_at_time_point.is_empty():
-            del self._all_particles[particle.time_point_number]
+            del self._all_particles[particle.time_point_number()]
             self._update_min_max_time_points_for_removal()
 
     def of_time_point_with_shapes(self, time_point: TimePoint) -> Dict[Particle, ParticleShape]:
