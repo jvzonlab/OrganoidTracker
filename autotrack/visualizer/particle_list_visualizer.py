@@ -14,11 +14,11 @@ class ParticleListVisualizer(Visualizer):
     Use the left/right arrow keys to move to the next cell division.
     Press M to exit this view."""
 
-    _current_particle_index: int
+    _current_particle_index: int = -1
     _particle_list = List[Particle]
     _show_next_image: bool
 
-    __last_index_per_class = dict()  # Static variable
+    __last_particle_by_class = dict()  # Static variable
 
     def __init__(self, window: Window, all_particles: List[Particle], chosen_particle: Optional[Particle] = None,
                  show_next_image: bool = False):
@@ -29,7 +29,7 @@ class ParticleListVisualizer(Visualizer):
         super().__init__(window)
         self._particle_list = all_particles
         self._particle_list.sort(key=lambda particle: particle.time_point_number())
-        self._current_particle_index = self._find_closest_particle_index(chosen_particle)
+        self._show_closest_or_stored_particle(chosen_particle)  # Calling a self.method during construction is bad...
         self._show_next_image = show_next_image
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
@@ -40,23 +40,30 @@ class ParticleListVisualizer(Visualizer):
             "Navigate/Time-Previous (Left)": self._goto_previous
         }
 
-    def _find_closest_particle_index(self, particle: Optional[Particle]) -> int:
-        if particle is None:
-            return self.__get_last_index()
+    def _show_closest_or_stored_particle(self, particle: Optional[Particle]):
+        if particle is not None:
+            # Try to find selected particle
+            try:
+                self._current_particle_index = self._particle_list.index(particle)
+            except ValueError:
+                # Try nearest particle
+                close_match = get_closest_particle(self._particle_list, particle, max_distance=100)
+
+                if close_match is not None and close_match.time_point_number() == particle.time_point_number():
+                    self._current_particle_index = self._particle_list.index(close_match)
+                    return
+
+        # Give up, show particle from before
         try:
-            return self._particle_list.index(particle)
+            particle = self._get_last_particle()
+            self._current_particle_index = self._particle_list.index(particle)
         except ValueError:
-            # Try nearest particle
-            close_match = get_closest_particle(self._particle_list, particle, max_distance=100)
+            pass  # Ignore, last particle is no longer avalable
 
-            if close_match is not None and close_match.time_point_number() == particle.time_point_number():
-                return self._particle_list.index(close_match)
-            return self.__get_last_index()  # Give up
-
-    def __get_last_index(self):
+    def _get_last_particle(self):
         """Gets the index we were at last time a visualizer of this kind was open."""
         try:
-            return ParticleListVisualizer.__last_index_per_class[type(self)]
+            return ParticleListVisualizer.__last_particle_by_class[type(self)]
         except KeyError:
             return -1
 
@@ -86,7 +93,7 @@ class ParticleListVisualizer(Visualizer):
         self._window.set_figure_title(self.get_title(self._particle_list, self._current_particle_index))
 
         self._fig.canvas.draw()
-        ParticleListVisualizer.__last_index_per_class[type(self)] = self._current_particle_index
+        ParticleListVisualizer.__last_particle_by_class[type(self)] = current_particle
 
     def _zoom_to_cell(self):
         mother = self._particle_list[self._current_particle_index]
