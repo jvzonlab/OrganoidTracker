@@ -54,6 +54,10 @@ class AbstractImageVisualizer(Visualizer):
 
     def _load_time_point(self, time_point: TimePoint):
         """Loads the images and other data of the time point."""
+        if time_point.time_point_number() < self._experiment.first_time_point_number() or \
+                time_point.time_point_number() > self._experiment.last_time_point_number():
+            raise ValueError("Time point outside experiment range")
+
         if self._display_settings.show_images:
             if self._display_settings.show_reconstruction:
                 time_point_images = self.reconstruct_image(time_point, self._guess_image_size(time_point))
