@@ -84,7 +84,7 @@ class TrackVisualizer(Visualizer):
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "t":
-            from autotrack.core import StandardImageVisualizer
+            from autotrack.visualizer.image_visualizer import StandardImageVisualizer
             image_visualizer = StandardImageVisualizer(self._window, z=int(self._particle.z),
                                                        time_point_number=self._particle.time_point_number())
             activate(image_visualizer)
