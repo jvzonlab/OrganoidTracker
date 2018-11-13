@@ -13,7 +13,8 @@ from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
 class ErrorsVisualizer(ParticleListVisualizer):
     """Shows all errors and warnings in the experiment.
     Press Left/Right to view the previous/next error.
-    Press E to exit this view (so that you can for example make a correction to the data).
+    Press Delete to delete (suppress) the shown error.
+    Press C to change (fix) the data and press E to exit this view.
     """
 
     _problematic_lineages: List[LineageWithErrors]
@@ -55,7 +56,8 @@ class ErrorsVisualizer(ParticleListVisualizer):
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
             **super().get_extra_menu_options(),
-            "View/Exit-Exit this view (/exit)": lambda: self.goto_full_image(),
+            "Edit/Suppress-Suppress this error (Del)": self._suppress_error,
+            "View/Exit-Exit this view (E)": self.goto_full_image,
             "Navigate/Lineage-Next lineage (Up)": self.__goto_next_lineage,
             "Navigate/Lineage-Previous lineage (Down)": self.__goto_previous_lineage
         }
@@ -87,6 +89,8 @@ class ErrorsVisualizer(ParticleListVisualizer):
             self.goto_full_image()
         elif event.key == "c":
             self._edit_data()
+        elif event.key == "delete":
+            self._suppress_error()
         else:
             super()._on_key_press(event)
 
@@ -123,4 +127,15 @@ class ErrorsVisualizer(ParticleListVisualizer):
                                                 z=int(viewed_particle.z),
                                                 selected_particle=viewed_particle)
         activate(data_editor)
+
+    def _suppress_error(self):
+        if self._current_particle_index < 0 or self._current_particle_index >= len(self._particle_list):
+            return
+        particle = self._particle_list[self._current_particle_index]
+        graph = self._experiment.links.get_scratch_else_baseline()
+        error = linking_markers.get_error_marker(graph, particle)
+        linking_markers.suppress_error_marker(graph, particle, error)
+        del self._particle_list[self._current_particle_index]
+        self.draw_view()
+        self.update_status(f"Suppressed warning for {particle}")
 

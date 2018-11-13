@@ -77,7 +77,8 @@ def set_track_start_marker(links: Graph, particle: Particle, start_marker: Optio
 
 
 def get_error_marker(links: Graph, particle: Particle) -> Optional[Error]:
-    """Gets the error marker for the given link, if any."""
+    """Gets the error marker for the given link, if any. Returns None if the error has been suppressed using
+    suppress_error_marker."""
     node_data = links.nodes.get(particle)
     if node_data is None:
         return None
@@ -89,7 +90,15 @@ def get_error_marker(links: Graph, particle: Particle) -> Optional[Error]:
     if error is None:
         return None  # In the past, we used to store None to delete errors
 
+    if "suppressed_error" in node_data and node_data["suppressed_error"] == error:
+        return None  # Error was suppressed
     return Error(error)
+
+
+def suppress_error_marker(links: Graph, particle: Particle, error: Error):
+    """Suppresses an error. Even if set_error_marker is called afterwards, the error will not show up in
+    get_error_marker."""
+    links.nodes[particle]["suppressed_error"] = error.value
 
 
 def set_error_marker(links: Graph, particle: Particle, error: Optional[Error]):
