@@ -10,14 +10,12 @@ class EmptyVisualizer(Visualizer):
         super().__init__(window)
 
     def refresh_view(self):
-        try:
-            self._experiment.first_time_point_number()
-        except ValueError:
-            pass  # Nothing to refresh
-        else:
-            # Switch to more appropriate viewer
-            visualizer = StandardImageVisualizer(self._window)
-            activate(visualizer)
+        if self._experiment.first_time_point_number() is None:
+            return  # Nothing to refresh
+
+        # Switch to more appropriate viewer
+        visualizer = StandardImageVisualizer(self._window)
+        activate(visualizer)
 
     def draw_view(self):
         self._clear_axis()
