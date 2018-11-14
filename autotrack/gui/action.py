@@ -95,17 +95,12 @@ def load_tracking_data(window: Window):
     if file_name is None:
         return  # Cancelled
 
-    try:
-        new_experiment = io.load_data_file(file_name)
-    except ValueError as e:
-        messagebox.showerror("Error loading data file",
-                             "Failed to load data file.\n\n" + _error_message(e))
-    else:
-        # Transfer image loader from old experiment
-        new_experiment.image_loader(window.get_experiment().image_loader())
+    new_experiment = io.load_data_file(file_name)
+    # Transfer image loader from old experiment
+    new_experiment.image_loader(window.get_experiment().image_loader())
 
-        window.set_experiment(new_experiment)
-        window.refresh()
+    window.set_experiment(new_experiment)
+    window.refresh()
 
 
 def add_positions(window: Window):
@@ -197,6 +192,13 @@ def save_tracking_data(experiment: Experiment) -> bool:
 
     io.save_data_to_json(experiment, data_file)
     return True
+
+
+def reload_plugins(window: Window):
+    """Reloads all active plugins from disk."""
+    count = window.reload_plugins()
+    window.refresh()
+    window.set_status(f"Reloaded all {count} plugins.")
 
 
 def _error_message(error: Exception):
