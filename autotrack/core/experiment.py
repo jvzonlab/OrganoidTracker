@@ -120,7 +120,7 @@ class Experiment:
             raise ValueError(f"Time point out of bounds (was: {time_point_number}, first: {first}, last: {last})")
         return TimePoint(time_point_number)
 
-    def first_time_point_number(self):
+    def first_time_point_number(self) -> Optional[int]:
         """Gets the first time point of the experiment where there is data (images and/or particles)."""
         image_first = self._image_loader.get_first_time_point()
         particle_first = self._particles.first_time_point_number()
@@ -130,7 +130,7 @@ class Experiment:
             return image_first
         return min(particle_first, image_first)
 
-    def last_time_point_number(self):
+    def last_time_point_number(self) -> Optional[int]:
         """Gets the last time point (inclusive) of the experiment where there is data (images and/or particles)."""
         image_last = self._image_loader.get_last_time_point()
         particle_last = self._particles.last_time_point_number()
