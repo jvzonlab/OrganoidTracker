@@ -15,6 +15,7 @@ from autotrack.core.particles import Particle
 from autotrack.gui import launch_window, Window, dialog
 from autotrack.gui.dialog import popup_figure, prompt_int, popup_error
 from autotrack.linking import particle_flow
+from autotrack.linking_analysis import linking_markers
 from autotrack.visualizer import Visualizer, activate, DisplaySettings
 
 
@@ -164,7 +165,8 @@ class AbstractImageVisualizer(Visualizer):
         if abs(dz) <= self.MAX_Z_DISTANCE:
             # Draw error marker
             graph = self._experiment.links.get_scratch_else_baseline()
-            if graph is not None and particle in graph and "error" in graph.nodes[particle]:
+            if graph is not None and particle in graph \
+                    and linking_markers.get_error_marker(graph, particle) is not None:
                 self._draw_error(particle, dz)
 
             # Make particle selectable
