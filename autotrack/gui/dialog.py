@@ -2,9 +2,7 @@ import os as _os
 import subprocess as _subprocess
 import sys as _sys
 import traceback as _traceback
-from typing import Tuple, List, Optional
-
-from collections import Callable as _Callable
+from typing import Tuple, List, Optional,  Callable
 import matplotlib as _matplotlib
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow
@@ -113,8 +111,12 @@ class _Popup(QMainWindow):
         super().__init__(parent)
 
         self._figure = figure
+        self._save_name = save_name
+
         figure_widget = FigureCanvasQTAgg(figure)
         figure_widget.setParent(self)
+        figure_widget.setFocusPolicy(QtCore.Qt.ClickFocus)
+        figure_widget.setFocus()
         self.setWindowTitle("Figure")
         self.setCentralWidget(figure_widget)
         figure_widget.mpl_connect("key_press_event", self._save_handler)
@@ -132,7 +134,7 @@ class _Popup(QMainWindow):
         self._figure.savefig(file_name)
 
 
-def popup_figure(save_name: Name, draw_function: _Callable):
+def popup_figure(save_name: Name, draw_function: Callable[[Figure], None]):
     """Shows a popup screen with the image"""
 
     _matplotlib.rcParams['font.family'] = 'serif'
