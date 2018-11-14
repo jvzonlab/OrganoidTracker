@@ -1,21 +1,26 @@
 import os
-from typing import Any, List
-from importlib import import_module
+from typing import Any, List, Dict
+import importlib
 
 from autotrack.gui import Plugin, Window
 
 
 class _FilePlugin(Plugin):
     """A plugin that consists of a single .py file."""
-    __loaded_file: Any
+    __loaded_script: Any
+    __module_name: str
 
     def __init__(self, module_name: str):
-        self.__loaded_file = import_module(module_name)
+        self.__module_name = module_name
+        self.__loaded_script = importlib.import_module(module_name)
 
     def get_menu_items(self, window: Window):
-        if hasattr(self.__loaded_file, 'get_menu_items'):
-            return self.__loaded_file.get_menu_items(window)
+        if hasattr(self.__loaded_script, 'get_menu_items'):
+            return self.__loaded_script.get_menu_items(window)
         return {}
+
+    def reload(self):
+        importlib.reload(self.__loaded_script)
 
 
 def load_plugins(folder: str) -> List[Plugin]:

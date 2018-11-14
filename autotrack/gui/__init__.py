@@ -35,6 +35,10 @@ class Plugin:
         """
         return {}
 
+    def reload(self):
+        """Reloads this plugin from disk."""
+        ...
+
 
 class Window:
     """The model for a window."""
@@ -149,6 +153,13 @@ class Window:
         for plugin in plugins:
             self.__plugins.append(plugin)
 
+    def reload_plugins(self) -> int:
+        """Reloads all plugins from disk. You should update the window after calling this. Returns the number of
+        reloaded plugins."""
+        for plugin in self.__plugins:
+            plugin.reload()
+        return len(self.__plugins)
+
     def _get_default_menu(self) -> Dict[str, Any]:
         from autotrack.gui import action
 
@@ -160,6 +171,7 @@ class Window:
             "File/Export-Export detection data only...": lambda: action.export_positions_and_shapes(self.get_experiment()),
             "File/Export-Export linking data only...": lambda: action.export_links(self.get_experiment()),
             "File/Export-Export to Guizela's file format...": lambda: action.export_links_guizela(self.get_experiment()),
+            "File/Plugins-Reload all plugins...": lambda: action.reload_plugins(self),
             "File/Exit-Exit (Alt+F4)": lambda: action.ask_exit(self.get_experiment()),
             "Edit/Add-Add positions and shapes...": lambda: action.add_positions(self),
             "Edit/Add-Add links, scores and warnings...": lambda: action.add_links(self),
