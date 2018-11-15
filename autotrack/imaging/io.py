@@ -11,7 +11,7 @@ from pandas import DataFrame
 
 from autotrack.core.experiment import Experiment
 from autotrack.core import shape, TimePoint
-from autotrack.core.image_loader import ImageResolution
+from autotrack.core.resolution import ImageResolution
 from autotrack.core.links import LinkType
 from autotrack.core.particles import Particle, ParticleCollection
 from autotrack.core.score import ScoredFamily, Score, Family, ScoreCollection

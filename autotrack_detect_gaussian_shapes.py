@@ -17,7 +17,7 @@ from autotrack.config import ConfigFile
 from autotrack.particle_detection import gaussian_detector_for_experiment
 
 # PARAMETERS
-from autotrack.core.image_loader import ImageResolution
+from autotrack.core.resolution import ImageResolution
 from autotrack.core.experiment import Experiment
 
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)

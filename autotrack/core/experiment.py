@@ -1,14 +1,13 @@
-from typing import Dict, Optional, List, Tuple, Iterable
+from typing import Optional, List, Tuple, Iterable
 
-import networkx
-from networkx import Graph
 from numpy import ndarray
 
 from autotrack.core import TimePoint, Name
-from autotrack.core.image_loader import ImageLoader, ImageResolution
-from autotrack.core.links import ParticleLinks, LinkType
+from autotrack.core.image_loader import ImageLoader
+from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle, ParticleCollection
 from autotrack.core.path import PathCollection
+from autotrack.core.resolution import ImageResolution
 from autotrack.core.score import ScoreCollection
 
 

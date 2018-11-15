@@ -6,7 +6,7 @@ from numpy import ndarray
 import numpy
 
 from autotrack.core import TimePoint
-from autotrack.core.image_loader import ImageLoader, ImageResolution
+from autotrack.core.image_loader import ImageLoader
 from autotrack.core.experiment import Experiment
 
 
