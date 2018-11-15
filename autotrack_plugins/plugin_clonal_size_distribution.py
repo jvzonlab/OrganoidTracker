@@ -55,7 +55,7 @@ def _get_division_count_in_lineage(particle: Particle, graph: Graph):
 
 def _draw_clonal_sizes(figure: Figure, clonal_sizes: ndarray):
     axes = figure.gca()
-    axes.hist(clonal_sizes, range(clonal_sizes.max()), color="blue")
+    axes.hist(clonal_sizes, range(clonal_sizes.max() + 1), color="blue")
     axes.set_title("Clonal size distribution")
     axes.set_ylabel("Frequency")
     axes.set_xlabel("Clonal size")
