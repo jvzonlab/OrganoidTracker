@@ -1,8 +1,11 @@
 from operator import itemgetter
 from typing import Dict, AbstractSet, Optional, Iterable, Set
 
-from autotrack.core.shape import ParticleShape, UnknownShape
+import math
+
 from autotrack.core import TimePoint
+from autotrack.core.resolution import ImageResolution
+from autotrack.core.shape import ParticleShape, UnknownShape
 
 
 class Particle:
@@ -21,6 +24,13 @@ class Particle:
         """Gets the squared distance. Working with squared distances instead of normal ones gives a much better
         performance, as the expensive sqrt(..) function can be avoided."""
         return (self.x - other.x) ** 2 + (self.y - other.y) ** 2 + ((self.z - other.z) * z_factor) ** 2
+
+    def distance_um(self, other: "Particle", resolution: ImageResolution) -> float:
+        """Gets the distance to the other particle in micrometers."""
+        dx = (self.x - other.x) * resolution.pixel_size_zyx_um[2]
+        dy = (self.y - other.y) * resolution.pixel_size_zyx_um[1]
+        dz = (self.z - other.z) * resolution.pixel_size_zyx_um[0]
+        return math.sqrt(dx ** 2 + dy ** 2 + dz ** 2)
 
     def time_point_number(self) -> Optional[int]:
         return self._time_point_number
