@@ -8,11 +8,9 @@ from matplotlib.figure import Figure
 
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import LinkType
 from autotrack.gui import Window, dialog
 from autotrack.gui.dialog import popup_message_cancellable
 from autotrack.imaging import tifffolder, io
-from autotrack.manual_tracking import data_exporter, data_importer
 from autotrack.visualizer import activate
 from autotrack.visualizer.empty_visualizer import EmptyVisualizer
 
@@ -100,49 +98,6 @@ def load_tracking_data(window: Window):
     new_experiment.image_loader(window.get_experiment().image_loader())
 
     window.set_experiment(new_experiment)
-    window.refresh()
-
-
-def add_positions(window: Window):
-    experiment = window.get_experiment()
-
-    cell_file = dialog.prompt_load_file("Select positions file", [("JSON file", "*.json")])
-    if not cell_file:
-        return  # Cancelled
-
-    try:
-        io.load_positions_and_shapes_from_json(experiment, cell_file)
-    except ValueError as e:
-        raise UserError("Error loading positions",
-                        "Failed to load positions.\n\n" + _error_message(e))
-    else:
-        window.refresh()
-
-
-def add_links(window: Window):
-    experiment = window.get_experiment()
-
-    link_file = dialog.prompt_load_file("Select link file", [("JSON file", "*.json")])
-    if not link_file:
-        return  # Cancelled
-
-    try:
-        io.load_linking_result(experiment, str(link_file), LinkType.BASELINE)
-    except ValueError as e:
-        raise UserError("Error loading links", "Failed to load links. Are you sure that is a valid JSON links"
-                                               " file? Are the corresponding cell positions loaded?\n\n"
-                                               + _error_message(e))
-    else:
-        window.refresh()
-
-
-def add_guizela_tracks(window: Window):
-    """Loads the tracks in Guizela's format."""
-    folder = dialog.prompt_directory("Open folder with Guizela's tracks...")
-    if not folder:
-        return  # Cancelled
-
-    data_importer.add_data_to_experiment(window.get_experiment(), folder)
     window.refresh()
 
 

@@ -1,5 +1,5 @@
 import collections
-from typing import Optional, Deque, List, Tuple, Iterable
+from typing import Optional, Deque, List
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent, LocationEvent
 from networkx import Graph
@@ -12,7 +12,7 @@ from autotrack.core.shape import ParticleShape
 from autotrack.gui import Window
 from autotrack.linking_analysis import logical_tests
 from autotrack.visualizer import DisplaySettings, activate
-from autotrack.visualizer.image_visualizer import AbstractImageVisualizer
+from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
 
 def _initialize_links(experiment: Experiment):
@@ -142,7 +142,7 @@ class _MoveParticleAction(_Action):
         return f"Moved {self.new_position} back to {self.old_position}"
 
 
-class LinkAndPositionEditor(AbstractImageVisualizer):
+class LinkAndPositionEditor(ExitableImageVisualizer):
     """Editor for cell links and positions. Use the Insert key to insert new cells or links, and Delete to delete
      them."""
 
@@ -194,7 +194,9 @@ class LinkAndPositionEditor(AbstractImageVisualizer):
             return
         new_selection = self._get_particle_at(event.xdata, event.ydata)
         if new_selection is None:
-            self.update_status("Cannot find a particle here")
+            self._selected1, self._selected2 = None, None
+            self.draw_view()
+            self.update_status("Cannot find a cell here. Unselected both cells.")
             return
         if new_selection == self._selected1:
             self._selected1 = None  # Deselect
@@ -211,17 +213,7 @@ class LinkAndPositionEditor(AbstractImageVisualizer):
             **super().get_extra_menu_options(),
             "Edit/Editor-Undo (Ctrl+z)": self._undo,
             "Edit/Editor-Redo (Ctrl+y)": self._redo,
-            "View/Exit-Exit this view (C)": self._exit_view
         }
-
-    def _on_command(self, command: str):
-        if command == "exit":
-            self._exit_view()
-        elif command == "help":
-            self.update_status("/exit: Exit this view (you can also press C)"
-                               "\n/t20: Jump to time point 20 (also works for other time points)")
-        else:
-            super()._on_command(command)
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "c":
@@ -257,7 +249,9 @@ class LinkAndPositionEditor(AbstractImageVisualizer):
             old_links = list(self._experiment.links.scratch[self._selected1])
             self._perform_action(_ReverseAction(_InsertParticleAction(self._selected1, old_links)))
         elif self._experiment.links.scratch.has_edge(self._selected1, self._selected2):  # Delete link between cells
-            self._perform_action(_ReverseAction(_InsertLinkAction(self._selected1, self._selected2)))
+            particle1, particle2 = self._selected1, self._selected2
+            self._selected1, self._selected2 = None, None
+            self._perform_action(_ReverseAction(_InsertLinkAction(particle1, particle2)))
         else:
             self.update_status("No link found between the two particles - nothing to delete")
 
@@ -312,10 +306,3 @@ class LinkAndPositionEditor(AbstractImageVisualizer):
             self.update_status(result_string)
         except IndexError:
             self.update_status("No more actions to redo.")
-
-    def _exit_view(self):
-        _commit_links(self._experiment)
-        from autotrack.visualizer.image_visualizer import StandardImageVisualizer
-        image_visualizer = StandardImageVisualizer(self._window, time_point_number=self._time_point.time_point_number(),
-                                                   z=self._z, display_settings=self._display_settings)
-        activate(image_visualizer)

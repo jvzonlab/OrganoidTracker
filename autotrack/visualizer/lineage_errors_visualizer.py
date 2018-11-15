@@ -7,10 +7,11 @@ from autotrack.core.particles import Particle
 from autotrack.gui import Window
 from autotrack.linking_analysis import lineage_checks
 from autotrack.visualizer import activate
-from autotrack.visualizer.image_visualizer import AbstractImageVisualizer
+from autotrack.visualizer.abstract_image_visualizer import AbstractImageVisualizer
+from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
 
-class LineageErrorsVisualizer(AbstractImageVisualizer):
+class LineageErrorsVisualizer(ExitableImageVisualizer):
     """Viewer to detect errors in lineages. All cells with a gray marker have potential errors in them. Hover your mouse
     over a cell and press E to dismiss or correct the errors in that lineage."""
 
@@ -19,30 +20,6 @@ class LineageErrorsVisualizer(AbstractImageVisualizer):
     def __init__(self, window: Window, time_point_number: Optional[int] = None, z: int = 14):
         self._verified_lineages = set()
         super().__init__(window, time_point_number, z)
-
-    def get_extra_menu_options(self) -> Dict[str, Any]:
-        return {
-            **super().get_extra_menu_options(),
-            "View/Exit-Exit this view (L)": self._exit_view,
-        }
-
-    def _exit_view(self, dt: int = 0):
-        time_point_number = self._time_point.time_point_number() + dt
-        from autotrack.visualizer.image_visualizer import StandardImageVisualizer
-        image_visualizer = StandardImageVisualizer(self._window, time_point_number=time_point_number,
-                                                   z=self._z, display_settings=self._display_settings)
-        activate(image_visualizer)
-
-    def _on_command(self, command: str) -> bool:
-        if command == "help":
-            self.update_status("Available commands:"
-                               "  /t20: Jump to time point 20 (also works for other time points)"
-                               "  /exit: Exits this view")
-            return True
-        if command == "exit":
-            self._exit_view()
-            return True
-        return super()._on_command(command)
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "l":
@@ -57,7 +34,8 @@ class LineageErrorsVisualizer(AbstractImageVisualizer):
         # Rendering this view is quite slow, so it is better to exit this view instead of rerendering it for another
         # time point
         try:
-            self._exit_view(dt=dt)
+            self._time_point = self._experiment.get_time_point(self._time_point.time_point_number() + dt)
+            self._exit_view()
         except ValueError:
             pass  # Time point doesn't exit
 

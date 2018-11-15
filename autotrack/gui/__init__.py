@@ -173,9 +173,6 @@ class Window:
             "File/Export-Export to Guizela's file format...": lambda: action.export_links_guizela(self.get_experiment()),
             "File/Plugins-Reload all plugins...": lambda: action.reload_plugins(self),
             "File/Exit-Exit (Alt+F4)": lambda: action.ask_exit(self.get_experiment()),
-            "Edit/Add-Add positions and shapes...": lambda: action.add_positions(self),
-            "Edit/Add-Add links, scores and warnings...": lambda: action.add_links(self),
-            "Edit/Add-Add positions and links from Guizela's format...": lambda: action.add_guizela_tracks(self),
             "Edit/Experiment-Rename experiment...": lambda: action.rename_experiment(self),
             "View/Toggle-Toggle showing axis numbers": lambda: action.toggle_axis(self.get_figure()),
         }

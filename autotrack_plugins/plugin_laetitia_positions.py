@@ -17,12 +17,15 @@ TIME_POINT_FROM_FILE_NAME = re.compile("t(\d+)")
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Edit/Add-Add positions in Laetitia's format...": lambda: _import_laetitia_positions(window),
+        "File/SaveLoad-Load positions in Laetitia's format...": lambda: _load_laetitia_positions(window),
         "File/Export-Export positions in Laetitia's format...": lambda: _export_laetitia_positions(window)
     }
 
 
-def _import_laetitia_positions(window: Window):
+def _load_laetitia_positions(window: Window):
+    new_experiment = Experiment()
+    new_experiment.image_loader(window.get_experiment().image_loader())  # Copy over image loader
+
     z_offset = _get_z_offset(window.get_experiment())
 
     if not dialog.popup_message_cancellable("Instructions", "Choose the directory containing the *.npy or *.txt files."):
@@ -32,8 +35,9 @@ def _import_laetitia_positions(window: Window):
         return
 
     for file_name in os.listdir(directory):
-        _import_file(window.get_experiment(), directory, file_name, z_offset)
+        _import_file(new_experiment, directory, file_name, z_offset)
 
+    window.set_experiment(new_experiment)
     window.refresh()
 
 

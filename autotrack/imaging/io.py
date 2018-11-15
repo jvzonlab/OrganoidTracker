@@ -32,8 +32,8 @@ def _load_guizela_data_file(file_name: str, min_time_point: int, max_time_point:
     """Starting from a random *.p file in a directory, this loads all data according to Guizela's format from that
     directory."""
     experiment = Experiment()
-    from autotrack.manual_tracking import data_importer
-    data_importer.add_data_to_experiment(experiment, os.path.dirname(file_name), min_time_point, max_time_point)
+    from autotrack.manual_tracking import guizela_data_importer
+    guizela_data_importer.add_data_to_experiment(experiment, os.path.dirname(file_name), min_time_point, max_time_point)
     return experiment
 
 

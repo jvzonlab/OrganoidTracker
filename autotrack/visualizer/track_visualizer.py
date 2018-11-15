@@ -10,8 +10,8 @@ from autotrack.core.resolution import ImageResolution
 from autotrack.gui import Window, dialog
 from autotrack.linking import existing_connections
 from autotrack.linking_analysis import cell_appearance_finder
-from autotrack.visualizer import activate, DisplaySettings
-from autotrack.visualizer.image_visualizer import AbstractImageVisualizer
+from autotrack.visualizer import DisplaySettings
+from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
 
 def _get_particles_in_lineage(graph: Graph, particle: Particle) -> Graph:
@@ -83,7 +83,7 @@ def _plot_displacements(axes: Axes, graph: Graph, resolution: ImageResolution, p
         return
 
 
-class TrackVisualizer(AbstractImageVisualizer):
+class TrackVisualizer(ExitableImageVisualizer):
     """Shows the trajectory of a single cell. Double-click a cell to select it. Press T to exit this view."""
 
     _particles_in_lineage: Optional[Graph] = None
@@ -106,12 +106,6 @@ class TrackVisualizer(AbstractImageVisualizer):
             "View/Exit-Exit this view (T)": self._exit_view,
             "Graph/Displacement-Cell displacement over time...": self._show_displacement,
         }
-
-    def _exit_view(self):
-        from autotrack.visualizer.image_visualizer import StandardImageVisualizer
-        image_visualizer = StandardImageVisualizer(self._window, self._time_point.time_point_number(), self._z,
-                                                   self._display_settings)
-        activate(image_visualizer)
 
     def _show_displacement(self):
         try:

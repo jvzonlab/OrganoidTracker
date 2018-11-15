@@ -1,5 +1,5 @@
 from autotrack.gui import Window
-from autotrack.visualizer.image_visualizer import StandardImageVisualizer
+from autotrack.visualizer.standard_image_visualizer import StandardImageVisualizer
 from autotrack.visualizer import Visualizer, activate
 
 

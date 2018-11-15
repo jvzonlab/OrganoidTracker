@@ -11,7 +11,7 @@ from autotrack.gui import Window, dialog
 from autotrack.particle_detection import thresholding, watershedding, gaussian_fit, smoothing, missed_cell_finder
 from autotrack.core.gaussian import Gaussian
 from autotrack.visualizer import activate, DisplaySettings
-from autotrack.visualizer.image_visualizer import AbstractImageVisualizer
+from autotrack.visualizer.abstract_image_visualizer import AbstractImageVisualizer
 
 
 class DetectionVisualizer(AbstractImageVisualizer):
