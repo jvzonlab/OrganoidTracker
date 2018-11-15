@@ -306,3 +306,8 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
             self.update_status(result_string)
         except IndexError:
             self.update_status("No more actions to redo.")
+
+    def refresh_view(self):
+        self._undo_queue.clear()
+        self._redo_queue.clear()
+        super().refresh_view()

@@ -325,15 +325,15 @@ class AbstractImageVisualizer(Visualizer):
 
     def _toggle_showing_next_time_point(self):
         self._display_settings.show_next_time_point = not self._display_settings.show_next_time_point
-        self.refresh_view()
+        self._move_in_time(0)  # Refreshes image
 
     def _toggle_showing_images(self):
         self._display_settings.show_images = not self._display_settings.show_images
-        self.refresh_view()
+        self._move_in_time(0)  # Refreshes image
 
     def _toggle_showing_reconstruction(self):
         self._display_settings.show_reconstruction = not self._display_settings.show_reconstruction
-        self.refresh_view()
+        self._move_in_time(0)  # Refreshes image
 
     def _move_in_z(self, dz: int):
         old_z = self._z
