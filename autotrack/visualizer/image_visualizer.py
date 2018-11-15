@@ -504,7 +504,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         activate(editor)
 
     def _show_lineage_errors(self):
-        from autotrack.visualizer.lineages_visualizer import LineageErrorsVisualizer
+        from autotrack.visualizer.lineage_errors_visualizer import LineageErrorsVisualizer
         editor = LineageErrorsVisualizer(self._window, time_point_number=self._time_point.time_point_number(),
                                          z=self._z)
         activate(editor)

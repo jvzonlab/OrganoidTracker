@@ -56,7 +56,10 @@ class LineageErrorsVisualizer(AbstractImageVisualizer):
     def _move_in_time(self, dt: int):
         # Rendering this view is quite slow, so it is better to exit this view instead of rerendering it for another
         # time point
-        self._exit_view(dt=dt)
+        try:
+            self._exit_view(dt=dt)
+        except ValueError:
+            pass  # Time point doesn't exit
 
     def _show_linking_errors(self, particle: Optional[Particle] = None):
         from autotrack.visualizer.errors_visualizer import ErrorsVisualizer
@@ -86,6 +89,5 @@ class LineageErrorsVisualizer(AbstractImageVisualizer):
 
         verified = particle in self._verified_lineages
         color = color if verified else "gray"
-        self._ax.plot(particle.x, particle.y, 'o', markersize=25, color=(0, 0, 0, 0), markeredgecolor=color,
-                      markeredgewidth=5)
+        self._draw_selection(particle, color)
         return super()._draw_particle(particle, color, dz, dt)
