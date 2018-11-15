@@ -111,6 +111,15 @@ class AbstractImageVisualizer(Visualizer):
         if self._time_point_images is not None:
             self._ax.imshow(self._time_point_images[self._z], cmap=self._color_map)
 
+    def _draw_selection(self, particle: Particle, color: str):
+        """Draws a marker for the given particle that indicates that the particle is selected. Subclasses can call this
+        method to show a particle selection.
+
+        Note: this method will draw the selection marker even if the given particle is in another time point, or even on
+        a completely different z layer. So only call this method if you want to have a marker visible."""
+        self._ax.plot(particle.x, particle.y, 'o', markersize=25, color=(0, 0, 0, 0), markeredgecolor=color,
+                      markeredgewidth=5)
+
     def _get_figure_title(self, errors: int) -> str:
         title = "Time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
         if errors != 0:
@@ -427,11 +436,10 @@ class StandardImageVisualizer(AbstractImageVisualizer):
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "t":
-            particle = self._get_particle_at(event.xdata, event.ydata)
-            if particle is not None:
-                from autotrack.visualizer.track_visualizer import TrackVisualizer
-                track_visualizer = TrackVisualizer(self._window, particle)
-                activate(track_visualizer)
+            from autotrack.visualizer.track_visualizer import TrackVisualizer
+            track_visualizer = TrackVisualizer(self._window, self._time_point.time_point_number(), self._z,
+                                               self._display_settings)
+            activate(track_visualizer)
         elif event.key == "e":
             particle = self._get_particle_at(event.xdata, event.ydata)
             self._show_linking_errors(particle)

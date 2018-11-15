@@ -1,99 +1,162 @@
-from typing import Set, Optional
+from typing import Optional
 
-import matplotlib.pyplot as plt
 from matplotlib.backend_bases import KeyEvent, MouseEvent
+from matplotlib.figure import Figure, Axes
 from networkx import Graph
 
-from autotrack import core
+from autotrack.core import UserError
 from autotrack.core.particles import Particle
-from autotrack.linking import cell_cycle
-from autotrack.visualizer import Visualizer, activate
-from autotrack.gui import Window
+from autotrack.core.resolution import ImageResolution
+from autotrack.gui import Window, dialog
+from autotrack.linking import existing_connections
+from autotrack.linking_analysis import cell_appearance_finder
+from autotrack.visualizer import activate, DisplaySettings
+from autotrack.visualizer.image_visualizer import AbstractImageVisualizer
 
 
-class TrackVisualizer(Visualizer):
-    """Shows trajectories of particles. The past is blue, the future is red.
-    Double-click on a cell point to focus on that cell.
-    Press T to return to the normal view."""
+def _get_particles_in_lineage(graph: Graph, particle: Particle) -> Graph:
+    particles = Graph()
+    particles.add_node(particle)
+    _add_past_particles(graph, particle, particles)
+    _add_future_particles(graph, particle, particles)
+    return particles
 
-    _particle: Particle
-    _particles_on_display: Set[Particle]
 
-    def __init__(self, window: Window, particle: Particle):
-        super().__init__(window)
-        self._particle = particle
-        self._particles_on_display = set()
+def _add_past_particles(graph: Graph, particle: Particle, single_lineage_graph: Graph):
+    """Finds all particles in earlier time points connected to this particle."""
+    while True:
+        past_particles = existing_connections.find_past_particles(graph, particle)
+        for past_particle in past_particles:
+            single_lineage_graph.add_node(past_particle)
+            single_lineage_graph.add_edge(particle, past_particle)
 
-    def draw_view(self):
-        self._clear_axis()
-        self._particles_on_display.clear()
+        if len(past_particles) == 0:
+            return  # Start of lineage
+        if len(past_particles) > 1:
+            # Cell merge (physically impossible)
+            for past_particle in past_particles:
+                _add_past_particles(graph, past_particle, single_lineage_graph)
+            return
 
-        self._draw_particle(self._particle, color=core.COLOR_CELL_CURRENT, size=7)
+        particle = past_particles.pop()
 
-        self._draw_network(self._experiment.links.scratch, line_style='dotted', line_width=3, max_distance=1)
-        self._draw_network(self._experiment.links.baseline)
 
-        plt.title("Tracks of " + str(self._particle) + "\n" + self._get_cell_age_str())
-        self._fig.canvas.draw()
+def _add_future_particles(graph: Graph, particle: Particle, single_lineage_graph: Graph):
+    """Finds all particles in later time points connected to this particle."""
+    while True:
+        future_particles = existing_connections.find_future_particles(graph, particle)
+        for future_particle in future_particles:
+            single_lineage_graph.add_node(future_particle)
+            single_lineage_graph.add_edge(particle, future_particle)
 
-    def _get_cell_age_str(self) -> str:
-        graph = self._experiment.links.get_baseline_else_scratch()
-        if graph is None:
-            return ""
-        age = cell_cycle.get_age(graph, self._particle)
-        if age is None:
-            return "Age: born before measurements"
-        return "Age: " + str(age)
+        if len(future_particles) == 0:
+            return  # End of lineage
+        if len(future_particles) > 1:
+            # Cell division
+            for daughter in future_particles:
+                _add_future_particles(graph, daughter, single_lineage_graph)
+            return
 
-    def _draw_network(self, network: Optional[Graph], line_style: str = 'solid', line_width: int = 1,
-                      max_distance: int = 10):
-        if network is not None:
-            already_drawn = {self._particle}
-            self._draw_all_connected(self._particle, network, already_drawn, line_style=line_style,
-                                     line_width=line_width, max_distance=max_distance)
-            self._particles_on_display.update(already_drawn)
+        particle = future_particles.pop()
 
-    def _draw_all_connected(self, particle: Particle, network: Graph, already_drawn: Set[Particle],
-                            max_distance: int = 10, line_style: str = 'solid', line_width: float = 1):
+
+def _plot_displacements(axes: Axes, graph: Graph, resolution: ImageResolution, particle: Particle):
+    displacements = list()
+    time_point_numbers = list()
+
+    while True:
+        future_particles = existing_connections.find_future_particles(graph, particle)
+
+        if len(future_particles) == 1:
+            # Track continues
+            future_particle = future_particles.pop()
+            displacements.append(particle.distance_um(future_particle, resolution))
+            time_point_numbers.append(particle.time_point_number())
+
+            particle = future_particle
+            continue
+
+        # End of this cell track: either start multiple new ones (division) or stop tracking
+        axes.plot(time_point_numbers, displacements)
+        for future_particle in future_particles:
+            _plot_displacements(axes, graph, resolution, future_particle)
+        return
+
+
+class TrackVisualizer(AbstractImageVisualizer):
+    """Shows the trajectory of a single cell. Double-click a cell to select it. Press T to exit this view."""
+
+    _particles_in_lineage: Optional[Graph] = None
+
+    def __init__(self, window: Window, time_point_number: int,
+                 z: int, display_settings: DisplaySettings):
+        super().__init__(window, time_point_number, z, display_settings)
+
+    def _draw_particle(self, particle: Particle, color: str, dz: int, dt: int) -> int:
+        if abs(dz) <= 3 and self._particles_in_lineage is not None and particle in self._particles_in_lineage:
+            self._draw_selection(particle, color)
+        return super()._draw_particle(particle, color, dz, dt)
+
+    def _get_figure_title(self, errors: int):
+        return f"Tracks at time point {self._time_point.time_point_number()} (z={self._z})"
+
+    def get_extra_menu_options(self):
+        return {
+            **super().get_extra_menu_options(),
+            "View/Exit-Exit this view (T)": self._exit_view,
+            "Graph/Displacement-Cell displacement over time...": self._show_displacement,
+        }
+
+    def _exit_view(self):
+        from autotrack.visualizer.image_visualizer import StandardImageVisualizer
+        image_visualizer = StandardImageVisualizer(self._window, self._time_point.time_point_number(), self._z,
+                                                   self._display_settings)
+        activate(image_visualizer)
+
+    def _show_displacement(self):
         try:
-            links = network[particle]
-            for linked_particle in links:
-                if linked_particle not in already_drawn:
-                    color = core.COLOR_CELL_NEXT
-                    positions = [particle.x, particle.y, linked_particle.x - particle.x, linked_particle.y - particle.y]
-                    if linked_particle.time_point_number() <= self._particle.time_point_number():
-                        # Particle in the past, use different style
-                        color = core.COLOR_CELL_PREVIOUS
-                    if linked_particle.time_point_number() < particle.time_point_number():
-                        # Always draw arrow from oldest to newest particle
-                        positions = [linked_particle.x, linked_particle.y,
-                                     particle.x - linked_particle.x, particle.y - linked_particle.y]
+            resolution = self._experiment.image_resolution()
+        except ValueError:
+            raise UserError("Resolution not set", "The image resolution is not set. Cannot calculate cellular"
+                                                  " displacement")
+        else:
+            if self._particles_in_lineage is None:
+                raise UserError("No cell track selected", "No cell track selected, so we cannot plot anything. Double-click"
+                                                          " on a cell to select a track.")
 
-                    self._ax.arrow(*positions, color=color, linestyle=line_style, linewidth=line_width, fc=color,
-                                   ec=color, head_width=1, head_length=1)
-                    if abs(linked_particle.time_point_number() - self._particle.time_point_number()) <= max_distance:
-                        already_drawn.add(linked_particle)
-                        self._draw_particle(linked_particle, color)
-                        self._draw_all_connected(linked_particle, network, already_drawn, max_distance, line_style,
-                                                 line_width)
-        except KeyError:
-            pass # No older links
+            def draw_function(figure: Figure):
+                axes = figure.gca()
+                axes.set_xlabel("Time (time points)")
+                axes.set_ylabel("Displacement between time points (μm)")
+                axes.set_title("Cellular displacement")
+                for lineage_start in cell_appearance_finder.find_appeared_cells(self._particles_in_lineage):
+                    _plot_displacements(axes, self._particles_in_lineage, resolution, lineage_start)
 
-    def _draw_particle(self, particle: Particle, color, size=5):
-        self._ax.plot(particle.x, particle.y, 'o', color=color, markeredgecolor='black', markersize=size)
+            dialog.popup_figure(self._experiment.name, draw_function)
+
+    def _on_command(self, command: str) -> bool:
+        if command == "exit":
+            self._exit_view()
+            return True
+        return super()._on_command(command)
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "t":
-            from autotrack.visualizer.image_visualizer import StandardImageVisualizer
-            image_visualizer = StandardImageVisualizer(self._window, z=int(self._particle.z),
-                                                       time_point_number=self._particle.time_point_number())
-            activate(image_visualizer)
+            self._exit_view()
+        else:
+            super()._on_key_press(event)
 
     def _on_mouse_click(self, event: MouseEvent):
-        if event.button == 1 and event.dblclick:
-            # Focus on clicked particle
-            particle = self.get_closest_particle(self._particles_on_display, x=event.xdata, y=event.ydata, z=None,
-                                                 max_distance=20)
-            if particle is not None:
-                self._particle = particle
-                self.draw_view()
+        if event.dblclick:
+            graph = self._experiment.links.get_baseline_else_scratch()
+            if graph is None:
+                self.update_status("No links found. Is the linking data missing?")
+                return
+            particle = self._get_particle_at(event.xdata, event.ydata)
+            if particle is None:
+                self.update_status("Couldn't find a particle here.")
+                self._particles_in_lineage = None
+                return
+            self._particles_in_lineage = _get_particles_in_lineage(graph, particle)
+            self.draw_view()
+            self.update_status("Focused on " + str(particle))
