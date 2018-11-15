@@ -7,11 +7,9 @@ that is not the nearest neighbor.
 from autotrack import gui
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import LinkType
 from autotrack.imaging import tifffolder, io
 from autotrack.linking import linker_for_experiment
-from autotrack.linking import link_util
-from autotrack.visualizer import image_visualizer
+from autotrack.visualizer import standard_image_visualizer
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
@@ -49,8 +47,8 @@ results_nearest_neighbor = linker_for_experiment.with_only_the_preferred_edges(r
 print("Writing results to file...")
 io.save_links_to_json(results, _output_file)
 print("Visualizing..")
-experiment.links.add_links(LinkType.SCRATCH, results)
-image_visualizer.show(experiment)
+experiment.links.add_links(results)
+standard_image_visualizer.show(experiment)
 print("Done!")
 gui.mainloop()
 

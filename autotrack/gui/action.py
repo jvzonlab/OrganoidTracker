@@ -109,7 +109,7 @@ def export_positions_and_shapes(experiment: Experiment):
 
 
 def export_links(experiment: Experiment):
-    links = experiment.links.baseline
+    links = experiment.links.graph
     if not links:
         raise UserError("No links", "Cannot export links; there are no links created.")
 
@@ -121,7 +121,7 @@ def export_links(experiment: Experiment):
 
 
 def export_links_guizela(experiment: Experiment):
-    links = experiment.links.baseline
+    links = experiment.links.graph
     if not links:
         raise UserError("No links", "Cannot export links; there are no links created.")
 

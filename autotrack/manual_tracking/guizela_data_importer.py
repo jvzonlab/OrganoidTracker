@@ -1,17 +1,16 @@
 """Extracting the tracks as measured by Guizela to a Graph object"""
 
-import math
 import os
 import pickle
 import sys
 from typing import List
 
+import math
 import numpy
 from networkx import Graph
 
 from autotrack.core import TimePoint
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import LinkType
 from autotrack.core.particles import Particle
 from autotrack.core.path import PathCollection, Path
 from autotrack.linking_analysis import linking_markers
@@ -57,7 +56,7 @@ def add_data_to_experiment(experiment: Experiment, tracks_dir: str, min_time_poi
     graph = _load_links(tracks_dir, min_time_point, max_time_point)
     for particle in graph.nodes():
         experiment.add_particle(particle)
-    experiment.links.add_links(LinkType.BASELINE, graph)
+    experiment.links.add_links(graph)
     _load_crypt_axis(tracks_dir, experiment.paths, min_time_point, max_time_point)
 
 

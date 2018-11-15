@@ -7,9 +7,8 @@ from os import path
 
 from autotrack import gui
 from autotrack.config import ConfigFile
-from autotrack.core.links import LinkType
 from autotrack.imaging import tifffolder, io
-from autotrack.visualizer import image_visualizer
+from autotrack.visualizer import standard_image_visualizer
 from autotrack.core.experiment import Experiment
 
 # PARAMETERS
@@ -32,7 +31,7 @@ if path.exists(_data_file):
 
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
-vis = image_visualizer.show(experiment)
+vis = standard_image_visualizer.show(experiment)
 
 print("Done!")
 gui.mainloop()

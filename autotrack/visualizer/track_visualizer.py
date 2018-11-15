@@ -97,7 +97,7 @@ class TrackVisualizer(ExitableImageVisualizer):
             self._draw_selection(particle, color)
         return super()._draw_particle(particle, color, dz, dt)
 
-    def _get_figure_title(self, errors: int):
+    def _get_figure_title(self):
         return f"Tracks at time point {self._time_point.time_point_number()} (z={self._z})"
 
     def get_extra_menu_options(self):
@@ -142,7 +142,7 @@ class TrackVisualizer(ExitableImageVisualizer):
 
     def _on_mouse_click(self, event: MouseEvent):
         if event.dblclick:
-            graph = self._experiment.links.get_baseline_else_scratch()
+            graph = self._experiment.links.graph
             if graph is None:
                 self.update_status("No links found. Is the linking data missing?")
                 return

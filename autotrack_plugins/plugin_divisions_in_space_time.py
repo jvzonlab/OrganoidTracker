@@ -112,7 +112,7 @@ def _get_crypt_start_positions(experiment: Experiment) -> Dict[TimePoint, float]
 
 def _get_graphing_data(experiment: Experiment) -> _SpaceTimeGrid:
     grid = _SpaceTimeGrid()
-    links = experiment.links.get_baseline_else_scratch()
+    links = experiment.links.graph
     if links is None:
         raise UserError("No linking data found", "No links were loaded. Therefore, we cannot determine the cell age, so"
                                                  " we cannot plot anything.")

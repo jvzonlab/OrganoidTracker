@@ -60,7 +60,7 @@ def _plot_volumes(experiment: Experiment, figure: Figure, mi_start=0, line_count
 
 def _plot_mother_stat(experiment: Experiment, figure: Figure, stat: GetStatistic, y_label: str, mi_start: int,
                       line_count: int, starting_time_point: int):
-    graph = experiment.links.get_baseline_else_scratch()
+    graph = experiment.links.graph
     if graph is None:
         raise UserError("No cell links", "No cell links were loaded, so we cannot track cell statistics over time.")
     mothers = [mother for mother in mother_finder.find_mothers(graph) if mother.time_point_number() >= starting_time_point]

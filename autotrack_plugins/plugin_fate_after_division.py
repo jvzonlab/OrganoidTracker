@@ -18,7 +18,7 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
 
 
 def _show_chance_of_division(experiment: Experiment):
-    links = experiment.links.get_baseline_else_scratch()
+    links = experiment.links.graph
     if links is None:
         raise UserError("No linking data found", "For this graph on cell divisions, it is required to have the cell"
                                                  " links loaded.")

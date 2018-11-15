@@ -7,7 +7,7 @@
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
 from autotrack.imaging import tifffolder, io
-from autotrack.manual_tracking import data_importer
+from autotrack.manual_tracking import guizela_data_importer
 
 # CONFIGURATION
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
@@ -26,7 +26,7 @@ config.save_and_exit_if_changed()
 
 print("Loading data using Guizela's format")
 experiment = Experiment()
-data_importer.add_data_to_experiment(experiment, _tracks_folder, min_time_point=_min_time_point,
+guizela_data_importer.add_data_to_experiment(experiment, _tracks_folder, min_time_point=_min_time_point,
                                    max_time_point=_max_time_point)
 
 print("Performing rudimentary 2d shape detection...")
@@ -34,6 +34,6 @@ tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
 
 io.save_positions_and_shapes_to_json(experiment, _positions_file)
-io.save_links_to_json(experiment.links.baseline, _links_file)
+io.save_links_to_json(experiment.links.graph, _links_file)
 
 print("Done!")

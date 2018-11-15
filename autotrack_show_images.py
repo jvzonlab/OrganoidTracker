@@ -7,7 +7,7 @@ from autotrack import gui
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
 from autotrack.imaging import tifffolder
-from autotrack.visualizer import image_visualizer
+from autotrack.visualizer import standard_image_visualizer
 
 # PARAMETERS
 config = ConfigFile("image_viewer")
@@ -22,7 +22,7 @@ print("Starting...")
 
 experiment = Experiment()
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format)
-image_visualizer.show(experiment)
+standard_image_visualizer.show(experiment)
 
 print("Done!")
 gui.mainloop()

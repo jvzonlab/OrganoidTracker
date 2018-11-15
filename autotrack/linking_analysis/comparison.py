@@ -9,13 +9,10 @@ from autotrack.linking import mother_finder
 from autotrack.linking_analysis import cell_death_finder
 
 
-def print_differences(experiment: Experiment):
-    scratch_links = experiment.links.scratch
-    baseline_links = experiment.links.baseline
-
+def print_differences(scratch_links: Graph, baseline_links: Graph, last_time_point_number: int):
     _print_links_differences(scratch_links, baseline_links)
     _print_mother_differences(scratch_links, baseline_links)
-    _print_death_differences(scratch_links, baseline_links, experiment.last_time_point_number())
+    _print_death_differences(scratch_links, baseline_links, last_time_point_number)
 
 
 def _print_mother_differences(automatic_links: Graph, baseline_links: Graph):

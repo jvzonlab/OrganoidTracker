@@ -6,12 +6,12 @@
 from autotrack import gui
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import LinkType
 from autotrack.imaging import tifffolder, io
 from autotrack.linking_analysis import comparison
-from autotrack.visualizer import image_visualizer
 
 # PARAMETERS
+from autotrack.visualizer import standard_image_visualizer
+
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("compare_links")
 _images_folder = config.get_or_default("images_folder", "./", store_in_defaults=True)
@@ -32,16 +32,15 @@ print("Starting...")
 experiment = Experiment()
 io.load_positions_and_shapes_from_json(experiment, _positions_file,
                                        min_time_point=_min_time_point, max_time_point=_max_time_point)
-io.load_linking_result(experiment, _automatic_links_file, LinkType.SCRATCH)
-experiment.links.set_links(LinkType.BASELINE, io.load_links_from_json(_baseline_links_file,
-                                                                      min_time_point=_min_time_point,
-                                                                      max_time_point=_max_time_point))
+scratch_links = io.load_linking_result(experiment, _automatic_links_file)
+baseline_links = io.load_links_from_json(_baseline_links_file, min_time_point=_min_time_point,
+                                         max_time_point=_max_time_point)
 
-comparison.print_differences(experiment)
+comparison.print_differences(scratch_links, baseline_links, experiment.last_time_point_number())
 
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
-vis = image_visualizer.show(experiment)
+vis = standard_image_visualizer.show(experiment)
 
 print("Done!")
 gui.mainloop()

@@ -18,7 +18,7 @@ def postprocess(experiment: Experiment, margin_xy: int):
 
 def _remove_particles_close_to_edge(experiment: Experiment, margin_xy: int):
     image_loader = experiment.image_loader()
-    graph = experiment.links.get_baseline_else_scratch()
+    graph = experiment.links.graph
     example_image = image_loader.get_image_stack(experiment.get_time_point(image_loader.get_first_time_point()))
     for time_point in experiment.time_points():
         for particle in list(experiment.particles.of_time_point(time_point)):
@@ -43,7 +43,7 @@ def _add_out_of_view_markers(graph: Graph, particle: Particle):
 
 def _remove_spurs(experiment: Experiment):
     """Removes all very short tracks that end in a cell death."""
-    graph = experiment.links.get_baseline_else_scratch()
+    graph = experiment.links.graph
     for particle in list(cell_appearance_finder.find_appeared_cells(graph)):
         _check_for_and_remove_spur(experiment, graph, particle)
 

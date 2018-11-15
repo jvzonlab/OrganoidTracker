@@ -48,7 +48,7 @@ class LineageErrorsVisualizer(ExitableImageVisualizer):
         super()._load_time_point(time_point)
 
         # Check what lineages contain errors
-        links = self._experiment.links.get_scratch_else_baseline()
+        links = self._experiment.links.graph
         if links is None:
             self._verified_lineages = set()
             return

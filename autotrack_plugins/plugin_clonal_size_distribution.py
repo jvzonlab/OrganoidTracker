@@ -20,7 +20,7 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
 
 def _show_clonal_size_distribution(window: Window):
     experiment = window.get_experiment()
-    graph = experiment.links.get_baseline_else_scratch()
+    graph = experiment.links.graph
     if graph is None:
         raise UserError("Failed to calculate clonal size distribution",
                         "Cannot calculate clonal size distribution. The linking data is missing.")

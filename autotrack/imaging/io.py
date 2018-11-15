@@ -9,13 +9,11 @@ import numpy
 from networkx import node_link_data, node_link_graph, Graph
 from pandas import DataFrame
 
-from autotrack.core.experiment import Experiment
 from autotrack.core import shape, TimePoint
-from autotrack.core.resolution import ImageResolution
-from autotrack.core.links import LinkType
+from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle, ParticleCollection
-from autotrack.core.score import ScoredFamily, Score, Family, ScoreCollection
-
+from autotrack.core.resolution import ImageResolution
+from autotrack.core.score import ScoredFamily, Score, Family
 
 FILE_EXTENSION = "aut"
 
@@ -54,15 +52,16 @@ def _load_json_data_file(file_name: str, min_time_point: int, max_time_point: in
     with open(file_name) as handle:
         data = json.load(handle, object_hook=_my_decoder)
 
-        if "version" not in data:
-            if "directed" in data or "links" in data:
+        if "version" not in data and "links" not in data:
+            # We don't have a general data file, but a specialized one
+            if "directed" in data:
                 # File is a linking result file
-                _parse_links_format(experiment, data, LinkType.BASELINE)
+                _parse_links_format(experiment, data)
             else:  # file is a position/shape file
                 _parse_shape_format(experiment, data, min_time_point, max_time_point)
             return experiment
 
-        if data["version"] != "v1":
+        if data.get("version", "v1") != "v1":
             raise ValueError("Unknown data version", "This program is not able to load data of version "
                              + str(data["version"]) + ".")
 
@@ -72,17 +71,12 @@ def _load_json_data_file(file_name: str, min_time_point: int, max_time_point: in
         if "family_scores" in data:
             experiment.scores.add_scored_families(data["family_scores"])
 
-        if "links_scratch" in data:
-            scratch_links = node_link_graph(data["links_scratch"])
-            for particle in scratch_links.nodes():
-                experiment.add_particle(particle)
-            experiment.links.set_links(LinkType.SCRATCH, scratch_links)
-
-        if "links_baseline" in data:
-            baseline_links = node_link_graph(data["links_baseline"])
-            for particle in baseline_links.nodes():
-                experiment.add_particle(particle)
-            experiment.links.set_links(LinkType.BASELINE, baseline_links)
+        if "links" in data:
+            _parse_links_format(experiment, data["links"])
+        elif "links_scratch" in data:  # Deprecated, was used back when experiments could hold multiple linking sets
+            _parse_links_format(experiment, data["links_scratch"])
+        elif "links_baseline" in data:  # Deprecated, was used back when experiments could hold multiple linking sets
+            _parse_links_format(experiment, data["links_baseline"])
 
         if "image_resolution" in data:
             x_res = data["image_resolution"]["x_um"]
@@ -93,13 +87,13 @@ def _load_json_data_file(file_name: str, min_time_point: int, max_time_point: in
     return experiment
 
 
-def load_linking_result(experiment: Experiment, json_file_name: str, link_type: LinkType):
+def load_linking_result(experiment: Experiment, json_file_name: str):
     """Loads a JSON file that is a linking result."""
     with open(json_file_name) as handle:
         data = json.load(handle, object_hook=_my_decoder)
         if data is None:
             raise ValueError
-        _parse_links_format(experiment, data, link_type)
+        _parse_links_format(experiment, data)
 
 
 def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List], min_time_point: int, max_time_point: int):
@@ -114,16 +108,12 @@ def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List],
             experiment.particles.add(particle, particle_shape)
 
 
-def _parse_links_format(experiment: Experiment, data: Dict[str, Any], link_type: LinkType):
-    # Read families
-    experiment.scores.add_scored_families(data.get("family_scores", []))
-
-    # Read graph
-    link_data = data if "directed" in data else data["links"]
+def _parse_links_format(experiment: Experiment, link_data: Dict[str, Any]):
+    """Parses a node_link_graph and adds all links and particles to the experiment."""
     graph = node_link_graph(link_data)
     for particle in graph.nodes():
         experiment.add_particle(particle)
-    experiment.links.add_links(link_type, graph)
+    experiment.links.add_links(graph)
 
 
 class _MyEncoder(JSONEncoder):
@@ -193,21 +183,6 @@ def _encode_positions_and_shapes(particles_and_shapes: ParticleCollection):
     return data_structure
 
 
-def save_links_and_scores_to_json(links: Graph, scores: ScoreCollection, json_file_name: str):
-    """1. Saves particle linking data to a JSON file. File follows the d3.js format, like the example here:
-        http://bl.ocks.org/mbostock/4062045
-    2. Saves mother scores to the same JSON file.
-    """
-    links_for_json = node_link_data(links)
-
-    families = list(scores.all_scored_families())
-
-    final_data = {"links": links_for_json, "family_scores": families}
-    _create_parent_directories(json_file_name)
-    with open(json_file_name, 'w') as handle:
-        json.dump(final_data, handle, cls=_MyEncoder)
-
-
 def save_dataframe_to_csv(data_frame: DataFrame, csv_file_name: str):
     """Saves the data frame to a CSV file, creating necessary parent directories first."""
     _create_parent_directories(csv_file_name)
@@ -225,13 +200,9 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
         "version": "v1",
         "shapes": _encode_positions_and_shapes(experiment.particles)}
 
-    # Save scratch links
-    if experiment.links.scratch is not None:
-        save_data["links_scratch"] = node_link_data(experiment.links.scratch)
-
-    # Save baseline links
-    if experiment.links.baseline is not None:
-        save_data["links_baseline"] = node_link_data(experiment.links.baseline)
+    # Save links
+    if experiment.links.graph is not None:
+        save_data["links"] = node_link_data(experiment.links.graph)
 
     # Save scores of families
     scored_families = list(experiment.scores.all_scored_families())

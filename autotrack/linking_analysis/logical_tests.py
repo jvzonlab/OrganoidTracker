@@ -89,7 +89,7 @@ def _get_past_particles(graph: Graph, particle: Particle) -> List[Particle]:
 def apply_on(experiment: Experiment, *iterable: Particle):
     """Adds errors for all logical inconsistencies for particles in the collection, like cells that spawn out of
     nowhere, cells that merge together and cells that have three or more daughters."""
-    graph = experiment.links.get_scratch_else_baseline()
+    graph = experiment.links.graph
     for particle in iterable:
         error = get_error(graph, particle, experiment.scores, experiment.particles)
         linking_markers.set_error_marker(graph, particle, error)

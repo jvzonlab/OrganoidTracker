@@ -88,8 +88,7 @@ class ParticleListVisualizer(Visualizer):
         current_particle = self._particle_list[self._current_particle_index]
         shape = self._experiment.particles.get_shape(current_particle)
         shape.draw2d(current_particle.x, current_particle.y, 0, 0, self._ax, core.COLOR_CELL_CURRENT)
-        self._draw_connections(self._experiment.links.baseline, current_particle)
-        self._draw_connections(self._experiment.links.scratch, current_particle, line_style='dotted', line_width=3)
+        self._draw_connections(self._experiment.links.graph, current_particle)
         self._window.set_figure_title(self.get_title(self._particle_list, self._current_particle_index))
 
         self._fig.canvas.draw()

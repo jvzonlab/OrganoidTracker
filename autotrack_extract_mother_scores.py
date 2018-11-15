@@ -4,9 +4,8 @@
 simple nearest-neighbor linking. The data is compared with data of the actual mothers.
 """
 from autotrack.config import ConfigFile
-from autotrack.core.links import LinkType
-from autotrack.imaging import tifffolder, io
 from autotrack.core.experiment import Experiment
+from autotrack.imaging import tifffolder, io
 from autotrack.linking import linker_for_experiment, mother_finder
 from autotrack.linking.rational_scoring_system import RationalScoringSystem
 from autotrack.linking_analysis import scores_dataframe
@@ -32,13 +31,13 @@ io.load_positions_and_shapes_from_json(experiment, _positions_file,
                                        min_time_point=_min_time_point, max_time_point=_max_time_point)
 _baseline_links = io.load_links_from_json(_baseline_links_file,
                                           min_time_point=_min_time_point, max_time_point=_max_time_point)
-experiment.links.set_links(LinkType.BASELINE, _baseline_links)
+experiment.links.set_links(_baseline_links)
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
 
 print("Discovering possible links using greedy nearest-neighbor...")
 possible_links = linker_for_experiment.nearest_neighbor(experiment, tolerance=2)
-experiment.links.set_links(LinkType.SCRATCH, possible_links)
+experiment.links.set_links(possible_links)
 
 print("Scoring all possible mothers")
 scoring_system = RationalScoringSystem()

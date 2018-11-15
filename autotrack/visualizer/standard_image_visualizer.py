@@ -2,9 +2,7 @@ from typing import Optional
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 
-from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import LinkType
 from autotrack.core.particles import Particle
 from autotrack.gui import launch_window, Window, dialog
 from autotrack.imaging import io
@@ -64,7 +62,6 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             "Edit/Add-Add positions and links from Guizela's format...": lambda: self._ask_add_guizela_tracks,
             "Edit/Manual-Manually change data... (C)": self._show_data_editor,
             "Edit/Automatic-Cell detection...": self._show_cell_detector,
-            "View/Linking-Linking differences (D)": self._show_linking_differences,
             "View/Linking-Linking errors and warnings (E)": self._show_linking_errors,
             "View/Linking-Lineage errors and warnings (L)": self._show_lineage_errors,
             "View/Cell-Cell divisions (M)": self._show_mother_cells,
@@ -80,9 +77,6 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         elif event.key == "e":
             particle = self._get_particle_at(event.xdata, event.ydata)
             self._show_linking_errors(particle)
-        elif event.key == "d":
-            particle = self._get_particle_at(event.xdata, event.ydata)
-            self._show_linking_differences(particle)
         elif event.key == "m":
             self._show_mother_cells()
         elif event.key == "c":
@@ -102,7 +96,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         elif event.key == "f":  # show flow info
             particle = self._get_particle_at(event.xdata, event.ydata)
             particles_of_time_point = self._experiment.particles.of_time_point(self._time_point)
-            links = self._experiment.links.get_scratch_else_baseline()
+            links = self._experiment.links.graph
             if particle is not None and links is not None:
                 self.update_status("Flow toward previous frame: " +
                                    str(particle_flow.get_flow_to_previous(links, particles_of_time_point, particle)) +
@@ -128,11 +122,6 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         from autotrack.visualizer.errors_visualizer import ErrorsVisualizer
         warnings_visualizer = ErrorsVisualizer(self._window, particle)
         activate(warnings_visualizer)
-
-    def _show_linking_differences(self, particle: Optional[Particle] = None):
-        from autotrack.visualizer.differences_visualizer import DifferencesVisualizer
-        differences_visualizer = DifferencesVisualizer(self._window, particle)
-        activate(differences_visualizer)
 
     def _show_data_editor(self):
         from autotrack.visualizer.link_and_position_editor import LinkAndPositionEditor
@@ -178,7 +167,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         if not link_file:
             return  # Cancelled
 
-        io.load_linking_result(self._experiment, str(link_file), LinkType.BASELINE)
+        io.load_linking_result(self._experiment, str(link_file))
         self.draw_view()
 
     def _ask_add_guizela_tracks(self):

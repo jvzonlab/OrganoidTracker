@@ -91,10 +91,10 @@ class AbstractImageVisualizer(Visualizer):
         self._clear_axis()
         self.__particles_near_visible_layer.clear()
         self._draw_image()
-        errors = self._draw_particles()
+        self._draw_particles()
         self._draw_path()
         self._draw_extra()
-        self._window.set_figure_title(self._get_figure_title(errors))
+        self._window.set_figure_title(self._get_figure_title())
 
         self._fig.canvas.draw()
 
@@ -111,11 +111,8 @@ class AbstractImageVisualizer(Visualizer):
         self._ax.plot(particle.x, particle.y, 'o', markersize=25, color=(0, 0, 0, 0), markeredgecolor=color,
                       markeredgewidth=5)
 
-    def _get_figure_title(self, errors: int) -> str:
-        title = "Time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
-        if errors != 0:
-            title += " (changes: " + str(errors) + ")"
-        return title
+    def _get_figure_title(self) -> str:
+        return "Time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
 
     def _must_show_other_time_points(self) -> bool:
         return True
@@ -123,48 +120,41 @@ class AbstractImageVisualizer(Visualizer):
     def _draw_extra(self):
         pass  # Subclasses can override this
 
-    def _draw_particles(self) -> int:
+    def _draw_particles(self):
         """Draws particles and links. Returns the amount of non-equal links in the image"""
-
-        link_changes = 0
 
         # Next time point
         can_show_other_time_points = self._must_show_other_time_points() and self._experiment.links.has_links()
         if self._display_settings.show_next_time_point or can_show_other_time_points:
             # Only draw particles of next/previous time point if there is linking data, or if we're forced to
             try:
-                link_changes += self._draw_particles_of_time_point(
-                    self._experiment.get_next_time_point(self._time_point), color='red')
+                self._draw_particles_of_time_point(self._experiment.get_next_time_point(self._time_point), color='red')
             except ValueError:
                 pass  # There is no next time point, ignore
 
         # Previous time point
         if not self._display_settings.show_next_time_point and can_show_other_time_points:
             try:
-                link_changes += self._draw_particles_of_time_point(
+                self._draw_particles_of_time_point(
                     self._experiment.get_previous_time_point(self._time_point), color='blue')
             except ValueError:
                 pass  # There is no previous time point, ignore
 
         # Current time point
-        link_changes += self._draw_particles_of_time_point(self._time_point)
+        self._draw_particles_of_time_point(self._time_point)
 
-        return link_changes
-
-    def _draw_particles_of_time_point(self, time_point: TimePoint, color: str = core.COLOR_CELL_CURRENT) -> int:
-        link_changes = 0
+    def _draw_particles_of_time_point(self, time_point: TimePoint, color: str = core.COLOR_CELL_CURRENT):
         dt = time_point.time_point_number() - self._time_point.time_point_number()
         for particle in self._experiment.particles.of_time_point(time_point):
             dz = self._z - round(particle.z)
 
             # Draw the particle itself (as a square or circle, depending on its depth)
-            link_changes += self._draw_particle(particle, color, dz, dt)
-        return link_changes
+            self._draw_particle(particle, color, dz, dt)
 
-    def _draw_particle(self, particle: Particle, color: str, dz: int, dt: int) -> int:
+    def _draw_particle(self, particle: Particle, color: str, dz: int, dt: int):
         if abs(dz) <= self.MAX_Z_DISTANCE:
             # Draw error marker
-            graph = self._experiment.links.get_scratch_else_baseline()
+            graph = self._experiment.links.graph
             if graph is not None and particle in graph \
                     and linking_markers.get_error_marker(graph, particle) is not None:
                 self._draw_error(particle, dz)
@@ -173,47 +163,35 @@ class AbstractImageVisualizer(Visualizer):
             self.__particles_near_visible_layer.append(particle)
 
         # Draw links
-        link_changes = self._draw_links(particle)
+        self._draw_links(particle)
 
         # Draw particle
         if self._display_settings.show_reconstruction:  # Showing a 3D reconstruction, so don't display a 2D one too
             shape.draw_marker_2d(particle.x, particle.y, dz, dt, self._ax, color)
         else:
             self._experiment.particles.get_shape(particle).draw2d(particle.x, particle.y, dz, dt, self._ax, color)
-        return link_changes
 
     def _draw_error(self, particle: Particle, dz: int):
         self._ax.plot(particle.x, particle.y, 'X', color='black', markeredgecolor='white',
                       markersize=19 - abs(dz), markeredgewidth=2)
 
-    def _draw_links(self, particle: Particle) -> int:
+    def _draw_links(self, particle: Particle):
         """Draws links between the particles. Returns 1 if there is 1 error: the baseline links don't match the actual
         links.
         """
-        links_normal = self._get_links(self._experiment.links.scratch, particle)
-        links_base = self._get_links(self._experiment.links.baseline, particle)
+        links_base = self._get_links(self._experiment.links.graph, particle)
         if particle.time_point_number() > self._time_point.time_point_number():
             # Draw links that go to past
-            links_normal = [p for p in links_normal if p.time_point_number() < particle.time_point_number()]
             links_base = [p for p in links_base if p.time_point_number() < particle.time_point_number()]
         elif particle.time_point_number() < self._time_point.time_point_number():
             # Draw links that go to future
-            links_normal = [p for p in links_normal if p.time_point_number() > particle.time_point_number()]
             links_base = [p for p in links_base if p.time_point_number() > particle.time_point_number()]
         else:
             # Only draw links that go multiple steps into the past or future. Links that go one step into the past
             # or future are already drawn by the above functions
-            links_normal = [p for p in links_normal if abs(p.time_point_number() - particle.time_point_number()) >= 2]
             links_base = [p for p in links_base if abs(p.time_point_number() - particle.time_point_number()) >= 2]
 
-        self._draw_given_links(particle, links_normal, line_style='dotted', line_width=3)
         self._draw_given_links(particle, links_base)
-
-        # Check for errors
-        if self._experiment.links.can_compare_links():
-            if links_base != links_normal:
-                return 1
-        return 0
 
     def _draw_given_links(self, particle, links, line_style='solid', line_width=1):
         particle_dt = numpy.sign(particle.time_point_number() - self._time_point.time_point_number())

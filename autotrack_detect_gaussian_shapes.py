@@ -15,11 +15,10 @@ Parameters: (all sizes are in pixels)
 from autotrack.imaging import tifffolder, io
 from autotrack.config import ConfigFile
 from autotrack.particle_detection import gaussian_detector_for_experiment
-
-# PARAMETERS
 from autotrack.core.resolution import ImageResolution
 from autotrack.core.experiment import Experiment
 
+# PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("detect_gaussian_shapes")
 _images_folder = config.get_or_default("images_folder", "./", store_in_defaults=True)

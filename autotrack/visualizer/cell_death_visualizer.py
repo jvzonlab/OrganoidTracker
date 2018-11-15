@@ -10,7 +10,7 @@ from autotrack.linking_analysis import cell_death_finder, linking_markers
 
 
 def _get_end_of_tracks(experiment: Experiment) -> List[Particle]:
-    graph = experiment.links.get_baseline_else_scratch()
+    graph = experiment.links.graph
     if graph is None:
         return []
     all_deaths = list(cell_death_finder.find_ended_tracks(graph, experiment.last_time_point_number()))
@@ -40,24 +40,9 @@ class CellTrackEndVisualizer(ParticleListVisualizer):
         description = ""
         if end_reason is not None:
             description = "    (" + end_reason.get_display_name() + ")"
-        if not self._is_in_scratch_data(cell):
-            description = "    (NOT IN SCRATCH DATA)"
         return "Track end " + str(self._current_particle_index + 1) + "/" + str(len(self._particle_list))\
                + description + "\n" + str(cell)
 
-    def _is_in_scratch_data(self, particle: Particle) -> Optional[bool]:
-        """Gets if a death was correctly recognized by the scratch graph. Returns None if there is no scratch graph."""
-        main_graph = self._experiment.links.baseline
-        scratch_graph = self._experiment.links.scratch
-        if main_graph is None or scratch_graph is None:
-            return None
-
-        try:
-            connections_scratch = find_future_particles(scratch_graph, particle)
-            return len(connections_scratch) == 0
-        except KeyError:
-            return False
-
     def _get_end_cause(self, particle: Particle) -> Optional[EndMarker]:
-        links = self._experiment.links.get_baseline_else_scratch()
-        return linking_markers.get_track_end_marker(particle, links)
+        links = self._experiment.links.graph
+        return linking_markers.get_track_end_marker(links, particle)

@@ -22,7 +22,7 @@ class ErrorsVisualizer(ParticleListVisualizer):
     _total_number_of_warnings: int
 
     def __init__(self, window: Window, start_particle: Optional[Particle]):
-        links = window.get_experiment().links.get_scratch_else_baseline()
+        links = window.get_experiment().links.graph
         crumb_particles = set()
         if start_particle is not None:
             crumb_particles.add(start_particle)
@@ -74,7 +74,7 @@ class ErrorsVisualizer(ParticleListVisualizer):
 
     def get_title(self, particle_list: List[Particle], current_particle_index: int):
         particle = particle_list[current_particle_index]
-        error = linking_markers.get_error_marker(self._experiment.links.get_scratch_else_baseline(), particle)
+        error = linking_markers.get_error_marker(self._experiment.links.graph, particle)
         return f"{error.get_severity().name} {current_particle_index + 1} / {len(particle_list)} "\
             f" of lineage {self._current_lineage_index + 1} / {len(self._problematic_lineages)} " \
                f"  ({self._total_number_of_warnings} warnings in total)" +\
@@ -132,7 +132,7 @@ class ErrorsVisualizer(ParticleListVisualizer):
         if self._current_particle_index < 0 or self._current_particle_index >= len(self._particle_list):
             return
         particle = self._particle_list[self._current_particle_index]
-        graph = self._experiment.links.get_scratch_else_baseline()
+        graph = self._experiment.links.graph
         error = linking_markers.get_error_marker(graph, particle)
         linking_markers.suppress_error_marker(graph, particle, error)
         del self._particle_list[self._current_particle_index]

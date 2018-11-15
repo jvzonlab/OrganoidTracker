@@ -11,7 +11,7 @@ from autotrack.linking import mother_finder
 
 
 def _get_mothers(experiment: Experiment) -> List[Particle]:
-    graph = experiment.links.get_baseline_else_scratch()
+    graph = experiment.links.graph
     if graph is None:
         return []
     all_mothers = list(mother_finder.find_mothers(graph))
@@ -36,8 +36,6 @@ class CellDivisionVisualizer(ParticleListVisualizer):
     def get_title(self, all_cells: List[Particle], cell_index: int):
         mother = all_cells[cell_index]
         recognized_str = ""
-        if self._was_recognized(mother) is False:
-            recognized_str = "    (NOT RECOGNIZED)"
         return "Mother " + str(self._current_particle_index + 1) + "/" + str(len(self._particle_list))\
                + recognized_str + "\n" + str(mother)
 
@@ -46,17 +44,3 @@ class CellDivisionVisualizer(ParticleListVisualizer):
             self.goto_full_image()
         else:
             super()._on_key_press(event)
-
-    def _was_recognized(self, mother: Particle) -> Optional[bool]:
-        """Gets if a mother was correctly recognized by the scratch graph. Returns None if there is no scratch graph."""
-        main_graph = self._experiment.links.baseline
-        scratch_graph = self._experiment.links.scratch
-        if main_graph is None or scratch_graph is None:
-            return None
-
-        try:
-            connections_main = find_future_particles(main_graph, mother)
-            connections_scratch = find_future_particles(scratch_graph, mother)
-            return connections_main == connections_scratch
-        except KeyError:
-            return False

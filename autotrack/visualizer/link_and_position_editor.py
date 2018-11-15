@@ -6,7 +6,6 @@ from networkx import Graph
 
 from autotrack import core
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import LinkType
 from autotrack.core.particles import Particle
 from autotrack.core.shape import ParticleShape
 from autotrack.gui import Window
@@ -16,19 +15,9 @@ from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualiz
 
 
 def _initialize_links(experiment: Experiment):
-    if experiment.links.scratch is None:
+    if experiment.links.graph is None:
         # Scratch links are missing - set scratch links from baseline
-        baseline_links = experiment.links.baseline
-        if baseline_links is None:
-            baseline_links = Graph()
-        experiment.links.set_links(LinkType.SCRATCH, baseline_links)
-    experiment.links.remove_links(LinkType.BASELINE)
-
-
-def _commit_links(experiment: Experiment):
-    """Makes all dotted links "real" links."""
-    experiment.links.set_links(LinkType.BASELINE, experiment.links.scratch)
-    experiment.links.remove_links(LinkType.SCRATCH)
+        experiment.links.set_links(Graph())
 
 
 class _Action:
@@ -56,7 +45,7 @@ class _InsertLinkAction(_Action):
             raise ValueError(f"The {particle1} is at the same time point as {particle2}")
 
     def do(self, experiment: Experiment):
-        links = experiment.links.scratch
+        links = experiment.links.graph
         if self.particle1 not in links:
             links.add_node(self.particle1)
         if self.particle2 not in links:
@@ -67,7 +56,7 @@ class _InsertLinkAction(_Action):
         return f"Inserted link between {self.particle1} and {self.particle2}"
 
     def undo(self, experiment: Experiment):
-        links = experiment.links.scratch
+        links = experiment.links.graph
         links.remove_edge(self.particle1, self.particle2)
         logical_tests.apply_on(experiment, self.particle1, self.particle2)
         return f"Removed link between {self.particle1} and {self.particle2}"
@@ -101,7 +90,7 @@ class _InsertParticleAction(_Action):
     def do(self, experiment: Experiment):
         experiment.add_particle(self.particle)
         for linked_particle in self.linked_particles:
-            experiment.links.scratch.add_edge(self.particle, linked_particle)
+            experiment.links.graph.add_edge(self.particle, linked_particle)
         logical_tests.apply_on(experiment, self.particle, *self.linked_particles)
 
         return_value = f"Added {self.particle}"
@@ -163,7 +152,7 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
 
         _initialize_links(self._experiment)
 
-    def _get_figure_title(self, errors: int) -> str:
+    def _get_figure_title(self) -> str:
         return "Editing time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
 
     def _get_window_title(self) -> str:
@@ -246,9 +235,9 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
         if self._selected1 is None:
             self.update_status("You need to select a cell first")
         elif self._selected2 is None:  # Delete cell and its links
-            old_links = list(self._experiment.links.scratch[self._selected1])
+            old_links = list(self._experiment.links.graph[self._selected1])
             self._perform_action(_ReverseAction(_InsertParticleAction(self._selected1, old_links)))
-        elif self._experiment.links.scratch.has_edge(self._selected1, self._selected2):  # Delete link between cells
+        elif self._experiment.links.graph.has_edge(self._selected1, self._selected2):  # Delete link between cells
             particle1, particle2 = self._selected1, self._selected2
             self._selected1, self._selected2 = None, None
             self._perform_action(_ReverseAction(_InsertLinkAction(particle1, particle2)))
