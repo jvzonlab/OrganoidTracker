@@ -14,7 +14,10 @@ from autotrack.core import UserError, Name
 
 
 def _window() -> QWidget:
-    return QApplication.activeWindow()
+    active_window = QApplication.activeWindow()
+    if active_window is None:
+        return QApplication.topLevelWidgets()[0]
+    return active_window
 
 
 def prompt_int(title: str, question: str) -> Optional[int]:
