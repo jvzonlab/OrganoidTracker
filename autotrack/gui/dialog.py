@@ -143,10 +143,7 @@ def popup_figure(save_name: Name, draw_function: Callable[[Figure], None]):
     _matplotlib.rcParams['mathtext.fontset'] = 'stix'
 
     figure = Figure(figsize=(5.5, 5), dpi=95, tight_layout=True)
-    try:
-        draw_function(figure)
-    except BaseException as e:
-        raise e
+    draw_function(figure)
     _Popup(_window(), figure, save_name)
 
 
