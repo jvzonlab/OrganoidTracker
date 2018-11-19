@@ -69,7 +69,7 @@ class Visualizer:
     def async(self, runnable, result_handler):
         """Creates a callable that runs the given runnable on a worker thread."""
         class MyTask(Task):
-            def run(self):
+            def compute(self):
                 return runnable()
 
             def on_finished(self, result: Any):

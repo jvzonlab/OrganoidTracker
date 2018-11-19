@@ -9,11 +9,12 @@ from PyQt5.QtWidgets import QWidget
 
 from autotrack.core import UserError
 from autotrack.core.concurrent import ConcurrentSet
+from autotrack.gui import dialog
 
 
 class Task:
     """A long-running task. run() will be called on a worker thread, on_Finished() and on_error() on the GUI thread."""
-    def run(self) -> Any:
+    def compute(self) -> Any:
         raise NotImplementedError()
 
     def on_finished(self, result: Any):
@@ -21,10 +22,7 @@ class Task:
 
     def on_error(self, e: BaseException):
         from autotrack.gui import dialog
-        if isinstance(e, UserError):
-            dialog.popup_error(e.title, e.body)
-        else:
-            dialog.popup_exception(e)
+        dialog.popup_exception(e)
 
 
 class _CompletedTask:
@@ -84,6 +82,9 @@ class Scheduler(Thread):
         except queue.Empty:
             # Ignore, will check again after a while
             pass
+        except BaseException as e:
+            # Unhandled exception, don't let PyQt catch this
+            dialog.popup_exception(e)
 
     def run(self):
         """Long running method that processes pending tasks. Do not call, let Python call it."""
@@ -91,7 +92,7 @@ class Scheduler(Thread):
             task: Task = self._task_queue.get(block=True, timeout=None)
             self._running_tasks.add(task)
             try:
-                result = task.run()
+                result = task.compute()
                 self._finished_queue.put(_CompletedTask(task, result=result))
             except Exception as e:
                 self._finished_queue.put(_CompletedTask(task, error=e))
