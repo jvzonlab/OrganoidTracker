@@ -4,7 +4,7 @@ from matplotlib.backend_bases import KeyEvent
 
 from autotrack.core.particles import Particle
 from autotrack.gui import Window
-from autotrack.linking_analysis import linking_markers, lineage_checks
+from autotrack.linking_analysis import linking_markers, lineage_checks, logical_tests
 from autotrack.linking_analysis.lineage_checks import LineageWithErrors
 from autotrack.visualizer import activate
 from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
@@ -56,8 +56,8 @@ class ErrorsVisualizer(ParticleListVisualizer):
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
             **super().get_extra_menu_options(),
-            "Edit/Suppress-Suppress this error (Del)": self._suppress_error,
-            "View/Exit-Exit this view (E)": self.goto_full_image,
+            "Edit/Errors-Suppress this error (Del)": self._suppress_error,
+            "Edit/Errors-Recheck all errors (/recheck)": self._recheck_errors,
             "Navigate/Lineage-Next lineage (Up)": self.__goto_next_lineage,
             "Navigate/Lineage-Previous lineage (Down)": self.__goto_previous_lineage
         }
@@ -79,6 +79,22 @@ class ErrorsVisualizer(ParticleListVisualizer):
             f" of lineage {self._current_lineage_index + 1} / {len(self._problematic_lineages)} " \
                f"  ({self._total_number_of_warnings} warnings in total)" +\
             "\n" + error.get_message() + "\n" + str(particle)
+
+    def _on_command(self, command: str) -> bool:
+        if command == "recheck":
+            self._recheck_errors()
+            return True
+        return super()._on_command(command)
+
+    def _recheck_errors(self):
+        logical_tests.apply(self._experiment)
+        # Recalculate everything
+        selected_particle = None
+        if 0 <= self._current_particle_index < len(self._particle_list):
+            selected_particle = self._particle_list[self._current_particle_index]
+        activate(ErrorsVisualizer(self.get_window(), selected_particle))
+        self.update_status("Rechecked all cells in the experiment. "
+                           "Please note that suppressed warnings remain suppressed.")
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "up":
