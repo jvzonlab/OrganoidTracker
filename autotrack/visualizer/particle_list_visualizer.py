@@ -140,7 +140,7 @@ class ParticleListVisualizer(Visualizer):
         self.draw_view()
 
     def goto_full_image(self):
-        from autotrack.visualizer.image_visualizer import StandardImageVisualizer
+        from autotrack.visualizer.standard_image_visualizer import StandardImageVisualizer
 
         if self._current_particle_index < 0 or self._current_particle_index >= len(self._particle_list):
             # Don't know where to go
