@@ -111,6 +111,9 @@ class _ParticlesAtTimePoint:
         """Returns True if there are no particles stored."""
         return len(self._particles) == 0
 
+    def __len__(self):
+        return len(self._particles)
+
 
 class ParticleCollection:
 
@@ -204,6 +207,18 @@ class ParticleCollection:
         if particles_at_time_point is None:
             return False
         return particle in particles_at_time_point.particles()
+
+    def __len__(self):
+        """Returns the total number of particles across all time points."""
+        count = 0
+        for particles_at_time_point in self._all_particles.values():
+            count += len(particles_at_time_point)
+        return count
+
+    def __iter__(self):
+        """Iterates over all particles."""
+        for particles_at_time_point in self._all_particles.values():
+            yield from particles_at_time_point.particles()
 
 
 def get_closest_particle(particles: Iterable[Particle], search_position: Particle,

@@ -1,6 +1,7 @@
 """Contains function that allows you to find the nearest few particles"""
 
 import operator
+from typing import Iterable, List
 
 from autotrack.core import TimePoint
 from autotrack.core.particles import ParticleCollection, Particle
@@ -34,7 +35,7 @@ class _NearestParticles:
             if its_distance_squared > max_allowed_distance_squared:
                 del self._nearest[particle]
 
-    def get_particles(self, max_amount: int):
+    def get_particles(self, max_amount: int) -> List[Particle]:
         """Gets the found particles."""
         items = sorted(self._nearest.items(), key=operator.itemgetter(1))
         particles = [item[0] for item in items]
@@ -43,8 +44,8 @@ class _NearestParticles:
         return particles
 
 
-def find_nearest_particles(particles: ParticleCollection, search_in: TimePoint, around: Particle, tolerance: float,
-                           max_amount: int = 1000):
+def find_nearest_particles(particles: Iterable[Particle], around: Particle, tolerance: float,
+                           max_amount: int = 1000) -> List[Particle]:
     """Finds the particles nearest to the given particle.
 
     - search_in is the time_point to search in
@@ -59,7 +60,7 @@ def find_nearest_particles(particles: ParticleCollection, search_in: TimePoint, 
     if tolerance < 1:
         raise ValueError()
     nearest_particles = _NearestParticles(tolerance)
-    for particle in particles.of_time_point(search_in):
+    for particle in particles:
         nearest_particles.add_candidate(particle, particle.distance_squared(around, z_factor=3))
     return nearest_particles.get_particles(max_amount)
 

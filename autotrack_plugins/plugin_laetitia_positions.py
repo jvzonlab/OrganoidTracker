@@ -26,7 +26,8 @@ def _load_laetitia_positions(window: Window):
     new_experiment = Experiment()
     new_experiment.image_loader(window.get_experiment().image_loader())  # Copy over image loader
 
-    z_offset = _get_z_offset(window.get_experiment())
+    z_offset = -2#_get_z_offset(window.get_experiment())
+    dialog.popup_message("z_offset", str(z_offset))
 
     if not dialog.popup_message_cancellable("Instructions", "Choose the directory containing the *.npy or *.txt files."):
         return

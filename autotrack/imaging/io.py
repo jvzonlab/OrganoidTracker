@@ -31,6 +31,7 @@ def _load_guizela_data_file(file_name: str, min_time_point: int, max_time_point:
     directory."""
     experiment = Experiment()
     from autotrack.manual_tracking import guizela_data_importer
+    print("File name", file_name)
     guizela_data_importer.add_data_to_experiment(experiment, os.path.dirname(file_name), min_time_point, max_time_point)
     return experiment
 
