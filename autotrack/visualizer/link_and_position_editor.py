@@ -9,7 +9,9 @@ from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
 from autotrack.core.shape import ParticleShape
 from autotrack.gui import Window
-from autotrack.linking_analysis import logical_tests
+from autotrack.linking import existing_connections
+from autotrack.linking_analysis import logical_tests, linking_markers
+from autotrack.linking_analysis.linking_markers import EndMarker
 from autotrack.visualizer import DisplaySettings, activate
 from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
@@ -123,12 +125,41 @@ class _MoveParticleAction(_Action):
 
     def do(self, experiment: Experiment):
         experiment.move_particle(self.old_position, self.new_position)
+        logical_tests.apply_on(experiment, self.new_position)
         return f"Moved {self.old_position} to {self.new_position}"
 
     def undo(self, experiment: Experiment):
         experiment.move_particle(self.new_position, self.old_position)
         experiment.particles.add(self.old_position, self.old_shape)
+        logical_tests.apply_on(experiment, self.old_position)
         return f"Moved {self.new_position} back to {self.old_position}"
+
+
+class _MarkLineageEndAction(_Action):
+    """Used to add a marker to the end of a lineage."""
+
+    marker: Optional[EndMarker]  # Set to None to erase a marker
+    old_marker: Optional[EndMarker]
+    particle: Particle
+
+    def __init__(self, particle: Particle, marker: Optional[EndMarker], old_marker: Optional[EndMarker]):
+        self.particle = particle
+        self.marker = marker
+        self.old_marker = old_marker
+
+    def do(self, experiment: Experiment) -> str:
+        linking_markers.set_track_end_marker(experiment.links.graph, self.particle, self.marker)
+        logical_tests.apply_on(experiment, self.particle)
+        if self.marker is None:
+            return f"Removed the lineage end marker of {self.particle}"
+        return f"Added the {self.marker.get_display_name()}-marker to {self.particle}"
+
+    def undo(self, experiment: Experiment):
+        linking_markers.set_track_end_marker(experiment.links.graph, self.particle, self.old_marker)
+        logical_tests.apply_on(experiment, self.particle)
+        if self.old_marker is None:
+            return f"Removed the lineage end marker again of {self.particle}"
+        return f"Re-added the {self.old_marker.get_display_name()}-marker to {self.particle}"
 
 
 class LinkAndPositionEditor(ExitableImageVisualizer):
@@ -202,6 +233,9 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
             **super().get_extra_menu_options(),
             "Edit/Editor-Undo (Ctrl+z)": self._undo,
             "Edit/Editor-Redo (Ctrl+y)": self._redo,
+            "Edit/LineageEnd-Mark as cell death": lambda: self._try_set_end_marker(EndMarker.DEAD),
+            "Edit/LineageEnd-Mark as moving out of view": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
+            "Edit/LineageEnd-Remove end marker": lambda: self._try_set_end_marker(None)
         }
 
     def _on_key_press(self, event: KeyEvent):
@@ -235,7 +269,8 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
         if self._selected1 is None:
             self.update_status("You need to select a cell first")
         elif self._selected2 is None:  # Delete cell and its links
-            old_links = list(self._experiment.links.graph[self._selected1])
+            graph = self._experiment.links.graph
+            old_links = list(graph[self._selected1]) if self._selected1 in graph else list()
             self._perform_action(_ReverseAction(_InsertParticleAction(self._selected1, old_links)))
         elif self._experiment.links.graph.has_edge(self._selected1, self._selected2):  # Delete link between cells
             particle1, particle2 = self._selected1, self._selected2
@@ -243,6 +278,24 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
             self._perform_action(_ReverseAction(_InsertLinkAction(particle1, particle2)))
         else:
             self.update_status("No link found between the two particles - nothing to delete")
+
+    def _try_set_end_marker(self, marker: Optional[EndMarker]):
+        if self._selected1 is None or self._selected2 is not None:
+            self.update_status("You need to have exactly one cell selected in order to move a cell.")
+            return
+
+        graph = self._experiment.links.graph
+        if len(existing_connections.find_future_particles(graph, self._selected1)) > 0:
+            self.update_status(f"The {self._selected1} is not a lineage end.")
+            return
+        current_marker = linking_markers.get_track_end_marker(graph, self._selected1)
+        if current_marker == marker:
+            if marker is None:
+                self.update_status("There is no lineage ending marker here, cannot delete anything.")
+            else:
+                self.update_status(f"This lineage end already has the {marker.get_display_name()} marker.")
+            return
+        self._perform_action(_MarkLineageEndAction(self._selected1, marker, current_marker))
 
     def _show_linking_errors(self, particle: Optional[Particle] = None):
         from autotrack.visualizer.errors_visualizer import ErrorsVisualizer

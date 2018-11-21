@@ -12,7 +12,6 @@ from autotrack.linking_analysis.errors import Error
 class EndMarker(Enum):
     DEAD = 1
     OUT_OF_VIEW = 2
-    UNSURE = 3
 
     def get_display_name(self):
         """Gets a user-friendly display name."""
@@ -99,6 +98,15 @@ def suppress_error_marker(links: Graph, particle: Particle, error: Error):
     """Suppresses an error. Even if set_error_marker is called afterwards, the error will not show up in
     get_error_marker."""
     links.nodes[particle]["suppressed_error"] = error.value
+
+
+def is_error_suppressed(links: Graph, particle: Particle, error: Error) -> bool:
+    """Returns True if the given error is suppressed. If another type of error is suppressed, this method returns
+    False."""
+    node_data = links.nodes.get(particle)
+    if node_data is None:
+        return False
+    return "suppressed_error" in node_data and node_data["suppressed_error"] == error.value
 
 
 def set_error_marker(links: Graph, particle: Particle, error: Optional[Error]):

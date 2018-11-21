@@ -3,6 +3,7 @@ from typing import List, Optional
 from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
 from autotrack.linking.existing_connections import find_future_particles
+from autotrack.linking_analysis.errors import Error
 from autotrack.linking_analysis.linking_markers import EndMarker
 from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
 from autotrack.gui import Window
@@ -37,12 +38,15 @@ class CellTrackEndVisualizer(ParticleListVisualizer):
         cell = all_cells[cell_index]
         end_reason = self._get_end_cause(cell)
 
-        description = ""
-        if end_reason is not None:
-            description = "    (" + end_reason.get_display_name() + ")"
-        return "Track end " + str(self._current_particle_index + 1) + "/" + str(len(self._particle_list))\
-               + description + "\n" + str(cell)
+        return f"Track end {self._current_particle_index + 1}/{len(self._particle_list)}    ({end_reason})" \
+               f"\n{cell}"
 
-    def _get_end_cause(self, particle: Particle) -> Optional[EndMarker]:
+    def _get_end_cause(self, particle: Particle) -> str:
         links = self._experiment.links.graph
-        return linking_markers.get_track_end_marker(links, particle)
+
+        end_reason = linking_markers.get_track_end_marker(links, particle)
+        if end_reason is None:
+            if linking_markers.is_error_suppressed(links, particle, Error.NO_FUTURE_POSITION):
+                return "analyzed, but no conclusion"
+            return "not analyzed"
+        return end_reason.get_display_name()
