@@ -142,4 +142,9 @@ class ComparisonReport:
             false_negatives[i] = len(self._particles_by_category[false_negatives_cat].of_time_point(time_point))
         return Statistics(min_time_point_number, true_positives, false_positives, false_negatives)
 
-
+    def count(self, category: Category) -> int:
+        """Gets how many particles are stored in the given category."""
+        particles = self._particles_by_category.get(category)
+        if particles is None:
+            return 0
+        return len(particles)
