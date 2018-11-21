@@ -70,7 +70,8 @@ def _plot_displacements(axes: Axes, graph: Graph, resolution: ImageResolution, p
         if len(future_particles) == 1:
             # Track continues
             future_particle = future_particles.pop()
-            displacements.append(particle.distance_um(future_particle, resolution))
+            delta_time = future_particle.time_point_number() - particle.time_point_number()
+            displacements.append(particle.distance_um(future_particle, resolution) / delta_time)
             time_point_numbers.append(particle.time_point_number())
 
             particle = future_particle
