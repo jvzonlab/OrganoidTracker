@@ -4,21 +4,27 @@ from networkx import Graph
 
 from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle, ParticleCollection
+from autotrack.core.resolution import ImageResolution
 from autotrack.core.score import Score, ScoreCollection, Family
 from autotrack.linking import cell_cycle
 from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.errors import Error
 
 
-def apply(scores: ScoreCollection, particles: ParticleCollection, graph: Graph):
+def apply(experiment: Experiment):
     """Adds errors for all logical inconsistencies in the graph, like cells that spawn out of nowhere, cells that
     merge together and cells that have three or more daughters."""
+    graph = experiment.links.graph
+    scores = experiment.scores
+    particles = experiment.particles
+    resolution = experiment.image_resolution()
     for particle in graph:
-        error = get_error(graph, particle, scores, particles)
+        error = get_error(graph, particle, scores, particles, resolution)
         linking_markers.set_error_marker(graph, particle, error)
 
 
-def get_error(links: Graph, particle: Particle, scores: ScoreCollection, particles: ParticleCollection) -> Optional[Error]:
+def get_error(links: Graph, particle: Particle, scores: ScoreCollection, particles: ParticleCollection,
+              resolution: ImageResolution) -> Optional[Error]:
     future_particles = _get_future_particles(links, particle)
     if len(future_particles) > 2:
         return Error.TOO_MANY_DAUGHTER_CELLS
@@ -51,6 +57,10 @@ def get_error(links: Graph, particle: Particle, scores: ScoreCollection, particl
             past_shape = particles.get_shape(past_particle)
             if not past_shape.is_unknown() and past_shape.volume() / (shape.volume() + 0.0001) > 3:
                 return Error.SHRUNK_A_LOT
+
+        # Check movement distance
+        if past_particle.distance_um(particle, resolution) > 10:
+            return Error.MOVED_TOO_FAST
     return None
 
 
@@ -91,5 +101,5 @@ def apply_on(experiment: Experiment, *iterable: Particle):
     nowhere, cells that merge together and cells that have three or more daughters."""
     graph = experiment.links.graph
     for particle in iterable:
-        error = get_error(graph, particle, experiment.scores, experiment.particles)
+        error = get_error(graph, particle, experiment.scores, experiment.particles, experiment.image_resolution())
         linking_markers.set_error_marker(graph, particle, error)

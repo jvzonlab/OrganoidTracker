@@ -19,6 +19,7 @@ class Error(Enum):
     YOUNG_MOTHER = 8
     LOW_MOTHER_SCORE = 9
     SHRUNK_A_LOT = 10
+    MOVED_TOO_FAST = 11
 
     def get_severity(self) -> Severity:
         """Gets the severity."""
@@ -40,6 +41,8 @@ __info = {
     Error.YOUNG_MOTHER: (Severity.ERROR, "This is most likely not a mother cell: it is a very young cell."),
     Error.LOW_MOTHER_SCORE: (Severity.WARNING, "This cell is probably not a mother cell."),
     Error.SHRUNK_A_LOT: (Severity.WARNING, "This cell just shrank a lot in size. It may be a mother or daughter cell."),
+    Error.MOVED_TOO_FAST: (Severity.WARNING, "This cell just moved very quickly. The link coming from the past may be"
+                                             " wrong.")
 }
 
 

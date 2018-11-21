@@ -40,7 +40,7 @@ experiment.links.set_links(link_result)
 experiment.scores = scores
 links_postprocessor.postprocess(experiment, margin_xy=_margin_xy)
 print("Checking results for common errors...")
-logical_tests.apply(experiment.scores, experiment.particles, experiment.links.graph)
+logical_tests.apply(experiment)
 print("Writing results to file...")
 io.save_data_to_json(experiment, _links_output_file)
 
