@@ -87,6 +87,18 @@ class _Comparing:
             particle_ground_truth = next_ground_truth[0]
             particle_scratch = next_scratch[0]
 
+            # If the detection data skipped time points, do the same for the ground truth data
+            while particle_scratch.time_point_number() > particle_ground_truth.time_point_number():
+                next_ground_truth = find_future_particles(self._ground_truth, particle_ground_truth)
+                if len(next_ground_truth) == 0:  # Detection data skipped past a lineage end
+                    report.add_data(LINEAGE_END_FALSE_NEGATIVES, particle_ground_truth)
+                    return
+                elif len(next_ground_truth) > 1:  # Detection data skipped past a cell division
+                    report.add_data(DIVISIONS_FALSE_NEGATIVES, particle_ground_truth)
+                    return
+                else:
+                    particle_ground_truth = next_ground_truth.pop()
+
             # Check distances
             distance_um = particle_ground_truth.distance_um(particle_scratch, self._resolution)
             if distance_um > self._max_distance_um:
