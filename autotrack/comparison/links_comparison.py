@@ -107,7 +107,7 @@ class _Comparing:
             distance_um = particle_ground_truth.distance_um(particle_scratch, self._resolution)
             if distance_um > self._max_distance_um:
                 report.add_data(MOVEMENT_DISAGREEMENT, particle_ground_truth, "too far away from the detected position "
-                                "at", particle_ground_truth, f"- difference is {distance_um:0.1f} um")
+                                "at", particle_scratch, f"- difference is {distance_um:0.1f} um")
                 return
             report.add_data(MOVEMENT_TRUE_POSITIVES, particle_ground_truth)
 
