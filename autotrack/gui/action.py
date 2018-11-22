@@ -136,7 +136,8 @@ def export_links_guizela(experiment: Experiment):
         if not comparisons_folder:
             return
 
-    data_exporter.export_links(links, links_folder, comparisons_folder)
+    from autotrack.manual_tracking import guizela_data_exporter
+    guizela_data_exporter.export_links(links, links_folder, comparisons_folder)
 
 
 def save_tracking_data(experiment: Experiment) -> bool:
