@@ -66,13 +66,16 @@ class _Comparing:
             if len(next_ground_truth) > 1:
                 if len(next_scratch) != 2:
                     report.add_data(DIVISIONS_FALSE_NEGATIVES, particle_ground_truth)
-                    return
                 else:  # So both have len 2
                     report.add_data(DIVISIONS_TRUE_POSITIVES, particle_ground_truth)
                     distance_one_one = next_ground_truth[0].distance_um(next_scratch[0], self._resolution)
                     distance_one_two = next_ground_truth[0].distance_um(next_scratch[1], self._resolution)
                     if distance_one_one < distance_one_two:
                         self.compare_lineages(report, next_ground_truth[0], next_scratch[0])
+                        self.compare_lineages(report, next_ground_truth[1], next_scratch[1])
+                    else:
+                        self.compare_lineages(report, next_ground_truth[0], next_scratch[1])
+                        self.compare_lineages(report, next_ground_truth[1], next_scratch[0])
                 return
 
             # len(next_ground_truth) == 1
