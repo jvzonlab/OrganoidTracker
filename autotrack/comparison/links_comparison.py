@@ -20,7 +20,7 @@ DIVISIONS_FALSE_POSITIVES = Category("Made up cell divisions")
 MOVEMENT_DISAGREEMENT = Category("Distance between cells became too large")
 MOVEMENT_TRUE_POSITIVES = Category("Correctly detected moving cells")
 LINEAGE_START_FALSE_NEGATIVES = Category("Missed lineage starts")
-LINEAGE_START_TRUE_POSITIVES = Category("Found lineage starts")
+LINEAGE_START_TRUE_POSITIVES = Category("Correctly detected lineage starts")
 
 
 def _find_closest_in(all_particles: Set[Particle], search: Particle, max_distance_um: float,
@@ -77,7 +77,8 @@ class _Comparing:
 
             # len(next_ground_truth) == 1
             if len(next_scratch) > 1:
-                report.add_data(DIVISIONS_FALSE_POSITIVES, particle_ground_truth)
+                report.add_data(DIVISIONS_FALSE_POSITIVES, particle_ground_truth, "moves to", next_ground_truth[0],
+                                "but was detected as dividing into", next_scratch[0], "and", next_scratch[1])
                 return
             elif len(next_scratch) == 0:
                 report.add_data(LINEAGE_END_FALSE_POSITIVES, particle_ground_truth)
