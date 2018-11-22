@@ -91,13 +91,13 @@ class ComparisonReport:
         self._details_by_particle = dict()
         self._particles_by_category = dict()
 
-    def add_data(self, category: Category, particle: Particle, details: Optional[str] = None):
-        """Adds a """
+    def add_data(self, category: Category, particle: Particle, *details: Union[str, Particle]):
+        """Adds a data point. The """
         if category not in self._particles_by_category:
             self._particles_by_category[category] = ParticleCollection()
 
-        if details is not None:
-            self._details_by_particle[particle] = details
+        if details:
+            self._details_by_particle[particle] = " ".join(str(detail) for detail in details)
         self._particles_by_category[category].add(particle)
 
     def __str__(self):
