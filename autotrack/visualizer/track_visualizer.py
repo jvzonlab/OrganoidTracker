@@ -7,7 +7,8 @@ from networkx import Graph
 from autotrack.core import UserError
 from autotrack.core.particles import Particle
 from autotrack.core.resolution import ImageResolution
-from autotrack.gui import Window, dialog
+from autotrack.gui import dialog
+from autotrack.gui.window import Window
 from autotrack.linking import existing_connections
 from autotrack.linking_analysis import cell_appearance_finder
 from autotrack.visualizer import DisplaySettings

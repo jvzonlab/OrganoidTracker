@@ -11,8 +11,9 @@ from tifffile import tifffile
 from autotrack import core
 from autotrack.core import TimePoint, shape
 from autotrack.core.particles import Particle
-from autotrack.gui import Window, dialog
+from autotrack.gui import dialog
 from autotrack.gui.dialog import prompt_int, popup_error
+from autotrack.gui.window import Window
 from autotrack.linking_analysis import linking_markers
 from autotrack.visualizer import Visualizer, DisplaySettings
 
@@ -33,7 +34,7 @@ class AbstractImageVisualizer(Visualizer):
     # display_settings property
     _color_map: Union[str, Colormap] = "gray"
 
-    def __init__(self, window: Window, time_point_number: Optional[int] = None, z: int = 14,
+    def __init__(self, window: Window, *, time_point_number: Optional[int] = None, z: int = 14,
                  display_settings: DisplaySettings = None):
         super().__init__(window)
 

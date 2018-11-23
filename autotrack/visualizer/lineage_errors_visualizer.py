@@ -1,13 +1,12 @@
-from typing import Optional, Tuple, Set, Dict, Any
+from typing import Optional, Set
 
 from matplotlib.backend_bases import KeyEvent
 
 from autotrack.core import TimePoint
 from autotrack.core.particles import Particle
-from autotrack.gui import Window
+from autotrack.gui.window import Window
 from autotrack.linking_analysis import lineage_checks
 from autotrack.visualizer import activate
-from autotrack.visualizer.abstract_image_visualizer import AbstractImageVisualizer
 from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
 
@@ -19,7 +18,7 @@ class LineageErrorsVisualizer(ExitableImageVisualizer):
 
     def __init__(self, window: Window, time_point_number: Optional[int] = None, z: int = 14):
         self._verified_lineages = set()
-        super().__init__(window, time_point_number, z)
+        super().__init__(window, time_point_number=time_point_number, z=z)
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "l":
@@ -38,6 +37,12 @@ class LineageErrorsVisualizer(ExitableImageVisualizer):
             self._exit_view()
         except ValueError:
             pass  # Time point doesn't exit
+
+    def _exit_view(self):
+        from autotrack.visualizer.link_and_position_editor import LinkAndPositionEditor
+        image_visualizer = LinkAndPositionEditor(self._window, time_point_number=self._time_point.time_point_number(),
+                                                 z=self._z)
+        activate(image_visualizer)
 
     def _show_linking_errors(self, particle: Optional[Particle] = None):
         from autotrack.visualizer.errors_visualizer import ErrorsVisualizer

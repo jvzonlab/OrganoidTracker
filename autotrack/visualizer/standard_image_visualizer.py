@@ -3,8 +3,9 @@ from typing import Optional
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 
 from autotrack.core.experiment import Experiment
-from autotrack.core.particles import Particle
-from autotrack.gui import launch_window, Window, dialog
+from autotrack.gui import dialog
+from autotrack.gui.launcher import launch_window
+from autotrack.gui.window import Window
 from autotrack.imaging import io
 from autotrack.linking import particle_flow
 from autotrack.manual_tracking import guizela_data_importer
@@ -62,8 +63,6 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             "Edit/Add-Add positions and links from Guizela's format...": lambda: self._ask_add_guizela_tracks,
             "Edit/Manual-Manually change data... (C)": self._show_data_editor,
             "Edit/Automatic-Cell detection...": self._show_cell_detector,
-            "View/Linking-Linking errors and warnings (E)": self._show_linking_errors,
-            "View/Linking-Lineage errors and warnings (L)": self._show_lineage_errors,
             "View/Cell-Cell divisions (M)": self._show_mother_cells,
             "View/Cell-Track ends and cell deaths (/deaths)": self._show_dead_cells
         }
@@ -74,15 +73,10 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             track_visualizer = TrackVisualizer(self._window, self._time_point.time_point_number(), self._z,
                                                self._display_settings)
             activate(track_visualizer)
-        elif event.key == "e":
-            particle = self._get_particle_at(event.xdata, event.ydata)
-            self._show_linking_errors(particle)
         elif event.key == "m":
             self._show_mother_cells()
         elif event.key == "c":
             self._show_data_editor()
-        elif event.key == "l":
-            self._show_lineage_errors()
         elif event.key == "v":  # show volume info
             particle = self._get_particle_at(event.xdata, event.ydata)
             if particle is None:
@@ -118,21 +112,10 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         track_visualizer = CellDivisionVisualizer(self._window)
         activate(track_visualizer)
 
-    def _show_linking_errors(self, particle: Optional[Particle] = None):
-        from autotrack.visualizer.errors_visualizer import ErrorsVisualizer
-        warnings_visualizer = ErrorsVisualizer(self._window, particle)
-        activate(warnings_visualizer)
-
     def _show_data_editor(self):
         from autotrack.visualizer.link_and_position_editor import LinkAndPositionEditor
         editor = LinkAndPositionEditor(self._window, time_point_number=self._time_point.time_point_number(),
                                        z=self._z)
-        activate(editor)
-
-    def _show_lineage_errors(self):
-        from autotrack.visualizer.lineage_errors_visualizer import LineageErrorsVisualizer
-        editor = LineageErrorsVisualizer(self._window, time_point_number=self._time_point.time_point_number(),
-                                         z=self._z)
         activate(editor)
 
     def _on_command(self, command: str) -> bool:

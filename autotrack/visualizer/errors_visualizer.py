@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any
 from matplotlib.backend_bases import KeyEvent
 
 from autotrack.core.particles import Particle
-from autotrack.gui import Window
+from autotrack.gui.window import Window
 from autotrack.linking_analysis import linking_markers, lineage_checks, logical_tests
 from autotrack.linking_analysis.lineage_checks import LineageWithErrors
 from autotrack.visualizer import activate
@@ -102,9 +102,7 @@ class ErrorsVisualizer(ParticleListVisualizer):
         elif event.key == "down":
             self.__goto_previous_lineage()
         elif event.key == "e":
-            self.goto_full_image()
-        elif event.key == "c":
-            self._edit_data()
+            self._exit_view()
         elif event.key == "delete":
             self._suppress_error()
         else:
@@ -130,7 +128,7 @@ class ErrorsVisualizer(ParticleListVisualizer):
         self._current_particle_index = 0
         self.draw_view()
 
-    def _edit_data(self):
+    def _exit_view(self):
         from autotrack.visualizer.link_and_position_editor import LinkAndPositionEditor
 
         if self._current_particle_index < 0 or self._current_particle_index >= len(self._particle_list):

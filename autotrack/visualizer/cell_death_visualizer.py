@@ -2,12 +2,10 @@ from typing import List, Optional
 
 from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
-from autotrack.linking.existing_connections import find_future_particles
-from autotrack.linking_analysis.errors import Error
-from autotrack.linking_analysis.linking_markers import EndMarker
-from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
-from autotrack.gui import Window
+from autotrack.gui.window import Window
 from autotrack.linking_analysis import cell_death_finder, linking_markers
+from autotrack.linking_analysis.errors import Error
+from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
 
 
 def _get_end_of_tracks(experiment: Experiment) -> List[Particle]:

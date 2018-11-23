@@ -5,13 +5,12 @@ from typing import List, Dict, Any
 
 import numpy
 from matplotlib.figure import Figure
-import cProfile
-
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from autotrack.core import UserError, TimePoint
 from autotrack.core.experiment import Experiment
-from autotrack.gui import dialog, Window
+from autotrack.gui import dialog
+from autotrack.gui.window import Window
 from autotrack.linking import cell_cycle, mother_finder, existing_connections
 
 _TIME_POINTS_PER_CELL = 3

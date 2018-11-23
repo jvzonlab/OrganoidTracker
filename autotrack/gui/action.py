@@ -8,8 +8,9 @@ from matplotlib.figure import Figure
 
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
-from autotrack.gui import Window, dialog
+from autotrack.gui import dialog
 from autotrack.gui.dialog import popup_message_cancellable
+from autotrack.gui.window import Window
 from autotrack.imaging import tifffolder, io
 from autotrack.visualizer import activate
 from autotrack.visualizer.empty_visualizer import EmptyVisualizer

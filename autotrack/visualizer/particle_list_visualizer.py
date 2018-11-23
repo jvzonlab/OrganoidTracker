@@ -5,7 +5,7 @@ from networkx import Graph
 
 from autotrack import core
 from autotrack.core.particles import Particle, get_closest_particle
-from autotrack.gui import Window
+from autotrack.gui.window import Window
 from autotrack.visualizer import Visualizer, activate, DisplaySettings
 
 
@@ -35,7 +35,7 @@ class ParticleListVisualizer(Visualizer):
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
             **super().get_extra_menu_options(),
-            "View/Exit-Exit this view (/exit)": lambda: self.goto_full_image(),
+            "View/Exit-Exit this view (/exit)": lambda: self._exit_view(),
             "Navigate/Time-Next (Right)": self._goto_next,
             "Navigate/Time-Previous (Left)": self._goto_previous
         }
@@ -139,7 +139,7 @@ class ParticleListVisualizer(Visualizer):
             self._current_particle_index = len(self._particle_list) - 1
         self.draw_view()
 
-    def goto_full_image(self):
+    def _exit_view(self):
         from autotrack.visualizer.standard_image_visualizer import StandardImageVisualizer
 
         if self._current_particle_index < 0 or self._current_particle_index >= len(self._particle_list):
@@ -165,7 +165,7 @@ class ParticleListVisualizer(Visualizer):
 
     def _on_command(self, command: str) -> bool:
         if command == "exit":
-            self.goto_full_image()
+            self._exit_view()
             return True
         if command == "help":
             self.update_status("Available commands:\n"

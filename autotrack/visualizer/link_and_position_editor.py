@@ -1,5 +1,4 @@
-import collections
-from typing import Optional, Deque, List
+from typing import Optional, List
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent, LocationEvent
 from networkx import Graph
@@ -8,12 +7,13 @@ from autotrack import core
 from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
 from autotrack.core.shape import ParticleShape
-from autotrack.gui import Window
+from autotrack.gui.window import Window
 from autotrack.linking import existing_connections
 from autotrack.linking_analysis import logical_tests, linking_markers
 from autotrack.linking_analysis.linking_markers import EndMarker
 from autotrack.visualizer import DisplaySettings, activate
 from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
+from autotrack.gui.undo_redo import UndoableAction
 
 
 def _initialize_links(experiment: Experiment):
@@ -22,20 +22,7 @@ def _initialize_links(experiment: Experiment):
         experiment.links.set_links(Graph())
 
 
-class _Action:
-
-    def do(self, experiment: Experiment) -> str:
-        """Performs the action. The scratch links in the experiment will be initialized. Returns an user-friendly
-        message of what just happened."""
-        raise NotImplementedError()
-
-    def undo(self, experiment: Experiment) -> str:
-        """Undoes the action. The scratch links in the experiment will be initialized. Returns an user-friendly
-        message of what just happened."""
-        raise NotImplementedError()
-
-
-class _InsertLinkAction(_Action):
+class _InsertLinkAction(UndoableAction):
     """Used to insert a link between two particles."""
     particle1: Particle
     particle2: Particle
@@ -64,11 +51,11 @@ class _InsertLinkAction(_Action):
         return f"Removed link between {self.particle1} and {self.particle2}"
 
 
-class _ReverseAction(_Action):
+class _ReverseAction(UndoableAction):
     """Does exactly the opposite of another action. It works by switching the do and undo methods."""
-    inverse: _Action
+    inverse: UndoableAction
 
-    def __init__(self, action: _Action):
+    def __init__(self, action: UndoableAction):
         """Note: there must be a link between the two particles."""
         self.inverse = action
 
@@ -79,7 +66,7 @@ class _ReverseAction(_Action):
         return self.inverse.do(experiment)
 
 
-class _InsertParticleAction(_Action):
+class _InsertParticleAction(UndoableAction):
     """Used to insert a particle."""
 
     particle: Particle
@@ -109,7 +96,7 @@ class _InsertParticleAction(_Action):
         return f"Removed {self.particle}"
 
 
-class _MoveParticleAction(_Action):
+class _MoveParticleAction(UndoableAction):
     """Used to move a particle"""
 
     old_position: Particle
@@ -135,7 +122,7 @@ class _MoveParticleAction(_Action):
         return f"Moved {self.new_position} back to {self.old_position}"
 
 
-class _MarkLineageEndAction(_Action):
+class _MarkLineageEndAction(UndoableAction):
     """Used to add a marker to the end of a lineage."""
 
     marker: Optional[EndMarker]  # Set to None to erase a marker
@@ -169,15 +156,10 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
     _selected1: Optional[Particle] = None
     _selected2: Optional[Particle] = None
 
-    _undo_queue: Deque[_Action]
-    _redo_queue: Deque[_Action]
-
-    def __init__(self, window: Window, time_point_number: int = 1, z: int = 14,
+    def __init__(self, window: Window, *, time_point_number: int = 1, z: int = 14,
                  selected_particle: Optional[Particle] = None):
-        super().__init__(window, time_point_number, z, DisplaySettings(show_reconstruction=False))
-
-        self._undo_queue = collections.deque(maxlen=50)
-        self._redo_queue = collections.deque(maxlen=50)
+        super().__init__(window, time_point_number=time_point_number, z=z,
+                         display_settings=DisplaySettings(show_reconstruction=False))
 
         self._selected1 = selected_particle
 
@@ -233,6 +215,8 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
             **super().get_extra_menu_options(),
             "Edit/Editor-Undo (Ctrl+z)": self._undo,
             "Edit/Editor-Redo (Ctrl+y)": self._redo,
+            "View/Linking-Linking errors and warnings (E)": self._show_linking_errors,
+            "View/Linking-Lineage errors and warnings (L)": self._show_lineage_errors,
             "Edit/LineageEnd-Mark as cell death": lambda: self._try_set_end_marker(EndMarker.DEAD),
             "Edit/LineageEnd-Mark as moving out of view": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
             "Edit/LineageEnd-Remove end marker": lambda: self._try_set_end_marker(None)
@@ -244,6 +228,8 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
         elif event.key == "e":
             particle = self._get_particle_at(event.xdata, event.ydata)
             self._show_linking_errors(particle)
+        elif event.key == "l":
+            self._show_lineage_errors()
         elif event.key == "ctrl+z":
             self._undo()
         elif event.key == "ctrl+y":
@@ -302,6 +288,12 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
         warnings_visualizer = ErrorsVisualizer(self._window, particle)
         activate(warnings_visualizer)
 
+    def _show_lineage_errors(self):
+        from autotrack.visualizer.lineage_errors_visualizer import LineageErrorsVisualizer
+        editor = LineageErrorsVisualizer(self._window, time_point_number=self._time_point.time_point_number(),
+                                         z=self._z)
+        activate(editor)
+
     def _try_insert(self, event: LocationEvent):
         if self._selected1 is None or self._selected2 is None:
             # Insert new particle
@@ -321,35 +313,17 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
             self._selected1, self._selected2 = None, None
             self._perform_action(_InsertLinkAction(particle1, particle2))
 
-    def _perform_action(self, action: _Action):
-        """Performs an action, and stores it so that we can undo it"""
-        result_string = action.do(self._experiment)
-        self._undo_queue.append(action)
-        self._redo_queue.clear()
-        self.draw_view()  # Refresh
-        self.update_status(result_string)
+    def _perform_action(self, action: UndoableAction):
+        status = self._window.get_undo_redo().do(action, self._experiment)
+        self.draw_view()
+        self.update_status(status)
 
     def _undo(self):
-        try:
-            action = self._undo_queue.pop()
-            result_string = action.undo(self._experiment)
-            self._redo_queue.append(action)
-            self.draw_view()  # Refresh
-            self.update_status(result_string)
-        except IndexError:
-            self.update_status("No more actions to undo.")
+        status = self._window.get_undo_redo().undo(self._experiment)
+        self.draw_view()
+        self.update_status(status)
 
     def _redo(self):
-        try:
-            action = self._redo_queue.pop()
-            result_string = action.do(self._experiment)
-            self._undo_queue.append(action)
-            self.draw_view()  # Refresh
-            self.update_status(result_string)
-        except IndexError:
-            self.update_status("No more actions to redo.")
-
-    def refresh_view(self):
-        self._undo_queue.clear()
-        self._redo_queue.clear()
-        super().refresh_view()
+        status = self._window.get_undo_redo().redo(self._experiment)
+        self.draw_view()
+        self.update_status(status)

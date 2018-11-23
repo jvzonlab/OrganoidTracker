@@ -8,7 +8,9 @@ import numpy
 from autotrack.core import UserError, TimePoint
 from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle, ParticleCollection
-from autotrack.gui import Window, dialog
+from autotrack.gui import dialog
+from autotrack.gui.window import Window
+
 
 Z_OVERSCALED = 6.0
 EXPECTED_Z_LAYERS = 32

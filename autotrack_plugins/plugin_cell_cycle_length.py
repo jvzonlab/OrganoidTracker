@@ -10,7 +10,8 @@ from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
 from autotrack.core.score import Family
-from autotrack.gui import Window, dialog
+from autotrack.gui import dialog
+from autotrack.gui.window import Window
 from autotrack.linking import mother_finder, cell_cycle
 from autotrack.linking_analysis import cell_fates
 from autotrack.linking_analysis.cell_fates import CellFate

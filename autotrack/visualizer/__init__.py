@@ -11,8 +11,9 @@ from autotrack import core
 from autotrack.core import TimePoint
 from autotrack.core.particles import Particle, get_closest_particle
 from autotrack.core.experiment import Experiment
-from autotrack.gui import Window, dialog
+from autotrack.gui import dialog
 from autotrack.gui.threading import Task
+from autotrack.gui.window import Window
 
 
 class DisplaySettings:

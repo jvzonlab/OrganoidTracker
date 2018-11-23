@@ -6,7 +6,8 @@ from networkx import Graph
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
-from autotrack.gui import dialog, Window
+from autotrack.gui import dialog
+from autotrack.gui.window import Window
 from autotrack.linking import mother_finder
 from statistics import median
 

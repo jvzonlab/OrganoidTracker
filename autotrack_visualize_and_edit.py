@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 
-# Compares two linking results. The baseline links are assumed to be 100% correct, any deviations from that are
-# counted as errors. Solid lines in the figures represent the correct linking result, dotted lines any deviations from
-# that.
+"""Used to open a data file from the command line."""
 from os import path
 
-from autotrack import gui
 from autotrack.config import ConfigFile
+from autotrack.gui import launcher
 from autotrack.imaging import tifffolder, io
 from autotrack.visualizer import standard_image_visualizer
 from autotrack.core.experiment import Experiment
@@ -34,4 +32,4 @@ tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
 vis = standard_image_visualizer.show(experiment)
 
 print("Done!")
-gui.mainloop()
+launcher.mainloop()

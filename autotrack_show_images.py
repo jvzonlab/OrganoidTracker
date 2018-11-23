@@ -3,9 +3,9 @@
 # Small visualization tool. Keeps only one TIFF file in memory at a time, so it should start up fast and have a
 # reasonable low memory footprint.
 
-from autotrack import gui
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
+from autotrack.gui import launcher
 from autotrack.imaging import tifffolder
 from autotrack.visualizer import standard_image_visualizer
 
@@ -25,4 +25,4 @@ tifffolder.load_images_from_folder(experiment, _images_folder, _images_format)
 standard_image_visualizer.show(experiment)
 
 print("Done!")
-gui.mainloop()
+launcher.mainloop()

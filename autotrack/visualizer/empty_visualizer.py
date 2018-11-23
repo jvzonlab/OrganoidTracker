@@ -1,4 +1,4 @@
-from autotrack.gui import Window
+from autotrack.gui.window import Window
 from autotrack.visualizer.standard_image_visualizer import StandardImageVisualizer
 from autotrack.visualizer import Visualizer, activate
 

@@ -2,7 +2,7 @@ import os
 from typing import Any, List, Dict
 import importlib
 
-from autotrack.gui import Plugin, Window
+from autotrack.gui.window import Plugin, Window
 
 
 class _FilePlugin(Plugin):

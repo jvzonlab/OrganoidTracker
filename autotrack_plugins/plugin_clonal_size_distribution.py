@@ -7,14 +7,15 @@ from numpy import ndarray
 
 from autotrack.core import UserError, Name
 from autotrack.core.particles import Particle
-from autotrack.gui import Window, dialog
+from autotrack.gui import dialog
+from autotrack.gui.window import Window
 from autotrack.gui.threading import Task
 from autotrack.linking import existing_connections
 from autotrack.linking_analysis import cell_appearance_finder, linking_markers, filtered_graph
 from autotrack.linking_analysis.linking_markers import EndMarker
 
 
-_LINEAGE_FOLLOW_TIME_H = 35
+_LINEAGE_FOLLOW_TIME_H = 25
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -37,6 +38,7 @@ def _show_clonal_size_distribution(window: Window):
 
     # Calculate the number of time points in the given follow time
     time_point_window = int(_LINEAGE_FOLLOW_TIME_H * 60 / experiment.image_resolution().time_point_interval_m)
+    print("Time point window is", time_point_window)
 
     # Run the task on another thread, as calculating is quite slow
     window.get_scheduler().add_task(_ClonalDistributionTask(experiment.name, graph, time_point_window,
@@ -107,7 +109,11 @@ def _get_division_count_in_lineage(particle: Particle, graph: Graph, last_time_p
 
 def _draw_clonal_sizes(figure: Figure, clonal_sizes: ndarray):
     axes = figure.gca()
-    axes.hist(clonal_sizes, range(clonal_sizes.max() + 2), color="blue")
+    if len(clonal_sizes) > 0:
+        axes.hist(clonal_sizes, range(clonal_sizes.max() + 2), color="blue")
+    else:
+        axes.text(0, 0, "No histogram: no lineages without dissappearing cells spanning at least"
+                        f" {_LINEAGE_FOLLOW_TIME_H} h were found")
     axes.set_title("Clonal size distribution")
     axes.set_ylabel("Relative frequency")
     axes.set_xlabel(f"Clonal size after {_LINEAGE_FOLLOW_TIME_H} h")

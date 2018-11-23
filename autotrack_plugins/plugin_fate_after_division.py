@@ -5,7 +5,8 @@ from networkx import Graph
 
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
-from autotrack.gui import Window, dialog
+from autotrack.gui import dialog
+from autotrack.gui.window import Window
 from autotrack.linking import cell_cycle, mother_finder
 from autotrack.linking_analysis import cell_fates
 from autotrack.linking_analysis.cell_fates import CellFate

@@ -1,15 +1,15 @@
 from typing import Any, Tuple, Union, List
 
 import numpy
-import tifffile
-from numpy import ndarray
 from matplotlib.backend_bases import KeyEvent
+from numpy import ndarray
 
 from autotrack.core import UserError
-from autotrack.core.particles import Particle
-from autotrack.gui import Window, dialog
-from autotrack.particle_detection import thresholding, watershedding, gaussian_fit, smoothing, missed_cell_finder
 from autotrack.core.gaussian import Gaussian
+from autotrack.core.particles import Particle
+from autotrack.gui import dialog
+from autotrack.gui.window import Window
+from autotrack.particle_detection import thresholding, watershedding, gaussian_fit, smoothing, missed_cell_finder
 from autotrack.visualizer import activate, DisplaySettings
 from autotrack.visualizer.abstract_image_visualizer import AbstractImageVisualizer
 

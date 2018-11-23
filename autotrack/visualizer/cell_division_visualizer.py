@@ -1,13 +1,12 @@
-from typing import List, Optional
+from typing import List
 
 from matplotlib.backend_bases import KeyEvent
 
 from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
-from autotrack.linking.existing_connections import find_future_particles
-from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
-from autotrack.gui import Window
+from autotrack.gui.window import Window
 from autotrack.linking import mother_finder
+from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
 
 
 def _get_mothers(experiment: Experiment) -> List[Particle]:
@@ -41,6 +40,6 @@ class CellDivisionVisualizer(ParticleListVisualizer):
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "m":
-            self.goto_full_image()
+            self._exit_view()
         else:
             super()._on_key_press(event)
