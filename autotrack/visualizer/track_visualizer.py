@@ -92,7 +92,7 @@ class TrackVisualizer(ExitableImageVisualizer):
 
     def __init__(self, window: Window, time_point_number: int,
                  z: int, display_settings: DisplaySettings):
-        super().__init__(window, time_point_number, z, display_settings)
+        super().__init__(window, time_point_number=time_point_number, z=z, display_settings=display_settings)
 
     def _draw_particle(self, particle: Particle, color: str, dz: int, dt: int) -> int:
         if abs(dz) <= 3 and self._particles_in_lineage is not None and particle in self._particles_in_lineage:
