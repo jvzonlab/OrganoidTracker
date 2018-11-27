@@ -14,10 +14,9 @@ class LineageErrorsVisualizer(ExitableImageVisualizer):
     """Viewer to detect errors in lineages. All cells with a gray marker have potential errors in them. Hover your mouse
     over a cell and press E to dismiss or correct the errors in that lineage."""
 
-    _verified_lineages: Set[Particle]
+    _verified_lineages: Set[Particle] = set()
 
     def __init__(self, window: Window, time_point_number: Optional[int] = None, z: int = 14):
-        self._verified_lineages = set()
         super().__init__(window, time_point_number=time_point_number, z=z)
 
     def _on_key_press(self, event: KeyEvent):
