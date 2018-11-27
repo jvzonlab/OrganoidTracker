@@ -11,6 +11,7 @@ from pandas import DataFrame
 
 from autotrack.core import shape, TimePoint
 from autotrack.core.experiment import Experiment
+from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle, ParticleCollection
 from autotrack.core.resolution import ImageResolution
 from autotrack.core.score import ScoredFamily, Score, Family
@@ -153,10 +154,10 @@ def _my_decoder(json_object):
     return json_object
 
 
-def save_links_to_json(links: Graph, json_file_name: str):
+def save_links_to_json(links: ParticleLinks, json_file_name: str):
     """Saves particle linking data to a JSON file. File follows the d3.js format, like the example here:
     http://bl.ocks.org/mbostock/4062045 """
-    data = node_link_data(links)
+    data = links.node_link_data()
 
     _create_parent_directories(json_file_name)
     with open(json_file_name, 'w') as handle:

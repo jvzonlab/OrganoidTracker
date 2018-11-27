@@ -4,12 +4,10 @@
 biological constraints are not taken into account. The visualizer shows not only the nearest neighbors, but also other
 possible links: those alternative links are shown as dotted lines.
 """
-from autotrack import gui
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
 from autotrack.imaging import tifffolder, io
 from autotrack.linking import linker_for_experiment
-from autotrack.visualizer import standard_image_visualizer
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
@@ -36,9 +34,6 @@ print("Starting link process...")
 results_all = linker_for_experiment.nearest_neighbor(experiment, tolerance=2)
 results = linker_for_experiment.with_only_the_preferred_edges(results_all)
 print("Writing results to file...")
-io.save_links_to_json(results, _output_file)
-print("Visualizing...")
 experiment.links.add_links(results)
-standard_image_visualizer.show(experiment)
+io.save_links_to_json(experiment.links, _output_file)
 print("Done!")
-gui.mainloop()

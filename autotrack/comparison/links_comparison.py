@@ -5,6 +5,7 @@ from networkx import Graph
 from autotrack.comparison.report import ComparisonReport, Category
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
+from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle, ParticleCollection
 from autotrack.core.resolution import ImageResolution
 from autotrack.linking.existing_connections import find_future_particles
@@ -41,10 +42,10 @@ class _Comparing:
 
     _resolution: ImageResolution
     _max_distance_um: float
-    _ground_truth: Graph
-    _scratch: Graph
+    _ground_truth: ParticleLinks
+    _scratch: ParticleLinks
 
-    def __init__(self, resolution: ImageResolution, ground_truth: Graph, scratch: Graph, max_distance_um: float):
+    def __init__(self, resolution: ImageResolution, ground_truth: ParticleLinks, scratch: ParticleLinks, max_distance_um: float):
         """Creates the comparison object. You need to provide two data sets. Cells are not allowed to move further away
          from each other than max_distance_um."""
         self._resolution = resolution
@@ -54,8 +55,8 @@ class _Comparing:
 
     def compare_lineages(self, report: ComparisonReport, particle_ground_truth: Particle, particle_scratch: Particle):
         while True:
-            next_ground_truth = list(find_future_particles(self._ground_truth, particle_ground_truth))
-            next_scratch = list(find_future_particles(self._scratch, particle_scratch))
+            next_ground_truth = list(self._ground_truth.find_futures(particle_ground_truth))
+            next_scratch = list(self._scratch.find_futures(particle_scratch))
             if len(next_ground_truth) == 0:
                 if len(next_scratch) != 0:
                     report.add_data(LINEAGE_END_FALSE_NEGATIVES, particle_ground_truth)
@@ -93,7 +94,7 @@ class _Comparing:
 
             # If the detection data skipped time points, do the same for the ground truth data
             while particle_scratch.time_point_number() > particle_ground_truth.time_point_number():
-                next_ground_truth = find_future_particles(self._ground_truth, particle_ground_truth)
+                next_ground_truth = self._ground_truth.find_futures(particle_ground_truth)
                 if len(next_ground_truth) == 0:  # Detection data skipped past a lineage end
                     report.add_data(LINEAGE_END_FALSE_NEGATIVES, particle_ground_truth)
                     return
@@ -113,15 +114,14 @@ class _Comparing:
 
 
 def compare_links(ground_truth: Experiment, scratch: Experiment, max_distance_um: float = 5) -> ComparisonReport:
-    if ground_truth.links.graph is None or scratch.links.graph is None:
+    if not ground_truth.links.has_links() or not scratch.links.has_links():
         raise UserError("Linking data is missing", "One of the data sets has no linking data available.")
 
     report = ComparisonReport()
     report.title = "Links comparison"
-    comparing = _Comparing(ground_truth.image_resolution(), ground_truth.links.graph, scratch.links.graph,
-                           max_distance_um)
-    lineage_starts_ground_truth = cell_appearance_finder.find_appeared_cells(ground_truth.links.graph)
-    lineage_starts_scratch = set(cell_appearance_finder.find_appeared_cells(scratch.links.graph))
+    comparing = _Comparing(ground_truth.image_resolution(), ground_truth.links, scratch.links, max_distance_um)
+    lineage_starts_ground_truth = ground_truth.links.find_appeared_cells()
+    lineage_starts_scratch = set(scratch.links.find_appeared_cells())
     for lineage_start_ground_truth in lineage_starts_ground_truth:
         lineage_start_scratch = _find_closest_in(lineage_starts_scratch, lineage_start_ground_truth, max_distance_um,
                                                  ground_truth.image_resolution())

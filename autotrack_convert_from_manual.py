@@ -34,6 +34,6 @@ tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
 
 io.save_positions_and_shapes_to_json(experiment, _positions_file)
-io.save_links_to_json(experiment.links.graph, _links_file)
+io.save_links_to_json(experiment.links, _links_file)
 
 print("Done!")

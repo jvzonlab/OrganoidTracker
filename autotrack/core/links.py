@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, Dict, Iterable, List, AbstractSet, Set
 
 import networkx
 from networkx import Graph
@@ -12,7 +12,10 @@ class ParticleLinks:
     comparisons become possible. Care has been taken to ensure that the node sets of both linking networks are
     equal, so that comparisons between the networks are easier."""
 
-    __graph: Optional[Graph] = None
+    __graph: Optional[Graph]
+
+    def __init__(self, graph: Graph = None):
+        self.__graph = graph
 
     def add_links(self, graph: Graph):
         """Adds all links from the graph. Existing link are not removed."""
@@ -55,6 +58,50 @@ class ParticleLinks:
         self.__graph = graph
 
     def add_particle(self, particle: Particle):
-        """Adds the particle as a node to the linking graphs. Does nothing if there is no linking data."""
-        if self.__graph is not None:
-            self.__graph.add_node(particle)
+        """Adds the particle as a node to the linking graphs. Initialized the linking graph if necessary."""
+        if self.__graph is None:
+            self.__graph = Graph()
+        self.__graph.add_node(particle)
+
+    def node_link_data(self) -> Dict:
+        """Return data in node-link format that is suitable for JSON serialization
+        and use in Javascript documents."""
+        if self.__graph is None:
+            return {}
+        return networkx.node_link_data(self.__graph)
+
+    def find_futures(self, particle: Particle) -> Set[Particle]:
+        """Returns all connections to the future."""
+        if self.__graph is None:
+            return set()
+        linked_particles = self.__graph[particle]
+        return {linked_particle for linked_particle in linked_particles
+                if linked_particle.time_point_number() > particle.time_point_number()}
+
+    def find_pasts(self, particle: Particle) -> Set[Particle]:
+        """Returns all connections to the past."""
+        if self.__graph is None:
+            return set()
+        linked_particles = self.__graph[particle]
+        return {linked_particle for linked_particle in linked_particles
+                if linked_particle.time_point_number() < particle.time_point_number()}
+
+    def find_appeared_cells(self, time_point_number_to_ignore: Optional[int] = None) -> Iterable[Particle]:
+        """This method gets all particles that "popped up out of nothing": that have no links to the past. You can give
+        this method a time point number to ignore. Usually, this would be the first time point number of the experiment,
+        as cells that have no links to the past in the first time point are not that interesting."""
+        if self.__graph is None:
+            return []
+
+        for particle in self.__graph.nodes():
+            if len(self.find_pasts(particle)) == 0:
+                if time_point_number_to_ignore is None or time_point_number_to_ignore != particle.time_point_number():
+                    yield particle
+
+    def add_link(self, particle1: Particle, particle2: Particle):
+        """Adds a link between the particles. The links will be initialized if necessary."""
+        if self.__graph is None:
+            self.__graph = Graph()
+        self.__graph.add_node(particle1)
+        self.__graph.add_node(particle2)
+        self.__graph.add_edge(particle1, particle2)
