@@ -135,14 +135,14 @@ class _MarkLineageEndAction(UndoableAction):
         self.old_marker = old_marker
 
     def do(self, experiment: Experiment) -> str:
-        linking_markers.set_track_end_marker(experiment.links.graph, self.particle, self.marker)
+        linking_markers.set_track_end_marker(experiment.links, self.particle, self.marker)
         logical_tests.apply_on(experiment, self.particle)
         if self.marker is None:
             return f"Removed the lineage end marker of {self.particle}"
         return f"Added the {self.marker.get_display_name()}-marker to {self.particle}"
 
     def undo(self, experiment: Experiment):
-        linking_markers.set_track_end_marker(experiment.links.graph, self.particle, self.old_marker)
+        linking_markers.set_track_end_marker(experiment.links, self.particle, self.old_marker)
         logical_tests.apply_on(experiment, self.particle)
         if self.old_marker is None:
             return f"Removed the lineage end marker again of {self.particle}"
@@ -270,11 +270,11 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
             self.update_status("You need to have exactly one cell selected in order to move a cell.")
             return
 
-        graph = self._experiment.links.graph
-        if len(existing_connections.find_future_particles(graph, self._selected1)) > 0:
+        links = self._experiment.links
+        if len(links.find_futures(self._selected1)) > 0:
             self.update_status(f"The {self._selected1} is not a lineage end.")
             return
-        current_marker = linking_markers.get_track_end_marker(graph, self._selected1)
+        current_marker = linking_markers.get_track_end_marker(links, self._selected1)
         if current_marker == marker:
             if marker is None:
                 self.update_status("There is no lineage ending marker here, cannot delete anything.")

@@ -3,6 +3,7 @@ from typing import Optional, List, Iterable
 from networkx import Graph
 
 from autotrack.core.experiment import Experiment
+from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle, ParticleCollection
 from autotrack.core.resolution import ImageResolution
 from autotrack.core.score import Score, ScoreCollection, Family
@@ -14,18 +15,18 @@ from autotrack.linking_analysis.errors import Error
 def apply(experiment: Experiment):
     """Adds errors for all logical inconsistencies in the graph, like cells that spawn out of nowhere, cells that
     merge together and cells that have three or more daughters."""
-    graph = experiment.links.graph
+    links = experiment.links
     scores = experiment.scores
     particles = experiment.particles
     resolution = experiment.image_resolution()
-    for particle in graph:
-        error = get_error(graph, particle, scores, particles, resolution)
-        linking_markers.set_error_marker(graph, particle, error)
+    for particle in links.find_all_particles():
+        error = get_error(links, particle, scores, particles, resolution)
+        linking_markers.set_error_marker(links, particle, error)
 
 
-def get_error(links: Graph, particle: Particle, scores: ScoreCollection, particles: ParticleCollection,
+def get_error(links: ParticleLinks, particle: Particle, scores: ScoreCollection, particles: ParticleCollection,
               resolution: ImageResolution) -> Optional[Error]:
-    future_particles = _get_future_particles(links, particle)
+    future_particles = links.find_futures(particle)
     if len(future_particles) > 2:
         return Error.TOO_MANY_DAUGHTER_CELLS
     elif len(future_particles) == 0 \
@@ -37,11 +38,11 @@ def get_error(links: Graph, particle: Particle, scores: ScoreCollection, particl
             score = scores.of_family(Family(particle, *future_particles))
             if score is None or score.is_unlikely_mother():
                 return Error.LOW_MOTHER_SCORE
-        age = cell_cycle.get_age(links, particle)
+        age = cell_cycle.get_age(links.graph, particle)
         if age is not None and age < 5:
             return Error.YOUNG_MOTHER
 
-    past_particles = _get_past_particles(links, particle)
+    past_particles = links.find_pasts(particle)
     if len(past_particles) == 0:
         if particle.time_point_number() > particles.first_time_point_number() \
                 and linking_markers.get_track_start_marker(links, particle) is None:
@@ -50,8 +51,8 @@ def get_error(links: Graph, particle: Particle, scores: ScoreCollection, particl
         return Error.CELL_MERGE
     else:  # len(past_particles) == 1
         # Check cell size
-        past_particle = past_particles[0]
-        future_particles_of_past_particle = _get_future_particles(links, past_particle)
+        past_particle = past_particles.pop()
+        future_particles_of_past_particle = links.find_futures(past_particle)
         shape = particles.get_shape(particle)
         if not shape.is_unknown() and len(future_particles_of_past_particle) == 1:
             past_shape = particles.get_shape(past_particle)
@@ -80,26 +81,10 @@ def _set_error(graph: Graph, particle: Particle, error: Error):
     graph.add_node(particle, error=error.value)
 
 
-def _get_future_particles(graph: Graph, particle: Particle):
-    try:
-        linked_particles = graph[particle]
-        return [p for p in linked_particles if p.time_point_number() > particle.time_point_number()]
-    except KeyError:
-        return []
-
-
-def _get_past_particles(graph: Graph, particle: Particle) -> List[Particle]:
-    try:
-        linked_particles = graph[particle]
-        return [p for p in linked_particles if p.time_point_number() < particle.time_point_number()]
-    except KeyError:
-        return []
-
-
 def apply_on(experiment: Experiment, *iterable: Particle):
     """Adds errors for all logical inconsistencies for particles in the collection, like cells that spawn out of
     nowhere, cells that merge together and cells that have three or more daughters."""
-    graph = experiment.links.graph
+    links = experiment.links
     for particle in iterable:
-        error = get_error(graph, particle, experiment.scores, experiment.particles, experiment.image_resolution())
-        linking_markers.set_error_marker(graph, particle, error)
+        error = get_error(links, particle, experiment.scores, experiment.particles, experiment.image_resolution())
+        linking_markers.set_error_marker(links, particle, error)

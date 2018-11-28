@@ -11,6 +11,7 @@ from networkx import Graph
 
 from autotrack.core import TimePoint
 from autotrack.core.experiment import Experiment
+from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
 from autotrack.core.path import PathCollection, Path
 from autotrack.core.resolution import ImageResolution
@@ -19,17 +20,17 @@ from autotrack.linking_analysis.linking_markers import EndMarker
 from autotrack.manual_tracking.track_lib import Track
 
 
-def _load_links(tracks_dir: str, min_time_point: int = 0, max_time_point: int = 5000) -> Graph:
+def _load_links(tracks_dir: str, min_time_point: int = 0, max_time_point: int = 5000) -> ParticleLinks:
     """Extracts all positions and links from the track files in tracks_dir, returns them as a Graph."""
 
     _fix_python_path_for_pickle()
-    graph = Graph()
+    links = ParticleLinks()
 
-    tracks = _read_track_files(tracks_dir, graph, min_time_point=min_time_point, max_time_point=max_time_point)
-    _read_lineage_file(tracks_dir, graph, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
-    _read_deaths_file(tracks_dir, graph, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
+    tracks = _read_track_files(tracks_dir, links, min_time_point=min_time_point, max_time_point=max_time_point)
+    _read_lineage_file(tracks_dir, links, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
+    _read_deaths_file(tracks_dir, links, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
 
-    return graph
+    return links
 
 
 def _load_crypt_axis(tracks_dir: str, paths: PathCollection, min_time_point: int, max_time_point: int):
@@ -55,14 +56,15 @@ def _load_crypt_axis(tracks_dir: str, paths: PathCollection, min_time_point: int
 def add_data_to_experiment(experiment: Experiment, tracks_dir: str, min_time_point: int = 0, max_time_point: int = 500):
     """Adds all particles and links from the given folder to the experiment."""
     graph = _load_links(tracks_dir, min_time_point, max_time_point)
-    for particle in graph.nodes():
+    for particle in graph.find_all_particles():
         experiment.add_particle(particle)
     experiment.links.add_links(graph)
     experiment.image_resolution(ImageResolution(0.32, 0.32, 2, 12))
     _load_crypt_axis(tracks_dir, experiment.paths, min_time_point, max_time_point)
 
 
-def _read_track_files(tracks_dir: str, graph: Graph, min_time_point: int = 0, max_time_point: int = 5000) -> List[Track]:
+def _read_track_files(tracks_dir: str, links: ParticleLinks, min_time_point: int = 0, max_time_point: int = 5000
+                      ) -> List[Track]:
     """Adds all tracks to the graph, and returns the original tracks"""
     track_files = os.listdir(tracks_dir)
     print("Found " + str(len(track_files)) + " files to analyse")
@@ -78,14 +80,14 @@ def _read_track_files(tracks_dir: str, graph: Graph, min_time_point: int = 0, ma
             print("Reading track " + str(track_index))
 
         # Note that the first track will get id 0, the second id 1, etc. This is required for the lineages file
-        tracks.append(_extract_links_from_track(track_file, graph, min_time_point=min_time_point, max_time_point=max_time_point))
+        tracks.append(_extract_links_from_track(track_file, links, min_time_point=min_time_point, max_time_point=max_time_point))
 
         track_index += 1
 
     return tracks
 
 
-def _read_lineage_file(tracks_dir: str, graph: Graph, tracks: List[Track], min_time_point: int = 0,
+def _read_lineage_file(tracks_dir: str, links: ParticleLinks, tracks: List[Track], min_time_point: int = 0,
                        max_time_point: int = 5000) -> None:
     """Connects the lineages in the graph based on information from the lineages.p file"""
     print("Reading lineages file")
@@ -105,11 +107,11 @@ def _read_lineage_file(tracks_dir: str, graph: Graph, tracks: List[Track], min_t
             child_1_first_snapshot = _get_cell_in_time_point(child_track_1, first_time_point_after_division)
             child_2_first_snapshot = _get_cell_in_time_point(child_track_2, first_time_point_after_division)
 
-            graph.add_edge(mother_last_snapshot, child_1_first_snapshot)
-            graph.add_edge(mother_last_snapshot, child_2_first_snapshot)
+            links.add_link(mother_last_snapshot, child_1_first_snapshot)
+            links.add_link(mother_last_snapshot, child_2_first_snapshot)
 
 
-def _read_deaths_file(tracks_dir: str, links: Graph, tracks_by_id: List[Track], min_time_point: int,
+def _read_deaths_file(tracks_dir: str, links: ParticleLinks, tracks_by_id: List[Track], min_time_point: int,
                       max_time_point: int):
     """Adds all marked cell deaths to the linking network."""
     _fix_python_path_for_pickle()
@@ -137,7 +139,8 @@ def _get_cell_in_time_point(track: Track, time_point_number: int) -> Particle:
     return particle
 
 
-def _extract_links_from_track(track_file: str, graph: Graph, min_time_point: int = 0, max_time_point: int = 5000) -> Track:
+def _extract_links_from_track(track_file: str, links: ParticleLinks, min_time_point: int = 0,
+                              max_time_point: int = 5000) -> Track:
     with open(track_file, "rb") as file_handle:
         track = pickle.load(file_handle, encoding='latin1')
         current_particle = None
@@ -151,10 +154,9 @@ def _extract_links_from_track(track_file: str, graph: Graph, min_time_point: int
             if math.isnan(current_particle.x + current_particle.y + current_particle.z):
                 print("Warning: found invalid " + str(current_particle))
                 continue
-            graph.add_node(current_particle)
 
             if previous_particle is not None:
-                graph.add_edge(previous_particle, current_particle)
+                links.add_link(previous_particle, current_particle)
 
         return track
 

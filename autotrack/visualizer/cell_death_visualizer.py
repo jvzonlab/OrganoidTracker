@@ -40,7 +40,7 @@ class CellTrackEndVisualizer(ParticleListVisualizer):
                f"\n{cell}"
 
     def _get_end_cause(self, particle: Particle) -> str:
-        links = self._experiment.links.graph
+        links = self._experiment.links
 
         end_reason = linking_markers.get_track_end_marker(links, particle)
         if end_reason is None:

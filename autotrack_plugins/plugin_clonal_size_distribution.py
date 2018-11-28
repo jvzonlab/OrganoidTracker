@@ -6,6 +6,7 @@ from networkx import Graph
 from numpy import ndarray
 
 from autotrack.core import UserError, Name
+from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
@@ -76,22 +77,23 @@ def _get_clonal_sizes_list(graph: Graph, time_point_window: int, first_time_poin
         print("Calculating clonal sizes at time point", view_start_time_point)
         view_end_time_point = view_start_time_point + time_point_window
         subgraph = filtered_graph.limit_to_time_points(graph, view_start_time_point, view_end_time_point)
-        for lineage_start in cell_appearance_finder.find_appeared_cells(subgraph):
-            cell_divisions_count = _get_division_count_in_lineage(lineage_start, subgraph, view_end_time_point)
+        sublinks = ParticleLinks(subgraph)
+        for lineage_start in sublinks.find_appeared_cells():
+            cell_divisions_count = _get_division_count_in_lineage(lineage_start, sublinks, view_end_time_point)
             if cell_divisions_count is not None:
                 clonal_sizes.append(cell_divisions_count + 1)  # +1 to convert cell divisions count to clonal size
     return numpy.array(clonal_sizes, dtype=numpy.int32)
 
 
-def _get_division_count_in_lineage(particle: Particle, graph: Graph, last_time_point_number: int) -> Optional[int]:
+def _get_division_count_in_lineage(particle: Particle, links: ParticleLinks, last_time_point_number: int) -> Optional[int]:
     """Gets how many divisions there are in the lineage starting at the given cell. If the cell does not divide, then
     this method will return 0."""
     division_count = 0
     while True:
-        next_particles = existing_connections.find_future_particles(graph, particle)
+        next_particles = links.find_futures(particle)
         if len(next_particles) == 0:
             # Cell death/disappearance
-            end_marker = linking_markers.get_track_end_marker(graph, particle)
+            end_marker = linking_markers.get_track_end_marker(links, particle)
             if particle.time_point_number() == last_time_point_number or end_marker == EndMarker.DEAD:
                 return division_count
             return None  # We cannot completely analyze this lineage, as a cell went out the field of view
@@ -99,7 +101,7 @@ def _get_division_count_in_lineage(particle: Particle, graph: Graph, last_time_p
             # Cell division, process daughters
             division_count += 1
             for next_particle in next_particles:
-                next_division_count = _get_division_count_in_lineage(next_particle, graph, last_time_point_number)
+                next_division_count = _get_division_count_in_lineage(next_particle, links, last_time_point_number)
                 if next_division_count is None:
                     return None  # Cannot determine number of divisions in this linage
                 division_count += next_division_count

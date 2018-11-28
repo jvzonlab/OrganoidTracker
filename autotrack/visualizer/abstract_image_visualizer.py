@@ -155,9 +155,8 @@ class AbstractImageVisualizer(Visualizer):
     def _draw_particle(self, particle: Particle, color: str, dz: int, dt: int):
         if abs(dz) <= self.MAX_Z_DISTANCE:
             # Draw error marker
-            graph = self._experiment.links.graph
-            if graph is not None and particle in graph \
-                    and linking_markers.get_error_marker(graph, particle) is not None:
+            links = self._experiment.links
+            if linking_markers.get_error_marker(links, particle) is not None:
                 self._draw_error(particle, dz)
 
             # Make particle selectable

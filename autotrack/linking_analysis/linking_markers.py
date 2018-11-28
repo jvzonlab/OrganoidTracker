@@ -5,6 +5,7 @@ from typing import Optional
 
 from networkx import Graph
 
+from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
 from autotrack.linking_analysis.errors import Error
 
@@ -27,92 +28,67 @@ class StartMarker(Enum):
         return self.name.lower().replace("_", " ")
 
 
-def get_track_end_marker(links: Graph, particle: Particle) -> Optional[EndMarker]:
+def get_track_end_marker(links: ParticleLinks, particle: Particle) -> Optional[EndMarker]:
     """Gets a death marker, which provides a reason why the cell lineage ended."""
-    node_data = links.nodes.get(particle)
-    if node_data is None:
+    ending_str = links.get_particle_data(particle, "ending")
+    if ending_str is None:
         return None
 
-    try:
-        ending_str: str = node_data["ending"]
-        return EndMarker[ending_str.upper()]
-    except KeyError:
-        return None
+    return EndMarker[ending_str.upper()]
 
 
-def set_track_end_marker(links: Graph, particle: Particle, end_marker: Optional[EndMarker]):
+def set_track_end_marker(links: ParticleLinks, particle: Particle, end_marker: Optional[EndMarker]):
     """Sets a reason why the track ended at the given point."""
     if end_marker is None:
-        try:
-            del links.nodes[particle]["ending"]
-        except KeyError:
-            pass  # Ignore, nothing to delete
+        links.set_particle_data(particle, "ending", None)
     else:
-        links.nodes[particle]["ending"] = end_marker.name.lower()
+        links.set_particle_data(particle, "ending", end_marker.name.lower())
 
 
-def get_track_start_marker(links: Graph, particle: Particle) -> Optional[StartMarker]:
+def get_track_start_marker(links: ParticleLinks, particle: Particle) -> Optional[StartMarker]:
     """Gets the appearance marker. This is used to explain why a cell appeared out of thin air."""
-    node_data = links.nodes.get(particle)
-    if node_data is None:
+    starting_str = links.get_particle_data(particle, "starting")
+    if starting_str is None:
         return None
 
-    try:
-        starting_str: str = node_data["starting"]
-        return StartMarker[starting_str.upper()]
-    except KeyError:
-        return None
+    return StartMarker[starting_str.upper()]
 
 
-def set_track_start_marker(links: Graph, particle: Particle, start_marker: Optional[StartMarker]):
+def set_track_start_marker(links: ParticleLinks, particle: Particle, start_marker: Optional[StartMarker]):
     """Sets a reason why the track ended at the given point."""
     if start_marker is None:
-        try:
-            del links.nodes[particle]["starting"]
-        except KeyError:
-            pass  # Ignore, nothing to delete
+        links.set_particle_data(particle, "starting", None)
     else:
-        links.nodes[particle]["starting"] = start_marker.name.lower()
+        links.set_particle_data(particle, "starting", start_marker.name.lower())
 
 
-def get_error_marker(links: Graph, particle: Particle) -> Optional[Error]:
+def get_error_marker(links: ParticleLinks, particle: Particle) -> Optional[Error]:
     """Gets the error marker for the given link, if any. Returns None if the error has been suppressed using
     suppress_error_marker."""
-    node_data = links.nodes.get(particle)
-    if node_data is None:
+    error_number = links.get_particle_data(particle, "error")
+    if error_number is None:
         return None
 
-    if "error" not in node_data:
-        return None
-
-    error = node_data["error"]
-    if error is None:
-        return None  # In the past, we used to store None to delete errors
-
-    if "suppressed_error" in node_data and node_data["suppressed_error"] == error:
+    if links.get_particle_data(particle, "suppressed_error") == error_number:
         return None  # Error was suppressed
-    return Error(error)
+    return Error(error_number)
 
 
-def suppress_error_marker(links: Graph, particle: Particle, error: Error):
+def suppress_error_marker(links: ParticleLinks, particle: Particle, error: Error):
     """Suppresses an error. Even if set_error_marker is called afterwards, the error will not show up in
     get_error_marker."""
-    links.nodes[particle]["suppressed_error"] = error.value
+    links.set_particle_data(particle, "suppressed_error", error.value)
 
 
-def is_error_suppressed(links: Graph, particle: Particle, error: Error) -> bool:
+def is_error_suppressed(links: ParticleLinks, particle: Particle, error: Error) -> bool:
     """Returns True if the given error is suppressed. If another type of error is suppressed, this method returns
     False."""
-    node_data = links.nodes.get(particle)
-    if node_data is None:
-        return False
-    return "suppressed_error" in node_data and node_data["suppressed_error"] == error.value
+    return links.get_particle_data(particle, "suppressed_error") == error.value
 
 
-def set_error_marker(links: Graph, particle: Particle, error: Optional[Error]):
+def set_error_marker(links: ParticleLinks, particle: Particle, error: Optional[Error]):
     """Sets an error marker for the given particle."""
     if error is None:
-        if "error" in links.nodes[particle]:
-            del links.nodes[particle]["error"]
+        links.set_particle_data(particle, "error", None)
     else:
-        links.nodes[particle]["error"] = error.value
+        links.set_particle_data(particle, "error", error.value)

@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional, Dict, Iterable, List, AbstractSet, Set
+from typing import Optional, Dict, Iterable, List, AbstractSet, Set, Union
 
 import networkx
 from networkx import Graph
@@ -17,13 +17,14 @@ class ParticleLinks:
     def __init__(self, graph: Graph = None):
         self.__graph = graph
 
-    def add_links(self, graph: Graph):
+    def add_links(self, links: Union[Graph, "ParticleLinks"]):
         """Adds all links from the graph. Existing link are not removed."""
+        graph = links if isinstance(links, Graph) else links.graph
+
         if self.__graph is None:
             self.__graph = graph
         else:
-            self.__graph.add_nodes_from(graph.nodes)
-            self.__graph.add_edges_from(graph.edges)
+            self.__graph = networkx.compose(graph, self.__graph)
 
     def remove_all_links(self):
         """Removes all links in the experiment."""
@@ -74,6 +75,8 @@ class ParticleLinks:
         """Returns all connections to the future."""
         if self.__graph is None:
             return set()
+        if particle not in self.__graph:
+            return set()
         linked_particles = self.__graph[particle]
         return {linked_particle for linked_particle in linked_particles
                 if linked_particle.time_point_number() > particle.time_point_number()}
@@ -81,6 +84,8 @@ class ParticleLinks:
     def find_pasts(self, particle: Particle) -> Set[Particle]:
         """Returns all connections to the past."""
         if self.__graph is None:
+            return set()
+        if particle not in self.__graph:
             return set()
         linked_particles = self.__graph[particle]
         return {linked_particle for linked_particle in linked_particles
@@ -99,9 +104,53 @@ class ParticleLinks:
                     yield particle
 
     def add_link(self, particle1: Particle, particle2: Particle):
-        """Adds a link between the particles. The links will be initialized if necessary."""
+        """Adds a link between the particles. The linking network will be initialized if necessary."""
         if self.__graph is None:
             self.__graph = Graph()
         self.__graph.add_node(particle1)
         self.__graph.add_node(particle2)
         self.__graph.add_edge(particle1, particle2)
+
+    def get_particle_data(self, particle: Particle, data_name: str) -> Union[str, int, None]:
+        """Gets the attribute of the particle with the given name. Returns None if not found."""
+        if self.__graph is None:
+            return None
+        data = self.__graph.nodes.get(particle)
+        if data is None:
+            return None
+        return data.get(data_name)
+
+    def set_particle_data(self, particle: Particle, data_name: str, value: Union[str, int, None]):
+        """Adds or overwrites the given attribute for the given particle. Set value to None to delete the attribute.
+
+        Note: this is a low-level API. See the linking_markers module for more high-level methods, for example for how
+        to read end markers, error markers, etc.
+        """
+        if value is None:
+            if self.__graph is None:
+                return  # No links, so nothing to delete
+            try:
+                del self.__graph.nodes[particle][data_name]
+            except KeyError:
+                pass  # Ignore, nothing to delete
+            return
+
+        if self.__graph is None:
+            self.__graph = Graph()
+
+        # Next line of code has some complex syntax to support dynamic attribute names.
+        # If data_name == "foo", then the line is equal to self.__graph.add_node(particle, foo=value)
+        self.__graph.add_node(particle, **{data_name: value})
+
+    def find_links_of(self, particle: Particle) -> Iterable[Particle]:
+        """Gets all links of a particle, both to the past and the future."""
+        if self.__graph is None:
+            return []  # No graph
+        try:
+            return self.__graph[particle]
+        except KeyError:
+            return []  # Particle not in graph
+
+    def find_all_particles(self) -> Iterable[Particle]:
+        """Gets all particles in the linking graph. Note that particles without links are not included here."""
+        return self.__graph.nodes()

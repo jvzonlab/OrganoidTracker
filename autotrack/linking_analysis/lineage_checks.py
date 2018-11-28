@@ -4,6 +4,7 @@ from typing import List, Optional, Set, AbstractSet
 
 from networkx import Graph
 
+from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
 from autotrack.linking import existing_connections
 from autotrack.linking_analysis import cell_appearance_finder, linking_markers
@@ -22,32 +23,32 @@ class LineageWithErrors:
         self.crumbs = set()
 
 
-def get_problematic_lineages(graph: Graph, crumbs: AbstractSet[Particle]) -> List[LineageWithErrors]:
+def get_problematic_lineages(links: ParticleLinks, crumbs: AbstractSet[Particle]) -> List[LineageWithErrors]:
     """Gets a list of all lineages with warnings in the experiment. The provided "crumbs" are placed in the right
     lineages, so that you can see to what lineages those cells belong."""
     lineages_with_errors = []
-    for starting_cell in cell_appearance_finder.find_appeared_cells(graph):
+    for starting_cell in links.find_appeared_cells():
         lineage = LineageWithErrors(starting_cell)
-        _find_errors_in_lineage(graph, lineage, starting_cell, crumbs)
+        _find_errors_in_lineage(links, lineage, starting_cell, crumbs)
         if len(lineage.errored_particles) > 0:
             lineages_with_errors.append(lineage)
     return lineages_with_errors
 
 
-def _find_errors_in_lineage(graph: Graph, lineage: LineageWithErrors, particle: Particle, crumbs: AbstractSet[Particle]):
+def _find_errors_in_lineage(links: ParticleLinks, lineage: LineageWithErrors, particle: Particle, crumbs: AbstractSet[Particle]):
     while True:
         if particle in crumbs:
             lineage.crumbs.add(particle)
 
-        error = linking_markers.get_error_marker(graph, particle)
+        error = linking_markers.get_error_marker(links, particle)
         if error is not None:
             lineage.errored_particles.append(particle)
-        future_particles = existing_connections.find_future_particles(graph, particle)
+        future_particles = links.find_futures(particle)
 
         if len(future_particles) > 1:
             # Branch out
             for future_particle in future_particles:
-                _find_errors_in_lineage(graph, lineage, future_particle, crumbs)
+                _find_errors_in_lineage(links, lineage, future_particle, crumbs)
             return
         if len(future_particles) < 1:
             # Stop

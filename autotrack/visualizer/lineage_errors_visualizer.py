@@ -16,9 +16,6 @@ class LineageErrorsVisualizer(ExitableImageVisualizer):
 
     _verified_lineages: Set[Particle] = set()
 
-    def __init__(self, window: Window, time_point_number: Optional[int] = None, z: int = 14):
-        super().__init__(window, time_point_number=time_point_number, z=z)
-
     def _on_key_press(self, event: KeyEvent):
         if event.key == "l":
             self._exit_view()
@@ -52,8 +49,8 @@ class LineageErrorsVisualizer(ExitableImageVisualizer):
         super()._load_time_point(time_point)
 
         # Check what lineages contain errors
-        links = self._experiment.links.graph
-        if links is None:
+        links = self._experiment.links
+        if not links.has_links():
             self._verified_lineages = set()
             return
 

@@ -5,6 +5,7 @@ from networkx import Graph
 from autotrack.core.experiment import Experiment
 from numpy import ndarray
 
+from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
 from autotrack.linking import existing_connections
 from autotrack.linking_analysis import cell_appearance_finder, linking_markers
@@ -18,27 +19,24 @@ def postprocess(experiment: Experiment, margin_xy: int):
 
 def _remove_particles_close_to_edge(experiment: Experiment, margin_xy: int):
     image_loader = experiment.image_loader()
-    graph = experiment.links.graph
+    links = experiment.links
     example_image = image_loader.get_image_stack(experiment.get_time_point(image_loader.get_first_time_point()))
     for time_point in experiment.time_points():
         for particle in list(experiment.particles.of_time_point(time_point)):
             if particle.x < margin_xy or particle.y < margin_xy or particle.x > example_image.shape[2] - margin_xy\
                     or particle.y > example_image.shape[1] - margin_xy:
-                _add_out_of_view_markers(graph, particle)
+                _add_out_of_view_markers(links, particle)
                 experiment.remove_particle(particle)
 
 
-def _add_out_of_view_markers(graph: Graph, particle: Particle):
+def _add_out_of_view_markers(links: ParticleLinks, particle: Particle):
     """Adds markers to the remaining links so that it is clear why they appeared/disappeared."""
-    try:
-        linked_particles: Iterable[Particle] = graph[particle]
-        for linked_particle in linked_particles:
-            if linked_particle.time_point_number() < particle.time_point_number():
-                linking_markers.set_track_end_marker(graph, linked_particle, EndMarker.OUT_OF_VIEW)
-            else:
-                linking_markers.set_track_start_marker(graph, linked_particle, StartMarker.GOES_INTO_VIEW)
-    except KeyError:
-        pass  # Particle is not in linking network
+    linked_particles = links.find_links_of(particle)
+    for linked_particle in linked_particles:
+        if linked_particle.time_point_number() < particle.time_point_number():
+            linking_markers.set_track_end_marker(links, linked_particle, EndMarker.OUT_OF_VIEW)
+        else:
+            linking_markers.set_track_start_marker(links, linked_particle, StartMarker.GOES_INTO_VIEW)
 
 
 def _remove_spurs(experiment: Experiment):
