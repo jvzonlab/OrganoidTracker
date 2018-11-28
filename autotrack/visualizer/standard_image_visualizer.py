@@ -64,7 +64,8 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             "Edit/Manual-Manually change data... (C)": self._show_data_editor,
             "Edit/Automatic-Cell detection...": self._show_cell_detector,
             "View/Cell-Cell divisions (M)": self._show_mother_cells,
-            "View/Cell-Track ends and cell deaths (/deaths)": self._show_dead_cells
+            "View/Cell-Track ends and cell deaths (/deaths)": self._show_dead_cells,
+            "View/Cell-Lineage fates": self._show_lineage_fates,
         }
 
     def _on_key_press(self, event: KeyEvent):
@@ -110,6 +111,12 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     def _show_mother_cells(self):
         from autotrack.visualizer.cell_division_visualizer import CellDivisionVisualizer
         track_visualizer = CellDivisionVisualizer(self._window)
+        activate(track_visualizer)
+
+    def _show_lineage_fates(self):
+        from autotrack.visualizer.lineage_fate_visualizer import LineageFateVisualizer
+        track_visualizer = LineageFateVisualizer(self._window, time_point_number=self._time_point.time_point_number(),
+                                                 z=self._z, display_settings=self._display_settings)
         activate(track_visualizer)
 
     def _show_data_editor(self):
