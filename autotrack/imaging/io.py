@@ -204,8 +204,8 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
         "shapes": _encode_positions_and_shapes(experiment.particles)}
 
     # Save links
-    if experiment.links.graph is not None:
-        save_data["links"] = node_link_data(experiment.links.graph)
+    if experiment.links.has_links():
+        save_data["links"] = experiment.links.node_link_data()
 
     # Save scores of families
     scored_families = list(experiment.scores.all_scored_families())
@@ -227,7 +227,7 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
         json.dump(save_data, handle, cls=_MyEncoder)
 
 
-def load_links_from_json(json_file_name: str, min_time_point: int = 0, max_time_point: int = 5000) -> Graph:
+def load_links_from_json(json_file_name: str, min_time_point: int = 0, max_time_point: int = 5000) -> ParticleLinks:
     """Loads all links from a file. Links that extend outside the allowed time points are removed."""
     with open(json_file_name) as handle:
         data = json.load(handle, object_hook=_my_decoder)
@@ -242,7 +242,7 @@ def load_links_from_json(json_file_name: str, min_time_point: int = 0, max_time_
                          if min_time_point <= entry["source"].time_point_number() <= max_time_point
                          and min_time_point <= entry["target"].time_point_number() <= max_time_point]
 
-        return node_link_graph(data)
+        return ParticleLinks(node_link_graph(data))
 
 
 def _create_parent_directories(file_name: str):

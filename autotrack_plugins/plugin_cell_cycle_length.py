@@ -8,6 +8,7 @@ from numpy import ndarray
 
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
+from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
 from autotrack.core.score import Family
 from autotrack.gui import dialog
@@ -25,8 +26,8 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
 
 def _view_cell_cycle_length(window: Window):
     experiment = window.get_experiment()
-    links = experiment.links.graph
-    if links is None:
+    links = experiment.links
+    if not links.has_links():
         raise UserError("No links specified", "No links were loaded. Cannot plot anything.")
 
     third_variable_getter = _ThirdVar()
@@ -136,21 +137,21 @@ def _calculate_moving_average(x_values: ndarray, y_values: ndarray, window_size:
            numpy.array(y_moving_average_stdev, dtype=numpy.float32)
 
 
-def _draw_cell_cycle_length(figure: Figure, links: Graph, time_point_duration_h: float,
+def _draw_cell_cycle_length(figure: Figure, links: ParticleLinks, time_point_duration_h: float,
                             third_variable_getter: _ThirdVar):
     previous_cycle_durations = list()
     cycle_durations = list()
     third_variables = list()  # Used for color, can be z position
 
     # Find all families and their next division
-    for family in mother_finder.find_families(links):
+    for family in mother_finder.find_families(links.graph):
         previous_cycle_duration = cell_cycle.get_age(links, family.mother)
         if previous_cycle_duration is None:
             continue
 
         division_time = family.mother.time_point_number()
         for daughter in family.daughters:
-            next_division = cell_cycle.get_next_division(links, daughter)
+            next_division = cell_cycle.get_next_division(links.graph, daughter)
             if next_division is None:
                 continue
             cycle_duration = next_division.mother.time_point_number() - division_time

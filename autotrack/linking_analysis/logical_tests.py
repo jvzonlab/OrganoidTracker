@@ -38,7 +38,7 @@ def get_error(links: ParticleLinks, particle: Particle, scores: ScoreCollection,
             score = scores.of_family(Family(particle, *future_particles))
             if score is None or score.is_unlikely_mother():
                 return Error.LOW_MOTHER_SCORE
-        age = cell_cycle.get_age(links.graph, particle)
+        age = cell_cycle.get_age(links, particle)
         if age is not None and age < 5:
             return Error.YOUNG_MOTHER
 

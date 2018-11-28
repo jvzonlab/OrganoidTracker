@@ -122,8 +122,8 @@ def export_links(experiment: Experiment):
 
 
 def export_links_guizela(experiment: Experiment):
-    links = experiment.links.graph
-    if not links:
+    links = experiment.links
+    if not links.has_links():
         raise UserError("No links", "Cannot export links; there are no links created.")
 
     links_folder = dialog.prompt_save_file("Save links as...", [("Folder", "*")])

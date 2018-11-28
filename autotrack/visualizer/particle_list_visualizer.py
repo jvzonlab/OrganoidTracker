@@ -1,9 +1,9 @@
 from typing import List, Optional, Dict, Any
 
 from matplotlib.backend_bases import KeyEvent
-from networkx import Graph
 
 from autotrack import core
+from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle, get_closest_particle
 from autotrack.gui.window import Window
 from autotrack.visualizer import Visualizer, activate, DisplaySettings
@@ -88,7 +88,7 @@ class ParticleListVisualizer(Visualizer):
         current_particle = self._particle_list[self._current_particle_index]
         shape = self._experiment.particles.get_shape(current_particle)
         shape.draw2d(current_particle.x, current_particle.y, 0, 0, self._ax, core.COLOR_CELL_CURRENT)
-        self._draw_connections(self._experiment.links.graph, current_particle)
+        self._draw_connections(self._experiment.links, current_particle)
         self._window.set_figure_title(self.get_title(self._particle_list, self._current_particle_index))
 
         self._fig.canvas.draw()
@@ -100,12 +100,9 @@ class ParticleListVisualizer(Visualizer):
         self._ax.set_ylim(mother.y + 50, mother.y - 50)
         self._ax.set_autoscale_on(False)
 
-    def _draw_connections(self, graph: Optional[Graph], main_particle: Particle, line_style:str = "solid",
+    def _draw_connections(self, links: ParticleLinks, main_particle: Particle, line_style:str = "solid",
                           line_width: int = 1):
-        if graph is None or main_particle not in graph:
-            return
-
-        for connected_particle in graph[main_particle]:
+        for connected_particle in links.find_links_of(main_particle):
             delta_time = 1
             if connected_particle.time_point_number() < main_particle.time_point_number():
                 delta_time = -1

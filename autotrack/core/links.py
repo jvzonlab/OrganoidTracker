@@ -53,9 +53,10 @@ class ParticleLinks:
         """Returns True if the graph is not None."""
         return self.__graph is not None
 
-    def set_links(self, graph: Graph):
-        if graph is None:  # Prevent accidental removal of data
+    def set_links(self, links: Union[Graph, "ParticleLinks"]):
+        if links is None:  # Prevent accidental removal of data
             raise ValueError("Graph cannot be None. To remove links, use the remove_links method")
+        graph = links if isinstance(links, Graph) else links.graph
         self.__graph = graph
 
     def add_particle(self, particle: Particle):
@@ -153,4 +154,19 @@ class ParticleLinks:
 
     def find_all_particles(self) -> Iterable[Particle]:
         """Gets all particles in the linking graph. Note that particles without links are not included here."""
+        if self.__graph is None:
+            return []
         return self.__graph.nodes()
+
+    def remove_link(self, particle1: Particle, particle2: Particle):
+        """Removes the link between the given particles. Does nothing if there is no link between the particles."""
+        if self.__graph is None:
+            return
+        if self.__graph.has_edge(particle1, particle2):
+            self.__graph.remove_edge(particle1, particle2)
+
+    def has_link(self, particle1: Particle, particle2: Particle) -> bool:
+        """Returns True if the two given particles are linked to each other."""
+        if self.__graph is None:
+            return False
+        return self.__graph.has_edge(particle1, particle2)

@@ -179,7 +179,7 @@ class AbstractImageVisualizer(Visualizer):
         """Draws links between the particles. Returns 1 if there is 1 error: the baseline links don't match the actual
         links.
         """
-        links_base = self._get_links(self._experiment.links.graph, particle)
+        links_base = self._experiment.links.find_links_of(particle)
         if particle.time_point_number() > self._time_point.time_point_number():
             # Draw links that go to past
             links_base = [p for p in links_base if p.time_point_number() < particle.time_point_number()]
@@ -218,14 +218,6 @@ class AbstractImageVisualizer(Visualizer):
                 # Drawing from past to future, skipping this time point
                 self._ax.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], linestyle=line_style,
                               color=core.COLOR_CELL_CURRENT, linewidth=line_width)
-
-    def _get_links(self, network: Optional[Graph], particle: Particle) -> Iterable[Particle]:
-        if network is None:
-            return []
-        try:
-            return network[particle]
-        except KeyError:
-            return []
 
     def _draw_path(self):
         """Draws the path, which is usually the crypt axis."""

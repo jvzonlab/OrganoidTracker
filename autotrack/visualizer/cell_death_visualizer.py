@@ -9,11 +9,7 @@ from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
 
 
 def _get_end_of_tracks(experiment: Experiment) -> List[Particle]:
-    graph = experiment.links.graph
-    if graph is None:
-        return []
-    all_deaths = list(cell_death_finder.find_ended_tracks(graph, experiment.last_time_point_number()))
-    return all_deaths
+    return list(cell_death_finder.find_ended_tracks(experiment.links, experiment.last_time_point_number()))
 
 
 class CellTrackEndVisualizer(ParticleListVisualizer):

@@ -10,11 +10,7 @@ from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
 
 
 def _get_mothers(experiment: Experiment) -> List[Particle]:
-    graph = experiment.links.graph
-    if graph is None:
-        return []
-    all_mothers = list(mother_finder.find_mothers(graph))
-    return all_mothers
+    return list(mother_finder.find_mothers(experiment.links))
 
 
 class CellDivisionVisualizer(ParticleListVisualizer):

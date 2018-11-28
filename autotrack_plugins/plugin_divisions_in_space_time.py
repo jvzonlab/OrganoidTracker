@@ -111,20 +111,20 @@ def _get_crypt_start_positions(experiment: Experiment) -> Dict[TimePoint, float]
 
 def _get_graphing_data(experiment: Experiment) -> _SpaceTimeGrid:
     grid = _SpaceTimeGrid()
-    links = experiment.links.graph
-    if links is None:
+    links = experiment.links
+    if not links.has_links():
         raise UserError("No linking data found", "No links were loaded. Therefore, we cannot determine the cell age, so"
                                                  " we cannot plot anything.")
     highest_path_positions = _get_crypt_start_positions(experiment)
 
 
     # Rank all cells according to their crypt position, time point and cell cycle length
-    families = mother_finder.find_families(links)
+    families = mother_finder.find_families(links.graph)
     i = 0
     for family in families:
         i+=1
         for particle in family.daughters:
-            next_division = cell_cycle.get_next_division(links, particle)
+            next_division = cell_cycle.get_next_division(links.graph, particle)
             if next_division is None:
                 continue
             cell_cycle_length = cell_cycle.get_age(links, next_division.mother)
@@ -132,7 +132,7 @@ def _get_graphing_data(experiment: Experiment) -> _SpaceTimeGrid:
                 continue
 
             while True:
-                next_particles = existing_connections.find_future_particles(links, particle)
+                next_particles = links.find_futures(particle)
                 if len(next_particles) != 1:
                     break  # Found next division or end of cell track
 

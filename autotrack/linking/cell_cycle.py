@@ -2,23 +2,25 @@ from typing import Optional, Iterable, Set
 
 from networkx import Graph
 
+from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
 from autotrack.core.score import Family
 from autotrack.linking.existing_connections import find_future_particles, find_preferred_links, find_past_particles, \
     find_preferred_past_particle
 
 
-def get_age(graph: Graph, particle: Particle) -> Optional[int]:
+def get_age(links: ParticleLinks, particle: Particle) -> Optional[int]:
     """Gets how many time steps ago this cell was born"""
     timesteps_ago = 0
 
     while True:
         timesteps_ago += 1
 
-        particle = find_preferred_past_particle(graph, particle)
-        if particle is None:
-            return None # Cell first appeared here, don't know age for sure
-        daughters = find_preferred_links(graph, particle, find_future_particles(graph, particle))
+        particles = links.find_pasts(particle)
+        if len(particles) != 1:
+            return None  # Cell first appeared here (or we have a cell merge), don't know age for sure
+        particle = particles.pop()
+        daughters = links.find_futures(particle)
         if len(daughters) > 1:
             return timesteps_ago
 

@@ -5,6 +5,7 @@ from networkx import Graph
 
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
+from autotrack.core.links import ParticleLinks
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
 from autotrack.linking import cell_cycle, mother_finder
@@ -95,12 +96,12 @@ class _Bin:
         return self.total_number_of_cells() == 0
 
 
-def _classify_cell_divisions(experiment: Experiment, links: Graph, time_points_per_bin: int) -> List[_Bin]:
+def _classify_cell_divisions(experiment: Experiment, links: ParticleLinks, time_points_per_bin: int) -> List[_Bin]:
     """Classifies each cell division in the data: is it the last cell division in a lineage, or will there be more after
     this? The cell divisions are returned in bins. No empty bins are returned."""
     bins = list()
 
-    for cell_division in mother_finder.find_families(links):
+    for cell_division in mother_finder.find_families(links.graph):
         previous_cell_cycle_length = cell_cycle.get_age(links, cell_division.mother)
         if previous_cell_cycle_length is None:
             continue  # Cannot plot without knowing the length of the previous cell cycle
@@ -111,6 +112,6 @@ def _classify_cell_divisions(experiment: Experiment, links: Graph, time_points_p
         bin = bins[bin_index]
 
         for daughter in cell_division.daughters:
-            cell_fate = cell_fates.get_fate(experiment, links, daughter)
+            cell_fate = cell_fates.get_fate(experiment, links.graph, daughter)
             bin.add_data_point(cell_fate)
     return [bin for bin in bins if not bin.is_empty()]

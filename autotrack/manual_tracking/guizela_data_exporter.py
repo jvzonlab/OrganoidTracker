@@ -9,12 +9,13 @@ import numpy
 from networkx import Graph
 
 from autotrack.core import UserError
+from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
 from autotrack.linking import existing_connections
 from autotrack.linking_analysis.cell_appearance_finder import find_appeared_cells
 
 
-def export_links(links: Graph, output_folder: str, comparison_folder: Optional[str] = None):
+def export_links(links: ParticleLinks, output_folder: str, comparison_folder: Optional[str] = None):
     """Exports the links of the experiment in Guizela's file format."""
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
@@ -33,18 +34,18 @@ class _TrackExporter:
     """Used to export tracks in Guizela's file format, preferably using the original track ids."""
 
     _next_track_id: int = 0
-    _graph: Graph
+    _links: ParticleLinks
 
     _mother_daughter_pairs: List[List[int]]
     _tracks_by_id: Dict[int, Any]
 
-    def __init__(self, graph: Graph):
-        self._graph = graph
+    def __init__(self, links: ParticleLinks):
+        self._links = links
         self._mother_daughter_pairs = []
         self._tracks_by_id = {}
 
         # Convert graph to list of tracks
-        for particle in find_appeared_cells(self._graph):
+        for particle in self._links.find_appeared_cells():
             self._add_track_including_child_tracks(particle, self._get_new_track_id())
 
     def _add_track_including_child_tracks(self, particle: Particle, track_id: int):
@@ -55,7 +56,7 @@ class _TrackExporter:
         track = track_lib_v4.Track(x=numpy.array([particle.x, particle.y, particle.z]), t=particle.time_point_number())
 
         while True:
-            future_particles = existing_connections.find_future_particles(self._graph, particle)
+            future_particles = self._links.find_futures(particle)
             if len(future_particles) == 2:
                 # Division: end current track and start two new ones
                 daughter_1 = future_particles.pop()

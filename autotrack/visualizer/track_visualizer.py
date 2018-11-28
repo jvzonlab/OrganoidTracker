@@ -5,6 +5,7 @@ from matplotlib.figure import Figure, Axes
 from networkx import Graph
 
 from autotrack.core import UserError
+from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
 from autotrack.core.resolution import ImageResolution
 from autotrack.gui import dialog
@@ -15,18 +16,18 @@ from autotrack.visualizer import DisplaySettings
 from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
 
-def _get_particles_in_lineage(graph: Graph, particle: Particle) -> Graph:
+def _get_particles_in_lineage(links: ParticleLinks, particle: Particle) -> Graph:
     particles = Graph()
     particles.add_node(particle)
-    _add_past_particles(graph, particle, particles)
-    _add_future_particles(graph, particle, particles)
+    _add_past_particles(links, particle, particles)
+    _add_future_particles(links, particle, particles)
     return particles
 
 
-def _add_past_particles(graph: Graph, particle: Particle, single_lineage_graph: Graph):
+def _add_past_particles(links: ParticleLinks, particle: Particle, single_lineage_graph: Graph):
     """Finds all particles in earlier time points connected to this particle."""
     while True:
-        past_particles = existing_connections.find_past_particles(graph, particle)
+        past_particles = links.find_pasts(particle)
         for past_particle in past_particles:
             single_lineage_graph.add_node(past_particle)
             single_lineage_graph.add_edge(particle, past_particle)
@@ -36,16 +37,16 @@ def _add_past_particles(graph: Graph, particle: Particle, single_lineage_graph: 
         if len(past_particles) > 1:
             # Cell merge (physically impossible)
             for past_particle in past_particles:
-                _add_past_particles(graph, past_particle, single_lineage_graph)
+                _add_past_particles(links, past_particle, single_lineage_graph)
             return
 
         particle = past_particles.pop()
 
 
-def _add_future_particles(graph: Graph, particle: Particle, single_lineage_graph: Graph):
+def _add_future_particles(links: ParticleLinks, particle: Particle, single_lineage_graph: Graph):
     """Finds all particles in later time points connected to this particle."""
     while True:
-        future_particles = existing_connections.find_future_particles(graph, particle)
+        future_particles = links.find_futures(particle)
         for future_particle in future_particles:
             single_lineage_graph.add_node(future_particle)
             single_lineage_graph.add_edge(particle, future_particle)
@@ -55,7 +56,7 @@ def _add_future_particles(graph: Graph, particle: Particle, single_lineage_graph
         if len(future_particles) > 1:
             # Cell division
             for daughter in future_particles:
-                _add_future_particles(graph, daughter, single_lineage_graph)
+                _add_future_particles(links, daughter, single_lineage_graph)
             return
 
         particle = future_particles.pop()
@@ -143,8 +144,8 @@ class TrackVisualizer(ExitableImageVisualizer):
 
     def _on_mouse_click(self, event: MouseEvent):
         if event.dblclick:
-            graph = self._experiment.links.graph
-            if graph is None:
+            links = self._experiment.links
+            if not links.has_links():
                 self.update_status("No links found. Is the linking data missing?")
                 return
             particle = self._get_particle_at(event.xdata, event.ydata)
@@ -152,6 +153,6 @@ class TrackVisualizer(ExitableImageVisualizer):
                 self.update_status("Couldn't find a particle here.")
                 self._particles_in_lineage = None
                 return
-            self._particles_in_lineage = _get_particles_in_lineage(graph, particle)
+            self._particles_in_lineage = _get_particles_in_lineage(links, particle)
             self.draw_view()
             self.update_status("Focused on " + str(particle))

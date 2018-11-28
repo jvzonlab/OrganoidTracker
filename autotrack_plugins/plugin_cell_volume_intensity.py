@@ -5,6 +5,7 @@ from networkx import Graph
 
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
+from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
@@ -61,10 +62,10 @@ def _plot_volumes(experiment: Experiment, figure: Figure, mi_start=0, line_count
 
 def _plot_mother_stat(experiment: Experiment, figure: Figure, stat: GetStatistic, y_label: str, mi_start: int,
                       line_count: int, starting_time_point: int):
-    graph = experiment.links.graph
-    if graph is None:
+    links = experiment.links
+    if not links.has_links():
         raise UserError("No cell links", "No cell links were loaded, so we cannot track cell statistics over time.")
-    mothers = [mother for mother in mother_finder.find_mothers(graph) if mother.time_point_number() >= starting_time_point]
+    mothers = [mother for mother in mother_finder.find_mothers(links) if mother.time_point_number() >= starting_time_point]
     mothers = mothers[mi_start:mi_start + line_count]
     axes = figure.gca()
     show_legend = line_count <= 5
@@ -72,7 +73,7 @@ def _plot_mother_stat(experiment: Experiment, figure: Figure, stat: GetStatistic
     all_values = []
     lines = []
     for mother in mothers:
-        time_point_numbers, volumes = _data_into_past_until_division(experiment, mother, graph, stat)
+        time_point_numbers, volumes = _data_into_past_until_division(experiment, mother, links, stat)
         color = None if show_legend else (0, 0, 0, 0.2)
         lines.append(axes.plot(time_point_numbers, volumes, label=str(mother), color=color))
         all_values += volumes
@@ -92,7 +93,7 @@ def _plot_intensities(experiment: Experiment, figure: Figure, mi_start=0, line_c
                       starting_time_point)
 
 
-def _data_into_past_until_division(experiment: Experiment, starting_point: Particle, graph: Graph,
+def _data_into_past_until_division(experiment: Experiment, starting_point: Particle, links: ParticleLinks,
                                    func: GetStatistic) -> PointList:
     particle = starting_point
     x_values = []
@@ -103,20 +104,20 @@ def _data_into_past_until_division(experiment: Experiment, starting_point: Parti
             x_values.append(particle.time_point_number() - starting_point.time_point_number())
             y_values.append(y_value)
 
-        particle = _get_previous(particle, graph)
+        particle = _get_previous(particle, links)
     return x_values, y_values
 
 
-def _get_previous(particle: Particle, graph: Graph) -> Optional[Particle]:
+def _get_previous(particle: Particle, links: ParticleLinks) -> Optional[Particle]:
 
     # Find the single previous position
-    previous_positions = [p for p in graph[particle] if p.time_point_number() < particle.time_point_number()]
+    previous_positions = links.find_pasts(particle)
     if len(previous_positions) != 1:
         return None
-    previous = previous_positions[0]
+    previous = previous_positions.pop()
 
     # Find the single next position of the previous (ensures that we are not doing another cell division)
-    next_positions = [p for p in graph[previous] if p.time_point_number() > previous.time_point_number()]
+    next_positions = links.find_futures(previous)
     if len(next_positions) != 1:
         return None  # This is a mother cell, so don't take it into account
 

@@ -41,17 +41,17 @@ def _add_out_of_view_markers(links: ParticleLinks, particle: Particle):
 
 def _remove_spurs(experiment: Experiment):
     """Removes all very short tracks that end in a cell death."""
-    graph = experiment.links.graph
-    for particle in list(cell_appearance_finder.find_appeared_cells(graph)):
-        _check_for_and_remove_spur(experiment, graph, particle)
+    links = experiment.links
+    for particle in list(links.find_appeared_cells()):
+        _check_for_and_remove_spur(experiment, links, particle)
 
 
-def _check_for_and_remove_spur(experiment: Experiment, graph: Graph, particle: Particle):
+def _check_for_and_remove_spur(experiment: Experiment, links: ParticleLinks, particle: Particle):
     track_length = 0
     particles_in_track = [particle]
 
     while True:
-        next_particles = existing_connections.find_future_particles(graph, particle)
+        next_particles = links.find_futures(particle)
         if len(next_particles) == 0:
             # End of track
             if track_length < 3:
@@ -62,7 +62,7 @@ def _check_for_and_remove_spur(experiment: Experiment, graph: Graph, particle: P
         if len(next_particles) > 1:
             # Cell division
             for next_particle in next_particles:
-                _check_for_and_remove_spur(experiment, graph, next_particle)
+                _check_for_and_remove_spur(experiment, links, next_particle)
             return
 
         particle = next_particles.pop()

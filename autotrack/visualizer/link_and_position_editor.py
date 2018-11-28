@@ -1,25 +1,17 @@
-from typing import Optional, List
+from typing import Optional, List, Set
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent, LocationEvent
-from networkx import Graph
 
 from autotrack import core
 from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
 from autotrack.core.shape import ParticleShape
 from autotrack.gui.window import Window
-from autotrack.linking import existing_connections
 from autotrack.linking_analysis import logical_tests, linking_markers
 from autotrack.linking_analysis.linking_markers import EndMarker
 from autotrack.visualizer import DisplaySettings, activate
 from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 from autotrack.gui.undo_redo import UndoableAction
-
-
-def _initialize_links(experiment: Experiment):
-    if experiment.links.graph is None:
-        # Scratch links are missing - set scratch links from baseline
-        experiment.links.set_links(Graph())
 
 
 class _InsertLinkAction(UndoableAction):
@@ -34,19 +26,12 @@ class _InsertLinkAction(UndoableAction):
             raise ValueError(f"The {particle1} is at the same time point as {particle2}")
 
     def do(self, experiment: Experiment):
-        links = experiment.links.graph
-        if self.particle1 not in links:
-            links.add_node(self.particle1)
-        if self.particle2 not in links:
-            links.add_node(self.particle2)
-
-        links.add_edge(self.particle1, self.particle2)
+        experiment.links.add_link(self.particle1, self.particle2)
         logical_tests.apply_on(experiment, self.particle1, self.particle2)
         return f"Inserted link between {self.particle1} and {self.particle2}"
 
     def undo(self, experiment: Experiment):
-        links = experiment.links.graph
-        links.remove_edge(self.particle1, self.particle2)
+        experiment.links.remove_link(self.particle1, self.particle2)
         logical_tests.apply_on(experiment, self.particle1, self.particle2)
         return f"Removed link between {self.particle1} and {self.particle2}"
 
@@ -79,7 +64,7 @@ class _InsertParticleAction(UndoableAction):
     def do(self, experiment: Experiment):
         experiment.add_particle(self.particle)
         for linked_particle in self.linked_particles:
-            experiment.links.graph.add_edge(self.particle, linked_particle)
+            experiment.links.add_link(self.particle, linked_particle)
         logical_tests.apply_on(experiment, self.particle, *self.linked_particles)
 
         return_value = f"Added {self.particle}"
@@ -162,8 +147,6 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
                          display_settings=DisplaySettings(show_reconstruction=False))
 
         self._selected1 = selected_particle
-
-        _initialize_links(self._experiment)
 
     def _get_figure_title(self) -> str:
         return "Editing time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
@@ -255,10 +238,9 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
         if self._selected1 is None:
             self.update_status("You need to select a cell first")
         elif self._selected2 is None:  # Delete cell and its links
-            graph = self._experiment.links.graph
-            old_links = list(graph[self._selected1]) if self._selected1 in graph else list()
-            self._perform_action(_ReverseAction(_InsertParticleAction(self._selected1, old_links)))
-        elif self._experiment.links.graph.has_edge(self._selected1, self._selected2):  # Delete link between cells
+            old_links = self._experiment.links.find_links_of(self._selected1)
+            self._perform_action(_ReverseAction(_InsertParticleAction(self._selected1, list(old_links))))
+        elif self._experiment.links.has_link(self._selected1, self._selected2):  # Delete link between cells
             particle1, particle2 = self._selected1, self._selected2
             self._selected1, self._selected2 = None, None
             self._perform_action(_ReverseAction(_InsertLinkAction(particle1, particle2)))
