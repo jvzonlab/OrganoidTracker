@@ -124,7 +124,7 @@ def _get_graphing_data(experiment: Experiment) -> _SpaceTimeGrid:
     for family in families:
         i+=1
         for particle in family.daughters:
-            next_division = cell_cycle.get_next_division(links.graph, particle)
+            next_division = cell_cycle.get_next_division(links, particle)
             if next_division is None:
                 continue
             cell_cycle_length = cell_cycle.get_age(links, next_division.mother)

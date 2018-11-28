@@ -10,7 +10,7 @@ from autotrack.gui import dialog
 from autotrack.gui.window import Window
 from autotrack.linking import cell_cycle, mother_finder
 from autotrack.linking_analysis import cell_fates
-from autotrack.linking_analysis.cell_fates import CellFate
+from autotrack.linking_analysis.cell_fates import CellFateType
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -84,10 +84,10 @@ class _Bin:
     def total_number_of_cells(self):
         return self._dividing_count + self._nondividing_count + self._unknown_count
 
-    def add_data_point(self, cell_fate: CellFate):
-        if cell_fate == CellFate.NON_DIVIDING:
+    def add_data_point(self, cell_fate: CellFateType):
+        if cell_fate == CellFateType.JUST_MOVING or cell_fate == CellFateType.WILL_DIE:
             self._nondividing_count += 1
-        elif cell_fate == CellFate.WILL_DIVIDE:
+        elif cell_fate == CellFateType.WILL_DIVIDE:
             self._dividing_count += 1
         else:
             self._unknown_count += 1
@@ -112,6 +112,6 @@ def _classify_cell_divisions(experiment: Experiment, links: ParticleLinks, time_
         bin = bins[bin_index]
 
         for daughter in cell_division.daughters:
-            cell_fate = cell_fates.get_fate(experiment, links.graph, daughter)
+            cell_fate = cell_fates.get_fate(experiment, daughter).type
             bin.add_data_point(cell_fate)
     return [bin for bin in bins if not bin.is_empty()]

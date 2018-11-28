@@ -212,4 +212,4 @@ class Experiment:
         """Where there no divisions found because a cell really didn't divide, or did the experiment simply end before
         the cell divided? If the experiment continues for at least this many time points, then we can safely assume that
          the cell did not divide."""
-        return 100
+        return 80

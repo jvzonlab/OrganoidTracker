@@ -15,7 +15,7 @@ from autotrack.gui import dialog
 from autotrack.gui.window import Window
 from autotrack.linking import mother_finder, cell_cycle
 from autotrack.linking_analysis import cell_fates
-from autotrack.linking_analysis.cell_fates import CellFate
+from autotrack.linking_analysis.cell_fates import CellFateType
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -79,26 +79,24 @@ class _CellCryptPosVar(_ThirdVar):
 
 class _CellFateVar(_ThirdVar):
     experiment: Experiment
-    links: Graph
 
-    def __init__(self, experiment: Experiment, links: Graph):
+    def __init__(self, experiment: Experiment):
         self.experiment = experiment
-        self.links = links
 
     def get_number(self, daughter: Particle, next_division: Family) -> float:
         combined_fate = None
         for next in next_division.daughters:
-            cell_fate = cell_fates.get_fate(self.experiment, self.links, next)
+            cell_fate = cell_fates.get_fate(self.experiment, next).type
             if combined_fate is None:
                 combined_fate = cell_fate
                 continue
             if combined_fate == cell_fate:
                 continue
-            combined_fate = CellFate.UNKNOWN
+            combined_fate = CellFateType.UNKNOWN
 
-        if combined_fate == CellFate.WILL_DIVIDE:
+        if combined_fate == CellFateType.WILL_DIVIDE:
             return 1
-        elif combined_fate == CellFate.NON_DIVIDING:
+        elif combined_fate == CellFateType.JUST_MOVING or combined_fate == CellFateType.WILL_DIE:
             return 0
         else:
             return 0.5
@@ -151,7 +149,7 @@ def _draw_cell_cycle_length(figure: Figure, links: ParticleLinks, time_point_dur
 
         division_time = family.mother.time_point_number()
         for daughter in family.daughters:
-            next_division = cell_cycle.get_next_division(links.graph, daughter)
+            next_division = cell_cycle.get_next_division(links, daughter)
             if next_division is None:
                 continue
             cycle_duration = next_division.mother.time_point_number() - division_time

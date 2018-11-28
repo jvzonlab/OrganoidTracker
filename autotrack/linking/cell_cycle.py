@@ -1,12 +1,8 @@
-from typing import Optional, Iterable, Set
-
-from networkx import Graph
+from typing import Optional
 
 from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
 from autotrack.core.score import Family
-from autotrack.linking.existing_connections import find_future_particles, find_preferred_links, find_past_particles, \
-    find_preferred_past_particle
 
 
 def get_age(links: ParticleLinks, particle: Particle) -> Optional[int]:
@@ -25,11 +21,11 @@ def get_age(links: ParticleLinks, particle: Particle) -> Optional[int]:
             return timesteps_ago
 
 
-def get_next_division(graph: Graph, particle: Particle) -> Optional[Family]:
+def get_next_division(links: ParticleLinks, particle: Particle) -> Optional[Family]:
     """Gets the next division for the given particle. Returns None if there is no such division. Raises ValueError if a
     cell with more than two daughters is found in this lineage."""
     while True:
-        next_particles = find_future_particles(graph, particle)
+        next_particles = links.find_futures(particle)
         if len(next_particles) == 0:
             # Cell death or end of experiment
             return None

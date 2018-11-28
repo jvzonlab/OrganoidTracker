@@ -21,7 +21,7 @@ def _lineage_fate_to_text(lineage_fate: Optional[LineageFate]):
     return "~"
 
 
-def _lineage_fate_to_color(lineage_fate):
+def _lineage_fate_to_color(lineage_fate: Optional[LineageFate]):
     if lineage_fate is None or lineage_fate.errors > 0:
         return "black"
     if lineage_fate.divisions > 0:
