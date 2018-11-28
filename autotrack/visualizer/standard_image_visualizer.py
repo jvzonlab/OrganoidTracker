@@ -63,17 +63,16 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             "Edit/Add-Add positions and links from Guizela's format...": lambda: self._ask_add_guizela_tracks,
             "Edit/Manual-Manually change data... (C)": self._show_data_editor,
             "Edit/Automatic-Cell detection...": self._show_cell_detector,
-            "View/Cell-Cell divisions (M)": self._show_mother_cells,
-            "View/Cell-Track ends and cell deaths (/deaths)": self._show_dead_cells,
-            "View/Cell-Lineage fates": self._show_lineage_fates,
+            "View/Cells-Cell divisions... (M)": self._show_mother_cells,
+            "View/Cells-Track ends and cell deaths... (/deaths)": self._show_dead_cells,
+            "View/Tracks-Track follower... (T)": self._show_track_follower,
+            "View/Tracks-Cell fates...": self._show_cell_fates,
+            "View/Tracks-Whole lineage fates...": self._show_lineage_fates,
         }
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "t":
-            from autotrack.visualizer.track_visualizer import TrackVisualizer
-            track_visualizer = TrackVisualizer(self._window, self._time_point.time_point_number(), self._z,
-                                               self._display_settings)
-            activate(track_visualizer)
+            self._show_track_follower()
         elif event.key == "m":
             self._show_mother_cells()
         elif event.key == "c":
@@ -100,6 +99,12 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         else:
             super()._on_key_press(event)
 
+    def _show_track_follower(self):
+            from autotrack.visualizer.track_visualizer import TrackVisualizer
+            track_visualizer = TrackVisualizer(self._window, self._time_point.time_point_number(), self._z,
+                                               self._display_settings)
+            activate(track_visualizer)
+
     def _show_cell_detector(self):
         if self._experiment.get_image_stack(self._time_point) is None:
             dialog.popup_error("No images", "There are no images loaded, so we cannot detect cells.")
@@ -113,11 +118,17 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         track_visualizer = CellDivisionVisualizer(self._window)
         activate(track_visualizer)
 
+    def _show_cell_fates(self):
+        from autotrack.visualizer.cell_fate_visualizer import CellFateVisualizer
+        fate_visualizer = CellFateVisualizer(self._window, time_point_number=self._time_point.time_point_number(),
+                                             z=self._z, display_settings=self._display_settings)
+        activate(fate_visualizer)
+
     def _show_lineage_fates(self):
         from autotrack.visualizer.lineage_fate_visualizer import LineageFateVisualizer
-        track_visualizer = LineageFateVisualizer(self._window, time_point_number=self._time_point.time_point_number(),
-                                                 z=self._z, display_settings=self._display_settings)
-        activate(track_visualizer)
+        fate_visualizer = LineageFateVisualizer(self._window, time_point_number=self._time_point.time_point_number(),
+                                                z=self._z, display_settings=self._display_settings)
+        activate(fate_visualizer)
 
     def _show_data_editor(self):
         from autotrack.visualizer.link_and_position_editor import LinkAndPositionEditor
