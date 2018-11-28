@@ -35,7 +35,7 @@ class ParticleListVisualizer(Visualizer):
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
             **super().get_extra_menu_options(),
-            "View/Exit-Exit this view (/exit)": lambda: self._exit_view(),
+            "View/Exit-Exit this view (Esc)": lambda: self._exit_view(),
             "Navigate/Time-Next (Right)": self._goto_next,
             "Navigate/Time-Previous (Left)": self._goto_previous
         }
@@ -162,6 +162,8 @@ class ParticleListVisualizer(Visualizer):
         elif event.key == DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP:
             self._show_next_image = not self._show_next_image
             self.draw_view()
+        elif event.key == "escape":
+            self._exit_view()
 
     def _on_command(self, command: str) -> bool:
         if command == "exit":

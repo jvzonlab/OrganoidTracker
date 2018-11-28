@@ -105,7 +105,6 @@ class TrackVisualizer(ExitableImageVisualizer):
     def get_extra_menu_options(self):
         return {
             **super().get_extra_menu_options(),
-            "View/Exit-Exit this view (T)": self._exit_view,
             "Graph/Displacement-Cell displacement over time...": self._show_displacement,
         }
 
