@@ -63,4 +63,4 @@ class LineageFateVisualizer(ExitableImageVisualizer):
             lineage_fate = self._lineage_fates.get(particle)
             color = _lineage_fate_to_color(lineage_fate)
             self._ax.annotate( _lineage_fate_to_text(lineage_fate), (particle.x, particle.y), fontsize=12 - abs(dz),
-                               fontweight="bold", color=color, backgroundcolor=(1,1,1,0.5))
+                               fontweight="bold", color=color, backgroundcolor=(1,1,1,0.8))
