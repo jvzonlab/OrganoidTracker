@@ -3,6 +3,7 @@ import json
 import os
 from json import JSONEncoder
 from pathlib import Path
+from pprint import pprint
 from typing import List, Dict, Any
 
 import numpy
@@ -54,7 +55,7 @@ def _load_json_data_file(file_name: str, min_time_point: int, max_time_point: in
     with open(file_name) as handle:
         data = json.load(handle, object_hook=_my_decoder)
 
-        if "version" not in data and "links" not in data:
+        if "version" not in data and "family_scores" not in data:
             # We don't have a general data file, but a specialized one
             if "directed" in data:
                 # File is a linking result file
