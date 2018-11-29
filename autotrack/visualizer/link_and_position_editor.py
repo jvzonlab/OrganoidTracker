@@ -229,8 +229,9 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
             else:
                 old_shape = self._experiment.particles.get_shape(self._selected1)
                 new_position = Particle(event.xdata, event.ydata, self._z).with_time_point(self._time_point)
-                self._perform_action(_MoveParticleAction(self._selected1, old_shape, new_position))
-                self._selected1 = new_position
+                old_position = self._selected1
+                self._selected1 = None
+                self._perform_action(_MoveParticleAction(old_position, old_shape, new_position))
         else:
             super()._on_key_press(event)
 
