@@ -79,10 +79,6 @@ def _get_highest_mother_score(scores: ScoreCollection, particle: Particle) -> Op
     return highest_score
 
 
-def _set_error(graph: Graph, particle: Particle, error: Error):
-    graph.add_node(particle, error=error.value)
-
-
 def apply_on(experiment: Experiment, *iterable: Particle):
     """Adds errors for all logical inconsistencies for particles in the collection, like cells that spawn out of
     nowhere, cells that merge together and cells that have three or more daughters."""
