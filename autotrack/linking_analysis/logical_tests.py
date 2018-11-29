@@ -10,6 +10,7 @@ from autotrack.core.score import Score, ScoreCollection, Family
 from autotrack.linking import cell_cycle
 from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.errors import Error
+from autotrack.linking_analysis.linking_markers import EndMarker
 
 
 def apply(experiment: Experiment):
@@ -59,8 +60,9 @@ def get_error(links: ParticleLinks, particle: Particle, scores: ScoreCollection,
             if not past_shape.is_unknown() and past_shape.volume() / (shape.volume() + 0.0001) > 3:
                 return Error.SHRUNK_A_LOT
 
-        # Check movement distance
-        if past_particle.distance_um(particle, resolution) > 10:
+        # Check movement distance (fast movement is only allowed when a cell is launched into its death)
+        if past_particle.distance_um(particle, resolution) > 10 and \
+                linking_markers.get_track_end_marker(links, particle) != EndMarker.DEAD:
             return Error.MOVED_TOO_FAST
     return None
 
