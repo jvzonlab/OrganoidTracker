@@ -11,7 +11,7 @@ from autotrack.core import UserError, TimePoint
 from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
-from autotrack.linking import cell_cycle, mother_finder, existing_connections
+from autotrack.linking import cell_cycle, mother_finder
 
 _TIME_POINTS_PER_CELL = 3
 _PIXELS_PER_CELL = 5
@@ -119,7 +119,7 @@ def _get_graphing_data(experiment: Experiment) -> _SpaceTimeGrid:
 
 
     # Rank all cells according to their crypt position, time point and cell cycle length
-    families = mother_finder.find_families(links.graph)
+    families = mother_finder.find_families(links)
     i = 0
     for family in families:
         i+=1

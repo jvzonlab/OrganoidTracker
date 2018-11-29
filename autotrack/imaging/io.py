@@ -113,10 +113,11 @@ def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List],
 
 def _parse_links_format(experiment: Experiment, link_data: Dict[str, Any]):
     """Parses a node_link_graph and adds all links and particles to the experiment."""
-    graph = node_link_graph(link_data)
-    for particle in graph.nodes():
+    links = ParticleLinks()
+    links.add_d3_data(link_data)
+    for particle in links.find_all_particles():
         experiment.add_particle(particle)
-    experiment.links.add_links(graph)
+    experiment.links.add_links(links)
 
 
 class _MyEncoder(JSONEncoder):
@@ -158,7 +159,7 @@ def _my_decoder(json_object):
 def save_links_to_json(links: ParticleLinks, json_file_name: str):
     """Saves particle linking data to a JSON file. File follows the d3.js format, like the example here:
     http://bl.ocks.org/mbostock/4062045 """
-    data = links.node_link_data()
+    data = links.to_d3_data()
 
     _create_parent_directories(json_file_name)
     with open(json_file_name, 'w') as handle:
@@ -205,7 +206,7 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
 
     # Save links
     if experiment.links.has_links():
-        save_data["links"] = experiment.links.node_link_data()
+        save_data["links"] = experiment.links.to_d3_data()
 
     # Save scores of families
     scored_families = list(experiment.scores.all_scored_families())
@@ -242,7 +243,9 @@ def load_links_from_json(json_file_name: str, min_time_point: int = 0, max_time_
                          if min_time_point <= entry["source"].time_point_number() <= max_time_point
                          and min_time_point <= entry["target"].time_point_number() <= max_time_point]
 
-        return ParticleLinks(node_link_graph(data))
+        links = ParticleLinks()
+        links.add_d3_data(data)
+        return links
 
 
 def _create_parent_directories(file_name: str):

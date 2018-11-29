@@ -31,13 +31,13 @@ io.load_positions_and_shapes_from_json(experiment, _positions_file,
                                        min_time_point=_min_time_point, max_time_point=_max_time_point)
 _baseline_links = io.load_links_from_json(_baseline_links_file,
                                           min_time_point=_min_time_point, max_time_point=_max_time_point)
-experiment.links.set_links(_baseline_links)
+experiment.links = _baseline_links
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
 
 print("Discovering possible links using greedy nearest-neighbor...")
 possible_links = linker_for_experiment.nearest_neighbor(experiment, tolerance=2)
-experiment.links.set_links(possible_links)
+experiment.links = possible_links
 
 print("Scoring all possible mothers")
 scoring_system = RationalScoringSystem()

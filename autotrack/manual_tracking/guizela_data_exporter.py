@@ -1,4 +1,3 @@
-import glob
 import os.path
 import pickle
 import re
@@ -6,13 +5,10 @@ import sys
 from typing import List, Any, Optional, Dict
 
 import numpy
-from networkx import Graph
 
 from autotrack.core import UserError
 from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
-from autotrack.linking import existing_connections
-from autotrack.linking_analysis.cell_appearance_finder import find_appeared_cells
 
 
 def export_links(links: ParticleLinks, output_folder: str, comparison_folder: Optional[str] = None):

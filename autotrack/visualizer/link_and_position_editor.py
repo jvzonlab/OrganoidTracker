@@ -241,7 +241,7 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
         elif self._selected2 is None:  # Delete cell and its links
             old_links = self._experiment.links.find_links_of(self._selected1)
             self._perform_action(_ReverseAction(_InsertParticleAction(self._selected1, list(old_links))))
-        elif self._experiment.links.has_link(self._selected1, self._selected2):  # Delete link between cells
+        elif self._experiment.links.contains_link(self._selected1, self._selected2):  # Delete link between cells
             particle1, particle2 = self._selected1, self._selected2
             self._selected1, self._selected2 = None, None
             self._perform_action(_ReverseAction(_InsertLinkAction(particle1, particle2)))

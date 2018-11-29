@@ -204,8 +204,15 @@ class Experiment:
     @property
     def links(self) -> ParticleLinks:
         """Gets all links between the particles of different time points."""
-        # Don't allow to replace the ParticleLinks object
+        # Using a property to prevent someone from setting links to None
         return self._links
+
+    @links.setter
+    def links(self, links: ParticleLinks):
+        """Sets the links to the given value. May not be None."""
+        if links is None:
+            raise ValueError("links may not be None")
+        self._links = links
 
     @property
     def division_lookahead_time_points(self):

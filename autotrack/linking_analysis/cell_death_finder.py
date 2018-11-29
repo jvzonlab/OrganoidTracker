@@ -1,10 +1,7 @@
 from typing import Set
 
-from networkx import Graph
-
 from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
-from autotrack.linking import existing_connections
 
 
 def find_ended_tracks(links: ParticleLinks, last_time_point_number: int) -> Set[Particle]:

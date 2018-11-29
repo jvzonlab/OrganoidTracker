@@ -1,13 +1,12 @@
 from typing import Tuple, Iterable
 
 import numpy
-from networkx import Graph
 
+from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
-from autotrack.linking.existing_connections import find_preferred_past_particle, find_preferred_future_particles
 
 
-def get_flow_to_previous(graph: Graph, particles: Iterable[Particle], center: Particle,
+def get_flow_to_previous(links: ParticleLinks, particles: Iterable[Particle], center: Particle,
                          max_dx_and_dy: int = 50, max_dz = 2) -> Tuple[float, float, float]:
     """Gets the average flow of the particles within the specified radius towards the previous time point. Returns
     (0,0,0) if there are no particles. The given center particle must be in the givne time point.
@@ -19,20 +18,21 @@ def get_flow_to_previous(graph: Graph, particles: Iterable[Particle], center: Pa
         if _is_far_way_or_same(center, particle, max_dx_and_dy, max_dz):
             continue
 
-        past_position = find_preferred_past_particle(graph, particle)
-        if past_position is None:
+        past_positions = links.find_pasts(particle)
+        if len(past_positions) != 1:
             continue
 
+        past_position = past_positions.pop()
         total_movement += (past_position.x - particle.x, past_position.y - particle.y, past_position.z - particle.z)
         count += 1
 
     if count == 0:
-        return (0, 0, 0)
+        return 0, 0, 0
     return total_movement[0] / count, total_movement[1] / count, total_movement[2] / count
 
 
-def get_flow_to_next(graph: Graph, particles: Iterable[Particle], center: Particle,
-                         max_dx_and_dy: int = 50, max_dz = 2) -> Tuple[float, float, float]:
+def get_flow_to_next(links: ParticleLinks, particles: Iterable[Particle], center: Particle,
+                     max_dx_and_dy: int = 50, max_dz = 2) -> Tuple[float, float, float]:
     """Gets the average flow of the particles within the specified radius towards the next time point. Returns
     (0,0,0) if there are no particles. The given center particle must be in the given time point. Ignores cell
     divisions and dead cells.
@@ -44,7 +44,7 @@ def get_flow_to_next(graph: Graph, particles: Iterable[Particle], center: Partic
         if _is_far_way_or_same(center, particle, max_dx_and_dy, max_dz):
             continue
 
-        next_positions = find_preferred_future_particles(graph, particle)
+        next_positions = links.find_futures(particle)
         if len(next_positions) != 1:
             continue  # Cell division or dead cell; ignore
         next_position = next_positions.pop()

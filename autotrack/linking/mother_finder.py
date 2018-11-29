@@ -25,15 +25,14 @@ def find_mothers(links: ParticleLinks) -> Set[Particle]:
     return mothers
 
 
-def find_families(graph: Graph, warn_on_many_daughters = True) -> List[Family]:
+def find_families(links: ParticleLinks, warn_on_many_daughters = True) -> List[Family]:
     """Finds all mother and daughter cells in a graph. Mother cells are cells with at least two daughter cells.
     Returns a set of Family instances.
     """
     families = list()
 
-    for particle in graph.nodes():
-        linked_particles = graph[particle]
-        future_particles = {p for p in linked_particles if p.time_point_number() == particle.time_point_number() + 1}
+    for particle in links.find_all_particles():
+        future_particles = links.find_futures(particle)
         if len(future_particles) < 2:
             continue
         if warn_on_many_daughters:
@@ -49,11 +48,11 @@ def find_families(graph: Graph, warn_on_many_daughters = True) -> List[Family]:
     return families
 
 
-def calculates_scores(image_loader: ImageLoader, particles: ParticleCollection, graph: Graph,
+def calculates_scores(image_loader: ImageLoader, particles: ParticleCollection, links: ParticleLinks,
                       scoring_system: MotherScoringSystem) -> ScoreCollection:
     """Finds all families in the given links and calculates their scores."""
     scores = ScoreCollection()
-    families = find_families(graph, warn_on_many_daughters=False)
+    families = find_families(links, warn_on_many_daughters=False)
     i = 0
     for family in families:
         scores.set_family_score(family, scoring_system.calculate(image_loader, particles, family))

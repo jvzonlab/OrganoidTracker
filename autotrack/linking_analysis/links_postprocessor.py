@@ -1,14 +1,8 @@
-from collections import Iterable
-
-from networkx import Graph
-
 from autotrack.core.experiment import Experiment
-from numpy import ndarray
 
 from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
-from autotrack.linking import existing_connections
-from autotrack.linking_analysis import cell_appearance_finder, linking_markers
+from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.linking_markers import EndMarker, StartMarker
 
 

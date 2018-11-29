@@ -142,7 +142,7 @@ def _draw_cell_cycle_length(figure: Figure, links: ParticleLinks, time_point_dur
     third_variables = list()  # Used for color, can be z position
 
     # Find all families and their next division
-    for family in mother_finder.find_families(links.graph):
+    for family in mother_finder.find_families(links):
         previous_cycle_duration = cell_cycle.get_age(links, family.mother)
         if previous_cycle_duration is None:
             continue

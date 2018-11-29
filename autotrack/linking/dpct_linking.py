@@ -6,6 +6,7 @@ from typing import Dict, List, Iterable, Optional
 from networkx import Graph
 
 from autotrack.core.experiment import Experiment
+from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle, ParticleCollection
 from autotrack.core.score import ScoreCollection, Score, ScoredFamily
 
@@ -53,7 +54,7 @@ def _to_graph(particle_ids: _ParticleToId, results: Dict) -> Graph:
     return graph
 
 
-def run(particles: ParticleCollection, starting_links: Graph, scores: ScoreCollection):
+def run(particles: ParticleCollection, starting_links: ParticleLinks, scores: ScoreCollection):
     particle_ids = _ParticleToId()
     weights = {"weights": [
         10,  # multiplier for linking features?
@@ -74,11 +75,10 @@ def _scores_involving(daughter: Particle, scores: Iterable[ScoredFamily]) -> Ite
             yield score
 
 
-def _create_dpct_graph(particle_ids: _ParticleToId, starting_links: Graph, scores: ScoreCollection,
+def _create_dpct_graph(particle_ids: _ParticleToId, starting_links: ParticleLinks, scores: ScoreCollection,
                        shapes: ParticleCollection, min_time_point: int, max_time_point: int) -> Dict:
     segmentation_hypotheses = []
-    particle: Particle
-    for particle in starting_links.nodes:
+    for particle in starting_links.find_all_particles():
         appearance_penalty = 1 if particle.time_point_number() > min_time_point else 0
         disappearance_penalty = 1 if particle.time_point_number() < max_time_point else 0
 
@@ -97,9 +97,7 @@ def _create_dpct_graph(particle_ids: _ParticleToId, starting_links: Graph, score
         segmentation_hypotheses.append(map)
 
     linking_hypotheses = []
-    particle1: Particle
-    particle2: Particle
-    for particle1, particle2 in starting_links.edges:
+    for particle1, particle2 in starting_links.find_all_links():
         # Make sure particle1 is earlier in time
         if particle1.time_point_number() > particle2.time_point_number():
             particle1, particle2 = particle2, particle1

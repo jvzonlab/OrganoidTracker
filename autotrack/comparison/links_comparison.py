@@ -1,16 +1,11 @@
 from typing import Optional, Set
 
-from networkx import Graph
-
 from autotrack.comparison.report import ComparisonReport, Category
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
 from autotrack.core.links import ParticleLinks
-from autotrack.core.particles import Particle, ParticleCollection
+from autotrack.core.particles import Particle
 from autotrack.core.resolution import ImageResolution
-from autotrack.linking.existing_connections import find_future_particles
-from autotrack.linking_analysis import cell_appearance_finder
-
 
 LINEAGE_END_FALSE_NEGATIVES = Category("Missed lineage ends")
 LINEAGE_END_TRUE_POSITIVES = Category("Correctly detected lineage ends")

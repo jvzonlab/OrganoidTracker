@@ -20,15 +20,15 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
 
 
 def _show_chance_of_division(experiment: Experiment):
-    links = experiment.links.graph
-    if links is None:
+    links = experiment.links
+    if not links.has_links():
         raise UserError("No linking data found", "For this graph on cell divisions, it is required to have the cell"
                                                  " links loaded.")
 
     dialog.popup_figure(experiment.name, lambda figure: _draw_histogram(experiment, figure, links))
 
 
-def _draw_histogram(experiment: Experiment, figure: Figure, links: Graph):
+def _draw_histogram(experiment: Experiment, figure: Figure, links: ParticleLinks):
     time_points_per_bin = 10
     bins = _classify_cell_divisions(experiment, links, time_points_per_bin)
     if len(bins) == 0:
@@ -101,7 +101,7 @@ def _classify_cell_divisions(experiment: Experiment, links: ParticleLinks, time_
     this? The cell divisions are returned in bins. No empty bins are returned."""
     bins = list()
 
-    for cell_division in mother_finder.find_families(links.graph):
+    for cell_division in mother_finder.find_families(links):
         previous_cell_cycle_length = cell_cycle.get_age(links, cell_division.mother)
         if previous_cell_cycle_length is None:
             continue  # Cannot plot without knowing the length of the previous cell cycle

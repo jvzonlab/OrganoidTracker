@@ -2,7 +2,6 @@ from typing import Optional
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 from matplotlib.figure import Figure, Axes
-from networkx import Graph
 
 from autotrack.core import UserError
 from autotrack.core.links import ParticleLinks
@@ -10,64 +9,59 @@ from autotrack.core.particles import Particle
 from autotrack.core.resolution import ImageResolution
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
-from autotrack.linking import existing_connections
-from autotrack.linking_analysis import cell_appearance_finder
 from autotrack.visualizer import DisplaySettings
 from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
 
-def _get_particles_in_lineage(links: ParticleLinks, particle: Particle) -> Graph:
-    particles = Graph()
-    particles.add_node(particle)
-    _add_past_particles(links, particle, particles)
-    _add_future_particles(links, particle, particles)
-    return particles
+def _get_particles_in_lineage(links: ParticleLinks, particle: Particle) -> ParticleLinks:
+    single_lineage_links = ParticleLinks()
+    _add_past_particles(links, particle, single_lineage_links)
+    _add_future_particles(links, particle, single_lineage_links)
+    return single_lineage_links
 
 
-def _add_past_particles(links: ParticleLinks, particle: Particle, single_lineage_graph: Graph):
+def _add_past_particles(links: ParticleLinks, particle: Particle, single_lineage_links: ParticleLinks):
     """Finds all particles in earlier time points connected to this particle."""
     while True:
         past_particles = links.find_pasts(particle)
         for past_particle in past_particles:
-            single_lineage_graph.add_node(past_particle)
-            single_lineage_graph.add_edge(particle, past_particle)
+            single_lineage_links.add_link(particle, past_particle)
 
         if len(past_particles) == 0:
             return  # Start of lineage
         if len(past_particles) > 1:
             # Cell merge (physically impossible)
             for past_particle in past_particles:
-                _add_past_particles(links, past_particle, single_lineage_graph)
+                _add_past_particles(links, past_particle, single_lineage_links)
             return
 
         particle = past_particles.pop()
 
 
-def _add_future_particles(links: ParticleLinks, particle: Particle, single_lineage_graph: Graph):
+def _add_future_particles(links: ParticleLinks, particle: Particle, single_lineage_links: ParticleLinks):
     """Finds all particles in later time points connected to this particle."""
     while True:
         future_particles = links.find_futures(particle)
         for future_particle in future_particles:
-            single_lineage_graph.add_node(future_particle)
-            single_lineage_graph.add_edge(particle, future_particle)
+            single_lineage_links.add_link(particle, future_particle)
 
         if len(future_particles) == 0:
             return  # End of lineage
         if len(future_particles) > 1:
             # Cell division
             for daughter in future_particles:
-                _add_future_particles(links, daughter, single_lineage_graph)
+                _add_future_particles(links, daughter, single_lineage_links)
             return
 
         particle = future_particles.pop()
 
 
-def _plot_displacements(axes: Axes, graph: Graph, resolution: ImageResolution, particle: Particle):
+def _plot_displacements(axes: Axes, links: ParticleLinks, resolution: ImageResolution, particle: Particle):
     displacements = list()
     time_point_numbers = list()
 
     while True:
-        future_particles = existing_connections.find_future_particles(graph, particle)
+        future_particles = links.find_futures(particle)
 
         if len(future_particles) == 1:
             # Track continues
@@ -82,21 +76,22 @@ def _plot_displacements(axes: Axes, graph: Graph, resolution: ImageResolution, p
         # End of this cell track: either start multiple new ones (division) or stop tracking
         axes.plot(time_point_numbers, displacements)
         for future_particle in future_particles:
-            _plot_displacements(axes, graph, resolution, future_particle)
+            _plot_displacements(axes, links, resolution, future_particle)
         return
 
 
 class TrackVisualizer(ExitableImageVisualizer):
     """Shows the trajectory of a single cell. Double-click a cell to select it. Press T to exit this view."""
 
-    _particles_in_lineage: Optional[Graph] = None
+    _particles_in_lineage: Optional[ParticleLinks] = None
 
     def __init__(self, window: Window, time_point_number: int,
                  z: int, display_settings: DisplaySettings):
         super().__init__(window, time_point_number=time_point_number, z=z, display_settings=display_settings)
 
     def _draw_particle(self, particle: Particle, color: str, dz: int, dt: int) -> int:
-        if abs(dz) <= 3 and self._particles_in_lineage is not None and particle in self._particles_in_lineage:
+        if abs(dz) <= 3 and self._particles_in_lineage is not None\
+                and self._particles_in_lineage.contains_particle(particle):
             self._draw_selection(particle, color)
         return super()._draw_particle(particle, color, dz, dt)
 
@@ -125,7 +120,7 @@ class TrackVisualizer(ExitableImageVisualizer):
                 axes.set_xlabel("Time (time points)")
                 axes.set_ylabel("Displacement between time points (μm)")
                 axes.set_title("Cellular displacement")
-                for lineage_start in cell_appearance_finder.find_appeared_cells(self._particles_in_lineage):
+                for lineage_start in self._particles_in_lineage.find_appeared_cells():
                     _plot_displacements(axes, self._particles_in_lineage, resolution, lineage_start)
 
             dialog.popup_figure(self._experiment.name, draw_function)

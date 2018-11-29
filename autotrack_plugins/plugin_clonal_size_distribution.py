@@ -11,8 +11,7 @@ from autotrack.core.particles import Particle
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
 from autotrack.gui.threading import Task
-from autotrack.linking import existing_connections
-from autotrack.linking_analysis import cell_appearance_finder, linking_markers, filtered_graph
+from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.linking_markers import EndMarker
 
 
@@ -27,8 +26,8 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
 
 def _show_clonal_size_distribution(window: Window):
     experiment = window.get_experiment()
-    graph = experiment.links.graph
-    if graph is None:
+    links = experiment.links
+    if not links.has_links():
         raise UserError("Failed to calculate clonal size distribution",
                         "Cannot calculate clonal size distribution. The linking data is missing.")
     try:
@@ -42,42 +41,41 @@ def _show_clonal_size_distribution(window: Window):
     print("Time point window is", time_point_window)
 
     # Run the task on another thread, as calculating is quite slow
-    window.get_scheduler().add_task(_ClonalDistributionTask(experiment.name, graph, time_point_window,
+    window.get_scheduler().add_task(_ClonalDistributionTask(experiment.name, links, time_point_window,
                                                             experiment.first_time_point_number(),
                                                             experiment.last_time_point_number()))
 
 
 class _ClonalDistributionTask(Task):
 
-    _graph: Graph
+    _links: ParticleLinks
     _time_point_window: int
     _first_time_point_number: int
     _last_time_point_number: int
     _name: Name
 
-    def __init__(self, name: Name, graph: Graph, time_point_window: int, first_time_point_number: int,
+    def __init__(self, name: Name, links: ParticleLinks, time_point_window: int, first_time_point_number: int,
                  last_time_point_number: int):
         self._name = name
-        self._graph = graph.copy()  # Copy so that we can safely access this on another thread
+        self._links = links.copy()  # Copy so that we can safely access this on another thread
         self._time_point_window = time_point_window
         self._first_time_point_number = first_time_point_number
         self._last_time_point_number = last_time_point_number
 
     def compute(self) -> ndarray:
-        return _get_clonal_sizes_list(self._graph, self._time_point_window, self._first_time_point_number,
+        return _get_clonal_sizes_list(self._links, self._time_point_window, self._first_time_point_number,
                                       self._last_time_point_number)
 
     def on_finished(self, clonal_sizes: ndarray):
         dialog.popup_figure(self._name, lambda figure: _draw_clonal_sizes(figure, clonal_sizes))
 
 
-def _get_clonal_sizes_list(graph: Graph, time_point_window: int, first_time_point_number: int, last_time_point_number: int) -> ndarray:
+def _get_clonal_sizes_list(links: ParticleLinks, time_point_window: int, first_time_point_number: int, last_time_point_number: int) -> ndarray:
     clonal_sizes = list()
     for view_start_time_point in range(first_time_point_number, last_time_point_number - time_point_window, 5):
         print("Calculating clonal sizes at time point", view_start_time_point)
         view_end_time_point = view_start_time_point + time_point_window
-        subgraph = filtered_graph.limit_to_time_points(graph, view_start_time_point, view_end_time_point)
-        sublinks = ParticleLinks(subgraph)
+        sublinks = links.limit_to_time_points(view_start_time_point, view_end_time_point)
         for lineage_start in sublinks.find_appeared_cells():
             cell_divisions_count = _get_division_count_in_lineage(lineage_start, sublinks, view_end_time_point)
             if cell_divisions_count is not None:

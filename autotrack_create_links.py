@@ -2,6 +2,7 @@
 
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
+from autotrack.core.links import ParticleLinks
 from autotrack.imaging import tifffolder, io
 from autotrack.linking import linker_for_experiment, dpct_linking, mother_finder
 from autotrack.linking.rational_scoring_system import RationalScoringSystem
@@ -36,7 +37,7 @@ scores = mother_finder.calculates_scores(experiment.image_loader(), experiment.p
 print("Deciding on what links to use...")
 link_result = dpct_linking.run(experiment.particles, possible_links, scores)
 print("Applying final touches...")
-experiment.links.set_links(link_result)
+experiment.links = link_result
 experiment.scores = scores
 links_postprocessor.postprocess(experiment, margin_xy=_margin_xy)
 print("Checking results for common errors...")
