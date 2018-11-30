@@ -210,8 +210,8 @@ class Experiment:
     @links.setter
     def links(self, links: ParticleLinks):
         """Sets the links to the given value. May not be None."""
-        if links is None:
-            raise ValueError("links may not be None")
+        if not isinstance(links, ParticleLinks):
+            raise ValueError("links must be a ParticleLinks object, was " + repr(links))
         self._links = links
 
     @property
