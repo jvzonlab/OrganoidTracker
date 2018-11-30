@@ -33,28 +33,20 @@ class _ParticleToId:
         return self.__id_to_particle[id]
 
 
-def _to_graph(particle_ids: _ParticleToId, results: Dict) -> Graph:
-    graph = Graph()
+def _to_links(particle_ids: _ParticleToId, results: Dict) -> ParticleLinks:
+    links = ParticleLinks()
 
-    # Add nodes
-    for entry in results["detectionResults"]:
-        if not entry["value"]:
-            continue  # Cell was not detected
-        particle = particle_ids.particle(entry["id"])
-        graph.add_node(particle)
-
-    # Add edges
     for entry in results["linkingResults"]:
         if not entry["value"]:
             continue  # Link was not detected
         particle1 = particle_ids.particle(entry["src"])
         particle2 = particle_ids.particle(entry["dest"])
-        graph.add_edge(particle1, particle2)
+        links.add_link(particle1, particle2)
 
-    return graph
+    return links
 
 
-def run(particles: ParticleCollection, starting_links: ParticleLinks, scores: ScoreCollection):
+def run(particles: ParticleCollection, starting_links: ParticleLinks, scores: ScoreCollection) -> ParticleLinks:
     particle_ids = _ParticleToId()
     weights = {"weights": [
         10,  # multiplier for linking features?
@@ -65,7 +57,7 @@ def run(particles: ParticleCollection, starting_links: ParticleLinks, scores: Sc
     input = _create_dpct_graph(particle_ids, starting_links, scores, particles,
                                particles.first_time_point_number(), particles.last_time_point_number())
     results = dpct.trackFlowBased(input, weights)
-    return _to_graph(particle_ids, results)
+    return _to_links(particle_ids, results)
 
 
 def _scores_involving(daughter: Particle, scores: Iterable[ScoredFamily]) -> Iterable[ScoredFamily]:
