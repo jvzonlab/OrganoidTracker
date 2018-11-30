@@ -59,7 +59,7 @@ def _load_json_data_file(file_name: str, min_time_point: int, max_time_point: in
             # We don't have a general data file, but a specialized one
             if "directed" in data:
                 # File is a linking result file
-                _parse_links_format(experiment, data)
+                _parse_links_format(experiment, data, min_time_point, max_time_point)
             else:  # file is a position/shape file
                 _parse_shape_format(experiment, data, min_time_point, max_time_point)
             return experiment
@@ -75,11 +75,11 @@ def _load_json_data_file(file_name: str, min_time_point: int, max_time_point: in
             experiment.scores.add_scored_families(data["family_scores"])
 
         if "links" in data:
-            _parse_links_format(experiment, data["links"])
+            _parse_links_format(experiment, data["links"], min_time_point, max_time_point)
         elif "links_scratch" in data:  # Deprecated, was used back when experiments could hold multiple linking sets
-            _parse_links_format(experiment, data["links_scratch"])
+            _parse_links_format(experiment, data["links_scratch"], min_time_point, max_time_point)
         elif "links_baseline" in data:  # Deprecated, was used back when experiments could hold multiple linking sets
-            _parse_links_format(experiment, data["links_baseline"])
+            _parse_links_format(experiment, data["links_baseline"], min_time_point, max_time_point)
 
         if "image_resolution" in data:
             x_res = data["image_resolution"]["x_um"]
@@ -91,12 +91,11 @@ def _load_json_data_file(file_name: str, min_time_point: int, max_time_point: in
 
 
 def load_linking_result(experiment: Experiment, json_file_name: str):
-    """Loads a JSON file that is a linking result."""
-    with open(json_file_name) as handle:
-        data = json.load(handle, object_hook=_my_decoder)
-        if data is None:
-            raise ValueError
-        _parse_links_format(experiment, data)
+    """Loads a JSON file that is a linking result. Raises ValueError if the file contains no links."""
+    new_experiment = load_data_file(json_file_name)
+    if not new_experiment.links.has_links():
+        raise ValueError("No links found in file", f"The file \"{json_file_name}\" contains no linking data.")
+    experiment.links.add_links(new_experiment.links)
 
 
 def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List], min_time_point: int, max_time_point: int):
@@ -111,10 +110,11 @@ def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List],
             experiment.particles.add(particle, particle_shape)
 
 
-def _parse_links_format(experiment: Experiment, link_data: Dict[str, Any]):
+def _parse_links_format(experiment: Experiment, link_data: Dict[str, Any], min_time_point: int, max_time_point: int):
     """Parses a node_link_graph and adds all links and particles to the experiment."""
     links = ParticleLinks()
     links.add_d3_data(link_data)
+    links.limit_to_time_points(min_time_point, max_time_point)
     for particle in links.find_all_particles():
         experiment.add_particle(particle)
     experiment.links.add_links(links)
