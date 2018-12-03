@@ -113,8 +113,7 @@ def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List],
 def _parse_links_format(experiment: Experiment, link_data: Dict[str, Any], min_time_point: int, max_time_point: int):
     """Parses a node_link_graph and adds all links and particles to the experiment."""
     links = ParticleLinks()
-    links.add_d3_data(link_data)
-    links.limit_to_time_points(min_time_point, max_time_point)
+    links.add_d3_data(link_data, min_time_point, max_time_point)
     for particle in links.find_all_particles():
         experiment.add_particle(particle)
     experiment.links.add_links(links)

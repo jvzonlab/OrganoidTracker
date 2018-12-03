@@ -28,6 +28,7 @@ class TestLinksComparison(unittest.TestCase):
         ground_truth = _experiment(a1, a2, a3)
         ground_truth.links.add_link(a1, a2)
         ground_truth.links.add_link(a2, a3)
+        ground_truth.links.debug_sanity_check()
 
         # Create another data set that does the same, but 10px apart: b1 -> b2 -> b3
         b1 = Particle(1, 0, 0).with_time_point_number(1)
@@ -57,6 +58,7 @@ class TestLinksComparison(unittest.TestCase):
         ground_truth = _experiment(a1, a2, a3)
         ground_truth.links.add_link(a1, a2)
         ground_truth.links.add_link(a1, a3)
+        ground_truth.links.debug_sanity_check()
 
         # Create a missed cell division; b1 -> b2, but b3 has no links
         b1 = Particle(0, 0, 0).with_time_point_number(1)

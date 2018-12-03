@@ -77,7 +77,6 @@ class Experiment:
         """Adds a particle to the experiment. The particle must have a time point number specified. The particle will
         also be added as a node to the linking graphs."""
         self._particles.add(particle)
-        self._links.add_particle(particle)
 
     def remove_particle(self, particle: Particle):
         self._particles.detach_particle(particle)

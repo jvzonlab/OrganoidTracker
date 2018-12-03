@@ -20,7 +20,8 @@ _LINEAGE_FOLLOW_TIME_H = 25
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Graph/Clonal size distribution-Clonal size distribution...": lambda: _show_clonal_size_distribution(window),
+        # Disabled while code is being updated for new linking structure
+        # "Graph/Clonal size distribution-Clonal size distribution...": lambda: _show_clonal_size_distribution(window),
     }
 
 
@@ -75,11 +76,7 @@ def _get_clonal_sizes_list(links: ParticleLinks, time_point_window: int, first_t
     for view_start_time_point in range(first_time_point_number, last_time_point_number - time_point_window, 5):
         print("Calculating clonal sizes at time point", view_start_time_point)
         view_end_time_point = view_start_time_point + time_point_window
-        sublinks = links.limit_to_time_points(view_start_time_point, view_end_time_point)
-        for lineage_start in sublinks.find_appeared_cells():
-            cell_divisions_count = _get_division_count_in_lineage(lineage_start, sublinks, view_end_time_point)
-            if cell_divisions_count is not None:
-                clonal_sizes.append(cell_divisions_count + 1)  # +1 to convert cell divisions count to clonal size
+        # TODO rewrite for new linking structure
     return numpy.array(clonal_sizes, dtype=numpy.int32)
 
 
