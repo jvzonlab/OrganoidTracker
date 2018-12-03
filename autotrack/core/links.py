@@ -132,6 +132,48 @@ class ParticleLinks:
         if track is None:
             return
 
+        age = track.get_age(particle)
+        if len(track._particles_by_time_point) == 1:
+            # This was the only particle in the track, remove track
+            for previous_track in track._previous_tracks:
+                previous_track._next_tracks.remove(track)
+            for next_track in track._next_tracks:
+                next_track._previous_tracks.remove(track)
+            self._tracks.remove(track)
+        elif age == 0:
+            # Particle is first particle of the track
+            # Remove links with previous tracks
+            for previous_track in track._previous_tracks:
+                previous_track._next_tracks.remove(track)
+            track._previous_tracks = []
+
+            # Remove actual particle
+            track._particles_by_time_point[0] = None
+            while track._particles_by_time_point[0] is None:  # Remove all Nones at the beginning
+                track._min_time_point_number += 1
+                track._particles_by_time_point = track._particles_by_time_point[1:]
+        else:
+            # Particle is further in the track
+            if particle.time_point_number() < track.max_time_point_number():
+                # Need to split so that particle is the last particle of the track
+                _ = self._split_track(track, age + 1)
+
+            # Decouple from next tracks
+            for next_track in track._next_tracks:
+                next_track._previous_tracks.remove(track)
+            track._next_tracks = []
+
+            # Delete last particle in the track
+            track._particles_by_time_point[-1] = None
+            while track._particles_by_time_point[-1] is None:  # Remove all Nones at the end
+                del track._particles_by_time_point[-1]
+
+        # Remove from indexes
+        del self._particle_to_track[particle]
+        for data_set in self._particle_data.values():
+            if particle in data_set:
+                del data_set[particle]
+
     def replace_particle(self, old_position: Particle, position_new: Particle):
         """Replaces one particle with another. The old particle is removed from the graph, the new one is added. All
         links will be moved over to the new particle"""
@@ -154,12 +196,19 @@ class ParticleLinks:
         """Return data in D3.js node-link format that is suitable for JSON serialization
         and use in Javascript documents."""
         nodes = list()
+
+        # Save nodes and store extra data
         for particle in self.find_all_particles():
             node = {
                 "id": particle
             }
+            for data_name, data_values in self._particle_data:
+                particle_value = data_values.get(particle)
+                if particle_value is not None:
+                    node[data_name] = particle_value
             nodes.append(node)
 
+        # Save edges
         edges = list()
         for source, target in self.find_all_links():
             edge = {
@@ -285,6 +334,8 @@ class ParticleLinks:
         Note: this is a low-level API. See the linking_markers module for more high-level methods, for example for how
         to read end markers, error markers, etc.
         """
+        if data_name == "id":
+            raise ValueError("The data_name 'id' is used to store the particle itself.")
         data_of_particles = self._particle_data.get(data_name)
         if data_of_particles is None:
             data_of_particles = dict()
@@ -466,8 +517,11 @@ class ParticleLinks:
             if track.find_last() is None:
                 raise ValueError(f"{track} has no last particle")
             for particle in track.particles():
-                if particle is not None and self._particle_to_track[particle] != track:
-                    raise ValueError(f"{particle} is not in index of {track}")
+                if particle not in self._particle_to_track:
+                    raise ValueError(f"{particle} of {track} is not indexed")
+                elif self._particle_to_track[particle] != track:
+                    raise ValueError(f"{particle} in track {track} is indexed as being in track"
+                                     f" {self._particle_to_track[particle]}")
             for previous_track in track._previous_tracks:
                 if previous_track.max_time_point_number() >= track._min_time_point_number:
                     raise ValueError(f"Previous track {previous_track} is not in the past compared to {track}")
