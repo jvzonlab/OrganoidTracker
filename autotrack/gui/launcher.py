@@ -13,6 +13,8 @@ from matplotlib.figure import Figure
 
 from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog, APP_NAME
+from autotrack.gui.application import Application
+from autotrack.gui.gui_experiment import GuiExperiment
 from autotrack.gui.threading import Scheduler
 from autotrack.gui.window import Window
 
@@ -47,8 +49,6 @@ def launch_window(experiment: Experiment) -> Window:
     q_window.setWindowTitle(APP_NAME)
     q_window.setWindowIcon(QIcon(path.join(path.dirname(path.abspath(sys.argv[0])), 'autotrack', 'gui', 'icon.ico')))
 
-    menu = q_window.menuBar()
-
     # Initialize main grid
     main_frame = QtWidgets.QWidget(parent=q_window)
     q_window.setCentralWidget(main_frame)
@@ -79,7 +79,8 @@ def launch_window(experiment: Experiment) -> Window:
     toolbar = NavigationToolbar2QT(mpl_canvas, q_window)
     q_window.addToolBar(toolbar)
 
-    window = Window(q_window, menu, fig, experiment, title, status_box)
+    application = Application(q_window)
+    window = Window(q_window, application, fig, GuiExperiment(experiment), title, status_box)
     command_box.escape_handler = lambda: mpl_canvas.setFocus()
     command_box.enter_handler = partial(_commandbox_execute, window=window, main_figure=mpl_canvas)
 

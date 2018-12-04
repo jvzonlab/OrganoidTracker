@@ -47,7 +47,7 @@ def _generate_deathbed_images(window: Window):
         raise UserError("Deathbed images", "No deathbed images found. Are there no cell deaths, or is the number of"
                                            " steps that you want to look into the past too high?")
 
-    window.get_scheduler().add_task(_ImageGeneratingTask(experiment.image_loader(), particles, output_file))
+    window.get_application().scheduler.add_task(_ImageGeneratingTask(experiment.image_loader(), particles, output_file))
 
 
 class _ImageGeneratingTask(Task):

@@ -77,7 +77,7 @@ class Visualizer:
                 result_handler(result)
 
         def internal():
-            self._window.get_scheduler().add_task(MyTask())
+            self._window.get_application().scheduler.add_task(MyTask())
         return internal
 
     def draw_view(self):
@@ -123,14 +123,14 @@ class Visualizer:
     def attach(self):
         self._window.setup_menu(self.get_extra_menu_options())
         self._window.set_window_title(self._get_window_title())
-        self._window.register_event_handler("visualizer", "key_press_event", self._on_key_press_raw)
-        self._window.register_event_handler("visualizer", "button_press_event", self._on_mouse_click)
-        self._window.register_event_handler("visualizer", "data_updated_event", self.refresh_data)
-        self._window.register_event_handler("visualizer", "image_and_data_updated_event", self.refresh_image)
-        self._window.register_event_handler("visualizer", "command_event", self._on_command_raw)
+        self._window.register_event_handler("key_press_event", self._on_key_press_raw)
+        self._window.register_event_handler("button_press_event", self._on_mouse_click)
+        self._window.register_event_handler("data_updated_event", self.refresh_data)
+        self._window.register_event_handler("image_and_data_updated_event", self.refresh_image)
+        self._window.register_event_handler("command_event", self._on_command_raw)
 
     def detach(self):
-        self._window.unregister_event_handlers("visualizer")
+        self._window.unregister_event_handlers()
 
     def _get_window_title(self) -> Optional[str]:
         """Called to query what the window title should be. This will be prefixed with the name of the program."""
@@ -196,7 +196,7 @@ __active_visualizer = None # Reference to prevent event handler from being garba
 
 
 def activate(visualizer: Visualizer) -> None:
-    if visualizer.get_window().get_scheduler().has_active_tasks():
+    if visualizer.get_window().get_application().scheduler.has_active_tasks():
         raise core.UserError("Running a task", "Please wait until the current task has been finished before switching"
                                                " to another window.")
     global __active_visualizer

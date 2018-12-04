@@ -42,7 +42,7 @@ def _show_clonal_size_distribution(window: Window):
     print("Time point window is", time_point_window)
 
     # Run the task on another thread, as calculating is quite slow
-    window.get_scheduler().add_task(_ClonalDistributionTask(experiment.name, links, time_point_window,
+    window.get_application().scheduler.add_task(_ClonalDistributionTask(experiment.name, links, time_point_window,
                                                             experiment.first_time_point_number(),
                                                             experiment.last_time_point_number()))
 

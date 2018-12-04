@@ -5,122 +5,59 @@ from matplotlib.figure import Figure
 
 from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog, APP_NAME
+from autotrack.gui.application import Application
+from autotrack.gui.gui_experiment import GuiExperiment
 from autotrack.gui.threading import Scheduler
 from autotrack.gui.undo_redo import UndoRedo
 
 
-class Plugin:
-    """
-    Represents a plugin. Plugins can add new data visualizers or provide support for more file types.
-    Instead of writing a plugin, you can also write a script that uses the classes in core and imaging.
-    """
-
-    def get_menu_items(self, window: "Window")-> Dict[str, Any]:
-        """
-        Used to add menu items that must always be visible. Example:
-
-            return {
-                "File/Import-Import my format...": lambda: my_code_here(),
-                "View/Analysis-Useful analysis screen here...": lambda: my_other_code_here()
-            }
-        """
-        return {}
-
-    def reload(self):
-        """Reloads this plugin from disk."""
-        ...
-
-
-class _EventListeners:
-
-    _listeners: Dict[str, List[Callable]]
-
-    def __init__(self):
-        self._listeners = dict()
-
-    def add(self, source: str, action: Callable):
-        """Adds a new event listener."""
-        if source in self._listeners:
-            self._listeners[source].append(action)
-        else:
-            self._listeners[source] = [action]  # No listeners yet for this source, create a list
-
-    def remove(self, source: str):
-        """Removes all event listeners that were registered with the given source."""
-        if source in self._listeners:
-            del self._listeners[source]
-
-    def call_all(self, *args):
-        for listeners in self._listeners.values():
-            for listener in listeners:
-                listener(*args)
-
-
 class Window:
     """The model for a window."""
-    __root: QMainWindow
-    __scheduler: Scheduler
-    __plugins: List[Plugin]
+    __q_window: QMainWindow
 
     __fig: Figure
     __status_text: QLabel
     __title_text: QLabel
-    __experiment: Experiment
-
-    __event_handler_ids: Dict[int, str]
-    __data_updated_handlers: _EventListeners
-    __image_and_data_updated_handlers: _EventListeners
-    __command_handlers: _EventListeners
+    __gui_experiment: GuiExperiment
+    __application: Application
+    __event_handler_ids: List[int]
     __menu: QMenuBar
-    __undo_redo: UndoRedo
 
-    def __init__(self, root: QMainWindow, menu: QMenuBar, figure: Figure, experiment: Experiment,
+    def __init__(self, q_window: QMainWindow, application: Application, figure: Figure, experiment: GuiExperiment,
                  title_text: QLabel, status_text: QLabel):
-        self.__root = root
-        self.__menu = menu
+        self.__q_window = q_window
+        self.__application = application
+        self.__menu = q_window.menuBar()
         self.__fig = figure
-        self.__experiment = experiment
+        self.__gui_experiment = experiment
         self.__status_text = status_text
         self.__title_text = title_text
-        self.__event_handler_ids = dict()
-        self.__data_updated_handlers = _EventListeners()
-        self.__image_and_data_updated_handlers = _EventListeners()
-        self.__command_handlers = _EventListeners()
-        self.__plugins = []
-        self.__undo_redo = UndoRedo()
+        self.__event_handler_ids = list()
 
-        self.__scheduler = Scheduler(root)
-        self.__scheduler.daemon = True
-        self.__scheduler.start()
+    def _event_source(self) -> str:
+        """Returns an identifier used to register and unregister events."""
+        return f"window_{id(self)}"
 
-    def register_event_handler(self, source: str, event: str, action: Callable):
-        """Registers an event handler. Supported events:
+    def register_event_handler(self, event: str, action: Callable):
+        """Registers an event handler, whichs allows you to react on things like "data changed". Supported events:
 
         * All matplotlib events.
-        * "data_updated_event" for when the figure annotations need to be redrawn.
-        * "image_and_data_updated_event" for when the complete figure needs to be redrawn.
-        * "command_event" for when a command is executed
+        * All GuiExperiment event: GuiExperiment.KNOWN_EVENTS
+
+        Don't forget to unregister your event handlers when its no longer needed! Otherwise you'll have a memory leak.
         """
-        if event == "data_updated_event":
-            self.__data_updated_handlers.add(source, action)
-        elif event == "image_and_data_updated_event":
-            self.__image_and_data_updated_handlers.add(source, action)
-        elif event == "command_event":
-            self.__command_handlers.add(source, action)
+        if event in GuiExperiment.KNOWN_EVENTS:
+            self.__gui_experiment.register_event_handler(event, self._event_source(), action)
         else:
             # Matplotlib events are handled differently
-            event_id = self.__fig.canvas.mpl_connect(event, action)
-            self.__event_handler_ids[event_id] = source
+            self.__event_handler_ids.append(self.__fig.canvas.mpl_connect(event, action))
 
-    def unregister_event_handlers(self, source_to_remove: str):
-        """Unregisters all handles registered using register_event_handler"""
-        for id, source in self.__event_handler_ids.copy().items():
-            if source == source_to_remove:
-                self.__fig.canvas.mpl_disconnect(id)
-                del self.__event_handler_ids[id]  # Safe, as we're iterating over a copy
-        self.__data_updated_handlers.remove(source_to_remove)
-        self.__image_and_data_updated_handlers.remove(source_to_remove)
-        self.__command_handlers.remove(source_to_remove)
+    def unregister_event_handlers(self):
+        """Unregisters all handlers registered using register_event_handler"""
+        for id in self.__event_handler_ids:
+            self.__fig.canvas.mpl_disconnect(id)
+        self.__event_handler_ids.clear()
+        self.__gui_experiment.unregister_event_handlers(self._event_source())
 
     def get_figure(self) -> Figure:
         """Gets the Matplotlib figure."""
@@ -144,56 +81,42 @@ class Window:
     def set_window_title(self, text: Optional[str]):
         """Sets the title of the window, prefixed by APP_NAME. Use None as the title to just sown APP_NAME."""
         if text is None:
-            self.__root.setWindowTitle(APP_NAME)
+            self.__q_window.setWindowTitle(APP_NAME)
         else:
-            self.__root.setWindowTitle(APP_NAME + " - " + text)
+            self.__q_window.setWindowTitle(APP_NAME + " - " + text)
 
     def get_experiment(self) -> Experiment:
         """Gets the experiment that is being shown."""
-        return self.__experiment
+        return self.__gui_experiment.experiment
 
     def set_experiment(self, experiment: Experiment):
         """Replaces the experiment that is being shown. The undo/redo queue is cleared automatically. You'll likely want
         to call refresh() after calling this."""
-        self.__experiment = experiment
-        self.__undo_redo.clear()
+        self.__gui_experiment.set_experiment(experiment)
 
     def redraw_data(self):
         """Redraws the main figure using the latest values from the experiment."""
-        self.__data_updated_handlers.call_all()
+        self.__gui_experiment.redraw_data()
 
     def redraw_image_and_data(self):
         """Redraws the image using the latest values from the experiment."""
-        self.__image_and_data_updated_handlers.call_all()
+        self.__gui_experiment.redraw_image_and_data()
 
     def setup_menu(self, extra_items: Dict[str, any]):
         """Update the main menu of the window to contain the given options."""
         menu_items = self._get_default_menu()
-        for plugin in self.__plugins:
+        for plugin in self.__application.get_plugins():
             menu_items.update(plugin.get_menu_items(self))
         menu_items.update(extra_items)
         menu_items.update(_get_help_menu())  # This menu must come last
-        _update_menu(self.__root, self.__menu, menu_items)
+        _update_menu(self.__q_window, self.__menu, menu_items)
 
-    def get_scheduler(self) -> Scheduler:
-        """Gets the scheduler, useful for registering background tasks"""
-        return self.__scheduler
+    def get_application(self) -> Application:
+        return self.__application
 
     def get_undo_redo(self) -> UndoRedo:
         """Gets the undo/redo handler. Any actions performed through this handler can be undone."""
-        return self.__undo_redo
-
-    def install_plugins(self, plugins: Iterable[Plugin]):
-        """Adds the given list of plugins to the list of active plugins."""
-        for plugin in plugins:
-            self.__plugins.append(plugin)
-
-    def reload_plugins(self) -> int:
-        """Reloads all plugins from disk. You should update the window after calling this. Returns the number of
-        reloaded plugins."""
-        for plugin in self.__plugins:
-            plugin.reload()
-        return len(self.__plugins)
+        return self.__gui_experiment.undo_redo
 
     def _get_default_menu(self) -> Dict[str, Any]:
         from autotrack.gui import action
@@ -214,7 +137,7 @@ class Window:
 
     def execute_command(self, command: str):
         """Calls all registered command handlers with the given argument. Used when a user entered a command."""
-        self.__command_handlers.call_all(command)
+        self.__gui_experiment.execute_command(command)
 
 
 def _simple_menu_dict_to_nested(menu_items: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
