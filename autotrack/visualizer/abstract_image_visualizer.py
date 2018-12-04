@@ -88,6 +88,9 @@ class AbstractImageVisualizer(Visualizer):
         size = images_for_size.shape if images_for_size is not None else self.DEFAULT_SIZE
         return size
 
+    def refresh_image(self):
+        self._move_in_time(dt=0)  # This will redraw the view
+
     def draw_view(self):
         self._clear_axis()
         self.__particles_near_visible_layer.clear()

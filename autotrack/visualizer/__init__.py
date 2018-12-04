@@ -84,8 +84,12 @@ class Visualizer:
         """Draws the view."""
         raise NotImplementedError()
 
-    def refresh_view(self):
-        """Draws the view, forcing to reload any cached data."""
+    def refresh_data(self):
+        """Redraws the view."""
+        self.draw_view()
+
+    def refresh_image(self):
+        """Redraws the view after loading the images."""
         self.draw_view()
 
     def update_status(self, text: Union[str, bytes], redraw=True):
@@ -119,13 +123,14 @@ class Visualizer:
     def attach(self):
         self._window.setup_menu(self.get_extra_menu_options())
         self._window.set_window_title(self._get_window_title())
-        self._window.register_event_handler("key_press_event", self._on_key_press_raw)
-        self._window.register_event_handler("button_press_event", self._on_mouse_click)
-        self._window.register_event_handler("refresh_event", self.refresh_view)
-        self._window.register_event_handler("command_event", self._on_command_raw)
+        self._window.register_event_handler("visualizer", "key_press_event", self._on_key_press_raw)
+        self._window.register_event_handler("visualizer", "button_press_event", self._on_mouse_click)
+        self._window.register_event_handler("visualizer", "data_updated_event", self.refresh_data)
+        self._window.register_event_handler("visualizer", "image_and_data_updated_event", self.refresh_image)
+        self._window.register_event_handler("visualizer", "command_event", self._on_command_raw)
 
     def detach(self):
-        self._window.unregister_event_handlers()
+        self._window.unregister_event_handlers("visualizer")
 
     def _get_window_title(self) -> Optional[str]:
         """Called to query what the window title should be. This will be prefixed with the name of the program."""

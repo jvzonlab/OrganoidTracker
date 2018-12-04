@@ -67,7 +67,7 @@ def load_images(window: Window):
 
     # Load and show images
     tifffolder.load_images_from_folder(window.get_experiment(), directory, file_name_pattern)
-    window.refresh()
+    window.redraw_image_and_data()
 
 
 def _find_pattern(file_name: str) -> Optional[str]:
@@ -99,7 +99,7 @@ def load_tracking_data(window: Window):
     new_experiment.image_loader(window.get_experiment().image_loader())
 
     window.set_experiment(new_experiment)
-    window.refresh()
+    window.redraw_data()
 
 
 def export_positions_and_shapes(experiment: Experiment):
@@ -154,7 +154,7 @@ def save_tracking_data(experiment: Experiment) -> bool:
 def reload_plugins(window: Window):
     """Reloads all active plugins from disk."""
     count = window.reload_plugins()
-    window.refresh()
+    window.redraw_data()
     window.set_status(f"Reloaded all {count} plugins.")
 
 

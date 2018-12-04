@@ -9,7 +9,13 @@ class EmptyVisualizer(Visualizer):
     def __init__(self, window: Window):
         super().__init__(window)
 
-    def refresh_view(self):
+    def refresh_data(self):
+        self._exit_if_possible()
+
+    def refresh_image(self):
+        self._exit_if_possible()
+
+    def _exit_if_possible(self):
         if self._experiment.first_time_point_number() is None:
             return  # Nothing to refresh
 

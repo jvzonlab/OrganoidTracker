@@ -1,7 +1,7 @@
 """Extra markers used to describe the linking data. For example, you can mark the end of a lineage as a cell death."""
 
 from enum import Enum
-from typing import Optional
+from typing import Optional, Dict, Iterable
 
 from networkx import Graph
 
@@ -62,6 +62,16 @@ def set_track_start_marker(links: ParticleLinks, particle: Particle, start_marke
         links.set_particle_data(particle, "starting", start_marker.name.lower())
 
 
+def get_errored_particles(links: ParticleLinks) -> Iterable[Particle]:
+    """Gets all particles that have a (non suppressed) error."""
+
+    with_error_marker = links.find_all_particles_with_data("error")
+    for particle, error_number in with_error_marker:
+        if links.get_particle_data(particle, "suppressed_error") == error_number:
+            continue # Error was suppressed
+
+        yield particle
+
 def get_error_marker(links: ParticleLinks, particle: Particle) -> Optional[Error]:
     """Gets the error marker for the given link, if any. Returns None if the error has been suppressed using
     suppress_error_marker."""
@@ -92,3 +102,5 @@ def set_error_marker(links: ParticleLinks, particle: Particle, error: Optional[E
         links.set_particle_data(particle, "error", None)
     else:
         links.set_particle_data(particle, "error", error.value)
+
+

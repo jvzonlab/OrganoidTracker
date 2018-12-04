@@ -1,5 +1,5 @@
 from pprint import pprint
-from typing import Optional, Dict, Iterable, List, Set, Union, Tuple, Any
+from typing import Optional, Dict, Iterable, List, Set, Union, Tuple, Any, ItemsView
 
 from autotrack.core.particles import Particle
 
@@ -57,6 +57,12 @@ class LinkingTrack:
         """Returns the last particle in this track."""
         return self._particles_by_time_point[-1]
 
+    def find_all_descending_tracks(self) -> Iterable["LinkingTrack"]:
+        """Iterates over all tracks that will follow this one, and the one after thet, etc."""
+        for next_track in self._next_tracks:
+            yield next_track
+            yield from next_track.find_all_descending_tracks()
+
     def particles(self) -> Iterable[Particle]:
         """Returns all particles in this track, in order."""
         for particle in self._particles_by_time_point:
@@ -86,15 +92,16 @@ class LinkingTrack:
         return f"<LinkingTrack t={self._min_time_point_number}-{self.max_time_point_number()}>"
 
     def get_next_tracks(self) -> Set["LinkingTrack"]:
-        """Gets a set of the tracks that will follow this track. If empty, the lineage end. If the length is 2, it is
-        a cell division. Lengths of 1 will never occur. Lengths of 3 can occur, but make no biological sense."""
+        """Gets a set of the tracks that will directly follow this track. If empty, the lineage end. If the length is 2,
+        it is a cell division. Lengths of 1 will never occur. Lengths of 3 can occur, but make no biological sense.
+
+        See find_all_descending_tracks if you're also interested in the tracks that come after that."""
         return set(self._next_tracks)
 
     def get_previous_tracks(self) -> Set["LinkingTrack"]:
         """Gets a set of the tracks before this track. If empty, the lineage started. Normally, the set will have a
         size of 1. Larger sizes indicate a cell merge, which makes no biological sense."""
         return set(self._previous_tracks)
-
 
     def min_time_point_number(self) -> int:
         """Gets the first time point number of this track."""
@@ -556,3 +563,14 @@ class ParticleLinks:
         for track in self._tracks:
             if not track._previous_tracks:
                 yield track
+
+    def find_all_particles_with_data(self, data_name: str) -> ItemsView[Particle, Any]:
+        """Gets a dictionary of all particles with the given data marker. Do not modify the returned dictionary."""
+        data_set = self._particle_data.get(data_name)
+        if data_set is None:
+            return dict().items()
+        return data_set.items()
+
+    def get_track(self, particle: Particle) -> Optional[LinkingTrack]:
+        """Gets the track the given particle belong in."""
+        return self._particle_to_track.get(particle)

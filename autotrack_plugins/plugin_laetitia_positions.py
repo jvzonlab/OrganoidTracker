@@ -41,7 +41,7 @@ def _load_laetitia_positions(window: Window):
         _import_file(new_experiment, directory, file_name, z_offset)
 
     window.set_experiment(new_experiment)
-    window.refresh()
+    window.redraw_data()
 
 
 def _export_laetitia_positions(window: Window):

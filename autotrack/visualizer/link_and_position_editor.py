@@ -298,15 +298,15 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
 
     def _perform_action(self, action: UndoableAction):
         status = self._window.get_undo_redo().do(action, self._experiment)
-        self.get_window().refresh()
+        self.get_window().redraw_data()
         self.update_status(status)
 
     def _undo(self):
         status = self._window.get_undo_redo().undo(self._experiment)
-        self.get_window().refresh()
+        self.get_window().redraw_data()
         self.update_status(status)
 
     def _redo(self):
         status = self._window.get_undo_redo().redo(self._experiment)
-        self.get_window().refresh()
+        self.get_window().redraw_data()
         self.update_status(status)

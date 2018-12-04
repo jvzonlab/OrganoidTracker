@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional, Iterable
+from typing import List, Dict, Any, Optional, Iterable, Callable
 
 from PyQt5.QtWidgets import QMainWindow, QMenuBar, QLabel, QAction
 from matplotlib.figure import Figure
@@ -30,6 +30,32 @@ class Plugin:
         """Reloads this plugin from disk."""
         ...
 
+
+class _EventListeners:
+
+    _listeners: Dict[str, List[Callable]]
+
+    def __init__(self):
+        self._listeners = dict()
+
+    def add(self, source: str, action: Callable):
+        """Adds a new event listener."""
+        if source in self._listeners:
+            self._listeners[source].append(action)
+        else:
+            self._listeners[source] = [action]  # No listeners yet for this source, create a list
+
+    def remove(self, source: str):
+        """Removes all event listeners that were registered with the given source."""
+        if source in self._listeners:
+            del self._listeners[source]
+
+    def call_all(self, *args):
+        for listeners in self._listeners.values():
+            for listener in listeners:
+                listener(*args)
+
+
 class Window:
     """The model for a window."""
     __root: QMainWindow
@@ -41,9 +67,10 @@ class Window:
     __title_text: QLabel
     __experiment: Experiment
 
-    __event_handler_ids: List[int]
-    __refresh_handlers: List[Any]
-    __command_handlers: List[Any]
+    __event_handler_ids: Dict[int, str]
+    __data_updated_handlers: _EventListeners
+    __image_and_data_updated_handlers: _EventListeners
+    __command_handlers: _EventListeners
     __menu: QMenuBar
     __undo_redo: UndoRedo
 
@@ -55,9 +82,10 @@ class Window:
         self.__experiment = experiment
         self.__status_text = status_text
         self.__title_text = title_text
-        self.__event_handler_ids = []
-        self.__refresh_handlers = []
-        self.__command_handlers = []
+        self.__event_handler_ids = dict()
+        self.__data_updated_handlers = _EventListeners()
+        self.__image_and_data_updated_handlers = _EventListeners()
+        self.__command_handlers = _EventListeners()
         self.__plugins = []
         self.__undo_redo = UndoRedo()
 
@@ -65,28 +93,34 @@ class Window:
         self.__scheduler.daemon = True
         self.__scheduler.start()
 
-    def register_event_handler(self, event: str, action):
+    def register_event_handler(self, source: str, event: str, action: Callable):
         """Registers an event handler. Supported events:
 
         * All matplotlib events.
-        * "refresh_event" for when the figure needs to be redrawn.
+        * "data_updated_event" for when the figure annotations need to be redrawn.
+        * "image_and_data_updated_event" for when the complete figure needs to be redrawn.
         * "command_event" for when a command is executed
         """
-        if event == "refresh_event":
-            self.__refresh_handlers.append(action)
+        if event == "data_updated_event":
+            self.__data_updated_handlers.add(source, action)
+        elif event == "image_and_data_updated_event":
+            self.__image_and_data_updated_handlers.add(source, action)
         elif event == "command_event":
-            self.__command_handlers.append(action)
+            self.__command_handlers.add(source, action)
+        else:
+            # Matplotlib events are handled differently
+            event_id = self.__fig.canvas.mpl_connect(event, action)
+            self.__event_handler_ids[event_id] = source
 
-        self.__event_handler_ids.append(self.__fig.canvas.mpl_connect(event, action))
-
-    def unregister_event_handlers(self):
+    def unregister_event_handlers(self, source_to_remove: str):
         """Unregisters all handles registered using register_event_handler"""
-        for id in self.__event_handler_ids:
-            self.__fig.canvas.mpl_disconnect(id)
-        self.__event_handler_ids = []
-        self.__refresh_handlers.clear()
-        self.__command_handlers.clear()
-        self.setup_menu(dict())
+        for id, source in self.__event_handler_ids.copy().items():
+            if source == source_to_remove:
+                self.__fig.canvas.mpl_disconnect(id)
+                del self.__event_handler_ids[id]  # Safe, as we're iterating over a copy
+        self.__data_updated_handlers.remove(source_to_remove)
+        self.__image_and_data_updated_handlers.remove(source_to_remove)
+        self.__command_handlers.remove(source_to_remove)
 
     def get_figure(self) -> Figure:
         """Gets the Matplotlib figure."""
@@ -124,10 +158,13 @@ class Window:
         self.__experiment = experiment
         self.__undo_redo.clear()
 
-    def refresh(self):
-        """Redraws the main figure."""
-        for refresh_handler in self.__refresh_handlers:
-            refresh_handler()
+    def redraw_data(self):
+        """Redraws the main figure using the latest values from the experiment."""
+        self.__data_updated_handlers.call_all()
+
+    def redraw_image_and_data(self):
+        """Redraws the image using the latest values from the experiment."""
+        self.__image_and_data_updated_handlers.call_all()
 
     def setup_menu(self, extra_items: Dict[str, any]):
         """Update the main menu of the window to contain the given options."""
@@ -177,8 +214,7 @@ class Window:
 
     def execute_command(self, command: str):
         """Calls all registered command handlers with the given argument. Used when a user entered a command."""
-        for command_handler in self.__command_handlers:
-            command_handler(command)
+        self.__command_handlers.call_all(command)
 
 
 def _simple_menu_dict_to_nested(menu_items: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:

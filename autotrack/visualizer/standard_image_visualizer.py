@@ -180,4 +180,4 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             return  # Cancelled
 
         guizela_data_importer.add_data_to_experiment(self._experiment, folder)
-        self.get_window().refresh()
+        self.get_window().redraw_data()
