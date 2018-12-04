@@ -7,33 +7,25 @@ from autotrack.core.score import Family
 
 def get_age(links: ParticleLinks, particle: Particle) -> Optional[int]:
     """Gets how many time steps ago this cell was born"""
-    timesteps_ago = 0
-
-    while True:
-        timesteps_ago += 1
-
-        particles = links.find_pasts(particle)
-        if len(particles) != 1:
-            return None  # Cell first appeared here (or we have a cell merge), don't know age for sure
-        particle = particles.pop()
-        daughters = links.find_futures(particle)
-        if len(daughters) > 1:
-            return timesteps_ago
+    track = links.get_track(particle)
+    if track is None:
+        return 0
+    return track.get_age(particle)
 
 
 def get_next_division(links: ParticleLinks, particle: Particle) -> Optional[Family]:
     """Gets the next division for the given particle. Returns None if there is no such division. Raises ValueError if a
     cell with more than two daughters is found in this lineage."""
-    while True:
-        next_particles = links.find_futures(particle)
-        if len(next_particles) == 0:
-            # Cell death or end of experiment
-            return None
-        if len(next_particles) == 1:
-            # Go to next time point
-            particle = next_particles.pop()
-            continue
-        if len(next_particles) == 2:
-            # Found the next division
-            return Family(particle, *next_particles)
-        raise ValueError("Cell " + str(particle) + " has multiple daughters: " + str(next_particles))
+    track = links.get_track(particle)
+    if track is None:
+        return None
+
+    next_tracks = track.get_next_tracks()
+    if len(next_tracks) == 0:
+        return None
+
+    next_daughters = [next_track.find_first() for next_track in next_tracks]
+    if len(next_daughters) != 2:
+        raise ValueError("Cell " + str(track.find_last()) + " has multiple daughters: " + str(next_daughters))
+
+    return Family(track.find_last(), *next_daughters)
