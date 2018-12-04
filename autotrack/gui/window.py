@@ -119,12 +119,13 @@ class Window:
         return self.__experiment
 
     def set_experiment(self, experiment: Experiment):
-        """Replaces the experiment that is being shown. You'll likely want to call refresh() after calling this."""
+        """Replaces the experiment that is being shown. The undo/redo queue is cleared automatically. You'll likely want
+        to call refresh() after calling this."""
         self.__experiment = experiment
+        self.__undo_redo.clear()
 
     def refresh(self):
         """Redraws the main figure."""
-        self.__undo_redo.clear()
         for refresh_handler in self.__refresh_handlers:
             refresh_handler()
 

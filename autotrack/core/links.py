@@ -85,6 +85,25 @@ class LinkingTrack:
     def __repr__(self):
         return f"<LinkingTrack t={self._min_time_point_number}-{self.max_time_point_number()}>"
 
+    def get_next_tracks(self) -> Set["LinkingTrack"]:
+        """Gets a set of the tracks that will follow this track. If empty, the lineage end. If the length is 2, it is
+        a cell division. Lengths of 1 will never occur. Lengths of 3 can occur, but make no biological sense."""
+        return set(self._next_tracks)
+
+    def get_previous_tracks(self) -> Set["LinkingTrack"]:
+        """Gets a set of the tracks before this track. If empty, the lineage started. Normally, the set will have a
+        size of 1. Larger sizes indicate a cell merge, which makes no biological sense."""
+        return set(self._previous_tracks)
+
+
+    def min_time_point_number(self) -> int:
+        """Gets the first time point number of this track."""
+        return self._min_time_point_number
+
+    def __len__(self):
+        """Gets the time length of the track, in number of time points."""
+        return len(self._particles_by_time_point)
+
 
 class ParticleLinks:
     """Represents all particle links. Two different networks can be specified (called baseline and scratch), so that
@@ -202,7 +221,7 @@ class ParticleLinks:
             node = {
                 "id": particle
             }
-            for data_name, data_values in self._particle_data:
+            for data_name, data_values in self._particle_data.items():
                 particle_value = data_values.get(particle)
                 if particle_value is not None:
                     node[data_name] = particle_value
@@ -528,3 +547,12 @@ class ParticleLinks:
                 if track not in previous_track._next_tracks:
                     raise ValueError(f"Current track {track} is connected to previous track {previous_track}, but that"
                                      f" track is not connected to the current track.")
+            if len(track._next_tracks) == 1 and len(track._next_tracks[0]._previous_tracks) == 1:
+                raise ValueError(f"Track {track} and {track._next_tracks[0]} could have been merged into"
+                                 f" a single track")
+
+    def find_starting_tracks(self) -> Iterable[LinkingTrack]:
+        """Gets all starting tracks, so all tracks that have no links to the past."""
+        for track in self._tracks:
+            if not track._previous_tracks:
+                yield track

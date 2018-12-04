@@ -343,6 +343,3 @@ class AbstractImageVisualizer(Visualizer):
             self.update_status(self.get_default_status())
         except ValueError:
             pass
-
-    def refresh_view(self):
-        self._move_in_time(0)  # This makes the viewer reload the image

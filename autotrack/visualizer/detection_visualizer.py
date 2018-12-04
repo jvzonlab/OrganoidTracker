@@ -43,7 +43,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
     def get_extra_menu_options(self):
         return {
             **super().get_extra_menu_options(),
-            "View/Show-Show original images (R)": self.refresh_view,
+            "View/Show-Show original images (R)": lambda: self._move_in_time(dt=0),
             "View/Exit-Exit this view (/exit)": self._show_main_view,
             "Threshold/Normal-Basic threshold": self._basic_threshold,
             "Threshold/Normal-With watershed segmentation": self.async(self._get_watershedded_threshold,
@@ -235,7 +235,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
     def _on_key_press(self, event: KeyEvent):
         if event.key == "r":
             # Reset view
-            self.refresh_view()
+            self._move_in_time(dt=0)
         super()._on_key_press(event)
 
     def _print_missed_cells(self, watershed: ndarray):
