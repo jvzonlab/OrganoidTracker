@@ -20,9 +20,9 @@ def _window() -> QWidget:
     return active_window
 
 
-def prompt_int(title: str, question: str) -> Optional[int]:
+def prompt_int(title: str, question: str, min: int=-2147483647, max: int=2147483647) -> Optional[int]:
     """Asks the user to enter an integer. Returns None if the user pressed Cancel or closed the dialog box."""
-    result, ok = QInputDialog.getInt(_window(), title, question)
+    result, ok = QInputDialog.getInt(_window(), title, question, min=min, max=max)
     return result if ok else None
 
 

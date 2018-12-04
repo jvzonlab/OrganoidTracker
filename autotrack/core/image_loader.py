@@ -24,3 +24,7 @@ class ImageLoader:
     def get_last_time_point(self) -> Optional[int]:
         """Gets the last time point (inclusive) for which images are available."""
         return None
+
+    def copy(self) -> "ImageLoader":
+        """Copies the image loader, so that you can use it on another thread."""
+        raise NotImplementedError()

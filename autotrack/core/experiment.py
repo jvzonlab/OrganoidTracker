@@ -46,6 +46,9 @@ class _CachedImageLoader(ImageLoader):
     def get_last_time_point(self) -> Optional[int]:
         return self._internal.get_last_time_point()
 
+    def copy(self) -> ImageLoader:
+        return _CachedImageLoader(self._internal.copy())
+
 
 class Experiment:
     """A complete experiment, with many stacks of images collected over time. This class ultimately collects all

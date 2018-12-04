@@ -45,6 +45,14 @@ def set_track_end_marker(links: ParticleLinks, particle: Particle, end_marker: O
         links.set_particle_data(particle, "ending", end_marker.name.lower())
 
 
+def find_dead_particles(links: ParticleLinks) -> Iterable[Particle]:
+    """Gets all particles that were marked as dead."""
+    death_marker = EndMarker.DEAD.name.lower()
+    for particle, ending_marker in links.find_all_particles_with_data("ending"):
+        if ending_marker == death_marker:
+            yield particle
+
+
 def get_track_start_marker(links: ParticleLinks, particle: Particle) -> Optional[StartMarker]:
     """Gets the appearance marker. This is used to explain why a cell appeared out of thin air."""
     starting_str = links.get_particle_data(particle, "starting")
@@ -71,6 +79,7 @@ def get_errored_particles(links: ParticleLinks) -> Iterable[Particle]:
             continue # Error was suppressed
 
         yield particle
+
 
 def get_error_marker(links: ParticleLinks, particle: Particle) -> Optional[Error]:
     """Gets the error marker for the given link, if any. Returns None if the error has been suppressed using
@@ -102,5 +111,3 @@ def set_error_marker(links: ParticleLinks, particle: Particle, error: Optional[E
         links.set_particle_data(particle, "error", None)
     else:
         links.set_particle_data(particle, "error", error.value)
-
-

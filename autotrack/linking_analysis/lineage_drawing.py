@@ -31,7 +31,7 @@ class LineageDrawing:
 
     def _get_sublineage_draw_data(self, lin_id: LinkingTrack, x_curr_branch, x_end_branch, line_list):
         # if current branch has no next tracks
-        if not lin_id.get_next_tracks():
+        if len(lin_id.get_next_tracks()) != 2:
             # then it has no sublineage, so we plot an end branch
             # set x position of current branch to that of the next end branch
             x_curr_branch = x_end_branch

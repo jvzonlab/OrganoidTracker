@@ -76,3 +76,6 @@ class TiffImageLoader(ImageLoader):
 
     def get_last_time_point(self) -> Optional[int]:
         return self._max_time_point
+
+    def copy(self) -> ImageLoader:
+        return TiffImageLoader(self._folder, self._file_name_format, self._min_time_point, self._max_time_point)
