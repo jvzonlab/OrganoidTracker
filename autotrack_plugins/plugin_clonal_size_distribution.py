@@ -9,6 +9,7 @@ from autotrack.core import UserError, Name
 from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
 from autotrack.gui import dialog
+from autotrack.gui.gui_experiment import GuiExperiment
 from autotrack.gui.window import Window
 from autotrack.gui.threading import Task
 from autotrack.linking_analysis import linking_markers
@@ -42,7 +43,7 @@ def _show_clonal_size_distribution(window: Window):
     print("Time point window is", time_point_window)
 
     # Run the task on another thread, as calculating is quite slow
-    window.get_application().scheduler.add_task(_ClonalDistributionTask(experiment.name, links, time_point_window,
+    window.get_scheduler().add_task(_ClonalDistributionTask(window.get_gui_experiment(), links, time_point_window,
                                                             experiment.first_time_point_number(),
                                                             experiment.last_time_point_number()))
 
@@ -54,10 +55,11 @@ class _ClonalDistributionTask(Task):
     _first_time_point_number: int
     _last_time_point_number: int
     _name: Name
+    _gui_experiment: GuiExperiment
 
-    def __init__(self, name: Name, links: ParticleLinks, time_point_window: int, first_time_point_number: int,
+    def __init__(self, gui_experiment: GuiExperiment, links: ParticleLinks, time_point_window: int, first_time_point_number: int,
                  last_time_point_number: int):
-        self._name = name
+        self._gui_experiment = gui_experiment
         self._links = links.copy()  # Copy so that we can safely access this on another thread
         self._time_point_window = time_point_window
         self._first_time_point_number = first_time_point_number
@@ -68,7 +70,7 @@ class _ClonalDistributionTask(Task):
                                       self._last_time_point_number)
 
     def on_finished(self, clonal_sizes: ndarray):
-        dialog.popup_figure(self._name, lambda figure: _draw_clonal_sizes(figure, clonal_sizes))
+        dialog.popup_figure(self._gui_experiment, lambda figure: _draw_clonal_sizes(figure, clonal_sizes))
 
 
 def _get_clonal_sizes_list(links: ParticleLinks, time_point_window: int, first_time_point_number: int, last_time_point_number: int) -> ndarray:

@@ -22,7 +22,7 @@ def _show_lineage_tree(window: Window):
         raise UserError("No links specified", "No links were loaded. Cannot plot anything.")
 
     experiment.links.debug_sanity_check()
-    dialog.popup_figure(experiment.name, lambda fig: _plot_lineages(fig, experiment))
+    dialog.popup_figure(window.get_gui_experiment(), lambda fig: _plot_lineages(fig, experiment))
 
 
 def _plot_lineages(fig: Figure, experiment: Experiment):

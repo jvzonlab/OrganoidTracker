@@ -36,7 +36,7 @@ def _view_cell_cycle_length(window: Window):
     except ValueError:
         raise UserError("No resolution set", "The resolution of the images was not set. Cannot plot anything.")
 
-    dialog.popup_figure(experiment.name, lambda fig: _draw_cell_cycle_length(fig, links, time_point_duration_h,
+    dialog.popup_figure(window.get_gui_experiment(), lambda fig: _draw_cell_cycle_length(fig, links, time_point_duration_h,
                                                                              third_variable_getter))
 
 

@@ -1,15 +1,13 @@
 import queue
-import tkinter
 from queue import Queue
 from threading import Thread
 from typing import Optional, Any
 
 from PyQt5.QtCore import QTimer
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QApplication
 
 from autotrack.core import UserError
 from autotrack.core.concurrent import ConcurrentSet
-from autotrack.gui import dialog
 
 
 class Task:
@@ -54,13 +52,13 @@ class Scheduler(Thread):
     _running_tasks: ConcurrentSet
     _finished_queue: Queue  # Queue[_CompletedTask]
 
-    def __init__(self, qt_parent: QWidget):
+    def __init__(self):
         super().__init__()
         self._task_queue = Queue(maxsize=1)
         self._finished_queue = Queue()
         self._running_tasks = ConcurrentSet()
 
-        timer = QTimer(qt_parent)
+        timer = QTimer(QApplication.instance())
         timer.timeout.connect(self._check_for_results_on_gui_thread)
         timer.start(100)
 

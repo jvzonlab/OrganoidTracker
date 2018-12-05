@@ -15,17 +15,17 @@ from autotrack.linking_analysis.cell_fates import CellFateType
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Graph/Cell cycle-Chance of division...": lambda: _show_chance_of_division(window.get_experiment())
+        "Graph/Cell cycle-Chance of division...": lambda: _show_chance_of_division(window)
     }
 
 
-def _show_chance_of_division(experiment: Experiment):
-    links = experiment.links
+def _show_chance_of_division(window: Window):
+    links = window.get_experiment().links
     if not links.has_links():
         raise UserError("No linking data found", "For this graph on cell divisions, it is required to have the cell"
                                                  " links loaded.")
 
-    dialog.popup_figure(experiment.name, lambda figure: _draw_histogram(experiment, figure, links))
+    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_histogram(experiment, figure, links))
 
 
 def _draw_histogram(experiment: Experiment, figure: Figure, links: ParticleLinks):

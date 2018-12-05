@@ -40,7 +40,7 @@ def _load_laetitia_positions(window: Window):
     for file_name in os.listdir(directory):
         _import_file(new_experiment, directory, file_name, z_offset)
 
-    window.set_experiment(new_experiment)
+    window.get_gui_experiment().set_experiment(new_experiment)
     window.redraw_data()
 
 

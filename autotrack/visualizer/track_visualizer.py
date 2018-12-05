@@ -123,7 +123,7 @@ class TrackVisualizer(ExitableImageVisualizer):
                 for lineage_start in self._particles_in_lineage.find_appeared_cells():
                     _plot_displacements(axes, self._particles_in_lineage, resolution, lineage_start)
 
-            dialog.popup_figure(self._experiment.name, draw_function)
+            dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
 
     def _on_command(self, command: str) -> bool:
         if command == "exit":

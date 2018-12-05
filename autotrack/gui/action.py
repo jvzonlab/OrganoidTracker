@@ -41,7 +41,7 @@ def new(window: Window):
     """Starts a new experiment."""
     if dialog.prompt_yes_no("Confirmation",
                             "Are you sure you want to start a new project? Any unsaved changed will be lost."):
-        window.set_experiment(Experiment())
+        window.get_gui_experiment().set_experiment(Experiment())
         visualizer = EmptyVisualizer(window)
         activate(visualizer)
 
@@ -98,7 +98,7 @@ def load_tracking_data(window: Window):
     # Transfer image loader from old experiment
     new_experiment.image_loader(window.get_experiment().image_loader())
 
-    window.set_experiment(new_experiment)
+    window.get_gui_experiment().set_experiment(new_experiment)
     window.redraw_data()
 
 

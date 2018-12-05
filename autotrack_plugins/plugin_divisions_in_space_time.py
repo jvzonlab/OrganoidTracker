@@ -71,7 +71,7 @@ class _SpaceTimeGrid:
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Graph/Cell cycle-Cell cycle lengths over space and time...": lambda: _show_graph(window.get_experiment())
+        "Graph/Cell cycle-Cell cycle lengths over space and time...": lambda: _show_graph(window)
     }
 
 
@@ -148,13 +148,13 @@ def _get_graphing_data(experiment: Experiment) -> _SpaceTimeGrid:
     return grid
 
 
-def _show_graph(experiment: Experiment):
-    grid = _get_graphing_data(experiment)
+def _show_graph(window: Window):
+    grid = _get_graphing_data(window.get_experiment())
 
     if grid.is_empty():
         raise UserError("No cell cycles found", "No complete cell cycles were found in the linking data."
                                                 " Cannot plot anything.")
-    dialog.popup_figure(experiment.name, lambda figure: _draw_graph(figure, grid))
+    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_graph(figure, grid))
 
 
 # experiment = Experiment()

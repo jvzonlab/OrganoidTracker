@@ -28,14 +28,14 @@ def _show_cell_volumes(window: Window):
     def draw(figure: Figure):
         _plot_volumes(window.get_experiment(), figure)
 
-    dialog.popup_figure(window.get_experiment().name, draw)
+    dialog.popup_figure(window.get_gui_experiment(), draw)
 
 
 def _show_cell_intensities(window: Window):
     def draw(figure: Figure):
         _plot_intensities(window.get_experiment(), figure)
 
-    dialog.popup_figure(window.get_experiment().name, draw)
+    dialog.popup_figure(window.get_gui_experiment(), draw)
 
 
 def _get_volume(experiment: Experiment, particle: Particle) -> Optional[float]:

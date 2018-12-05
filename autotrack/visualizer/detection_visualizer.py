@@ -29,7 +29,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
     def __init__(self, window: Window, time_point_number: int, z: int, display_settings: DisplaySettings):
         display_settings.show_next_time_point = False
         display_settings.show_reconstruction = False
-        super().__init__(window, time_point_number, z, display_settings)
+        super().__init__(window, time_point_number=time_point_number, z=z, display_settings=display_settings)
 
     def _get_window_title(self) -> str:
         return "Cell detection"
@@ -74,7 +74,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
         return super()._on_command(command)
 
     def _show_main_view(self):
-        from autotrack.visualizer.image_visualizer import StandardImageVisualizer
+        from autotrack.visualizer.standard_image_visualizer import StandardImageVisualizer
         v = StandardImageVisualizer(self._window, self._time_point.time_point_number(), self._z, self._display_settings)
         activate(v)
 

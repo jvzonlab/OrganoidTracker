@@ -77,7 +77,7 @@ class Visualizer:
                 result_handler(result)
 
         def internal():
-            self._window.get_application().scheduler.add_task(MyTask())
+            self._window.get_scheduler().add_task(MyTask())
         return internal
 
     def draw_view(self):
@@ -196,7 +196,7 @@ __active_visualizer = None # Reference to prevent event handler from being garba
 
 
 def activate(visualizer: Visualizer) -> None:
-    if visualizer.get_window().get_application().scheduler.has_active_tasks():
+    if visualizer.get_window().get_scheduler().has_active_tasks():
         raise core.UserError("Running a task", "Please wait until the current task has been finished before switching"
                                                " to another window.")
     global __active_visualizer

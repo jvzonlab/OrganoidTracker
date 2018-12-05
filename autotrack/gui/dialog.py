@@ -2,15 +2,17 @@ import os as _os
 import subprocess as _subprocess
 import sys as _sys
 import traceback as _traceback
-from typing import Tuple, List, Optional,  Callable
-import matplotlib as _matplotlib
+from typing import Tuple, List, Optional, Callable
+
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow
-from matplotlib.backend_bases import KeyEvent
+from PyQt5.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow, QVBoxLayout, \
+    QLabel
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
 from autotrack.core import UserError, Name
+from autotrack.gui.window import Window
+from autotrack.gui.gui_experiment import GuiExperiment
 
 
 def _window() -> QWidget:
@@ -106,48 +108,61 @@ def popup_message(title: str, message: str):
     QMessageBox.information(_window(), title, message, QMessageBox.Ok, QMessageBox.Ok)
 
 
-class _Popup(QMainWindow):
-    _figure: Figure
-    _save_name: Name
+class _PopupQWindow(QMainWindow):
 
-    def __init__(self, parent: QWidget, figure: Figure, save_name: Name):
+    _figure: Figure
+    _status_text: QLabel
+    _title_text: QLabel
+
+    def __init__(self, parent: QWidget, figure: Figure):
         super().__init__(parent)
 
         self._figure = figure
-        self._save_name = save_name
 
-        figure_widget = FigureCanvasQTAgg(figure)
-        figure_widget.setParent(self)
-        figure_widget.setFocusPolicy(QtCore.Qt.ClickFocus)
-        figure_widget.setFocus()
-        self.setWindowTitle("Figure")
-        self.setCentralWidget(figure_widget)
-        figure_widget.mpl_connect("key_press_event", self._save_handler)
-        figure_widget.draw()
+        # Initialize main grid
+        main_frame = QWidget(parent=self)
+        self.setCentralWidget(main_frame)
+        vertical_boxes = QVBoxLayout(main_frame)
+
+        # Add title
+        self._title_text = QLabel(parent=main_frame)
+        self._title_text.setStyleSheet("font-size: 16pt; font-weight: bold")
+        vertical_boxes.addWidget(self._title_text)
+
+        # Add Matplotlib figure to frame
+        mpl_canvas = FigureCanvasQTAgg(figure)
+        mpl_canvas.setParent(main_frame)
+        mpl_canvas.setFocusPolicy(QtCore.Qt.ClickFocus)
+        mpl_canvas.setFocus()
+        vertical_boxes.addWidget(mpl_canvas)
+        mpl_canvas.draw()
+
+        # Add status bar
+        self._status_text = QLabel(parent=main_frame)
+        vertical_boxes.addWidget(self._status_text)
+
         self.show()
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
-    def _save_handler(self, event: KeyEvent):
-        if event.key != "ctrl+s":
-            return
-        file_name = prompt_save_file("Save figure as...", [
-            ("PNG file", "*.png"), ("PDF file", "*.pdf"), ("SVG file", "*.svg")], suggested_name=self._save_name.get_save_name())
-        if file_name is None:
-            return
-        self._figure.savefig(file_name)
+
+class PopupWindow(Window):
+    pass
 
 
-def popup_figure(save_name: Name, draw_function: Callable[[Figure], None]):
-    """Shows a popup screen with the image"""
+def popup_window(experiment: GuiExperiment) -> PopupWindow:
+    """Pops up a window, which is then returned. You can then for example attach a Visualizer to this window to show
+    something.."""
+    figure = Figure(figsize=(5.5, 5), dpi=95)
+    q_window = _PopupQWindow(_window(), figure)
+    return PopupWindow(q_window, figure, experiment, q_window._title_text, q_window._status_text)
 
-    _matplotlib.rcParams['font.family'] = 'serif'
-    _matplotlib.rcParams['font.size'] = 11
-    _matplotlib.rcParams['font.serif'] = ['Times New Roman', 'Times']
-    _matplotlib.rcParams['mathtext.fontset'] = 'stix'
 
-    figure = Figure(figsize=(5.5, 5), dpi=95, tight_layout=True)
+def popup_figure(experiment: GuiExperiment, draw_function: Callable[[Figure], None]):
+    """Pops up a figure. The figure is drawn inside draw_function."""
+    figure = Figure(figsize=(5.5, 5), dpi=95)
     draw_function(figure)
-    _Popup(_window(), figure, save_name)
+    q_window = _PopupQWindow(_window(), figure)
+    PopupWindow(q_window, figure, experiment, q_window._title_text, q_window._status_text)
 
 
 def prompt_yes_no(title: str, message: str) -> bool:

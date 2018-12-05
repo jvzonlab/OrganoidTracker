@@ -2,9 +2,8 @@ from typing import Dict, Optional
 
 from autotrack.core import TimePoint
 from autotrack.core.particles import Particle
-from autotrack.linking_analysis import lineage_fates, cell_fates
+from autotrack.linking_analysis import cell_fates
 from autotrack.linking_analysis.cell_fates import CellFateType, CellFate
-from autotrack.linking_analysis.lineage_fates import LineageFate
 from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
 
