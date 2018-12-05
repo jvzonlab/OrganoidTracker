@@ -1,13 +1,10 @@
 from typing import Dict, Any
 
-from matplotlib.figure import Figure
-
 from autotrack.core import UserError
-from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
-from autotrack.linking_analysis import lineage_drawing
 from autotrack.linking_analysis.lineage_drawing import LineageDrawing
+from autotrack.visualizer import Visualizer
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -21,15 +18,19 @@ def _show_lineage_tree(window: Window):
     if not experiment.links.has_links():
         raise UserError("No links specified", "No links were loaded. Cannot plot anything.")
 
-    experiment.links.debug_sanity_check()
-    dialog.popup_figure(window.get_gui_experiment(), lambda fig: _plot_lineages(fig, experiment))
+    dialog.popup_visualizer(window.get_gui_experiment(), LineageTreeVisualizer)
 
 
-def _plot_lineages(fig: Figure, experiment: Experiment):
-    axes = fig.gca()
+class LineageTreeVisualizer(Visualizer):
 
-    width = LineageDrawing(experiment.links).draw_lineages(axes, show_cell_id=False)
+    def draw_view(self):
+        axes = self._ax
+        experiment = self._experiment
 
-    axes.set_ylabel("Time (time points)")
-    axes.set_ylim([experiment.last_time_point_number(), experiment.first_time_point_number() - 1])
-    axes.set_xlim([-0.1, width + 0.1])
+        width = LineageDrawing(experiment.links).draw_lineages(axes, show_cell_id=False)
+
+        axes.set_ylabel("Time (time points)")
+        axes.set_ylim([experiment.last_time_point_number(), experiment.first_time_point_number() - 1])
+        axes.set_xlim([-0.1, width + 0.1])
+
+        self._fig.canvas.draw()

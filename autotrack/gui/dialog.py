@@ -2,9 +2,10 @@ import os as _os
 import subprocess as _subprocess
 import sys as _sys
 import traceback as _traceback
-from typing import Tuple, List, Optional, Callable
+from typing import Tuple, List, Optional, Callable, ClassVar
 
 from PyQt5 import QtCore
+from PyQt5.QtGui import QCloseEvent
 from PyQt5.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow, QVBoxLayout, \
     QLabel
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
@@ -113,11 +114,13 @@ class _PopupQWindow(QMainWindow):
     _figure: Figure
     _status_text: QLabel
     _title_text: QLabel
+    _on_close: Callable
 
-    def __init__(self, parent: QWidget, figure: Figure):
+    def __init__(self, parent: QWidget, figure: Figure, on_close: Callable):
         super().__init__(parent)
 
         self._figure = figure
+        self._on_close = on_close
 
         # Initialize main grid
         main_frame = QWidget(parent=self)
@@ -144,17 +147,32 @@ class _PopupQWindow(QMainWindow):
         self.show()
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
+    def closeEvent(self, event: QCloseEvent):
+        try:
+            self._on_close()
+        except BaseException as e:
+            popup_exception(e)
+
 
 class PopupWindow(Window):
+
     pass
 
 
-def popup_window(experiment: GuiExperiment) -> PopupWindow:
+def popup_visualizer(experiment: GuiExperiment, visualizer_class: ClassVar):
     """Pops up a window, which is then returned. You can then for example attach a Visualizer to this window to show
-    something.."""
+    something."""
     figure = Figure(figsize=(5.5, 5), dpi=95)
-    q_window = _PopupQWindow(_window(), figure)
-    return PopupWindow(q_window, figure, experiment, q_window._title_text, q_window._status_text)
+
+    def close_listener():
+        visualizer.detach()
+    q_window = _PopupQWindow(_window(), figure, close_listener)
+    window = PopupWindow(q_window, figure, experiment, q_window._title_text, q_window._status_text)
+
+    from autotrack.visualizer import Visualizer
+    visualizer: Visualizer = visualizer_class(window)
+    visualizer.attach()
+    visualizer.draw_view()
 
 
 def popup_figure(experiment: GuiExperiment, draw_function: Callable[[Figure], None]):

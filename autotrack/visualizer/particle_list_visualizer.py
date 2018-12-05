@@ -80,6 +80,7 @@ class ParticleListVisualizer(Visualizer):
                 self._window.set_figure_title(self.get_message_no_particles())
             else:
                 self._window.set_figure_title(self.get_message_press_right())
+            self._fig.canvas.draw()
             return
 
         self._zoom_to_cell()
