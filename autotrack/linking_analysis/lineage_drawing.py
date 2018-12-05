@@ -1,5 +1,5 @@
 # File originally written by Jeroen van Zon
-from typing import Callable, Tuple
+from typing import Callable, Tuple, Union
 
 from matplotlib import cm
 from matplotlib.axes import Axes
@@ -9,8 +9,13 @@ from autotrack.core.links import LinkingTrack, ParticleLinks
 from autotrack.core.resolution import ImageResolution
 
 # Type definition: a color getter is a function that takes an int (time point) and the linking track, and returns a
-# float value.
-_ColorGetter = Callable[[int, LinkingTrack], float]
+# Matplotlib color
+_ColorGetter = Callable[[int, LinkingTrack], Union[
+    Tuple[float, float, float],
+    Tuple[float, float, float, float],
+    str,
+    float
+]]
 
 
 def _get_lineage_drawing_start_time(lineage: LinkingTrack) -> int:
@@ -106,18 +111,17 @@ class LineageDrawing:
                 axes.plot([x_offset + X[0], x_offset + X[1]], [T[0], T[0]], '-k')
         return diagram_width
 
-    def draw_lineages_colored(self, axes: Axes, color_getter: _ColorGetter, data_color_range: Tuple[float, float],
-                              image_resolution: ImageResolution):
+    def draw_lineages_colored(self, axes: Axes, color_getter: _ColorGetter, image_resolution: ImageResolution):
         """Draws lineage trees that are color coded. You can for example color cells by z position, by track
         length, etc. Returns the width of the lineage tree in Matplotlib pixels."""
         x_offset = 0
         for lineage in self.links.find_starting_tracks():
-            width = self._draw_single_lineage_colored(axes, lineage, x_offset, color_getter, data_color_range, image_resolution)
+            width = self._draw_single_lineage_colored(axes, lineage, x_offset, color_getter, image_resolution)
             x_offset += width
         return x_offset
 
     def _draw_single_lineage_colored(self, ax: Axes, lineage: LinkingTrack, x_offset: int, color_getter: _ColorGetter,
-                                     data_color_range: Tuple[float, float], image_resolution: ImageResolution) -> int:
+                                     image_resolution: ImageResolution) -> int:
         """Draw lineage with given function used for color. You can for example color cells by z position, by track
         length, etc. Returns the width of the lineage tree in Matplotlib pixels."""
         (diagram_width, line_list) = self._get_lineage_draw_data(lineage)
@@ -143,10 +147,8 @@ class LineageDrawing:
                     # get time points for current sub time interval i
                     t0 = time_point_of_line * image_resolution.time_point_interval_h
                     t1 = (time_point_of_line + 1) * image_resolution.time_point_interval_h
-                    # get data value
-                    val = color_getter(time_point_of_line, linking_track)
                     # get color corresponding to current z value
-                    color_val = cm.jet((val - data_color_range[0]) / (data_color_range[1] - data_color_range[0]))
+                    color_val = color_getter(time_point_of_line, linking_track)
                     # save line data
                     lines_XY.append([(x_offset + X, t0), (x_offset + X, t1)])
                     lines_col.append(color_val)
@@ -161,16 +163,14 @@ class LineageDrawing:
                 time_point_of_line = time_points_of_line[0]
                 time = time_point_of_line * image_resolution.time_point_interval_h
 
-                # get z value
-                val = color_getter(time_point_of_line, linking_track)
                 # get color corresponding to current z value
-                color_val = cm.jet((val - data_color_range[0]) / (data_color_range[1] - data_color_range[0]))
+                color_val = color_getter(time_point_of_line, linking_track)
                 # save line data
                 lines_XY.append(
                     [(x_offset + X[0], time), (x_offset + X[1], time)])
                 lines_col.append(color_val)
 
-        line_segments = LineCollection(lines_XY, colors=lines_col, lw=3)
+        line_segments = LineCollection(lines_XY, colors=lines_col, lw=1.5)
         ax.add_collection(line_segments)
 
         return diagram_width

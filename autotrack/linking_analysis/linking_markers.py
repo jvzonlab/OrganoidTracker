@@ -70,7 +70,7 @@ def set_track_start_marker(links: ParticleLinks, particle: Particle, start_marke
         links.set_particle_data(particle, "starting", start_marker.name.lower())
 
 
-def get_errored_particles(links: ParticleLinks) -> Iterable[Particle]:
+def find_errored_particles(links: ParticleLinks) -> Iterable[Particle]:
     """Gets all particles that have a (non suppressed) error."""
 
     with_error_marker = links.find_all_particles_with_data("error")

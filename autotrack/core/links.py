@@ -10,6 +10,8 @@ class LinkingTrack:
     # Particles by time point. Position 0 contains the particle at min_time_point, position 1 min_time_point + 1, etc.
     # List may contain None, but never as the first or last entry (then you would just resize the list)
     _particles_by_time_point: List[Optional[Particle]]
+
+    # Links to other tracks that follow or precede this track
     _next_tracks: List["LinkingTrack"]
     _previous_tracks: List["LinkingTrack"]
 

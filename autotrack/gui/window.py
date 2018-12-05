@@ -70,13 +70,6 @@ class Window:
 
     def set_status(self, text: str):
         """Sets the small text below the figure."""
-
-        # Expand to at least six lines to avoid resizing the box so much
-        line_count = text.count('\n') + 1
-        while line_count < 6:
-            text = "\n" + text
-            line_count += 1
-
         self.__status_text.setText(text)
 
     def set_figure_title(self, text: str):

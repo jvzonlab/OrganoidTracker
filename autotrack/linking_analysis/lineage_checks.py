@@ -42,7 +42,7 @@ def _group_by_track(links: ParticleLinks, particles: Iterable[Particle]) -> Dict
 def get_problematic_lineages(links: ParticleLinks, crumbs: AbstractSet[Particle]) -> List[LineageWithErrors]:
     """Gets a list of all lineages with warnings in the experiment. The provided "crumbs" are placed in the right
     lineages, so that you can see to what lineages those cells belong."""
-    particles_with_errors = linking_markers.get_errored_particles(links)
+    particles_with_errors = linking_markers.find_errored_particles(links)
     track_to_errors = _group_by_track(links, particles_with_errors)
     track_to_crumbs = _group_by_track(links, crumbs)
 

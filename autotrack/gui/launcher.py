@@ -89,6 +89,13 @@ class MainWindow(Window):
         """Gets all installed plugins. Do not modify the returned list."""
         return self.__plugins
 
+    def set_status(self, text: str):
+        # Expand to at least six lines to avoid resizing the box so much
+        line_count = text.count('\n') + 1
+        while line_count < 6:
+            text = "\n" + text
+            line_count += 1
+        super().set_status(text)
 
 def launch_window(experiment: Experiment) -> MainWindow:
     """Launches a window with an empty figure. Doesn't start the main loop yet. Use and activate a visualizer to add
