@@ -93,6 +93,7 @@ class AbstractImageVisualizer(Visualizer):
 
     def draw_view(self):
         self._clear_axis()
+        self._ax.set_facecolor((0.2, 0.2, 0.2))
         self.__particles_near_visible_layer.clear()
         self._draw_image()
         self._draw_particles()

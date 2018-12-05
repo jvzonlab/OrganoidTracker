@@ -6,7 +6,7 @@ from typing import Dict, Any
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon, QKeyEvent
+from PyQt5.QtGui import QIcon, QKeyEvent, QPalette
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QWidget, QApplication, QVBoxLayout, QLabel, QLineEdit
 from matplotlib.backend_bases import KeyEvent
@@ -128,6 +128,10 @@ def launch_window(experiment: Experiment) -> MainWindow:
     mpl_canvas.setFocusPolicy(Qt.ClickFocus)
     mpl_canvas.setFocus()
     vertical_boxes.addWidget(mpl_canvas)
+
+    # Set figure background color to that of the main_frame
+    background_color = main_frame.palette().color(QPalette.Background)
+    fig.set_facecolor((background_color.redF(), background_color.greenF(), background_color.blueF()))
 
     # Add status bar
     status_box = QLabel(parent=main_frame)

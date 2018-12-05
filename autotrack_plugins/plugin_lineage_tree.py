@@ -27,7 +27,8 @@ def _show_lineage_tree(window: Window):
 class LineageTreeVisualizer(Visualizer):
 
     def draw_view(self):
-        axes = self._ax
+        self._clear_axis()
+
         experiment = self._experiment
         links = experiment.links
 
@@ -41,9 +42,9 @@ class LineageTreeVisualizer(Visualizer):
         resolution = ImageResolution(1, 1, 1, 60)
         width = LineageDrawing(links).draw_lineages_colored(self._ax, color_getter, resolution)
 
-        axes.set_ylabel("Time (time points)")
-        axes.set_ylim([experiment.last_time_point_number(), experiment.first_time_point_number() - 1])
-        axes.set_xlim([-0.1, width + 0.1])
+        self._ax.set_ylabel("Time (time points)")
+        self._ax.set_ylim([experiment.last_time_point_number(), experiment.first_time_point_number() - 1])
+        self._ax.set_xlim([-0.1, width + 0.1])
 
         self.update_status("Note: this lineage tree updates live.")
         self._fig.canvas.draw()

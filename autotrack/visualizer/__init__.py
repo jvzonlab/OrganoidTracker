@@ -63,6 +63,7 @@ class Visualizer:
         self._ax.clear()
         if xlim[1] - xlim[0] > 2:
             # Only preserve scale if some sensible value was recorded
+            ylim = [max(ylim), min(ylim)]  # Make sure y-axis is inverted
             self._ax.set_xlim(*xlim)
             self._ax.set_ylim(*ylim)
             self._ax.set_autoscale_on(False)
