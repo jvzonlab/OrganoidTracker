@@ -7,7 +7,7 @@ from typing import Tuple, List, Optional, Callable, ClassVar
 from PyQt5 import QtCore
 from PyQt5.QtGui import QCloseEvent
 from PyQt5.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow, QVBoxLayout, \
-    QLabel
+    QLabel, QSizePolicy
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
@@ -129,7 +129,7 @@ class _PopupQWindow(QMainWindow):
 
         # Add title
         self._title_text = QLabel(parent=main_frame)
-        self._title_text.setStyleSheet("font-size: 16pt; font-weight: bold")
+        self._title_text.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
         vertical_boxes.addWidget(self._title_text)
 
         # Add Matplotlib figure to frame
@@ -142,6 +142,7 @@ class _PopupQWindow(QMainWindow):
 
         # Add status bar
         self._status_text = QLabel(parent=main_frame)
+        self._status_text.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
         vertical_boxes.addWidget(self._status_text)
 
         self.show()

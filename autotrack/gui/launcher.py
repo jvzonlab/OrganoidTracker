@@ -7,7 +7,7 @@ from typing import Dict, Any
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QKeyEvent, QPalette
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QMainWindow, QSizePolicy
 from PyQt5.QtWidgets import QWidget, QApplication, QVBoxLayout, QLabel, QLineEdit
 from matplotlib.backend_bases import KeyEvent
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
@@ -120,6 +120,7 @@ def launch_window(experiment: Experiment) -> MainWindow:
     # Add title
     title = QLabel(parent=main_frame)
     title.setStyleSheet("font-size: 16pt; font-weight: bold")
+    title.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
     vertical_boxes.addWidget(title)
 
     # Add Matplotlib figure to frame
@@ -135,6 +136,7 @@ def launch_window(experiment: Experiment) -> MainWindow:
 
     # Add status bar
     status_box = QLabel(parent=main_frame)
+    status_box.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
     vertical_boxes.addWidget(status_box)
 
     # Add command box
