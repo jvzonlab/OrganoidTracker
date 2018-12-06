@@ -1,5 +1,5 @@
 from pprint import pprint
-from typing import Optional, Dict, Iterable, List, Set, Union, Tuple, Any, ItemsView
+from typing import Optional, Dict, Iterable, List, Set, Union, Tuple, Any, ItemsView, Callable
 
 from autotrack.core.particles import Particle
 
@@ -496,7 +496,7 @@ class ParticleLinks:
         old_track._next_tracks = [track_after_split]
 
         # Update indices for changed tracks
-        self._tracks.append(track_after_split)
+        self._tracks.insert(self._tracks.index(old_track) + 1, track_after_split)
         for particle_after_split in particles_after_split:
             self._particle_to_track[particle_after_split] = track_after_split
 
@@ -576,3 +576,8 @@ class ParticleLinks:
     def get_track(self, particle: Particle) -> Optional[LinkingTrack]:
         """Gets the track the given particle belong in."""
         return self._particle_to_track.get(particle)
+
+    def sort_tracks(self, key: Callable[[LinkingTrack], Any]):
+        """Sorts the tracks, which affects the order in which most find_ functions return data (like
+        find_starting_tracks)."""
+        self._tracks.sort(key=key)
