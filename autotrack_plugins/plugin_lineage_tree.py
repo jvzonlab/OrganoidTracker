@@ -7,6 +7,7 @@ from autotrack.gui import dialog
 from autotrack.gui.window import Window
 from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.lineage_drawing import LineageDrawing
+from autotrack.linking_analysis.linking_markers import EndMarker
 from autotrack.visualizer import Visualizer
 
 
@@ -24,6 +25,10 @@ def _show_lineage_tree(window: Window):
     dialog.popup_visualizer(window.get_gui_experiment(), LineageTreeVisualizer)
 
 
+def _get_track_x(linking_track: LinkingTrack):
+    return linking_track.find_first().x
+
+
 class LineageTreeVisualizer(Visualizer):
 
     def draw_view(self):
@@ -31,12 +36,16 @@ class LineageTreeVisualizer(Visualizer):
 
         experiment = self._experiment
         links = experiment.links
+        links.sort_tracks(_get_track_x)
 
         tracks_with_errors = self._find_tracks_with_errors()
 
         def color_getter(time_point_number: int, track: LinkingTrack) -> Tuple[float, float, float]:
             if track in tracks_with_errors:
                 return 0.7, 0.7, 0.7
+            if track.max_time_point_number() - time_point_number < 10 and\
+                    linking_markers.get_track_end_marker(links, track.find_last()) == EndMarker.DEAD:
+                return 1, 0, 0
             return 0, 0, 0
 
         resolution = ImageResolution(1, 1, 1, 60)
