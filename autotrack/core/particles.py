@@ -10,15 +10,19 @@ from autotrack.core.shape import ParticleShape, UnknownShape
 
 class Particle:
     """A detected particle. Only the 3D + time position is stored here, see the ParticleShape class for the shape."""
+
+    __slots__ = ["x", "y", "z", "_time_point_number"]  # Optimization - Google "python slots"
+
     x: float
     y: float
     z: float
-    _time_point_number: Optional[int] = None
+    _time_point_number: Optional[int]
 
     def __init__(self, x: float, y: float, z: float):
         self.x = float(x)
         self.y = float(y)
         self.z = float(z)
+        self._time_point_number = None
 
     def distance_squared(self, other: "Particle", z_factor: float = 5) -> float:
         """Gets the squared distance. Working with squared distances instead of normal ones gives a much better
