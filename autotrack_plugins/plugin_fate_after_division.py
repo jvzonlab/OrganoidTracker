@@ -20,17 +20,17 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
 
 
 def _show_chance_of_division(window: Window):
-    links = window.get_experiment().links
-    if not links.has_links():
+    experiment = window.get_experiment()
+    if not experiment.links.has_links():
         raise UserError("No linking data found", "For this graph on cell divisions, it is required to have the cell"
                                                  " links loaded.")
 
-    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_histogram(experiment, figure, links))
+    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_histogram(experiment, figure))
 
 
-def _draw_histogram(experiment: Experiment, figure: Figure, links: ParticleLinks):
+def _draw_histogram(experiment: Experiment, figure: Figure):
     time_points_per_bin = 10
-    bins = _classify_cell_divisions(experiment, links, time_points_per_bin)
+    bins = _classify_cell_divisions(experiment, time_points_per_bin)
     if len(bins) == 0:
         raise UserError("No cell cycles found",
                         "The linking data contains no full cell cycles, so we cannot plot anything.")
@@ -96,9 +96,10 @@ class _Bin:
         return self.total_number_of_cells() == 0
 
 
-def _classify_cell_divisions(experiment: Experiment, links: ParticleLinks, time_points_per_bin: int) -> List[_Bin]:
+def _classify_cell_divisions(experiment: Experiment,time_points_per_bin: int) -> List[_Bin]:
     """Classifies each cell division in the data: is it the last cell division in a lineage, or will there be more after
     this? The cell divisions are returned in bins. No empty bins are returned."""
+    links = experiment.links
     bins = list()
 
     for cell_division in mother_finder.find_families(links):
