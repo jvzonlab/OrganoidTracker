@@ -5,6 +5,7 @@ from scipy.ndimage import morphology
 import tifffile
 
 from autotrack.core.experiment import Experiment
+from autotrack.imaging import bits
 from autotrack.particle_detection import thresholding
 from os import path
 
@@ -14,7 +15,7 @@ def perform_for_experiment(experiment: Experiment, output_folder: str, block_siz
     Path(output_folder).mkdir(parents=True, exist_ok=True)
     for time_point in experiment.time_points():
         print("Working on time point " + str(time_point.time_point_number()) + "...")
-        image = thresholding.image_to_8bit(experiment.get_image_stack(time_point))
+        image = bits.image_to_8bit(experiment.get_image_stack(time_point))
         threshold = numpy.empty_like(image)
 
         # Distance transform from threshold
@@ -22,7 +23,7 @@ def perform_for_experiment(experiment: Experiment, output_folder: str, block_siz
         distances = numpy.empty_like(image, dtype=numpy.float64)
         morphology.distance_transform_edt(threshold.max() - threshold, sampling=sampling, distances=distances)
         distances[distances > max_distance] = max_distance
-        distances_8bit = thresholding.image_to_8bit(distances)
+        distances_8bit = bits.image_to_8bit(distances)
         tifffile.imsave(path.join(output_folder, "from-threshold-t%03d.tif" % time_point.time_point_number()),
                         distances_8bit)
 
@@ -32,7 +33,7 @@ def perform_for_experiment(experiment: Experiment, output_folder: str, block_siz
             threshold[int(particle.z), int(particle.y), int(particle.x)] = 255
         morphology.distance_transform_edt(threshold.max() - threshold, sampling=sampling, distances=distances)
         distances[distances > max_distance] = max_distance
-        distances_8bit = thresholding.image_to_8bit(distances)
+        distances_8bit = bits.image_to_8bit(distances)
         tifffile.imsave(path.join(output_folder, "from-points-t%03d.tif" % time_point.time_point_number()),
                         distances_8bit)
 

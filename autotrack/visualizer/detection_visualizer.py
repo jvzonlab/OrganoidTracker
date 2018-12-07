@@ -9,6 +9,7 @@ from autotrack.core.gaussian import Gaussian
 from autotrack.core.particles import Particle
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
+from autotrack.imaging import bits
 from autotrack.particle_detection import thresholding, watershedding, gaussian_fit, smoothing, missed_cell_finder
 from autotrack.visualizer import activate, DisplaySettings
 from autotrack.visualizer.abstract_image_visualizer import AbstractImageVisualizer
@@ -130,7 +131,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
     def _get_8bit_images(self):
         images = self._experiment.get_image_stack(self._time_point)
         if images is not None:
-            return thresholding.image_to_8bit(images)
+            return bits.image_to_8bit(images)
         return None
 
     def _display_image(self, image_stack: ndarray, color_map=None):

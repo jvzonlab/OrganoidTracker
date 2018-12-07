@@ -11,8 +11,6 @@ from autotrack.segmentation import iso_intensity_curvature
 from autotrack.segmentation.iso_intensity_curvature import ImageDerivatives
 
 
-def image_to_8bit(image: ndarray):
-    return cv2.convertScaleAbs(image, alpha=256 / image.max(), beta=0)
 
 
 def background_removal(orignal_image_8bit: ndarray, threshold: ndarray):

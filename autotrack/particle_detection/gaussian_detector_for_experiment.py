@@ -6,6 +6,7 @@ import numpy
 from autotrack.core import TimePoint
 from autotrack.core.experiment import Experiment
 from autotrack.core.shape import GaussianShape, UnknownShape
+from autotrack.imaging import bits
 from autotrack.particle_detection import thresholding, watershedding, gaussian_fit, smoothing
 
 
@@ -21,7 +22,7 @@ def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, thres
     # Acquire images
     particles = list(experiment.particles.of_time_point(time_point))
     images = experiment.get_image_stack(time_point)
-    images = thresholding.image_to_8bit(images)
+    images = bits.image_to_8bit(images)
 
     # Create a threshold
     images_smoothed = smoothing.get_smoothed(images, int(threshold_block_size / 2))
