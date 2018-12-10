@@ -82,6 +82,7 @@ class Scheduler(Thread):
             pass
         except BaseException as e:
             # Unhandled exception, don't let PyQt catch this
+            from autotrack.gui import dialog
             dialog.popup_exception(e)
 
     def run(self):
