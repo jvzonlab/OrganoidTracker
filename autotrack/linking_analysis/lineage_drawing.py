@@ -103,7 +103,7 @@ class LineageDrawing:
                 axes.plot([x_offset + X[0], x_offset + X[0]], T, '-k')
                 if show_cell_id:
                     # print cell id
-                    cell = linking_track.find_first()
+                    cell = linking_track.find_first_particle()
                     axes.annotate(f"({cell.x:.1f}, {cell.y:.1f}, {cell.z:.1f})", (x_offset + X[0], T[0]))
             if len(X) == 2:
                 # two x positions, so this a horizontal line indicating division

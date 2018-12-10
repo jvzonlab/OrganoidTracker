@@ -24,8 +24,8 @@ def get_next_division(links: ParticleLinks, particle: Particle) -> Optional[Fami
     if len(next_tracks) == 0:
         return None
 
-    next_daughters = [next_track.find_first() for next_track in next_tracks]
+    next_daughters = [next_track.find_first_particle() for next_track in next_tracks]
     if len(next_daughters) != 2:
-        raise ValueError("Cell " + str(track.find_last()) + " has multiple daughters: " + str(next_daughters))
+        raise ValueError("Cell " + str(track.find_last_particle()) + " has multiple daughters: " + str(next_daughters))
 
-    return Family(track.find_last(), *next_daughters)
+    return Family(track.find_last_particle(), *next_daughters)

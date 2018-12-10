@@ -37,7 +37,7 @@ class LinkingTrack:
             search_index -= 1
 
         # We ended up at the first time point of this track, continue search in previous tracks
-        return {track.find_last() for track in self._previous_tracks}
+        return {track.find_last_particle() for track in self._previous_tracks}
 
     def _find_futures(self, time_point_number: int) -> Set[Particle]:
         """Returns all particles directly linked to the particle at the given time point."""
@@ -49,18 +49,20 @@ class LinkingTrack:
             search_index += 1
 
         # We ended up at the last time point of this track, continue search in next tracks
-        return {track.find_first() for track in self._next_tracks}
+        return {track.find_first_particle() for track in self._next_tracks}
 
-    def find_first(self) -> Particle:
+    def find_first_particle(self) -> Particle:
         """Returns the first particle in this track."""
         return self._particles_by_time_point[0]
 
-    def find_last(self) -> Particle:
+    def find_last_particle(self) -> Particle:
         """Returns the last particle in this track."""
         return self._particles_by_time_point[-1]
 
-    def find_all_descending_tracks(self) -> Iterable["LinkingTrack"]:
+    def find_all_descending_tracks(self, include_self: bool = False) -> Iterable["LinkingTrack"]:
         """Iterates over all tracks that will follow this one, and the one after thet, etc."""
+        if include_self:
+            yield self
         for next_track in self._next_tracks:
             yield next_track
             yield from next_track.find_all_descending_tracks()
@@ -296,7 +298,7 @@ class ParticleLinks:
         as cells that have no links to the past in the first time point are not that interesting."""
         for track in self._tracks:
             if time_point_number_to_ignore is None or time_point_number_to_ignore != track._min_time_point_number:
-                yield track.find_first()
+                yield track.find_first_particle()
 
     def add_link(self, particle1: Particle, particle2: Particle):
         """Adds a link between the particles. The linking network will be initialized if necessary."""
@@ -445,7 +447,7 @@ class ParticleLinks:
 
             # Return links to next track
             for next_track in track._next_tracks:
-                yield previous_particle, next_track.find_first()
+                yield previous_particle, next_track.find_first_particle()
 
             # (links to previous track are NOT returned, those will be included by that previous track as links to the
             # next track)
@@ -463,9 +465,9 @@ class ParticleLinks:
 
         # We can now re-establish the links between all tracks
         for track in self._tracks:
-            track_copy = copy._particle_to_track[track.find_first()]
+            track_copy = copy._particle_to_track[track.find_first_particle()]
             for next_track in track._next_tracks:
-                next_track_copy = copy._particle_to_track[next_track.find_first()]
+                next_track_copy = copy._particle_to_track[next_track.find_first_particle()]
                 track_copy._next_tracks.append(next_track_copy)
                 next_track_copy._previous_tracks.append(track_copy)
 
@@ -540,9 +542,9 @@ class ParticleLinks:
         for track in self._tracks:
             if len(track._particles_by_time_point) == 0:
                 raise ValueError(f"Empty track at t={track._min_time_point_number}")
-            if track.find_first() is None:
+            if track.find_first_particle() is None:
                 raise ValueError(f"{track} has no first particle")
-            if track.find_last() is None:
+            if track.find_last_particle() is None:
                 raise ValueError(f"{track} has no last particle")
             for particle in track.particles():
                 if particle not in self._particle_to_track:
@@ -581,3 +583,12 @@ class ParticleLinks:
         """Sorts the tracks, which affects the order in which most find_ functions return data (like
         find_starting_tracks)."""
         self._tracks.sort(key=key)
+
+    def find_all_tracks_in_time_point(self, time_point_number: int) -> Iterable[LinkingTrack]:
+        """This method finds all tracks that run trough the given time point."""
+        for track in self._tracks:
+            if track._min_time_point_number > time_point_number:
+                continue
+            if track.max_time_point_number() < time_point_number:
+                continue
+            yield track

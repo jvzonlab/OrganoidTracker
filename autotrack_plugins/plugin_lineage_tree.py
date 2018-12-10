@@ -26,7 +26,7 @@ def _show_lineage_tree(window: Window):
 
 
 def _get_track_x(linking_track: LinkingTrack):
-    return linking_track.find_first().x
+    return linking_track.find_first_particle().x
 
 
 class LineageTreeVisualizer(Visualizer):
@@ -44,7 +44,7 @@ class LineageTreeVisualizer(Visualizer):
             if track in tracks_with_errors:
                 return 0.7, 0.7, 0.7
             if track.max_time_point_number() - time_point_number < 10 and\
-                    linking_markers.get_track_end_marker(links, track.find_last()) == EndMarker.DEAD:
+                    linking_markers.get_track_end_marker(links, track.find_last_particle()) == EndMarker.DEAD:
                 return 1, 0, 0
             return 0, 0, 0
 
