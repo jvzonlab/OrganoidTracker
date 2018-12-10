@@ -6,9 +6,8 @@ import numpy
 from numpy import ndarray
 
 from autotrack.core.particles import Particle
-from autotrack.particle_detection import watershedding
-from autotrack.segmentation import iso_intensity_curvature
-from autotrack.segmentation.iso_intensity_curvature import ImageDerivatives
+from autotrack.particle_detection import watershedding, iso_intensity_curvature
+from autotrack.particle_detection.iso_intensity_curvature import ImageDerivatives
 
 
 

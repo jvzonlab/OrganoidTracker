@@ -5,7 +5,7 @@ import math
 import numpy
 from numpy import ndarray
 
-from autotrack.segmentation.iso_intensity_curvature import get_negative_gaussian_curvatures, ImageDerivatives
+from autotrack.particle_detection.iso_intensity_curvature import get_negative_gaussian_curvatures, ImageDerivatives
 
 SQRT_OF_2PI = math.sqrt(2 * math.pi)
 
