@@ -8,6 +8,7 @@ from PyQt5 import QtCore
 from PyQt5.QtGui import QCloseEvent
 from PyQt5.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow, QVBoxLayout, \
     QLabel, QSizePolicy
+from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
@@ -140,6 +141,9 @@ class _PopupQWindow(QMainWindow):
         vertical_boxes.addWidget(mpl_canvas)
         mpl_canvas.draw()
 
+        # Add Matplotlib toolbar
+        self.addToolBar(NavigationToolbar2QT(mpl_canvas, self))
+
         # Add status bar
         self._status_text = QLabel(parent=main_frame)
         self._status_text.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
@@ -178,9 +182,12 @@ def popup_visualizer(experiment: GuiExperiment, visualizer_class: ClassVar):
 
 def popup_figure(experiment: GuiExperiment, draw_function: Callable[[Figure], None]):
     """Pops up a figure. The figure is drawn inside draw_function."""
+    def do_nothing_on_close():
+        pass  # Used to indicate that no action needs to be taken once the window closes
+
     figure = Figure(figsize=(5.5, 5), dpi=95)
     draw_function(figure)
-    q_window = _PopupQWindow(_window(), figure)
+    q_window = _PopupQWindow(_window(), figure, do_nothing_on_close)
     PopupWindow(q_window, figure, experiment, q_window._title_text, q_window._status_text)
 
 
