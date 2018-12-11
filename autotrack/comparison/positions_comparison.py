@@ -1,6 +1,6 @@
 from autotrack.comparison.report import ComparisonReport, Category, Statistics
 from autotrack.core.experiment import Experiment
-from autotrack.core.find_nearest_neighbors import find_nearest_particles
+from autotrack.linking.nearby_particle_finder import find_close_particles
 
 
 _DETECTIONS_FALSE_NEGATIVES = Category("Missed detections")
@@ -29,7 +29,7 @@ def compare_positions(ground_truth: Experiment, scratch: Experiment, max_distanc
         baseline_particles = set(ground_truth.particles.of_time_point(time_point))
         scratch_particles = set(scratch.particles.of_time_point(time_point))
         for baseline_particle in baseline_particles:
-            nearest_in_scratch = find_nearest_particles(scratch_particles, around=baseline_particle, tolerance=1)
+            nearest_in_scratch = find_close_particles(scratch_particles, around=baseline_particle, tolerance=1)
             if len(nearest_in_scratch) == 0:
                 report.add_data(_DETECTIONS_FALSE_NEGATIVES, baseline_particle, "No candidates in the scratch data left.")
                 continue
@@ -42,7 +42,7 @@ def compare_positions(ground_truth: Experiment, scratch: Experiment, max_distanc
 
         # Only the scratch particles with no corresponding baseline particle are left
         for scratch_particle in scratch_particles:
-            nearest_in_baseline = find_nearest_particles(baseline_particles, around=scratch_particle, tolerance=1)
+            nearest_in_baseline = find_close_particles(baseline_particles, around=scratch_particle, tolerance=1)
             distance_um = scratch_particle.distance_um(nearest_in_baseline[0], resolution)
             if distance_um > 3.3333 * max_distance_um:
                 # Assume cell is in unannotated region

@@ -1,11 +1,10 @@
 from networkx import Graph
 
 from autotrack.core.links import ParticleLinks
-from autotrack.core.particles import Particle, get_closest_particle, ParticleCollection
+from autotrack.core.particles import Particle, ParticleCollection
 from autotrack.core import TimePoint
 from autotrack.core.experiment import Experiment
-from autotrack.linking import particle_flow
-from autotrack.core.find_nearest_neighbors import find_nearest_particles
+from autotrack.linking.nearby_particle_finder import find_close_particles
 
 
 def nearest_neighbor(experiment: Experiment, tolerance: float = 1.0, over_previous: bool = False) -> ParticleLinks:
@@ -57,7 +56,7 @@ def _add_nodes(graph: Graph, experiment: Experiment, time_point: TimePoint) -> N
 def _add_nearest_edges(links: ParticleLinks, particles: ParticleCollection, time_point_previous: TimePoint, time_point_current: TimePoint, tolerance: float):
     """Adds edges pointing towards previous time point, making the shortest one the preferred."""
     for particle in particles.of_time_point(time_point_current):
-        nearby_list = find_nearest_particles(particles.of_time_point(time_point_previous), particle, tolerance, max_amount=5)
+        nearby_list = find_close_particles(particles.of_time_point(time_point_previous), particle, tolerance, max_amount=5)
         for nearby_particle in nearby_list:
             links.add_link(particle, nearby_particle)
 
@@ -65,7 +64,7 @@ def _add_nearest_edges(links: ParticleLinks, particles: ParticleCollection, time
 def _add_nearest_edges_extra(links: ParticleLinks, particles: ParticleCollection, time_point_current: TimePoint, time_point_next: TimePoint, tolerance: float):
     """Adds edges to the next time point, which is useful if _add_edges missed some possible links."""
     for particle in particles.of_time_point(time_point_current):
-        nearby_list = find_nearest_particles(particles.of_time_point(time_point_next), particle, tolerance, max_amount=5)
+        nearby_list = find_close_particles(particles.of_time_point(time_point_next), particle, tolerance, max_amount=5)
         for nearby_particle in nearby_list:
             links.add_link(particle, nearby_particle)
 

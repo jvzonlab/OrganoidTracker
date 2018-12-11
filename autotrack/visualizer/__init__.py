@@ -9,11 +9,12 @@ from matplotlib.figure import Figure, Axes
 
 from autotrack import core
 from autotrack.core import TimePoint
-from autotrack.core.particles import Particle, get_closest_particle
+from autotrack.core.particles import Particle
 from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog
 from autotrack.gui.threading import Task
 from autotrack.gui.window import Window
+from autotrack.linking.nearby_particle_finder import find_closest_particle
 
 
 class DisplaySettings:
@@ -187,7 +188,7 @@ class Visualizer:
             z = 0
             ignore_z = True
         search_position = Particle(x, y, z)
-        return get_closest_particle(particles, search_position, ignore_z=ignore_z, max_distance=max_distance)
+        return find_closest_particle(particles, search_position, ignore_z=ignore_z, max_distance=max_distance)
 
     def get_window(self):
         return self._window

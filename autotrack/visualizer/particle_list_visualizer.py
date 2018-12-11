@@ -4,8 +4,9 @@ from matplotlib.backend_bases import KeyEvent
 
 from autotrack import core
 from autotrack.core.links import ParticleLinks
-from autotrack.core.particles import Particle, get_closest_particle
+from autotrack.core.particles import Particle
 from autotrack.gui.window import Window
+from autotrack.linking.nearby_particle_finder import find_closest_particle
 from autotrack.visualizer import Visualizer, activate, DisplaySettings
 
 
@@ -47,7 +48,7 @@ class ParticleListVisualizer(Visualizer):
                 self._current_particle_index = self._particle_list.index(particle)
             except ValueError:
                 # Try nearest particle
-                close_match = get_closest_particle(self._particle_list, particle, max_distance=100)
+                close_match = find_closest_particle(self._particle_list, particle, max_distance=100)
 
                 if close_match is not None and close_match.time_point_number() == particle.time_point_number():
                     self._current_particle_index = self._particle_list.index(close_match)

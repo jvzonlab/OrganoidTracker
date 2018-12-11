@@ -1,6 +1,7 @@
 import unittest
 
-from autotrack.core.particles import Particle, get_closest_n_particles
+from autotrack.core.particles import Particle
+from autotrack.linking.nearby_particle_finder import find_closest_n_particles
 
 
 class TestFindNearestFew(unittest.TestCase):
@@ -9,4 +10,4 @@ class TestFindNearestFew(unittest.TestCase):
         system = [Particle(0,0,0), Particle(0,7,0), Particle(0,2,0), Particle(0,1,0), Particle(0,3,0)]
         self.assertEquals(
             {Particle(0,0,0), Particle(0,2,0), Particle(0,1,0)},
-            get_closest_n_particles(system, Particle(0, -1, 0), 3))
+            find_closest_n_particles(system, Particle(0, -1, 0), 3))
