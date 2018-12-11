@@ -1,7 +1,6 @@
 from enum import Enum
 from typing import Optional
 
-from autotrack.core import TimePoint
 from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
 from autotrack.linking_analysis import linking_markers

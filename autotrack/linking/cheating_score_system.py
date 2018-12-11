@@ -1,3 +1,5 @@
+"""Artificial scoring system for testing purposes."""
+
 from typing import Set, Iterable
 
 from autotrack.core.image_loader import ImageLoader

@@ -5,12 +5,12 @@ from matplotlib.backend_bases import KeyEvent
 from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
 from autotrack.gui.window import Window
-from autotrack.linking import mother_finder
+from autotrack.linking import cell_division_finder
 from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
 
 
 def _get_mothers(experiment: Experiment) -> List[Particle]:
-    return list(mother_finder.find_mothers(experiment.links))
+    return list(cell_division_finder.find_mothers(experiment.links))
 
 
 class CellDivisionVisualizer(ParticleListVisualizer):

@@ -5,7 +5,7 @@ from matplotlib.backend_bases import KeyEvent
 from autotrack.core import TimePoint
 from autotrack.core.particles import Particle
 from autotrack.gui.window import Window
-from autotrack.linking_analysis import lineage_checks
+from autotrack.linking_analysis import lineage_error_finder
 from autotrack.visualizer import activate
 from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
@@ -55,10 +55,10 @@ class LineageErrorsVisualizer(ExitableImageVisualizer):
             return
 
         particles = self._experiment.particles.of_time_point(time_point)
-        lineages_with_errors = lineage_checks.get_problematic_lineages(links, particles)
+        lineages_with_errors = lineage_error_finder.get_problematic_lineages(links, particles)
         verified_lineages = set()
         for particle in particles:
-            if lineage_checks.find_lineage_index_with_crumb(lineages_with_errors, particle) is None:
+            if lineage_error_finder.find_lineage_index_with_crumb(lineages_with_errors, particle) is None:
                 verified_lineages.add(particle)
         self._verified_lineages = verified_lineages
 

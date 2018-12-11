@@ -2,8 +2,8 @@ from typing import Dict, Optional
 
 from autotrack.core import TimePoint
 from autotrack.core.particles import Particle
-from autotrack.linking_analysis import lineage_fates
-from autotrack.linking_analysis.lineage_fates import LineageFate
+from autotrack.linking_analysis import lineage_fate_finder
+from autotrack.linking_analysis.lineage_fate_finder import LineageFate
 from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
 
@@ -55,7 +55,7 @@ class LineageFateVisualizer(ExitableImageVisualizer):
         last_time_point_number = self._experiment.last_time_point_number()
         result = dict()
         for particle in particles:
-            result[particle] = lineage_fates.get_lineage_fate(particle, links, last_time_point_number)
+            result[particle] = lineage_fate_finder.get_lineage_fate(particle, links, last_time_point_number)
         self._lineage_fates = result
 
     def _draw_particle(self, particle: Particle, color: str, dz: int, dt: int):

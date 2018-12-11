@@ -1,14 +1,11 @@
-from typing import Optional, List, Iterable
-
-from networkx import Graph
+from typing import Optional
 
 from autotrack.core.experiment import Experiment
 from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle, ParticleCollection
 from autotrack.core.resolution import ImageResolution
 from autotrack.core.score import Score, ScoreCollection, Family
-from autotrack.linking import cell_cycle
-from autotrack.linking_analysis import linking_markers
+from autotrack.linking_analysis import linking_markers, particle_age_finder
 from autotrack.linking_analysis.errors import Error
 from autotrack.linking_analysis.linking_markers import EndMarker
 
@@ -39,7 +36,7 @@ def get_error(links: ParticleLinks, particle: Particle, scores: ScoreCollection,
             score = scores.of_family(Family(particle, *future_particles))
             if score is None or score.is_unlikely_mother():
                 return Error.LOW_MOTHER_SCORE
-        age = cell_cycle.get_age(links, particle)
+        age = particle_age_finder.get_age(links, particle)
         if age is not None and age < 5:
             return Error.YOUNG_MOTHER
 

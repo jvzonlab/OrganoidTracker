@@ -2,8 +2,8 @@ from typing import Dict, Optional
 
 from autotrack.core import TimePoint
 from autotrack.core.particles import Particle
-from autotrack.linking_analysis import cell_fates
-from autotrack.linking_analysis.cell_fates import CellFateType, CellFate
+from autotrack.linking_analysis import cell_fate_finder
+from autotrack.linking_analysis.cell_fate_finder import CellFateType, CellFate
 from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
 
@@ -47,7 +47,7 @@ class CellFateVisualizer(ExitableImageVisualizer):
         particles = self._experiment.particles.of_time_point(time_point)
         result = dict()
         for particle in particles:
-            result[particle] = cell_fates.get_fate(self._experiment, particle)
+            result[particle] = cell_fate_finder.get_fate(self._experiment, particle)
         self._cell_fates = result
 
     def _draw_particle(self, particle: Particle, color: str, dz: int, dt: int):

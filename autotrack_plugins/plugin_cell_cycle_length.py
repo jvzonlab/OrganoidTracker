@@ -13,9 +13,9 @@ from autotrack.core.particles import Particle
 from autotrack.core.score import Family
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
-from autotrack.linking import mother_finder, cell_cycle
-from autotrack.linking_analysis import cell_fates
-from autotrack.linking_analysis.cell_fates import CellFateType
+from autotrack.linking import cell_division_finder
+from autotrack.linking_analysis import cell_fate_finder, particle_age_finder
+from autotrack.linking_analysis.cell_fate_finder import CellFateType
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -86,7 +86,7 @@ class _CellFateVar(_ThirdVar):
     def get_number(self, daughter: Particle, next_division: Family) -> float:
         combined_fate = None
         for next in next_division.daughters:
-            cell_fate = cell_fates.get_fate(self.experiment, next).type
+            cell_fate = cell_fate_finder.get_fate(self.experiment, next).type
             if combined_fate is None:
                 combined_fate = cell_fate
                 continue
@@ -142,14 +142,14 @@ def _draw_cell_cycle_length(figure: Figure, links: ParticleLinks, time_point_dur
     third_variables = list()  # Used for color, can be z position
 
     # Find all families and their next division
-    for family in mother_finder.find_families(links):
-        previous_cycle_duration = cell_cycle.get_age(links, family.mother)
+    for family in cell_division_finder.find_families(links):
+        previous_cycle_duration = particle_age_finder.get_age(links, family.mother)
         if previous_cycle_duration is None:
             continue
 
         division_time = family.mother.time_point_number()
         for daughter in family.daughters:
-            next_division = cell_cycle.get_next_division(links, daughter)
+            next_division = cell_division_finder.get_next_division(links, daughter)
             if next_division is None:
                 continue
             cycle_duration = next_division.mother.time_point_number() - division_time

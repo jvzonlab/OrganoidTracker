@@ -1,11 +1,14 @@
+"""Used to create links between particles at different time points. Supports cell divisions. Based on
+
+C. Haubold, J. Ales, S. Wolf, F. A. Hamprecht. A Generalized Successive Shortest Paths Solver for Tracking Dividing
+Targets. ECCV 2016 Proceedings.
+
+"""
+
 import dpct
 import math
-from pprint import pprint
-from typing import Dict, List, Iterable, Optional
+from typing import Dict, List, Iterable
 
-from networkx import Graph
-
-from autotrack.core.experiment import Experiment
 from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle, ParticleCollection
 from autotrack.core.score import ScoreCollection, Score, ScoredFamily

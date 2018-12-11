@@ -11,7 +11,8 @@ from autotrack.core import UserError, TimePoint
 from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
-from autotrack.linking import cell_cycle, mother_finder
+from autotrack.linking import cell_division_finder
+from autotrack.linking_analysis import particle_age_finder
 
 _TIME_POINTS_PER_CELL = 3
 _PIXELS_PER_CELL = 5
@@ -119,15 +120,15 @@ def _get_graphing_data(experiment: Experiment) -> _SpaceTimeGrid:
 
 
     # Rank all cells according to their crypt position, time point and cell cycle length
-    families = mother_finder.find_families(links)
+    families = cell_division_finder.find_families(links)
     i = 0
     for family in families:
         i+=1
         for particle in family.daughters:
-            next_division = cell_cycle.get_next_division(links, particle)
+            next_division = cell_division_finder.get_next_division(links, particle)
             if next_division is None:
                 continue
-            cell_cycle_length = cell_cycle.get_age(links, next_division.mother)
+            cell_cycle_length = particle_age_finder.get_age(links, next_division.mother)
             if cell_cycle_length is None:
                 continue
 

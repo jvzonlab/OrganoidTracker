@@ -1,3 +1,6 @@
+"""Used to get a summary of what happens to a single cell lineage. How many divisions, deaths, ends and errors are
+there?"""
+
 from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
 from autotrack.linking_analysis import linking_markers

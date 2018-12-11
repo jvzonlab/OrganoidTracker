@@ -9,7 +9,7 @@ from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
-from autotrack.linking import mother_finder
+from autotrack.linking import cell_division_finder
 from statistics import median
 
 
@@ -65,7 +65,7 @@ def _plot_mother_stat(experiment: Experiment, figure: Figure, stat: GetStatistic
     links = experiment.links
     if not links.has_links():
         raise UserError("No cell links", "No cell links were loaded, so we cannot track cell statistics over time.")
-    mothers = [mother for mother in mother_finder.find_mothers(links) if mother.time_point_number() >= starting_time_point]
+    mothers = [mother for mother in cell_division_finder.find_mothers(links) if mother.time_point_number() >= starting_time_point]
     mothers = mothers[mi_start:mi_start + line_count]
     axes = figure.gca()
     show_legend = line_count <= 5

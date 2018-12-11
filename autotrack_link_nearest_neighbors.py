@@ -7,7 +7,7 @@ possible links: those alternative links are shown as dotted lines.
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
 from autotrack.imaging import tifffolder, io
-from autotrack.linking import linker_for_experiment
+from autotrack.linking import nearest_neighbor_linker
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
@@ -31,7 +31,7 @@ print("Discovering images...")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format, min_time_point=_min_time_point,
                                    max_time_point=_max_time_point)
 print("Starting link process...")
-results = linker_for_experiment.nearest_neighbor(experiment, tolerance=2)
+results = nearest_neighbor_linker.nearest_neighbor(experiment, tolerance=2)
 print("Writing results to file...")
 io.save_links_to_json(results, _output_file)
 print("Done!")

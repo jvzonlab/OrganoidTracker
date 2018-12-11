@@ -6,7 +6,7 @@ simple nearest-neighbor linking. The data is compared with data of the actual mo
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
 from autotrack.imaging import tifffolder, io
-from autotrack.linking import linker_for_experiment, mother_finder
+from autotrack.linking import nearest_neighbor_linker, cell_division_finder
 from autotrack.linking.rational_scoring_system import RationalScoringSystem
 from autotrack.linking_analysis import scores_dataframe
 
@@ -36,13 +36,13 @@ tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
 
 print("Discovering possible links using greedy nearest-neighbor...")
-possible_links = linker_for_experiment.nearest_neighbor(experiment, tolerance=2)
+possible_links = nearest_neighbor_linker.nearest_neighbor(experiment, tolerance=2)
 experiment.links = possible_links
 
 print("Scoring all possible mothers")
 scoring_system = RationalScoringSystem()
-real_mothers = set(mother_finder.find_mothers(_baseline_links))
-putative_families = mother_finder.find_families(possible_links, warn_on_many_daughters=False)
+real_mothers = set(cell_division_finder.find_mothers(_baseline_links))
+putative_families = cell_division_finder.find_families(possible_links, warn_on_many_daughters=False)
 dataframe = scores_dataframe.create(experiment, putative_families, scoring_system, real_mothers)
 io.save_dataframe_to_csv(dataframe, _output_file)
 

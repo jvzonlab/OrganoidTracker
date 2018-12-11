@@ -4,8 +4,8 @@ from matplotlib.backend_bases import KeyEvent
 
 from autotrack.core.particles import Particle
 from autotrack.gui.window import Window
-from autotrack.linking_analysis import linking_markers, lineage_checks, logical_tests
-from autotrack.linking_analysis.lineage_checks import LineageWithErrors
+from autotrack.linking_analysis import linking_markers, lineage_error_finder, cell_error_finder
+from autotrack.linking_analysis.lineage_error_finder import LineageWithErrors
 from autotrack.visualizer import activate
 from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
 
@@ -28,7 +28,7 @@ class ErrorsVisualizer(ParticleListVisualizer):
             crumb_particles.add(start_particle)
         if self._get_last_particle() is not None:
             crumb_particles.add(self._get_last_particle())
-        self._problematic_lineages = lineage_checks.get_problematic_lineages(links, crumb_particles)
+        self._problematic_lineages = lineage_error_finder.get_problematic_lineages(links, crumb_particles)
         self._total_number_of_warnings = sum((len(lineage.errored_particles) for lineage in self._problematic_lineages))
 
         super().__init__(window, chosen_particle=start_particle, all_particles=[])
@@ -37,11 +37,11 @@ class ErrorsVisualizer(ParticleListVisualizer):
         if particle is None:
             particle = self._get_last_particle()
 
-        lineage_index = lineage_checks.find_lineage_index_with_crumb(self._problematic_lineages, particle)
+        lineage_index = lineage_error_finder.find_lineage_index_with_crumb(self._problematic_lineages, particle)
         if lineage_index is None:
             # Try again, now with last particle
             particle = self._get_last_particle()
-            lineage_index = lineage_checks.find_lineage_index_with_crumb(self._problematic_lineages, particle)
+            lineage_index = lineage_error_finder.find_lineage_index_with_crumb(self._problematic_lineages, particle)
             if lineage_index is None:
                 return
 
@@ -87,7 +87,7 @@ class ErrorsVisualizer(ParticleListVisualizer):
         return super()._on_command(command)
 
     def _recheck_errors(self):
-        logical_tests.apply(self._experiment)
+        cell_error_finder.apply(self._experiment)
         # Recalculate everything
         selected_particle = None
         if 0 <= self._current_particle_index < len(self._particle_list):

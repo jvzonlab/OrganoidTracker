@@ -7,7 +7,7 @@ from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
 from autotrack.core.shape import ParticleShape
 from autotrack.gui.window import Window
-from autotrack.linking_analysis import logical_tests, linking_markers
+from autotrack.linking_analysis import cell_error_finder, linking_markers
 from autotrack.linking_analysis.linking_markers import EndMarker
 from autotrack.visualizer import DisplaySettings, activate
 from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
@@ -27,12 +27,12 @@ class _InsertLinkAction(UndoableAction):
 
     def do(self, experiment: Experiment):
         experiment.links.add_link(self.particle1, self.particle2)
-        logical_tests.apply_on(experiment, self.particle1, self.particle2)
+        cell_error_finder.apply_on(experiment, self.particle1, self.particle2)
         return f"Inserted link between {self.particle1} and {self.particle2}"
 
     def undo(self, experiment: Experiment):
         experiment.links.remove_link(self.particle1, self.particle2)
-        logical_tests.apply_on(experiment, self.particle1, self.particle2)
+        cell_error_finder.apply_on(experiment, self.particle1, self.particle2)
         return f"Removed link between {self.particle1} and {self.particle2}"
 
 
@@ -65,7 +65,7 @@ class _InsertParticleAction(UndoableAction):
         experiment.add_particle(self.particle)
         for linked_particle in self.linked_particles:
             experiment.links.add_link(self.particle, linked_particle)
-        logical_tests.apply_on(experiment, self.particle, *self.linked_particles)
+        cell_error_finder.apply_on(experiment, self.particle, *self.linked_particles)
 
         return_value = f"Added {self.particle}"
         if len(self.linked_particles) > 1:
@@ -77,7 +77,7 @@ class _InsertParticleAction(UndoableAction):
 
     def undo(self, experiment: Experiment):
         experiment.remove_particle(self.particle)
-        logical_tests.apply_on(experiment, *self.linked_particles)
+        cell_error_finder.apply_on(experiment, *self.linked_particles)
         return f"Removed {self.particle}"
 
 
@@ -97,13 +97,13 @@ class _MoveParticleAction(UndoableAction):
 
     def do(self, experiment: Experiment):
         experiment.move_particle(self.old_position, self.new_position)
-        logical_tests.apply_on(experiment, self.new_position)
+        cell_error_finder.apply_on(experiment, self.new_position)
         return f"Moved {self.old_position} to {self.new_position}"
 
     def undo(self, experiment: Experiment):
         experiment.move_particle(self.new_position, self.old_position)
         experiment.particles.add(self.old_position, self.old_shape)
-        logical_tests.apply_on(experiment, self.old_position)
+        cell_error_finder.apply_on(experiment, self.old_position)
         return f"Moved {self.new_position} back to {self.old_position}"
 
 
@@ -121,14 +121,14 @@ class _MarkLineageEndAction(UndoableAction):
 
     def do(self, experiment: Experiment) -> str:
         linking_markers.set_track_end_marker(experiment.links, self.particle, self.marker)
-        logical_tests.apply_on(experiment, self.particle)
+        cell_error_finder.apply_on(experiment, self.particle)
         if self.marker is None:
             return f"Removed the lineage end marker of {self.particle}"
         return f"Added the {self.marker.get_display_name()}-marker to {self.particle}"
 
     def undo(self, experiment: Experiment):
         linking_markers.set_track_end_marker(experiment.links, self.particle, self.old_marker)
-        logical_tests.apply_on(experiment, self.particle)
+        cell_error_finder.apply_on(experiment, self.particle)
         if self.old_marker is None:
             return f"Removed the lineage end marker again of {self.particle}"
         return f"Re-added the {self.old_marker.get_display_name()}-marker to {self.particle}"

@@ -1,14 +1,12 @@
-import matplotlib.pyplot
+"""Designed scoring system for scoring putative mother cells."""
 
 import numpy
 from numpy import ndarray
 
-from autotrack.core import TimePoint
 from autotrack.core.image_loader import ImageLoader
 from autotrack.core.mask import create_mask_for, Mask, OutsideImageError
 from autotrack.core.particles import Particle, ParticleCollection
 from autotrack.core.score import Score, Family
-from autotrack.imaging import angles
 from autotrack.linking.scoring_system import MotherScoringSystem
 
 

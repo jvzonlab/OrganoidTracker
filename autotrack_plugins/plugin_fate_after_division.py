@@ -1,16 +1,14 @@
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, List
 
 from matplotlib.figure import Figure
-from networkx import Graph
 
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import ParticleLinks
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
-from autotrack.linking import cell_cycle, mother_finder
-from autotrack.linking_analysis import cell_fates
-from autotrack.linking_analysis.cell_fates import CellFateType
+from autotrack.linking import cell_division_finder
+from autotrack.linking_analysis import cell_fate_finder, particle_age_finder
+from autotrack.linking_analysis.cell_fate_finder import CellFateType
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -102,8 +100,8 @@ def _classify_cell_divisions(experiment: Experiment,time_points_per_bin: int) ->
     links = experiment.links
     bins = list()
 
-    for cell_division in mother_finder.find_families(links):
-        previous_cell_cycle_length = cell_cycle.get_age(links, cell_division.mother)
+    for cell_division in cell_division_finder.find_families(links):
+        previous_cell_cycle_length = particle_age_finder.get_age(links, cell_division.mother)
         if previous_cell_cycle_length is None:
             continue  # Cannot plot without knowing the length of the previous cell cycle
 
@@ -113,6 +111,6 @@ def _classify_cell_divisions(experiment: Experiment,time_points_per_bin: int) ->
         bin = bins[bin_index]
 
         for daughter in cell_division.daughters:
-            cell_fate = cell_fates.get_fate(experiment, daughter).type
+            cell_fate = cell_fate_finder.get_fate(experiment, daughter).type
             bin.add_data_point(cell_fate)
     return [bin for bin in bins if not bin.is_empty()]

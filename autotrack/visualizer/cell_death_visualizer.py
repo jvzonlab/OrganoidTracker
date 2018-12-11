@@ -3,13 +3,13 @@ from typing import List, Optional
 from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
 from autotrack.gui.window import Window
-from autotrack.linking_analysis import cell_death_finder, linking_markers
+from autotrack.linking_analysis import lineage_end_finder, linking_markers
 from autotrack.linking_analysis.errors import Error
 from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
 
 
 def _get_end_of_tracks(experiment: Experiment) -> List[Particle]:
-    return list(cell_death_finder.find_ended_tracks(experiment.links, experiment.last_time_point_number()))
+    return list(lineage_end_finder.find_ended_tracks(experiment.links, experiment.last_time_point_number()))
 
 
 class CellTrackEndVisualizer(ParticleListVisualizer):

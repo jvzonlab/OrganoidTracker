@@ -592,3 +592,7 @@ class ParticleLinks:
             if track.max_time_point_number() < time_point_number:
                 continue
             yield track
+
+    def find_all_tracks(self) -> Iterable[LinkingTrack]:
+        """Gets all tracks, even tracks that have another track before them."""
+        yield from self._tracks

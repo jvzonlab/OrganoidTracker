@@ -5,9 +5,9 @@ from autotrack.core.experiment import Experiment
 from autotrack.core.links import ParticleLinks
 from autotrack.core.resolution import ImageResolution
 from autotrack.imaging import tifffolder, io
-from autotrack.linking import linker_for_experiment, dpct_linking, mother_finder
+from autotrack.linking import nearest_neighbor_linker, dpct_linker, cell_division_finder
 from autotrack.linking.rational_scoring_system import RationalScoringSystem
-from autotrack.linking_analysis import logical_tests, links_postprocessor
+from autotrack.linking_analysis import cell_error_finder, links_postprocessor
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
@@ -37,18 +37,18 @@ print("Discovering images...")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)
 print("Performing nearest-neighbor linking...")
-possible_links = linker_for_experiment.nearest_neighbor(experiment, tolerance=2, over_previous=False)
+possible_links = nearest_neighbor_linker.nearest_neighbor(experiment, tolerance=2)
 print("Calculating scores of possible mothers...")
 score_system = RationalScoringSystem()
-scores = mother_finder.calculates_scores(experiment.image_loader(), experiment.particles, possible_links, score_system)
+scores = cell_division_finder.calculates_scores(experiment.image_loader(), experiment.particles, possible_links, score_system)
 print("Deciding on what links to use...")
-link_result = dpct_linking.run(experiment.particles, possible_links, scores)
+link_result = dpct_linker.run(experiment.particles, possible_links, scores)
 print("Applying final touches...")
 experiment.links = link_result
 experiment.scores = scores
 links_postprocessor.postprocess(experiment, margin_xy=_margin_xy)
 print("Checking results for common errors...")
-logical_tests.apply(experiment)
+cell_error_finder.apply(experiment)
 print("Writing results to file...")
 io.save_data_to_json(experiment, _links_output_file)
 

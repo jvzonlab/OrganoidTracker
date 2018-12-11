@@ -7,7 +7,7 @@ from autotrack.gui import dialog
 from autotrack.gui.launcher import launch_window
 from autotrack.gui.window import Window
 from autotrack.imaging import io
-from autotrack.linking import particle_flow
+from autotrack.linking_analysis import particle_flow_calculator
 from autotrack.manual_tracking import guizela_data_importer
 from autotrack.visualizer import activate, DisplaySettings
 from autotrack.visualizer.abstract_image_visualizer import AbstractImageVisualizer
@@ -93,9 +93,9 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             links = self._experiment.links
             if particle is not None and links.has_links():
                 self.update_status("Flow toward previous frame: " +
-                                   str(particle_flow.get_flow_to_previous(links, particles_of_time_point, particle)) +
+                                   str(particle_flow_calculator.get_flow_to_previous(links, particles_of_time_point, particle)) +
                                    "\nFlow towards next frame: " +
-                                   str(particle_flow.get_flow_to_next(links, particles_of_time_point, particle)))
+                                   str(particle_flow_calculator.get_flow_to_next(links, particles_of_time_point, particle)))
         else:
             super()._on_key_press(event)
 

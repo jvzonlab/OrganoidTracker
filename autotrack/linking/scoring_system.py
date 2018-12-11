@@ -1,3 +1,5 @@
+"""Base class for scoring system for putative mother cells."""
+
 from autotrack.core.image_loader import ImageLoader
 from autotrack.core.particles import Particle, ParticleCollection
 from autotrack.core.score import Score, Family
