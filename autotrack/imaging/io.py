@@ -3,11 +3,9 @@ import json
 import os
 from json import JSONEncoder
 from pathlib import Path
-from pprint import pprint
 from typing import List, Dict, Any
 
 import numpy
-from networkx import node_link_data, node_link_graph, Graph
 from pandas import DataFrame
 
 from autotrack.core import shape, TimePoint
@@ -114,8 +112,9 @@ def _parse_links_format(experiment: Experiment, link_data: Dict[str, Any], min_t
     """Parses a node_link_graph and adds all links and particles to the experiment."""
     links = ParticleLinks()
     links.add_d3_data(link_data, min_time_point, max_time_point)
+    particles = experiment.particles
     for particle in links.find_all_particles():
-        experiment.add_particle(particle)
+        particles.add(particle)
     experiment.links.add_links(links)
 
 

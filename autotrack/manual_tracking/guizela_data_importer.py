@@ -56,8 +56,9 @@ def _load_crypt_axis(tracks_dir: str, paths: PathCollection, min_time_point: int
 def add_data_to_experiment(experiment: Experiment, tracks_dir: str, min_time_point: int = 0, max_time_point: int = 500):
     """Adds all particles and links from the given folder to the experiment."""
     links = _load_links(tracks_dir, min_time_point, max_time_point)
+    particles = experiment.particles
     for particle in links.find_all_particles():
-        experiment.add_particle(particle)
+        particles.add(particle)
     experiment.links.add_links(links)
     experiment.image_resolution(ImageResolution(0.32, 0.32, 2, 12))
     _load_crypt_axis(tracks_dir, experiment.paths, min_time_point, max_time_point)

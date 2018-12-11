@@ -62,7 +62,7 @@ class _InsertParticleAction(UndoableAction):
         self.linked_particles = linked_particles
 
     def do(self, experiment: Experiment):
-        experiment.add_particle(self.particle)
+        experiment.particles.add(self.particle)
         for linked_particle in self.linked_particles:
             experiment.links.add_link(self.particle, linked_particle)
         cell_error_finder.apply_on(experiment, self.particle, *self.linked_particles)

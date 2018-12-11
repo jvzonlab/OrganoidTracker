@@ -14,7 +14,7 @@ def _experiment(*particles: Particle) -> Experiment:
     experiment = Experiment()
     experiment.image_resolution(ImageResolution(1, 1, 1, 1))  # Set 1 px = 1 um for simplicity
     for particle in particles:
-        experiment.add_particle(particle)
+        experiment.particles.add(particle)
     return experiment
 
 

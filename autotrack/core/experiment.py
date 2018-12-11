@@ -70,18 +70,8 @@ class Experiment:
         self.paths = PathCollection()
         self._links = ParticleLinks()
 
-    def add_particle_raw(self, x: float, y: float, z: float, time_point_number: int):
-        """Adds a single particle to the experiment, creating the time point if it does not exist yet."""
-        particle = Particle(x, y, z)
-        particle.with_time_point_number(time_point_number)
-        self.add_particle(particle)
-
-    def add_particle(self, particle: Particle):
-        """Adds a particle to the experiment. The particle must have a time point number specified. The particle will
-        also be added as a node to the linking graphs."""
-        self._particles.add(particle)
-
     def remove_particle(self, particle: Particle):
+        """Removes both a particle and its links from the experiment."""
         self._particles.detach_particle(particle)
         self._links.remove_links_of_particle(particle)
 
@@ -105,14 +95,9 @@ class Experiment:
             self._links.remove_links_of_particle(particle)
         self._particles.detach_all_for_time_point(time_point)
 
-    def remove_all_particles(self):
-        """Removes all particles and links in the experiment, so in all time points."""
-        self._particles = ParticleCollection()
-        self._links.remove_all_links()
-        self.scores = ScoreCollection()
-
     def get_time_point(self, time_point_number: int) -> TimePoint:
-        """Gets the time point with the given number. Throws ValueError if no such time point exists."""
+        """Gets the time point with the given number. Throws ValueError if no such time point exists. This method is
+        essentially an alternative for `TimePoint(time_point_number)`, but with added bound checks."""
         first = self.first_time_point_number()
         last = self.last_time_point_number()
         if first is None or last is None:
