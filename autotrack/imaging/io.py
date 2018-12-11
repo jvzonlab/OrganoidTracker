@@ -121,7 +121,9 @@ def _parse_links_format(experiment: Experiment, link_data: Dict[str, Any], min_t
 
 class _MyEncoder(JSONEncoder):
     def default(self, o):
-        if isinstance(o, Particle) or isinstance(o, Score):
+        if isinstance(o, Particle):
+            return {"x": o.x, "y": o.y, "z": o.z, "_time_point_number": o.time_point_number()}
+        if isinstance(o, Score):
             return o.__dict__
 
         if isinstance(o, ScoredFamily):
@@ -218,7 +220,7 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
         save_data["image_resolution"] = {"x_um": resolution.pixel_size_zyx_um[2],
                                          "y_um": resolution.pixel_size_zyx_um[1],
                                          "z_um": resolution.pixel_size_zyx_um[0],
-                                         "t_m": resolution.pixel_size_zyx_um[0]}
+                                         "t_m": resolution.time_point_interval_m}
     except ValueError:
         pass
 
