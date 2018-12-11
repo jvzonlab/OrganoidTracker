@@ -1,26 +1,23 @@
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 import numpy
 from matplotlib.figure import Figure
 from numpy import ndarray
 
 from autotrack.core import UserError, Name
-from autotrack.core.links import ParticleLinks, LinkingTrack
+from autotrack.core.links import ParticleLinks
 from autotrack.gui import dialog
 from autotrack.gui.gui_experiment import GuiExperiment
 from autotrack.gui.threading import Task
 from autotrack.gui.window import Window
-from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.lineage_division_count import get_division_count_in_lineage
-from autotrack.linking_analysis.linking_markers import EndMarker
 
 _LINEAGE_FOLLOW_TIME_H = 35
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        # Disabled while code is being updated for new linking structure
-        "Graph/Clone size distribution-Clone size distribution...": lambda: _show_clone_size_distribution(window),
+        "Graph/Lineages-Clone size distribution...": lambda: _show_clone_size_distribution(window),
     }
 
 
@@ -86,10 +83,11 @@ def _get_clone_sizes_list(links: ParticleLinks, time_point_window: int, first_ti
 
 
 def _draw_clone_sizes(figure: Figure, clone_sizes: ndarray):
-    max_clone_size = clone_sizes.max()
-
     axes = figure.gca()
+
+    max_clone_size = 1
     if len(clone_sizes) > 0:
+        max_clone_size = clone_sizes.max()
         axes.hist(clone_sizes, range(1, max_clone_size + 2), color="blue")
     else:
         axes.text(0, 0, "No histogram: no lineages without dissappearing cells spanning at least"

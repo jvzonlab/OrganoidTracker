@@ -101,7 +101,7 @@ class TrackVisualizer(ExitableImageVisualizer):
     def get_extra_menu_options(self):
         return {
             **super().get_extra_menu_options(),
-            "Graph/Displacement-Cell displacement over time...": self._show_displacement,
+            "Graph/Over time-Cell displacement over time...": self._show_displacement,
         }
 
     def _show_displacement(self):
