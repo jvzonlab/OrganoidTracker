@@ -2,7 +2,8 @@ Autotrack
 =========
 
 Autotrack is a program designed for automating the detection and linking of cells. It assists in making manual
-corrections to the data.
+corrections to the data. It also contains a Python library for working with the data sets, see the [API] page for
+details.
 
 The intended workflow is as follows:
 
@@ -18,16 +19,18 @@ Visual:
   clicking a bit through the menus.
 * `autotrack_show_images.py` - shows images in an directory, but no other metadata.
 * `autotrack_visualize_and_edit.py` - shows images, cell positions and cell links. Used to edit linking data.
-* `autotrack_compare_links.py` - shows images, cell positions and two sets of linking data. Used to compare the two.
 
 Command-line:
 * `autotrack_convert_from_manual.py` - converts Guizela's track format to a cell positions file, discarding linking
   data.
 * `autotrack_create_links.py` - uses a cell positions file to link cells from different time points together.
 * `autotrack_extract_mother_scores.py` - creates a CSV file, showing how the mother scores are built up.
+* `autotrack_compare_positions.py` - compare two sets of particle detection data
+* `autotrack_compare_links.py` - compare two sets of linking data.
 
 The command-line scripts have documentation included inside themselves. The visual scripts are all essentially the same,
 and are documented in [VISUALIZER].
 
+[API]: API.md
 [TRACK_MANUALLY]: TRACK_MANUALLY.md
 [VISUALIZER]: VISUALIZER.md
