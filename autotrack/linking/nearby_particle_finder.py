@@ -65,16 +65,16 @@ def find_close_particles(particles: Iterable[Particle], around: Particle, tolera
     return nearest_particles.get_particles(max_amount)
 
 
-def find_closest_particle(particles: Iterable[Particle], search_position: Particle,
-                          ignore_z: bool = False, max_distance: int = 100000) -> Optional[Particle]:
+def find_closest_particle(particles: Iterable[Particle], around: Particle, ignore_z: bool = False,
+                          max_distance: int = 100000) -> Optional[Particle]:
     """Gets the particle closest ot the given position."""
     closest_particle = None
     closest_distance_squared = max_distance ** 2
 
     for particle in particles:
         if ignore_z:
-            search_position.z = particle.z  # Make search ignore z
-        distance = particle.distance_squared(search_position)
+            around.z = particle.z  # Make search ignore z
+        distance = particle.distance_squared(around)
         if distance < closest_distance_squared:
             closest_distance_squared = distance
             closest_particle = particle
@@ -82,20 +82,20 @@ def find_closest_particle(particles: Iterable[Particle], search_position: Partic
     return closest_particle
 
 
-def find_closest_n_particles(particles: Iterable[Particle], search_position: Particle, amount: int,
+def find_closest_n_particles(particles: Iterable[Particle], around: Particle, max_amount: int,
                              max_distance: int = 100000) -> Set[Particle]:
     max_distance_squared = max_distance ** 2
     closest_particles = []
 
     for particle in particles:
-        distance_squared = particle.distance_squared(search_position)
+        distance_squared = particle.distance_squared(around)
         if distance_squared > max_distance_squared:
             continue
-        if len(closest_particles) < amount or closest_particles[-1][0] > distance_squared:
+        if len(closest_particles) < max_amount or closest_particles[-1][0] > distance_squared:
             # Found closer particle
             closest_particles.append((distance_squared, particle))
             closest_particles.sort(key=itemgetter(0))
-            if len(closest_particles) > amount:
+            if len(closest_particles) > max_amount:
                 # List too long, remove furthest
                 del closest_particles[-1]
 
