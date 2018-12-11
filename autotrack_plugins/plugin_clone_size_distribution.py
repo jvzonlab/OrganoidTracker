@@ -17,7 +17,7 @@ _LINEAGE_FOLLOW_TIME_H = 35
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Graph/Lineages-Clone size distribution...": lambda: _show_clone_size_distribution(window),
+        "Graph//Lineages-Clone size distribution...": lambda: _show_clone_size_distribution(window),
     }
 
 

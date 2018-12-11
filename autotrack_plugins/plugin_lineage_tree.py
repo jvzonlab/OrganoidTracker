@@ -13,7 +13,7 @@ from autotrack.visualizer import Visualizer
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Graph/Lineages-Show lineage tree...": lambda: _show_lineage_tree(window)
+        "Graph//Lineages-Show lineage tree...": lambda: _show_lineage_tree(window)
     }
 
 

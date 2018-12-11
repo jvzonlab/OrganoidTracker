@@ -253,18 +253,18 @@ class AbstractImageVisualizer(Visualizer):
                             + max_str + ".")
         return {
             **super().get_extra_menu_options(),
-            "File/Export-Export image...": self._export_images,
-            "View/Toggle-Toggle showing two time points (" + DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + ")":
+            "File//Export-Export image...": self._export_images,
+            "View//Toggle-Toggle showing two time points (" + DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + ")":
                 self._toggle_showing_next_time_point,
-            "View/Toggle-Toggle showing images (" + DisplaySettings.KEY_SHOW_IMAGES.upper() + ")":
+            "View//Toggle-Toggle showing images (" + DisplaySettings.KEY_SHOW_IMAGES.upper() + ")":
                 self._toggle_showing_images,
-            "View/Toggle-Toggle showing reconstruction (" + DisplaySettings.KEY_SHOW_RECONSTRUCTION.upper() + ")":
+            "View//Toggle-Toggle showing reconstruction (" + DisplaySettings.KEY_SHOW_RECONSTRUCTION.upper() + ")":
                 self._toggle_showing_reconstruction,
-            "Navigate/Layer-Above layer (Up)": lambda: self._move_in_z(1),
-            "Navigate/Layer-Below layer (Down)": lambda: self._move_in_z(-1),
-            "Navigate/Time-Next time point (Right)": lambda: self._move_in_time(1),
-            "Navigate/Time-Previous time point (Left)": lambda: self._move_in_time(-1),
-            "Navigate/Time-Other time point... (/t*)": time_point_prompt
+            "Navigate//Layer-Above layer (Up)": lambda: self._move_in_z(1),
+            "Navigate//Layer-Below layer (Down)": lambda: self._move_in_z(-1),
+            "Navigate//Time-Next time point (Right)": lambda: self._move_in_time(1),
+            "Navigate//Time-Previous time point (Left)": lambda: self._move_in_time(-1),
+            "Navigate//Time-Other time point... (/t*)": time_point_prompt
         }
 
     def _on_key_press(self, event: KeyEvent):

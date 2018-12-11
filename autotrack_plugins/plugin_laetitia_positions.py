@@ -19,8 +19,8 @@ TIME_POINT_FROM_FILE_NAME = re.compile("t(\d+)")
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "File/SaveLoad-Load positions in Laetitia's format...": lambda: _load_laetitia_positions(window),
-        "File/Export-Export positions in Laetitia's format...": lambda: _export_laetitia_positions(window)
+        "File//SaveLoad-Load positions in Laetitia's format...": lambda: _load_laetitia_positions(window),
+        "File//Export-Export positions in Laetitia's format...": lambda: _export_laetitia_positions(window)
     }
 
 

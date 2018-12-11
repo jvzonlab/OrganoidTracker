@@ -36,9 +36,9 @@ class ParticleListVisualizer(Visualizer):
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
             **super().get_extra_menu_options(),
-            "View/Exit-Exit this view (Esc)": lambda: self._exit_view(),
-            "Navigate/Time-Next (Right)": self._goto_next,
-            "Navigate/Time-Previous (Left)": self._goto_previous
+            "View//Exit-Exit this view (Esc)": lambda: self._exit_view(),
+            "Navigate//Time-Next (Right)": self._goto_next,
+            "Navigate//Time-Previous (Left)": self._goto_previous
         }
 
     def _show_closest_or_stored_particle(self, particle: Optional[Particle]):

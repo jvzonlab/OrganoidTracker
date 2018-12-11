@@ -19,8 +19,8 @@ PointList = Tuple[List[float], List[float]]  # A list of x values and a list of 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Graph/Over time-Cell volumes over time...": lambda: _show_cell_volumes(window),
-        "Graph/Over time-Cell intensities over time...": lambda: _show_cell_intensities(window)
+        "Graph//Over time-Cell volumes over time...": lambda: _show_cell_volumes(window),
+        "Graph//Over time-Cell intensities over time...": lambda: _show_cell_intensities(window)
     }
 
 

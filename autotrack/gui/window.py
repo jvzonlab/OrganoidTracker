@@ -1,3 +1,4 @@
+import re
 from typing import Callable, Dict, List, Any, Optional, Union, Iterable, Tuple
 
 from PyQt5.QtWidgets import QMainWindow, QLabel, QMenuBar, QAction, QMenu
@@ -130,6 +131,7 @@ _NEW_CATEGORY = "---"
 
 
 class _MenuData:
+    """Class to translate from the string-based menu format to the Qt menu."""
 
     _categories: Dict[str, Dict[str, Union[Callable, "_MenuData"]]]
 
@@ -159,9 +161,11 @@ class _MenuData:
             if item_label == _NEW_CATEGORY:  # Separation line
                 qmenu.addSeparator()
             elif isinstance(item_action, _MenuData):  # Submenu
+                print("Submenu", item_label, item_action)
                 sub_menu = qmenu.addMenu(item_label)
                 item_action.to_qmenu(sub_menu)
             else:  # Single action
+                print("Action", item_label)
                 action = QAction(item_label, qmenu)
                 action.triggered.connect(_with_safeguard(item_action))
                 qmenu.addAction(action)
@@ -173,11 +177,11 @@ class _MenuData:
 
             self.add_menu_entry("Analysis-Cell deaths/Distance-Distance between neighbor cells...", _show_distances)
         """
-        split_by_slashes = name.split("/")
+        split_by_slashes = name.split("//")
         part_for_this_menu = split_by_slashes[0]
 
         if "-" in part_for_this_menu:
-            category_name, label = name.split("-", maxsplit=2)
+            category_name, label = part_for_this_menu.split("-", maxsplit=2)
         else:
             category_name, label = "", part_for_this_menu
 
@@ -191,10 +195,13 @@ class _MenuData:
             if label not in category:
                 category[label] = _MenuData()
             sub_menu: _MenuData = category[label]
-            sub_menu.add_menu_entry("/".join(split_by_slashes[1:]), action)
+            sub_menu.add_menu_entry("//".join(split_by_slashes[1:]), action)
         else:
             # Add to this menu
             self._categories[category_name][label] = action
+
+    def __repr__(self) -> str:
+        return f"<_MenuData, {len(list(self.items()))} items>"
 
 
 def _simple_menu_dict_to_nested(menu_items: Dict[str, Any]) -> _MenuData:

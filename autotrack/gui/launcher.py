@@ -47,17 +47,17 @@ class MainWindow(Window):
         from autotrack.gui import action
 
         menu_items = {
-            "File/New-New project...": lambda: action.new(self),
-            "File/SaveLoad-Load images...": lambda: action.load_images(self),
-            "File/SaveLoad-Load tracking data...": lambda: action.load_tracking_data(self),
-            "File/SaveLoad-Save tracking data...": lambda: action.save_tracking_data(self.get_experiment()),
-            "File/Export-Export detection data only...": lambda: action.export_positions_and_shapes(self.get_experiment()),
-            "File/Export-Export linking data only...": lambda: action.export_links(self.get_experiment()),
-            "File/Export-Export to Guizela's file format...": lambda: action.export_links_guizela(self.get_experiment()),
-            "File/Plugins-Reload all plugins...": lambda: action.reload_plugins(self),
-            "File/Exit-Exit (Alt+F4)": lambda: action.ask_exit(self.get_experiment()),
-            "Edit/Experiment-Rename experiment...": lambda: action.rename_experiment(self),
-            "View/Toggle-Toggle showing axis numbers": lambda: action.toggle_axis(self.get_figure()),
+            "File//New-New project...": lambda: action.new(self),
+            "File//SaveLoad-Load images...": lambda: action.load_images(self),
+            "File//SaveLoad-Load tracking data...": lambda: action.load_tracking_data(self),
+            "File//SaveLoad-Save tracking data...": lambda: action.save_tracking_data(self.get_experiment()),
+            "File//Export-Export detection data only...": lambda: action.export_positions_and_shapes(self.get_experiment()),
+            "File//Export-Export linking data only...": lambda: action.export_links(self.get_experiment()),
+            "File//Export-Export to Guizela's file format...": lambda: action.export_links_guizela(self.get_experiment()),
+            "File//Plugins-Reload all plugins...": lambda: action.reload_plugins(self),
+            "File//Exit-Exit (Alt+F4)": lambda: action.ask_exit(self.get_experiment()),
+            "Edit//Experiment-Rename experiment...": lambda: action.rename_experiment(self),
+            "View//Toggle-Toggle showing axis numbers": lambda: action.toggle_axis(self.get_figure()),
         }
 
         for plugin in self.get_plugins():

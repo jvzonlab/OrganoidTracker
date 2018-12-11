@@ -72,7 +72,7 @@ class _SpaceTimeGrid:
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Graph/Cell cycle-Cell cycle lengths over space and time...": lambda: _show_graph(window)
+        "Graph//Cell cycle-Cell cycle lengths over space and time...": lambda: _show_graph(window)
     }
 
 

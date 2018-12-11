@@ -11,7 +11,7 @@ class ExitableImageVisualizer(AbstractImageVisualizer):
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
             **super().get_extra_menu_options(),
-            "View/Exit-Exit this view (Esc)": self._exit_view,
+            "View//Exit-Exit this view (Esc)": self._exit_view,
         }
 
     def _exit_view(self):

@@ -45,9 +45,9 @@ Any Python file you place in the `autotrack_plugins` folder that has a name star
 
     def get_menu_items(window):
         return {
-            "Tools/Messages-Show Hello World...":
+            "Tools//Messages-Show Hello World...":
                 lambda: dialog.popup_message("My Title", "Hello World!"),
-            "Tools/Messages-Show other message...":
+            "Tools//Messages-Show other message...":
                 lambda: dialog.popup_message("My Title", "Nice weather, isn't it?")
         }
 

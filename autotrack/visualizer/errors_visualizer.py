@@ -56,10 +56,10 @@ class ErrorsVisualizer(ParticleListVisualizer):
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
             **super().get_extra_menu_options(),
-            "Edit/Errors-Suppress this error (Del)": self._suppress_error,
-            "Edit/Errors-Recheck all errors (/recheck)": self._recheck_errors,
-            "Navigate/Lineage-Next lineage (Up)": self.__goto_next_lineage,
-            "Navigate/Lineage-Previous lineage (Down)": self.__goto_previous_lineage
+            "Edit//Errors-Suppress this error (Del)": self._suppress_error,
+            "Edit//Errors-Recheck all errors (/recheck)": self._recheck_errors,
+            "Navigate//Lineage-Next lineage (Up)": self.__goto_next_lineage,
+            "Navigate//Lineage-Previous lineage (Down)": self.__goto_previous_lineage
         }
 
     def get_message_no_particles(self):

@@ -20,7 +20,7 @@ from autotrack.linking_analysis.cell_fate_finder import CellFateType
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Graph/Cell cycle-Cell cycle lengths of two generations...": lambda: _view_cell_cycle_length(window)
+        "Graph//Cell cycle-Cell cycle lengths of two generations...": lambda: _view_cell_cycle_length(window)
     }
 
 

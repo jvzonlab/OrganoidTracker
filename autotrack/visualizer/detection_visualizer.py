@@ -44,21 +44,21 @@ class DetectionVisualizer(AbstractImageVisualizer):
     def get_extra_menu_options(self):
         return {
             **super().get_extra_menu_options(),
-            "View/Show-Show original images (R)": lambda: self._move_in_time(dt=0),
-            "View/Exit-Exit this view (/exit)": self._show_main_view,
-            "Threshold/Normal-Basic threshold": self._basic_threshold,
-            "Threshold/Normal-With watershed segmentation": self.async(self._get_watershedded_threshold,
+            "View//Show-Show original images (R)": lambda: self._move_in_time(dt=0),
+            "View//Exit-Exit this view (/exit)": self._show_main_view,
+            "Threshold//Normal-Basic threshold": self._basic_threshold,
+            "Threshold//Normal-With watershed segmentation": self.async(self._get_watershedded_threshold,
                                                                        self._display_threshold),
-            "Threshold/Normal-With iso-intensity curvature segmentation": self.async(self._get_advanced_threshold,
+            "Threshold//Normal-With iso-intensity curvature segmentation": self.async(self._get_advanced_threshold,
                                                                                      self._display_threshold),
-            "Threshold/Smoothed-Smoothed basic threshold": self.async(self._get_adaptive_smoothed_threshold,
+            "Threshold//Smoothed-Smoothed basic threshold": self.async(self._get_adaptive_smoothed_threshold,
                                                                       self._display_threshold),
-            "Reconstruction/Default-Reconstruct normal treshold": self.async(self._get_threshold_reconstruction,
+            "Reconstruction//Default-Reconstruct normal treshold": self.async(self._get_threshold_reconstruction,
                                                                              self._display_watershed),
-            "Reconstruction/Default-Reconstruct smoothed threshold": self.async(
+            "Reconstruction//Default-Reconstruct smoothed threshold": self.async(
                 self._get_smoothed_threshold_reconstruction,
                 self._display_watershed),
-            "Reconstruction/Default-Reconstruct original image": self.async(
+            "Reconstruction//Default-Reconstruct original image": self.async(
                 self._get_image_reconstruction,
                 self._display_reconstruction)
         }

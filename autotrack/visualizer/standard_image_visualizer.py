@@ -58,16 +58,16 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     def get_extra_menu_options(self):
         return {
             **super().get_extra_menu_options(),
-            "Edit/Add-Add positions and shapes...": self._ask_add_positions_from_file,
-            "Edit/Add-Add links, scores and warnings...": self._ask_add_links_from_file,
-            "Edit/Add-Add positions and links from Guizela's format...": self._ask_add_guizela_tracks,
-            "Edit/Experiment-Manually change data... (C)": self._show_data_editor,
-            "Edit/Automatic-Cell detection...": self._show_cell_detector,
-            "View/Cells-Cell divisions... (M)": self._show_mother_cells,
-            "View/Cells-Track ends and cell deaths... (/deaths)": self._show_dead_cells,
-            "View/Tracks-Track follower... (T)": self._show_track_follower,
-            "View/Tracks-Cell fates...": self._show_cell_fates,
-            "View/Tracks-Whole lineage fates...": self._show_lineage_fates,
+            "Edit//Add-Add positions and shapes...": self._ask_add_positions_from_file,
+            "Edit//Add-Add links, scores and warnings...": self._ask_add_links_from_file,
+            "Edit//Add-Add positions and links from Guizela's format...": self._ask_add_guizela_tracks,
+            "Edit//Experiment-Manually change data... (C)": self._show_data_editor,
+            "Edit//Automatic-Cell detection...": self._show_cell_detector,
+            "View//Cells-Cell divisions... (M)": self._show_mother_cells,
+            "View//Cells-Track ends and cell deaths... (/deaths)": self._show_dead_cells,
+            "View//Tracks-Track follower... (T)": self._show_track_follower,
+            "View//Tracks-Cell fates...": self._show_cell_fates,
+            "View//Tracks-Whole lineage fates...": self._show_lineage_fates,
         }
 
     def _on_key_press(self, event: KeyEvent):
