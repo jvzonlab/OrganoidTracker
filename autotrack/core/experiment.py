@@ -2,7 +2,7 @@ from typing import Optional, List, Tuple, Iterable
 
 from numpy import ndarray
 
-from autotrack.core import TimePoint, Name
+from autotrack.core import TimePoint, Name, UserError
 from autotrack.core.image_loader import ImageLoader
 from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle, ParticleCollection
@@ -159,7 +159,7 @@ class Experiment:
         return self._image_loader.get_image_stack(time_point)
 
     def image_resolution(self, *args: Optional[ImageResolution]):
-        """Gets or sets the image resolution. Throws ValueError if you try to get the resolution when none has been set.
+        """Gets or sets the image resolution. Throws UserError if you try to get the resolution when none has been set.
 
         Set the image resolution:
         >>> self.image_resolution(ImageResolution(0.32, 0.32, 0.32, 12))
@@ -175,7 +175,7 @@ class Experiment:
         if len(args) > 1:
             raise ValueError(f"Too many args: {args}")
         if self._image_resolution is None:
-            raise ValueError("No resolution was set")
+            raise UserError("No image resolution set", "No image resolution was set. Please set a resolution first.")
         return self._image_resolution
 
     @property
