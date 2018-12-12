@@ -161,11 +161,9 @@ class _MenuData:
             if item_label == _NEW_CATEGORY:  # Separation line
                 qmenu.addSeparator()
             elif isinstance(item_action, _MenuData):  # Submenu
-                print("Submenu", item_label, item_action)
                 sub_menu = qmenu.addMenu(item_label)
                 item_action.to_qmenu(sub_menu)
             else:  # Single action
-                print("Action", item_label)
                 action = QAction(item_label, qmenu)
                 action.triggered.connect(_with_safeguard(item_action))
                 qmenu.addAction(action)
