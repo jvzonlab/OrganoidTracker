@@ -15,14 +15,14 @@ from autotrack.gui import dialog
 from autotrack.gui.threading import Task
 from autotrack.gui.window import Window
 from autotrack.imaging import cropper, bits
-from autotrack.linking_analysis import linking_markers
+from autotrack.linking_analysis import linking_markers, particle_connection_finder
 
 _MARGIN = 40
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-         "View//Cell deaths-Cell deaths//Deathbed images...": lambda: _generate_deathbed_images(window),
+         "View//Cell deaths-Deathbed images...": lambda: _generate_deathbed_images(window),
     }
 
 
@@ -31,8 +31,8 @@ class _Deathbed:
 
     particles: List[Particle]  # List of particles. Death at index 0, one time point before at index 1, etc.
 
-    def __init__(self, first: Particle):
-        self.particles = [first]
+    def __init__(self, particles: List[Particle]):
+        self.particles = particles
 
     def image_min_x(self) -> int:
         return int(min((particle.x for particle in self.particles))) - _MARGIN
@@ -63,13 +63,13 @@ def _generate_deathbed_images(window: Window):
     if steps_back is None:
         return
 
-    particles = list()
+    deathbeds = list()
     for particle in linking_markers.find_dead_particles(experiment.links):
-        particle = _find_ancestor(particle, experiment.links, steps_back)
-        if particle is not None:
-            particles.append(particle)
+        before_death_list = particle_connection_finder.find_previous_positions(particle, experiment.links, steps_back)
+        if before_death_list is not None:
+            deathbeds.append(_Deathbed([particle] + before_death_list))
 
-    if len(particles) == 0:
+    if len(deathbeds) == 0:
         raise UserError("Deathbed images", "No deathbed images found. Are there no cell deaths, or is the number of"
                                            " steps that you want to look into the past too high?")
 
@@ -81,7 +81,7 @@ def _generate_deathbed_images(window: Window):
                         f"A file already exists at {output_folder}. Therefore, we cannot create a directory there.")
     os.mkdir(output_folder)
 
-    window.get_scheduler().add_task(_ImageGeneratingTask(experiment.image_loader(), particles, output_folder))
+    window.get_scheduler().add_task(_ImageGeneratingTask(experiment.image_loader(), deathbeds, output_folder))
 
 
 class _ImageGeneratingTask(Task):
@@ -121,13 +121,3 @@ class _ImageGeneratingTask(Task):
     def on_finished(self, result: bool):
         dialog.popup_message("Death bed", "Images generated successfully!")
 
-
-def _find_ancestor(particle: Particle, links: ParticleLinks, steps_back: int) -> Optional[_Deathbed]:
-    deathbed = _Deathbed(particle)
-    for i in range(steps_back):
-        previous = links.find_pasts(particle)
-        if len(previous) == 0:
-            return None
-        particle = previous.pop()
-        deathbed.particles.append(particle)
-    return deathbed

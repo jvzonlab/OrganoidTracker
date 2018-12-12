@@ -94,7 +94,7 @@ def find_closest_n_particles(particles: Iterable[Particle], around: Particle, ma
         if len(closest_particles) < max_amount or closest_particles[-1][0] > distance_squared:
             # Found closer particle
             closest_particles.append((distance_squared, particle))
-            closest_particles.sort(key=itemgetter(0))
+            closest_particles.sort(key=operator.itemgetter(0))
             if len(closest_particles) > max_amount:
                 # List too long, remove furthest
                 del closest_particles[-1]
