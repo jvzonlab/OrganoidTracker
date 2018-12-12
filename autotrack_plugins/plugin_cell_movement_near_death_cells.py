@@ -38,21 +38,27 @@ def _draw_figure(experiment: Experiment, figure: Figure):
 
     dead_cells = list(linking_markers.find_dead_particles(links))
     previous_times = numpy.array(range(_STEPS_BACK + 1)) * resolution.time_point_interval_m
-    total_distances = numpy.zeros_like(previous_times, dtype=numpy.float32)
+    all_distances = numpy.full((len(dead_cells), len(previous_times)), fill_value=numpy.nan, dtype=numpy.float32)
 
-    for dead_cell in dead_cells:
+    for i, dead_cell in enumerate(dead_cells):
         previous_positions = particle_connection_finder.find_previous_positions(dead_cell, links, steps_back=_STEPS_BACK)
         if previous_positions is None:
             continue
 
         previous_distances = [_get_average_distance_to_nearest_two_cells(particles, pos, resolution)
                               for pos in previous_positions]
-        total_distances += previous_distances
-        axes.plot(previous_times, previous_distances, color="gray")
+        all_distances[i] = previous_distances
+        axes.plot(previous_times, previous_distances, color="black", alpha=0.3)
 
     if len(dead_cells) > 0:
-        axes.plot(previous_times, total_distances / len(dead_cells), color="blue", linewidth=3, label="Average")
+        mean = numpy.nanmean(all_distances, 0)
+        stdev = numpy.nanstd(all_distances, 0, ddof=1)
+        axes.plot(previous_times, mean, color="blue", linewidth=3, label="Average")
+        axes.fill_between(previous_times, mean - stdev, mean + stdev, color="blue", alpha=0.2)
         axes.legend()
+    else:
+        axes.text(0.5, 0.5, f"No cells were found with both a death marker and {_STEPS_BACK} time points of history.",
+                  horizontalalignment='center', verticalalignment = 'center', transform = axes.transAxes)
 
 
 def _get_average_distance_to_nearest_two_cells(all_particles: ParticleCollection, around: Particle, resolution: ImageResolution) -> float:
