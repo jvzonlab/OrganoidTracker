@@ -17,6 +17,21 @@ class UndoableAction:
         raise NotImplementedError()
 
 
+class ReversedAction(UndoableAction):
+    """Does exactly the opposite of another action. It works by switching the do and undo methods."""
+    inverse: UndoableAction
+
+    def __init__(self, action: UndoableAction):
+        """Note: there must be a link between the two particles."""
+        self.inverse = action
+
+    def do(self, experiment: Experiment):
+        return self.inverse.undo(experiment)
+
+    def undo(self, experiment: Experiment):
+        return self.inverse.do(experiment)
+
+
 class UndoRedo:
 
     _undo_queue: Deque[UndoableAction]

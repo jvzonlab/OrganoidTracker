@@ -12,7 +12,7 @@ from networkx import Graph
 from autotrack.core import TimePoint
 from autotrack.core.experiment import Experiment
 from autotrack.core.links import ParticleLinks
-from autotrack.core.particles import Particle
+from autotrack.core.particles import Particle, ParticleCollection
 from autotrack.core.path import PathCollection, Path
 from autotrack.core.resolution import ImageResolution
 from autotrack.linking_analysis import linking_markers
@@ -33,8 +33,10 @@ def _load_links(tracks_dir: str, min_time_point: int = 0, max_time_point: int = 
     return links
 
 
-def _load_crypt_axis(tracks_dir: str, paths: PathCollection, min_time_point: int, max_time_point: int):
-    """Loads the axis of the crypt and saves it as a Path to the experiment."""
+def _load_crypt_axis(tracks_dir: str, particles: ParticleCollection, paths: PathCollection, min_time_point: int,
+                     max_time_point: int):
+    """Loads the axis of the crypt and saves it as a Path to the experiment. The offset of path will be set such that
+    the bottom-most particle has a crypt axis position of 0."""
     _fix_python_path_for_pickle()
     file = os.path.join(tracks_dir, "crypt_axes.p")
     if not os.path.exists(file):
@@ -48,9 +50,13 @@ def _load_crypt_axis(tracks_dir: str, paths: PathCollection, min_time_point: int
                 continue
 
             path = Path()
+            axis.x.reverse()  # Guizela's paths are defined in exactly the opposite way of what we want
             for position in axis.x:  # axis.x == [[x,y,z],[x,y,z],[x,y,z],...]
                 path.add_point(position[0], position[1], position[2])
-            paths.set_path(TimePoint(axis.t), path)
+
+            time_point = TimePoint(axis.t)
+            path.update_offset_for_particles(particles.of_time_point(time_point))
+            paths.add_path(time_point, path)
 
 
 def add_data_to_experiment(experiment: Experiment, tracks_dir: str, min_time_point: int = 0, max_time_point: int = 500):
@@ -61,7 +67,7 @@ def add_data_to_experiment(experiment: Experiment, tracks_dir: str, min_time_poi
         particles.add(particle)
     experiment.links.add_links(links)
     experiment.image_resolution(ImageResolution(0.32, 0.32, 2, 12))
-    _load_crypt_axis(tracks_dir, experiment.paths, min_time_point, max_time_point)
+    _load_crypt_axis(tracks_dir, experiment.particles, experiment.paths, min_time_point, max_time_point)
 
 
 def _read_track_files(tracks_dir: str, links: ParticleLinks, min_time_point: int = 0, max_time_point: int = 5000

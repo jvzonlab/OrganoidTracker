@@ -10,8 +10,8 @@ from autotrack.gui.window import Window
 from autotrack.linking_analysis import cell_error_finder, linking_markers
 from autotrack.linking_analysis.linking_markers import EndMarker
 from autotrack.visualizer import DisplaySettings, activate
-from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
-from autotrack.gui.undo_redo import UndoableAction
+from autotrack.visualizer.abstract_editor import AbstractEditor
+from autotrack.gui.undo_redo import UndoableAction, ReversedAction
 
 
 class _InsertLinkAction(UndoableAction):
@@ -34,21 +34,6 @@ class _InsertLinkAction(UndoableAction):
         experiment.links.remove_link(self.particle1, self.particle2)
         cell_error_finder.apply_on(experiment, self.particle1, self.particle2)
         return f"Removed link between {self.particle1} and {self.particle2}"
-
-
-class _ReverseAction(UndoableAction):
-    """Does exactly the opposite of another action. It works by switching the do and undo methods."""
-    inverse: UndoableAction
-
-    def __init__(self, action: UndoableAction):
-        """Note: there must be a link between the two particles."""
-        self.inverse = action
-
-    def do(self, experiment: Experiment):
-        return self.inverse.undo(experiment)
-
-    def undo(self, experiment: Experiment):
-        return self.inverse.do(experiment)
 
 
 class _InsertParticleAction(UndoableAction):
@@ -134,7 +119,7 @@ class _MarkLineageEndAction(UndoableAction):
         return f"Re-added the {self.old_marker.get_display_name()}-marker to {self.particle}"
 
 
-class LinkAndPositionEditor(ExitableImageVisualizer):
+class LinkAndPositionEditor(AbstractEditor):
     """Editor for cell links and positions. Use the Insert key to insert new cells or links, and Delete to delete
      them."""
 
@@ -142,17 +127,11 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
     _selected2: Optional[Particle] = None
 
     def __init__(self, window: Window, *, time_point_number: int = 1, z: int = 14,
-                 selected_particle: Optional[Particle] = None):
+                 display_settings: Optional[DisplaySettings] = None, selected_particle: Optional[Particle] = None):
         super().__init__(window, time_point_number=time_point_number, z=z,
-                         display_settings=DisplaySettings(show_reconstruction=False))
+                         display_settings=display_settings)
 
         self._selected1 = selected_particle
-
-    def _get_figure_title(self) -> str:
-        return "Editing time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
-
-    def _get_window_title(self) -> str:
-        return "Manual data editing"
 
     def _draw_extra(self):
         if self._selected1 is not None and not self._experiment.particles.exists(self._selected1):
@@ -196,8 +175,7 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
     def get_extra_menu_options(self):
         return {
             **super().get_extra_menu_options(),
-            "Edit//Editor-Undo (Ctrl+z)": self._undo,
-            "Edit//Editor-Redo (Ctrl+y)": self._redo,
+            "Edit//Experiment-Edit data axes... (A)": self._show_path_editor,
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
             "View//Linking-Lineage errors and warnings (L)": self._show_lineage_errors,
             "Edit//LineageEnd-Mark as cell death": lambda: self._try_set_end_marker(EndMarker.DEAD),
@@ -213,10 +191,8 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
             self._show_linking_errors(particle)
         elif event.key == "l":
             self._show_lineage_errors()
-        elif event.key == "ctrl+z":
-            self._undo()
-        elif event.key == "ctrl+y":
-            self._redo()
+        elif event.key == "a":
+            self._show_path_editor()
         elif event.key == "insert":
             self._try_insert(event)
         elif event.key == "delete":
@@ -240,11 +216,11 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
             self.update_status("You need to select a cell first")
         elif self._selected2 is None:  # Delete cell and its links
             old_links = self._experiment.links.find_links_of(self._selected1)
-            self._perform_action(_ReverseAction(_InsertParticleAction(self._selected1, list(old_links))))
+            self._perform_action(ReversedAction(_InsertParticleAction(self._selected1, list(old_links))))
         elif self._experiment.links.contains_link(self._selected1, self._selected2):  # Delete link between cells
             particle1, particle2 = self._selected1, self._selected2
             self._selected1, self._selected2 = None, None
-            self._perform_action(_ReverseAction(_InsertLinkAction(particle1, particle2)))
+            self._perform_action(ReversedAction(_InsertLinkAction(particle1, particle2)))
         else:
             self.update_status("No link found between the two particles - nothing to delete")
 
@@ -265,6 +241,12 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
                 self.update_status(f"This lineage end already has the {marker.get_display_name()} marker.")
             return
         self._perform_action(_MarkLineageEndAction(self._selected1, marker, current_marker))
+
+    def _show_path_editor(self):
+        from autotrack.visualizer.path_editor import PathEditor
+        path_editor = PathEditor(self._window, time_point_number=self._time_point.time_point_number(),
+                                         z=self._z, display_settings=self._display_settings)
+        activate(path_editor)
 
     def _show_linking_errors(self, particle: Optional[Particle] = None):
         from autotrack.visualizer.errors_visualizer import ErrorsVisualizer
@@ -298,17 +280,3 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
             self._selected1, self._selected2 = None, None
             self._perform_action(_InsertLinkAction(particle1, particle2))
 
-    def _perform_action(self, action: UndoableAction):
-        status = self._window.get_undo_redo().do(action, self._experiment)
-        self.get_window().redraw_data()
-        self.update_status(status)
-
-    def _undo(self):
-        status = self._window.get_undo_redo().undo(self._experiment)
-        self.get_window().redraw_data()
-        self.update_status(status)
-
-    def _redo(self):
-        status = self._window.get_undo_redo().redo(self._experiment)
-        self.get_window().redraw_data()
-        self.update_status(status)

@@ -93,31 +93,12 @@ def _draw_graph(figure: Figure, grid: _SpaceTimeGrid):
     axes.set_title("Cell cycle lengths over space and time")
 
 
-def _get_crypt_start_positions(experiment: Experiment) -> Dict[TimePoint, float]:
-    """Records for each time point the particle with the highest position along the path."""
-    result = dict()
-    for time_point in experiment.time_points():
-        axis = experiment.paths.of_time_point(time_point)
-        if axis is None:
-            continue
-        highest_path_position = 0
-        for particle in experiment.particles.of_time_point(time_point):
-            path_position = axis.get_path_position_2d(particle)
-            if path_position > highest_path_position:
-                highest_path_position = path_position
-        if highest_path_position > 0:
-            result[time_point] = highest_path_position
-    return result
-
-
 def _get_graphing_data(experiment: Experiment) -> _SpaceTimeGrid:
     grid = _SpaceTimeGrid()
     links = experiment.links
     if not links.has_links():
         raise UserError("No linking data found", "No links were loaded. Therefore, we cannot determine the cell age, so"
                                                  " we cannot plot anything.")
-    highest_path_positions = _get_crypt_start_positions(experiment)
-
 
     # Rank all cells according to their crypt position, time point and cell cycle length
     families = cell_division_finder.find_families(links)
@@ -139,13 +120,11 @@ def _get_graphing_data(experiment: Experiment) -> _SpaceTimeGrid:
 
                 particle = next_particles.pop()
                 time_point = particle.time_point()
-                crypt_path = experiment.paths.of_time_point(time_point)
-                if crypt_path is None:
+                position_on_crypt_axis = experiment.paths.get_path_position_2d(particle)
+                if position_on_crypt_axis is None:
                     continue
-                highest_path_position = highest_path_positions.get(time_point)
-                position_on_crypt_axis = highest_path_position - crypt_path.get_path_position_2d(particle)
 
-                grid.add_point(time_point, position_on_crypt_axis, cell_cycle_length)
+                grid.add_point(time_point, position_on_crypt_axis.pos, cell_cycle_length)
     return grid
 
 
