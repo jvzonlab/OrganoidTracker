@@ -196,13 +196,13 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
     def get_extra_menu_options(self):
         return {
             **super().get_extra_menu_options(),
-            "Edit/Editor-Undo (Ctrl+z)": self._undo,
-            "Edit/Editor-Redo (Ctrl+y)": self._redo,
-            "View/Linking-Linking errors and warnings (E)": self._show_linking_errors,
-            "View/Linking-Lineage errors and warnings (L)": self._show_lineage_errors,
-            "Edit/LineageEnd-Mark as cell death": lambda: self._try_set_end_marker(EndMarker.DEAD),
-            "Edit/LineageEnd-Mark as moving out of view": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
-            "Edit/LineageEnd-Remove end marker": lambda: self._try_set_end_marker(None)
+            "Edit//Editor-Undo (Ctrl+z)": self._undo,
+            "Edit//Editor-Redo (Ctrl+y)": self._redo,
+            "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
+            "View//Linking-Lineage errors and warnings (L)": self._show_lineage_errors,
+            "Edit//LineageEnd-Mark as cell death": lambda: self._try_set_end_marker(EndMarker.DEAD),
+            "Edit//LineageEnd-Mark as moving out of view": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
+            "Edit//LineageEnd-Remove end marker": lambda: self._try_set_end_marker(None)
         }
 
     def _on_key_press(self, event: KeyEvent):
