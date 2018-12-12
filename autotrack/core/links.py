@@ -8,8 +8,7 @@ class LinkingTrack:
     _min_time_point_number: int  # Equal to _particles_by_time_point[0].time_point_number()
 
     # Particles by time point. Position 0 contains the particle at min_time_point, position 1 min_time_point + 1, etc.
-    # List may contain None, but never as the first or last entry (then you would just resize the list)
-    _particles_by_time_point: List[Optional[Particle]]
+    _particles_by_time_point: List[Particle]
 
     # Links to other tracks that follow or precede this track
     _next_tracks: List["LinkingTrack"]
@@ -21,7 +20,7 @@ class LinkingTrack:
         self._next_tracks = list()
         self._previous_tracks = list()
 
-    def _get_by_time_point(self, time_point_number: int):
+    def _get_by_time_point(self, time_point_number: int) -> Particle:
         if time_point_number < self._min_time_point_number \
                 or time_point_number >= self._min_time_point_number + len(self._particles_by_time_point):
             raise IndexError(f"Time point {time_point_number} outside track")
@@ -30,11 +29,8 @@ class LinkingTrack:
     def _find_pasts(self, time_point_number: int) -> Set[Particle]:
         """Returns all particles directly linked to the particle at the given time point."""
         search_index = (time_point_number - 1) - self._min_time_point_number # -1 is to look one time point in the past
-        while search_index >= 0:
-            previous_particle = self._particles_by_time_point[search_index]
-            if previous_particle is not None:
-                return {previous_particle}
-            search_index -= 1
+        if search_index >= 0:
+            return {self._particles_by_time_point[search_index]}
 
         # We ended up at the first time point of this track, continue search in previous tracks
         return {track.find_last_particle() for track in self._previous_tracks}
@@ -42,11 +38,8 @@ class LinkingTrack:
     def _find_futures(self, time_point_number: int) -> Set[Particle]:
         """Returns all particles directly linked to the particle at the given time point."""
         search_index = (time_point_number + 1) - self._min_time_point_number
-        while search_index < len(self._particles_by_time_point):
-            next_particle = self._particles_by_time_point[search_index]
-            if next_particle is not None:
-                return {next_particle}
-            search_index += 1
+        if search_index < len(self._particles_by_time_point):
+            return {self._particles_by_time_point[search_index]}
 
         # We ended up at the last time point of this track, continue search in next tracks
         return {track.find_first_particle() for track in self._next_tracks}
@@ -69,9 +62,7 @@ class LinkingTrack:
 
     def particles(self) -> Iterable[Particle]:
         """Returns all particles in this track, in order."""
-        for particle in self._particles_by_time_point:
-            if particle is not None:
-                yield particle
+        yield from self._particles_by_time_point
 
     def _update_link_to_previous(self, was: "LinkingTrack", will_be: "LinkingTrack"):
         """Replaces a value in the _previous_tracks list. Make sure that old track is in the list."""
@@ -222,62 +213,6 @@ class ParticleLinks:
         """Returns True if the graph is not None."""
         return len(self._particle_to_track) > 0
 
-    def to_d3_data(self) -> Dict:
-        """Return data in D3.js node-link format that is suitable for JSON serialization
-        and use in Javascript documents."""
-        nodes = list()
-
-        # Save nodes and store extra data
-        for particle in self.find_all_particles():
-            node = {
-                "id": particle
-            }
-            for data_name, data_values in self._particle_data.items():
-                particle_value = data_values.get(particle)
-                if particle_value is not None:
-                    node[data_name] = particle_value
-            nodes.append(node)
-
-        # Save edges
-        edges = list()
-        for source, target in self.find_all_links():
-            edge = {
-                "source": source,
-                "target": target
-            }
-            edges.append(edge)
-
-        return {
-            "directed": False,
-            "multigraph": False,
-            "graph": dict(),
-            "nodes": nodes,
-            "links": edges
-        }
-
-    def add_d3_data(self, data: Dict, min_time_point: int = -100000, max_time_point: int = 100000):
-        """Adds data in the D3.js node-link format. Used for deserialization."""
-
-        # Add particle data
-        for node in data["nodes"]:
-            if len(node.keys()) == 1:
-                # No extra data found
-                continue
-            particle = node["id"]
-            for data_key, data_value in node.items():
-                if data_key == "id":
-                    continue
-                self.set_particle_data(particle, data_key, data_value)
-
-        # Add links
-        for link in data["links"]:
-            source: Particle = link["source"]
-            target: Particle = link["target"]
-            if source.time_point_number() < min_time_point or target.time_point_number() < min_time_point \
-                or source.time_point_number() > max_time_point or target.time_point_number() > max_time_point:
-                continue
-            self.add_link(source, target)
-
     def find_futures(self, particle: Particle) -> Set[Particle]:
         """Returns all connections to the future."""
         track = self._particle_to_track.get(particle)
@@ -302,8 +237,11 @@ class ParticleLinks:
 
     def add_link(self, particle1: Particle, particle2: Particle):
         """Adds a link between the particles. The linking network will be initialized if necessary."""
-        if particle1.time_point_number() == particle2.time_point_number():
+        dt = particle1.time_point_number() - particle2.time_point_number()
+        if dt == 0:
             raise ValueError("Particles are in the same time point")
+        if abs(dt) > 1:
+            raise ValueError("Link skipped a time point")
 
         track1 = self._particle_to_track.get(particle1)
         track2 = self._particle_to_track.get(particle2)
@@ -596,3 +534,10 @@ class ParticleLinks:
     def find_all_tracks(self) -> Iterable[LinkingTrack]:
         """Gets all tracks, even tracks that have another track before them."""
         yield from self._tracks
+
+    def find_all_data_of_particle(self, particle: Particle) -> Iterable[Tuple[str, Any]]:
+        """Finds all stored data of a given particle."""
+        for data_name, data_values in self._particle_data.items():
+            data_value = data_values.get(particle)
+            if data_value is not None:
+                yield data_name, data_value

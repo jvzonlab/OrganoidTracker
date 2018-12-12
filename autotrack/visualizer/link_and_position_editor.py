@@ -290,6 +290,8 @@ class LinkAndPositionEditor(ExitableImageVisualizer):
             self._perform_action(_InsertParticleAction(particle, connections))
         elif self._selected1.time_point_number() == self._selected2.time_point_number():
             self.update_status("The two selected cells are in exactly the same time point - cannot insert link.")
+        elif abs(self._selected1.time_point_number() - self._selected2.time_point_number()) > 1:
+            self.update_status("The two selected cells are not in consecutive time points - cannot insert link.")
         else:
             # Insert link between two particles
             particle1, particle2 = self._selected1, self._selected2
