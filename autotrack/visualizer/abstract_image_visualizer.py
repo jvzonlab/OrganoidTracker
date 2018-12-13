@@ -225,14 +225,14 @@ class AbstractImageVisualizer(Visualizer):
 
     def _draw_path(self):
         """Draws the path, which is usually the crypt axis."""
-        paths = self._experiment.paths.of_time_point(self._time_point)
+        paths = self._experiment.data_axes.of_time_point(self._time_point)
 
         for path in paths:
             dz = abs(path.get_z() - self._z)
             marker = path.get_direction_marker()
             linewidth = 3 if dz == 0 else 1
 
-            origin = path.path_position_to_xy(0)
+            origin = path.from_position_on_axis(0)
             if origin is not None:
                 self._ax.plot(origin[0], origin[1], marker="*", markerfacecolor=core.COLOR_CELL_CURRENT,
                               markeredgecolor="black", markersize=max(11, 18 - dz))

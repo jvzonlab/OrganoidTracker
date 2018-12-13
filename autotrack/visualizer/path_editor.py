@@ -5,7 +5,7 @@ from matplotlib.backend_bases import KeyEvent, MouseEvent
 from autotrack.core import TimePoint
 from autotrack.core.experiment import Experiment
 from autotrack.core.particles import Particle
-from autotrack.core.path import Path
+from autotrack.core.data_axis import DataAxis
 from autotrack.gui.undo_redo import UndoableAction, ReversedAction
 from autotrack.gui.window import Window
 from autotrack.visualizer import activate, DisplaySettings
@@ -14,28 +14,28 @@ from autotrack.visualizer.abstract_editor import AbstractEditor
 
 class _AddPathAction(UndoableAction):
 
-    _path: Path
+    _path: DataAxis
     _time_point: TimePoint
 
-    def __init__(self, path: Path, time_point: TimePoint):
+    def __init__(self, path: DataAxis, time_point: TimePoint):
         self._path = path
         self._time_point = time_point
 
     def do(self, experiment: Experiment) -> str:
-        experiment.paths.add_path(self._time_point, self._path)
+        experiment.data_axes.add_data_axis(self._time_point, self._path)
         self._path.update_offset_for_particles(experiment.particles.of_time_point(self._time_point))
         return "Added path to time point " + str(self._time_point.time_point_number())
 
     def undo(self, experiment: Experiment):
-        experiment.paths.remove_path(self._time_point, self._path)
+        experiment.data_axes.remove_data_axis(self._time_point, self._path)
         return "Removed path in time point " + str(self._time_point.time_point_number())
 
 
 class _AddPointAction(UndoableAction):
-    _path: Path
+    _path: DataAxis
     _new_point: Particle
 
-    def __init__(self, path: Path, new_point: Particle):
+    def __init__(self, path: DataAxis, new_point: Particle):
         self._path = path
         self._new_point = new_point
 
@@ -54,7 +54,7 @@ class PathEditor(AbstractEditor):
     Press Insert to start a new path if no path is selected.
     Press Delete to delete the whole selected path."""
 
-    _selected_path: Optional[Path]
+    _selected_path: Optional[DataAxis]
     _selected_path_time_point: Optional[TimePoint]
 
     def __init__(self, window: Window, *, time_point_number: Optional[int] = None, z: int = 14,
@@ -63,7 +63,7 @@ class PathEditor(AbstractEditor):
         self._selected_path = None
         self._selected_path_time_point = None
 
-    def _select_path(self, path: Optional[Path]):
+    def _select_path(self, path: Optional[DataAxis]):
         """(De)selects a path for the current time point. Make sure to redraw after calling this method."""
         if path is None:
             self._selected_path = None
@@ -76,11 +76,11 @@ class PathEditor(AbstractEditor):
         if event.dblclick:
             # Select path
             position = Particle(event.xdata, event.ydata, self._z).with_time_point(self._time_point)
-            path_position = self._experiment.paths.get_path_position_2d(position)
-            if path_position is None or path_position.distance > 10 or path_position.path == self._selected_path:
+            path_position = self._experiment.data_axes.to_position_on_axis(position)
+            if path_position is None or path_position.distance > 10 or path_position.axis == self._selected_path:
                 self._select_path(None)
             else:
-                self._select_path(path_position.path)
+                self._select_path(path_position.axis)
             self.draw_view()
 
     def _get_figure_title(self) -> str:
@@ -89,10 +89,10 @@ class PathEditor(AbstractEditor):
     def _get_window_title(self) -> str:
         return "Manual data editing"
 
-    def _get_selected_path_of_current_time_point(self) -> Optional[Path]:
+    def _get_selected_path_of_current_time_point(self) -> Optional[DataAxis]:
         if self._selected_path is None:
             return None
-        if not self._experiment.paths.exists(self._selected_path, self._selected_path_time_point):
+        if not self._experiment.data_axes.exists(self._selected_path, self._selected_path_time_point):
             self._selected_path = None  # Path was deleted, remove selection
             return None
         if self._selected_path_time_point != self._time_point:
@@ -112,7 +112,7 @@ class PathEditor(AbstractEditor):
             selected_path = self._get_selected_path_of_current_time_point()
             if selected_path is None:
                 # Time for a new path
-                path = Path()
+                path = DataAxis()
                 path.add_point(event.xdata, event.ydata, self._z)
                 self._select_path(path)
                 self._perform_action(_AddPathAction(path, self._time_point))

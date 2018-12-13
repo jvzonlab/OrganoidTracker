@@ -120,7 +120,7 @@ def _get_graphing_data(experiment: Experiment) -> _SpaceTimeGrid:
 
                 particle = next_particles.pop()
                 time_point = particle.time_point()
-                position_on_crypt_axis = experiment.paths.get_path_position_2d(particle)
+                position_on_crypt_axis = experiment.data_axes.to_position_on_axis(particle)
                 if position_on_crypt_axis is None:
                     continue
 

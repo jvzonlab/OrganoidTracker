@@ -6,7 +6,7 @@ from autotrack.core import TimePoint, Name, UserError
 from autotrack.core.image_loader import ImageLoader
 from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle, ParticleCollection
-from autotrack.core.path import PathCollection
+from autotrack.core.data_axis import DataAxisCollection
 from autotrack.core.resolution import ImageResolution
 from autotrack.core.score import ScoreCollection
 
@@ -60,14 +60,14 @@ class Experiment:
     _links: ParticleLinks
     _image_loader: ImageLoader = ImageLoader()
     _name: Name
-    paths: PathCollection
+    data_axes: DataAxisCollection
     _image_resolution: Optional[ImageResolution] = None
 
     def __init__(self):
         self._name = Name()
         self._particles = ParticleCollection()
         self.scores = ScoreCollection()
-        self.paths = PathCollection()
+        self.data_axes = DataAxisCollection()
         self._links = ParticleLinks()
 
     def remove_particle(self, particle: Particle):

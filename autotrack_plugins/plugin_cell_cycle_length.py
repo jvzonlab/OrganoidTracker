@@ -65,7 +65,7 @@ class _CellCryptPosVar(_ThirdVar):
         self.links = links
 
     def get_number(self, daughter: Particle, next_division: Family) -> float:
-        path = self.experiment.paths.of_time_point(daughter.time_point())
+        path = self.experiment.data_axes.of_time_point(daughter.time_point())
         if path is None:
             return 0
         return path.get_path_position_2d(daughter)

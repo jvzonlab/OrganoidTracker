@@ -1,6 +1,6 @@
 import math
 from collections import namedtuple
-from typing import List, Dict, Optional, Tuple, Iterable
+from typing import List, Dict, Optional, Tuple, Iterable, Any
 
 import numpy
 from scipy import interpolate
@@ -8,10 +8,10 @@ from scipy import interpolate
 from autotrack.core import TimePoint
 from autotrack.core.particles import Particle
 
-PathPosition = namedtuple("PathPosition", ["path", "pos", "distance"])
+DataAxisPosition = namedtuple("DataAxisPosition", ["axis", "pos", "distance"])
 
 
-class Path:
+class DataAxis:
     """A curve (curved line) trough the particles. This can be used to measure how far the particles are along this
      curve."""
 
@@ -67,7 +67,7 @@ class Path:
         y_values = points[1]
         return x_values, y_values
 
-    def get_path_position_2d(self, particle: Particle) -> Optional[PathPosition]:
+    def to_position_on_axis(self, particle: Particle) -> Optional[DataAxisPosition]:
         """Gets the closest position on the path and the distance to the path, both in pixels. Returns None if the path
         has fewer than 2 points."""
         x_values, y_values = self.get_interpolation_2d()
@@ -98,9 +98,9 @@ class Path:
         distance_on_line = numpy.sqrt(distance_to_start_of_line_squared - min_distance_to_line_squared)
 
         raw_path_position = combined_length_of_previous_lines + distance_on_line
-        return PathPosition(self, raw_path_position - self._offset, math.sqrt(min_distance_to_line_squared))
+        return DataAxisPosition(self, raw_path_position - self._offset, math.sqrt(min_distance_to_line_squared))
 
-    def path_position_to_xy(self, path_position: float) -> Optional[Tuple[float, float]]:
+    def from_position_on_axis(self, path_position: float) -> Optional[Tuple[float, float]]:
         """Given a path position, this returns the corresponding x and y coordinates. Returns None for positions outside
         of the line."""
         if len(self._x_list) < 2:
@@ -140,28 +140,13 @@ class Path:
             # More vertical movement
             return "^" if dy < 0 else "v"
 
-    def update_offset_for_particles(self, particles: Iterable[Particle]):
-        """Updates the offset of this crypt axis such that the lowest path position that is ever returned by
-        get_path_position_2d is exactly 0.
-        """
-        if len(self._x_list) < 2:
-            return  # Too small path to update
-
-        current_lowest_position = None
-        for particle in particles:
-            path_position = self.get_path_position_2d(particle).pos
-            if current_lowest_position is None or path_position < current_lowest_position:
-                current_lowest_position = path_position
-        if current_lowest_position is not None:  # Don't do anything if the list of particles was empty
-            self._offset += current_lowest_position
-    
     def __eq__(self, other):
         # Paths are only equal if they are the same instence
         return other is self
 
-    def copy(self) -> "Path":
+    def copy(self) -> "DataAxis":
         """Returns a copy of this path. Changes to this path will not affect the copy and vice versa."""
-        copy = Path()
+        copy = DataAxis()
         for i in range(len(self._x_list)):
             copy.add_point(self._x_list[i], self._y_list[i], self._z)
         return copy
@@ -174,6 +159,31 @@ class Path:
                 del self._y_list[i]
                 self._interpolation = None  # Interpolation is now outdated
                 return
+
+    def update_offset_for_particles(self, particles: Iterable[Particle]):
+        """Updates the offset of this crypt axis such that the lowest path position that is ever returned by
+        get_path_position_2d is exactly 0.
+        """
+        if len(self._x_list) < 2:
+            return  # Too small path to update
+
+        current_lowest_position = None
+        for particle in particles:
+            path_position = self.to_position_on_axis(particle).pos
+            if current_lowest_position is None or path_position < current_lowest_position:
+                current_lowest_position = path_position
+        if current_lowest_position is not None:  # Don't do anything if the list of particles was empty
+            self._offset += current_lowest_position
+
+    def set_offset(self, offset: float):
+        """Manually sets the offset used in calls to get_path_position_2d and path_position_to_xy. See also
+        update_offset_for_particles."""
+        self._offset = float(offset)
+
+    def get_offset(self):
+        """Gets the offset used in calls to get_path_position_2d and path_position_to_xy. Note that these methods apply
+        the offset automatically, so except for saving/loading purposes there should be no need to call this method."""
+        return self._offset
 
 
 def _distance(x1, y1, x2, y2):
@@ -196,57 +206,69 @@ def _distance_to_line_segment_squared(line_x1, line_y1, line_x2, line_y2, point_
                              line_x1 + t * (line_x2 - line_x1), line_y1 + t * (line_y2 - line_y1))
 
 
-class PathCollection:
+class DataAxisCollection:
     """Holds the paths of all time points in an experiment."""
 
-    _paths: Dict[TimePoint, List[Path]]
+    _data_axes: Dict[TimePoint, List[DataAxis]]
 
     def __init__(self):
-        self._paths = dict()
+        self._data_axes = dict()
 
-    def of_time_point(self, time_point: TimePoint) -> Iterable[Path]:
+    def of_time_point(self, time_point: TimePoint) -> Iterable[DataAxis]:
         """Gets the paths of the time point, or an empty collection if that time point has no paths defined."""
-        paths = self._paths.get(time_point)
+        paths = self._data_axes.get(time_point)
         if paths is None:
             return []
         return paths
 
-    def get_path_position_2d(self, particle: Particle) -> Optional[PathPosition]:
+    def to_position_on_axis(self, particle: Particle) -> Optional[DataAxisPosition]:
         """Gets the position of the particle along the closest axis."""
-        paths = self._paths.get(particle.time_point())
-        if paths is None:
+        data_axes = self._data_axes.get(particle.time_point())
+        if data_axes is None:
             return None
 
-        # Find the closest path, return position on that path
+        # Find the closest axis, return position on that axis
         lowest_distance_position = None
-        for path in paths:
-            position = path.get_path_position_2d(particle)
+        for data_axis in data_axes:
+            position = data_axis.to_position_on_axis(particle)
             if lowest_distance_position is None or position.distance < lowest_distance_position.distance:
                 lowest_distance_position = position
         return lowest_distance_position
 
-    def add_path(self, time_point: TimePoint, path: Path):
-        """Adds a new path to the given time point. Existing paths are left untouched."""
-        existing_paths = self._paths.get(time_point)
-        if existing_paths is None:
-            self._paths[time_point] = [path]
+    def add_data_axis(self, time_point: TimePoint, path: DataAxis):
+        """Adds a new data axis to the given time point. Existing axes are left untouched."""
+        existing_data_axes = self._data_axes.get(time_point)
+        if existing_data_axes is None:
+            self._data_axes[time_point] = [path]
         else:
-            existing_paths.append(path)
+            existing_data_axes.append(path)
 
-    def remove_path(self, time_point: TimePoint, path: Path):
-        """Removes the given path from the given time point. Does nothing if the path is not used for the given time
-         point."""
-        existing_paths = self._paths.get(time_point)
+    def remove_data_axis(self, time_point: TimePoint, path: DataAxis):
+        """Removes the given data axis from the given time point. Does nothing if the data axis is not used for the
+        given time point."""
+        existing_paths = self._data_axes.get(time_point)
         if existing_paths is None:
             return
         try:
             existing_paths.remove(path)
+            if len(existing_paths) == 0:
+                del self._data_axes[time_point]  # We just removed the last path of this time point
         except ValueError:
             pass  # Ignore, path is not in list
 
-    def exists(self, path: Path, time_point: TimePoint) -> bool:
+    def exists(self, path: DataAxis, time_point: TimePoint) -> bool:
         """Returns True if the path exists in this path collection at the given time point, False otherwise."""
-        paths = self._paths.get(time_point)
+        paths = self._data_axes.get(time_point)
         if paths is None:
             return False
         return path in paths
+
+    def has_axes(self) -> bool:
+        """Returns True if there are any paths stored in this collection. """
+        return len(self._data_axes) > 0
+
+    def all_data_axes(self) -> Iterable[Tuple[DataAxis, TimePoint]]:
+        """Gets all paths. Note that a single time point can have multiple paths."""
+        for time_point, paths in self._data_axes.items():
+            for path in paths:
+                yield path, time_point

@@ -8,10 +8,11 @@ from typing import List, Dict, Any
 import numpy
 from pandas import DataFrame
 
-from autotrack.core import shape, TimePoint
+from autotrack.core import shape, TimePoint, UserError
 from autotrack.core.experiment import Experiment
 from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle, ParticleCollection
+from autotrack.core.data_axis import DataAxisCollection, DataAxis
 from autotrack.core.resolution import ImageResolution
 from autotrack.core.score import ScoredFamily, Score, Family
 
@@ -69,6 +70,9 @@ def _load_json_data_file(file_name: str, min_time_point: int, max_time_point: in
         if "shapes" in data:
             _parse_shape_format(experiment, data["shapes"], min_time_point, max_time_point)
 
+        if "data_axes" in data:
+            _parse_data_axes_format(experiment, data["data_axes"], min_time_point, max_time_point)
+
         if "family_scores" in data:
             experiment.scores.add_scored_families(data["family_scores"])
 
@@ -116,6 +120,21 @@ def _parse_links_format(experiment: Experiment, link_data: Dict[str, Any], min_t
     for particle in links.find_all_particles():
         particles.add(particle)
     experiment.links.add_links(links)
+
+
+def _parse_data_axes_format(experiment: Experiment, axes_data: List[Dict], min_time_point: int, max_time_point: int):
+    for path_json in axes_data:
+        time_point_number = path_json["_time_point_number"]
+        if time_point_number < min_time_point or time_point_number > max_time_point:
+            continue
+        path = DataAxis()
+        points_x = path_json["x_list"]
+        points_y = path_json["y_list"]
+        z = path_json["z"]
+        for i in range(len(points_x)):
+            path.add_point(points_x[i], points_y[i], z)
+        path.set_offset(path_json["offset"])
+        experiment.data_axes.add_data_axis(TimePoint(time_point_number), path)
 
 
 def _add_d3_data(links: ParticleLinks, data: Dict, min_time_point: int = -100000, max_time_point: int = 100000):
@@ -253,6 +272,21 @@ def save_dataframe_to_csv(data_frame: DataFrame, csv_file_name: str):
         raise e
 
 
+def _encode_data_axes_to_json(data_axes: DataAxisCollection) -> List[Dict]:
+    json_list = list()
+    for data_axis, time_point in data_axes.all_data_axes():
+        points_x, points_y = data_axis.get_points_2d()
+        json_object = {
+            "_time_point_number": time_point.time_point_number(),
+            "x_list": points_x,
+            "y_list": points_y,
+            "z": data_axis.get_z(),
+            "offset": data_axis.get_offset()
+        }
+        json_list.append(json_object)
+    return json_list
+
+
 def save_data_to_json(experiment: Experiment, json_file_name: str):
     """Saves positions, shapes, scores and links to a JSON file. The file should end with the extension FILE_EXTENSION.
     """
@@ -269,6 +303,10 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
     if len(scored_families) > 0:
         save_data["family_scores"] = scored_families
 
+    # Save data axes
+    if experiment.data_axes.has_axes():
+        save_data["data_axes"] = _encode_data_axes_to_json(experiment.data_axes)
+
     # Save image resolution
     try:
         resolution = experiment.image_resolution()
@@ -276,7 +314,7 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
                                          "y_um": resolution.pixel_size_zyx_um[1],
                                          "z_um": resolution.pixel_size_zyx_um[0],
                                          "t_m": resolution.time_point_interval_m}
-    except ValueError:
+    except UserError:
         pass
 
     _create_parent_directories(json_file_name)
