@@ -1,7 +1,7 @@
+from statistics import median
 from typing import Optional, Tuple, List, Callable, Dict, Any
 
 from matplotlib.figure import Figure
-from networkx import Graph
 
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
@@ -10,8 +10,6 @@ from autotrack.core.particles import Particle
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
 from autotrack.linking import cell_division_finder
-from statistics import median
-
 
 GetStatistic = Callable[[Experiment, Particle], float]  # A function that gets some statistic of a cell, like its volume
 PointList = Tuple[List[float], List[float]]  # A list of x values and a list of y values

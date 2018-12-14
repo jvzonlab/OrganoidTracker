@@ -1,7 +1,4 @@
 import unittest
-from time import sleep
-
-from networkx import Graph
 
 from autotrack.comparison import links_comparison
 from autotrack.core.experiment import Experiment

@@ -3,7 +3,6 @@ from typing import Dict, Any, Tuple, Optional
 import numpy
 from matplotlib.figure import Figure
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from networkx import Graph
 from numpy import ndarray
 
 from autotrack.core import UserError
@@ -53,28 +52,6 @@ class _ThirdVar:
     def get_colobar_label(self) -> Optional[str]:
         """If this is None, then no color or color bar is used: the the Third Variable will essentiaally be ignored."""
         return None
-
-
-class _CellCryptPosVar(_ThirdVar):
-
-    experiment: Experiment
-    links: Graph
-
-    def __init__(self, experiment: Experiment, links: Graph):
-        self.experiment = experiment
-        self.links = links
-
-    def get_number(self, daughter: Particle, next_division: Family) -> float:
-        path = self.experiment.data_axes.of_time_point(daughter.time_point())
-        if path is None:
-            return 0
-        return path.get_path_position_2d(daughter)
-
-    def show_average(self) -> bool:
-        return False
-
-    def get_colobar_label(self) -> Optional[str]:
-        return "Crypt axis position of division (px)"
 
 
 class _CellFateVar(_ThirdVar):

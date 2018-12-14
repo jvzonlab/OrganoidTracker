@@ -7,7 +7,6 @@ from networkx import Graph
 from numpy import ndarray
 
 from autotrack.core.ellipse import EllipseStack, Ellipse
-from autotrack.core.gaussian import Gaussian
 
 ELLIPSE_SHRINK_PIXELS = 5
 

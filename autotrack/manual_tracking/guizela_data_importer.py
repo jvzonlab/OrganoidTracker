@@ -1,19 +1,18 @@
 """Extracting the tracks as measured by Guizela to a Graph object"""
 
+import math
 import os
 import pickle
 import sys
 from typing import List
 
-import math
 import numpy
-from networkx import Graph
 
 from autotrack.core import TimePoint
+from autotrack.core.data_axis import DataAxisCollection, DataAxis
 from autotrack.core.experiment import Experiment
 from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle, ParticleCollection
-from autotrack.core.data_axis import DataAxisCollection, DataAxis
 from autotrack.core.resolution import ImageResolution
 from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.linking_markers import EndMarker

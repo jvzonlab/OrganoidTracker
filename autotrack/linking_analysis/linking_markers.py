@@ -1,9 +1,7 @@
 """Extra markers used to describe the linking data. For example, you can mark the end of a lineage as a cell death."""
 
 from enum import Enum
-from typing import Optional, Dict, Iterable
-
-from networkx import Graph
+from typing import Optional, Iterable
 
 from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
