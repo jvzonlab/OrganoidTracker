@@ -97,7 +97,7 @@ class Window:
         """Redraws the main figure using the latest values from the experiment."""
         self.__gui_experiment.redraw_data()
 
-    def redraw_image_and_data(self):
+    def redraw_all(self):
         """Redraws the image using the latest values from the experiment."""
         self.__gui_experiment.redraw_image_and_data()
 

@@ -4,7 +4,6 @@ import cv2
 import numpy
 from matplotlib.backend_bases import KeyEvent
 from matplotlib.colors import Colormap
-from networkx import Graph
 from numpy.core.multiarray import ndarray
 from tifffile import tifffile
 
@@ -89,8 +88,9 @@ class AbstractImageVisualizer(Visualizer):
         size = images_for_size.shape if images_for_size is not None else self.DEFAULT_SIZE
         return size
 
-    def refresh_image(self):
-        self._move_in_time(dt=0)  # This will redraw the view
+    def refresh_all(self):
+        self._load_time_point(self._time_point)  # Reload image
+        super().refresh_all()
 
     def draw_view(self):
         self._clear_axis()

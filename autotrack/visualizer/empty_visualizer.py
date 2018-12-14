@@ -12,7 +12,8 @@ class EmptyVisualizer(Visualizer):
     def refresh_data(self):
         self._exit_if_possible()
 
-    def refresh_image(self):
+    def refresh_all(self):
+        super().refresh_all()
         self._exit_if_possible()
 
     def _exit_if_possible(self):

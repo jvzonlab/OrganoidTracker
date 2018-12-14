@@ -90,8 +90,10 @@ class Visualizer:
         """Redraws the view."""
         self.draw_view()
 
-    def refresh_image(self):
+    def refresh_all(self):
         """Redraws the view after loading the images."""
+        self._window.setup_menu(self.get_extra_menu_options())
+        self._window.set_window_title(self._get_window_title())
         self.draw_view()
 
     def update_status(self, text: Union[str, bytes], redraw=True):
@@ -128,7 +130,7 @@ class Visualizer:
         self._window.register_event_handler("key_press_event", self._on_key_press_raw)
         self._window.register_event_handler("button_press_event", self._on_mouse_click)
         self._window.register_event_handler("data_updated_event", self.refresh_data)
-        self._window.register_event_handler("image_and_data_updated_event", self.refresh_image)
+        self._window.register_event_handler("any_updated_event", self.refresh_all)
         self._window.register_event_handler("command_event", self._on_command_raw)
 
     def detach(self):

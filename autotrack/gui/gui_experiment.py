@@ -36,12 +36,12 @@ class GuiExperiment:
     """Used to store the experiment, along with some data that is only relevant within a GUI app, but that doesn't
     need to be saved."""
 
-    KNOWN_EVENTS = {"data_updated_event", "image_and_data_updated_event", "command_event"}
+    KNOWN_EVENTS = {"data_updated_event", "any_updated_event", "command_event"}
 
     _experiment: Experiment
     _undo_redo: UndoRedo
     _data_updated_handlers: _EventListeners
-    _image_and_data_updated_handlers: _EventListeners
+    _any_updated_event: _EventListeners
     _command_handlers: _EventListeners
 
     def __init__(self, experiment: Experiment):
@@ -49,7 +49,7 @@ class GuiExperiment:
         self._undo_redo = UndoRedo()
 
         self._data_updated_handlers = _EventListeners()
-        self._image_and_data_updated_handlers = _EventListeners()
+        self._any_updated_event = _EventListeners()
         self._command_handlers = _EventListeners()
 
     @property  # read-only
@@ -65,13 +65,13 @@ class GuiExperiment:
 
         * All matplotlib events.
         * "data_updated_event" for when the figure annotations need to be redrawn.
-        * "image_and_data_updated_event" for when the complete figure needs to be redrawn.
+        * "any_updated_event" for when the complete figure needs to be redrawn, including the menu bar and image.
         * "command_event" for when a command is executed
         """
         if event == "data_updated_event":
             self._data_updated_handlers.add(source, action)
-        elif event == "image_and_data_updated_event":
-            self._image_and_data_updated_handlers.add(source, action)
+        elif event == "any_updated_event":
+            self._any_updated_event.add(source, action)
         elif event == "command_event":
             self._command_handlers.add(source, action)
         else:
@@ -80,12 +80,12 @@ class GuiExperiment:
     def unregister_event_handlers(self, source_to_remove: str):
         """Unregisters all handles registered using register_event_handler"""
         self._data_updated_handlers.remove(source_to_remove)
-        self._image_and_data_updated_handlers.remove(source_to_remove)
+        self._any_updated_event.remove(source_to_remove)
         self._command_handlers.remove(source_to_remove)
 
     def set_experiment(self, experiment: Experiment):
         self._experiment = experiment
-        self._image_and_data_updated_handlers.call_all()
+        self._any_updated_event.call_all()
 
     def redraw_data(self):
         """Redraws the main figure using the latest values from the experiment."""
@@ -93,7 +93,7 @@ class GuiExperiment:
 
     def redraw_image_and_data(self):
         """Redraws the image using the latest values from the experiment."""
-        self._image_and_data_updated_handlers.call_all()
+        self._any_updated_event.call_all()
 
     def execute_command(self, command: str):
         """Calls all registered command handlers with the given argument. Used when a user entered a command."""
