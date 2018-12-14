@@ -18,7 +18,7 @@ _STEPS_BACK = 15
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-         "Graph//Cell deaths-Cells nearby cell deaths...": lambda: _nearby_cell_movement(window),
+         "Graph//Cell deaths-Cell deaths//Graph-Distance to nearby cells...": lambda: _nearby_cell_movement(window),
     }
 
 
