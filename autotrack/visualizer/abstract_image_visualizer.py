@@ -10,6 +10,7 @@ from tifffile import tifffile
 
 from autotrack import core
 from autotrack.core import TimePoint, shape
+from autotrack.core.data_axis import DataAxis
 from autotrack.core.particles import Particle
 from autotrack.gui import dialog
 from autotrack.gui.dialog import prompt_int, popup_error
@@ -97,7 +98,7 @@ class AbstractImageVisualizer(Visualizer):
         self.__particles_near_visible_layer.clear()
         self._draw_image()
         self._draw_particles()
-        self._draw_path()
+        self._draw_data_axes()
         self._draw_extra()
         self._window.set_figure_title(self._get_figure_title())
 
@@ -223,24 +224,25 @@ class AbstractImageVisualizer(Visualizer):
                 self._ax.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], linestyle=line_style,
                               color=core.COLOR_CELL_CURRENT, linewidth=line_width)
 
-    def _draw_path(self):
-        """Draws the path, which is usually the crypt axis."""
-        paths = self._experiment.data_axes.of_time_point(self._time_point)
+    def _draw_data_axes(self):
+        """Draws the data axis, which is usually the crypt axis."""
+        for data_axis in self._experiment.data_axes.of_time_point(self._time_point):
+            self._draw_data_axis(data_axis, color=core.COLOR_CELL_CURRENT, marker_size_max=10)
 
-        for path in paths:
-            dz = abs(path.get_z() - self._z)
-            marker = path.get_direction_marker()
-            linewidth = 3 if dz == 0 else 1
+    def _draw_data_axis(self, data_axis: DataAxis, color: str, marker_size_max: int):
+        """Draws a single data axis. Usually, we use this as the crypt axis."""
+        dz = abs(data_axis.get_z() - self._z)
+        marker = data_axis.get_direction_marker()
+        linewidth = 3 if dz == 0 else 1
 
-            origin = path.from_position_on_axis(0)
-            if origin is not None:
-                self._ax.plot(origin[0], origin[1], marker="*", markerfacecolor=core.COLOR_CELL_CURRENT,
-                              markeredgecolor="black", markersize=max(11, 18 - dz))
+        origin = data_axis.from_position_on_axis(0)
+        if origin is not None:
+            self._ax.plot(origin[0], origin[1], marker="*", markerfacecolor=core.COLOR_CELL_CURRENT,
+                          markeredgecolor="black", markersize=max(11, 18 - dz))
 
-            self._ax.plot(*path.get_interpolation_2d(), color=core.COLOR_CELL_CURRENT, linewidth=linewidth)
-            self._ax.plot(*path.get_points_2d(), linewidth=0, marker=marker, markerfacecolor=core.COLOR_CELL_CURRENT,
-                          markeredgecolor="black", markersize=max(7, 12 - dz))
-
+        self._ax.plot(*data_axis.get_interpolation_2d(), color=color, linewidth=linewidth)
+        self._ax.plot(*data_axis.get_points_2d(), linewidth=0, marker=marker, markerfacecolor=color,
+                      markeredgecolor="black", markersize=max(7, marker_size_max - dz))
 
     def _get_particle_at(self, x: Optional[int], y: Optional[int]) -> Optional[Particle]:
         """Wrapper of get_closest_particle that makes use of the fact that we can lookup all particles ourselves."""

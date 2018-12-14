@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 
@@ -49,19 +49,34 @@ class _AddPointAction(UndoableAction):
         return f"Removed point at ({self._new_point.x:.0f}, {self._new_point.y:.0f}) from path"
 
 
-class PathEditor(AbstractEditor):
+class DataAxisEditor(AbstractEditor):
     """Editor for paths. Double-click to (de)select a path.
     Press Insert to start a new path if no path is selected.
-    Press Delete to delete the whole selected path."""
+    Press Delete to delete the whole selected path.
+    Press C to copy a selected path from another time point to this time point.
+    Press P to view the position of each cell on the nearest data axis."""
 
     _selected_path: Optional[DataAxis]
     _selected_path_time_point: Optional[TimePoint]
+    _draw_axis_positions: bool
 
     def __init__(self, window: Window, *, time_point_number: Optional[int] = None, z: int = 14,
                  display_settings: DisplaySettings = None):
         super().__init__(window, time_point_number=time_point_number, z=z, display_settings=display_settings)
         self._selected_path = None
         self._selected_path_time_point = None
+        self._draw_axis_positions = False
+
+    def get_extra_menu_options(self) -> Dict[str, Any]:
+        return {
+            **super().get_extra_menu_options(),
+            "View//Toggle-Toggle showing data axis positions": self._toggle_viewing_axis_positions,
+            "Edit//Copy-Copy axis to this time point (C)": self._copy_axis_to_current_time_point,
+        }
+
+    def _toggle_viewing_axis_positions(self):
+        self._draw_axis_positions = not self._draw_axis_positions
+        self.draw_view()
 
     def _select_path(self, path: Optional[DataAxis]):
         """(De)selects a path for the current time point. Make sure to redraw after calling this method."""
@@ -99,13 +114,26 @@ class PathEditor(AbstractEditor):
             return None  # Don't draw paths of other time points
         return self._selected_path
 
-    def _draw_extra(self):
-        # Highlight the selected path
-        path = self._get_selected_path_of_current_time_point()
-        if path is None:
+    def _draw_particle(self, particle: Particle, color: str, dz: int, dt: int):
+        if not self._draw_axis_positions or dt != 0 or abs(dz) > 3:
+            super()._draw_particle(particle, color, dz, dt)
             return
-        self._ax.plot(*path.get_points_2d(), marker=path.get_direction_marker(), color="white", linewidth=4,
-                      markerfacecolor="white", markeredgecolor="black", markersize=12)
+
+        axis_position = self._experiment.data_axes.to_position_on_axis(particle)
+        if axis_position is None:
+            super()._draw_particle(particle, color, dz, dt)
+            return
+
+        background_color = (1, 1, 1, 0.8) if axis_position.axis == self._selected_path else (0, 1, 0, 0.8)
+        self._ax.annotate(f"{axis_position.pos:.1f}", (particle.x, particle.y), fontsize=12 - abs(dz),
+                        fontweight="bold", color="black", backgroundcolor=background_color)
+
+    def _draw_data_axis(self, data_axis: DataAxis, color: str, marker_size_max: int):
+        if data_axis == self._get_selected_path_of_current_time_point():
+            # Highlight the selected path
+            super()._draw_data_axis(data_axis, "white", int(marker_size_max * 1.5))
+        else:
+            super()._draw_data_axis(data_axis, color, marker_size_max)
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "insert":
@@ -129,17 +157,22 @@ class PathEditor(AbstractEditor):
                 self._select_path(None)
                 self._perform_action(ReversedAction(_AddPathAction(selected_path, self._time_point)))
         elif event.key == "c":
-            if self._selected_path is None:
-                self.update_status("No path selected, cannot copy anything")
-                return
-            if self._selected_path_time_point == self._time_point:
-                self.update_status("Cannot copy a path to the same time point")
-                return
-            copied_path = self._selected_path.copy()
-            self._select_path(copied_path)
-            self._perform_action(_AddPathAction(copied_path, self._time_point))
+            self._copy_axis_to_current_time_point()
+        elif event.key == "p":
+            self._toggle_viewing_axis_positions()
         else:
             super()._on_key_press(event)
+
+    def _copy_axis_to_current_time_point(self):
+        if self._selected_path is None:
+            self.update_status("No path selected, cannot copy anything")
+            return
+        if self._selected_path_time_point == self._time_point:
+            self.update_status("Cannot copy a path to the same time point")
+            return
+        copied_path = self._selected_path.copy()
+        self._select_path(copied_path)
+        self._perform_action(_AddPathAction(copied_path, self._time_point))
 
     def _exit_view(self):
         from autotrack.visualizer.link_and_position_editor import LinkAndPositionEditor

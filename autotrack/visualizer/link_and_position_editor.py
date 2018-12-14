@@ -243,9 +243,9 @@ class LinkAndPositionEditor(AbstractEditor):
         self._perform_action(_MarkLineageEndAction(self._selected1, marker, current_marker))
 
     def _show_path_editor(self):
-        from autotrack.visualizer.path_editor import PathEditor
-        path_editor = PathEditor(self._window, time_point_number=self._time_point.time_point_number(),
-                                         z=self._z, display_settings=self._display_settings)
+        from autotrack.visualizer.data_axis_editor import DataAxisEditor
+        path_editor = DataAxisEditor(self._window, time_point_number=self._time_point.time_point_number(),
+                                     z=self._z, display_settings=self._display_settings)
         activate(path_editor)
 
     def _show_linking_errors(self, particle: Optional[Particle] = None):
