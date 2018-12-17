@@ -226,10 +226,10 @@ class AbstractImageVisualizer(Visualizer):
 
     def _draw_data_axes(self):
         """Draws the data axis, which is usually the crypt axis."""
-        for data_axis in self._experiment.data_axes.of_time_point(self._time_point):
-            self._draw_data_axis(data_axis, color=core.COLOR_CELL_CURRENT, marker_size_max=10)
+        for i, data_axis in enumerate(self._experiment.data_axes.of_time_point(self._time_point)):
+            self._draw_data_axis(data_axis, i + 1, color=core.COLOR_CELL_CURRENT, marker_size_max=10)
 
-    def _draw_data_axis(self, data_axis: DataAxis, color: str, marker_size_max: int):
+    def _draw_data_axis(self, data_axis: DataAxis, id: int, color: str, marker_size_max: int):
         """Draws a single data axis. Usually, we use this as the crypt axis."""
         dz = abs(data_axis.get_z() - self._z)
         marker = data_axis.get_direction_marker()

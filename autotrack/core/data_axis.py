@@ -1,6 +1,5 @@
 import math
-from collections import namedtuple
-from typing import List, Dict, Optional, Tuple, Iterable, Any
+from typing import List, Dict, Optional, Tuple, Iterable
 
 import numpy
 from scipy import interpolate
@@ -8,7 +7,18 @@ from scipy import interpolate
 from autotrack.core import TimePoint
 from autotrack.core.particles import Particle
 
-DataAxisPosition = namedtuple("DataAxisPosition", ["axis", "pos", "distance"])
+
+class DataAxisPosition:
+    axis: "DataAxis"  # The data axis at a particular time point.
+    axis_id: int  # Used to identify the data axis over multiple time points.
+    pos: float  # The position on the data axis.
+    distance: float  # The distance from the point to the nearest point on the data axis.
+
+    def __init__(self, axis: "DataAxis", pos: float, distance: float):
+        self.axis = axis
+        self.axis_id = 0
+        self.pos = pos
+        self.distance = distance
 
 
 class DataAxis:
@@ -68,7 +78,7 @@ class DataAxis:
         return x_values, y_values
 
     def to_position_on_axis(self, particle: Particle) -> Optional[DataAxisPosition]:
-        """Gets the closest position on the path and the distance to the path, both in pixels. Returns None if the path
+        """Gets the closest position on the axes and the distance to the axes, both in pixels. Returns None if the path
         has fewer than 2 points."""
         x_values, y_values = self.get_interpolation_2d()
         if len(x_values) < 2:
@@ -82,7 +92,8 @@ class DataAxis:
             line_y1 = y_values[i - 1]
             line_x2 = x_values[i]
             line_y2 = y_values[i]
-            distance_squared = _distance_to_line_segment_squared(line_x1, line_y1, line_x2, line_y2, particle.x, particle.y)
+            distance_squared = _distance_to_line_segment_squared(line_x1, line_y1, line_x2, line_y2, particle.x,
+                                                                 particle.y)
             if min_distance_to_line_squared is None or distance_squared < min_distance_to_line_squared:
                 min_distance_to_line_squared = distance_squared
                 closest_line_index = i
@@ -93,8 +104,9 @@ class DataAxis:
             combined_length_of_previous_lines += _distance(x_values[i], y_values[i], x_values[i - 1], y_values[i - 1])
 
         # Calculate length on line segment
-        distance_to_start_of_line_squared = _distance_squared(x_values[closest_line_index - 1], y_values[closest_line_index - 1],
-                                              particle.x, particle.y)
+        distance_to_start_of_line_squared = _distance_squared(x_values[closest_line_index - 1],
+                                                              y_values[closest_line_index - 1],
+                                                              particle.x, particle.y)
         distance_on_line = numpy.sqrt(distance_to_start_of_line_squared - min_distance_to_line_squared)
 
         raw_path_position = combined_length_of_previous_lines + distance_on_line
@@ -192,14 +204,14 @@ def _distance(x1, y1, x2, y2):
 
 
 def _distance_squared(vx, vy, wx, wy):
-    return (vx - wx)**2 + (vy - wy)**2
+    return (vx - wx) ** 2 + (vy - wy) ** 2
 
 
 def _distance_to_line_segment_squared(line_x1, line_y1, line_x2, line_y2, point_x, point_y):
     """Distance from point to a line defined by the points (line_x1, line_y1) and (line_x2, line_y2)."""
     l2 = _distance_squared(line_x1, line_y1, line_x2, line_y2)
     if l2 == 0:
-         return _distance_squared(point_x, point_y, line_x1, line_y1)
+        return _distance_squared(point_x, point_y, line_x1, line_y1)
     t = ((point_x - line_x1) * (line_x2 - line_x1) + (point_y - line_y1) * (line_y2 - line_y1)) / l2
     t = max(0, min(1, t))
     return _distance_squared(point_x, point_y,
@@ -229,8 +241,11 @@ class DataAxisCollection:
 
         # Find the closest axis, return position on that axis
         lowest_distance_position = None
-        for data_axis in data_axes:
+        for i, data_axis in enumerate(data_axes):
             position = data_axis.to_position_on_axis(particle)
+            if position is None:
+                continue
+            position.axis_id = i + 1
             if lowest_distance_position is None or position.distance < lowest_distance_position.distance:
                 lowest_distance_position = position
         return lowest_distance_position

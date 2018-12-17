@@ -128,12 +128,15 @@ class DataAxisEditor(AbstractEditor):
         self._ax.annotate(f"{axis_position.pos:.1f}", (particle.x, particle.y), fontsize=12 - abs(dz),
                         fontweight="bold", color="black", backgroundcolor=background_color)
 
-    def _draw_data_axis(self, data_axis: DataAxis, color: str, marker_size_max: int):
+    def _draw_data_axis(self, data_axis: DataAxis, id: int, color: str, marker_size_max: int):
         if data_axis == self._get_selected_path_of_current_time_point():
-            # Highlight the selected path
-            super()._draw_data_axis(data_axis, "white", int(marker_size_max * 1.5))
-        else:
-            super()._draw_data_axis(data_axis, color, marker_size_max)
+            color = "white"  # Highlight the selected path
+            marker_size_max = int(marker_size_max * 1.5)
+
+        super()._draw_data_axis(data_axis, id, color, marker_size_max)
+
+        pos_x, pos_y = data_axis.get_points_2d()
+        self._ax.annotate(f"Axis {id}", (pos_x[0], pos_y[0] + 10), fontsize=12, fontweight="bold", color=color)
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "insert":
