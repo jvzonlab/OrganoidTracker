@@ -7,9 +7,10 @@ details.
 
 The intended workflow is as follows:
 
-* Obtain cell positions
-* Obtain cell shapes
-* Link the cells of different time points together
+1. Obtain nucleus positions (for now this is done using an external program)
+2. Obtain nucleus shapes
+3. Link the cells of different time points together
+4. Manually correct all warnings
 
 The following scripts are available:
 
