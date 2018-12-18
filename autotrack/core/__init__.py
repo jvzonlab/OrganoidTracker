@@ -2,7 +2,7 @@
 which are placed in an Experiment. A TimePoint also stores scores of possible mother-daughter cell combinations.
 An Experiment also stores an ImageLoader and up to two cell links networks (stored as Graph objects)."""
 import re
-from typing import Optional
+from typing import Optional, Iterable, Union
 
 COLOR_CELL_NEXT = "red"
 COLOR_CELL_PREVIOUS = "blue"
@@ -72,3 +72,45 @@ class Name:
     def __str__(self):
         name = self._name
         return name if name is not None else "Unnamed"
+
+
+def min_none(numbers: Union[Optional[float], Iterable[Optional[float]]], *args: Optional[float]):
+    """Calculates the minimal number. None values are ignored. Usage:
+
+    >>> min_none(2, 3, 5, None, 5) == 2
+    >>> min_none([4, None, 2, None, -1]) == -1
+    >>> min_none([]) is None
+    >>> min_none(None, None, None) is None
+    """
+    min_value = None
+
+    if numbers is None or isinstance(numbers, float) or isinstance(numbers, int):
+        numbers = [numbers] + list(args)
+
+    for number in numbers:
+        if number is None:
+            continue
+        if min_value is None or number < min_value:
+            min_value = number
+    return min_value
+
+
+def max_none(numbers: Union[Optional[float], Iterable[Optional[float]]], *args: Optional[float]):
+    """Calculates the minimal number. None values are ignored. Usage:
+
+    >>> max_none(2, 3, 5, None, 5)  == 5
+    >>> max_none([4, None, 2, None, -1]) == 4
+    >>> max_none([]) is None
+    >>> max_none(None, None, None) is None
+    """
+    max_value = None
+
+    if numbers is None or isinstance(numbers, float) or isinstance(numbers, int):
+        numbers = [numbers] + list(args)
+
+    for number in numbers:
+        if number is None:
+            continue
+        if max_value is None or number > max_value:
+            max_value = number
+    return max_value

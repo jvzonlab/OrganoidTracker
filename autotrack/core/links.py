@@ -541,3 +541,16 @@ class ParticleLinks:
             data_value = data_values.get(particle)
             if data_value is not None:
                 yield data_name, data_value
+
+    def get_first_position_of(self, particle: Particle):
+        """Rewinds the particle back in time, until the first appearance of that particle was found."""
+        track = self.get_track(particle)
+        if track is None:
+            return particle  # Particle has no links
+
+        while True:
+            previous_tracks = track.get_previous_tracks()
+            if len(previous_tracks) == 0:
+                return track.find_first_particle()
+            else:
+                track = previous_tracks.pop()

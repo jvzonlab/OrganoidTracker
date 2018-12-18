@@ -2,7 +2,7 @@ from typing import Optional, List, Tuple, Iterable
 
 from numpy import ndarray
 
-from autotrack.core import TimePoint, Name, UserError
+from autotrack.core import TimePoint, Name, UserError, min_none, max_none
 from autotrack.core.image_loader import ImageLoader
 from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle, ParticleCollection
@@ -40,11 +40,11 @@ class _CachedImageLoader(ImageLoader):
     def uncached(self) -> ImageLoader:
         return self._internal
 
-    def get_first_time_point(self) -> Optional[int]:
-        return self._internal.get_first_time_point()
+    def first_time_point_number(self) -> Optional[int]:
+        return self._internal.first_time_point_number()
 
-    def get_last_time_point(self) -> Optional[int]:
-        return self._internal.get_last_time_point()
+    def last_time_point_number(self) -> Optional[int]:
+        return self._internal.last_time_point_number()
 
     def copy(self) -> ImageLoader:
         return _CachedImageLoader(self._internal.copy())
@@ -108,23 +108,15 @@ class Experiment:
 
     def first_time_point_number(self) -> Optional[int]:
         """Gets the first time point of the experiment where there is data (images and/or particles)."""
-        image_first = self._image_loader.get_first_time_point()
-        particle_first = self._particles.first_time_point_number()
-        if image_first is None:
-            return particle_first
-        if particle_first is None:
-            return image_first
-        return min(particle_first, image_first)
+        return min_none(self._image_loader.first_time_point_number(),
+                        self._particles.first_time_point_number(),
+                        self.data_axes.first_time_point_number())
 
     def last_time_point_number(self) -> Optional[int]:
         """Gets the last time point (inclusive) of the experiment where there is data (images and/or particles)."""
-        image_last = self._image_loader.get_last_time_point()
-        particle_last = self._particles.last_time_point_number()
-        if image_last is None:
-            return particle_last
-        if particle_last is None:
-            return image_last
-        return max(particle_last, image_last)
+        return max_none(self._image_loader.last_time_point_number(),
+                        self._particles.last_time_point_number(),
+                        self.data_axes.last_time_point_number())
 
     def get_previous_time_point(self, time_point: TimePoint) -> TimePoint:
         """Gets the time point directly before the given time point. Throws KeyError if the given time point is the last

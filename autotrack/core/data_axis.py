@@ -5,6 +5,7 @@ import numpy
 from scipy import interpolate
 
 from autotrack.core import TimePoint
+from autotrack.core.links import ParticleLinks
 from autotrack.core.particles import Particle
 
 
@@ -222,39 +223,67 @@ class DataAxisCollection:
     """Holds the paths of all time points in an experiment."""
 
     _data_axes: Dict[TimePoint, List[DataAxis]]
+    _min_time_point_number: Optional[int]
+    _max_time_point_number: Optional[int]
 
     def __init__(self):
         self._data_axes = dict()
+        self._min_time_point_number = None
+        self._max_time_point_number = None
 
-    def of_time_point(self, time_point: TimePoint) -> Iterable[DataAxis]:
-        """Gets the paths of the time point, or an empty collection if that time point has no paths defined."""
-        paths = self._data_axes.get(time_point)
-        if paths is None:
-            return []
-        return paths
+    def first_time_point_number(self) -> Optional[int]:
+        """Gets the first time point that contains data axes, or None if there are no axes stored."""
+        return self._min_time_point_number
 
-    def to_position_on_axis(self, particle: Particle) -> Optional[DataAxisPosition]:
-        """Gets the position of the particle along the closest axis."""
-        data_axes = self._data_axes.get(particle.time_point())
+    def last_time_point_number(self) -> Optional[int]:
+        """Gets the last time point (inclusive) that contains data axes, or None if there are no axes stored."""
+        return self._max_time_point_number
+
+    def of_time_point(self, time_point: TimePoint) -> Iterable[Tuple[int, DataAxis]]:
+        """Gets the data axes of the time point along with their id, or an empty collection if that time point has no
+        paths defined."""
+        data_axes = self._data_axes.get(time_point)
         if data_axes is None:
-            return None
+            return []
+        for i, data_axis in enumerate(data_axes):
+            yield i + 1, data_axis
 
+    def _to_position_on_axis(self, particle: Particle) -> Optional[DataAxisPosition]:
         # Find the closest axis, return position on that axis
         lowest_distance_position = None
-        for i, data_axis in enumerate(data_axes):
+        for axis_id, data_axis in self.of_time_point(particle.time_point()):
             position = data_axis.to_position_on_axis(particle)
             if position is None:
                 continue
-            position.axis_id = i + 1
+            position.axis_id = axis_id
             if lowest_distance_position is None or position.distance < lowest_distance_position.distance:
                 lowest_distance_position = position
         return lowest_distance_position
+
+    def to_position_on_original_axis(self, links: ParticleLinks, particle: Particle) -> Optional[DataAxisPosition]:
+        """Gets the position on the axis that was closest in the first time point this particle appeared. In this way,
+        every particle is assigned to a single axis, and will never switch to another axis during its lifetime."""
+        first_particle = links.get_first_position_of(particle)
+        first_axis_position = self._to_position_on_axis(first_particle)
+        for axis_id, axis in self.of_time_point(particle.time_point()):
+            if axis_id == first_axis_position.axis_id:
+                position = axis.to_position_on_axis(particle)
+                if position is not None:
+                    position.axis_id = axis_id
+                return position
 
     def add_data_axis(self, time_point: TimePoint, path: DataAxis):
         """Adds a new data axis to the given time point. Existing axes are left untouched."""
         existing_data_axes = self._data_axes.get(time_point)
         if existing_data_axes is None:
+            # Add data for a new time point
             self._data_axes[time_point] = [path]
+
+            # Update min/max time points
+            if self._max_time_point_number is None or time_point.time_point_number() > self._max_time_point_number:
+                self._max_time_point_number = time_point.time_point_number()
+            if self._min_time_point_number is None or time_point.time_point_number() < self._min_time_point_number:
+                self._min_time_point_number = time_point.time_point_number()
         else:
             existing_data_axes.append(path)
 
@@ -267,7 +296,11 @@ class DataAxisCollection:
         try:
             existing_paths.remove(path)
             if len(existing_paths) == 0:
-                del self._data_axes[time_point]  # We just removed the last path of this time point
+                # We just removed the last path of this time point
+                del self._data_axes[time_point]
+                if time_point.time_point_number() == self._min_time_point_number\
+                        or time_point.time_point_number() == self._max_time_point_number:
+                    self._recalculate_min_max_time_point()  # Removed first or last time point, calculate new min/max
         except ValueError:
             pass  # Ignore, path is not in list
 
@@ -287,3 +320,16 @@ class DataAxisCollection:
         for time_point, paths in self._data_axes.items():
             for path in paths:
                 yield path, time_point
+
+    def _recalculate_min_max_time_point(self):
+        """Recalculates the min/max time point based on the current data axis map. Call this method when the last axis
+        of a time point has been removed."""
+        min_time_point_number = None
+        max_time_point_number = None
+        for time_point in self._data_axes.keys():
+            if min_time_point_number is None or time_point.time_point_number() < min_time_point_number:
+                min_time_point_number = time_point.time_point_number()
+            if max_time_point_number is None or time_point.time_point_number() > max_time_point_number:
+                max_time_point_number = time_point.time_point_number()
+        self._min_time_point_number = min_time_point_number
+        self._max_time_point_number = max_time_point_number

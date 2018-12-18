@@ -90,8 +90,9 @@ class DataAxisEditor(AbstractEditor):
     def _on_mouse_click(self, event: MouseEvent):
         if event.dblclick:
             # Select path
+            links = self._experiment.links
             position = Particle(event.xdata, event.ydata, self._z).with_time_point(self._time_point)
-            path_position = self._experiment.data_axes.to_position_on_axis(position)
+            path_position = self._experiment.data_axes.to_position_on_original_axis(links, position)
             if path_position is None or path_position.distance > 10 or path_position.axis == self._selected_path:
                 self._select_path(None)
             else:
@@ -119,7 +120,7 @@ class DataAxisEditor(AbstractEditor):
             super()._draw_particle(particle, color, dz, dt)
             return
 
-        axis_position = self._experiment.data_axes.to_position_on_axis(particle)
+        axis_position = self._experiment.data_axes.to_position_on_original_axis(self._experiment.links, particle)
         if axis_position is None:
             super()._draw_particle(particle, color, dz, dt)
             return

@@ -71,10 +71,10 @@ class TiffImageLoader(ImageLoader):
                 return outer
             return None
 
-    def get_first_time_point(self) -> Optional[int]:
+    def first_time_point_number(self) -> Optional[int]:
         return self._min_time_point
 
-    def get_last_time_point(self) -> Optional[int]:
+    def last_time_point_number(self) -> Optional[int]:
         return self._max_time_point
 
     def copy(self) -> ImageLoader:

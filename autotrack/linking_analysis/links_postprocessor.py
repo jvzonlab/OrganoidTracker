@@ -14,7 +14,7 @@ def postprocess(experiment: Experiment, margin_xy: int):
 def _remove_particles_close_to_edge(experiment: Experiment, margin_xy: int):
     image_loader = experiment.image_loader()
     links = experiment.links
-    example_image = image_loader.get_image_stack(experiment.get_time_point(image_loader.get_first_time_point()))
+    example_image = image_loader.get_image_stack(experiment.get_time_point(image_loader.first_time_point_number()))
     for time_point in experiment.time_points():
         for particle in list(experiment.particles.of_time_point(time_point)):
             if particle.x < margin_xy or particle.y < margin_xy or particle.x > example_image.shape[2] - margin_xy\

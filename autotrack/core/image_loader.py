@@ -17,11 +17,11 @@ class ImageLoader:
         """
         return self
 
-    def get_first_time_point(self) -> Optional[int]:
+    def first_time_point_number(self) -> Optional[int]:
         """Gets the first time point for which images are available."""
         return None
 
-    def get_last_time_point(self) -> Optional[int]:
+    def last_time_point_number(self) -> Optional[int]:
         """Gets the last time point (inclusive) for which images are available."""
         return None
 

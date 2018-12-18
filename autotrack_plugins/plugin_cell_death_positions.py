@@ -26,7 +26,7 @@ def _view_cell_death_locations(window: Window):
     dead_cells = linking_markers.find_dead_particles(experiment.links)
     crypt_positions = dict()
     for dead_cell in dead_cells:
-        crypt_position = data_axes.to_position_on_axis(dead_cell)
+        crypt_position = data_axes.to_position_on_original_axis(experiment.links, dead_cell)
         if crypt_position is not None:
             if crypt_position.axis_id not in crypt_positions:
                 crypt_positions[crypt_position.axis_id] = []
