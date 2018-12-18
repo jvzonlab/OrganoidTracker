@@ -1,32 +1,32 @@
 import unittest
 
-from autotrack.core.links import ParticleLinks
-from autotrack.core.particles import Particle
+from autotrack.core.links import PositionLinks
+from autotrack.core.positions import Position
 
 
 class TestLinks(unittest.TestCase):
 
     def test_data(self):
-        particle = Particle(0, 0, 0).with_time_point_number(0)
-        links = ParticleLinks()
-        links.set_particle_data(particle, "name", "AA")
+        position = Position(0, 0, 0).with_time_point_number(0)
+        links = PositionLinks()
+        links.set_position_data(position, "name", "AA")
 
-        self.assertEquals("AA", links.get_particle_data(particle, "name"))
+        self.assertEquals("AA", links.get_position_data(position, "name"))
 
     def test_futures(self):
-        particle = Particle(0, 0, 0).with_time_point_number(0)
-        future_particle = Particle(1, 0, 0).with_time_point_number(1)
-        links = ParticleLinks()
-        links.add_link(particle, future_particle)
+        position = Position(0, 0, 0).with_time_point_number(0)
+        future_position = Position(1, 0, 0).with_time_point_number(1)
+        links = PositionLinks()
+        links.add_link(position, future_position)
 
-        self.assertEquals({future_particle}, links.find_futures(particle))
-        self.assertEquals(set(), links.find_futures(future_particle))
+        self.assertEquals({future_position}, links.find_futures(position))
+        self.assertEquals(set(), links.find_futures(future_position))
 
     def test_pasts(self):
-        particle = Particle(0, 0, 0).with_time_point_number(1)
-        past_particle = Particle(1, 0, 0).with_time_point_number(0)
-        links = ParticleLinks()
-        links.add_link(particle, past_particle)
+        position = Position(0, 0, 0).with_time_point_number(1)
+        past_position = Position(1, 0, 0).with_time_point_number(0)
+        links = PositionLinks()
+        links.add_link(position, past_position)
 
-        self.assertEquals({past_particle}, links.find_pasts(particle))
-        self.assertEquals(set(), links.find_pasts(past_particle))
+        self.assertEquals({past_position}, links.find_pasts(position))
+        self.assertEquals(set(), links.find_pasts(past_position))

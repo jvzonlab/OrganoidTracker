@@ -24,7 +24,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     """Cell and image viewer
 
     Moving: left/right moves in time, up/down in the z-direction and type '/t30' + ENTER to jump to time point 30
-    Press F to show the detected particle flow, press V to view the detected particle volume"""
+    Press F to show the detected position flow, press V to view the detected position volume"""
 
     def __init__(self, window: Window, time_point_number: Optional[int] = None, z: int = 14,
                  display_settings: Optional[DisplaySettings] = None):
@@ -32,14 +32,14 @@ class StandardImageVisualizer(AbstractImageVisualizer):
 
     def _on_mouse_click(self, event: MouseEvent):
         if event.dblclick and event.button == 1:
-            particle = self._get_particle_at(event.xdata, event.ydata)
-            if particle is not None:
-                self.__display_cell_division_scores(particle)
+            position = self._get_position_at(event.xdata, event.ydata)
+            if position is not None:
+                self.__display_cell_division_scores(position)
         else:
             super()._on_mouse_click(event)
 
-    def __display_cell_division_scores(self, particle):
-        cell_divisions = list(self._experiment.scores.of_mother(particle))
+    def __display_cell_division_scores(self, position):
+        cell_divisions = list(self._experiment.scores.of_mother(position))
         cell_divisions.sort(key=lambda d: d.score.total(), reverse=True)
         displayed_items = 0
         text = ""
@@ -78,24 +78,24 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         elif event.key == "c":
             self._show_data_editor()
         elif event.key == "v":  # show volume info
-            particle = self._get_particle_at(event.xdata, event.ydata)
-            if particle is None:
-                self.update_status("No particle at mouse position")
+            position = self._get_position_at(event.xdata, event.ydata)
+            if position is None:
+                self.update_status("No position at mouse position")
                 return
-            shape = self._experiment.particles.get_shape(particle)
+            shape = self._experiment.positions.get_shape(position)
             try:
-                self.update_status(f"Volume of {particle} is {shape.volume():.2f} px3")
+                self.update_status(f"Volume of {position} is {shape.volume():.2f} px3")
             except NotImplementedError:
-                self.update_status(f"The {particle} has no volume information stored")
+                self.update_status(f"The {position} has no volume information stored")
         elif event.key == "f":  # show flow info
-            particle = self._get_particle_at(event.xdata, event.ydata)
-            particles_of_time_point = self._experiment.particles.of_time_point(self._time_point)
+            position = self._get_position_at(event.xdata, event.ydata)
+            positions_of_time_point = self._experiment.positions.of_time_point(self._time_point)
             links = self._experiment.links
-            if particle is not None and links.has_links():
+            if position is not None and links.has_links():
                 self.update_status("Flow toward previous frame: " +
-                                   str(particle_flow_calculator.get_flow_to_previous(links, particles_of_time_point, particle)) +
+                                   str(particle_flow_calculator.get_flow_to_previous(links, positions_of_time_point, position)) +
                                    "\nFlow towards next frame: " +
-                                   str(particle_flow_calculator.get_flow_to_next(links, particles_of_time_point, particle)))
+                                   str(particle_flow_calculator.get_flow_to_next(links, positions_of_time_point, position)))
         else:
             super()._on_key_press(event)
 

@@ -3,8 +3,8 @@ from typing import Optional, Set
 from autotrack.comparison.report import ComparisonReport, Category
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import ParticleLinks
-from autotrack.core.particles import Particle
+from autotrack.core.links import PositionLinks
+from autotrack.core.positions import Position
 from autotrack.core.resolution import ImageResolution
 
 LINEAGE_END_FALSE_NEGATIVES = Category("Missed lineage ends")
@@ -19,28 +19,28 @@ LINEAGE_START_FALSE_NEGATIVES = Category("Missed lineage starts")
 LINEAGE_START_TRUE_POSITIVES = Category("Correctly detected lineage starts")
 
 
-def _find_closest_in(all_particles: Set[Particle], search: Particle, max_distance_um: float,
-                     resolution: ImageResolution) -> Optional[Particle]:
-    closest_particle = None
+def _find_closest_in(all_positions: Set[Position], search: Position, max_distance_um: float,
+                     resolution: ImageResolution) -> Optional[Position]:
+    closest_position = None
     closest_distance = float("inf")
-    for particle in all_particles:
-        if particle.time_point_number() != search.time_point_number():
+    for position in all_positions:
+        if position.time_point_number() != search.time_point_number():
             continue
-        distance = particle.distance_um(search, resolution)
+        distance = position.distance_um(search, resolution)
         if distance < closest_distance and distance < max_distance_um:
             closest_distance = distance
-            closest_particle = particle
-    return closest_particle
+            closest_position = position
+    return closest_position
 
 
 class _Comparing:
 
     _resolution: ImageResolution
     _max_distance_um: float
-    _ground_truth: ParticleLinks
-    _scratch: ParticleLinks
+    _ground_truth: PositionLinks
+    _scratch: PositionLinks
 
-    def __init__(self, resolution: ImageResolution, ground_truth: ParticleLinks, scratch: ParticleLinks, max_distance_um: float):
+    def __init__(self, resolution: ImageResolution, ground_truth: PositionLinks, scratch: PositionLinks, max_distance_um: float):
         """Creates the comparison object. You need to provide two data sets. Cells are not allowed to move further away
          from each other than max_distance_um."""
         self._resolution = resolution
@@ -48,22 +48,22 @@ class _Comparing:
         self._scratch = scratch
         self._max_distance_um = max_distance_um
 
-    def compare_lineages(self, report: ComparisonReport, particle_ground_truth: Particle, particle_scratch: Particle):
+    def compare_lineages(self, report: ComparisonReport, position_ground_truth: Position, position_scratch: Position):
         while True:
-            next_ground_truth = list(self._ground_truth.find_futures(particle_ground_truth))
-            next_scratch = list(self._scratch.find_futures(particle_scratch))
+            next_ground_truth = list(self._ground_truth.find_futures(position_ground_truth))
+            next_scratch = list(self._scratch.find_futures(position_scratch))
             if len(next_ground_truth) == 0:
                 if len(next_scratch) != 0:
-                    report.add_data(LINEAGE_END_FALSE_NEGATIVES, particle_ground_truth)
+                    report.add_data(LINEAGE_END_FALSE_NEGATIVES, position_ground_truth)
                 else:
-                    report.add_data(LINEAGE_END_TRUE_POSITIVES, particle_ground_truth)
+                    report.add_data(LINEAGE_END_TRUE_POSITIVES, position_ground_truth)
                 return
 
             if len(next_ground_truth) > 1:
                 if len(next_scratch) != 2:
-                    report.add_data(DIVISIONS_FALSE_NEGATIVES, particle_ground_truth)
+                    report.add_data(DIVISIONS_FALSE_NEGATIVES, position_ground_truth)
                 else:  # So both have len 2
-                    report.add_data(DIVISIONS_TRUE_POSITIVES, particle_ground_truth)
+                    report.add_data(DIVISIONS_TRUE_POSITIVES, position_ground_truth)
                     distance_one_one = next_ground_truth[0].distance_um(next_scratch[0], self._resolution)
                     distance_one_two = next_ground_truth[0].distance_um(next_scratch[1], self._resolution)
                     if distance_one_one < distance_one_two:
@@ -76,36 +76,36 @@ class _Comparing:
 
             # len(next_ground_truth) == 1
             if len(next_scratch) > 1:
-                report.add_data(DIVISIONS_FALSE_POSITIVES, particle_ground_truth, "moves to", next_ground_truth[0],
+                report.add_data(DIVISIONS_FALSE_POSITIVES, position_ground_truth, "moves to", next_ground_truth[0],
                                 "but was detected as dividing into", next_scratch[0], "and", next_scratch[1])
                 return
             elif len(next_scratch) == 0:
-                report.add_data(LINEAGE_END_FALSE_POSITIVES, particle_ground_truth)
+                report.add_data(LINEAGE_END_FALSE_POSITIVES, position_ground_truth)
                 return
 
             # Both have length 1, continue looking in this lineage
-            particle_ground_truth = next_ground_truth[0]
-            particle_scratch = next_scratch[0]
+            position_ground_truth = next_ground_truth[0]
+            position_scratch = next_scratch[0]
 
             # If the detection data skipped time points, do the same for the ground truth data
-            while particle_scratch.time_point_number() > particle_ground_truth.time_point_number():
-                next_ground_truth = self._ground_truth.find_futures(particle_ground_truth)
+            while position_scratch.time_point_number() > position_ground_truth.time_point_number():
+                next_ground_truth = self._ground_truth.find_futures(position_ground_truth)
                 if len(next_ground_truth) == 0:  # Detection data skipped past a lineage end
-                    report.add_data(LINEAGE_END_FALSE_NEGATIVES, particle_ground_truth)
+                    report.add_data(LINEAGE_END_FALSE_NEGATIVES, position_ground_truth)
                     return
                 elif len(next_ground_truth) > 1:  # Detection data skipped past a cell division
-                    report.add_data(DIVISIONS_FALSE_NEGATIVES, particle_ground_truth)
+                    report.add_data(DIVISIONS_FALSE_NEGATIVES, position_ground_truth)
                     return
                 else:
-                    particle_ground_truth = next_ground_truth.pop()
+                    position_ground_truth = next_ground_truth.pop()
 
             # Check distances
-            distance_um = particle_ground_truth.distance_um(particle_scratch, self._resolution)
+            distance_um = position_ground_truth.distance_um(position_scratch, self._resolution)
             if distance_um > self._max_distance_um:
-                report.add_data(MOVEMENT_DISAGREEMENT, particle_ground_truth, "too far away from the detected position "
-                                "at", particle_scratch, f"- difference is {distance_um:0.1f} um")
+                report.add_data(MOVEMENT_DISAGREEMENT, position_ground_truth, "too far away from the detected position "
+                                "at", position_scratch, f"- difference is {distance_um:0.1f} um")
                 return
-            report.add_data(MOVEMENT_TRUE_POSITIVES, particle_ground_truth)
+            report.add_data(MOVEMENT_TRUE_POSITIVES, position_ground_truth)
 
 
 def compare_links(ground_truth: Experiment, scratch: Experiment, max_distance_um: float = 5) -> ComparisonReport:

@@ -9,12 +9,12 @@ from matplotlib.figure import Figure, Axes
 
 from autotrack import core
 from autotrack.core import TimePoint
-from autotrack.core.particles import Particle
+from autotrack.core.positions import Position
 from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog
 from autotrack.gui.threading import Task
 from autotrack.gui.window import Window
-from autotrack.linking.nearby_particle_finder import find_closest_particle
+from autotrack.linking.nearby_position_finder import find_closest_position
 
 
 class DisplaySettings:
@@ -172,15 +172,15 @@ class Visualizer:
         rgb_images = numpy.zeros((zyx_size[0], zyx_size[1], zyx_size[2], 3), dtype='float')
         colors = [(1, 1, 1), (1, 1, 0), (1, 0, 1), (0, 1, 1), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
         i = 0
-        for particle, shape in self._experiment.particles.of_time_point_with_shapes(time_point).items():
-            shape.draw3d_color(particle.x, particle.y, particle.z, 0, rgb_images, colors[i % len(colors)])
+        for position, shape in self._experiment.positions.of_time_point_with_shapes(time_point).items():
+            shape.draw3d_color(position.x, position.y, position.z, 0, rgb_images, colors[i % len(colors)])
             i += 1
         rgb_images.clip(min=0, max=1, out=rgb_images)
         return rgb_images
 
     @staticmethod
-    def get_closest_particle(particles: Iterable[Particle], x: Optional[int], y: Optional[int], z: Optional[int], max_distance: int = 100000):
-        """Gets the particle closest ot the given position. If z is missing, it is ignored. If x or y are missing,
+    def get_closest_position(positions: Iterable[Position], x: Optional[int], y: Optional[int], z: Optional[int], max_distance: int = 100000):
+        """Gets the position closest ot the given position. If z is missing, it is ignored. If x or y are missing,
         None is returned.
         """
         if x is None or y is None:
@@ -189,8 +189,8 @@ class Visualizer:
         if z is None:
             z = 0
             ignore_z = True
-        search_position = Particle(x, y, z)
-        return find_closest_particle(particles, search_position, ignore_z=ignore_z, max_distance=max_distance)
+        search_position = Position(x, y, z)
+        return find_closest_position(positions, search_position, ignore_z=ignore_z, max_distance=max_distance)
 
     def get_window(self):
         return self._window

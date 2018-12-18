@@ -2,8 +2,8 @@
 
 from typing import List, Optional, Set, AbstractSet, Dict, Iterable
 
-from autotrack.core.links import ParticleLinks, LinkingTrack
-from autotrack.core.particles import Particle
+from autotrack.core.links import PositionLinks, LinkingTrack
+from autotrack.core.positions import Position
 from autotrack.linking_analysis import linking_markers
 
 
@@ -11,39 +11,39 @@ class LineageWithErrors:
     """Represents all (potential) errors in a  complete lineage tree."""
 
     start: LinkingTrack  # Start of the lineage tree
-    errored_particles: List[Particle]  # All particles with (potential) errors
-    crumbs: Set[Particle]  # Some of the particles in the lineage tree.
+    errored_positions: List[Position]  # All positions with (potential) errors
+    crumbs: Set[Position]  # Some of the positions in the lineage tree.
 
     def __init__(self, start: LinkingTrack):
         self.start = start
-        self.errored_particles = []
+        self.errored_positions = []
         self.crumbs = set()
 
-    def _add_errors(self, errors: Optional[Iterable[Particle]]):
+    def _add_errors(self, errors: Optional[Iterable[Position]]):
         if errors is not None:
-            self.errored_particles += errors
+            self.errored_positions += errors
 
-    def _add_crumbs(self, crumbs: Optional[Iterable[Particle]]):
+    def _add_crumbs(self, crumbs: Optional[Iterable[Position]]):
         if crumbs is not None:
             self.crumbs |= set(crumbs)
 
 
-def _group_by_track(links: ParticleLinks, particles: Iterable[Particle]) -> Dict[LinkingTrack, List[Particle]]:
-    track_to_particles = dict()
-    for particle in particles:
-        track = links.get_track(particle)
-        if track in track_to_particles:
-            track_to_particles[track].append(particle)
+def _group_by_track(links: PositionLinks, positions: Iterable[Position]) -> Dict[LinkingTrack, List[Position]]:
+    track_to_positions = dict()
+    for position in positions:
+        track = links.get_track(position)
+        if track in track_to_positions:
+            track_to_positions[track].append(position)
         else:
-            track_to_particles[track] = [particle]
-    return track_to_particles
+            track_to_positions[track] = [position]
+    return track_to_positions
 
 
-def get_problematic_lineages(links: ParticleLinks, crumbs: AbstractSet[Particle]) -> List[LineageWithErrors]:
+def get_problematic_lineages(links: PositionLinks, crumbs: AbstractSet[Position]) -> List[LineageWithErrors]:
     """Gets a list of all lineages with warnings in the experiment. The provided "crumbs" are placed in the right
     lineages, so that you can see to what lineages those cells belong."""
-    particles_with_errors = linking_markers.find_errored_particles(links)
-    track_to_errors = _group_by_track(links, particles_with_errors)
+    positions_with_errors = linking_markers.find_errored_positions(links)
+    track_to_errors = _group_by_track(links, positions_with_errors)
     track_to_crumbs = _group_by_track(links, crumbs)
 
     lineages_with_errors = list()
@@ -56,36 +56,36 @@ def get_problematic_lineages(links: ParticleLinks, crumbs: AbstractSet[Particle]
             lineage._add_errors(track_to_errors.get(next_track))
             lineage._add_crumbs(track_to_crumbs.get(next_track))
 
-        if len(lineage.errored_particles) > 0:
+        if len(lineage.errored_positions) > 0:
             lineages_with_errors.append(lineage)
 
     return lineages_with_errors
 
 
-def _find_errors_in_lineage(links: ParticleLinks, lineage: LineageWithErrors, particle: Particle, crumbs: AbstractSet[Particle]):
+def _find_errors_in_lineage(links: PositionLinks, lineage: LineageWithErrors, position: Position, crumbs: AbstractSet[Position]):
     while True:
-        if particle in crumbs:
-            lineage.crumbs.add(particle)
+        if position in crumbs:
+            lineage.crumbs.add(position)
 
-        error = linking_markers.get_error_marker(links, particle)
+        error = linking_markers.get_error_marker(links, position)
         if error is not None:
-            lineage.errored_particles.append(particle)
-        future_particles = links.find_futures(particle)
+            lineage.errored_positions.append(position)
+        future_positions = links.find_futures(position)
 
-        if len(future_particles) > 1:
+        if len(future_positions) > 1:
             # Branch out
-            for future_particle in future_particles:
-                _find_errors_in_lineage(links, lineage, future_particle, crumbs)
+            for future_position in future_positions:
+                _find_errors_in_lineage(links, lineage, future_position, crumbs)
             return
-        if len(future_particles) < 1:
+        if len(future_positions) < 1:
             # Stop
             return
         # Continue
-        particle = future_particles.pop()
+        position = future_positions.pop()
 
 
-def find_lineage_index_with_crumb(lineages: List[LineageWithErrors], crumb: Optional[Particle]) -> Optional[int]:
-    """Attempts to find the given particle in the lineages. Returns None if the particle is None or if the particle is
+def find_lineage_index_with_crumb(lineages: List[LineageWithErrors], crumb: Optional[Position]) -> Optional[int]:
+    """Attempts to find the given position in the lineages. Returns None if the position is None or if the position is
     in none of the lineages."""
     if crumb is None:
         return None

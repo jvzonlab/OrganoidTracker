@@ -2,7 +2,7 @@
 
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import ParticleLinks
+from autotrack.core.links import PositionLinks
 from autotrack.core.resolution import ImageResolution
 from autotrack.imaging import tifffolder, io
 from autotrack.linking import nearest_neighbor_linker, dpct_linker, cell_division_finder
@@ -40,9 +40,9 @@ print("Performing nearest-neighbor linking...")
 possible_links = nearest_neighbor_linker.nearest_neighbor(experiment, tolerance=2)
 print("Calculating scores of possible mothers...")
 score_system = RationalScoringSystem()
-scores = cell_division_finder.calculates_scores(experiment.image_loader(), experiment.particles, possible_links, score_system)
+scores = cell_division_finder.calculates_scores(experiment.image_loader(), experiment.positions, possible_links, score_system)
 print("Deciding on what links to use...")
-link_result = dpct_linker.run(experiment.particles, possible_links, scores)
+link_result = dpct_linker.run(experiment.positions, possible_links, scores)
 print("Applying final touches...")
 experiment.links = link_result
 experiment.scores = scores

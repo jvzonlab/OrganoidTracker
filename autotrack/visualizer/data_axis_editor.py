@@ -4,7 +4,7 @@ from matplotlib.backend_bases import KeyEvent, MouseEvent
 
 from autotrack.core import TimePoint
 from autotrack.core.experiment import Experiment
-from autotrack.core.particles import Particle
+from autotrack.core.positions import Position
 from autotrack.core.data_axis import DataAxis
 from autotrack.gui.undo_redo import UndoableAction, ReversedAction
 from autotrack.gui.window import Window
@@ -23,7 +23,7 @@ class _AddPathAction(UndoableAction):
 
     def do(self, experiment: Experiment) -> str:
         experiment.data_axes.add_data_axis(self._time_point, self._path)
-        self._path.update_offset_for_particles(experiment.particles.of_time_point(self._time_point))
+        self._path.update_offset_for_positions(experiment.positions.of_time_point(self._time_point))
         return "Added path to time point " + str(self._time_point.time_point_number())
 
     def undo(self, experiment: Experiment):
@@ -33,15 +33,15 @@ class _AddPathAction(UndoableAction):
 
 class _AddPointAction(UndoableAction):
     _path: DataAxis
-    _new_point: Particle
+    _new_point: Position
 
-    def __init__(self, path: DataAxis, new_point: Particle):
+    def __init__(self, path: DataAxis, new_point: Position):
         self._path = path
         self._new_point = new_point
 
     def do(self, experiment: Experiment) -> str:
         self._path.add_point(self._new_point.x, self._new_point.y, self._new_point.z)
-        self._path.update_offset_for_particles(experiment.particles.of_time_point(self._new_point.time_point()))
+        self._path.update_offset_for_positions(experiment.positions.of_time_point(self._new_point.time_point()))
         return f"Added point at ({self._new_point.x:.0f}, {self._new_point.y:.0f}) to selected path"
 
     def undo(self, experiment: Experiment) -> str:
@@ -91,7 +91,7 @@ class DataAxisEditor(AbstractEditor):
         if event.dblclick:
             # Select path
             links = self._experiment.links
-            position = Particle(event.xdata, event.ydata, self._z).with_time_point(self._time_point)
+            position = Position(event.xdata, event.ydata, self._z).with_time_point(self._time_point)
             path_position = self._experiment.data_axes.to_position_on_original_axis(links, position)
             if path_position is None or path_position.distance > 10 or path_position.axis == self._selected_path:
                 self._select_path(None)
@@ -115,18 +115,18 @@ class DataAxisEditor(AbstractEditor):
             return None  # Don't draw paths of other time points
         return self._selected_path
 
-    def _draw_particle(self, particle: Particle, color: str, dz: int, dt: int):
+    def _draw_position(self, position: Position, color: str, dz: int, dt: int):
         if not self._draw_axis_positions or dt != 0 or abs(dz) > 3:
-            super()._draw_particle(particle, color, dz, dt)
+            super()._draw_position(position, color, dz, dt)
             return
 
-        axis_position = self._experiment.data_axes.to_position_on_original_axis(self._experiment.links, particle)
+        axis_position = self._experiment.data_axes.to_position_on_original_axis(self._experiment.links, position)
         if axis_position is None:
-            super()._draw_particle(particle, color, dz, dt)
+            super()._draw_position(position, color, dz, dt)
             return
 
         background_color = (1, 1, 1, 0.8) if axis_position.axis == self._selected_path else (0, 1, 0, 0.8)
-        self._ax.annotate(f"{axis_position.pos:.1f}", (particle.x, particle.y), fontsize=12 - abs(dz),
+        self._ax.annotate(f"{axis_position.pos:.1f}", (position.x, position.y), fontsize=12 - abs(dz),
                         fontweight="bold", color="black", backgroundcolor=background_color)
 
     def _draw_data_axis(self, data_axis: DataAxis, id: int, color: str, marker_size_max: int):
@@ -150,7 +150,7 @@ class DataAxisEditor(AbstractEditor):
                 self._perform_action(_AddPathAction(path, self._time_point))
             else:
                 # Can modify existing path
-                point = Particle(event.xdata, event.ydata, self._z).with_time_point(self._time_point)
+                point = Position(event.xdata, event.ydata, self._z).with_time_point(self._time_point)
                 self._perform_action(_AddPointAction(selected_path, point))
         elif event.key == "delete":
             selected_path = self._get_selected_path_of_current_time_point()

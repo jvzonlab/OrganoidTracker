@@ -1,7 +1,7 @@
 from typing import List, Set, Optional, Iterable, Dict
 
 from autotrack.core import TimePoint
-from autotrack.core.particles import Particle
+from autotrack.core.positions import Position
 
 
 class Score:
@@ -64,17 +64,17 @@ class Score:
 
 class Family:
     """A mother cell with two daughter cells."""
-    mother: Particle
-    daughters: Set[Particle]  # Size of two, ensured by constructor.
+    mother: Position
+    daughters: Set[Position]  # Size of two, ensured by constructor.
 
-    def __init__(self, mother: Particle, daughter1: Particle, daughter2: Particle):
+    def __init__(self, mother: Position, daughter1: Position, daughter2: Position):
         """Creates a new family. daughter1 and daughter2 can be swapped without consequences."""
         self.mother = mother
         self.daughters = {daughter1, daughter2}
 
     @staticmethod
-    def _pos_str(particle: Particle) -> str:
-        return "(" + ("%.2f" % particle.x) + ", " + ("%.2f" % particle.y) + ", " + ("%.0f" % particle.z) + ")"
+    def _pos_str(position: Position) -> str:
+        return "(" + ("%.2f" % position.x) + ", " + ("%.2f" % position.y) + ", " + ("%.0f" % position.z) + ")"
 
     def __str__(self):
         return self._pos_str(self.mother) + " " + str(self.mother.time_point_number()) + "---> " \
@@ -116,15 +116,15 @@ class _ScoresOfTimePoint:
         self._mother_scores = dict()
 
     def mother_score(self, family: Family, score: Optional[Score] = None) -> Score:
-        """Gets or sets the mother score of the given particle. Raises KeyError if no score has been set for this
-         particle. Raises ValueError if you're looking in the wrong time point.
+        """Gets or sets the mother score of the given position. Raises KeyError if no score has been set for this
+         position. Raises ValueError if you're looking in the wrong time point.
          """
         if score is not None:
             self._mother_scores[family] = score
             return score
         return self._mother_scores[family]
 
-    def mother_scores(self, mother: Optional[Particle] = None) -> Iterable[ScoredFamily]:
+    def mother_scores(self, mother: Optional[Position] = None) -> Iterable[ScoredFamily]:
         """Gets all mother scores of either all putative mothers, or just the given mother (if any)."""
         for family, score in self._mother_scores.items():
             if mother is not None:
@@ -163,12 +163,12 @@ class ScoreCollection:
             return []
         return scores_of_time_point.mother_scores()
 
-    def of_mother(self, particle: Particle) -> Iterable[ScoredFamily]:
+    def of_mother(self, position: Position) -> Iterable[ScoredFamily]:
         """Gets all scores registered for the given mother."""
-        scores_of_time_point = self._all_scores.get(particle.time_point_number())
+        scores_of_time_point = self._all_scores.get(position.time_point_number())
         if scores_of_time_point is None:
             return []
-        return scores_of_time_point.mother_scores(particle)
+        return scores_of_time_point.mother_scores(position)
 
     def all_scored_families(self) -> Iterable[ScoredFamily]:
         """Gets all registered scores."""

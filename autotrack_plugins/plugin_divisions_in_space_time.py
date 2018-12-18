@@ -105,8 +105,8 @@ def _get_graphing_data(experiment: Experiment) -> _SpaceTimeGrid:
     i = 0
     for family in families:
         i+=1
-        for particle in family.daughters:
-            next_division = cell_division_finder.get_next_division(links, particle)
+        for position in family.daughters:
+            next_division = cell_division_finder.get_next_division(links, position)
             if next_division is None:
                 continue
             cell_cycle_length = particle_age_finder.get_age(links, next_division.mother)
@@ -114,13 +114,13 @@ def _get_graphing_data(experiment: Experiment) -> _SpaceTimeGrid:
                 continue
 
             while True:
-                next_particles = links.find_futures(particle)
-                if len(next_particles) != 1:
+                next_positions = links.find_futures(position)
+                if len(next_positions) != 1:
                     break  # Found next division or end of cell track
 
-                particle = next_particles.pop()
-                time_point = particle.time_point()
-                position_on_crypt_axis = experiment.data_axes.to_position_on_original_axis(experiment.links, particle)
+                position = next_positions.pop()
+                time_point = position.time_point()
+                position_on_crypt_axis = experiment.data_axes.to_position_on_original_axis(experiment.links, position)
                 if position_on_crypt_axis is None:
                     continue
 

@@ -9,7 +9,7 @@ from typing import Tuple, List
 
 
 def perform(image: ndarray) -> Tuple[ndarray, List[Ellipse]]:
-    """Returns a black-and-white image where white is particle and black is background, at least in theory."""
+    """Returns a black-and-white image where white is position and black is background, at least in theory."""
     image_8bit = cv2.convertScaleAbs(image, alpha=256 / image.max(), beta=0)
 
     # Crop to a circle

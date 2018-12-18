@@ -13,7 +13,7 @@ from autotrack.core.mask import Mask
 
 
 class ParticleShape:
-    """Represents the shape of a particle. No absolute position data is stored here."""
+    """Represents the shape of a position. No absolute position data is stored here."""
 
     def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
         """Draws a shape in 2d, at the given x and y. dz is how many z layers we are removed from the actual position,
@@ -152,7 +152,7 @@ class UnknownShape(ParticleShape):
 
 
 class GaussianShape(ParticleShape):
-    """Represents a particle represented by a Gaussian shape."""
+    """Represents a position represented by a Gaussian shape."""
     _gaussian: Gaussian
 
     def __init__(self, gaussian: Gaussian):
@@ -203,10 +203,10 @@ class GaussianShape(ParticleShape):
 
 
 class EllipseStackShape(ParticleShape):
-    """A stack of ellipses. Fairly simple, but still a useful 3D representation of the particle shape."""
+    """A stack of ellipses. Fairly simple, but still a useful 3D representation of the position shape."""
 
     _ellipse_stack: EllipseStack
-    _center_ellipse: int  # Z position of the particle center
+    _center_ellipse: int  # Z position of the position center
 
     def __init__(self, ellipse_stack: EllipseStack, center_ellipse: int):
         self._ellipse_stack = ellipse_stack

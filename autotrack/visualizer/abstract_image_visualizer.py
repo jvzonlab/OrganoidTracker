@@ -10,7 +10,7 @@ from tifffile import tifffile
 from autotrack import core
 from autotrack.core import TimePoint, shape
 from autotrack.core.data_axis import DataAxis
-from autotrack.core.particles import Particle
+from autotrack.core.positions import Position
 from autotrack.gui import dialog
 from autotrack.gui.dialog import prompt_int, popup_error
 from autotrack.gui.window import Window
@@ -27,7 +27,7 @@ class AbstractImageVisualizer(Visualizer):
     _time_point: TimePoint = None
     _time_point_images: ndarray = None
     _z: int
-    __particles_near_visible_layer: List[Particle]
+    __positions_near_visible_layer: List[Position]
     _display_settings: DisplaySettings
 
     # The color map should typically not be transferred when switching to another viewer, so it is not part of the
@@ -43,7 +43,7 @@ class AbstractImageVisualizer(Visualizer):
             time_point_number = window.get_experiment().first_time_point_number()
         self._z = int(z)
         self._load_time_point(TimePoint(time_point_number))
-        self.__particles_near_visible_layer = []
+        self.__positions_near_visible_layer = []
 
     def _load_time_point(self, time_point: TimePoint):
         """Loads the images and other data of the time point."""
@@ -95,9 +95,9 @@ class AbstractImageVisualizer(Visualizer):
     def draw_view(self):
         self._clear_axis()
         self._ax.set_facecolor((0.2, 0.2, 0.2))
-        self.__particles_near_visible_layer.clear()
+        self.__positions_near_visible_layer.clear()
         self._draw_image()
-        self._draw_particles()
+        self._draw_positions()
         self._draw_data_axes()
         self._draw_extra()
         self._window.set_figure_title(self._get_figure_title())
@@ -108,13 +108,13 @@ class AbstractImageVisualizer(Visualizer):
         if self._time_point_images is not None:
             self._ax.imshow(self._time_point_images[self._z], cmap=self._color_map)
 
-    def _draw_selection(self, particle: Particle, color: str):
-        """Draws a marker for the given particle that indicates that the particle is selected. Subclasses can call this
-        method to show a particle selection.
+    def _draw_selection(self, position: Position, color: str):
+        """Draws a marker for the given position that indicates that the position is selected. Subclasses can call this
+        method to show a position selection.
 
-        Note: this method will draw the selection marker even if the given particle is in another time point, or even on
+        Note: this method will draw the selection marker even if the given position is in another time point, or even on
         a completely different z layer. So only call this method if you want to have a marker visible."""
-        self._ax.plot(particle.x, particle.y, 'o', markersize=25, color=(0, 0, 0, 0), markeredgecolor=color,
+        self._ax.plot(position.x, position.y, 'o', markersize=25, color=(0, 0, 0, 0), markeredgecolor=color,
                       markeredgewidth=5)
 
     def _get_figure_title(self) -> str:
@@ -126,102 +126,102 @@ class AbstractImageVisualizer(Visualizer):
     def _draw_extra(self):
         pass  # Subclasses can override this
 
-    def _draw_particles(self):
-        """Draws particles and links. Returns the amount of non-equal links in the image"""
+    def _draw_positions(self):
+        """Draws positions and links. Returns the amount of non-equal links in the image"""
 
         # Next time point
         can_show_other_time_points = self._must_show_other_time_points() and self._experiment.links.has_links()
         if self._display_settings.show_next_time_point or can_show_other_time_points:
-            # Only draw particles of next/previous time point if there is linking data, or if we're forced to
+            # Only draw positions of next/previous time point if there is linking data, or if we're forced to
             try:
-                self._draw_particles_of_time_point(self._experiment.get_next_time_point(self._time_point), color='red')
+                self._draw_positions_of_time_point(self._experiment.get_next_time_point(self._time_point), color='red')
             except ValueError:
                 pass  # There is no next time point, ignore
 
         # Previous time point
         if not self._display_settings.show_next_time_point and can_show_other_time_points:
             try:
-                self._draw_particles_of_time_point(
+                self._draw_positions_of_time_point(
                     self._experiment.get_previous_time_point(self._time_point), color='blue')
             except ValueError:
                 pass  # There is no previous time point, ignore
 
         # Current time point
-        self._draw_particles_of_time_point(self._time_point)
+        self._draw_positions_of_time_point(self._time_point)
 
-    def _draw_particles_of_time_point(self, time_point: TimePoint, color: str = core.COLOR_CELL_CURRENT):
+    def _draw_positions_of_time_point(self, time_point: TimePoint, color: str = core.COLOR_CELL_CURRENT):
         dt = time_point.time_point_number() - self._time_point.time_point_number()
-        for particle in self._experiment.particles.of_time_point(time_point):
-            dz = self._z - round(particle.z)
+        for position in self._experiment.positions.of_time_point(time_point):
+            dz = self._z - round(position.z)
 
-            # Draw the particle itself (as a square or circle, depending on its depth)
-            self._draw_particle(particle, color, dz, dt)
+            # Draw the position itself (as a square or circle, depending on its depth)
+            self._draw_position(position, color, dz, dt)
 
-    def _draw_particle(self, particle: Particle, color: str, dz: int, dt: int):
+    def _draw_position(self, position: Position, color: str, dz: int, dt: int):
         if abs(dz) <= self.MAX_Z_DISTANCE:
             # Draw error marker
             links = self._experiment.links
-            if linking_markers.get_error_marker(links, particle) is not None:
-                self._draw_error(particle, dz)
+            if linking_markers.get_error_marker(links, position) is not None:
+                self._draw_error(position, dz)
 
-            # Make particle selectable
-            self.__particles_near_visible_layer.append(particle)
+            # Make position selectable
+            self.__positions_near_visible_layer.append(position)
 
         # Draw links
-        self._draw_links(particle)
+        self._draw_links(position)
 
-        # Draw particle
+        # Draw position
         if self._display_settings.show_reconstruction:  # Showing a 3D reconstruction, so don't display a 2D one too
-            shape.draw_marker_2d(particle.x, particle.y, dz, dt, self._ax, color)
+            shape.draw_marker_2d(position.x, position.y, dz, dt, self._ax, color)
         else:
-            self._experiment.particles.get_shape(particle).draw2d(particle.x, particle.y, dz, dt, self._ax, color)
+            self._experiment.positions.get_shape(position).draw2d(position.x, position.y, dz, dt, self._ax, color)
 
-    def _draw_error(self, particle: Particle, dz: int):
-        self._ax.plot(particle.x, particle.y, 'X', color='black', markeredgecolor='white',
+    def _draw_error(self, position: Position, dz: int):
+        self._ax.plot(position.x, position.y, 'X', color='black', markeredgecolor='white',
                       markersize=19 - abs(dz), markeredgewidth=2)
 
-    def _draw_links(self, particle: Particle):
-        """Draws links between the particles. Returns 1 if there is 1 error: the baseline links don't match the actual
+    def _draw_links(self, position: Position):
+        """Draws links between the positions. Returns 1 if there is 1 error: the baseline links don't match the actual
         links.
         """
-        links_base = self._experiment.links.find_links_of(particle)
-        if particle.time_point_number() > self._time_point.time_point_number():
+        links_base = self._experiment.links.find_links_of(position)
+        if position.time_point_number() > self._time_point.time_point_number():
             # Draw links that go to past
-            links_base = [p for p in links_base if p.time_point_number() < particle.time_point_number()]
-        elif particle.time_point_number() < self._time_point.time_point_number():
+            links_base = [p for p in links_base if p.time_point_number() < position.time_point_number()]
+        elif position.time_point_number() < self._time_point.time_point_number():
             # Draw links that go to future
-            links_base = [p for p in links_base if p.time_point_number() > particle.time_point_number()]
+            links_base = [p for p in links_base if p.time_point_number() > position.time_point_number()]
         else:
             # Only draw links that go multiple steps into the past or future. Links that go one step into the past
             # or future are already drawn by the above functions
-            links_base = [p for p in links_base if abs(p.time_point_number() - particle.time_point_number()) >= 2]
+            links_base = [p for p in links_base if abs(p.time_point_number() - position.time_point_number()) >= 2]
 
-        self._draw_given_links(particle, links_base)
+        self._draw_given_links(position, links_base)
 
-    def _draw_given_links(self, particle, links, line_style='solid', line_width=1):
-        particle_dt = numpy.sign(particle.time_point_number() - self._time_point.time_point_number())
-        for linked_particle in links:
-            linked_particle_dt = numpy.sign(linked_particle.time_point_number() - self._time_point.time_point_number())
+    def _draw_given_links(self, position, links, line_style='solid', line_width=1):
+        position_dt = numpy.sign(position.time_point_number() - self._time_point.time_point_number())
+        for linked_position in links:
+            linked_position_dt = numpy.sign(linked_position.time_point_number() - self._time_point.time_point_number())
             # link_dt is negative when drawing to past, positive when drawing to the future and 0 when drawing from the
             # past to the future (so it is skipping this time point)
-            link_dt = particle_dt + linked_particle_dt
+            link_dt = position_dt + linked_position_dt
 
-            min_display_z = min(linked_particle.z, particle.z) - self.MAX_Z_DISTANCE
-            max_display_z = max(linked_particle.z, particle.z) + self.MAX_Z_DISTANCE
+            min_display_z = min(linked_position.z, position.z) - self.MAX_Z_DISTANCE
+            max_display_z = max(linked_position.z, position.z) + self.MAX_Z_DISTANCE
             if self._z < min_display_z or self._z > max_display_z:
                 continue
             if link_dt < 0:
                 # Drawing to past
                 if not self._display_settings.show_next_time_point:
-                    self._ax.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], linestyle=line_style,
+                    self._ax.plot([position.x, linked_position.x], [position.y, linked_position.y], linestyle=line_style,
                                   color=core.COLOR_CELL_PREVIOUS, linewidth=line_width)
             elif link_dt > 0:
                 # Drawing to future
-                self._ax.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], linestyle=line_style,
+                self._ax.plot([position.x, linked_position.x], [position.y, linked_position.y], linestyle=line_style,
                               color=core.COLOR_CELL_NEXT, linewidth=line_width)
             else:
                 # Drawing from past to future, skipping this time point
-                self._ax.plot([particle.x, linked_particle.x], [particle.y, linked_particle.y], linestyle=line_style,
+                self._ax.plot([position.x, linked_position.x], [position.y, linked_position.y], linestyle=line_style,
                               color=core.COLOR_CELL_CURRENT, linewidth=line_width)
 
     def _draw_data_axes(self):
@@ -244,9 +244,9 @@ class AbstractImageVisualizer(Visualizer):
         self._ax.plot(*data_axis.get_points_2d(), linewidth=0, marker=marker, markerfacecolor=color,
                       markeredgecolor="black", markersize=max(7, marker_size_max - dz))
 
-    def _get_particle_at(self, x: Optional[int], y: Optional[int]) -> Optional[Particle]:
-        """Wrapper of get_closest_particle that makes use of the fact that we can lookup all particles ourselves."""
-        return self.get_closest_particle(self.__particles_near_visible_layer, x, y, None, max_distance=5)
+    def _get_position_at(self, x: Optional[int], y: Optional[int]) -> Optional[Position]:
+        """Wrapper of get_closest_position that makes use of the fact that we can lookup all positions ourselves."""
+        return self.get_closest_position(self.__positions_near_visible_layer, x, y, None, max_distance=5)
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
         def time_point_prompt():

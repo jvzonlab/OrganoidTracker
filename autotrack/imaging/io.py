@@ -1,4 +1,4 @@
-"""Classes for expressing the positions of particles"""
+"""Classes for expressing the positions of positions"""
 import json
 import os
 from json import JSONEncoder
@@ -10,8 +10,8 @@ from pandas import DataFrame
 
 from autotrack.core import shape, TimePoint, UserError
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import ParticleLinks
-from autotrack.core.particles import Particle, ParticleCollection
+from autotrack.core.links import PositionLinks
+from autotrack.core.positions import Position, PositionCollection
 from autotrack.core.data_axis import DataAxisCollection, DataAxis
 from autotrack.core.resolution import ImageResolution
 from autotrack.core.score import ScoredFamily, Score, Family
@@ -21,7 +21,7 @@ FILE_EXTENSION = "aut"
 
 def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: str,
                                         min_time_point: int = 0, max_time_point: int = 5000):
-    """Loads a JSON file that contains particle positions, with or without shape information."""
+    """Loads a JSON file that contains position positions, with or without shape information."""
     with open(json_file_name) as handle:
         time_points = json.load(handle)
         _parse_shape_format(experiment, time_points, min_time_point, max_time_point)
@@ -101,24 +101,24 @@ def load_linking_result(experiment: Experiment, json_file_name: str):
 
 
 def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List], min_time_point: int, max_time_point: int):
-    for time_point_number, raw_particles in json_structure.items():
+    for time_point_number, raw_positions in json_structure.items():
         time_point_number = int(time_point_number)  # str -> int
         if time_point_number < min_time_point or time_point_number > max_time_point:
             continue
 
-        for raw_particle in raw_particles:
-            particle = Particle(*raw_particle[0:3]).with_time_point_number(time_point_number)
-            particle_shape = shape.from_list(raw_particle[3:])
-            experiment.particles.add(particle, particle_shape)
+        for raw_position in raw_positions:
+            position = Position(*raw_position[0:3]).with_time_point_number(time_point_number)
+            position_shape = shape.from_list(raw_position[3:])
+            experiment.positions.add(position, position_shape)
 
 
 def _parse_links_format(experiment: Experiment, link_data: Dict[str, Any], min_time_point: int, max_time_point: int):
-    """Parses a node_link_graph and adds all links and particles to the experiment."""
-    links = ParticleLinks()
+    """Parses a node_link_graph and adds all links and positions to the experiment."""
+    links = PositionLinks()
     _add_d3_data(links, link_data, min_time_point, max_time_point)
-    particles = experiment.particles
-    for particle in links.find_all_particles():
-        particles.add(particle)
+    positions = experiment.positions
+    for position in links.find_all_positions():
+        positions.add(position)
     experiment.links.add_links(links)
 
 
@@ -137,24 +137,24 @@ def _parse_data_axes_format(experiment: Experiment, axes_data: List[Dict], min_t
         experiment.data_axes.add_data_axis(TimePoint(time_point_number), path)
 
 
-def _add_d3_data(links: ParticleLinks, data: Dict, min_time_point: int = -100000, max_time_point: int = 100000):
+def _add_d3_data(links: PositionLinks, data: Dict, min_time_point: int = -100000, max_time_point: int = 100000):
     """Adds data in the D3.js node-link format. Used for deserialization."""
 
-    # Add particle data
+    # Add position data
     for node in data["nodes"]:
         if len(node.keys()) == 1:
             # No extra data found
             continue
-        particle = node["id"]
+        position = node["id"]
         for data_key, data_value in node.items():
             if data_key == "id":
                 continue
-            links.set_particle_data(particle, data_key, data_value)
+            links.set_position_data(position, data_key, data_value)
 
     # Add links
     for link in data["links"]:
-        source: Particle = link["source"]
-        target: Particle = link["target"]
+        source: Position = link["source"]
+        target: Position = link["target"]
         if source.time_point_number() < min_time_point or target.time_point_number() < min_time_point \
             or source.time_point_number() > max_time_point or target.time_point_number() > max_time_point:
             continue  # Ignore time points out of range
@@ -163,7 +163,7 @@ def _add_d3_data(links: ParticleLinks, data: Dict, min_time_point: int = -100000
 
 class _MyEncoder(JSONEncoder):
     def default(self, o):
-        if isinstance(o, Particle):
+        if isinstance(o, Position):
             return {"x": o.x, "y": o.y, "z": o.z, "_time_point_number": o.time_point_number()}
         if isinstance(o, Score):
             return o.__dict__
@@ -185,10 +185,10 @@ class _MyEncoder(JSONEncoder):
 
 def _my_decoder(json_object):
     if 'x' in json_object and 'y' in json_object and 'z' in json_object:
-        particle = Particle(json_object['x'], json_object['y'], json_object['z'])
+        position = Position(json_object['x'], json_object['y'], json_object['z'])
         if '_time_point_number' in json_object:
-            particle.with_time_point_number(json_object['_time_point_number'])
-        return particle
+            position.with_time_point_number(json_object['_time_point_number'])
+        return position
     if 'scores' in json_object and 'mother' in json_object and 'daughter1' in json_object:
         mother = json_object["mother"]
         daughter1 = json_object["daughter1"]
@@ -199,8 +199,8 @@ def _my_decoder(json_object):
     return json_object
 
 
-def save_links_to_json(links: ParticleLinks, json_file_name: str):
-    """Saves particle linking data to a JSON file. File follows the d3.js format, like the example here:
+def save_links_to_json(links: PositionLinks, json_file_name: str):
+    """Saves position linking data to a JSON file. File follows the d3.js format, like the example here:
     http://bl.ocks.org/mbostock/4062045 """
     data = _links_to_d3_data(links)
 
@@ -209,17 +209,17 @@ def save_links_to_json(links: ParticleLinks, json_file_name: str):
         json.dump(data, handle, cls=_MyEncoder)
 
 
-def _links_to_d3_data(links: ParticleLinks) -> Dict:
+def _links_to_d3_data(links: PositionLinks) -> Dict:
     """Return data in D3.js node-link format that is suitable for JSON serialization
     and use in Javascript documents."""
     nodes = list()
 
     # Save nodes and store extra data
-    for particle in links.find_all_particles():
+    for position in links.find_all_positions():
         node = {
-            "id": particle
+            "id": position
         }
-        for data_name, data_value in links.find_all_data_of_particle(particle):
+        for data_name, data_value in links.find_all_data_of_position(position):
             node[data_name] = data_value
         nodes.append(node)
 
@@ -242,23 +242,23 @@ def _links_to_d3_data(links: ParticleLinks) -> Dict:
 
 
 def save_positions_and_shapes_to_json(experiment: Experiment, json_file_name: str):
-    """Saves a list of particles to disk."""
-    data_structure = _encode_positions_and_shapes(experiment.particles)
+    """Saves a list of positions to disk."""
+    data_structure = _encode_positions_and_shapes(experiment.positions)
 
     _create_parent_directories(json_file_name)
     with open(json_file_name, 'w') as handle:
         json.dump(data_structure, handle, cls=_MyEncoder)
 
 
-def _encode_positions_and_shapes(particles_and_shapes: ParticleCollection):
+def _encode_positions_and_shapes(positions_and_shapes: PositionCollection):
     data_structure = {}
-    for time_point_number in range(particles_and_shapes.first_time_point_number(), particles_and_shapes.last_time_point_number() + 1):
+    for time_point_number in range(positions_and_shapes.first_time_point_number(), positions_and_shapes.last_time_point_number() + 1):
         time_point = TimePoint(time_point_number)
-        particles = []
-        for particle, shape in particles_and_shapes.of_time_point_with_shapes(time_point).items():
-            particles.append([particle.x, particle.y, particle.z] + shape.to_list())
+        positions = []
+        for position, shape in positions_and_shapes.of_time_point_with_shapes(time_point).items():
+            positions.append([position.x, position.y, position.z] + shape.to_list())
 
-        data_structure[str(time_point_number)] = particles
+        data_structure[str(time_point_number)] = positions
     return data_structure
 
 
@@ -292,7 +292,7 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
     """
     save_data = {
         "version": "v1",
-        "shapes": _encode_positions_and_shapes(experiment.particles)}
+        "shapes": _encode_positions_and_shapes(experiment.positions)}
 
     # Save links
     if experiment.links.has_links():
@@ -322,7 +322,7 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
         json.dump(save_data, handle, cls=_MyEncoder)
 
 
-def load_links_from_json(json_file_name: str, min_time_point: int = 0, max_time_point: int = 5000) -> ParticleLinks:
+def load_links_from_json(json_file_name: str, min_time_point: int = 0, max_time_point: int = 5000) -> PositionLinks:
     """Loads all links from a file. Links that extend outside the allowed time points are removed."""
     with open(json_file_name) as handle:
         data = json.load(handle, object_hook=_my_decoder)
@@ -337,7 +337,7 @@ def load_links_from_json(json_file_name: str, min_time_point: int = 0, max_time_
                          if min_time_point <= entry["source"].time_point_number() <= max_time_point
                          and min_time_point <= entry["target"].time_point_number() <= max_time_point]
 
-        links = ParticleLinks()
+        links = PositionLinks()
         _add_d3_data(links, data)
         return links
 

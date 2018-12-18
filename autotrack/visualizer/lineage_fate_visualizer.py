@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 
 from autotrack.core import TimePoint
-from autotrack.core.particles import Particle
+from autotrack.core.positions import Position
 from autotrack.linking_analysis import lineage_fate_finder
 from autotrack.linking_analysis.lineage_fate_finder import LineageFate
 from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
@@ -39,7 +39,7 @@ class LineageFateVisualizer(ExitableImageVisualizer):
     4   cell divided four times. "4, 1X" means cell divided four times, one offspring cell died."
     ~   no events, just movement during the complete experiment."""
 
-    _lineage_fates: Dict[Particle, LineageFate] = dict()
+    _lineage_fates: Dict[Position, LineageFate] = dict()
 
     def _load_time_point(self, time_point: TimePoint):
         super()._load_time_point(time_point)
@@ -50,17 +50,17 @@ class LineageFateVisualizer(ExitableImageVisualizer):
             self._lineage_fates = dict()
             return
 
-        particles = self._experiment.particles.of_time_point(time_point)
+        positions = self._experiment.positions.of_time_point(time_point)
         links = self._experiment.links
         last_time_point_number = self._experiment.last_time_point_number()
         result = dict()
-        for particle in particles:
-            result[particle] = lineage_fate_finder.get_lineage_fate(particle, links, last_time_point_number)
+        for position in positions:
+            result[position] = lineage_fate_finder.get_lineage_fate(position, links, last_time_point_number)
         self._lineage_fates = result
 
-    def _draw_particle(self, particle: Particle, color: str, dz: int, dt: int):
+    def _draw_position(self, position: Position, color: str, dz: int, dt: int):
         if dt == 0 and abs(dz) <= 3:
-            lineage_fate = self._lineage_fates.get(particle)
+            lineage_fate = self._lineage_fates.get(position)
             color = _lineage_fate_to_color(lineage_fate)
-            self._ax.annotate( _lineage_fate_to_text(lineage_fate), (particle.x, particle.y), fontsize=12 - abs(dz),
+            self._ax.annotate( _lineage_fate_to_text(lineage_fate), (position.x, position.y), fontsize=12 - abs(dz),
                                fontweight="bold", color=color, backgroundcolor=(1,1,1,0.8))

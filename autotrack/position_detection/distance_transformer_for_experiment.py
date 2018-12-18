@@ -6,7 +6,7 @@ import tifffile
 
 from autotrack.core.experiment import Experiment
 from autotrack.imaging import bits
-from autotrack.particle_detection import thresholding
+from autotrack.position_detection import thresholding
 from os import path
 
 
@@ -29,8 +29,8 @@ def perform_for_experiment(experiment: Experiment, output_folder: str, block_siz
 
         # Distance transform from cell positions
         threshold.fill(0)
-        for particle in experiment.particles.of_time_point(time_point):
-            threshold[int(particle.z), int(particle.y), int(particle.x)] = 255
+        for position in experiment.positions.of_time_point(time_point):
+            threshold[int(position.z), int(position.y), int(position.x)] = 255
         morphology.distance_transform_edt(threshold.max() - threshold, sampling=sampling, distances=distances)
         distances[distances > max_distance] = max_distance
         distances_8bit = bits.image_to_8bit(distances)

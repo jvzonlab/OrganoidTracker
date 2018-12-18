@@ -7,7 +7,7 @@ import numpy
 
 from autotrack.core import UserError, TimePoint
 from autotrack.core.experiment import Experiment
-from autotrack.core.particles import Particle, ParticleCollection
+from autotrack.core.positions import Position, PositionCollection
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
 
@@ -63,12 +63,12 @@ def _export_laetitia_positions(window: Window):
                 overwrite = True
             else:
                 return
-        _export_file(experiment.particles.of_time_point(time_point), file_path, z_offset)
+        _export_file(experiment.positions.of_time_point(time_point), file_path, z_offset)
 
 
 def _get_z_offset(experiment: Experiment) -> int:
     """Laetitia adds black xy planes until the image has the expected number of z layers. We don't do that, so we need
-    to correct the particle z for this.
+    to correct the position z for this.
     """
     return int((_get_image_z_size(experiment) - EXPECTED_Z_LAYERS) / 2)
 
@@ -101,21 +101,21 @@ def _import_file(experiment: Experiment, directory: str, file_name: str, z_offse
 
     # Add new cells to the time point
     for row in range(len(coords)):
-        particle = Particle(coords[row, 2], coords[row, 1], (coords[row, 0] / Z_OVERSCALED) + z_offset)
+        position = Position(coords[row, 2], coords[row, 1], (coords[row, 0] / Z_OVERSCALED) + z_offset)
 
-        experiment.particles.add(particle.with_time_point_number(time_point_number))
+        experiment.positions.add(position.with_time_point_number(time_point_number))
 
 
-def _export_file(particles: AbstractSet[Particle], file_path: str, z_offset: int):
-    if len(particles) == 0:
+def _export_file(positions: AbstractSet[Position], file_path: str, z_offset: int):
+    if len(positions) == 0:
         return
-    array = numpy.empty((len(particles), 3), dtype=numpy.int64)
+    array = numpy.empty((len(positions), 3), dtype=numpy.int64)
 
     row = 0
-    for particle in particles:
-        array[row, 2] = round(particle.x)
-        array[row, 1] = round(particle.y)
-        array[row, 0] = round((particle.z - z_offset) * Z_OVERSCALED)
+    for position in positions:
+        array[row, 2] = round(position.x)
+        array[row, 1] = round(position.y)
+        array[row, 0] = round((position.z - z_offset) * Z_OVERSCALED)
         row += 1
 
     numpy.save(file_path, array)

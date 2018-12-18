@@ -1,12 +1,12 @@
 """Some helper function for calculations with angles."""
 import math
 
-from autotrack.core.particles import Particle
+from autotrack.core.positions import Position
 
 
-def direction_2d(particle1: Particle, particle2: Particle) -> float:
-    """Gets the direction from the given particle to the given particle, with 0* pointing upwards."""
-    return (90 + math.degrees(math.atan2(particle2.y - particle1.y, particle2.x - particle1.x))) % 360
+def direction_2d(position1: Position, position2: Position) -> float:
+    """Gets the direction from the given position to the given position, with 0* pointing upwards."""
+    return (90 + math.degrees(math.atan2(position2.y - position1.y, position2.x - position1.x))) % 360
 
 
 def difference(angle1: float, angle2: float) -> float:

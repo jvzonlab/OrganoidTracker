@@ -5,13 +5,13 @@ import numpy
 import pandas
 
 from autotrack.core.experiment import Experiment
-from autotrack.core.particles import Particle
+from autotrack.core.positions import Position
 from autotrack.core.score import Family, Score
 from autotrack.linking.scoring_system import MotherScoringSystem
 
 
 def create(experiment: Experiment, putative_families: List[Family], scoring_system: MotherScoringSystem,
-           actual_mothers: Set[Particle]):
+           actual_mothers: Set[Position]):
     tryout_score = _score(experiment, putative_families[0], scoring_system)
     keys = ["mother"] + tryout_score.keys() + ["total_score", "is_actual_mother"]
 
@@ -30,7 +30,7 @@ def create(experiment: Experiment, putative_families: List[Family], scoring_syst
     i = 0
     data = numpy.zeros([len(scores_of_mother), len(keys)], dtype=numpy.object)
     for mother, score in scores_of_mother.items():
-        if not isinstance(mother, Particle):
+        if not isinstance(mother, Position):
             print(mother)
         data[i, 0] = str(mother)
         for j in range(1, len(keys) - 2):
@@ -55,4 +55,4 @@ def _table_names(keys: List[str]) -> List[str]:
 
 
 def _score(experiment: Experiment, family: Family, scoring_system: MotherScoringSystem) -> Score:
-    return scoring_system.calculate(experiment.image_loader(), experiment.particles, family)
+    return scoring_system.calculate(experiment.image_loader(), experiment.positions, family)

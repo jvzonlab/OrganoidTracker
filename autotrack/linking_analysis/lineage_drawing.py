@@ -5,7 +5,7 @@ from matplotlib import cm
 from matplotlib.axes import Axes
 from matplotlib.collections import LineCollection
 
-from autotrack.core.links import LinkingTrack, ParticleLinks
+from autotrack.core.links import LinkingTrack, PositionLinks
 from autotrack.core.resolution import ImageResolution
 
 # Type definition: a color getter is a function that takes an int (time point) and the linking track, and returns a
@@ -29,9 +29,9 @@ def _get_lineage_drawing_start_time(lineage: LinkingTrack) -> int:
 
 class LineageDrawing:
 
-    links: ParticleLinks
+    links: PositionLinks
 
-    def __init__(self, links: ParticleLinks):
+    def __init__(self, links: PositionLinks):
         self.links = links
 
     def _get_sublineage_draw_data(self, lin_id: LinkingTrack, x_curr_branch, x_end_branch, line_list):
@@ -103,7 +103,7 @@ class LineageDrawing:
                 axes.plot([x_offset + X[0], x_offset + X[0]], T, '-k')
                 if show_cell_id:
                     # print cell id
-                    cell = linking_track.find_first_particle()
+                    cell = linking_track.find_first_position()
                     axes.annotate(f"({cell.x:.1f}, {cell.y:.1f}, {cell.z:.1f})", (x_offset + X[0], T[0]))
             if len(X) == 2:
                 # two x positions, so this a horizontal line indicating division

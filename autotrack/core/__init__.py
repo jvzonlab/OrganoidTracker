@@ -1,4 +1,4 @@
-"""Some base classes. Quick overview: Particles (usually cells, but may also be artifacts) are placed in TimePoints,
+"""Some base classes. Quick overview: Positions (usually cells, but may also be artifacts) are placed in TimePoints,
 which are placed in an Experiment. A TimePoint also stores scores of possible mother-daughter cell combinations.
 An Experiment also stores an ImageLoader and up to two cell links networks (stored as Graph objects)."""
 import re

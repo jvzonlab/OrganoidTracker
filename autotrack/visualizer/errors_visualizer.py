@@ -2,15 +2,15 @@ from typing import List, Optional, Dict, Any
 
 from matplotlib.backend_bases import KeyEvent
 
-from autotrack.core.particles import Particle
+from autotrack.core.positions import Position
 from autotrack.gui.window import Window
 from autotrack.linking_analysis import linking_markers, lineage_error_finder, cell_error_finder
 from autotrack.linking_analysis.lineage_error_finder import LineageWithErrors
 from autotrack.visualizer import activate
-from autotrack.visualizer.particle_list_visualizer import ParticleListVisualizer
+from autotrack.visualizer.position_list_visualizer import PositionListVisualizer
 
 
-class ErrorsVisualizer(ParticleListVisualizer):
+class ErrorsVisualizer(PositionListVisualizer):
     """Shows all errors and warnings in the experiment.
     Press Left/Right to view the previous/next error.
     Press Delete to delete (suppress) the shown error.
@@ -21,37 +21,37 @@ class ErrorsVisualizer(ParticleListVisualizer):
     _current_lineage_index: int = -1
     _total_number_of_warnings: int
 
-    def __init__(self, window: Window, start_particle: Optional[Particle]):
+    def __init__(self, window: Window, start_position: Optional[Position]):
         links = window.get_experiment().links
-        crumb_particles = set()
-        if start_particle is not None:
-            crumb_particles.add(start_particle)
-        if self._get_last_particle() is not None:
-            crumb_particles.add(self._get_last_particle())
-        self._problematic_lineages = lineage_error_finder.get_problematic_lineages(links, crumb_particles)
-        self._total_number_of_warnings = sum((len(lineage.errored_particles) for lineage in self._problematic_lineages))
+        crumb_positions = set()
+        if start_position is not None:
+            crumb_positions.add(start_position)
+        if self._get_last_position() is not None:
+            crumb_positions.add(self._get_last_position())
+        self._problematic_lineages = lineage_error_finder.get_problematic_lineages(links, crumb_positions)
+        self._total_number_of_warnings = sum((len(lineage.errored_positions) for lineage in self._problematic_lineages))
 
-        super().__init__(window, chosen_particle=start_particle, all_particles=[])
+        super().__init__(window, chosen_position=start_position, all_positions=[])
 
-    def _show_closest_or_stored_particle(self, particle: Optional[Particle]):
-        if particle is None:
-            particle = self._get_last_particle()
+    def _show_closest_or_stored_position(self, position: Optional[Position]):
+        if position is None:
+            position = self._get_last_position()
 
-        lineage_index = lineage_error_finder.find_lineage_index_with_crumb(self._problematic_lineages, particle)
+        lineage_index = lineage_error_finder.find_lineage_index_with_crumb(self._problematic_lineages, position)
         if lineage_index is None:
-            # Try again, now with last particle
-            particle = self._get_last_particle()
-            lineage_index = lineage_error_finder.find_lineage_index_with_crumb(self._problematic_lineages, particle)
+            # Try again, now with last position
+            position = self._get_last_position()
+            lineage_index = lineage_error_finder.find_lineage_index_with_crumb(self._problematic_lineages, position)
             if lineage_index is None:
                 return
 
         self._current_lineage_index = lineage_index  # Found the lineage the cell is in
-        self._particle_list = self._problematic_lineages[self._current_lineage_index].errored_particles
+        self._position_list = self._problematic_lineages[self._current_lineage_index].errored_positions
         try:
             # We even found the cell itself
-            self._current_particle_index = self._particle_list.index(particle)
+            self._current_position_index = self._position_list.index(position)
         except ValueError:
-            self._current_particle_index = -1
+            self._current_position_index = -1
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
@@ -62,7 +62,7 @@ class ErrorsVisualizer(ParticleListVisualizer):
             "Navigate//Lineage-Previous lineage (Down)": self.__goto_previous_lineage
         }
 
-    def get_message_no_particles(self):
+    def get_message_no_positions(self):
         if len(self._problematic_lineages) > 0:
             return "No warnings or errors found at position.\n" \
                    "Press the up arrow key to view the first lineage tree with warnings."
@@ -72,13 +72,13 @@ class ErrorsVisualizer(ParticleListVisualizer):
         return "No warnings or errors found in at position." \
                "\nPress the right arrow key to view the first warning in the lineage."
 
-    def get_title(self, particle_list: List[Particle], current_particle_index: int):
-        particle = particle_list[current_particle_index]
-        error = linking_markers.get_error_marker(self._experiment.links, particle)
-        return f"{error.get_severity().name} {current_particle_index + 1} / {len(particle_list)} "\
+    def get_title(self, position_list: List[Position], current_position_index: int):
+        position = position_list[current_position_index]
+        error = linking_markers.get_error_marker(self._experiment.links, position)
+        return f"{error.get_severity().name} {current_position_index + 1} / {len(position_list)} "\
             f" of lineage {self._current_lineage_index + 1} / {len(self._problematic_lineages)} " \
                f"  ({self._total_number_of_warnings} warnings in total)" +\
-            "\n" + error.get_message() + "\n" + str(particle)
+            "\n" + error.get_message() + "\n" + str(position)
 
     def _on_command(self, command: str) -> bool:
         if command == "recheck":
@@ -89,10 +89,10 @@ class ErrorsVisualizer(ParticleListVisualizer):
     def _recheck_errors(self):
         cell_error_finder.apply(self._experiment)
         # Recalculate everything
-        selected_particle = None
-        if 0 <= self._current_particle_index < len(self._particle_list):
-            selected_particle = self._particle_list[self._current_particle_index]
-        activate(ErrorsVisualizer(self.get_window(), selected_particle))
+        selected_position = None
+        if 0 <= self._current_position_index < len(self._position_list):
+            selected_position = self._position_list[self._current_position_index]
+        activate(ErrorsVisualizer(self.get_window(), selected_position))
         self.update_status("Rechecked all cells in the experiment. "
                            "Please note that suppressed warnings remain suppressed.")
 
@@ -114,8 +114,8 @@ class ErrorsVisualizer(ParticleListVisualizer):
         self._current_lineage_index -= 1
         if self._current_lineage_index < 0:
             self._current_lineage_index = len(self._problematic_lineages) - 1
-        self._particle_list = self._problematic_lineages[self._current_lineage_index].errored_particles
-        self._current_particle_index = 0
+        self._position_list = self._problematic_lineages[self._current_lineage_index].errored_positions
+        self._current_position_index = 0
         self.draw_view()
 
     def __goto_next_lineage(self):
@@ -124,32 +124,32 @@ class ErrorsVisualizer(ParticleListVisualizer):
         self._current_lineage_index += 1
         if self._current_lineage_index >= len(self._problematic_lineages):
             self._current_lineage_index = 0
-        self._particle_list = self._problematic_lineages[self._current_lineage_index].errored_particles
-        self._current_particle_index = 0
+        self._position_list = self._problematic_lineages[self._current_lineage_index].errored_positions
+        self._current_position_index = 0
         self.draw_view()
 
     def _exit_view(self):
         from autotrack.visualizer.link_and_position_editor import LinkAndPositionEditor
 
-        if self._current_particle_index < 0 or self._current_particle_index >= len(self._particle_list):
+        if self._current_position_index < 0 or self._current_position_index >= len(self._position_list):
             # Don't know where to go
             data_editor = LinkAndPositionEditor(self._window)
         else:
-            viewed_particle = self._particle_list[self._current_particle_index]
+            viewed_position = self._position_list[self._current_position_index]
             data_editor = LinkAndPositionEditor(self._window,
-                                                time_point_number=viewed_particle.time_point_number(),
-                                                z=int(viewed_particle.z),
-                                                selected_particle=viewed_particle)
+                                                time_point_number=viewed_position.time_point_number(),
+                                                z=int(viewed_position.z),
+                                                selected_position=viewed_position)
         activate(data_editor)
 
     def _suppress_error(self):
-        if self._current_particle_index < 0 or self._current_particle_index >= len(self._particle_list):
+        if self._current_position_index < 0 or self._current_position_index >= len(self._position_list):
             return
-        particle = self._particle_list[self._current_particle_index]
+        position = self._position_list[self._current_position_index]
         links = self._experiment.links
-        error = linking_markers.get_error_marker(links, particle)
-        linking_markers.suppress_error_marker(links, particle, error)
-        del self._particle_list[self._current_particle_index]
+        error = linking_markers.get_error_marker(links, position)
+        linking_markers.suppress_error_marker(links, position, error)
+        del self._position_list[self._current_position_index]
         self.draw_view()
-        self.update_status(f"Suppressed warning for {particle}")
+        self.update_status(f"Suppressed warning for {position}")
 

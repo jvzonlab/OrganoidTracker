@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 
 from autotrack.core import TimePoint
-from autotrack.core.particles import Particle
+from autotrack.core.positions import Position
 from autotrack.linking_analysis import cell_fate_finder
 from autotrack.linking_analysis.cell_fate_finder import CellFateType, CellFate
 from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
@@ -33,7 +33,7 @@ class CellFateVisualizer(ExitableImageVisualizer):
     < in 16   cell will divide in 16 time points
     ~         no events, just movement."""
 
-    _cell_fates: Dict[Particle, CellFate] = dict()
+    _cell_fates: Dict[Position, CellFate] = dict()
 
     def _load_time_point(self, time_point: TimePoint):
         super()._load_time_point(time_point)
@@ -44,17 +44,17 @@ class CellFateVisualizer(ExitableImageVisualizer):
             self._cell_fates = dict()
             return
 
-        particles = self._experiment.particles.of_time_point(time_point)
+        positions = self._experiment.positions.of_time_point(time_point)
         result = dict()
-        for particle in particles:
-            result[particle] = cell_fate_finder.get_fate(self._experiment, particle)
+        for position in positions:
+            result[position] = cell_fate_finder.get_fate(self._experiment, position)
         self._cell_fates = result
 
-    def _draw_particle(self, particle: Particle, color: str, dz: int, dt: int):
+    def _draw_position(self, position: Position, color: str, dz: int, dt: int):
         if dt == 0 and abs(dz) <= 3:
-            cell_fate = self._cell_fates.get(particle)
+            cell_fate = self._cell_fates.get(position)
             if cell_fate is None:
                 cell_fate = CellFate(CellFateType.UNKNOWN, None)
             color = _cell_fate_to_color(cell_fate)
-            self._ax.annotate(_cell_fate_to_text(cell_fate), (particle.x, particle.y), fontsize=8 - abs(dz / 2),
+            self._ax.annotate(_cell_fate_to_text(cell_fate), (position.x, position.y), fontsize=8 - abs(dz / 2),
                               fontweight="bold", color=color, backgroundcolor=(1,1,1,0.8))

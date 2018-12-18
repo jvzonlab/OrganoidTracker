@@ -14,7 +14,7 @@ Parameters: (all sizes are in pixels)
 """
 from autotrack.imaging import tifffolder, io
 from autotrack.config import ConfigFile
-from autotrack.particle_detection import gaussian_detector_for_experiment
+from autotrack.position_detection import gaussian_detector_for_experiment
 from autotrack.core.resolution import ImageResolution
 from autotrack.core.experiment import Experiment
 

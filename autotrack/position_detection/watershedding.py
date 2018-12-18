@@ -8,7 +8,7 @@ import numpy
 from numpy import ndarray
 from scipy.ndimage import morphology
 
-from autotrack.core.particles import Particle
+from autotrack.core.positions import Position
 
 
 def _create_colormap() -> List[Tuple[float, float, float, float]]:
@@ -62,20 +62,20 @@ def watershed_maxima(threshold: ndarray, intensities: ndarray, minimal_size: Tup
     return watershed_labels(threshold, surface, spots, n_spots)
 
 
-def create_labels(particles: Iterable[Particle], output: ndarray):
+def create_labels(positions: Iterable[Position], output: ndarray):
     """Creates a label image using the given labels. This image can be used for a watershed transform, for example.
-    particles: list of particles, must have x/y/z in range of the output image
-    output: integer image, which will contain the labels. label 1 == particle 0, label 2 == particle 1, etc."""
+    positions: list of positions, must have x/y/z in range of the output image
+    output: integer image, which will contain the labels. label 1 == position 0, label 2 == position 1, etc."""
     i = 1
-    for particle in particles:
+    for position in positions:
         try:
-            z = int(particle.z)
+            z = int(position.z)
             if z == -1 or z == output.shape[0]:
-                z = max(0, min(z, output.shape[0] - 1))  # Clamp z when particle is just above or below expected range
-            output[z, int(particle.y), int(particle.x)] = i
+                z = max(0, min(z, output.shape[0] - 1))  # Clamp z when position is just above or below expected range
+            output[z, int(position.y), int(position.x)] = i
             i += 1
         except IndexError:
-            raise ValueError("The images do not match the cells: " + str(particle) + " is outside the image of size " +
+            raise ValueError("The images do not match the cells: " + str(position) + " is outside the image of size " +
                              str((output.shape[2], output.shape[1], output.shape[0])) + ".")
 
 

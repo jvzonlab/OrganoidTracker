@@ -6,17 +6,17 @@ from numpy import ndarray
 
 from autotrack.core import UserError
 from autotrack.core.gaussian import Gaussian
-from autotrack.core.particles import Particle
+from autotrack.core.positions import Position
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
 from autotrack.imaging import bits
-from autotrack.particle_detection import thresholding, watershedding, gaussian_fit, smoothing, missed_cell_finder
+from autotrack.position_detection import thresholding, watershedding, gaussian_fit, smoothing, missed_cell_finder
 from autotrack.visualizer import activate, DisplaySettings
 from autotrack.visualizer.abstract_image_visualizer import AbstractImageVisualizer
 
 
 class DetectionVisualizer(AbstractImageVisualizer):
-    """Visualizer specialized in displaying particle positions.
+    """Visualizer specialized in displaying position positions.
     """
 
     resolution = (2, 0.32, 0.32)
@@ -38,7 +38,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
     def _must_show_other_time_points(self) -> bool:
         return False
 
-    def _draw_error(self, particle: Particle, dz: int):
+    def _draw_error(self, position: Position, dz: int):
         pass  # Don't draw linking errors here, they are not interesting in this view
 
     def get_extra_menu_options(self):
@@ -110,11 +110,11 @@ class DetectionVisualizer(AbstractImageVisualizer):
         if images is None:
             raise UserError("Failed to apply threshold", "Cannot show threshold - no images loaded.")
         images_smoothed = smoothing.get_smoothed(images, self.watershed_transform_smooth_size)
-        particles = list(self._experiment.particles.of_time_point(self._time_point))
+        positions = list(self._experiment.positions.of_time_point(self._time_point))
 
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
         thresholding.advanced_threshold(images, images_smoothed, threshold, self.threshold_block_size,
-                                        self.minimal_size, particles)
+                                        self.minimal_size, positions)
 
         return threshold
 
@@ -150,9 +150,9 @@ class DetectionVisualizer(AbstractImageVisualizer):
         self._display_image(image_stack, watershedding.COLOR_MAP)
 
     def _get_threshold_reconstruction(self, return_intermediate: bool = False) -> Any:
-        particles = list(self._experiment.particles.of_time_point(self._time_point))
-        if len(particles) == 0:
-            raise UserError("Failed to detect cells", "Cannot detect cells - no particle positions loaded.")
+        positions = list(self._experiment.positions.of_time_point(self._time_point))
+        if len(positions) == 0:
+            raise UserError("Failed to detect cells", "Cannot detect cells - no position positions loaded.")
         images = self._get_8bit_images()
         if images is None:
             raise UserError("Failed to detect cells", "Cannot detect cells - no images loaded.")
@@ -161,11 +161,11 @@ class DetectionVisualizer(AbstractImageVisualizer):
         images_smoothed = smoothing.get_smoothed(images, self.watershed_transform_smooth_size)
         threshold = numpy.empty_like(images, dtype=numpy.uint8)
         thresholding.advanced_threshold(images, images_smoothed, threshold, self.threshold_block_size,
-                                        self.minimal_size, particles)
+                                        self.minimal_size, positions)
 
         # Labelling, calculate distance to label
         label_image = numpy.empty_like(images, dtype=numpy.uint16)
-        watershedding.create_labels(particles, label_image)
+        watershedding.create_labels(positions, label_image)
         distance_transform_to_labels = watershedding.distance_transform_to_labels(label_image, self.resolution)
 
         # Distance transform to edge and labels
@@ -176,7 +176,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
 
         # Perform the watershed on the rough threshold
         watershed = watershedding.watershed_labels(threshold, distance_transform.max() - distance_transform,
-                                                   label_image, len(particles))[0]
+                                                   label_image, len(positions))[0]
         self._print_missed_cells(watershed)
 
         if return_intermediate:
@@ -202,7 +202,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
         return gaussian_fit.perform_gaussian_mixture_fit_from_watershed(images, watershed, self.gaussian_fit_smooth_size)
 
     def _display_reconstruction(self, gaussians: List[Gaussian]):
-        self._experiment.remove_particles(self._time_point)
+        self._experiment.remove_positions(self._time_point)
         shape = self._time_point_images.shape  # May be 3D or 4D, depending on what was previously displayed
         canvas = numpy.zeros((shape[0], shape[1], shape[2], 3), dtype=numpy.float64)
 
@@ -211,8 +211,8 @@ class DetectionVisualizer(AbstractImageVisualizer):
         for gaussian in gaussians:
             if gaussian is None:
                 continue
-            self._experiment.particles.add(
-                Particle(gaussian.mu_x, gaussian.mu_y, gaussian.mu_z).with_time_point(self._time_point))
+            self._experiment.positions.add(
+                Position(gaussian.mu_x, gaussian.mu_y, gaussian.mu_z).with_time_point(self._time_point))
             color = colors[i % len(colors)]
             gaussian.draw_colored(canvas, color)
             i += 1
@@ -240,9 +240,9 @@ class DetectionVisualizer(AbstractImageVisualizer):
         super()._on_key_press(event)
 
     def _print_missed_cells(self, watershed: ndarray):
-        particles = self._experiment.particles.of_time_point(self._time_point)
-        if len(particles) == 0:
+        positions = self._experiment.positions.of_time_point(self._time_point)
+        if len(positions) == 0:
             return
-        errors = missed_cell_finder.find_undetected_particles(watershed, particles)
-        for particle, error in errors.items():
-            print("Error at " + str(particle) + ": " + str(error))
+        errors = missed_cell_finder.find_undetected_positions(watershed, positions)
+        for position, error in errors.items():
+            print("Error at " + str(position) + ": " + str(error))

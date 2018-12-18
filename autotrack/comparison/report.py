@@ -4,7 +4,7 @@ import numpy
 from numpy import ndarray
 
 from autotrack.core import TimePoint
-from autotrack.core.particles import Particle, ParticleCollection
+from autotrack.core.positions import Position, PositionCollection
 
 _MAX_SHOWN = 15
 
@@ -84,37 +84,37 @@ class ComparisonReport:
 
     title: str = "Comparison"
     summary: str = ""
-    _details_by_particle: Dict[Particle, str]
-    _particles_by_category: Dict[Category, ParticleCollection]
+    _details_by_position: Dict[Position, str]
+    _positions_by_category: Dict[Category, PositionCollection]
 
     def __init__(self):
-        self._details_by_particle = dict()
-        self._particles_by_category = dict()
+        self._details_by_position = dict()
+        self._positions_by_category = dict()
 
-    def add_data(self, category: Category, particle: Particle, *details: Union[str, Particle]):
+    def add_data(self, category: Category, position: Position, *details: Union[str, Position]):
         """Adds a data point. The """
-        if category not in self._particles_by_category:
-            self._particles_by_category[category] = ParticleCollection()
+        if category not in self._positions_by_category:
+            self._positions_by_category[category] = PositionCollection()
 
         if details:
-            self._details_by_particle[particle] = " ".join(str(detail) for detail in details)
-        self._particles_by_category[category].add(particle)
+            self._details_by_position[position] = " ".join(str(detail) for detail in details)
+        self._positions_by_category[category].add(position)
 
     def __str__(self):
         report = self.title + "\n"
         report += ("-" * len(self.title)) + "\n\n"
         report += self.summary + "\n"
-        for category, particles in self._particles_by_category.items():
-            count = len(particles)
+        for category, positions in self._positions_by_category.items():
+            count = len(positions)
             report += "\n" + category.name + ": ("+str(count)+")\n"
 
             i = 0
-            for particle in particles:
-                particle_str = str(particle)
-                details = self._details_by_particle.get(particle)
+            for position in positions:
+                position_str = str(position)
+                details = self._details_by_position.get(position)
                 if details is not None:
-                    particle_str += " - " + details
-                report += "* " + particle_str + "\n"
+                    position_str += " - " + details
+                report += "* " + position_str + "\n"
                 i += 1
                 if i > _MAX_SHOWN:
                     report += "... " + str(count - _MAX_SHOWN) + " entries not shown\n"
@@ -124,12 +124,12 @@ class ComparisonReport:
     def calculate_statistics(self, true_positives_cat: Category, false_positives_cat: Category,
                              false_negatives_cat: Category) -> Statistics:
         """Calculate statistics using the given categories as false/true positives/negatives."""
-        min_time_point_number = min(self._particles_by_category[true_positives_cat].first_time_point_number(),
-                                    self._particles_by_category[false_positives_cat].first_time_point_number(),
-                                    self._particles_by_category[false_negatives_cat].first_time_point_number())
-        max_time_point_number = max(self._particles_by_category[true_positives_cat].last_time_point_number(),
-                                    self._particles_by_category[false_positives_cat].last_time_point_number(),
-                                    self._particles_by_category[false_negatives_cat].last_time_point_number())
+        min_time_point_number = min(self._positions_by_category[true_positives_cat].first_time_point_number(),
+                                    self._positions_by_category[false_positives_cat].first_time_point_number(),
+                                    self._positions_by_category[false_negatives_cat].first_time_point_number())
+        max_time_point_number = max(self._positions_by_category[true_positives_cat].last_time_point_number(),
+                                    self._positions_by_category[false_positives_cat].last_time_point_number(),
+                                    self._positions_by_category[false_negatives_cat].last_time_point_number())
 
         time_point_count = max_time_point_number - min_time_point_number + 1
         true_positives = numpy.ones(time_point_count, dtype=numpy.uint16)
@@ -137,14 +137,14 @@ class ComparisonReport:
         false_negatives = numpy.ones(time_point_count, dtype=numpy.uint16)
         for i in range(time_point_count):
             time_point = TimePoint(i + min_time_point_number)
-            true_positives[i] = len(self._particles_by_category[true_positives_cat].of_time_point(time_point))
-            false_positives[i] = len(self._particles_by_category[false_positives_cat].of_time_point(time_point))
-            false_negatives[i] = len(self._particles_by_category[false_negatives_cat].of_time_point(time_point))
+            true_positives[i] = len(self._positions_by_category[true_positives_cat].of_time_point(time_point))
+            false_positives[i] = len(self._positions_by_category[false_positives_cat].of_time_point(time_point))
+            false_negatives[i] = len(self._positions_by_category[false_negatives_cat].of_time_point(time_point))
         return Statistics(min_time_point_number, true_positives, false_positives, false_negatives)
 
     def count(self, category: Category) -> int:
-        """Gets how many particles are stored in the given category."""
-        particles = self._particles_by_category.get(category)
-        if particles is None:
+        """Gets how many positions are stored in the given category."""
+        positions = self._positions_by_category.get(category)
+        if positions is None:
             return 0
-        return len(particles)
+        return len(positions)

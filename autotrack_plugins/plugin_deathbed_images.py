@@ -9,13 +9,13 @@ import numpy
 
 from autotrack.core import UserError
 from autotrack.core.image_loader import ImageLoader
-from autotrack.core.links import ParticleLinks
-from autotrack.core.particles import Particle
+from autotrack.core.links import PositionLinks
+from autotrack.core.positions import Position
 from autotrack.gui import dialog
 from autotrack.gui.threading import Task
 from autotrack.gui.window import Window
 from autotrack.imaging import cropper, bits
-from autotrack.linking_analysis import linking_markers, particle_connection_finder
+from autotrack.linking_analysis import linking_markers, position_connection_finder
 
 _MARGIN = 40
 
@@ -27,29 +27,29 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
 
 
 class _Deathbed:
-    """Represents the final positions of a particle before it died."""
+    """Represents the final positions of a position before it died."""
 
-    particles: List[Particle]  # List of particles. Death at index 0, one time point before at index 1, etc.
+    positions: List[Position]  # List of positions. Death at index 0, one time point before at index 1, etc.
 
-    def __init__(self, particles: List[Particle]):
-        self.particles = particles
+    def __init__(self, positions: List[Position]):
+        self.positions = positions
 
     def image_min_x(self) -> int:
-        return int(min((particle.x for particle in self.particles))) - _MARGIN
+        return int(min((position.x for position in self.positions))) - _MARGIN
 
     def image_max_x(self) -> int:
-        return int(max((particle.x for particle in self.particles))) + _MARGIN
+        return int(max((position.x for position in self.positions))) + _MARGIN
 
     def image_min_y(self) -> int:
-        return int(min((particle.y for particle in self.particles))) - _MARGIN
+        return int(min((position.y for position in self.positions))) - _MARGIN
 
     def image_max_y(self) -> int:
-        return int(max((particle.y for particle in self.particles))) + _MARGIN
+        return int(max((position.y for position in self.positions))) + _MARGIN
 
     def get_file_name(self, suffix: str) -> str:
-        death_particle = self.particles[0]
-        return f"x{death_particle.x:.0f}-y{death_particle.y:.0f}-z{death_particle.z:.0f}" \
-            f"-t{death_particle.time_point_number()}{suffix}"
+        death_position = self.positions[0]
+        return f"x{death_position.x:.0f}-y{death_position.y:.0f}-z{death_position.z:.0f}" \
+            f"-t{death_position.time_point_number()}{suffix}"
 
 
 def _generate_deathbed_images(window: Window):
@@ -64,10 +64,10 @@ def _generate_deathbed_images(window: Window):
         return
 
     deathbeds = list()
-    for particle in linking_markers.find_dead_particles(experiment.links):
-        before_death_list = particle_connection_finder.find_previous_positions(particle, experiment.links, steps_back)
+    for position in linking_markers.find_dead_positions(experiment.links):
+        before_death_list = position_connection_finder.find_previous_positions(position, experiment.links, steps_back)
         if before_death_list is not None:
-            deathbeds.append(_Deathbed([particle] + before_death_list))
+            deathbeds.append(_Deathbed([position] + before_death_list))
 
     if len(deathbeds) == 0:
         raise UserError("Deathbed images", "No deathbed images found. Are there no cell deaths, or is the number of"
@@ -100,19 +100,19 @@ class _ImageGeneratingTask(Task):
             min_x, max_x = deathbed.image_min_x(), deathbed.image_max_x()
             min_y, max_y = deathbed.image_min_y(), deathbed.image_max_y()
 
-            out_array = numpy.zeros((len(deathbed.particles), max_y - min_y, max_x - min_x, 3), dtype=numpy.uint8)
+            out_array = numpy.zeros((len(deathbed.positions), max_y - min_y, max_x - min_x, 3), dtype=numpy.uint8)
 
-            for i in range(len(deathbed.particles)):
-                image_index = len(deathbed.particles) - i - 1
-                particle = deathbed.particles[i]
-                image = bits.image_to_8bit(self._image_loader.get_image_stack(particle.time_point()))
-                z = min(max(0, int(particle.z)), len(image) - 1)
+            for i in range(len(deathbed.positions)):
+                image_index = len(deathbed.positions) - i - 1
+                position = deathbed.positions[i]
+                image = bits.image_to_8bit(self._image_loader.get_image_stack(position.time_point()))
+                z = min(max(0, int(position.z)), len(image) - 1)
 
                 cropper.crop_2d(image, min_x, min_y, z, out_array[image_index, :, :, 0])
                 out_array[image_index, :, :, 1] = out_array[image_index, :, :, 0]  # Update green channel too
                 out_array[image_index, :, :, 2] = out_array[image_index, :, :, 0]  # Update blue channel too
 
-                local_pos = int(particle.x - min_x), int(particle.y - min_y)
+                local_pos = int(position.x - min_x), int(position.y - min_y)
                 cv2.circle(out_array[image_index, :, :], local_pos, 3, (255, 0, 0), cv2.FILLED)
 
             tifffile.imsave(path.join(self._output_folder, deathbed.get_file_name(".tif")), out_array, compress=6)

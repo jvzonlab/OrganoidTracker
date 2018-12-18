@@ -5,7 +5,7 @@ from numpy import ndarray
 
 from autotrack.core.image_loader import ImageLoader
 from autotrack.core.mask import create_mask_for, Mask, OutsideImageError
-from autotrack.core.particles import Particle, ParticleCollection
+from autotrack.core.positions import Position, PositionCollection
 from autotrack.core.score import Score, Family
 from autotrack.linking.scoring_system import MotherScoringSystem
 
@@ -13,7 +13,7 @@ from autotrack.linking.scoring_system import MotherScoringSystem
 class RationalScoringSystem(MotherScoringSystem):
     """Rationally-designed score system."""
 
-    def calculate(self, image_loader: ImageLoader, particle_shapes: ParticleCollection, family: Family) -> Score:
+    def calculate(self, image_loader: ImageLoader, position_shapes: PositionCollection, family: Family) -> Score:
         mother = family.mother
         daughter1, daughter2 = family.daughters
 
@@ -21,9 +21,9 @@ class RationalScoringSystem(MotherScoringSystem):
         daughter_image_stack = image_loader.get_image_stack(daughter1.time_point())
 
         try:
-            mother_mask = _get_mask(mother_image_stack, mother, particle_shapes)
-            daughter1_mask = _get_mask(daughter_image_stack, daughter1, particle_shapes)
-            daughter2_mask = _get_mask(daughter_image_stack, daughter2, particle_shapes)
+            mother_mask = _get_mask(mother_image_stack, mother, position_shapes)
+            daughter1_mask = _get_mask(daughter_image_stack, daughter1, position_shapes)
+            daughter2_mask = _get_mask(daughter_image_stack, daughter2, position_shapes)
 
             mother_intensities = _get_nucleus_image(mother_image_stack, mother_mask)
             mother_intensities_next = _get_nucleus_image(daughter_image_stack, mother_mask)
@@ -37,14 +37,14 @@ class RationalScoringSystem(MotherScoringSystem):
             score_daughter_intensities(score, daughter1_intensities, daughter2_intensities,
                                        daughter1_intensities_prev, daughter2_intensities_prev)
             score_daughter_distances(score, mother, daughter1, daughter2)
-            score_using_volumes(score, particle_shapes, mother, daughter1, daughter2)
+            score_using_volumes(score, position_shapes, mother, daughter1, daughter2)
             return score
         except OutsideImageError:
             print("No score for " + str(mother) + ": outside image")
             return Score()
 
 
-def score_daughter_distances(score: Score, mother: Particle, daughter1: Particle, daughter2: Particle):
+def score_daughter_distances(score: Score, mother: Position, daughter1: Position, daughter2: Position):
     m_d1_distance = mother.distance_squared(daughter1)
     m_d2_distance = mother.distance_squared(daughter2)
     shorter_distance = m_d1_distance if m_d1_distance < m_d2_distance else m_d2_distance
@@ -76,7 +76,7 @@ def score_daughter_intensities(score: Score, daughter1_intensities: ndarray, dau
         score.daughters_intensity_delta -= 1
 
 
-def score_mother_intensities(score: Score, mother: Particle, mother_intensities: ndarray, mother_intensities_next: ndarray):
+def score_mother_intensities(score: Score, mother: Position, mother_intensities: ndarray, mother_intensities_next: ndarray):
     """Mother cell must have high intensity """
 
     # Intensity and contrast
@@ -98,17 +98,17 @@ def score_mother_intensities(score: Score, mother: Particle, mother_intensities:
         score.mother_intensity_delta = -1
 
 
-def score_using_volumes(score: Score, particles: ParticleCollection, mother: Particle, daughter1: Particle, daughter2: Particle):
+def score_using_volumes(score: Score, positions: PositionCollection, mother: Position, daughter1: Position, daughter2: Position):
     score.daughters_volume = 0
 
-    mother_shape = particles.get_shape(mother)
+    mother_shape = positions.get_shape(mother)
 
     score.mother_volume = -10
     if mother_shape.is_unknown():
         return
 
-    daughter1_shape = particles.get_shape(daughter1)
-    daughter2_shape = particles.get_shape(daughter2)
+    daughter1_shape = positions.get_shape(daughter1)
+    daughter2_shape = positions.get_shape(daughter2)
 
     if daughter1_shape.is_unknown() or daughter2_shape.is_unknown():
         return  # Too close to edge
@@ -123,13 +123,13 @@ def score_using_volumes(score: Score, particles: ParticleCollection, mother: Par
 
 
 def _get_nucleus_image(image_stack: ndarray, mask: Mask) -> ndarray:
-    """Gets the 2D image belonging to the particle. If the particle lays just above or below the image stack, the
+    """Gets the 2D image belonging to the position. If the position lays just above or below the image stack, the
     nearest image is returned."""
     return mask.create_masked_and_normalized_image(image_stack)
 
 
-def _get_mask(image_stack: ndarray, particle: Particle, shapes: ParticleCollection) -> Mask:
-    shape = shapes.get_shape(particle)
+def _get_mask(image_stack: ndarray, position: Position, shapes: PositionCollection) -> Mask:
+    shape = shapes.get_shape(position)
     mask = create_mask_for(image_stack)
-    shape.draw_mask(mask, particle.x, particle.y, particle.z)
+    shape.draw_mask(mask, position.x, position.y, position.z)
     return mask

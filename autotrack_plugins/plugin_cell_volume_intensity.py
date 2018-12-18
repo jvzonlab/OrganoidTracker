@@ -5,13 +5,13 @@ from matplotlib.figure import Figure
 
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import ParticleLinks
-from autotrack.core.particles import Particle
+from autotrack.core.links import PositionLinks
+from autotrack.core.positions import Position
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
 from autotrack.linking import cell_division_finder
 
-GetStatistic = Callable[[Experiment, Particle], float]  # A function that gets some statistic of a cell, like its volume
+GetStatistic = Callable[[Experiment, Position], float]  # A function that gets some statistic of a cell, like its volume
 PointList = Tuple[List[float], List[float]]  # A list of x values and a list of y values
 
 
@@ -36,16 +36,16 @@ def _show_cell_intensities(window: Window):
     dialog.popup_figure(window.get_gui_experiment(), draw)
 
 
-def _get_volume(experiment: Experiment, particle: Particle) -> Optional[float]:
-    shape = experiment.particles.get_shape(particle)
+def _get_volume(experiment: Experiment, position: Position) -> Optional[float]:
+    shape = experiment.positions.get_shape(position)
     try:
         return shape.volume()
     except NotImplementedError:
         return None
 
 
-def _get_intensity(experiment: Experiment, particle: Particle) -> Optional[float]:
-    shape = experiment.particles.get_shape(particle)
+def _get_intensity(experiment: Experiment, position: Position) -> Optional[float]:
+    shape = experiment.positions.get_shape(position)
     try:
         return shape.intensity()
     except ValueError:
@@ -91,25 +91,25 @@ def _plot_intensities(experiment: Experiment, figure: Figure, mi_start=0, line_c
                       starting_time_point)
 
 
-def _data_into_past_until_division(experiment: Experiment, starting_point: Particle, links: ParticleLinks,
+def _data_into_past_until_division(experiment: Experiment, starting_point: Position, links: PositionLinks,
                                    func: GetStatistic) -> PointList:
-    particle = starting_point
+    position = starting_point
     x_values = []
     y_values = []
-    while particle is not None:
-        y_value = func(experiment, particle)
+    while position is not None:
+        y_value = func(experiment, position)
         if y_value is not None:
-            x_values.append(particle.time_point_number() - starting_point.time_point_number())
+            x_values.append(position.time_point_number() - starting_point.time_point_number())
             y_values.append(y_value)
 
-        particle = _get_previous(particle, links)
+        position = _get_previous(position, links)
     return x_values, y_values
 
 
-def _get_previous(particle: Particle, links: ParticleLinks) -> Optional[Particle]:
+def _get_previous(position: Position, links: PositionLinks) -> Optional[Position]:
 
     # Find the single previous position
-    previous_positions = links.find_pasts(particle)
+    previous_positions = links.find_pasts(position)
     if len(previous_positions) != 1:
         return None
     previous = previous_positions.pop()

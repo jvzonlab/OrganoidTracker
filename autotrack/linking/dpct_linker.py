@@ -1,4 +1,4 @@
-"""Used to create links between particles at different time points. Supports cell divisions. Based on
+"""Used to create links between positions at different time points. Supports cell divisions. Based on
 
 C. Haubold, J. Ales, S. Wolf, F. A. Hamprecht. A Generalized Successive Shortest Paths Solver for Tracking Dividing
 Targets. ECCV 2016 Proceedings.
@@ -9,105 +9,105 @@ import dpct
 import math
 from typing import Dict, List, Iterable
 
-from autotrack.core.links import ParticleLinks
-from autotrack.core.particles import Particle, ParticleCollection
+from autotrack.core.links import PositionLinks
+from autotrack.core.positions import Position, PositionCollection
 from autotrack.core.score import ScoreCollection, Score, ScoredFamily
 
 
-class _ParticleToId:
-    __particle_to_id: Dict[Particle, int]
-    __id_to_particle: List[Particle]
+class _PositionToId:
+    __position_to_id: Dict[Position, int]
+    __id_to_position: List[Position]
 
     def __init__(self):
-        self.__particle_to_id = dict()
-        self.__id_to_particle = [None, None]  # So the first particle will get index 2
+        self.__position_to_id = dict()
+        self.__id_to_position = [None, None]  # So the first position will get index 2
 
-    def id(self, particle: Particle) -> int:
-        """Gets the id of the particle, or creates a new id of the particle doesn't have one yet"""
-        id = self.__particle_to_id.get(particle)
+    def id(self, position: Position) -> int:
+        """Gets the id of the position, or creates a new id of the position doesn't have one yet"""
+        id = self.__position_to_id.get(position)
         if id is None:
-            id = len(self.__id_to_particle)  # This will be the new id
-            self.__id_to_particle.append(particle)
-            self.__particle_to_id[particle] = id
+            id = len(self.__id_to_position)  # This will be the new id
+            self.__id_to_position.append(position)
+            self.__position_to_id[position] = id
         return id
 
-    def particle(self, id: int) -> Particle:
-        """Gets the particle with the given id. Throws IndexError for invalid ids."""
-        return self.__id_to_particle[id]
+    def position(self, id: int) -> Position:
+        """Gets the position with the given id. Throws IndexError for invalid ids."""
+        return self.__id_to_position[id]
 
 
-def _to_links(particle_ids: _ParticleToId, results: Dict) -> ParticleLinks:
-    links = ParticleLinks()
+def _to_links(position_ids: _PositionToId, results: Dict) -> PositionLinks:
+    links = PositionLinks()
 
     for entry in results["linkingResults"]:
         if not entry["value"]:
             continue  # Link was not detected
-        particle1 = particle_ids.particle(entry["src"])
-        particle2 = particle_ids.particle(entry["dest"])
-        links.add_link(particle1, particle2)
+        position1 = position_ids.position(entry["src"])
+        position2 = position_ids.position(entry["dest"])
+        links.add_link(position1, position2)
 
     return links
 
 
-def run(particles: ParticleCollection, starting_links: ParticleLinks, scores: ScoreCollection) -> ParticleLinks:
-    particle_ids = _ParticleToId()
+def run(positions: PositionCollection, starting_links: PositionLinks, scores: ScoreCollection) -> PositionLinks:
+    position_ids = _PositionToId()
     weights = {"weights": [
         10,  # multiplier for linking features?
         150,  # multiplier for detection of a cell - the higher, the more expensive to omit a cell
         30,  # multiplier for division features - the higher, the cheaper it is to create a cell division
         150,  # multiplier for appearance features - the higher, the more expensive it is to create a cell out of nothing
         100]}  # multiplier for disappearance - the higher, the more expensive an end-of-lineage is
-    input = _create_dpct_graph(particle_ids, starting_links, scores, particles,
-                               particles.first_time_point_number(), particles.last_time_point_number())
+    input = _create_dpct_graph(position_ids, starting_links, scores, positions,
+                               positions.first_time_point_number(), positions.last_time_point_number())
     results = dpct.trackFlowBased(input, weights)
-    return _to_links(particle_ids, results)
+    return _to_links(position_ids, results)
 
 
-def _scores_involving(daughter: Particle, scores: Iterable[ScoredFamily]) -> Iterable[ScoredFamily]:
-    """Gets all scores where the given particle plays the role as a daughter in the given score."""
+def _scores_involving(daughter: Position, scores: Iterable[ScoredFamily]) -> Iterable[ScoredFamily]:
+    """Gets all scores where the given position plays the role as a daughter in the given score."""
     for score in scores:
         if daughter in score.family.daughters:
             yield score
 
 
-def _create_dpct_graph(particle_ids: _ParticleToId, starting_links: ParticleLinks, scores: ScoreCollection,
-                       shapes: ParticleCollection, min_time_point: int, max_time_point: int) -> Dict:
+def _create_dpct_graph(position_ids: _PositionToId, starting_links: PositionLinks, scores: ScoreCollection,
+                       shapes: PositionCollection, min_time_point: int, max_time_point: int) -> Dict:
     segmentation_hypotheses = []
-    for particle in starting_links.find_all_particles():
-        appearance_penalty = 1 if particle.time_point_number() > min_time_point else 0
-        disappearance_penalty = 1 if particle.time_point_number() < max_time_point else 0
+    for position in starting_links.find_all_positions():
+        appearance_penalty = 1 if position.time_point_number() > min_time_point else 0
+        disappearance_penalty = 1 if position.time_point_number() < max_time_point else 0
 
         map = {
-            "id": particle_ids.id(particle),
+            "id": position_ids.id(position),
             "features": [[1.0], [0.0]],  # Assigning a detection to zero cells costs 1, using it is free
             "appearanceFeatures": [[0], [appearance_penalty]],  # Using an appearance is expensive
             "disappearanceFeatures": [[0], [disappearance_penalty]],  # Using a dissappearance is expensive
-            "timestep": [particle.time_point_number(), particle.time_point_number()]
+            "timestep": [position.time_point_number(), position.time_point_number()]
         }
 
         # Add division score
-        division_score = _max_score(scores.of_mother(particle))
+        division_score = _max_score(scores.of_mother(position))
         if not division_score.is_unlikely_mother():
             map["divisionFeatures"] = [[0], [-division_score.total()]]
         segmentation_hypotheses.append(map)
 
     linking_hypotheses = []
-    for particle1, particle2 in starting_links.find_all_links():
-        # Make sure particle1 is earlier in time
-        if particle1.time_point_number() > particle2.time_point_number():
-            particle1, particle2 = particle2, particle1
+    for position1, position2 in starting_links.find_all_links():
+        # Make sure position1 is earlier in time
+        if position1.time_point_number() > position2.time_point_number():
+            position1, position2 = position2, position1
 
-        volume1, volume2 = shapes.get_shape(particle1).volume(), shapes.get_shape(particle2).volume()
-        link_penalty = math.sqrt(particle1.distance_squared(particle2))
+        volume1, volume2 = shapes.get_shape(position1).volume(), shapes.get_shape(position2).volume()
+        link_penalty = math.sqrt(position1.distance_squared(position2))
         link_penalty += abs(volume1 - volume2) ** (1 / 3)
 
-        mother_score = _max_score(_scores_involving(particle2, scores.of_mother(particle1)))
+        mother_score = _max_score(_scores_involving(position2, scores.of_mother(position1)))
 
         if not mother_score.is_unlikely_mother():
             link_penalty /= 2
         linking_hypotheses.append({
-            "src": particle_ids.id(particle1),
-            "dest": particle_ids.id(particle2),
+            "src": position_ids.id(position1),
+            "dest": position_ids.id(position2),
             "features": [[0],  # Sending zero cells through the link costs nothing
                          [link_penalty]  # Sending one cell through the link costs this
                          ]

@@ -5,9 +5,9 @@ import cv2
 import numpy
 from numpy import ndarray
 
-from autotrack.core.particles import Particle
-from autotrack.particle_detection import watershedding, iso_intensity_curvature
-from autotrack.particle_detection.iso_intensity_curvature import ImageDerivatives
+from autotrack.core.positions import Position
+from autotrack.position_detection import watershedding, iso_intensity_curvature
+from autotrack.position_detection.iso_intensity_curvature import ImageDerivatives
 
 
 
@@ -50,7 +50,7 @@ def watershedded_threshold(image_8bit: ndarray, image_8bit_smoothed: ndarray, ou
 
 
 def advanced_threshold(image_8bit: ndarray, image_8bit_smoothed: ndarray, out: ndarray, block_size: int,
-                       watershed_size: Tuple[int, int, int], particles: Iterable[Particle]):
+                       watershed_size: Tuple[int, int, int], positions: Iterable[Position]):
     watershedded_threshold(image_8bit, image_8bit_smoothed, out, block_size, watershed_size)
 
     curvature_out = numpy.full_like(image_8bit, 255, dtype=numpy.uint8)
@@ -59,17 +59,17 @@ def advanced_threshold(image_8bit: ndarray, image_8bit_smoothed: ndarray, out: n
 
     fill_threshold(out)
     background_removal(image_8bit, out)
-    _draw_crosses(particles, out)
+    _draw_crosses(positions, out)
 
 
-def _draw_crosses(particles: Iterable[Particle], out: ndarray):
-    """Draws squares around the known particle positions, so that they are surely included in the threshold."""
-    for particle in particles:
-        z = int(particle.z)
+def _draw_crosses(positions: Iterable[Position], out: ndarray):
+    """Draws squares around the known position positions, so that they are surely included in the threshold."""
+    for position in positions:
+        z = int(position.z)
         if z < 0 or z >= len(out):
             continue
-        out[z, int(particle.y - 3):int(particle.y + 3), int(particle.x - 10):int(particle.x + 10)] = 255
-        out[z, int(particle.y - 10):int(particle.y + 10), int(particle.x - 3):int(particle.x + 3)] = 255
+        out[z, int(position.y - 3):int(position.y + 3), int(position.x - 10):int(position.x + 10)] = 255
+        out[z, int(position.y - 10):int(position.y + 10), int(position.x - 3):int(position.x + 3)] = 255
 
 
 def _open(threshold: ndarray):

@@ -25,7 +25,7 @@ Command-line:
   data.
 * `autotrack_create_links.py` - uses a cell positions file to link cells from different time points together.
 * `autotrack_extract_mother_scores.py` - creates a CSV file, showing how the mother scores are built up.
-* `autotrack_compare_positions.py` - compare two sets of particle detection data
+* `autotrack_compare_positions.py` - compare two sets of position detection data
 * `autotrack_compare_links.py` - compare two sets of linking data.
 
 The command-line scripts have documentation included inside themselves. The visual scripts are all essentially the same,

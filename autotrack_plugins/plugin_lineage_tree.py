@@ -1,7 +1,7 @@
 from typing import Dict, Any, Tuple, Set
 
 from autotrack.core import UserError
-from autotrack.core.links import LinkingTrack, ParticleLinks
+from autotrack.core.links import LinkingTrack, PositionLinks
 from autotrack.core.resolution import ImageResolution
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
@@ -26,7 +26,7 @@ def _show_lineage_tree(window: Window):
 
 
 def _get_track_x(linking_track: LinkingTrack):
-    return linking_track.find_first_particle().x
+    return linking_track.find_first_position().x
 
 
 class LineageTreeVisualizer(Visualizer):
@@ -44,7 +44,7 @@ class LineageTreeVisualizer(Visualizer):
             if track in tracks_with_errors:
                 return 0.7, 0.7, 0.7
             if track.max_time_point_number() - time_point_number < 10 and\
-                    linking_markers.get_track_end_marker(links, track.find_last_particle()) == EndMarker.DEAD:
+                    linking_markers.get_track_end_marker(links, track.find_last_position()) == EndMarker.DEAD:
                 return 1, 0, 0
             return 0, 0, 0
 
@@ -61,8 +61,8 @@ class LineageTreeVisualizer(Visualizer):
     def _find_tracks_with_errors(self) -> Set[LinkingTrack]:
         links = self._experiment.links
         tracks_with_errors = set()
-        for particle in linking_markers.find_errored_particles(links):
-            track = links.get_track(particle)
+        for position in linking_markers.find_errored_positions(links):
+            track = links.get_track(position)
             if track is not None:
                 tracks_with_errors.add(track)
                 for next_track in track.get_next_tracks():

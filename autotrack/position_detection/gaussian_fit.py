@@ -12,7 +12,7 @@ from numpy import ndarray
 from autotrack.core.bounding_box import bounding_box_from_mahotas, BoundingBox
 from autotrack.core.gaussian import Gaussian
 from autotrack.core.mask import create_mask_for
-from autotrack.particle_detection import smoothing, ellipse_cluster
+from autotrack.position_detection import smoothing, ellipse_cluster
 
 
 class _ModelAndImageDifference:
@@ -117,9 +117,9 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
     ellipse_stacks = ellipse_cluster.get_ellipse_stacks_from_watershed(watershed_image)
     clusters = ellipse_cluster.find_overlapping_stacks(ellipse_stacks)
 
-    # Find out where the particles are
+    # Find out where the positions are
     bounding_boxes = mahotas.labeled.bbox(watershed_image.astype(numpy.int32))
-    particle_centers = mahotas.center_of_mass(image, watershed_image)
+    position_centers = mahotas.center_of_mass(image, watershed_image)
 
     all_gaussians: List[Optional[Gaussian]] = [None] * len(ellipse_stacks)  # Initialize empty list
 
@@ -139,7 +139,7 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
         for cell_id in cell_ids:
             mask.add_from_labeled(watershed_image, cell_id + 1)  # Background is 0, so cell 0 uses color 1
 
-            center_zyx = particle_centers[cell_id + 1]
+            center_zyx = position_centers[cell_id + 1]
             intensity = image[int(center_zyx[0]), int(center_zyx[1]), int(center_zyx[2])]
             gaussians.append(Gaussian(intensity, center_zyx[2], center_zyx[1], center_zyx[0], 50, 50, 2, 0, 0, 0))
         mask.dilate_xy(blur_radius // 2)

@@ -7,11 +7,11 @@ from typing import List, Any, Optional, Dict
 import numpy
 
 from autotrack.core import UserError
-from autotrack.core.links import ParticleLinks
-from autotrack.core.particles import Particle
+from autotrack.core.links import PositionLinks
+from autotrack.core.positions import Position
 
 
-def export_links(links: ParticleLinks, output_folder: str, comparison_folder: Optional[str] = None):
+def export_links(links: PositionLinks, output_folder: str, comparison_folder: Optional[str] = None):
     """Exports the links of the experiment in Guizela's file format."""
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
@@ -30,45 +30,45 @@ class _TrackExporter:
     """Used to export tracks in Guizela's file format, preferably using the original track ids."""
 
     _next_track_id: int = 0
-    _links: ParticleLinks
+    _links: PositionLinks
 
     _mother_daughter_pairs: List[List[int]]
     _tracks_by_id: Dict[int, Any]
 
-    def __init__(self, links: ParticleLinks):
+    def __init__(self, links: PositionLinks):
         self._links = links
         self._mother_daughter_pairs = []
         self._tracks_by_id = {}
 
         # Convert graph to list of tracks
-        for particle in self._links.find_appeared_cells():
-            self._add_track_including_child_tracks(particle, self._get_new_track_id())
+        for position in self._links.find_appeared_cells():
+            self._add_track_including_child_tracks(position, self._get_new_track_id())
 
-    def _add_track_including_child_tracks(self, particle: Particle, track_id: int):
-        """Exports a track, starting from the first particle position in the track."""
+    def _add_track_including_child_tracks(self, position: Position, track_id: int):
+        """Exports a track, starting from the first position position in the track."""
         _allow_loading_classes_without_namespace()
         import track_lib_v4
 
-        track = track_lib_v4.Track(x=numpy.array([particle.x, particle.y, particle.z]), t=particle.time_point_number())
+        track = track_lib_v4.Track(x=numpy.array([position.x, position.y, position.z]), t=position.time_point_number())
 
         while True:
-            future_particles = self._links.find_futures(particle)
-            if len(future_particles) == 2:
+            future_positions = self._links.find_futures(position)
+            if len(future_positions) == 2:
                 # Division: end current track and start two new ones
-                daughter_1 = future_particles.pop()
-                daughter_2 = future_particles.pop()
+                daughter_1 = future_positions.pop()
+                daughter_2 = future_positions.pop()
                 track_id_1 = self._get_new_track_id()
                 track_id_2 = self._get_new_track_id()
                 self._mother_daughter_pairs.append([track_id, track_id_1, track_id_2])
                 self._add_track_including_child_tracks(daughter_1, track_id_1)
                 self._add_track_including_child_tracks(daughter_2, track_id_2)
                 break
-            if len(future_particles) == 0:
+            if len(future_positions) == 0:
                 break  # End of track
 
             # Add point to track
-            particle = future_particles.pop()
-            track.add_point(x=numpy.array([particle.x, particle.y, particle.z]), t=particle.time_point_number())
+            position = future_positions.pop()
+            track.add_point(x=numpy.array([position.x, position.y, position.z]), t=position.time_point_number())
 
         self._tracks_by_id[track_id] = track
 

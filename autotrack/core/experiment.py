@@ -4,8 +4,8 @@ from numpy import ndarray
 
 from autotrack.core import TimePoint, Name, UserError, min_none, max_none
 from autotrack.core.image_loader import ImageLoader
-from autotrack.core.links import ParticleLinks
-from autotrack.core.particles import Particle, ParticleCollection
+from autotrack.core.links import PositionLinks
+from autotrack.core.positions import Position, PositionCollection
 from autotrack.core.data_axis import DataAxisCollection
 from autotrack.core.resolution import ImageResolution
 from autotrack.core.score import ScoreCollection
@@ -55,9 +55,9 @@ class Experiment:
     details of the experiment."""
 
     # Note: none of the fields may be None after __init__ is called
-    _particles: ParticleCollection
+    _positions: PositionCollection
     scores: ScoreCollection
-    _links: ParticleLinks
+    _links: PositionLinks
     _image_loader: ImageLoader = ImageLoader()
     _name: Name
     data_axes: DataAxisCollection
@@ -65,35 +65,35 @@ class Experiment:
 
     def __init__(self):
         self._name = Name()
-        self._particles = ParticleCollection()
+        self._positions = PositionCollection()
         self.scores = ScoreCollection()
         self.data_axes = DataAxisCollection()
-        self._links = ParticleLinks()
+        self._links = PositionLinks()
 
-    def remove_particle(self, particle: Particle):
-        """Removes both a particle and its links from the experiment."""
-        self._particles.detach_particle(particle)
-        self._links.remove_links_of_particle(particle)
+    def remove_position(self, position: Position):
+        """Removes both a position and its links from the experiment."""
+        self._positions.detach_position(position)
+        self._links.remove_links_of_position(position)
 
-    def move_particle(self, old_position: Particle, position_new: Particle) -> bool:
-        """Moves the position of a particle, preserving any links. (So it's different from remove-and-readd.) The shape
-        of a particle is not preserved, though. Throws ValueError when the particle is moved to another time point. If
-        the new position has not time point specified, it is set to the time point o the existing particle."""
+    def move_position(self, old_position: Position, position_new: Position) -> bool:
+        """Moves the position of a position, preserving any links. (So it's different from remove-and-readd.) The shape
+        of a position is not preserved, though. Throws ValueError when the position is moved to another time point. If
+        the new position has not time point specified, it is set to the time point o the existing position."""
         position_new.with_time_point_number(old_position.time_point_number())  # Make sure both have the same time point
 
         # Replace in linking graphs
-        self._links.replace_particle(old_position, position_new)
+        self._links.replace_position(old_position, position_new)
 
-        # Replace in particle collection
-        self._particles.detach_particle(old_position)
-        self._particles.add(position_new)
+        # Replace in position collection
+        self._positions.detach_position(old_position)
+        self._positions.add(position_new)
         return True
 
-    def remove_particles(self, time_point: TimePoint):
-        """Removes the particles and links of a given time point."""
-        for particle in self._particles.of_time_point(time_point):
-            self._links.remove_links_of_particle(particle)
-        self._particles.detach_all_for_time_point(time_point)
+    def remove_positions(self, time_point: TimePoint):
+        """Removes the positions and links of a given time point."""
+        for position in self._positions.of_time_point(time_point):
+            self._links.remove_links_of_position(position)
+        self._positions.detach_all_for_time_point(time_point)
 
     def get_time_point(self, time_point_number: int) -> TimePoint:
         """Gets the time point with the given number. Throws ValueError if no such time point exists. This method is
@@ -107,15 +107,15 @@ class Experiment:
         return TimePoint(time_point_number)
 
     def first_time_point_number(self) -> Optional[int]:
-        """Gets the first time point of the experiment where there is data (images and/or particles)."""
+        """Gets the first time point of the experiment where there is data (images and/or positions)."""
         return min_none(self._image_loader.first_time_point_number(),
-                        self._particles.first_time_point_number(),
+                        self._positions.first_time_point_number(),
                         self.data_axes.first_time_point_number())
 
     def last_time_point_number(self) -> Optional[int]:
-        """Gets the last time point (inclusive) of the experiment where there is data (images and/or particles)."""
+        """Gets the last time point (inclusive) of the experiment where there is data (images and/or positions)."""
         return max_none(self._image_loader.last_time_point_number(),
-                        self._particles.last_time_point_number(),
+                        self._positions.last_time_point_number(),
                         self.data_axes.last_time_point_number())
 
     def get_previous_time_point(self, time_point: TimePoint) -> TimePoint:
@@ -171,9 +171,9 @@ class Experiment:
         return self._image_resolution
 
     @property
-    def particles(self) -> ParticleCollection:
-        """Gets all particles of all time points."""
-        return self._particles
+    def positions(self) -> PositionCollection:
+        """Gets all positions of all time points."""
+        return self._positions
 
     @property
     def name(self) -> Name:
@@ -181,16 +181,16 @@ class Experiment:
         return self._name
 
     @property
-    def links(self) -> ParticleLinks:
-        """Gets all links between the particles of different time points."""
+    def links(self) -> PositionLinks:
+        """Gets all links between the positions of different time points."""
         # Using a property to prevent someone from setting links to None
         return self._links
 
     @links.setter
-    def links(self, links: ParticleLinks):
+    def links(self, links: PositionLinks):
         """Sets the links to the given value. May not be None."""
-        if not isinstance(links, ParticleLinks):
-            raise ValueError("links must be a ParticleLinks object, was " + repr(links))
+        if not isinstance(links, PositionLinks):
+            raise ValueError("links must be a PositionLinks object, was " + repr(links))
         self._links = links
 
     @property

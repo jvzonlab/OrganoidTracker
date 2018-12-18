@@ -5,8 +5,8 @@ import numpy
 from scipy import interpolate
 
 from autotrack.core import TimePoint
-from autotrack.core.links import ParticleLinks
-from autotrack.core.particles import Particle
+from autotrack.core.links import PositionLinks
+from autotrack.core.positions import Position
 
 
 class DataAxisPosition:
@@ -23,7 +23,7 @@ class DataAxisPosition:
 
 
 class DataAxis:
-    """A curve (curved line) trough the particles. This can be used to measure how far the particles are along this
+    """A curve (curved line) trough the positions. This can be used to measure how far the positions are along this
      curve."""
 
     _x_list: List[float]
@@ -78,7 +78,7 @@ class DataAxis:
         y_values = points[1]
         return x_values, y_values
 
-    def to_position_on_axis(self, particle: Particle) -> Optional[DataAxisPosition]:
+    def to_position_on_axis(self, position: Position) -> Optional[DataAxisPosition]:
         """Gets the closest position on the axes and the distance to the axes, both in pixels. Returns None if the path
         has fewer than 2 points."""
         x_values, y_values = self.get_interpolation_2d()
@@ -93,8 +93,8 @@ class DataAxis:
             line_y1 = y_values[i - 1]
             line_x2 = x_values[i]
             line_y2 = y_values[i]
-            distance_squared = _distance_to_line_segment_squared(line_x1, line_y1, line_x2, line_y2, particle.x,
-                                                                 particle.y)
+            distance_squared = _distance_to_line_segment_squared(line_x1, line_y1, line_x2, line_y2, position.x,
+                                                                 position.y)
             if min_distance_to_line_squared is None or distance_squared < min_distance_to_line_squared:
                 min_distance_to_line_squared = distance_squared
                 closest_line_index = i
@@ -107,7 +107,7 @@ class DataAxis:
         # Calculate length on line segment
         distance_to_start_of_line_squared = _distance_squared(x_values[closest_line_index - 1],
                                                               y_values[closest_line_index - 1],
-                                                              particle.x, particle.y)
+                                                              position.x, position.y)
         distance_on_line = numpy.sqrt(distance_to_start_of_line_squared - min_distance_to_line_squared)
 
         raw_path_position = combined_length_of_previous_lines + distance_on_line
@@ -173,7 +173,7 @@ class DataAxis:
                 self._interpolation = None  # Interpolation is now outdated
                 return
 
-    def update_offset_for_particles(self, particles: Iterable[Particle]):
+    def update_offset_for_positions(self, positions: Iterable[Position]):
         """Updates the offset of this crypt axis such that the lowest path position that is ever returned by
         get_path_position_2d is exactly 0.
         """
@@ -181,16 +181,16 @@ class DataAxis:
             return  # Too small path to update
 
         current_lowest_position = None
-        for particle in particles:
-            path_position = self.to_position_on_axis(particle).pos
+        for position in positions:
+            path_position = self.to_position_on_axis(position).pos
             if current_lowest_position is None or path_position < current_lowest_position:
                 current_lowest_position = path_position
-        if current_lowest_position is not None:  # Don't do anything if the list of particles was empty
+        if current_lowest_position is not None:  # Don't do anything if the list of positions was empty
             self._offset += current_lowest_position
 
     def set_offset(self, offset: float):
         """Manually sets the offset used in calls to get_path_position_2d and path_position_to_xy. See also
-        update_offset_for_particles."""
+        update_offset_for_positions."""
         self._offset = float(offset)
 
     def get_offset(self):
@@ -248,26 +248,26 @@ class DataAxisCollection:
         for i, data_axis in enumerate(data_axes):
             yield i + 1, data_axis
 
-    def _to_position_on_axis(self, particle: Particle) -> Optional[DataAxisPosition]:
+    def _to_position_on_axis(self, position: Position) -> Optional[DataAxisPosition]:
         # Find the closest axis, return position on that axis
         lowest_distance_position = None
-        for axis_id, data_axis in self.of_time_point(particle.time_point()):
-            position = data_axis.to_position_on_axis(particle)
-            if position is None:
+        for axis_id, data_axis in self.of_time_point(position.time_point()):
+            axis_position = data_axis.to_position_on_axis(position)
+            if axis_position is None:
                 continue
-            position.axis_id = axis_id
-            if lowest_distance_position is None or position.distance < lowest_distance_position.distance:
-                lowest_distance_position = position
+            axis_position.axis_id = axis_id
+            if lowest_distance_position is None or axis_position.distance < lowest_distance_position.distance:
+                lowest_distance_position = axis_position
         return lowest_distance_position
 
-    def to_position_on_original_axis(self, links: ParticleLinks, particle: Particle) -> Optional[DataAxisPosition]:
-        """Gets the position on the axis that was closest in the first time point this particle appeared. In this way,
-        every particle is assigned to a single axis, and will never switch to another axis during its lifetime."""
-        first_particle = links.get_first_position_of(particle)
-        first_axis_position = self._to_position_on_axis(first_particle)
-        for axis_id, axis in self.of_time_point(particle.time_point()):
+    def to_position_on_original_axis(self, links: PositionLinks, position: Position) -> Optional[DataAxisPosition]:
+        """Gets the position on the axis that was closest in the first time point this position appeared. In this way,
+        every position is assigned to a single axis, and will never switch to another axis during its lifetime."""
+        first_position = links.get_first_position_of(position)
+        first_axis_position = self._to_position_on_axis(first_position)
+        for axis_id, axis in self.of_time_point(position.time_point()):
             if axis_id == first_axis_position.axis_id:
-                position = axis.to_position_on_axis(particle)
+                position = axis.to_position_on_axis(position)
                 if position is not None:
                     position.axis_id = axis_id
                 return position

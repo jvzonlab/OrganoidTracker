@@ -22,7 +22,7 @@ class ReversedAction(UndoableAction):
     inverse: UndoableAction
 
     def __init__(self, action: UndoableAction):
-        """Note: there must be a link between the two particles."""
+        """Note: there must be a link between the two positions."""
         self.inverse = action
 
     def do(self, experiment: Experiment):

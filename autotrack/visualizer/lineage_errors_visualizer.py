@@ -3,7 +3,7 @@ from typing import Optional, Set
 from matplotlib.backend_bases import KeyEvent
 
 from autotrack.core import TimePoint
-from autotrack.core.particles import Particle
+from autotrack.core.positions import Position
 from autotrack.gui.window import Window
 from autotrack.linking_analysis import lineage_error_finder
 from autotrack.visualizer import activate
@@ -14,14 +14,14 @@ class LineageErrorsVisualizer(ExitableImageVisualizer):
     """Viewer to detect errors in lineages. All cells with a gray marker have potential errors in them. Hover your mouse
     over a cell and press E to dismiss or correct the errors in that lineage."""
 
-    _verified_lineages: Set[Particle] = set()
+    _verified_lineages: Set[Position] = set()
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "l":
             self._exit_view()
         elif event.key == "e":
-            particle = self._get_particle_at(event.xdata, event.ydata)
-            self._show_linking_errors(particle)
+            position = self._get_position_at(event.xdata, event.ydata)
+            self._show_linking_errors(position)
         else:
             super()._on_key_press(event)
 
@@ -40,9 +40,9 @@ class LineageErrorsVisualizer(ExitableImageVisualizer):
                                                  z=self._z)
         activate(image_visualizer)
 
-    def _show_linking_errors(self, particle: Optional[Particle] = None):
+    def _show_linking_errors(self, position: Optional[Position] = None):
         from autotrack.visualizer.errors_visualizer import ErrorsVisualizer
-        warnings_visualizer = ErrorsVisualizer(self._window, particle)
+        warnings_visualizer = ErrorsVisualizer(self._window, position)
         activate(warnings_visualizer)
 
     def _load_time_point(self, time_point: TimePoint):
@@ -54,19 +54,19 @@ class LineageErrorsVisualizer(ExitableImageVisualizer):
             self._verified_lineages = set()
             return
 
-        particles = self._experiment.particles.of_time_point(time_point)
-        lineages_with_errors = lineage_error_finder.get_problematic_lineages(links, particles)
+        positions = self._experiment.positions.of_time_point(time_point)
+        lineages_with_errors = lineage_error_finder.get_problematic_lineages(links, positions)
         verified_lineages = set()
-        for particle in particles:
-            if lineage_error_finder.find_lineage_index_with_crumb(lineages_with_errors, particle) is None:
-                verified_lineages.add(particle)
+        for position in positions:
+            if lineage_error_finder.find_lineage_index_with_crumb(lineages_with_errors, position) is None:
+                verified_lineages.add(position)
         self._verified_lineages = verified_lineages
 
-    def _draw_particle(self, particle: Particle, color: str, dz: int, dt: int) -> int:
+    def _draw_position(self, position: Position, color: str, dz: int, dt: int) -> int:
         if dt != 0 or abs(dz) > 3:
-            return super()._draw_particle(particle, color, dz, dt)
+            return super()._draw_position(position, color, dz, dt)
 
-        verified = particle in self._verified_lineages
+        verified = position in self._verified_lineages
         color = color if verified else "gray"
-        self._draw_selection(particle, color)
-        return super()._draw_particle(particle, color, dz, dt)
+        self._draw_selection(position, color)
+        return super()._draw_position(position, color, dz, dt)

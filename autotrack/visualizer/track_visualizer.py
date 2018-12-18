@@ -4,8 +4,8 @@ from matplotlib.backend_bases import KeyEvent, MouseEvent
 from matplotlib.figure import Figure, Axes
 
 from autotrack.core import UserError
-from autotrack.core.links import ParticleLinks
-from autotrack.core.particles import Particle
+from autotrack.core.links import PositionLinks
+from autotrack.core.positions import Position
 from autotrack.core.resolution import ImageResolution
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
@@ -13,87 +13,87 @@ from autotrack.visualizer import DisplaySettings
 from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
 
-def _get_particles_in_lineage(links: ParticleLinks, particle: Particle) -> ParticleLinks:
-    single_lineage_links = ParticleLinks()
-    _add_past_particles(links, particle, single_lineage_links)
-    _add_future_particles(links, particle, single_lineage_links)
+def _get_positions_in_lineage(links: PositionLinks, position: Position) -> PositionLinks:
+    single_lineage_links = PositionLinks()
+    _add_past_positions(links, position, single_lineage_links)
+    _add_future_positions(links, position, single_lineage_links)
     return single_lineage_links
 
 
-def _add_past_particles(links: ParticleLinks, particle: Particle, single_lineage_links: ParticleLinks):
-    """Finds all particles in earlier time points connected to this particle."""
+def _add_past_positions(links: PositionLinks, position: Position, single_lineage_links: PositionLinks):
+    """Finds all positions in earlier time points connected to this position."""
     while True:
-        past_particles = links.find_pasts(particle)
-        for past_particle in past_particles:
-            single_lineage_links.add_link(particle, past_particle)
+        past_positions = links.find_pasts(position)
+        for past_position in past_positions:
+            single_lineage_links.add_link(position, past_position)
 
-        if len(past_particles) == 0:
+        if len(past_positions) == 0:
             return  # Start of lineage
-        if len(past_particles) > 1:
+        if len(past_positions) > 1:
             # Cell merge (physically impossible)
-            for past_particle in past_particles:
-                _add_past_particles(links, past_particle, single_lineage_links)
+            for past_position in past_positions:
+                _add_past_positions(links, past_position, single_lineage_links)
             return
 
-        particle = past_particles.pop()
+        position = past_positions.pop()
 
 
-def _add_future_particles(links: ParticleLinks, particle: Particle, single_lineage_links: ParticleLinks):
-    """Finds all particles in later time points connected to this particle."""
+def _add_future_positions(links: PositionLinks, position: Position, single_lineage_links: PositionLinks):
+    """Finds all positions in later time points connected to this position."""
     while True:
-        future_particles = links.find_futures(particle)
-        for future_particle in future_particles:
-            single_lineage_links.add_link(particle, future_particle)
+        future_positions = links.find_futures(position)
+        for future_position in future_positions:
+            single_lineage_links.add_link(position, future_position)
 
-        if len(future_particles) == 0:
+        if len(future_positions) == 0:
             return  # End of lineage
-        if len(future_particles) > 1:
+        if len(future_positions) > 1:
             # Cell division
-            for daughter in future_particles:
-                _add_future_particles(links, daughter, single_lineage_links)
+            for daughter in future_positions:
+                _add_future_positions(links, daughter, single_lineage_links)
             return
 
-        particle = future_particles.pop()
+        position = future_positions.pop()
 
 
-def _plot_displacements(axes: Axes, links: ParticleLinks, resolution: ImageResolution, particle: Particle):
+def _plot_displacements(axes: Axes, links: PositionLinks, resolution: ImageResolution, position: Position):
     displacements = list()
     time_point_numbers = list()
 
     while True:
-        future_particles = links.find_futures(particle)
+        future_positions = links.find_futures(position)
 
-        if len(future_particles) == 1:
+        if len(future_positions) == 1:
             # Track continues
-            future_particle = future_particles.pop()
-            delta_time = future_particle.time_point_number() - particle.time_point_number()
-            displacements.append(particle.distance_um(future_particle, resolution) / delta_time)
-            time_point_numbers.append(particle.time_point_number())
+            future_position = future_positions.pop()
+            delta_time = future_position.time_point_number() - position.time_point_number()
+            displacements.append(position.distance_um(future_position, resolution) / delta_time)
+            time_point_numbers.append(position.time_point_number())
 
-            particle = future_particle
+            position = future_position
             continue
 
         # End of this cell track: either start multiple new ones (division) or stop tracking
         axes.plot(time_point_numbers, displacements)
-        for future_particle in future_particles:
-            _plot_displacements(axes, links, resolution, future_particle)
+        for future_position in future_positions:
+            _plot_displacements(axes, links, resolution, future_position)
         return
 
 
 class TrackVisualizer(ExitableImageVisualizer):
     """Shows the trajectory of a single cell. Double-click a cell to select it. Press T to exit this view."""
 
-    _particles_in_lineage: Optional[ParticleLinks] = None
+    _positions_in_lineage: Optional[PositionLinks] = None
 
     def __init__(self, window: Window, time_point_number: int,
                  z: int, display_settings: DisplaySettings):
         super().__init__(window, time_point_number=time_point_number, z=z, display_settings=display_settings)
 
-    def _draw_particle(self, particle: Particle, color: str, dz: int, dt: int) -> int:
-        if abs(dz) <= 3 and self._particles_in_lineage is not None\
-                and self._particles_in_lineage.contains_particle(particle):
-            self._draw_selection(particle, color)
-        return super()._draw_particle(particle, color, dz, dt)
+    def _draw_position(self, position: Position, color: str, dz: int, dt: int) -> int:
+        if abs(dz) <= 3 and self._positions_in_lineage is not None\
+                and self._positions_in_lineage.contains_position(position):
+            self._draw_selection(position, color)
+        return super()._draw_position(position, color, dz, dt)
 
     def _get_figure_title(self):
         return f"Tracks at time point {self._time_point.time_point_number()} (z={self._z})"
@@ -111,7 +111,7 @@ class TrackVisualizer(ExitableImageVisualizer):
             raise UserError("Resolution not set", "The image resolution is not set. Cannot calculate cellular"
                                                   " displacement")
         else:
-            if self._particles_in_lineage is None:
+            if self._positions_in_lineage is None:
                 raise UserError("No cell track selected", "No cell track selected, so we cannot plot anything. Double-click"
                                                           " on a cell to select a track.")
 
@@ -120,8 +120,8 @@ class TrackVisualizer(ExitableImageVisualizer):
                 axes.set_xlabel("Time (time points)")
                 axes.set_ylabel("Displacement between time points (μm)")
                 axes.set_title("Cellular displacement")
-                for lineage_start in self._particles_in_lineage.find_appeared_cells():
-                    _plot_displacements(axes, self._particles_in_lineage, resolution, lineage_start)
+                for lineage_start in self._positions_in_lineage.find_appeared_cells():
+                    _plot_displacements(axes, self._positions_in_lineage, resolution, lineage_start)
 
             dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
 
@@ -143,11 +143,11 @@ class TrackVisualizer(ExitableImageVisualizer):
             if not links.has_links():
                 self.update_status("No links found. Is the linking data missing?")
                 return
-            particle = self._get_particle_at(event.xdata, event.ydata)
-            if particle is None:
-                self.update_status("Couldn't find a particle here.")
-                self._particles_in_lineage = None
+            position = self._get_position_at(event.xdata, event.ydata)
+            if position is None:
+                self.update_status("Couldn't find a position here.")
+                self._positions_in_lineage = None
                 return
-            self._particles_in_lineage = _get_particles_in_lineage(links, particle)
+            self._positions_in_lineage = _get_positions_in_lineage(links, position)
             self.draw_view()
-            self.update_status("Focused on " + str(particle))
+            self.update_status("Focused on " + str(position))
