@@ -21,7 +21,7 @@ def _view_cell_death_locations(window: Window):
     resolution = experiment.image_resolution()
 
     if not data_axes.has_axes():
-        raise UserError("Dead cells", "No crypt axes where found. Cannnot determine positions of dead cells.")
+        raise UserError("Dead cells", "No crypt axes where found. Cannot determine positions of dead cells.")
 
     dead_cells = linking_markers.find_dead_positions(experiment.links)
     crypt_positions = dict()
