@@ -1,21 +1,16 @@
 # File originally written by Jeroen van Zon
 from typing import Callable, Tuple, Union
 
-from matplotlib import cm
 from matplotlib.axes import Axes
 from matplotlib.collections import LineCollection
 
 from autotrack.core.links import LinkingTrack, PositionLinks
 from autotrack.core.resolution import ImageResolution
+from autotrack.core.typing import MPLColor
 
 # Type definition: a color getter is a function that takes an int (time point) and the linking track, and returns a
 # Matplotlib color
-_ColorGetter = Callable[[int, LinkingTrack], Union[
-    Tuple[float, float, float],
-    Tuple[float, float, float, float],
-    str,
-    float
-]]
+_ColorGetter = Callable[[int, LinkingTrack], MPLColor]
 
 
 def _get_lineage_drawing_start_time(lineage: LinkingTrack) -> int:
@@ -28,7 +23,6 @@ def _get_lineage_drawing_start_time(lineage: LinkingTrack) -> int:
 
 
 class LineageDrawing:
-
     links: PositionLinks
 
     def __init__(self, links: PositionLinks):
