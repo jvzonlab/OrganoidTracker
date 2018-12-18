@@ -3,7 +3,7 @@ from typing import Optional
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 from matplotlib.figure import Figure, Axes
 
-from autotrack.core import UserError
+from autotrack.core import UserError, TimePoint
 from autotrack.core.links import PositionLinks
 from autotrack.core.positions import Position
 from autotrack.core.resolution import ImageResolution
@@ -85,9 +85,8 @@ class TrackVisualizer(ExitableImageVisualizer):
 
     _positions_in_lineage: Optional[PositionLinks] = None
 
-    def __init__(self, window: Window, time_point_number: int,
-                 z: int, display_settings: DisplaySettings):
-        super().__init__(window, time_point_number=time_point_number, z=z, display_settings=display_settings)
+    def __init__(self, window: Window, time_point: TimePoint, z: int, display_settings: DisplaySettings):
+        super().__init__(window, time_point=time_point, z=z, display_settings=display_settings)
 
     def _draw_position(self, position: Position, color: str, dz: int, dt: int) -> int:
         if abs(dz) <= 3 and self._positions_in_lineage is not None\

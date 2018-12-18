@@ -2,6 +2,7 @@ from typing import Optional
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 
+from autotrack.core import TimePoint
 from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog
 from autotrack.gui.launcher import launch_window
@@ -26,9 +27,9 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     Moving: left/right moves in time, up/down in the z-direction and type '/t30' + ENTER to jump to time point 30
     Press F to show the detected position flow, press V to view the detected position volume"""
 
-    def __init__(self, window: Window, time_point_number: Optional[int] = None, z: int = 14,
+    def __init__(self, window: Window, time_point: Optional[TimePoint] = None, z: int = 14,
                  display_settings: Optional[DisplaySettings] = None):
-        super().__init__(window, time_point_number=time_point_number, z=z, display_settings=display_settings)
+        super().__init__(window, time_point=time_point, z=z, display_settings=display_settings)
 
     def _on_mouse_click(self, event: MouseEvent):
         if event.dblclick and event.button == 1:
@@ -100,18 +101,16 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             super()._on_key_press(event)
 
     def _show_track_follower(self):
-            from autotrack.visualizer.track_visualizer import TrackVisualizer
-            track_visualizer = TrackVisualizer(self._window, self._time_point.time_point_number(), self._z,
-                                               self._display_settings)
-            activate(track_visualizer)
+        from autotrack.visualizer.track_visualizer import TrackVisualizer
+        track_visualizer = TrackVisualizer(self._window, self._time_point, self._z, self._display_settings)
+        activate(track_visualizer)
 
     def _show_cell_detector(self):
         if self._experiment.get_image_stack(self._time_point) is None:
             dialog.popup_error("No images", "There are no images loaded, so we cannot detect cells.")
             return
         from autotrack.visualizer.detection_visualizer import DetectionVisualizer
-        activate(DetectionVisualizer(self._window, self._time_point.time_point_number(), self._z,
-                                     self._display_settings))
+        activate(DetectionVisualizer(self._window, self._time_point, self._z, self._display_settings))
 
     def _show_mother_cells(self):
         from autotrack.visualizer.cell_division_visualizer import CellDivisionVisualizer
@@ -120,20 +119,19 @@ class StandardImageVisualizer(AbstractImageVisualizer):
 
     def _show_cell_fates(self):
         from autotrack.visualizer.cell_fate_visualizer import CellFateVisualizer
-        fate_visualizer = CellFateVisualizer(self._window, time_point_number=self._time_point.time_point_number(),
-                                             z=self._z, display_settings=self._display_settings)
+        fate_visualizer = CellFateVisualizer(self._window, time_point=self._time_point, z=self._z,
+                                             display_settings=self._display_settings)
         activate(fate_visualizer)
 
     def _show_lineage_fates(self):
         from autotrack.visualizer.lineage_fate_visualizer import LineageFateVisualizer
-        fate_visualizer = LineageFateVisualizer(self._window, time_point_number=self._time_point.time_point_number(),
-                                                z=self._z, display_settings=self._display_settings)
+        fate_visualizer = LineageFateVisualizer(self._window, time_point=self._time_point, z=self._z,
+                                                display_settings=self._display_settings)
         activate(fate_visualizer)
 
     def _show_data_editor(self):
         from autotrack.visualizer.link_and_position_editor import LinkAndPositionEditor
-        editor = LinkAndPositionEditor(self._window, time_point_number=self._time_point.time_point_number(),
-                                       z=self._z)
+        editor = LinkAndPositionEditor(self._window, time_point=self._time_point, z=self._z)
         activate(editor)
 
     def _on_command(self, command: str) -> bool:

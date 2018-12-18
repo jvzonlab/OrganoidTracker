@@ -137,7 +137,7 @@ class ErrorsVisualizer(PositionListVisualizer):
         else:
             viewed_position = self._position_list[self._current_position_index]
             data_editor = LinkAndPositionEditor(self._window,
-                                                time_point_number=viewed_position.time_point_number(),
+                                                time_point=viewed_position.time_point(),
                                                 z=int(viewed_position.z),
                                                 selected_position=viewed_position)
         activate(data_editor)

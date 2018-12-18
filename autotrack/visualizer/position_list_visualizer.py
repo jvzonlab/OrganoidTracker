@@ -148,7 +148,7 @@ class PositionListVisualizer(Visualizer):
         else:
             mother = self._position_list[self._current_position_index]
             image_visualizer = StandardImageVisualizer(self._window,
-                                                       time_point_number=mother.time_point_number(), z=int(mother.z),
+                                                       time_point=mother.time_point(), z=int(mother.z),
                                                        display_settings=DisplaySettings(
                                                            show_next_time_point=self._show_next_image))
         activate(image_visualizer)

@@ -16,8 +16,7 @@ class ExitableImageVisualizer(AbstractImageVisualizer):
 
     def _exit_view(self):
         from autotrack.visualizer.standard_image_visualizer import StandardImageVisualizer
-        image_visualizer = StandardImageVisualizer(self._window, self._time_point.time_point_number(), self._z,
-                                                   self._display_settings)
+        image_visualizer = StandardImageVisualizer(self._window, self._time_point, self._z, self._display_settings)
         activate(image_visualizer)
 
     def _on_key_press(self, event: KeyEvent):

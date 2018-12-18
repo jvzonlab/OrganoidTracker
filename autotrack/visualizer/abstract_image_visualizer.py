@@ -34,15 +34,15 @@ class AbstractImageVisualizer(Visualizer):
     # display_settings property
     _color_map: Union[str, Colormap] = "gray"
 
-    def __init__(self, window: Window, *, time_point_number: Optional[int] = None, z: int = 14,
+    def __init__(self, window: Window, *, time_point: Optional[TimePoint] = None, z: int = 14,
                  display_settings: DisplaySettings = None):
         super().__init__(window)
 
         self._display_settings = DisplaySettings() if display_settings is None else display_settings
-        if time_point_number is None:
-            time_point_number = window.get_experiment().first_time_point_number()
+        if time_point is None:
+            time_point = TimePoint(window.get_experiment().first_time_point_number())
         self._z = int(z)
-        self._load_time_point(TimePoint(time_point_number))
+        self._load_time_point(time_point)
         self.__positions_near_visible_layer = []
 
     def _load_time_point(self, time_point: TimePoint):

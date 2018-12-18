@@ -4,7 +4,7 @@ import numpy
 from matplotlib.backend_bases import KeyEvent
 from numpy import ndarray
 
-from autotrack.core import UserError
+from autotrack.core import UserError, TimePoint
 from autotrack.core.gaussian import Gaussian
 from autotrack.core.positions import Position
 from autotrack.gui import dialog
@@ -27,10 +27,10 @@ class DetectionVisualizer(AbstractImageVisualizer):
     gaussian_fit_smooth_size = 7
     watershed_transform_smooth_size = 25
 
-    def __init__(self, window: Window, time_point_number: int, z: int, display_settings: DisplaySettings):
+    def __init__(self, window: Window, time_point: TimePoint, z: int, display_settings: DisplaySettings):
         display_settings.show_next_time_point = False
         display_settings.show_reconstruction = False
-        super().__init__(window, time_point_number=time_point_number, z=z, display_settings=display_settings)
+        super().__init__(window, time_point=time_point, z=z, display_settings=display_settings)
 
     def _get_window_title(self) -> str:
         return "Cell detection"
@@ -76,7 +76,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
 
     def _show_main_view(self):
         from autotrack.visualizer.standard_image_visualizer import StandardImageVisualizer
-        v = StandardImageVisualizer(self._window, self._time_point.time_point_number(), self._z, self._display_settings)
+        v = StandardImageVisualizer(self._window, self._time_point, self._z, self._display_settings)
         activate(v)
 
     def _basic_threshold(self):

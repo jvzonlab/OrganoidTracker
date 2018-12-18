@@ -60,9 +60,9 @@ class DataAxisEditor(AbstractEditor):
     _selected_path_time_point: Optional[TimePoint]
     _draw_axis_positions: bool
 
-    def __init__(self, window: Window, *, time_point_number: Optional[int] = None, z: int = 14,
+    def __init__(self, window: Window, *, time_point: Optional[TimePoint] = None, z: int = 14,
                  display_settings: DisplaySettings = None):
-        super().__init__(window, time_point_number=time_point_number, z=z, display_settings=display_settings)
+        super().__init__(window, time_point=time_point, z=z, display_settings=display_settings)
         self._selected_path = None
         self._selected_path_time_point = None
         self._draw_axis_positions = False

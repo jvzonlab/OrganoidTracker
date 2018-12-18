@@ -3,6 +3,7 @@ from typing import Optional, List, Set
 from matplotlib.backend_bases import KeyEvent, MouseEvent, LocationEvent
 
 from autotrack import core
+from autotrack.core import TimePoint
 from autotrack.core.experiment import Experiment
 from autotrack.core.positions import Position
 from autotrack.core.shape import ParticleShape
@@ -126,10 +127,9 @@ class LinkAndPositionEditor(AbstractEditor):
     _selected1: Optional[Position] = None
     _selected2: Optional[Position] = None
 
-    def __init__(self, window: Window, *, time_point_number: int = 1, z: int = 14,
+    def __init__(self, window: Window, *, time_point: Optional[TimePoint] = None, z: int = 14,
                  display_settings: Optional[DisplaySettings] = None, selected_position: Optional[Position] = None):
-        super().__init__(window, time_point_number=time_point_number, z=z,
-                         display_settings=display_settings)
+        super().__init__(window, time_point=time_point, z=z, display_settings=display_settings)
 
         self._selected1 = selected_position
 
@@ -244,8 +244,8 @@ class LinkAndPositionEditor(AbstractEditor):
 
     def _show_path_editor(self):
         from autotrack.visualizer.data_axis_editor import DataAxisEditor
-        path_editor = DataAxisEditor(self._window, time_point_number=self._time_point.time_point_number(),
-                                     z=self._z, display_settings=self._display_settings)
+        path_editor = DataAxisEditor(self._window, time_point=self._time_point, z=self._z,
+                                     display_settings=self._display_settings)
         activate(path_editor)
 
     def _show_linking_errors(self, position: Optional[Position] = None):
@@ -255,8 +255,7 @@ class LinkAndPositionEditor(AbstractEditor):
 
     def _show_lineage_errors(self):
         from autotrack.visualizer.lineage_errors_visualizer import LineageErrorsVisualizer
-        editor = LineageErrorsVisualizer(self._window, time_point_number=self._time_point.time_point_number(),
-                                         z=self._z)
+        editor = LineageErrorsVisualizer(self._window, time_point=self._time_point, z=self._z)
         activate(editor)
 
     def _try_insert(self, event: LocationEvent):
