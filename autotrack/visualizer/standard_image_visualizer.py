@@ -32,29 +32,12 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         super().__init__(window, time_point=time_point, z=z, display_settings=display_settings)
 
     def _on_mouse_click(self, event: MouseEvent):
-        if event.dblclick and event.button == 1:
+        if event.button == 1:
             position = self._get_position_at(event.xdata, event.ydata)
             if position is not None:
-                self.__display_cell_division_scores(position)
+                self.update_status(f"Clicked on {position}")
         else:
             super()._on_mouse_click(event)
-
-    def __display_cell_division_scores(self, position):
-        cell_divisions = list(self._experiment.scores.of_mother(position))
-        cell_divisions.sort(key=lambda d: d.score.total(), reverse=True)
-        displayed_items = 0
-        text = ""
-        for scored_family in cell_divisions:
-            if displayed_items >= 2:
-                text += "... and " + str(len(cell_divisions) - displayed_items) + " more"
-                break
-            text += str(displayed_items + 1) + ". " + str(scored_family.family) + ", score: " \
-                    + str(scored_family.score).replace(",", ",\n\t") + "\n"
-            displayed_items += 1
-        if text:
-            self.update_status("Possible cell division scores:\n" + text)
-        else:
-            self.update_status("No cell division scores found")
 
     def get_extra_menu_options(self):
         return {
