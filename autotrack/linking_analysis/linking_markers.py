@@ -43,7 +43,7 @@ def set_track_end_marker(links: PositionLinks, position: Position, end_marker: O
         links.set_position_data(position, "ending", end_marker.name.lower())
 
 
-def find_dead_positions(links: PositionLinks) -> Iterable[Position]:
+def find_death_positions(links: PositionLinks) -> Iterable[Position]:
     """Gets all positions that were marked as dead."""
     death_marker = EndMarker.DEAD.name.lower()
     for position, ending_marker in links.find_all_positions_with_data("ending"):
