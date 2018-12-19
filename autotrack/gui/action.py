@@ -10,17 +10,19 @@ from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog
 from autotrack.gui.dialog import popup_message_cancellable
+from autotrack.gui.gui_experiment import GuiExperiment
+from autotrack.gui.undo_redo import UndoRedo
 from autotrack.gui.window import Window
 from autotrack.imaging import tifffolder, io
 from autotrack.visualizer import activate
 from autotrack.visualizer.empty_visualizer import EmptyVisualizer
 
 
-def ask_exit(experiment: Experiment):
+def ask_exit(gui_experiment: GuiExperiment):
     """Exits the main window, after asking if the user wants to save."""
     answer = dialog.prompt_yes_no_cancel("Confirmation", "Do you want to save your changes first?")
     if answer.is_yes():
-        if save_tracking_data(experiment):
+        if save_tracking_data(gui_experiment):
             QApplication.quit()
     elif answer.is_no():
         QApplication.quit()
@@ -141,13 +143,14 @@ def export_links_guizela(experiment: Experiment):
     guizela_data_exporter.export_links(links, links_folder, comparisons_folder)
 
 
-def save_tracking_data(experiment: Experiment) -> bool:
+def save_tracking_data(gui_experiment: GuiExperiment) -> bool:
     data_file = dialog.prompt_save_file("Save data as...", [
         (io.FILE_EXTENSION.upper() + " file", "*." + io.FILE_EXTENSION)])
     if not data_file:
         return False # Cancelled
 
-    io.save_data_to_json(experiment, data_file)
+    io.save_data_to_json(gui_experiment.experiment, data_file)
+    gui_experiment.undo_redo.mark_everything_saved()
     return True
 
 

@@ -53,11 +53,11 @@ class GuiExperiment:
         self._command_handlers = _EventListeners()
 
     @property  # read-only
-    def undo_redo(self):
+    def undo_redo(self) -> UndoRedo:
         return self._undo_redo
 
     @property  # read-only
-    def experiment(self):
+    def experiment(self) -> Experiment:
         return self._experiment
 
     def register_event_handler(self, event: str, source: str, action: Callable):

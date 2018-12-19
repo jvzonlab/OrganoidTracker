@@ -1,12 +1,12 @@
 import sys
 from functools import partial
 from os import path
-from typing import Callable, List, Iterable
+from typing import Callable, List, Iterable, Optional
 from typing import Dict, Any
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon, QKeyEvent, QPalette
+from PyQt5.QtGui import QIcon, QKeyEvent, QPalette, QCloseEvent
 from PyQt5.QtWidgets import QMainWindow, QSizePolicy
 from PyQt5.QtWidgets import QWidget, QApplication, QVBoxLayout, QLabel, QLineEdit
 from matplotlib.backend_bases import KeyEvent
@@ -35,6 +35,66 @@ class _CommandBox(QLineEdit):
             super().keyPressEvent(event)
 
 
+class _MyQMainWindow(QMainWindow):
+
+    command_box: _CommandBox
+    title: QLabel
+    status_box: QLabel
+    mpl_canvas: FigureCanvasQTAgg
+    close_handler: Optional[Callable[[QCloseEvent], None]] = None
+
+    def __init__(self, figure: Figure):
+        super().__init__()
+        self.setBaseSize(800, 700)
+        self.setWindowTitle(APP_NAME)
+        self.setWindowIcon(QIcon(path.join(path.dirname(path.abspath(sys.argv[0])), 'autotrack', 'gui', 'icon.ico')))
+
+        # Initialize main grid
+        main_frame = QWidget(parent=self)
+        self.setCentralWidget(main_frame)
+        vertical_boxes = QVBoxLayout(main_frame)
+
+        # Add title
+        self.title = QLabel(parent=main_frame)
+        self.title.setStyleSheet("font-size: 16pt; font-weight: bold")
+        self.title.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
+        vertical_boxes.addWidget(self.title)
+
+        # Add Matplotlib figure to frame
+        self.mpl_canvas = FigureCanvasQTAgg(figure)  # A tk.DrawingArea.
+        self.mpl_canvas.setParent(main_frame)
+        self.mpl_canvas.setFocusPolicy(Qt.ClickFocus)
+        self.mpl_canvas.setFocus()
+        vertical_boxes.addWidget(self.mpl_canvas)
+
+        # Set figure background color to that of the main_frame
+        background_color = main_frame.palette().color(QPalette.Background)
+        figure.set_facecolor((background_color.redF(), background_color.greenF(), background_color.blueF()))
+
+        # Add status bar
+        self.status_box = QLabel(parent=main_frame)
+        self.status_box.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
+        vertical_boxes.addWidget(self.status_box)
+
+        # Add command box
+        self.command_box = _CommandBox(parent=main_frame)
+        vertical_boxes.addWidget(self.command_box)
+
+        self.mpl_canvas.mpl_connect("key_release_event", partial(_commandbox_autofocus, command_box=self.command_box))
+        self.command_box.escape_handler = lambda: self.mpl_canvas.setFocus()
+
+        toolbar = NavigationToolbar2QT(self.mpl_canvas, self)
+        self.addToolBar(toolbar)
+
+    def closeEvent(self, event: QCloseEvent):
+        try:
+            if self.close_handler is not None:
+                self.close_handler(event)
+        except BaseException as e:
+            from autotrack.gui import dialog
+            dialog.popup_exception(e)
+
+
 class MainWindow(Window):
     __plugins: List[Plugin]
 
@@ -50,12 +110,12 @@ class MainWindow(Window):
             "File//New-New project...": lambda: action.new(self),
             "File//SaveLoad-Load images...": lambda: action.load_images(self),
             "File//SaveLoad-Load tracking data...": lambda: action.load_tracking_data(self),
-            "File//SaveLoad-Save tracking data...": lambda: action.save_tracking_data(self.get_experiment()),
+            "File//SaveLoad-Save tracking data...": lambda: action.save_tracking_data(self.get_gui_experiment()),
             "File//Export-Export detection data only...": lambda: action.export_positions_and_shapes(self.get_experiment()),
             "File//Export-Export linking data only...": lambda: action.export_links(self.get_experiment()),
             "File//Export-Export to Guizela's file format...": lambda: action.export_links_guizela(self.get_experiment()),
             "File//Plugins-Reload all plugins...": lambda: action.reload_plugins(self),
-            "File//Exit-Exit (Alt+F4)": lambda: action.ask_exit(self.get_experiment()),
+            "File//Exit-Exit (Alt+F4)": lambda: action.ask_exit(self.get_gui_experiment()),
             "Edit//Experiment-Rename experiment...": lambda: action.rename_experiment(self),
             "View//Toggle-Toggle showing axis numbers": lambda: action.toggle_axis(self.get_figure()),
         }
@@ -97,6 +157,23 @@ class MainWindow(Window):
             line_count += 1
         super().set_status(text)
 
+
+def _window_close(window: Window, event: QCloseEvent):
+    """Asks if the user wants to save before closing the program."""
+    if not window.get_gui_experiment().undo_redo.has_unsaved_changes():
+        return
+
+    event.ignore()
+    from autotrack.gui import dialog, action
+    answer = dialog.prompt_yes_no_cancel("Confirmation", "You have unsaved changes. Do you want to save those"
+                                                         " first?")
+    if answer.is_yes():
+        if action.save_tracking_data(window.get_gui_experiment()):
+            event.setAccepted(True)
+    elif answer.is_no():
+        event.setAccepted(True)
+
+
 def launch_window(experiment: Experiment) -> MainWindow:
     """Launches a window with an empty figure. Doesn't start the main loop yet. Use and activate a visualizer to add
     some interactiveness."""
@@ -107,50 +184,11 @@ def launch_window(experiment: Experiment) -> MainWindow:
     root = QApplication.instance()
     if not root:
         root = QApplication(sys.argv)
-    q_window = QMainWindow()
-    q_window.setBaseSize(800, 700)
-    q_window.setWindowTitle(APP_NAME)
-    q_window.setWindowIcon(QIcon(path.join(path.dirname(path.abspath(sys.argv[0])), 'autotrack', 'gui', 'icon.ico')))
+    q_window = _MyQMainWindow(fig)
+    window = MainWindow(q_window, fig, GuiExperiment(experiment), q_window.title, q_window.status_box)
 
-    # Initialize main grid
-    main_frame = QWidget(parent=q_window)
-    q_window.setCentralWidget(main_frame)
-    vertical_boxes = QVBoxLayout(main_frame)
-
-    # Add title
-    title = QLabel(parent=main_frame)
-    title.setStyleSheet("font-size: 16pt; font-weight: bold")
-    title.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
-    vertical_boxes.addWidget(title)
-
-    # Add Matplotlib figure to frame
-    mpl_canvas = FigureCanvasQTAgg(fig)  # A tk.DrawingArea.
-    mpl_canvas.setParent(main_frame)
-    mpl_canvas.setFocusPolicy(Qt.ClickFocus)
-    mpl_canvas.setFocus()
-    vertical_boxes.addWidget(mpl_canvas)
-
-    # Set figure background color to that of the main_frame
-    background_color = main_frame.palette().color(QPalette.Background)
-    fig.set_facecolor((background_color.redF(), background_color.greenF(), background_color.blueF()))
-
-    # Add status bar
-    status_box = QLabel(parent=main_frame)
-    status_box.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
-    vertical_boxes.addWidget(status_box)
-
-    # Add command box
-    command_box = _CommandBox(parent=main_frame)
-    vertical_boxes.addWidget(command_box)
-
-    mpl_canvas.mpl_connect("key_release_event", partial(_commandbox_autofocus, command_box=command_box))
-
-    toolbar = NavigationToolbar2QT(mpl_canvas, q_window)
-    q_window.addToolBar(toolbar)
-
-    window = MainWindow(q_window, fig, GuiExperiment(experiment), title, status_box)
-    command_box.escape_handler = lambda: mpl_canvas.setFocus()
-    command_box.enter_handler = partial(_commandbox_execute, window=window, main_figure=mpl_canvas)
+    q_window.command_box.enter_handler = partial(_commandbox_execute, window=window, main_figure=q_window.mpl_canvas)
+    q_window.close_handler = lambda close_event: _window_close(window, close_event)
 
     window.setup_menu(dict())  # This draws the menu
 

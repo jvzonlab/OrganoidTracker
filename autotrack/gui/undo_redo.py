@@ -36,16 +36,28 @@ class UndoRedo:
 
     _undo_queue: Deque[UndoableAction]
     _redo_queue: Deque[UndoableAction]
+    _unsaved_changes_count: int = 0
 
     def __init__(self):
         self._undo_queue = collections.deque(maxlen=50)
         self._redo_queue = collections.deque(maxlen=50)
+
+    def has_unsaved_changes(self) -> bool:
+        """Returns True if there are any unsaved changes, False otherwise."""
+        return self._unsaved_changes_count != 0
+
+    def mark_everything_saved(self):
+        """Marks that at this moment in time, everything was saved. has_unsaved_changes() will return True after calling
+        this method. However, after an action is done (see do(...) or redo(...), has_unsaved_changes() will return True
+        again. If you then undo that action again, has_unsaved_changes() will return False gain. Clever, isn't it?"""
+        self._unsaved_changes_count = 0
 
     def do(self, action: UndoableAction, experiment: Experiment) -> str:
         """Performs an action, and stores it so that we can undo it"""
         result_string = action.do(experiment)
         self._undo_queue.append(action)
         self._redo_queue.clear()
+        self._unsaved_changes_count += 1
         return result_string
 
     def undo(self, experiment: Experiment) -> str:
@@ -53,6 +65,7 @@ class UndoRedo:
             action = self._undo_queue.pop()
             result_string = action.undo(experiment)
             self._redo_queue.append(action)
+            self._unsaved_changes_count -= 1
             return result_string
         except IndexError:
             return "No more actions to undo."
@@ -62,6 +75,7 @@ class UndoRedo:
             action = self._redo_queue.pop()
             result_string = action.do(experiment)
             self._undo_queue.append(action)
+            self._unsaved_changes_count += 1
             return result_string
         except IndexError:
             return "No more actions to redo."
