@@ -69,7 +69,7 @@ class Visualizer:
             self._ax.set_ylim(*ylim)
             self._ax.set_autoscale_on(False)
 
-    def async(self, runnable, result_handler):
+    def run_async(self, runnable, result_handler):
         """Creates a callable that runs the given runnable on a worker thread."""
         class MyTask(Task):
             def compute(self):

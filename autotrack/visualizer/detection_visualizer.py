@@ -47,18 +47,18 @@ class DetectionVisualizer(AbstractImageVisualizer):
             "View//Show-Show original images (R)": lambda: self._move_in_time(dt=0),
             "View//Exit-Exit this view (/exit)": self._show_main_view,
             "Threshold//Normal-Basic threshold": self._basic_threshold,
-            "Threshold//Normal-With watershed segmentation": self.async(self._get_watershedded_threshold,
-                                                                       self._display_threshold),
-            "Threshold//Normal-With iso-intensity curvature segmentation": self.async(self._get_advanced_threshold,
-                                                                                     self._display_threshold),
-            "Threshold//Smoothed-Smoothed basic threshold": self.async(self._get_adaptive_smoothed_threshold,
-                                                                      self._display_threshold),
-            "Reconstruction//Default-Reconstruct normal treshold": self.async(self._get_threshold_reconstruction,
-                                                                             self._display_watershed),
-            "Reconstruction//Default-Reconstruct smoothed threshold": self.async(
+            "Threshold//Normal-With watershed segmentation": self.run_async(self._get_watershedded_threshold,
+                                                                            self._display_threshold),
+            "Threshold//Normal-With iso-intensity curvature segmentation": self.run_async(self._get_advanced_threshold,
+                                                                                          self._display_threshold),
+            "Threshold//Smoothed-Smoothed basic threshold": self.run_async(self._get_adaptive_smoothed_threshold,
+                                                                           self._display_threshold),
+            "Reconstruction//Default-Reconstruct normal threshold": self.run_async(self._get_threshold_reconstruction,
+                                                                                   self._display_watershed),
+            "Reconstruction//Default-Reconstruct smoothed threshold": self.run_async(
                 self._get_smoothed_threshold_reconstruction,
                 self._display_watershed),
-            "Reconstruction//Default-Reconstruct original image": self.async(
+            "Reconstruction//Default-Reconstruct original image": self.run_async(
                 self._get_image_reconstruction,
                 self._display_reconstruction)
         }
@@ -183,7 +183,8 @@ class DetectionVisualizer(AbstractImageVisualizer):
             return images, images_smoothed, watershed
         return watershed
 
-    def _get_smoothed_threshold_reconstruction(self, return_intermediate=False) -> Union[ndarray, Tuple[ndarray, ndarray]]:
+    def _get_smoothed_threshold_reconstruction(self, return_intermediate=False) -> Union[
+        ndarray, Tuple[ndarray, ndarray]]:
         images, images_smoothed, watershed = self._get_threshold_reconstruction(return_intermediate=True)
 
         # Create a basic threshold for better reconstruction of cell shape
@@ -199,7 +200,8 @@ class DetectionVisualizer(AbstractImageVisualizer):
     def _get_image_reconstruction(self) -> List[Gaussian]:
         images, watershed = self._get_smoothed_threshold_reconstruction(return_intermediate=True)
 
-        return gaussian_fit.perform_gaussian_mixture_fit_from_watershed(images, watershed, self.gaussian_fit_smooth_size)
+        return gaussian_fit.perform_gaussian_mixture_fit_from_watershed(images, watershed,
+                                                                        self.gaussian_fit_smooth_size)
 
     def _display_reconstruction(self, gaussians: List[Gaussian]):
         self._experiment.remove_positions(self._time_point)
