@@ -179,7 +179,7 @@ class _MenuData:
         part_for_this_menu = split_by_slashes[0]
 
         if "-" in part_for_this_menu:
-            category_name, label = part_for_this_menu.split("-", maxsplit=2)
+            category_name, label = part_for_this_menu.split("-", maxsplit=1)
         else:
             category_name, label = "", part_for_this_menu
 
