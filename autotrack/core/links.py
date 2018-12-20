@@ -107,10 +107,10 @@ class LinkingTrack:
         return len(self._positions_by_time_point)
 
 
-class PositionLinks:
-    """Represents all position links. Two different networks can be specified (called baseline and scratch), so that
-    comparisons become possible. Care has been taken to ensure that the node sets of both linking networks are
-    equal, so that comparisons between the networks are easier."""
+class Links:
+    """Represents all links between positions at different time points. This is used to follow particles over time. If a
+    position is linked to two positions in the next time step, than that is a cell division. If a position is linked to
+    no position in the next step, then either the cell died or the cell moved out of the image."""
 
     _tracks: List[LinkingTrack]
     _position_to_track: Dict[Position, LinkingTrack]
@@ -121,7 +121,7 @@ class PositionLinks:
         self._position_to_track = dict()
         self._position_data = dict()
 
-    def add_links(self, links: "PositionLinks"):
+    def add_links(self, links: "Links"):
         """Adds all links from the graph. Existing link are not removed. Changes may write through in the original
         links."""
         if self.has_links():
@@ -390,9 +390,9 @@ class PositionLinks:
             # (links to previous track are NOT returned, those will be included by that previous track as links to the
             # next track)
 
-    def copy(self) -> "PositionLinks":
+    def copy(self) -> "Links":
         """Returns a copy of all the links, so that you can modify that data set without affecting this one."""
-        copy = PositionLinks()
+        copy = Links()
 
         # Copy over tracks
         for track in self._tracks:

@@ -1,7 +1,7 @@
 """Used to get a summary of what happens to a single cell lineage. How many divisions, deaths, ends and errors are
 there?"""
 
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position
 from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.linking_markers import EndMarker
@@ -16,7 +16,7 @@ class LineageFate:
     ends: int = 0  # How many lineage ends (including cell deaths) are still in the lineage?
 
 
-def get_lineage_fate(position: Position, links: PositionLinks, last_time_point_number: int) -> LineageFate:
+def get_lineage_fate(position: Position, links: Links, last_time_point_number: int) -> LineageFate:
     """Calculates the fate of the lineage. The last time point number is used to ignore lineage ends that occur in that
     time point."""
     lineage_fate = LineageFate()
@@ -24,7 +24,7 @@ def get_lineage_fate(position: Position, links: PositionLinks, last_time_point_n
     return lineage_fate
 
 
-def _get_sub_cell_fate(position: Position, links: PositionLinks, lineage_fate: LineageFate, last_time_point_number: int):
+def _get_sub_cell_fate(position: Position, links: Links, lineage_fate: LineageFate, last_time_point_number: int):
     while True:
         error = linking_markers.get_error_marker(links, position)
         if error is not None:

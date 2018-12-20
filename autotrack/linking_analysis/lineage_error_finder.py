@@ -2,7 +2,7 @@
 
 from typing import List, Optional, Set, AbstractSet, Dict, Iterable
 
-from autotrack.core.links import PositionLinks, LinkingTrack
+from autotrack.core.links import Links, LinkingTrack
 from autotrack.core.positions import Position
 from autotrack.linking_analysis import linking_markers
 
@@ -28,7 +28,7 @@ class LineageWithErrors:
             self.crumbs |= set(crumbs)
 
 
-def _group_by_track(links: PositionLinks, positions: Iterable[Position]) -> Dict[LinkingTrack, List[Position]]:
+def _group_by_track(links: Links, positions: Iterable[Position]) -> Dict[LinkingTrack, List[Position]]:
     track_to_positions = dict()
     for position in positions:
         track = links.get_track(position)
@@ -39,7 +39,7 @@ def _group_by_track(links: PositionLinks, positions: Iterable[Position]) -> Dict
     return track_to_positions
 
 
-def get_problematic_lineages(links: PositionLinks, crumbs: AbstractSet[Position]) -> List[LineageWithErrors]:
+def get_problematic_lineages(links: Links, crumbs: AbstractSet[Position]) -> List[LineageWithErrors]:
     """Gets a list of all lineages with warnings in the experiment. The provided "crumbs" are placed in the right
     lineages, so that you can see to what lineages those cells belong."""
     positions_with_errors = linking_markers.find_errored_positions(links)
@@ -62,7 +62,7 @@ def get_problematic_lineages(links: PositionLinks, crumbs: AbstractSet[Position]
     return lineages_with_errors
 
 
-def _find_errors_in_lineage(links: PositionLinks, lineage: LineageWithErrors, position: Position, crumbs: AbstractSet[Position]):
+def _find_errors_in_lineage(links: Links, lineage: LineageWithErrors, position: Position, crumbs: AbstractSet[Position]):
     while True:
         if position in crumbs:
             lineage.crumbs.add(position)

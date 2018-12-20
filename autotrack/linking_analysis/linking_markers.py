@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import Optional, Iterable
 
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position
 from autotrack.linking_analysis.errors import Error
 
@@ -26,7 +26,7 @@ class StartMarker(Enum):
         return self.name.lower().replace("_", " ")
 
 
-def get_track_end_marker(links: PositionLinks, position: Position) -> Optional[EndMarker]:
+def get_track_end_marker(links: Links, position: Position) -> Optional[EndMarker]:
     """Gets a death marker, which provides a reason why the cell lineage ended."""
     ending_str = links.get_position_data(position, "ending")
     if ending_str is None:
@@ -35,7 +35,7 @@ def get_track_end_marker(links: PositionLinks, position: Position) -> Optional[E
     return EndMarker[ending_str.upper()]
 
 
-def set_track_end_marker(links: PositionLinks, position: Position, end_marker: Optional[EndMarker]):
+def set_track_end_marker(links: Links, position: Position, end_marker: Optional[EndMarker]):
     """Sets a reason why the track ended at the given point."""
     if end_marker is None:
         links.set_position_data(position, "ending", None)
@@ -43,7 +43,7 @@ def set_track_end_marker(links: PositionLinks, position: Position, end_marker: O
         links.set_position_data(position, "ending", end_marker.name.lower())
 
 
-def find_death_positions(links: PositionLinks) -> Iterable[Position]:
+def find_death_positions(links: Links) -> Iterable[Position]:
     """Gets all positions that were marked as dead."""
     death_marker = EndMarker.DEAD.name.lower()
     for position, ending_marker in links.find_all_positions_with_data("ending"):
@@ -51,7 +51,7 @@ def find_death_positions(links: PositionLinks) -> Iterable[Position]:
             yield position
 
 
-def get_track_start_marker(links: PositionLinks, position: Position) -> Optional[StartMarker]:
+def get_track_start_marker(links: Links, position: Position) -> Optional[StartMarker]:
     """Gets the appearance marker. This is used to explain why a cell appeared out of thin air."""
     starting_str = links.get_position_data(position, "starting")
     if starting_str is None:
@@ -60,7 +60,7 @@ def get_track_start_marker(links: PositionLinks, position: Position) -> Optional
     return StartMarker[starting_str.upper()]
 
 
-def set_track_start_marker(links: PositionLinks, position: Position, start_marker: Optional[StartMarker]):
+def set_track_start_marker(links: Links, position: Position, start_marker: Optional[StartMarker]):
     """Sets a reason why the track ended at the given point."""
     if start_marker is None:
         links.set_position_data(position, "starting", None)
@@ -68,7 +68,7 @@ def set_track_start_marker(links: PositionLinks, position: Position, start_marke
         links.set_position_data(position, "starting", start_marker.name.lower())
 
 
-def find_errored_positions(links: PositionLinks) -> Iterable[Position]:
+def find_errored_positions(links: Links) -> Iterable[Position]:
     """Gets all positions that have a (non suppressed) error."""
 
     with_error_marker = links.find_all_positions_with_data("error")
@@ -79,7 +79,7 @@ def find_errored_positions(links: PositionLinks) -> Iterable[Position]:
         yield position
 
 
-def get_error_marker(links: PositionLinks, position: Position) -> Optional[Error]:
+def get_error_marker(links: Links, position: Position) -> Optional[Error]:
     """Gets the error marker for the given link, if any. Returns None if the error has been suppressed using
     suppress_error_marker."""
     error_number = links.get_position_data(position, "error")
@@ -91,19 +91,19 @@ def get_error_marker(links: PositionLinks, position: Position) -> Optional[Error
     return Error(error_number)
 
 
-def suppress_error_marker(links: PositionLinks, position: Position, error: Error):
+def suppress_error_marker(links: Links, position: Position, error: Error):
     """Suppresses an error. Even if set_error_marker is called afterwards, the error will not show up in
     get_error_marker."""
     links.set_position_data(position, "suppressed_error", error.value)
 
 
-def is_error_suppressed(links: PositionLinks, position: Position, error: Error) -> bool:
+def is_error_suppressed(links: Links, position: Position, error: Error) -> bool:
     """Returns True if the given error is suppressed. If another type of error is suppressed, this method returns
     False."""
     return links.get_position_data(position, "suppressed_error") == error.value
 
 
-def set_error_marker(links: PositionLinks, position: Position, error: Optional[Error]):
+def set_error_marker(links: Links, position: Position, error: Optional[Error]):
     """Sets an error marker for the given position."""
     if error is None:
         links.set_position_data(position, "error", None)

@@ -3,11 +3,11 @@ division.."""
 
 from typing import Optional
 
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position
 
 
-def get_age(links: PositionLinks, position: Position) -> Optional[int]:
+def get_age(links: Links, position: Position) -> Optional[int]:
     """Gets how many time steps ago this cell was born"""
     track = links.get_track(position)
     if track is None:

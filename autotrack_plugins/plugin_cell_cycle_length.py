@@ -7,7 +7,7 @@ from numpy import ndarray
 
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position
 from autotrack.core.score import Family
 from autotrack.gui import dialog
@@ -112,7 +112,7 @@ def _calculate_moving_average(x_values: ndarray, y_values: ndarray, window_size:
            numpy.array(y_moving_average_stdev, dtype=numpy.float32)
 
 
-def _draw_cell_cycle_length(figure: Figure, links: PositionLinks, time_point_duration_h: float,
+def _draw_cell_cycle_length(figure: Figure, links: Links, time_point_duration_h: float,
                             third_variable_getter: _ThirdVar):
     previous_cycle_durations = list()
     cycle_durations = list()

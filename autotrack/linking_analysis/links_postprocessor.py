@@ -1,6 +1,6 @@
 from autotrack.core.experiment import Experiment
 
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position
 from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.linking_markers import EndMarker, StartMarker
@@ -23,7 +23,7 @@ def _remove_positions_close_to_edge(experiment: Experiment, margin_xy: int):
                 experiment.remove_position(position)
 
 
-def _add_out_of_view_markers(links: PositionLinks, position: Position):
+def _add_out_of_view_markers(links: Links, position: Position):
     """Adds markers to the remaining links so that it is clear why they appeared/disappeared."""
     linked_positions = links.find_links_of(position)
     for linked_position in linked_positions:
@@ -40,7 +40,7 @@ def _remove_spurs(experiment: Experiment):
         _check_for_and_remove_spur(experiment, links, position)
 
 
-def _check_for_and_remove_spur(experiment: Experiment, links: PositionLinks, position: Position):
+def _check_for_and_remove_spur(experiment: Experiment, links: Links, position: Position):
     track_length = 0
     positions_in_track = [position]
 

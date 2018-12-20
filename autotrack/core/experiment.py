@@ -4,7 +4,7 @@ from numpy import ndarray
 
 from autotrack.core import TimePoint, Name, UserError, min_none, max_none
 from autotrack.core.image_loader import ImageLoader
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position, PositionCollection
 from autotrack.core.data_axis import DataAxisCollection
 from autotrack.core.resolution import ImageResolution
@@ -57,7 +57,7 @@ class Experiment:
     # Note: none of the fields may be None after __init__ is called
     _positions: PositionCollection
     scores: ScoreCollection
-    _links: PositionLinks
+    _links: Links
     _image_loader: ImageLoader = ImageLoader()
     _name: Name
     data_axes: DataAxisCollection
@@ -68,7 +68,7 @@ class Experiment:
         self._positions = PositionCollection()
         self.scores = ScoreCollection()
         self.data_axes = DataAxisCollection()
-        self._links = PositionLinks()
+        self._links = Links()
 
     def remove_position(self, position: Position):
         """Removes both a position and its links from the experiment."""
@@ -181,15 +181,15 @@ class Experiment:
         return self._name
 
     @property
-    def links(self) -> PositionLinks:
+    def links(self) -> Links:
         """Gets all links between the positions of different time points."""
         # Using a property to prevent someone from setting links to None
         return self._links
 
     @links.setter
-    def links(self, links: PositionLinks):
+    def links(self, links: Links):
         """Sets the links to the given value. May not be None."""
-        if not isinstance(links, PositionLinks):
+        if not isinstance(links, Links):
             raise ValueError("links must be a PositionLinks object, was " + repr(links))
         self._links = links
 

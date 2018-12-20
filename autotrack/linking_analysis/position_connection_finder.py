@@ -1,10 +1,10 @@
 from typing import List, Optional
 
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position
 
 
-def find_previous_positions(position: Position, links: PositionLinks, steps_back: int) -> Optional[List[Position]]:
+def find_previous_positions(position: Position, links: Links, steps_back: int) -> Optional[List[Position]]:
     """Gets a list consisting of the given position and steps_back positions in previous time points. Returns None if
     we can't get back that many time points. Index 0 will be the given position, index 1 the position one time step back,
     etc."""

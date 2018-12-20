@@ -5,7 +5,7 @@ from matplotlib.figure import Figure
 
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
@@ -91,7 +91,7 @@ def _plot_intensities(experiment: Experiment, figure: Figure, mi_start=0, line_c
                       starting_time_point)
 
 
-def _data_into_past_until_division(experiment: Experiment, starting_point: Position, links: PositionLinks,
+def _data_into_past_until_division(experiment: Experiment, starting_point: Position, links: Links,
                                    func: GetStatistic) -> PointList:
     position = starting_point
     x_values = []
@@ -106,7 +106,7 @@ def _data_into_past_until_division(experiment: Experiment, starting_point: Posit
     return x_values, y_values
 
 
-def _get_previous(position: Position, links: PositionLinks) -> Optional[Position]:
+def _get_previous(position: Position, links: Links) -> Optional[Position]:
 
     # Find the single previous position
     previous_positions = links.find_pasts(position)

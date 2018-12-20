@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any
 from matplotlib.backend_bases import KeyEvent
 
 from autotrack import core
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position
 from autotrack.gui.window import Window
 from autotrack.linking.nearby_position_finder import find_closest_position
@@ -102,7 +102,7 @@ class PositionListVisualizer(Visualizer):
         self._ax.set_ylim(mother.y + 50, mother.y - 50)
         self._ax.set_autoscale_on(False)
 
-    def _draw_connections(self, links: PositionLinks, main_position: Position, line_style:str = "solid",
+    def _draw_connections(self, links: Links, main_position: Position, line_style:str = "solid",
                           line_width: int = 1):
         for connected_position in links.find_links_of(main_position):
             delta_time = 1

@@ -4,13 +4,13 @@ import itertools
 from typing import Set, List, Optional
 
 from autotrack.core.image_loader import ImageLoader
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position, PositionCollection
 from autotrack.core.score import Family, ScoreCollection
 from autotrack.linking.scoring_system import MotherScoringSystem
 
 
-def get_next_division(links: PositionLinks, position: Position) -> Optional[Family]:
+def get_next_division(links: Links, position: Position) -> Optional[Family]:
     """Gets the next division for the given position. Returns None if there is no such division. Raises ValueError if a
     cell with more than two daughters is found in this lineage."""
     track = links.get_track(position)
@@ -28,7 +28,7 @@ def get_next_division(links: PositionLinks, position: Position) -> Optional[Fami
     return Family(track.find_last_position(), next_daughters[0], next_daughters[1])
 
 
-def find_mothers(links: PositionLinks) -> Set[Position]:
+def find_mothers(links: Links) -> Set[Position]:
     """Finds all mother cells in a graph. Mother cells are cells with at least two daughter cells."""
     mothers = set()
 
@@ -42,7 +42,7 @@ def find_mothers(links: PositionLinks) -> Set[Position]:
     return mothers
 
 
-def find_families(links: PositionLinks, warn_on_many_daughters = True) -> List[Family]:
+def find_families(links: Links, warn_on_many_daughters = True) -> List[Family]:
     """Finds all mother and daughter cells in a graph. Mother cells are cells with at least two daughter cells.
     Returns a set of Family instances.
     """
@@ -66,7 +66,7 @@ def find_families(links: PositionLinks, warn_on_many_daughters = True) -> List[F
     return families
 
 
-def calculates_scores(image_loader: ImageLoader, positions: PositionCollection, links: PositionLinks,
+def calculates_scores(image_loader: ImageLoader, positions: PositionCollection, links: Links,
                       scoring_system: MotherScoringSystem) -> ScoreCollection:
     """Finds all families in the given links and calculates their scores."""
     scores = ScoreCollection()

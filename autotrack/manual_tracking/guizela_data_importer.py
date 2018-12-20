@@ -11,7 +11,7 @@ import numpy
 from autotrack.core import TimePoint
 from autotrack.core.data_axis import DataAxisCollection, DataAxis
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position, PositionCollection
 from autotrack.core.resolution import ImageResolution
 from autotrack.linking_analysis import linking_markers
@@ -19,11 +19,11 @@ from autotrack.linking_analysis.linking_markers import EndMarker
 from autotrack.manual_tracking.track_lib import Track
 
 
-def _load_links(tracks_dir: str, min_time_point: int = 0, max_time_point: int = 5000) -> PositionLinks:
+def _load_links(tracks_dir: str, min_time_point: int = 0, max_time_point: int = 5000) -> Links:
     """Extracts all positions and links from the track files in tracks_dir, returns them as a Graph."""
 
     _fix_python_path_for_pickle()
-    links = PositionLinks()
+    links = Links()
 
     tracks = _read_track_files(tracks_dir, links, min_time_point=min_time_point, max_time_point=max_time_point)
     _read_lineage_file(tracks_dir, links, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
@@ -69,7 +69,7 @@ def add_data_to_experiment(experiment: Experiment, tracks_dir: str, min_time_poi
     _load_crypt_axis(tracks_dir, experiment.positions, experiment.data_axes, min_time_point, max_time_point)
 
 
-def _read_track_files(tracks_dir: str, links: PositionLinks, min_time_point: int = 0, max_time_point: int = 5000
+def _read_track_files(tracks_dir: str, links: Links, min_time_point: int = 0, max_time_point: int = 5000
                       ) -> List[Track]:
     """Adds all tracks to the graph, and returns the original tracks"""
     track_files = os.listdir(tracks_dir)
@@ -93,7 +93,7 @@ def _read_track_files(tracks_dir: str, links: PositionLinks, min_time_point: int
     return tracks
 
 
-def _read_lineage_file(tracks_dir: str, links: PositionLinks, tracks: List[Track], min_time_point: int = 0,
+def _read_lineage_file(tracks_dir: str, links: Links, tracks: List[Track], min_time_point: int = 0,
                        max_time_point: int = 5000) -> None:
     """Connects the lineages in the graph based on information from the lineages.p file"""
     print("Reading lineages file")
@@ -117,7 +117,7 @@ def _read_lineage_file(tracks_dir: str, links: PositionLinks, tracks: List[Track
             links.add_link(mother_last_snapshot, child_2_first_snapshot)
 
 
-def _read_deaths_file(tracks_dir: str, links: PositionLinks, tracks_by_id: List[Track], min_time_point: int,
+def _read_deaths_file(tracks_dir: str, links: Links, tracks_by_id: List[Track], min_time_point: int,
                       max_time_point: int):
     """Adds all marked cell deaths to the linking network."""
     _fix_python_path_for_pickle()
@@ -145,7 +145,7 @@ def _get_cell_in_time_point(track: Track, time_point_number: int) -> Position:
     return position
 
 
-def _extract_links_from_track(track_file: str, links: PositionLinks, min_time_point: int = 0,
+def _extract_links_from_track(track_file: str, links: Links, min_time_point: int = 0,
                               max_time_point: int = 5000) -> Track:
     with open(track_file, "rb") as file_handle:
         track = pickle.load(file_handle, encoding='latin1')

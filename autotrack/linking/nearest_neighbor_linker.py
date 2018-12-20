@@ -1,13 +1,13 @@
 """Ultra-simple linker. Used as a starting point for more complex links."""
 
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import PositionCollection
 from autotrack.core import TimePoint
 from autotrack.core.experiment import Experiment
 from autotrack.linking.nearby_position_finder import find_close_positions
 
 
-def nearest_neighbor(experiment: Experiment, tolerance: float = 1.0) -> PositionLinks:
+def nearest_neighbor(experiment: Experiment, tolerance: float = 1.0) -> Links:
     """Simple nearest neighbour linking, keeping a list of potential candidates based on a given tolerance.
 
     A tolerance of 1.05 also links positions 5% from the closest position. Note that if a tolerance higher than 1 is
@@ -15,7 +15,7 @@ def nearest_neighbor(experiment: Experiment, tolerance: float = 1.0) -> Position
 
     max_time_point is the last time point that will still be included.
     """
-    links = PositionLinks()
+    links = Links()
 
     time_point_previous = None
     for time_point_current in experiment.time_points():
@@ -29,7 +29,7 @@ def nearest_neighbor(experiment: Experiment, tolerance: float = 1.0) -> Position
     return links
 
 
-def _add_nearest_edges(links: PositionLinks, positions: PositionCollection, time_point_previous: TimePoint, time_point_current: TimePoint, tolerance: float):
+def _add_nearest_edges(links: Links, positions: PositionCollection, time_point_previous: TimePoint, time_point_current: TimePoint, tolerance: float):
     """Adds edges pointing towards previous time point, making the shortest one the preferred."""
     for position in positions.of_time_point(time_point_current):
         nearby_list = find_close_positions(positions.of_time_point(time_point_previous), position, tolerance, max_amount=5)
@@ -37,7 +37,7 @@ def _add_nearest_edges(links: PositionLinks, positions: PositionCollection, time
             links.add_link(position, nearby_position)
 
 
-def _add_nearest_edges_extra(links: PositionLinks, positions: PositionCollection, time_point_current: TimePoint, time_point_next: TimePoint, tolerance: float):
+def _add_nearest_edges_extra(links: Links, positions: PositionCollection, time_point_current: TimePoint, time_point_next: TimePoint, tolerance: float):
     """Adds edges to the next time point, which is useful if _add_edges missed some possible links."""
     for position in positions.of_time_point(time_point_current):
         nearby_list = find_close_positions(positions.of_time_point(time_point_next), position, tolerance, max_amount=5)

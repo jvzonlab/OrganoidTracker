@@ -3,7 +3,7 @@ from typing import Optional, Set
 from autotrack.comparison.report import ComparisonReport, Category
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position
 from autotrack.core.resolution import ImageResolution
 
@@ -37,10 +37,10 @@ class _Comparing:
 
     _resolution: ImageResolution
     _max_distance_um: float
-    _ground_truth: PositionLinks
-    _scratch: PositionLinks
+    _ground_truth: Links
+    _scratch: Links
 
-    def __init__(self, resolution: ImageResolution, ground_truth: PositionLinks, scratch: PositionLinks, max_distance_um: float):
+    def __init__(self, resolution: ImageResolution, ground_truth: Links, scratch: Links, max_distance_um: float):
         """Creates the comparison object. You need to provide two data sets. Cells are not allowed to move further away
          from each other than max_distance_um."""
         self._resolution = resolution

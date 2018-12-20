@@ -1,6 +1,6 @@
 import unittest
 
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position
 from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.errors import Error
@@ -9,7 +9,7 @@ from autotrack.linking_analysis.errors import Error
 class TestLinkingMarkers(unittest.TestCase):
 
     def test_error_marker(self):
-        position_links = PositionLinks()
+        position_links = Links()
 
         self.assertEquals(None, linking_markers.get_error_marker(position_links, Position(0, 0, 0).with_time_point_number(0)),
                           "non-existing position must have no error marker")

@@ -1,7 +1,7 @@
 from typing import Dict, Any, Tuple, Set
 
 from autotrack.core import UserError
-from autotrack.core.links import LinkingTrack, PositionLinks
+from autotrack.core.links import LinkingTrack, Links
 from autotrack.core.resolution import ImageResolution
 from autotrack.gui import dialog
 from autotrack.gui.window import Window

@@ -2,11 +2,11 @@ from typing import Tuple, Iterable
 
 import numpy
 
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position
 
 
-def get_flow_to_previous(links: PositionLinks, positions: Iterable[Position], center: Position,
+def get_flow_to_previous(links: Links, positions: Iterable[Position], center: Position,
                          max_dx_and_dy: int = 50, max_dz = 2) -> Tuple[float, float, float]:
     """Gets the average flow of the positions within the specified radius towards the previous time point. Returns
     (0,0,0) if there are no positions. The given center position must be in the givne time point.
@@ -31,7 +31,7 @@ def get_flow_to_previous(links: PositionLinks, positions: Iterable[Position], ce
     return total_movement[0] / count, total_movement[1] / count, total_movement[2] / count
 
 
-def get_flow_to_next(links: PositionLinks, positions: Iterable[Position], center: Position,
+def get_flow_to_next(links: Links, positions: Iterable[Position], center: Position,
                      max_dx_and_dy: int = 50, max_dz = 2) -> Tuple[float, float, float]:
     """Gets the average flow of the positions within the specified radius towards the next time point. Returns
     (0,0,0) if there are no positions. The given center position must be in the given time point. Ignores cell

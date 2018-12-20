@@ -9,7 +9,7 @@ import numpy
 
 from autotrack.core import UserError
 from autotrack.core.image_loader import ImageLoader
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position
 from autotrack.gui import dialog
 from autotrack.gui.threading import Task

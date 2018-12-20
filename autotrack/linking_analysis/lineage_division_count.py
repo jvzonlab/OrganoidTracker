@@ -1,11 +1,11 @@
 from typing import Optional
 
-from autotrack.core.links import LinkingTrack, PositionLinks
+from autotrack.core.links import LinkingTrack, Links
 from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.linking_markers import EndMarker
 
 
-def get_division_count_in_lineage(starting_track: LinkingTrack, links: PositionLinks, last_time_point_number: int
+def get_division_count_in_lineage(starting_track: LinkingTrack, links: Links, last_time_point_number: int
                                   ) -> Optional[int]:
     """Gets how many divisions there are in the lineage starting at the given cell. If the cell does not divide, then
     this method will return 0. If a lineage ended before the end of the experiment and it was not because of an actual

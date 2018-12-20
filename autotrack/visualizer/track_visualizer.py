@@ -4,7 +4,7 @@ from matplotlib.backend_bases import KeyEvent, MouseEvent
 from matplotlib.figure import Figure, Axes
 
 from autotrack.core import UserError, TimePoint
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position
 from autotrack.core.resolution import ImageResolution
 from autotrack.gui import dialog
@@ -13,14 +13,14 @@ from autotrack.visualizer import DisplaySettings
 from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
 
-def _get_positions_in_lineage(links: PositionLinks, position: Position) -> PositionLinks:
-    single_lineage_links = PositionLinks()
+def _get_positions_in_lineage(links: Links, position: Position) -> Links:
+    single_lineage_links = Links()
     _add_past_positions(links, position, single_lineage_links)
     _add_future_positions(links, position, single_lineage_links)
     return single_lineage_links
 
 
-def _add_past_positions(links: PositionLinks, position: Position, single_lineage_links: PositionLinks):
+def _add_past_positions(links: Links, position: Position, single_lineage_links: Links):
     """Finds all positions in earlier time points connected to this position."""
     while True:
         past_positions = links.find_pasts(position)
@@ -38,7 +38,7 @@ def _add_past_positions(links: PositionLinks, position: Position, single_lineage
         position = past_positions.pop()
 
 
-def _add_future_positions(links: PositionLinks, position: Position, single_lineage_links: PositionLinks):
+def _add_future_positions(links: Links, position: Position, single_lineage_links: Links):
     """Finds all positions in later time points connected to this position."""
     while True:
         future_positions = links.find_futures(position)
@@ -56,7 +56,7 @@ def _add_future_positions(links: PositionLinks, position: Position, single_linea
         position = future_positions.pop()
 
 
-def _plot_displacements(axes: Axes, links: PositionLinks, resolution: ImageResolution, position: Position):
+def _plot_displacements(axes: Axes, links: Links, resolution: ImageResolution, position: Position):
     displacements = list()
     time_point_numbers = list()
 
@@ -83,7 +83,7 @@ def _plot_displacements(axes: Axes, links: PositionLinks, resolution: ImageResol
 class TrackVisualizer(ExitableImageVisualizer):
     """Shows the trajectory of a single cell. Double-click a cell to select it. Press T to exit this view."""
 
-    _positions_in_lineage: Optional[PositionLinks] = None
+    _positions_in_lineage: Optional[Links] = None
 
     def __init__(self, window: Window, time_point: TimePoint, z: int, display_settings: DisplaySettings):
         super().__init__(window, time_point=time_point, z=z, display_settings=display_settings)
@@ -104,25 +104,21 @@ class TrackVisualizer(ExitableImageVisualizer):
         }
 
     def _show_displacement(self):
-        try:
-            resolution = self._experiment.image_resolution()
-        except ValueError:
-            raise UserError("Resolution not set", "The image resolution is not set. Cannot calculate cellular"
-                                                  " displacement")
-        else:
-            if self._positions_in_lineage is None:
-                raise UserError("No cell track selected", "No cell track selected, so we cannot plot anything. Double-click"
-                                                          " on a cell to select a track.")
+        resolution = self._experiment.image_resolution()
 
-            def draw_function(figure: Figure):
-                axes = figure.gca()
-                axes.set_xlabel("Time (time points)")
-                axes.set_ylabel("Displacement between time points (μm)")
-                axes.set_title("Cellular displacement")
-                for lineage_start in self._positions_in_lineage.find_appeared_cells():
-                    _plot_displacements(axes, self._positions_in_lineage, resolution, lineage_start)
+        if self._positions_in_lineage is None:
+            raise UserError("No cell track selected", "No cell track selected, so we cannot plot anything. Double-click"
+                                                      " on a cell to select a track.")
 
-            dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
+        def draw_function(figure: Figure):
+            axes = figure.gca()
+            axes.set_xlabel("Time (time points)")
+            axes.set_ylabel("Displacement between time points (μm)")
+            axes.set_title("Cellular displacement")
+            for lineage_start in self._positions_in_lineage.find_appeared_cells():
+                _plot_displacements(axes, self._positions_in_lineage, resolution, lineage_start)
+
+        dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
 
     def _on_command(self, command: str) -> bool:
         if command == "exit":

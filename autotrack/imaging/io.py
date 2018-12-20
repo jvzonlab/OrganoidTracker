@@ -10,7 +10,7 @@ from pandas import DataFrame
 
 from autotrack.core import shape, TimePoint, UserError
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position, PositionCollection
 from autotrack.core.data_axis import DataAxisCollection, DataAxis
 from autotrack.core.resolution import ImageResolution
@@ -117,7 +117,7 @@ def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List],
 
 def _parse_links_format(experiment: Experiment, link_data: Dict[str, Any], min_time_point: int, max_time_point: int):
     """Parses a node_link_graph and adds all links and positions to the experiment."""
-    links = PositionLinks()
+    links = Links()
     _add_d3_data(links, link_data, min_time_point, max_time_point)
     positions = experiment.positions
     for position in links.find_all_positions():
@@ -140,7 +140,7 @@ def _parse_data_axes_format(experiment: Experiment, axes_data: List[Dict], min_t
         experiment.data_axes.add_data_axis(TimePoint(time_point_number), path)
 
 
-def _add_d3_data(links: PositionLinks, data: Dict, min_time_point: int = -100000, max_time_point: int = 100000):
+def _add_d3_data(links: Links, data: Dict, min_time_point: int = -100000, max_time_point: int = 100000):
     """Adds data in the D3.js node-link format. Used for deserialization."""
 
     # Add position data
@@ -202,7 +202,7 @@ def _my_decoder(json_object):
     return json_object
 
 
-def save_links_to_json(links: PositionLinks, json_file_name: str):
+def save_links_to_json(links: Links, json_file_name: str):
     """Saves position linking data to a JSON file. File follows the d3.js format, like the example here:
     http://bl.ocks.org/mbostock/4062045 """
     data = _links_to_d3_data(links)
@@ -212,7 +212,7 @@ def save_links_to_json(links: PositionLinks, json_file_name: str):
         json.dump(data, handle, cls=_MyEncoder)
 
 
-def _links_to_d3_data(links: PositionLinks) -> Dict:
+def _links_to_d3_data(links: Links) -> Dict:
     """Return data in D3.js node-link format that is suitable for JSON serialization
     and use in Javascript documents."""
     nodes = list()
@@ -330,7 +330,7 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
         json.dump(save_data, handle, cls=_MyEncoder)
 
 
-def load_links_from_json(json_file_name: str, min_time_point: int = 0, max_time_point: int = 5000) -> PositionLinks:
+def load_links_from_json(json_file_name: str, min_time_point: int = 0, max_time_point: int = 5000) -> Links:
     """Loads all links from a file. Links that extend outside the allowed time points are removed."""
     with open(json_file_name) as handle:
         data = json.load(handle, object_hook=_my_decoder)
@@ -345,7 +345,7 @@ def load_links_from_json(json_file_name: str, min_time_point: int = 0, max_time_
                          if min_time_point <= entry["source"].time_point_number() <= max_time_point
                          and min_time_point <= entry["target"].time_point_number() <= max_time_point]
 
-        links = PositionLinks()
+        links = Links()
         _add_d3_data(links, data)
         return links
 

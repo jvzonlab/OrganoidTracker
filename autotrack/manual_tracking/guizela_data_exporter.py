@@ -7,11 +7,11 @@ from typing import List, Any, Optional, Dict
 import numpy
 
 from autotrack.core import UserError
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position
 
 
-def export_links(links: PositionLinks, output_folder: str, comparison_folder: Optional[str] = None):
+def export_links(links: Links, output_folder: str, comparison_folder: Optional[str] = None):
     """Exports the links of the experiment in Guizela's file format."""
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
@@ -30,12 +30,12 @@ class _TrackExporter:
     """Used to export tracks in Guizela's file format, preferably using the original track ids."""
 
     _next_track_id: int = 0
-    _links: PositionLinks
+    _links: Links
 
     _mother_daughter_pairs: List[List[int]]
     _tracks_by_id: Dict[int, Any]
 
-    def __init__(self, links: PositionLinks):
+    def __init__(self, links: Links):
         self._links = links
         self._mother_daughter_pairs = []
         self._tracks_by_id = {}

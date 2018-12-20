@@ -2,7 +2,7 @@
 
 from autotrack.config import ConfigFile
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.resolution import ImageResolution
 from autotrack.imaging import tifffolder, io
 from autotrack.linking import nearest_neighbor_linker, dpct_linker, cell_division_finder

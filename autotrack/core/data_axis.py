@@ -5,7 +5,7 @@ import numpy
 from scipy import interpolate
 
 from autotrack.core import TimePoint
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position
 
 
@@ -260,7 +260,7 @@ class DataAxisCollection:
                 lowest_distance_position = axis_position
         return lowest_distance_position
 
-    def to_position_on_original_axis(self, links: PositionLinks, position: Position) -> Optional[DataAxisPosition]:
+    def to_position_on_original_axis(self, links: Links, position: Position) -> Optional[DataAxisPosition]:
         """Gets the position on the axis that was closest in the first time point this position appeared. In this way,
         every position is assigned to a single axis, and will never switch to another axis during its lifetime."""
         first_position = links.get_first_position_of(position)

@@ -4,7 +4,7 @@ from typing import Callable, Tuple, Union
 from matplotlib.axes import Axes
 from matplotlib.collections import LineCollection
 
-from autotrack.core.links import LinkingTrack, PositionLinks
+from autotrack.core.links import LinkingTrack, Links
 from autotrack.core.resolution import ImageResolution
 from autotrack.core.typing import MPLColor
 
@@ -23,9 +23,9 @@ def _get_lineage_drawing_start_time(lineage: LinkingTrack) -> int:
 
 
 class LineageDrawing:
-    links: PositionLinks
+    links: Links
 
-    def __init__(self, links: PositionLinks):
+    def __init__(self, links: Links):
         self.links = links
 
     def _get_sublineage_draw_data(self, lin_id: LinkingTrack, x_curr_branch, x_end_branch, line_list):

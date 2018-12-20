@@ -9,7 +9,7 @@ import dpct
 import math
 from typing import Dict, List, Iterable
 
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position, PositionCollection
 from autotrack.core.score import ScoreCollection, Score, ScoredFamily
 
@@ -36,8 +36,8 @@ class _PositionToId:
         return self.__id_to_position[id]
 
 
-def _to_links(position_ids: _PositionToId, results: Dict) -> PositionLinks:
-    links = PositionLinks()
+def _to_links(position_ids: _PositionToId, results: Dict) -> Links:
+    links = Links()
 
     for entry in results["linkingResults"]:
         if not entry["value"]:
@@ -49,7 +49,7 @@ def _to_links(position_ids: _PositionToId, results: Dict) -> PositionLinks:
     return links
 
 
-def run(positions: PositionCollection, starting_links: PositionLinks, scores: ScoreCollection) -> PositionLinks:
+def run(positions: PositionCollection, starting_links: Links, scores: ScoreCollection) -> Links:
     position_ids = _PositionToId()
     weights = {"weights": [
         10,  # multiplier for linking features?
@@ -70,7 +70,7 @@ def _scores_involving(daughter: Position, scores: Iterable[ScoredFamily]) -> Ite
             yield score
 
 
-def _create_dpct_graph(position_ids: _PositionToId, starting_links: PositionLinks, scores: ScoreCollection,
+def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links, scores: ScoreCollection,
                        shapes: PositionCollection, min_time_point: int, max_time_point: int) -> Dict:
     segmentation_hypotheses = []
     for position in starting_links.find_all_positions():

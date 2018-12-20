@@ -1,7 +1,7 @@
 from typing import Optional
 
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import PositionLinks
+from autotrack.core.links import Links
 from autotrack.core.positions import Position, PositionCollection
 from autotrack.core.resolution import ImageResolution
 from autotrack.core.score import Score, ScoreCollection, Family
@@ -22,7 +22,7 @@ def apply(experiment: Experiment):
         linking_markers.set_error_marker(links, position, error)
 
 
-def get_error(links: PositionLinks, position: Position, scores: ScoreCollection, positions: PositionCollection,
+def get_error(links: Links, position: Position, scores: ScoreCollection, positions: PositionCollection,
               resolution: ImageResolution) -> Optional[Error]:
     future_positions = links.find_futures(position)
     if len(future_positions) > 2:
