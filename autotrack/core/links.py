@@ -185,9 +185,7 @@ class Links:
             track._next_tracks = []
 
             # Delete last position in the track
-            track._positions_by_time_point[-1] = None
-            while track._positions_by_time_point[-1] is None:  # Remove all Nones at the end
-                del track._positions_by_time_point[-1]
+            del track._positions_by_time_point[-1]
 
         # Remove from indexes
         del self._position_to_track[position]
