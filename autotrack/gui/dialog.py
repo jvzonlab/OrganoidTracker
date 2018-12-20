@@ -13,8 +13,8 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
 from autotrack.core import UserError, Name
-from autotrack.gui.window import Window
 from autotrack.gui.gui_experiment import GuiExperiment
+from autotrack.gui.window import Window
 
 
 def _window() -> QWidget:

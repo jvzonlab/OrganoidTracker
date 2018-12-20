@@ -2,7 +2,7 @@ from typing import Tuple
 
 
 class ImageResolution:
-    """Represents the resolution of a 3D image."""
+    """Represents the resolution of a 3D image. X and y resolution must be equal."""
     pixel_size_zyx_um: Tuple[float, float, float]
     time_point_interval_m: float  # Time between time points in minutes
 
@@ -20,3 +20,7 @@ class ImageResolution:
     @property
     def pixel_size_x_um(self) -> float:
         return self.pixel_size_zyx_um[2]
+
+    @property
+    def pixel_size_z_um(self) -> float:
+        return self.pixel_size_zyx_um[0]

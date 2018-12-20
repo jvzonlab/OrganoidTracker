@@ -8,7 +8,7 @@ from matplotlib.figure import Figure
 
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
-from autotrack.gui import dialog
+from autotrack.gui import dialog, image_resolution_dialog
 from autotrack.gui.dialog import popup_message_cancellable
 from autotrack.gui.gui_experiment import GuiExperiment
 from autotrack.gui.undo_redo import UndoRedo
@@ -183,3 +183,7 @@ def rename_experiment(window: Window):
     if name:
         experiment.name.set_name(name)
         window.set_status("Changed the name of the experiment to \"" + str(experiment.name) + "\".")
+
+
+def set_image_resolution(window: Window):
+    image_resolution_dialog.popup_resolution_setter(window.get_gui_experiment())

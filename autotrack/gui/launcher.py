@@ -117,6 +117,7 @@ class MainWindow(Window):
             "File//Plugins-Reload all plugins...": lambda: action.reload_plugins(self),
             "File//Exit-Exit (Alt+F4)": lambda: action.ask_exit(self.get_gui_experiment()),
             "Edit//Experiment-Rename experiment...": lambda: action.rename_experiment(self),
+            "Edit//Experiment-Set image resolution...": lambda: action.set_image_resolution(self),
             "View//Toggle-Toggle showing axis numbers": lambda: action.toggle_axis(self.get_figure()),
         }
 
