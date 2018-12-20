@@ -67,6 +67,9 @@ def _load_json_data_file(file_name: str, min_time_point: int, max_time_point: in
             raise ValueError("Unknown data version", "This program is not able to load data of version "
                              + str(data["version"]) + ".")
 
+        if "name" in data:
+            experiment.name.set_name(data["name"])
+
         if "shapes" in data:
             _parse_shape_format(experiment, data["shapes"], min_time_point, max_time_point)
 
@@ -294,6 +297,10 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
 
     if experiment.positions.has_positions():
         save_data["positions"] = _encode_positions_and_shapes(experiment.positions)
+
+    # Save name
+    if experiment.name.has_name():
+        save_data["name"] = str(experiment.name)
 
     # Save links
     if experiment.links.has_links():

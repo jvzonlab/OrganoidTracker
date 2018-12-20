@@ -30,7 +30,8 @@ def load_images_from_folder(experiment: Experiment, folder: str, file_name_forma
         time_point_number += 1
     max_time_point = time_point_number - 1  # Last actual image is attempted number - 1
 
-    experiment.name.provide_automatic_name(path.basename(folder).replace("-stacks", ""))
+    if not experiment.name.has_name():
+        experiment.name.set_name(path.basename(folder).replace("-stacks", ""))
     experiment.image_loader(TiffImageLoader(folder, file_name_format, min_time_point, max_time_point))
 
 

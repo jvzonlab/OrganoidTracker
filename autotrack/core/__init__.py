@@ -43,19 +43,14 @@ class TimePoint:
 
 
 class Name:
-    _automatic: bool = True  # Set to False when the user manually entered a name
     _name: Optional[str] = None
 
-    def provide_automatic_name(self, name: Optional[str]):
-        if self._automatic:
-            # Allowed to replace one automatically generated name by another
-            self._name = name
-            return True
-        return False  # Don't allow to override a manually chosen name by some automatically generated name
+    def has_name(self) -> bool:
+        """Returns True if there is any name stored."""
+        return self._name is not None
 
     def set_name(self, name: Optional[str]):
         """Forcibly sets a name."""
-        self._automatic = False
         self._name = name
 
     def get_save_name(self):
@@ -66,10 +61,11 @@ class Name:
         return hash(str(self))
 
     def __eq__(self, other):
-        """Checks if the name as returned by str(...) is equal. So an automatic name can match a manual name."""
+        """Checks if the name as returned by str(...) is equal."""
         return isinstance(other, Name) and str(self) == str(other)
 
     def __str__(self):
+        """Returns the name if there is any name stored, otherwise it returns "Unnamed"."""
         name = self._name
         return name if name is not None else "Unnamed"
 
