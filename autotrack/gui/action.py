@@ -1,5 +1,6 @@
 import re
 import sys
+from enum import Enum
 from os import path
 from typing import Optional
 
@@ -18,14 +19,20 @@ from autotrack.visualizer import activate
 from autotrack.visualizer.empty_visualizer import EmptyVisualizer
 
 
-def ask_exit(gui_experiment: GuiExperiment):
-    """Exits the main window, after asking if the user wants to save."""
-    answer = dialog.prompt_yes_no_cancel("Confirmation", "Do you want to save your changes first?")
+def ask_save_unsaved_changes(gui_experiment: GuiExperiment) -> bool:
+    """If there are any unsaved changes, this method will prompt the user to save them. Returns True if the user either
+    successfully saved the data, or if the user doesn't want to save. Returns False if the action must be aborted."""
+    if not gui_experiment.undo_redo.has_unsaved_changes():
+        return True
+
+    answer = dialog.prompt_yes_no_cancel("Confirmation", "There are unsaved changes to the tracking data. Do you want"
+                                                         " to save those first?")
     if answer.is_yes():
         if save_tracking_data(gui_experiment):
-            QApplication.quit()
+            return True
     elif answer.is_no():
-        QApplication.quit()
+        return True
+    return False
 
 
 def toggle_axis(figure: Figure):
@@ -89,6 +96,9 @@ def _find_pattern(file_name: str) -> Optional[str]:
 
 
 def load_tracking_data(window: Window):
+    if not ask_save_unsaved_changes(window.get_gui_experiment()):
+        return  # Cancelled
+
     file_name = dialog.prompt_load_file("Select data file", [
         (io.FILE_EXTENSION.upper() + " file", "*." + io.FILE_EXTENSION),
         ("Detection or linking files", "*.json"),
@@ -187,3 +197,9 @@ def rename_experiment(window: Window):
 
 def set_image_resolution(window: Window):
     image_resolution_dialog.popup_resolution_setter(window.get_gui_experiment())
+
+
+def ask_exit(gui_experiment: GuiExperiment):
+    """Asks to save unsaved changes, then exits."""
+    if ask_save_unsaved_changes(gui_experiment):
+        QApplication.quit()

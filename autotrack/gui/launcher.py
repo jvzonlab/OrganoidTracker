@@ -161,17 +161,9 @@ class MainWindow(Window):
 
 def _window_close(window: Window, event: QCloseEvent):
     """Asks if the user wants to save before closing the program."""
-    if not window.get_gui_experiment().undo_redo.has_unsaved_changes():
-        return
-
     event.ignore()
-    from autotrack.gui import dialog, action
-    answer = dialog.prompt_yes_no_cancel("Confirmation", "You have unsaved changes. Do you want to save those"
-                                                         " first?")
-    if answer.is_yes():
-        if action.save_tracking_data(window.get_gui_experiment()):
-            event.setAccepted(True)
-    elif answer.is_no():
+    from autotrack.gui import action
+    if action.ask_save_unsaved_changes(window.get_gui_experiment()):
         event.setAccepted(True)
 
 
