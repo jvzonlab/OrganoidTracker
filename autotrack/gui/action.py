@@ -102,7 +102,7 @@ def load_tracking_data(window: Window):
     file_name = dialog.prompt_load_file("Select data file", [
         (io.FILE_EXTENSION.upper() + " file", "*." + io.FILE_EXTENSION),
         ("Detection or linking files", "*.json"),
-        ("Guizela's tracking files", "*.p")])
+        ("Guizela's tracking files", "lineages.p")])
     if file_name is None:
         return  # Cancelled
 
