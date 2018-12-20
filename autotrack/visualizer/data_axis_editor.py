@@ -126,8 +126,7 @@ class DataAxisEditor(AbstractEditor):
             return
 
         background_color = (1, 1, 1, 0.8) if axis_position.axis == self._selected_path else (0, 1, 0, 0.8)
-        self._ax.annotate(f"{axis_position.pos:.1f}", (position.x, position.y), fontsize=12 - abs(dz),
-                        fontweight="bold", color="black", backgroundcolor=background_color)
+        self._draw_annotation(position, f"{axis_position.pos:.1f}", background_color=background_color)
 
     def _draw_data_axis(self, data_axis: DataAxis, id: int, color: str, marker_size_max: int):
         if data_axis == self._get_selected_path_of_current_time_point():

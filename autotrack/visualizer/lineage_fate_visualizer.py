@@ -107,5 +107,5 @@ class LineageFateVisualizer(ExitableImageVisualizer):
         except KeyError:
             pass  # Not interesting
         text_color = "black" if sum(background_color) / len(background_color) > 0.6 else "white"
-        self._ax.annotate(_lineage_fate_to_text(lineage_fate), (position.x, position.y), fontsize=12 - abs(dz),
-                           fontweight="bold", color=text_color, backgroundcolor=background_color)
+        self._draw_annotation(position, _lineage_fate_to_text(lineage_fate), text_color=text_color,
+                              background_color=background_color)

@@ -11,6 +11,7 @@ from autotrack import core
 from autotrack.core import TimePoint, shape
 from autotrack.core.data_axis import DataAxis
 from autotrack.core.positions import Position
+from autotrack.core.typing import MPLColor
 from autotrack.gui import dialog
 from autotrack.gui.dialog import prompt_int, popup_error
 from autotrack.gui.window import Window
@@ -116,6 +117,14 @@ class AbstractImageVisualizer(Visualizer):
         a completely different z layer. So only call this method if you want to have a marker visible."""
         self._ax.plot(position.x, position.y, 'o', markersize=25, color=(0, 0, 0, 0), markeredgecolor=color,
                       markeredgewidth=5)
+
+    def _draw_annotation(self, position: Position, text: str, *, text_color: MPLColor = "black",
+                         background_color: MPLColor = (1, 1, 1, 0.8)):
+        """Draws an annotation with text for the given position."""
+        font_size = max(8, 12 - abs(position.z - self._z))
+        self._ax.annotate(text, (position.x, position.y), fontsize=font_size,
+                          fontweight="bold", color=text_color, backgroundcolor=background_color,
+                          horizontalalignment='center', verticalalignment='center')
 
     def _get_figure_title(self) -> str:
         return "Time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
