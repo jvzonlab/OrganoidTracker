@@ -290,9 +290,10 @@ def _encode_data_axes_to_json(data_axes: DataAxisCollection) -> List[Dict]:
 def save_data_to_json(experiment: Experiment, json_file_name: str):
     """Saves positions, shapes, scores and links to a JSON file. The file should end with the extension FILE_EXTENSION.
     """
-    save_data = {
-        "version": "v1",
-        "shapes": _encode_positions_and_shapes(experiment.positions)}
+    save_data = {"version": "v1"}
+
+    if experiment.positions.has_positions():
+        save_data["positions"] = _encode_positions_and_shapes(experiment.positions)
 
     # Save links
     if experiment.links.has_links():

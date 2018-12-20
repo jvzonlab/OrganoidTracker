@@ -224,4 +224,6 @@ class PositionCollection:
         for positions_at_time_point in self._all_positions.values():
             yield from positions_at_time_point.positions()
 
-
+    def has_positions(self) -> bool:
+        """Returns True if there are any positions stored here."""
+        return len(self._all_positions) > 0
