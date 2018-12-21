@@ -214,7 +214,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
             if gaussian is None:
                 continue
             self._experiment.positions.add(
-                Position(gaussian.mu_x, gaussian.mu_y, gaussian.mu_z).with_time_point(self._time_point))
+                Position(gaussian.mu_x, gaussian.mu_y, gaussian.mu_z, time_point=self._time_point))
             color = colors[i % len(colors)]
             gaussian.draw_colored(canvas, color)
             i += 1

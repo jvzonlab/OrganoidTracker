@@ -134,14 +134,13 @@ def _read_deaths_file(tracks_dir: str, links: Links, tracks_by_id: List[Track], 
             if last_position_time < min_time_point or last_position_time > max_time_point:
                 continue
             last_position_position = track.x[-1]
-            last_position = Position(*last_position_position).with_time_point_number(last_position_time)
+            last_position = Position(*last_position_position, time_point_number=last_position_time)
             linking_markers.set_track_end_marker(links, last_position, EndMarker.DEAD)
 
 
 def _get_cell_in_time_point(track: Track, time_point_number: int) -> Position:
     position = track.get_pos(time_point_number)
-    position = Position(position[0], position[1], position[2])
-    position.with_time_point_number(time_point_number)
+    position = Position(position[0], position[1], position[2], time_point_number=time_point_number)
     return position
 
 

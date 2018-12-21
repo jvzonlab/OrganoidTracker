@@ -204,7 +204,7 @@ class LinkAndPositionEditor(AbstractEditor):
                 self.update_status(f"Cannot move {self._selected1} to this time point.")
             else:
                 old_shape = self._experiment.positions.get_shape(self._selected1)
-                new_position = Position(event.xdata, event.ydata, self._z).with_time_point(self._time_point)
+                new_position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
                 old_position = self._selected1
                 self._selected1 = None
                 self._perform_action(_MovePositionAction(old_position, old_shape, new_position))
@@ -261,7 +261,7 @@ class LinkAndPositionEditor(AbstractEditor):
     def _try_insert(self, event: LocationEvent):
         if self._selected1 is None or self._selected2 is None:
             # Insert new position
-            position = Position(event.xdata, event.ydata, self._z).with_time_point(self._time_point)
+            position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
             connections = []
             if self._selected1 is not None \
                     and self._selected1.time_point_number() != self._time_point.time_point_number():

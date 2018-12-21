@@ -79,7 +79,7 @@ class Experiment:
         """Moves the position of a position, preserving any links. (So it's different from remove-and-readd.) The shape
         of a position is not preserved, though. Throws ValueError when the position is moved to another time point. If
         the new position has not time point specified, it is set to the time point o the existing position."""
-        position_new.with_time_point_number(old_position.time_point_number())  # Make sure both have the same time point
+        position_new.check_time_point(old_position.time_point())  # Make sure both have the same time point
 
         # Replace in linking graphs
         self._links.replace_position(old_position, position_new)

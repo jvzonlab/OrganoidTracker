@@ -100,9 +100,10 @@ def _import_file(experiment: Experiment, directory: str, file_name: str, z_offse
 
     # Add new cells to the time point
     for row in range(len(coords)):
-        position = Position(coords[row, 2], coords[row, 1], (coords[row, 0] / Z_OVERSCALED) + z_offset)
+        position = Position(coords[row, 2], coords[row, 1], (coords[row, 0] / Z_OVERSCALED) + z_offset,
+                            time_point_number=time_point_number)
 
-        experiment.positions.add(position.with_time_point_number(time_point_number))
+        experiment.positions.add(position)
 
 
 def _export_file(positions: AbstractSet[Position], file_path: str, z_offset: int):

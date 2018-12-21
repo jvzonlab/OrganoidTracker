@@ -9,20 +9,28 @@ from autotrack.core.shape import ParticleShape, UnknownShape
 
 
 class Position:
-    """A detected position. Only the 3D + time position is stored here, see the PositionShape class for the shape."""
+    """A detected position. Only the 3D + time position is stored here, see the PositionShape class for the shape.
+    The position is immutable."""
 
     __slots__ = ["x", "y", "z", "_time_point_number"]  # Optimization - Google "python slots"
 
-    x: float
-    y: float
-    z: float
+    x: float  # Read-only
+    y: float  # Read-only
+    z: float  # Read-only
     _time_point_number: Optional[int]
 
-    def __init__(self, x: float, y: float, z: float):
+    def __init__(self, x: float, y: float, z: float, *,
+                 time_point: Optional[TimePoint] = None, time_point_number: Optional[int] = None):
+        """Constructs a new position, optionally with either a time point or a time point number."""
         self.x = float(x)
         self.y = float(y)
         self.z = float(z)
-        self._time_point_number = None
+        if time_point is not None:
+            if time_point_number is not None:
+                raise ValueError("Both time_point and time_point_number params are set; use only one of them")
+            self._time_point_number = time_point.time_point_number()
+        if time_point_number is not None:
+            self._time_point_number = int(time_point_number)
 
     def distance_squared(self, other: "Position", z_factor: float = 5) -> float:
         """Gets the squared distance. Working with squared distances instead of normal ones gives a much better
@@ -38,15 +46,6 @@ class Position:
 
     def time_point_number(self) -> Optional[int]:
         return self._time_point_number
-
-    def with_time_point_number(self, time_point_number: int) -> "Position":
-        if self._time_point_number is not None and self._time_point_number != time_point_number:
-            raise ValueError("time_point_number was already set")
-        self._time_point_number = int(time_point_number)
-        return self
-
-    def with_time_point(self, time_point: TimePoint) -> "Position":
-        return self.with_time_point_number(time_point.time_point_number())
 
     def __repr__(self):
         string = "Position(" + ("%.2f" % self.x) + ", " + ("%.2f" % self.y) + ", " + ("%.0f" % self.z) + ")"
@@ -71,8 +70,16 @@ class Position:
                and self._time_point_number == other._time_point_number
 
     def time_point(self):
-        """Gets the time point of this position."""
+        """Gets the time point of this position. Note: getting the time point number is slightly more efficient, as
+        this method requires allocating a new TimePoint instance."""
         return TimePoint(self._time_point_number)
+
+    def check_time_point(self, time_point: TimePoint):
+        """Raises a ValueError if this position has no time point set, or if it has a time point that is not equal to
+        the given time point."""
+        if self._time_point_number != time_point.time_point_number():
+            raise ValueError(f"Time points don't match: self is in {self._time_point_number}, other in"
+                             f" {time_point.time_point_number()}")
 
 
 class _PositionsAtTimePoint:

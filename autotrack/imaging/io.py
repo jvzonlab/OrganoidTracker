@@ -110,7 +110,7 @@ def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List],
             continue
 
         for raw_position in raw_positions:
-            position = Position(*raw_position[0:3]).with_time_point_number(time_point_number)
+            position = Position(*raw_position[0:3], time_point_number=time_point_number)
             position_shape = shape.from_list(raw_position[3:])
             experiment.positions.add(position, position_shape)
 
@@ -188,10 +188,11 @@ class _MyEncoder(JSONEncoder):
 
 def _my_decoder(json_object):
     if 'x' in json_object and 'y' in json_object and 'z' in json_object:
-        position = Position(json_object['x'], json_object['y'], json_object['z'])
         if '_time_point_number' in json_object:
-            position.with_time_point_number(json_object['_time_point_number'])
-        return position
+            return Position(json_object['x'], json_object['y'], json_object['z'],
+                            time_point_number=json_object['_time_point_number'])
+        else:
+            return Position(json_object['x'], json_object['y'], json_object['z'])
     if 'scores' in json_object and 'mother' in json_object and 'daughter1' in json_object:
         mother = json_object["mother"]
         daughter1 = json_object["daughter1"]

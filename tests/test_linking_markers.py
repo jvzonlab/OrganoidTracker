@@ -11,10 +11,10 @@ class TestLinkingMarkers(unittest.TestCase):
     def test_error_marker(self):
         position_links = Links()
 
-        self.assertEquals(None, linking_markers.get_error_marker(position_links, Position(0, 0, 0).with_time_point_number(0)),
+        self.assertEquals(None, linking_markers.get_error_marker(position_links, Position(0, 0, 0, time_point_number=0)),
                           "non-existing position must have no error marker")
 
-        position = Position(2, 2, 2).with_time_point_number(2)
+        position = Position(2, 2, 2, time_point_number=2)
         self.assertEquals(None, linking_markers.get_error_marker(position_links, position), "no error marker was set")
 
         linking_markers.set_error_marker(position_links, position, Error.MOVED_TOO_FAST)

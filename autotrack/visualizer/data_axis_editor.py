@@ -91,7 +91,7 @@ class DataAxisEditor(AbstractEditor):
         if event.dblclick:
             # Select path
             links = self._experiment.links
-            position = Position(event.xdata, event.ydata, self._z).with_time_point(self._time_point)
+            position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
             path_position = self._experiment.data_axes.to_position_on_original_axis(links, position)
             if path_position is None or path_position.distance > 10 or path_position.axis == self._selected_path:
                 self._select_path(None)
@@ -149,7 +149,7 @@ class DataAxisEditor(AbstractEditor):
                 self._perform_action(_AddPathAction(path, self._time_point))
             else:
                 # Can modify existing path
-                point = Position(event.xdata, event.ydata, self._z).with_time_point(self._time_point)
+                point = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
                 self._perform_action(_AddPointAction(selected_path, point))
         elif event.key == "delete":
             selected_path = self._get_selected_path_of_current_time_point()
