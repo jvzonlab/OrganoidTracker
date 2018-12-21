@@ -30,7 +30,7 @@ def _nearby_cell_movement(window: Window):
 def _draw_figure(experiment: Experiment, figure: Figure):
     links = experiment.links
     positions = experiment.positions
-    resolution = experiment.image_resolution()
+    resolution = experiment.images.resolution()
     axes = figure.gca()
     axes.set_xlim(_STEPS_BACK * resolution.time_point_interval_m, resolution.time_point_interval_m)
     axes.set_xlabel("Minutes before death")

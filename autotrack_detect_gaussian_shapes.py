@@ -44,7 +44,7 @@ config.save_and_exit_if_changed()
 print("Loading cell positions...")
 experiment = io.load_data_file(_positions_input_file, min_time_point=_min_time_point, max_time_point=_max_time_point)
 resolution = ImageResolution(_pixel_size_x_um, _pixel_size_y_um, _pixel_size_z_um, _time_point_duration_m)
-experiment.image_resolution(resolution)
+experiment.images.set_resolution(resolution)
 print("Discovering images...")
 tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
                                    min_time_point=_min_time_point, max_time_point=_max_time_point)

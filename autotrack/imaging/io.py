@@ -91,7 +91,7 @@ def _load_json_data_file(file_name: str, min_time_point: int, max_time_point: in
             y_res = data["image_resolution"]["y_um"]
             z_res = data["image_resolution"]["z_um"]
             t_res = data["image_resolution"]["t_m"]
-            experiment.image_resolution(ImageResolution(x_res, y_res, z_res, t_res))
+            experiment.images.set_resolution(ImageResolution(x_res, y_res, z_res, t_res))
     return experiment
 
 
@@ -318,7 +318,7 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
 
     # Save image resolution
     try:
-        resolution = experiment.image_resolution()
+        resolution = experiment.images.resolution()
         save_data["image_resolution"] = {"x_um": resolution.pixel_size_zyx_um[2],
                                          "y_um": resolution.pixel_size_zyx_um[1],
                                          "z_um": resolution.pixel_size_zyx_um[0],

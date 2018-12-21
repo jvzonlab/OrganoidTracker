@@ -18,7 +18,7 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
 def _view_cell_death_locations(window: Window):
     experiment = window.get_experiment()
     data_axes = experiment.data_axes
-    resolution = experiment.image_resolution()
+    resolution = experiment.images.resolution()
 
     if not data_axes.has_axes():
         raise UserError("Dead cells", "No crypt axes where found. Cannot determine positions of dead cells.")

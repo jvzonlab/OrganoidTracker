@@ -21,7 +21,7 @@ class DetectionReport(ComparisonReport):
 
 def compare_positions(ground_truth: Experiment, scratch: Experiment, max_distance_um: float = 5) -> DetectionReport:
     """Checks how much the positions in the ground truth match with the given data."""
-    resolution = ground_truth.image_resolution()
+    resolution = ground_truth.images.resolution()
 
     report = DetectionReport()
 

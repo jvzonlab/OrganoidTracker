@@ -23,7 +23,7 @@ config.save_and_exit_if_changed()
 
 print("Starting...")
 ground_truth = io.load_data_file(_ground_truth_file, _min_time_point, _max_time_point)
-ground_truth.image_resolution(ImageResolution(_pixel_size_x_um, _pixel_size_y_um, _pixel_size_z_um, _time_point_duration_m))
+ground_truth.images.set_resolution(ImageResolution(_pixel_size_x_um, _pixel_size_y_um, _pixel_size_z_um, _time_point_duration_m))
 automatic_data = io.load_data_file(_automatic_file, _min_time_point, _max_time_point)
 
 print("Comparing...")

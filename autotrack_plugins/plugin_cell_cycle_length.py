@@ -31,7 +31,7 @@ def _view_cell_cycle_length(window: Window):
 
     third_variable_getter = _ThirdVar()
     try:
-        time_point_duration_h = experiment.image_resolution().time_point_interval_m / 60
+        time_point_duration_h = experiment.images.resolution().time_point_interval_m / 60
     except ValueError:
         raise UserError("No resolution set", "The resolution of the images was not set. Cannot plot anything.")
 

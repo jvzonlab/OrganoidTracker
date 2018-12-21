@@ -26,7 +26,7 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
 
 def _load_laetitia_positions(window: Window):
     new_experiment = Experiment()
-    new_experiment.image_loader(window.get_experiment().image_loader())  # Copy over image loader
+    new_experiment.images = window.get_experiment().images  # Copy over image loader
 
     z_offset = _get_z_offset(window.get_experiment())
 

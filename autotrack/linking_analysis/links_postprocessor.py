@@ -12,9 +12,9 @@ def postprocess(experiment: Experiment, margin_xy: int):
 
 
 def _remove_positions_close_to_edge(experiment: Experiment, margin_xy: int):
-    image_loader = experiment.image_loader()
+    image_loader = experiment.images
     links = experiment.links
-    example_image = image_loader.get_image_stack(experiment.get_time_point(image_loader.first_time_point_number()))
+    example_image = image_loader.get_image_stack(experiment.get_time_point(experiment.first_time_point_number()))
     for time_point in experiment.time_points():
         for position in list(experiment.positions.of_time_point(time_point)):
             if position.x < margin_xy or position.y < margin_xy or position.x > example_image.shape[2] - margin_xy\

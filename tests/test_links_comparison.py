@@ -9,7 +9,7 @@ from autotrack.core.resolution import ImageResolution
 def _experiment(*positions: Position) -> Experiment:
     """Creates a testing experiment containing the given positions. Resolution is simply 1px = 1um"""
     experiment = Experiment()
-    experiment.image_resolution(ImageResolution(1, 1, 1, 1))  # Set 1 px = 1 um for simplicity
+    experiment.images.set_resolution(ImageResolution(1, 1, 1, 1))  # Set 1 px = 1 um for simplicity
     for position in positions:
         experiment.positions.add(position)
     return experiment

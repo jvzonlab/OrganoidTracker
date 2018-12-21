@@ -32,7 +32,7 @@ def load_images_from_folder(experiment: Experiment, folder: str, file_name_forma
 
     if not experiment.name.has_name():
         experiment.name.set_name(path.basename(folder).replace("-stacks", ""))
-    experiment.image_loader(TiffImageLoader(folder, file_name_format, min_time_point, max_time_point))
+    experiment.images.image_loader(TiffImageLoader(folder, file_name_format, min_time_point, max_time_point))
 
 
 class TiffImageLoader(ImageLoader):

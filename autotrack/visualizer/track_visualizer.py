@@ -120,7 +120,7 @@ class TrackVisualizer(ExitableImageVisualizer):
         }
 
     def _show_displacement(self):
-        resolution = self._experiment.image_resolution()
+        resolution = self._experiment.images.resolution()
 
         if len(self._selected_lineages) == 0:
             raise UserError("No cell track selected", "No cell track selected, so we cannot plot anything. Double-click"

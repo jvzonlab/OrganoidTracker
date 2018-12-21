@@ -16,7 +16,7 @@ def apply(experiment: Experiment):
     links = experiment.links
     scores = experiment.scores
     positions = experiment.positions
-    resolution = experiment.image_resolution()
+    resolution = experiment.images.resolution()
     for position in links.find_all_positions():
         error = get_error(links, position, scores, positions, resolution)
         linking_markers.set_error_marker(links, position, error)
@@ -81,5 +81,5 @@ def apply_on(experiment: Experiment, *iterable: Position):
     nowhere, cells that merge together and cells that have three or more daughters."""
     links = experiment.links
     for position in iterable:
-        error = get_error(links, position, experiment.scores, experiment.positions, experiment.image_resolution())
+        error = get_error(links, position, experiment.scores, experiment.positions, experiment.images.resolution())
         linking_markers.set_error_marker(links, position, error)

@@ -27,7 +27,7 @@ print("Starting...")
 
 scratch_experiment = io.load_data_file(_automatic_links_file, _min_time_point, _max_time_point)
 baseline_experiment = io.load_data_file(_baseline_links_file, _min_time_point, _max_time_point)
-baseline_experiment.image_resolution(ImageResolution(_pixel_size_x_um, _pixel_size_y_um, _pixel_size_z_um, _time_point_duration_m))
+baseline_experiment.images.set_resolution(ImageResolution(_pixel_size_x_um, _pixel_size_y_um, _pixel_size_z_um, _time_point_duration_m))
 
 print("Comparing...")
 report = links_comparison.compare_links(baseline_experiment, scratch_experiment, _max_distance_um)

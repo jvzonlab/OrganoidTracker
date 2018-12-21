@@ -65,7 +65,7 @@ def add_data_to_experiment(experiment: Experiment, tracks_dir: str, min_time_poi
     for position in links.find_all_positions():
         positions.add(position)
     experiment.links.add_links(links)
-    experiment.image_resolution(ImageResolution(0.32, 0.32, 2, 12))
+    experiment.images.set_resolution(ImageResolution(0.32, 0.32, 2, 12))
     _load_crypt_axis(tracks_dir, experiment.positions, experiment.data_axes, min_time_point, max_time_point)
 
 

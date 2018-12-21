@@ -4,50 +4,13 @@ from numpy import ndarray
 
 from autotrack.core import TimePoint, Name, UserError, min_none, max_none
 from autotrack.core.image_loader import ImageLoader
+from autotrack.core.images import Images
 from autotrack.core.links import Links
 from autotrack.core.positions import Position, PositionCollection
 from autotrack.core.data_axis import DataAxisCollection
 from autotrack.core.resolution import ImageResolution
 from autotrack.core.score import ScoreCollection
 
-
-class _CachedImageLoader(ImageLoader):
-    """Wrapper that caches the last few loaded images."""
-
-    _internal: ImageLoader
-    _image_cache: List[Tuple[int, ndarray]]
-
-    def __init__(self, wrapped: ImageLoader):
-        self._image_cache = []
-        self._internal = wrapped
-
-    def _add_to_cache(self, time_point_number: int, image: ndarray):
-        if len(self._image_cache) > 5:
-            self._image_cache.pop(0)
-        self._image_cache.append((time_point_number, image))
-
-    def get_image_stack(self, time_point: TimePoint) -> Optional[ndarray]:
-        time_point_number = time_point.time_point_number()
-        for entry in self._image_cache:
-            if entry[0] == time_point_number:
-                return entry[1]
-
-        # Cache miss
-        image = self._internal.get_image_stack(time_point)
-        self._add_to_cache(time_point_number, image)
-        return image
-
-    def uncached(self) -> ImageLoader:
-        return self._internal
-
-    def first_time_point_number(self) -> Optional[int]:
-        return self._internal.first_time_point_number()
-
-    def last_time_point_number(self) -> Optional[int]:
-        return self._internal.last_time_point_number()
-
-    def copy(self) -> ImageLoader:
-        return _CachedImageLoader(self._internal.copy())
 
 
 class Experiment:
@@ -58,7 +21,7 @@ class Experiment:
     _positions: PositionCollection
     scores: ScoreCollection
     _links: Links
-    _image_loader: ImageLoader = ImageLoader()
+    _images: Images
     _name: Name
     data_axes: DataAxisCollection
     _image_resolution: Optional[ImageResolution] = None
@@ -69,6 +32,7 @@ class Experiment:
         self.scores = ScoreCollection()
         self.data_axes = DataAxisCollection()
         self._links = Links()
+        self._images = Images()
 
     def remove_position(self, position: Position):
         """Removes both a position and its links from the experiment."""
@@ -108,13 +72,13 @@ class Experiment:
 
     def first_time_point_number(self) -> Optional[int]:
         """Gets the first time point of the experiment where there is data (images and/or positions)."""
-        return min_none(self._image_loader.first_time_point_number(),
+        return min_none(self._images.image_loader().first_time_point_number(),
                         self._positions.first_time_point_number(),
                         self.data_axes.first_time_point_number())
 
     def last_time_point_number(self) -> Optional[int]:
         """Gets the last time point (inclusive) of the experiment where there is data (images and/or positions)."""
-        return max_none(self._image_loader.last_time_point_number(),
+        return max_none(self._images.image_loader().last_time_point_number(),
                         self._positions.last_time_point_number(),
                         self.data_axes.last_time_point_number())
 
@@ -139,36 +103,9 @@ class Experiment:
             yield self.get_time_point(current_number)
             current_number += 1
 
-    def image_loader(self, image_loader: Optional[ImageLoader] = None) -> ImageLoader:
-        """Gets/sets the image loader."""
-        if image_loader is not None:
-            self._image_loader = _CachedImageLoader(image_loader.uncached())
-            return image_loader
-        return self._image_loader
-
     def get_image_stack(self, time_point: TimePoint) -> Optional[ndarray]:
         """Gets a stack of all images for a time point, one for every z layer. Returns None if there is no image."""
-        return self._image_loader.get_image_stack(time_point)
-
-    def image_resolution(self, *args: Optional[ImageResolution]):
-        """Gets or sets the image resolution. Throws UserError if you try to get the resolution when none has been set.
-
-        Set the image resolution:
-        >>> self.image_resolution(ImageResolution(0.32, 0.32, 0.32, 12))
-
-        Get the image resolution:
-        >>> self.image_resolution()
-
-        Delete the image resolution:
-        >>> self.image_resolution(None)
-        """
-        if len(args) == 1:
-            self._image_resolution = args[0]
-        if len(args) > 1:
-            raise ValueError(f"Too many args: {args}")
-        if self._image_resolution is None:
-            raise UserError("No image resolution set", "No image resolution was set. Please set a resolution first.")
-        return self._image_resolution
+        return self._images.get_image_stack(time_point)
 
     @property
     def positions(self) -> PositionCollection:
@@ -190,8 +127,20 @@ class Experiment:
     def links(self, links: Links):
         """Sets the links to the given value. May not be None."""
         if not isinstance(links, Links):
-            raise ValueError("links must be a PositionLinks object, was " + repr(links))
+            raise TypeError("links must be a Links object, was " + repr(links))
         self._links = links
+
+    @property
+    def images(self) -> Images:
+        """Gets all images stored in the experiment."""
+        return self._images
+
+    @images.setter
+    def images(self, images: Images):
+        """Sets the images to the given value. May not be None."""
+        if not isinstance(images, Images):
+            raise TypeError("images mut be an Images object, was " + repr(images))
+        self._images = images
 
     @property
     def division_lookahead_time_points(self):

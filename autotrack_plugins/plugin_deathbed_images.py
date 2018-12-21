@@ -81,7 +81,7 @@ def _generate_deathbed_images(window: Window):
                         f"A file already exists at {output_folder}. Therefore, we cannot create a directory there.")
     os.mkdir(output_folder)
 
-    window.get_scheduler().add_task(_ImageGeneratingTask(experiment.image_loader(), deathbeds, output_folder))
+    window.get_scheduler().add_task(_ImageGeneratingTask(experiment.images.image_loader(), deathbeds, output_folder))
 
 
 class _ImageGeneratingTask(Task):

@@ -90,11 +90,11 @@ class _UpdateImageResolutionAction(UndoableAction):
         self._old_resolution = old_resolution
 
     def do(self, experiment: Experiment) -> str:
-        experiment.image_resolution(self._new_resolution)
+        experiment.images.set_resolution(self._new_resolution)
         return "Updated image resolution"
 
     def undo(self, experiment: Experiment) -> str:
-        experiment.image_resolution(self._old_resolution)
+        experiment.images.set_resolution(self._old_resolution)
         return "Restored image resolution"
 
 
@@ -102,7 +102,7 @@ def popup_resolution_setter(gui_experiment: GuiExperiment):
     """Shows a popup to change the image resolution."""
     experiment = gui_experiment.experiment
     try:
-        image_resolution = experiment.image_resolution()
+        image_resolution = experiment.images.resolution()
     except UserError:
         image_resolution = None
     popup = _ResolutionEditorWindow(image_resolution)

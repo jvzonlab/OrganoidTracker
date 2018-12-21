@@ -55,4 +55,4 @@ def _table_names(keys: List[str]) -> List[str]:
 
 
 def _score(experiment: Experiment, family: Family, scoring_system: MotherScoringSystem) -> Score:
-    return scoring_system.calculate(experiment.image_loader(), experiment.positions, family)
+    return scoring_system.calculate(experiment.images.image_loader(), experiment.positions, family)

@@ -28,13 +28,13 @@ def _show_clone_size_distribution(window: Window):
         raise UserError("Failed to calculate clone size distribution",
                         "Cannot calculate clone size distribution. The linking data is missing.")
     try:
-        experiment.image_resolution()
+        experiment.images.resolution()
     except ValueError:
         raise UserError("Failed to calculate clone size distribution", "Cannot calculate clone size distribution. "
                                                                         "No time resolution is provided.")
 
     # Calculate the number of time points in the given follow time
-    time_point_window = int(_LINEAGE_FOLLOW_TIME_H / experiment.image_resolution().time_point_interval_h)
+    time_point_window = int(_LINEAGE_FOLLOW_TIME_H / experiment.images.resolution().time_point_interval_h)
     print("Time point window is", time_point_window)
 
     # Run the task on another thread, as calculating is quite slow
