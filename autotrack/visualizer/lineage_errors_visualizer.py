@@ -36,8 +36,7 @@ class LineageErrorsVisualizer(ExitableImageVisualizer):
 
     def _exit_view(self):
         from autotrack.visualizer.link_and_position_editor import LinkAndPositionEditor
-        image_visualizer = LinkAndPositionEditor(self._window, time_point_number=self._time_point.time_point_number(),
-                                                 z=self._z)
+        image_visualizer = LinkAndPositionEditor(self._window, time_point=self._time_point, z=self._z)
         activate(image_visualizer)
 
     def _show_linking_errors(self, position: Optional[Position] = None):

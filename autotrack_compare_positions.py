@@ -4,7 +4,7 @@
 from autotrack.comparison import positions_comparison
 from autotrack.config import ConfigFile
 from autotrack.core.resolution import ImageResolution
-from autotrack.imaging import tifffolder, io
+from autotrack.imaging import io
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
