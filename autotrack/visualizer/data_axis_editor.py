@@ -179,7 +179,6 @@ class DataAxisEditor(AbstractEditor):
 
     def _exit_view(self):
         from autotrack.visualizer.link_and_position_editor import LinkAndPositionEditor
-        data_editor = LinkAndPositionEditor(self._window,
-                                            time_point_number=self._time_point.time_point_number(),
-                                            z=self._z, display_settings=self._display_settings)
+        data_editor = LinkAndPositionEditor(self._window, time_point=self._time_point, z=self._z,
+                                            display_settings=self._display_settings)
         activate(data_editor)

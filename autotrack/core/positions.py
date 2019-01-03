@@ -29,8 +29,10 @@ class Position:
             if time_point_number is not None:
                 raise ValueError("Both time_point and time_point_number params are set; use only one of them")
             self._time_point_number = time_point.time_point_number()
-        if time_point_number is not None:
+        elif time_point_number is not None:
             self._time_point_number = int(time_point_number)
+        else:
+            self._time_point_number = None
 
     def distance_squared(self, other: "Position", z_factor: float = 5) -> float:
         """Gets the squared distance. Working with squared distances instead of normal ones gives a much better
@@ -74,12 +76,30 @@ class Position:
         this method requires allocating a new TimePoint instance."""
         return TimePoint(self._time_point_number)
 
+    def is_zero(self) -> bool:
+        """Returns True if the X, Y and Z are exactly zero. Time is ignored."""
+        return self.x == 0 and self.y == 0 and self.z == 0
+
+    def subtract_pos(self, other: "Position") -> "Position":
+        """Returns a new position (without a time specified) that is the difference between this position and the other
+        position. The time point of the other position is ignored, the time point of the new position will be equal to
+        the time point of this position."""
+        return Position(self.x - other.x, self.y - other.y, self.z - other.z, time_point_number=self._time_point_number)
+
     def check_time_point(self, time_point: TimePoint):
         """Raises a ValueError if this position has no time point set, or if it has a time point that is not equal to
         the given time point."""
         if self._time_point_number != time_point.time_point_number():
             raise ValueError(f"Time points don't match: self is in {self._time_point_number}, other in"
                              f" {time_point.time_point_number()}")
+
+    def add_pos(self, other: "Position") -> "Position":
+        """Returns a new position (without a time specified) that is the sum of this position and the other position.
+        The time point of the other position is ignored, the time point of the new position will be equal to the time
+        point of this position."""
+        if other.x == 0 and other.y == 0 and other.z == 0:
+            return self  # No need to add anything
+        return Position(self.x + other.x, self.y + other.y, self.z + other.z, time_point_number=self._time_point_number)
 
 
 class _PositionsAtTimePoint:
@@ -176,6 +196,26 @@ class PositionCollection:
         self._max_time_point_number = None
         for time_point_number in self._all_positions.keys():
             self._update_min_max_time_points_for_addition(time_point_number)
+
+    def move_position(self, old_position: Position, new_position: Position):
+        """Moves a position, keeping its shape. Does nothing if the position is not in this collection. Raises a value
+        error if the time points the provided positions are None or if they do not match."""
+        if old_position.time_point_number() != new_position.time_point_number():
+            raise ValueError("Time points are different")
+
+        time_point_number = old_position.time_point_number()
+        if time_point_number is None:
+            raise ValueError("Position does not have a time point, so it cannot be added")
+
+        positions_at_time_point = self._all_positions.get(time_point_number)
+        if positions_at_time_point is None:
+            return  # Position was not in collection
+        old_shape = positions_at_time_point.get_shape(old_position)
+        try:
+            positions_at_time_point.detach_position(old_position)
+            positions_at_time_point.add_position(new_position, old_shape)
+        except KeyError:
+            pass  # Do nothing if the position was not in the collection
 
     def detach_position(self, position: Position):
         """Removes a position from a time point."""

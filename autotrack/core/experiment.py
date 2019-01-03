@@ -45,12 +45,11 @@ class Experiment:
         the new position has not time point specified, it is set to the time point o the existing position."""
         position_new.check_time_point(old_position.time_point())  # Make sure both have the same time point
 
-        # Replace in linking graphs
+        # Replace in linking network
         self._links.replace_position(old_position, position_new)
 
         # Replace in position collection
-        self._positions.detach_position(old_position)
-        self._positions.add(position_new)
+        self._positions.move_position(old_position, position_new)
         return True
 
     def remove_positions(self, time_point: TimePoint):

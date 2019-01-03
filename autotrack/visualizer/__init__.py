@@ -14,6 +14,7 @@ from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog
 from autotrack.gui.threading import Task
 from autotrack.gui.window import Window
+from autotrack.imaging import cropper
 from autotrack.linking.nearby_position_finder import find_closest_position
 
 
@@ -162,6 +163,16 @@ class Visualizer:
             try:
                 next_time_point = self._experiment.get_next_time_point(time_point)
                 next_time_point_images = self._experiment.get_image_stack(next_time_point)
+
+                # Check if we need to translate the next image
+                offsets = self._experiment.images.offsets
+                relative_offset = offsets.of_time_point(time_point).subtract_pos(offsets.of_time_point(next_time_point))
+                if relative_offset.x != 0 or relative_offset.y != 0 or relative_offset.z != 0:
+                    original_images = next_time_point_images
+                    next_time_point_images = numpy.zeros_like(original_images)
+                    cropper.crop_3d(original_images, int(relative_offset.x), int(relative_offset.y),
+                                    int(relative_offset.z), output=next_time_point_images)
+
                 rgb_images[:,:,:,0] = next_time_point_images # Red channel is next image
             except KeyError:
                 pass  # There is no next time point, ignore

@@ -108,7 +108,7 @@ def load_tracking_data(window: Window):
 
     new_experiment = io.load_data_file(file_name)
     # Transfer image loader from old experiment
-    new_experiment.images = window.get_experiment().images
+    new_experiment.images.image_loader(window.get_experiment().images.image_loader())
 
     window.get_gui_experiment().set_experiment(new_experiment)
     window.redraw_data()

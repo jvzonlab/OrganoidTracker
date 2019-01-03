@@ -107,7 +107,11 @@ class AbstractImageVisualizer(Visualizer):
 
     def _draw_image(self):
         if self._time_point_images is not None:
-            self._ax.imshow(self._time_point_images[self._z], cmap=self._color_map)
+            offset = self._experiment.images.offsets.of_time_point(self._time_point)
+            image_z = int(self._z - offset.z)
+            image = self._time_point_images[image_z]
+            extent = (offset.x, offset.x + image.shape[1], offset.y + image.shape[0], offset.y)
+            self._ax.imshow(image, cmap=self._color_map, extent=extent)
 
     def _draw_selection(self, position: Position, color: str):
         """Draws a marker for the given position that indicates that the position is selected. Subclasses can call this
@@ -336,10 +340,11 @@ class AbstractImageVisualizer(Visualizer):
             self.draw_view()
 
     def _clamp_z(self):
-        if self._z < 0:
-            self._z = 0
-        if self._time_point_images is not None and self._z >= len(self._time_point_images):
-            self._z = len(self._time_point_images) - 1
+        image_z_offset = int(self._experiment.images.offsets.of_time_point(self._time_point).z)
+        if self._z < image_z_offset:
+            self._z = image_z_offset
+        if self._time_point_images is not None and self._z >= len(self._time_point_images) + image_z_offset:
+            self._z = len(self._time_point_images) + image_z_offset - 1
 
     def _move_to_time(self, new_time_point_number: int) -> bool:
         try:

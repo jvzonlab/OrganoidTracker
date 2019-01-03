@@ -14,7 +14,7 @@ from autotrack.gui.window import Window
 
 Z_OVERSCALED = 6.0
 EXPECTED_Z_LAYERS = 32
-TIME_POINT_FROM_FILE_NAME = re.compile("t(\d+)")
+TIME_POINT_FROM_FILE_NAME = re.compile(r"t(\d+)")
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -62,7 +62,8 @@ def _export_laetitia_positions(window: Window):
                 overwrite = True
             else:
                 return
-        _export_file(experiment.positions.of_time_point(time_point), file_path, z_offset)
+        _export_file(experiment.positions.of_time_point(time_point),
+                     experiment.images.offsets.of_time_point(time_point), file_path, z_offset)
 
 
 def _get_z_offset(experiment: Experiment) -> int:
@@ -91,7 +92,8 @@ def _import_file(experiment: Experiment, directory: str, file_name: str, z_offse
     if match is None:
         return
 
-    time_point_number = int(match.group(1))  # Safe, as this group contains only numbers
+    time_point = TimePoint(int(match.group(1)))  # int(..) is safe, as this group contains only numbers
+    image_offset = experiment.images.offsets.of_time_point(time_point)
 
     if file_name.endswith(".txt"):
         coords = numpy.loadtxt(path.join(directory, file_name))
@@ -101,21 +103,22 @@ def _import_file(experiment: Experiment, directory: str, file_name: str, z_offse
     # Add new cells to the time point
     for row in range(len(coords)):
         position = Position(coords[row, 2], coords[row, 1], (coords[row, 0] / Z_OVERSCALED) + z_offset,
-                            time_point_number=time_point_number)
+                            time_point=time_point).add_pos(image_offset)
 
         experiment.positions.add(position)
 
 
-def _export_file(positions: AbstractSet[Position], file_path: str, z_offset: int):
+def _export_file(positions: AbstractSet[Position], image_offset: Position, file_path: str, z_offset: int):
     if len(positions) == 0:
         return
     array = numpy.empty((len(positions), 3), dtype=numpy.int64)
 
     row = 0
     for position in positions:
-        array[row, 2] = round(position.x)
-        array[row, 1] = round(position.y)
-        array[row, 0] = round((position.z - z_offset) * Z_OVERSCALED)
+        position_in_image = position.subtract_pos(image_offset)
+        array[row, 2] = round(position_in_image.x)
+        array[row, 1] = round(position_in_image.y)
+        array[row, 0] = round((position_in_image.z - z_offset) * Z_OVERSCALED)
         row += 1
 
     numpy.save(file_path, array)

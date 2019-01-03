@@ -50,26 +50,74 @@ class _CachedImageLoader(ImageLoader):
         return _CachedImageLoader(self._internal.copy())
 
 
+class ImageOffsets:
+    _offset: Dict[int, Position]
+
+    def __init__(self, offsets: List[Position] = None):
+        self._offset = dict()
+
+        if offsets is not None:
+            for offset in offsets:
+                self._offset[offset.time_point_number()] = Position(offset.x, offset.y, offset.z)
+
+    def __eq__(self, other):
+        if other is self:
+            return True
+        if not isinstance(other, ImageOffsets):
+            return False
+        return other._offset == self._offset
+
+    def of_time_point(self, time_point: TimePoint) -> Position:
+        """Gets the pixel offset of the image in the given time point."""
+        return self._offset.get(time_point.time_point_number(), _ZERO)
+
+    def update_offset(self, dx: int, dy: int, dz: int, min_time_point: int, max_time_point: int):
+        """Sets the offset for all of the given time point range (inclusive). The offset is added to the current offset.
+        """
+        offset = Position(dx, dy, dz)
+        for time_point_number in range(min_time_point, max_time_point + 1):
+            current_offset = self._offset.get(time_point_number, _ZERO)
+            self._offset[time_point_number] = current_offset.add_pos(offset)
+
+    def to_list(self) -> List[Position]:
+        """Exports this offset list as a list of offsets with time points specified."""
+        offset_list = []
+        for time_point_number, position in self._offset.items():
+            offset_list.append(Position(position.x, position.y, position.z, time_point_number=time_point_number))
+        return offset_list
+
+    def copy(self) -> "ImageOffsets":
+        """Returns a copy of this object. Any changes to the copy won't have an effect on this object, and vice versa.
+        """
+        copy = ImageOffsets()
+        copy._offset = self._offset.copy()  # Positions are immutable, so no need for a deep copy here
+        return copy
+
+
 class Images:
     """Records the images (3D + time), their resolution and their offset."""
 
     _image_loader: ImageLoader
-    _offset: Dict[int, Position]
+    _offsets: ImageOffsets
     _resolution: Optional[ImageResolution] = None
 
     def __init__(self):
         self._image_loader = ImageLoader()
-        self._offset = numpy.zeros((0, 3), dtype=numpy.int32)
+        self._offsets = ImageOffsets()
 
-    def set_offset(self, dx: int, dy: int, dz: int, min_time_point: int, max_time_point: int):
-        """Sets the offset for all of the given time point range (inclusive)."""
-        offset = Position(dx, dy, dz)
-        for time_point_number in range(min_time_point, max_time_point + 1):
-            self._offset[time_point_number] = offset
+    @property
+    def offsets(self):
+        """Gets the image offsets - used to keep the position of the object of interest constant, while the images move.
+        """
+        return self._offsets
 
-    def get_offset(self, time_point: TimePoint) -> Position:
-        """Gets the offset of the image in the given time point."""
-        return self._offset.get(time_point.time_point_number(), _ZERO)
+    @offsets.setter
+    def offsets(self, offsets: ImageOffsets):
+        """Sets the image offsets. We're using a @property here to make sure that an object of the correct type is
+        inserted."""
+        if not isinstance(offsets, ImageOffsets):
+            raise TypeError()
+        self._offsets = offsets
 
     def resolution(self):
         """Gets the image resolution. Raises UserError if you try to get the resolution when none has been set."""

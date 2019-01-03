@@ -176,6 +176,7 @@ class LinkAndPositionEditor(AbstractEditor):
         return {
             **super().get_extra_menu_options(),
             "Edit//Experiment-Edit data axes... (A)": self._show_path_editor,
+            "Edit//Experiment-Edit image offsets... (O)": self._show_offset_editor,
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
             "View//Linking-Lineage errors and warnings (L)": self._show_lineage_errors,
             "Edit//LineageEnd-Mark as cell death": lambda: self._try_set_end_marker(EndMarker.DEAD),
@@ -193,6 +194,8 @@ class LinkAndPositionEditor(AbstractEditor):
             self._show_lineage_errors()
         elif event.key == "a":
             self._show_path_editor()
+        elif event.key == "o":
+            self._show_offset_editor()
         elif event.key == "insert":
             self._try_insert(event)
         elif event.key == "delete":
@@ -247,6 +250,12 @@ class LinkAndPositionEditor(AbstractEditor):
         path_editor = DataAxisEditor(self._window, time_point=self._time_point, z=self._z,
                                      display_settings=self._display_settings)
         activate(path_editor)
+
+    def _show_offset_editor(self):
+        from autotrack.visualizer.image_offset_editor import ImageOffsetEditor
+        offset_editor = ImageOffsetEditor(self._window, time_point=self._time_point, z=self._z,
+                                          display_settings=self._display_settings)
+        activate(offset_editor)
 
     def _show_linking_errors(self, position: Optional[Position] = None):
         from autotrack.visualizer.errors_visualizer import ErrorsVisualizer

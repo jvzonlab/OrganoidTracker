@@ -10,6 +10,7 @@ from pandas import DataFrame
 
 from autotrack.core import shape, TimePoint, UserError
 from autotrack.core.experiment import Experiment
+from autotrack.core.images import ImageOffsets
 from autotrack.core.links import Links
 from autotrack.core.positions import Position, PositionCollection
 from autotrack.core.data_axis import DataAxisCollection, DataAxis
@@ -72,6 +73,8 @@ def _load_json_data_file(file_name: str, min_time_point: int, max_time_point: in
 
         if "shapes" in data:
             _parse_shape_format(experiment, data["shapes"], min_time_point, max_time_point)
+        elif "positions" in data:
+            _parse_shape_format(experiment, data["positions"], min_time_point, max_time_point)
 
         if "data_axes" in data:
             _parse_data_axes_format(experiment, data["data_axes"], min_time_point, max_time_point)
@@ -92,6 +95,9 @@ def _load_json_data_file(file_name: str, min_time_point: int, max_time_point: in
             z_res = data["image_resolution"]["z_um"]
             t_res = data["image_resolution"]["t_m"]
             experiment.images.set_resolution(ImageResolution(x_res, y_res, z_res, t_res))
+
+        if "image_offsets" in data:
+            experiment.images.offsets = ImageOffsets(data["image_offsets"])
     return experiment
 
 
@@ -325,6 +331,9 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
                                          "t_m": resolution.time_point_interval_m}
     except UserError:
         pass
+
+    # Save image offsets
+    save_data["image_offsets"] = experiment.images.offsets.to_list()
 
     _create_parent_directories(json_file_name)
     with open(json_file_name, 'w') as handle:
