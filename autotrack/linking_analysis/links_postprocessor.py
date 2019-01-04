@@ -26,26 +26,26 @@ def _remove_positions_close_to_edge(experiment: Experiment, margin_xy: int):
 def _mark_positions_going_out_of_image(experiment: Experiment):
     """Adds "going into view" and "going out of view" markers to all positions that fall outside the next or previous
     image, in case the camera was moved."""
-    time_point_previous = None
     for time_point in experiment.time_points():
-        if time_point_previous is not None:
-            offset = experiment.images.offsets.of_time_point(time_point)
-            offset_previous = experiment.images.offsets.of_time_point(time_point_previous)
-            if offset == offset_previous:
-                continue  # Image didn't move, so no positions can go out of the view
+        try:
+            time_point_previous = experiment.get_previous_time_point(time_point)
+        except ValueError:
+            continue  # This is the first time point
 
-            print("Found offset change at", time_point, "and", time_point_previous)
-            for position in experiment.positions.of_time_point(time_point_previous):
-                # Check for positions in the previous image that fall outside the current image
-                if not experiment.images.is_inside_image(position.with_time_point(time_point)):
-                    linking_markers.set_track_end_marker(experiment.links, position, EndMarker.OUT_OF_VIEW)
+        offset = experiment.images.offsets.of_time_point(time_point)
+        offset_previous = experiment.images.offsets.of_time_point(time_point_previous)
+        if offset == offset_previous:
+            continue  # Image didn't move, so no positions can go out of the view
 
-            for position in experiment.positions.of_time_point(time_point):
-                # Check for positions in the current image that fall outside the previous image
-                if not experiment.images.is_inside_image(position.with_time_point(time_point_previous)):
-                    linking_markers.set_track_start_marker(experiment.links, position, StartMarker.GOES_INTO_VIEW)
+        for position in experiment.positions.of_time_point(time_point_previous):
+            # Check for positions in the previous image that fall outside the current image
+            if not experiment.images.is_inside_image(position.with_time_point(time_point)):
+                linking_markers.set_track_end_marker(experiment.links, position, EndMarker.OUT_OF_VIEW)
 
-        time_point_previous = time_point
+        for position in experiment.positions.of_time_point(time_point):
+            # Check for positions in the current image that fall outside the previous image
+            if not experiment.images.is_inside_image(position.with_time_point(time_point_previous)):
+                linking_markers.set_track_start_marker(experiment.links, position, StartMarker.GOES_INTO_VIEW)
 
 
 def _add_out_of_view_markers(links: Links, position: Position):

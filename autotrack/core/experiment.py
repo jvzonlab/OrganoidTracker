@@ -83,13 +83,13 @@ class Experiment:
                         self.data_axes.last_time_point_number())
 
     def get_previous_time_point(self, time_point: TimePoint) -> TimePoint:
-        """Gets the time point directly before the given time point. Throws KeyError if the given time point is the last
-        time point."""
+        """Gets the time point directly before the given time point. Throws ValueError if the given time point is the
+        first time point of the experiment."""
         return self.get_time_point(time_point.time_point_number() - 1)
 
     def get_next_time_point(self, time_point: TimePoint) -> TimePoint:
-        """Gets the time point directly after the given time point. Throws KeyError if the given time point is the last
-         time point."""
+        """Gets the time point directly after the given time point. Throws ValueError if the given time point is the
+        last time point of the experiment."""
         return self.get_time_point(time_point.time_point_number() + 1)
 
     def time_points(self) -> Iterable[TimePoint]:
