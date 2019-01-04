@@ -3,7 +3,7 @@ from typing import Tuple, Iterable
 import numpy
 
 from autotrack.core.links import Links
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 
 
 def get_flow_to_previous(links: Links, positions: Iterable[Position], center: Position,

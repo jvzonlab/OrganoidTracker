@@ -6,6 +6,7 @@ from numpy import ndarray
 from scipy.ndimage import binary_dilation
 
 from autotrack.core.bounding_box import BoundingBox
+from autotrack.core.images import Image
 
 
 class OutsideImageError(Exception):
@@ -16,19 +17,22 @@ class OutsideImageError(Exception):
 class Mask:
     """Class used for drawing and applying masks."""
 
-    _offset_x: int = 0
-    _offset_y: int = 0
-    _offset_z: int = 0
+    _offset_x: int
+    _offset_y: int
+    _offset_z: int
     _max_x: int
     _max_y: int
     _max_z: int
 
     _mask: Optional[ndarray] = None
 
-    def __init__(self, max_x: int, max_y: int, max_z: int):
-        self._max_x = max_x
-        self._max_y = max_y
-        self._max_z = max_z
+    def __init__(self, image: Image):
+        self._offset_x = int(image.offset.x)
+        self._offset_y = int(image.offset.y)
+        self._offset_z = int(image.offset.z)
+        self._max_x = self._offset_x + image.array.shape[2]
+        self._max_y = self._offset_y + image.array.shape[1]
+        self._max_z = self._offset_z + image.array.shape[0]
 
     @property
     def offset_x(self):
@@ -81,12 +85,13 @@ class Mask:
             self._mask = numpy.zeros((size_z, size_y, size_x), dtype=numpy.uint8)
         return self._mask
 
-    def create_masked_and_normalized_image(self, image_stack: ndarray):
+    def create_masked_and_normalized_image(self, image: Image):
         """Create normalized subimage (floating point numbers from 0 to 1). Throws OutsideImageError when the mask is
         fully outside the image. Pixels outside the mask are set to NaN."""
-        image_for_masking = image_stack[self._offset_z:self._max_z,
-                            self._offset_y:self._max_y,
-                            self._offset_x:self._max_x].astype(dtype=numpy.float32)
+        image_for_masking = image.array[int(self._offset_z - image.offset.z):int(self._max_z - image.offset.z),
+                            int(self._offset_y - image.offset.y):int(self._max_y - image.offset.y),
+                            int(self._offset_x - image.offset.x):int(self._max_x - image.offset.x)].astype(
+            dtype=numpy.float32)
         try:
             image_for_masking /= image_for_masking.max()
         except ValueError:
@@ -99,12 +104,12 @@ class Mask:
         image_for_masking[mask == 0] = numpy.NAN
         return image_for_masking
 
-    def create_masked_image(self, image_stack: ndarray):
+    def create_masked_image(self, image: Image):
         """Create subimage where all pixels outside the mask are set to 0. Raises OutsideImageError if the mask is fully
         outside the given image."""
-        image_for_masking: ndarray = image_stack[self._offset_z:self._max_z,
-                            self._offset_y:self._max_y,
-                            self._offset_x:self._max_x]
+        image_for_masking: ndarray = image.array[self._offset_z - int(image.offset.z):self._max_z - int(image.offset.z),
+                                     self._offset_y - int(image.offset.y):self._max_y - int(image.offset.y),
+                                     self._offset_x - int(image.offset.x):self._max_x - int(image.offset.x)]
         if image_for_masking.size == 0:
             raise OutsideImageError()
         image_for_masking = image_for_masking.copy()
@@ -120,8 +125,8 @@ class Mask:
         """This adds all values of the given full size image with the given color (== label) to the mask."""
         array = self.get_mask_array()
         cropped_image = labeled_image[self._offset_z:self._max_z,
-                            self._offset_y:self._max_y,
-                            self._offset_x:self._max_x]
+                        self._offset_y:self._max_y,
+                        self._offset_x:self._max_x]
         array[cropped_image == label] = 1
 
     def dilate_xy(self, iterations: int = 1):
@@ -137,13 +142,13 @@ class Mask:
 
     def __repr__(self) -> str:
         return f"<Mask from ({self._offset_x}, {self._offset_y}, {self._offset_z})" \
-               f" to ({self._max_x}, {self._max_y}, {self._max_z})>"
+            f" to ({self._max_x}, {self._max_y}, {self._max_z})>"
 
     def has_zero_volume(self) -> bool:
         """If this mask has no volume, get_mask_array and related methods will fail."""
         return self._offset_x >= self._max_x or self._offset_y >= self._max_y or self._offset_z >= self._max_z
 
 
-def create_mask_for(image: ndarray) -> Mask:
+def create_mask_for(image: Image) -> Mask:
     """Creates a mask that will never expand beyond the size of the given image."""
-    return Mask(image.shape[2], image.shape[1], image.shape[0])
+    return Mask(image)

@@ -3,9 +3,10 @@
 import itertools
 from typing import Set, List, Optional
 
-from autotrack.core.image_loader import ImageLoader
+from autotrack.core.images import Images
 from autotrack.core.links import Links
-from autotrack.core.positions import Position, PositionCollection
+from autotrack.core.position import Position
+from autotrack.core.position_collection import PositionCollection
 from autotrack.core.score import Family, ScoreCollection
 from autotrack.linking.scoring_system import MotherScoringSystem
 
@@ -66,15 +67,26 @@ def find_families(links: Links, warn_on_many_daughters = True) -> List[Family]:
     return families
 
 
-def calculates_scores(image_loader: ImageLoader, positions: PositionCollection, links: Links,
+def calculates_scores(images: Images, positions: PositionCollection, links: Links,
                       scoring_system: MotherScoringSystem) -> ScoreCollection:
     """Finds all families in the given links and calculates their scores."""
     scores = ScoreCollection()
     families = find_families(links, warn_on_many_daughters=False)
+
+    # Sorting is important so that consecutive score calculations can use an image that is still in the cache
+    _sort_by_time_point(families)
+
     i = 0
     for family in families:
-        scores.set_family_score(family, scoring_system.calculate(image_loader, positions, family))
+        scores.set_family_score(family, scoring_system.calculate(images, positions, family))
         i += 1
         if i % 100 == 0:
             print("   working on " + str(i) + "/" + str(len(families)) + "...")
     return scores
+
+
+def _sort_by_time_point(families: List[Family]):
+    def get_time_point_number(family: Family):
+        return family.mother.time_point_number()
+
+    families.sort(key=get_time_point_number)

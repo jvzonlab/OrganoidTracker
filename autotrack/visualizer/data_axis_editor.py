@@ -4,7 +4,7 @@ from matplotlib.backend_bases import KeyEvent, MouseEvent
 
 from autotrack.core import TimePoint
 from autotrack.core.experiment import Experiment
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.core.data_axis import DataAxis
 from autotrack.gui.undo_redo import UndoableAction, ReversedAction
 from autotrack.gui.window import Window

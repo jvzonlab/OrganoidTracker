@@ -6,7 +6,8 @@ from matplotlib.figure import Figure
 from numpy import ndarray
 
 from autotrack.core.experiment import Experiment
-from autotrack.core.positions import PositionCollection, Position
+from autotrack.core.position_collection import PositionCollection
+from autotrack.core.position import Position
 from autotrack.core.resolution import ImageResolution
 from autotrack.gui import dialog
 from autotrack.gui.window import Window

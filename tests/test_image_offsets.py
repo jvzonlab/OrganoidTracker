@@ -2,7 +2,7 @@ import unittest
 
 from autotrack.core import TimePoint
 from autotrack.core.images import ImageOffsets
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 
 
 class TestImageOffsets(unittest.TestCase):

@@ -8,7 +8,7 @@ import numpy
 from numpy import ndarray
 from scipy.ndimage import morphology
 
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 
 
 def _create_colormap() -> List[Tuple[float, float, float, float]]:

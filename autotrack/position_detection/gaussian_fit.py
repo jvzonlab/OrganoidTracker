@@ -11,6 +11,7 @@ from numpy import ndarray
 
 from autotrack.core.bounding_box import bounding_box_from_mahotas, BoundingBox
 from autotrack.core.gaussian import Gaussian
+from autotrack.core.images import Image
 from autotrack.core.mask import create_mask_for
 from autotrack.position_detection import smoothing, ellipse_cluster
 
@@ -130,7 +131,7 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
         bounding_box = _merge_bounding_boxes(bounding_boxes, cell_ids)
         bounding_box.expand(x=blur_radius, y=blur_radius, z=0)
 
-        mask = create_mask_for(image)
+        mask = create_mask_for(Image(image))
         mask.set_bounds(bounding_box)
         if mask.has_zero_volume():
             continue
@@ -143,7 +144,7 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
             intensity = image[int(center_zyx[0]), int(center_zyx[1]), int(center_zyx[2])]
             gaussians.append(Gaussian(intensity, center_zyx[2], center_zyx[1], center_zyx[0], 50, 50, 2, 0, 0, 0))
         mask.dilate_xy(blur_radius // 2)
-        cropped_image = mask.create_masked_image(image)
+        cropped_image = mask.create_masked_image(Image(image))
         smoothing.smooth(cropped_image, blur_radius)
 
         offset_x, offset_y, offset_z = bounding_box.min_x, bounding_box.min_y, bounding_box.min_z

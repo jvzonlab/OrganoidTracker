@@ -5,7 +5,7 @@ from matplotlib.backend_bases import KeyEvent, MouseEvent, LocationEvent
 from autotrack import core
 from autotrack.core import TimePoint
 from autotrack.core.experiment import Experiment
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.core.shape import ParticleShape
 from autotrack.gui.window import Window
 from autotrack.linking_analysis import cell_error_finder, linking_markers

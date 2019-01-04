@@ -2,7 +2,7 @@
 there?"""
 
 from autotrack.core.links import Links
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.linking_markers import EndMarker
 

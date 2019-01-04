@@ -8,7 +8,7 @@ import numpy
 
 from autotrack.core import UserError
 from autotrack.core.links import Links
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 
 
 def export_links(links: Links, output_folder: str, comparison_folder: Optional[str] = None):

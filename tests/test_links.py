@@ -1,7 +1,7 @@
 import unittest
 
 from autotrack.core.links import Links
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 
 
 class TestLinks(unittest.TestCase):

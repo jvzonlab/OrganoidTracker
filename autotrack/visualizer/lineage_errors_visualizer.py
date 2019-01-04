@@ -3,7 +3,7 @@ from typing import Optional, Set
 from matplotlib.backend_bases import KeyEvent
 
 from autotrack.core import TimePoint
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.gui.window import Window
 from autotrack.linking_analysis import lineage_error_finder
 from autotrack.visualizer import activate

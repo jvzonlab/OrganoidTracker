@@ -4,7 +4,7 @@ from matplotlib.backend_bases import KeyEvent
 
 from autotrack import core
 from autotrack.core.links import Links
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.gui.window import Window
 from autotrack.linking.nearby_position_finder import find_closest_position
 from autotrack.visualizer import Visualizer, activate, DisplaySettings
@@ -120,11 +120,12 @@ class PositionListVisualizer(Visualizer):
 
     def _show_image(self):
         mother = self._position_list[self._current_position_index]
-        time_point = self._experiment.get_time_point(mother.time_point_number())
+        time_point = mother.time_point()
         image_stack = self.load_image(time_point, self._show_next_image)
         if image_stack is not None:
-            z = max(0, min(int(mother.z), len(image_stack) - 1))
-            self._ax.imshow(image_stack[z], cmap="gray")
+            offset_z = self._experiment.images.offsets.of_time_point(time_point).z
+            image_z = max(0, min(int(mother.z) + int(offset_z), len(image_stack) - 1))
+            self._ax.imshow(image_stack[image_z], cmap="gray")
 
     def _goto_next(self):
         self._current_position_index += 1

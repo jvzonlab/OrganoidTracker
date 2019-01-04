@@ -6,7 +6,7 @@ from scipy import interpolate
 
 from autotrack.core import TimePoint
 from autotrack.core.links import Links
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 
 
 class DataAxisPosition:

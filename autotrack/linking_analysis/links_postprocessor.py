@@ -1,7 +1,7 @@
 from autotrack.core.experiment import Experiment
 
 from autotrack.core.links import Links
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.linking_markers import EndMarker, StartMarker
 
@@ -9,18 +9,43 @@ from autotrack.linking_analysis.linking_markers import EndMarker, StartMarker
 def postprocess(experiment: Experiment, margin_xy: int):
     _remove_positions_close_to_edge(experiment, margin_xy)
     _remove_spurs(experiment)
+    _mark_positions_going_out_of_image(experiment)
 
 
 def _remove_positions_close_to_edge(experiment: Experiment, margin_xy: int):
     image_loader = experiment.images
     links = experiment.links
-    example_image = image_loader.get_image_stack(experiment.get_time_point(experiment.first_time_point_number()))
     for time_point in experiment.time_points():
         for position in list(experiment.positions.of_time_point(time_point)):
-            if position.x < margin_xy or position.y < margin_xy or position.x > example_image.shape[2] - margin_xy\
-                    or position.y > example_image.shape[1] - margin_xy:
+            if not image_loader.is_inside_image(position, margin_xy=margin_xy):
+                # Remove cell, but inform neighbors first
                 _add_out_of_view_markers(links, position)
                 experiment.remove_position(position)
+
+
+def _mark_positions_going_out_of_image(experiment: Experiment):
+    """Adds "going into view" and "going out of view" markers to all positions that fall outside the next or previous
+    image, in case the camera was moved."""
+    time_point_previous = None
+    for time_point in experiment.time_points():
+        if time_point_previous is not None:
+            offset = experiment.images.offsets.of_time_point(time_point)
+            offset_previous = experiment.images.offsets.of_time_point(time_point_previous)
+            if offset == offset_previous:
+                continue  # Image didn't move, so no positions can go out of the view
+
+            print("Found offset change at", time_point, "and", time_point_previous)
+            for position in experiment.positions.of_time_point(time_point_previous):
+                # Check for positions in the previous image that fall outside the current image
+                if not experiment.images.is_inside_image(position.with_time_point(time_point)):
+                    linking_markers.set_track_end_marker(experiment.links, position, EndMarker.OUT_OF_VIEW)
+
+            for position in experiment.positions.of_time_point(time_point):
+                # Check for positions in the current image that fall outside the previous image
+                if not experiment.images.is_inside_image(position.with_time_point(time_point_previous)):
+                    linking_markers.set_track_start_marker(experiment.links, position, StartMarker.GOES_INTO_VIEW)
+
+        time_point_previous = time_point
 
 
 def _add_out_of_view_markers(links: Links, position: Position):

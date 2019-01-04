@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 
 from autotrack.core import TimePoint
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.linking_analysis import cell_fate_finder
 from autotrack.linking_analysis.cell_fate_finder import CellFateType, CellFate
 from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer

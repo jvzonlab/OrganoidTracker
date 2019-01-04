@@ -2,7 +2,7 @@ from typing import List, Optional, Dict, Any
 
 from matplotlib.backend_bases import KeyEvent
 
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.gui.window import Window
 from autotrack.linking_analysis import linking_markers, lineage_error_finder, cell_error_finder
 from autotrack.linking_analysis.lineage_error_finder import LineageWithErrors

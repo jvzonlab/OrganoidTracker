@@ -4,7 +4,7 @@ from autotrack.comparison.report import ComparisonReport, Category
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
 from autotrack.core.links import Links
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.core.resolution import ImageResolution
 
 LINEAGE_END_FALSE_NEGATIVES = Category("Missed lineage ends")

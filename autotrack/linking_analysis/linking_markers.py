@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Optional, Iterable
 
 from autotrack.core.links import Links
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.linking_analysis.errors import Error
 
 

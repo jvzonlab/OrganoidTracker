@@ -10,7 +10,8 @@ import math
 from typing import Dict, List, Iterable
 
 from autotrack.core.links import Links
-from autotrack.core.positions import Position, PositionCollection
+from autotrack.core.position_collection import PositionCollection
+from autotrack.core.position import Position
 from autotrack.core.score import ScoreCollection, Score, ScoredFamily
 
 

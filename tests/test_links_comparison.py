@@ -2,7 +2,7 @@ import unittest
 
 from autotrack.comparison import links_comparison
 from autotrack.core.experiment import Experiment
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.core.resolution import ImageResolution
 
 

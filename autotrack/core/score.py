@@ -1,7 +1,7 @@
 from typing import List, Set, Optional, Iterable, Dict
 
 from autotrack.core import TimePoint
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 
 
 class Score:

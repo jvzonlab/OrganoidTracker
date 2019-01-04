@@ -4,7 +4,8 @@ import operator
 from typing import Iterable, List, Optional, Set
 
 from autotrack.core import TimePoint
-from autotrack.core.positions import PositionCollection, Position
+from autotrack.core.position_collection import PositionCollection
+from autotrack.core.position import Position
 
 
 class _NearestPositions:

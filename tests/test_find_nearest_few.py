@@ -1,7 +1,7 @@
 import unittest
 
 from autotrack.core import TimePoint
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.linking.nearby_position_finder import find_close_positions
 
 

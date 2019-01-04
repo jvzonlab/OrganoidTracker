@@ -9,7 +9,7 @@ from matplotlib.figure import Figure, Axes
 
 from autotrack import core
 from autotrack.core import TimePoint
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog
 from autotrack.gui.threading import Task

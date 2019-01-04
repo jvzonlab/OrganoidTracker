@@ -1,11 +1,13 @@
 """Designed scoring system for scoring putative mother cells."""
+import traceback
 
 import numpy
 from numpy import ndarray
 
-from autotrack.core.image_loader import ImageLoader
+from autotrack.core.images import Images, Image
 from autotrack.core.mask import create_mask_for, Mask, OutsideImageError
-from autotrack.core.positions import Position, PositionCollection
+from autotrack.core.position import Position
+from autotrack.core.position_collection import PositionCollection
 from autotrack.core.score import Score, Family
 from autotrack.linking.scoring_system import MotherScoringSystem
 
@@ -13,12 +15,14 @@ from autotrack.linking.scoring_system import MotherScoringSystem
 class RationalScoringSystem(MotherScoringSystem):
     """Rationally-designed score system."""
 
-    def calculate(self, image_loader: ImageLoader, position_shapes: PositionCollection, family: Family) -> Score:
+    def calculate(self, images: Images, position_shapes: PositionCollection, family: Family) -> Score:
         mother = family.mother
+        if str(mother) == "cell at (290.00, 138.00, 10.00) at time point 116":
+            print("Here")
         daughter1, daughter2 = family.daughters
 
-        mother_image_stack = image_loader.get_image_stack(mother.time_point())
-        daughter_image_stack = image_loader.get_image_stack(daughter1.time_point())
+        mother_image_stack = images.get_image(mother.time_point())
+        daughter_image_stack = images.get_image(daughter1.time_point())
 
         try:
             mother_mask = _get_mask(mother_image_stack, mother, position_shapes)
@@ -122,14 +126,14 @@ def score_using_volumes(score: Score, positions: PositionCollection, mother: Pos
         score.mother_volume = 0  # We have a mother cell, or maybe just a big cell
 
 
-def _get_nucleus_image(image_stack: ndarray, mask: Mask) -> ndarray:
+def _get_nucleus_image(image_stack: Image, mask: Mask) -> ndarray:
     """Gets the 2D image belonging to the position. If the position lays just above or below the image stack, the
     nearest image is returned."""
     return mask.create_masked_and_normalized_image(image_stack)
 
 
-def _get_mask(image_stack: ndarray, position: Position, shapes: PositionCollection) -> Mask:
+def _get_mask(image_stack: Image, position: Position, shapes: PositionCollection) -> Mask:
     shape = shapes.get_shape(position)
     mask = create_mask_for(image_stack)
-    shape.draw_mask(mask, position.x, position.y, position.z)
+    shape.draw_mask(mask, position.x, position.y, position.z )
     return mask

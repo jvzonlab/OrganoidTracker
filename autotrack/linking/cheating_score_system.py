@@ -2,8 +2,8 @@
 
 from typing import Set, Iterable
 
-from autotrack.core.image_loader import ImageLoader
-from autotrack.core.positions import PositionCollection
+from autotrack.core.images import Images
+from autotrack.core.position_collection import PositionCollection
 from autotrack.core.score import Family, Score
 from autotrack.linking.scoring_system import MotherScoringSystem
 
@@ -21,7 +21,7 @@ class CheatingScoringSystem(MotherScoringSystem):
         """Initializer. families is the ground-thruth of all families."""
         self._families = set(families)
 
-    def calculate(self, image_loader: ImageLoader, position_shapes: PositionCollection, family: Family) -> Score:
+    def calculate(self, images: Images, position_shapes: PositionCollection, family: Family) -> Score:
         if family in self._families:
             return CheatingScoringSystem.YES_SCORE
         else:

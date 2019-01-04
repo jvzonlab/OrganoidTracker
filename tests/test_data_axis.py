@@ -2,7 +2,7 @@ import unittest
 
 import numpy
 
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.core.data_axis import DataAxis
 
 

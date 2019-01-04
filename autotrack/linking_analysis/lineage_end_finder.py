@@ -3,7 +3,7 @@
 from typing import Set
 
 from autotrack.core.links import Links
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 
 
 def find_ended_tracks(links: Links, last_time_point_number: int) -> Set[Position]:

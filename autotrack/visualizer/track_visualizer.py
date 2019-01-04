@@ -6,7 +6,7 @@ from matplotlib.figure import Figure, Axes
 
 from autotrack.core import UserError, TimePoint
 from autotrack.core.links import Links, LinkingTrack
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.core.resolution import ImageResolution
 from autotrack.gui import dialog
 from autotrack.gui.window import Window

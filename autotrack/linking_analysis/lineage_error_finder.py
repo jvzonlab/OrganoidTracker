@@ -3,7 +3,7 @@
 from typing import List, Optional, Set, AbstractSet, Dict, Iterable
 
 from autotrack.core.links import Links, LinkingTrack
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.linking_analysis import linking_markers
 
 

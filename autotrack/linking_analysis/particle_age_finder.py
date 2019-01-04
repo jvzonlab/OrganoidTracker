@@ -4,7 +4,7 @@ division.."""
 from typing import Optional
 
 from autotrack.core.links import Links
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 
 
 def get_age(links: Links, position: Position) -> Optional[int]:

@@ -12,7 +12,8 @@ from autotrack.core import TimePoint
 from autotrack.core.data_axis import DataAxisCollection, DataAxis
 from autotrack.core.experiment import Experiment
 from autotrack.core.links import Links
-from autotrack.core.positions import Position, PositionCollection
+from autotrack.core.position_collection import PositionCollection
+from autotrack.core.position import Position
 from autotrack.core.resolution import ImageResolution
 from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.linking_markers import EndMarker

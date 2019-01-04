@@ -2,7 +2,8 @@ from typing import Optional
 
 from autotrack.core.experiment import Experiment
 from autotrack.core.links import Links
-from autotrack.core.positions import Position, PositionCollection
+from autotrack.core.position_collection import PositionCollection
+from autotrack.core.position import Position
 from autotrack.core.resolution import ImageResolution
 from autotrack.core.score import Score, ScoreCollection, Family
 from autotrack.linking_analysis import linking_markers, particle_age_finder

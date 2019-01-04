@@ -1,7 +1,7 @@
 import unittest
 
 from autotrack.comparison.report import ComparisonReport, Category
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 
 
 class TestFindNearestFew(unittest.TestCase):

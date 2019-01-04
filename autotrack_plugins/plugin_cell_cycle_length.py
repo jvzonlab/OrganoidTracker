@@ -8,7 +8,7 @@ from numpy import ndarray
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
 from autotrack.core.links import Links
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.core.score import Family
 from autotrack.gui import dialog
 from autotrack.gui.window import Window

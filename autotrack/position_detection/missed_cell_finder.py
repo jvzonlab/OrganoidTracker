@@ -2,7 +2,7 @@ from typing import Iterable, Dict
 
 from numpy import ndarray
 
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 
 
 def find_undetected_positions(labeled_image: ndarray, positions: Iterable[Position]) -> Dict[Position, str]:

@@ -6,7 +6,8 @@ from autotrack.core import TimePoint, Name, UserError, min_none, max_none
 from autotrack.core.image_loader import ImageLoader
 from autotrack.core.images import Images
 from autotrack.core.links import Links
-from autotrack.core.positions import Position, PositionCollection
+from autotrack.core.position_collection import PositionCollection
+from autotrack.core.position import Position
 from autotrack.core.data_axis import DataAxisCollection
 from autotrack.core.resolution import ImageResolution
 from autotrack.core.score import ScoreCollection

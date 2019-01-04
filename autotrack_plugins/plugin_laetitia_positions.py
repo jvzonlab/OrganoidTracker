@@ -7,7 +7,8 @@ import numpy
 
 from autotrack.core import UserError, TimePoint
 from autotrack.core.experiment import Experiment
-from autotrack.core.positions import Position, PositionCollection
+from autotrack.core.position_collection import PositionCollection
+from autotrack.core.position import Position
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
 

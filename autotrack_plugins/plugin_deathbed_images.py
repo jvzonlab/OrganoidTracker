@@ -10,7 +10,7 @@ import numpy
 from autotrack.core import UserError
 from autotrack.core.image_loader import ImageLoader
 from autotrack.core.links import Links
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.gui import dialog
 from autotrack.gui.threading import Task
 from autotrack.gui.window import Window
@@ -105,7 +105,7 @@ class _ImageGeneratingTask(Task):
             for i in range(len(deathbed.positions)):
                 image_index = len(deathbed.positions) - i - 1
                 position = deathbed.positions[i]
-                image = bits.image_to_8bit(self._image_loader.get_image_stack(position.time_point()))
+                image = bits.image_to_8bit(self._image_loader.get_image_array(position.time_point()))
                 z = min(max(0, int(position.z)), len(image) - 1)
 
                 cropper.crop_2d(image, min_x, min_y, z, out_array[image_index, :, :, 0])

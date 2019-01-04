@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from autotrack.core.links import Links
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 
 
 def find_previous_positions(position: Position, links: Links, steps_back: int) -> Optional[List[Position]]:

@@ -12,7 +12,8 @@ from autotrack.core import shape, TimePoint, UserError
 from autotrack.core.experiment import Experiment
 from autotrack.core.images import ImageOffsets
 from autotrack.core.links import Links
-from autotrack.core.positions import Position, PositionCollection
+from autotrack.core.position_collection import PositionCollection
+from autotrack.core.position import Position
 from autotrack.core.data_axis import DataAxisCollection, DataAxis
 from autotrack.core.resolution import ImageResolution
 from autotrack.core.score import ScoredFamily, Score, Family

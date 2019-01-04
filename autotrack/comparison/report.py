@@ -4,7 +4,8 @@ import numpy
 from numpy import ndarray
 
 from autotrack.core import TimePoint
-from autotrack.core.positions import Position, PositionCollection
+from autotrack.core.position_collection import PositionCollection
+from autotrack.core.position import Position
 
 _MAX_SHOWN = 15
 

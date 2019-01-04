@@ -5,7 +5,7 @@ import numpy
 import pandas
 
 from autotrack.core.experiment import Experiment
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.core.score import Family, Score
 from autotrack.linking.scoring_system import MotherScoringSystem
 
@@ -55,4 +55,4 @@ def _table_names(keys: List[str]) -> List[str]:
 
 
 def _score(experiment: Experiment, family: Family, scoring_system: MotherScoringSystem) -> Score:
-    return scoring_system.calculate(experiment.images.image_loader(), experiment.positions, family)
+    return scoring_system.calculate(experiment.images, experiment.positions, family)

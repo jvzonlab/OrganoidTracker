@@ -1,5 +1,5 @@
 from os import path
-from typing import Optional
+from typing import Optional, Tuple
 
 import tifffile
 from numpy import ndarray
@@ -39,19 +39,28 @@ class TiffImageLoader(ImageLoader):
 
     _folder: str
     _file_name_format: str
-    _min_time_point: Optional[int]
-    _max_time_point: Optional[int]
+    _min_time_point: int
+    _max_time_point: int
+    _image_size_zyx: Optional[Tuple[int, int, int]]
 
-    def __init__(self, folder: str, file_name_format: str, min_time_point: Optional[int] = None,
-                 max_time_point: Optional[int] = None):
+    def __init__(self, folder: str, file_name_format: str, min_time_point: int, max_time_point: int):
         """Creates a loader for multi-page TIFF files. file_name_format is a format string (so containing something
         like %03d), accepting one parameter representing the time point number."""
         self._folder = folder
         self._file_name_format = file_name_format
         self._min_time_point = min_time_point
         self._max_time_point = max_time_point
+        self._image_size_zyx = None
 
-    def get_image_stack(self, time_point: TimePoint) -> Optional[ndarray]:
+    def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
+        """Just get the size of the image at the first time point, and cache it."""
+        if self._image_size_zyx is None:
+            first_image_stack = self.get_image_array(TimePoint(self._min_time_point))
+            if first_image_stack is not None:
+                self._image_size_zyx = first_image_stack.shape
+        return self._image_size_zyx
+
+    def get_image_array(self, time_point: TimePoint) -> Optional[ndarray]:
         if time_point.time_point_number() < self._min_time_point or\
                 time_point.time_point_number() > self._max_time_point:
             return None

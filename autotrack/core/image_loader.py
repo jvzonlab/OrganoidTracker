@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple
 from numpy import ndarray
 
 from autotrack.core import TimePoint
@@ -7,8 +7,12 @@ from autotrack.core import TimePoint
 class ImageLoader:
     """Responsible for loading all images in an experiment."""
 
-    def get_image_stack(self, time_point: TimePoint) -> Optional[ndarray]:
+    def get_image_array(self, time_point: TimePoint) -> Optional[ndarray]:
         """Loads an image, usually from disk. Returns None if there is no image for this time point."""
+        return None
+
+    def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
+        """Gets the image size. Returns None if there are no images, or if the image size is not constant."""
         return None
 
     def uncached(self) -> "ImageLoader":

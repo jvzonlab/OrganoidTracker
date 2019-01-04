@@ -6,7 +6,7 @@ from numpy import ndarray
 
 from autotrack.core import UserError, TimePoint
 from autotrack.core.gaussian import Gaussian
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
 from autotrack.imaging import bits

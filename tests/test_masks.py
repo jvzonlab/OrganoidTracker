@@ -3,6 +3,7 @@ import unittest
 import numpy
 
 from autotrack.core.gaussian import Gaussian
+from autotrack.core.images import Image
 from autotrack.core.mask import create_mask_for
 from autotrack.core.shape import EllipseShape, GaussianShape, UnknownShape
 
@@ -11,7 +12,7 @@ class TestMasks(unittest.TestCase):
 
     def test_circle(self):
         numpy.random.seed(12)
-        image = numpy.random.normal(loc=5,scale=2,size=(3,50,50))
+        image = Image(numpy.random.normal(loc=5,scale=2,size=(3,50,50)))
         mask = create_mask_for(image)
 
         ellipse = UnknownShape()
@@ -25,7 +26,7 @@ class TestMasks(unittest.TestCase):
 
     def test_ellipse(self):
         numpy.random.seed(12)
-        image = numpy.random.normal(loc=5,scale=2,size=(5,30,30))
+        image = Image(numpy.random.normal(loc=5,scale=2,size=(5,30,30)))
         mask = create_mask_for(image)
 
         ellipse = EllipseShape(0, 0, 21, 23, 30)
@@ -40,8 +41,8 @@ class TestMasks(unittest.TestCase):
 
     def test_gaussian(self):
         numpy.random.seed(13)
-        image = numpy.random.normal(loc=5, scale=2, size=(16, 30, 30))
-        Gaussian(30, 15, 15, 8, 3, 3, 3, 0, 0, 0).draw(image)
+        image = Image(numpy.random.normal(loc=5, scale=2, size=(16, 30, 30)))
+        Gaussian(30, 15, 15, 8, 3, 3, 3, 0, 0, 0).draw(image.array)
         mask = create_mask_for(image)
 
         gaussian = GaussianShape(Gaussian(30, 0, 0, 0, 3, 3, 3, 0, 0, 0))

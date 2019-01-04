@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Optional
 
 from autotrack.core.experiment import Experiment
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.linking_markers import EndMarker
 

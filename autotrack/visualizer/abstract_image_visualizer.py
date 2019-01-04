@@ -10,7 +10,7 @@ from tifffile import tifffile
 from autotrack import core
 from autotrack.core import TimePoint, shape
 from autotrack.core.data_axis import DataAxis
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.core.typing import MPLColor
 from autotrack.gui import dialog
 from autotrack.gui.dialog import prompt_int, popup_error

@@ -1,7 +1,7 @@
 """Some helper function for calculations with angles."""
 import math
 
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 
 
 def direction_2d(position1: Position, position2: Position) -> float:

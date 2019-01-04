@@ -3,7 +3,7 @@ from typing import List
 from matplotlib.backend_bases import KeyEvent
 
 from autotrack.core.experiment import Experiment
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.gui.window import Window
 from autotrack.linking import cell_division_finder
 from autotrack.visualizer.position_list_visualizer import PositionListVisualizer

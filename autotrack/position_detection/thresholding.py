@@ -5,7 +5,7 @@ import cv2
 import numpy
 from numpy import ndarray
 
-from autotrack.core.positions import Position
+from autotrack.core.position import Position
 from autotrack.position_detection import watershedding, iso_intensity_curvature
 from autotrack.position_detection.iso_intensity_curvature import ImageDerivatives
 
