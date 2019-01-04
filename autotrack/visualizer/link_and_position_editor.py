@@ -169,6 +169,9 @@ class LinkAndPositionEditor(AbstractEditor):
         else:
             self._selected2 = self._selected1
             self._selected1 = new_selection
+            if self._selected2 is not None and\
+                    self._selected1.time_point_number() == self._selected2.time_point_number():
+                self._selected2 = None  # We want only one positions selected for a single time point
         self.draw_view()
         self.update_status("Selected:\n        " + str(self._selected1) + "\n        " + str(self._selected2))
 

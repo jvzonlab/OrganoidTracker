@@ -190,17 +190,18 @@ class Visualizer:
         return rgb_images
 
     @staticmethod
-    def get_closest_position(positions: Iterable[Position], x: Optional[int], y: Optional[int], z: Optional[int], max_distance: int = 100000):
+    def get_closest_position(positions: Iterable[Position], x: Optional[int], y: Optional[int], z: Optional[int],
+                             time_point: Optional[TimePoint], max_distance: int = 100000):
         """Gets the position closest ot the given position. If z is missing, it is ignored. If x or y are missing,
         None is returned.
         """
-        if x is None or y is None:
+        if x is None or y is None or time_point is None:
             return None # Mouse outside figure, so x or y are None
         ignore_z = False
         if z is None:
             z = 0
             ignore_z = True
-        search_position = Position(x, y, z)
+        search_position = Position(x, y, z, time_point=time_point)
         return find_closest_position(positions, search_position, ignore_z=ignore_z, max_distance=max_distance)
 
     def get_window(self):

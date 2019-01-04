@@ -76,6 +76,11 @@ def find_closest_position(positions: Iterable[Position], around: Position, ignor
         if ignore_z:
             around.z = position.z  # Make search ignore z
         distance = position.distance_squared(around)
+
+        around_time_point_number = around.time_point_number()
+        if around_time_point_number is not None:  # Make positions in same time point closer
+            distance += (around_time_point_number - position.time_point_number()) ** 2
+
         if distance < closest_distance_squared:
             closest_distance_squared = distance
             closest_position = position

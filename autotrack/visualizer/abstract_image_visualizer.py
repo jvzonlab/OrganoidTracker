@@ -259,7 +259,8 @@ class AbstractImageVisualizer(Visualizer):
 
     def _get_position_at(self, x: Optional[int], y: Optional[int]) -> Optional[Position]:
         """Wrapper of get_closest_position that makes use of the fact that we can lookup all positions ourselves."""
-        return self.get_closest_position(self.__positions_near_visible_layer, x, y, None, max_distance=5)
+        return self.get_closest_position(self.__positions_near_visible_layer, x, y, None, self._time_point,
+                                         max_distance=5)
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
         def time_point_prompt():
