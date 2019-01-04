@@ -6,5 +6,6 @@ __pycache__/
 .cache/
 .pytest_cache/
 
-# Ignore JSON files in the root of the project
+# Ignore configuration and eJSON files
 /*.json
+autotrack.ini
