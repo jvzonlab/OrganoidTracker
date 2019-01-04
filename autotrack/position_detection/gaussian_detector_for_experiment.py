@@ -20,6 +20,7 @@ def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, thres
                             gaussian_fit_smooth_size: int):
     print("Working on time point " + str(time_point.time_point_number()) + "...")
     # Acquire images
+    image_offset = experiment.images.offsets.of_time_point(time_point)
     positions = list(experiment.positions.of_time_point(time_point))
     images = experiment.get_image_stack(time_point)
     images = bits.image_to_8bit(images)
@@ -34,7 +35,7 @@ def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, thres
     # Labelling, calculate distance to label
     resolution = experiment.images.resolution()
     label_image = numpy.empty_like(images, dtype=numpy.uint16)
-    watershedding.create_labels(positions, label_image)
+    watershedding.create_labels(positions, image_offset, label_image)
     distance_transform_to_labels = watershedding.distance_transform_to_labels(label_image, resolution.pixel_size_zyx_um)
 
     # Distance transform to edge, combine with distance transform to labels
@@ -57,7 +58,9 @@ def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, thres
     gaussians = gaussian_fit.perform_gaussian_mixture_fit_from_watershed(images, watershed, gaussian_fit_smooth_size)
     for position, gaussian in zip(positions, gaussians):
         shape = UnknownShape() if gaussian is None \
-            else GaussianShape(gaussian.translated(-position.x, -position.y, -position.z))
-        experiment.positions.add(position, shape)
+            else GaussianShape(gaussian
+                               .translated(image_offset.x, image_offset.y, image_offset.z)
+                               .translated(-position.x, -position.y, -position.z))
+        experiment.positions.add(position, shape)  # This sets the shape
         if gaussian is None:
             print("Could not fit gaussian for " + str(position))

@@ -62,21 +62,23 @@ def watershed_maxima(threshold: ndarray, intensities: ndarray, minimal_size: Tup
     return watershed_labels(threshold, surface, spots, n_spots)
 
 
-def create_labels(positions: Iterable[Position], output: ndarray):
+def create_labels(positions: Iterable[Position], image_offset: Position, output: ndarray):
     """Creates a label image using the given labels. This image can be used for a watershed transform, for example.
-    positions: list of positions, must have x/y/z in range of the output image
+    positions: list of positions, must have x/y/z in range of the output image after translation by -image_offset
     output: integer image, which will contain the labels. label 1 == position 0, label 2 == position 1, etc."""
     i = 1
     for position in positions:
+        image_position = position.subtract_pos(image_offset)
         try:
-            z = int(position.z)
+            z = int(image_position.z)
             if z == -1 or z == output.shape[0]:
                 z = max(0, min(z, output.shape[0] - 1))  # Clamp z when position is just above or below expected range
-            output[z, int(position.y), int(position.x)] = i
+            output[z, int(image_position.y), int(image_position.x)] = i
             i += 1
         except IndexError:
-            raise ValueError("The images do not match the cells: " + str(position) + " is outside the image of size " +
-                             str((output.shape[2], output.shape[1], output.shape[0])) + ".")
+            raise ValueError(f"The images do not match the cells: {position} is outside the image of size "
+                             f"{(output.shape[2], output.shape[1], output.shape[0])} and offset "
+                             f"{(image_offset.x, image_offset.y, image_offset.z)}")
 
 
 def watershed_labels(threshold: ndarray, surface: ndarray, label_image: ndarray, label_count: int) -> Tuple[ndarray, ndarray]:

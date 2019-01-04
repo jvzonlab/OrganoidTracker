@@ -151,6 +151,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
 
     def _get_threshold_reconstruction(self, return_intermediate: bool = False) -> Any:
         positions = list(self._experiment.positions.of_time_point(self._time_point))
+        image_offset = self._experiment.images.offsets.of_time_point(self._time_point)
         if len(positions) == 0:
             raise UserError("Failed to detect cells", "Cannot detect cells - no position positions loaded.")
         images = self._get_8bit_images()
@@ -165,7 +166,7 @@ class DetectionVisualizer(AbstractImageVisualizer):
 
         # Labelling, calculate distance to label
         label_image = numpy.empty_like(images, dtype=numpy.uint16)
-        watershedding.create_labels(positions, label_image)
+        watershedding.create_labels(positions, image_offset, label_image)
         distance_transform_to_labels = watershedding.distance_transform_to_labels(label_image, self.resolution)
 
         # Distance transform to edge and labels
@@ -204,7 +205,6 @@ class DetectionVisualizer(AbstractImageVisualizer):
                                                                         self.gaussian_fit_smooth_size)
 
     def _display_reconstruction(self, gaussians: List[Gaussian]):
-        self._experiment.remove_positions(self._time_point)
         shape = self._time_point_images.shape  # May be 3D or 4D, depending on what was previously displayed
         canvas = numpy.zeros((shape[0], shape[1], shape[2], 3), dtype=numpy.float64)
 
@@ -213,8 +213,6 @@ class DetectionVisualizer(AbstractImageVisualizer):
         for gaussian in gaussians:
             if gaussian is None:
                 continue
-            self._experiment.positions.add(
-                Position(gaussian.mu_x, gaussian.mu_y, gaussian.mu_z, time_point=self._time_point))
             color = colors[i % len(colors)]
             gaussian.draw_colored(canvas, color)
             i += 1
@@ -242,9 +240,10 @@ class DetectionVisualizer(AbstractImageVisualizer):
         super()._on_key_press(event)
 
     def _print_missed_cells(self, watershed: ndarray):
+        image_offset = self._experiment.images.offsets.of_time_point(self._time_point)
         positions = self._experiment.positions.of_time_point(self._time_point)
         if len(positions) == 0:
             return
-        errors = missed_cell_finder.find_undetected_positions(watershed, positions)
+        errors = missed_cell_finder.find_undetected_positions(watershed, positions, image_offset)
         for position, error in errors.items():
             print("Error at " + str(position) + ": " + str(error))
