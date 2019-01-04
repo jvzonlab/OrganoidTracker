@@ -119,13 +119,15 @@ class PositionListVisualizer(Visualizer):
             position_shape.draw2d(connected_position.x, connected_position.y, 0, delta_time, self._ax, color)
 
     def _show_image(self):
-        mother = self._position_list[self._current_position_index]
-        time_point = mother.time_point()
+        current_position = self._position_list[self._current_position_index]
+        time_point = current_position.time_point()
         image_stack = self.load_image(time_point, self._show_next_image)
         if image_stack is not None:
-            offset_z = self._experiment.images.offsets.of_time_point(time_point).z
-            image_z = max(0, min(int(mother.z) + int(offset_z), len(image_stack) - 1))
-            self._ax.imshow(image_stack[image_z], cmap="gray")
+            offset = self._experiment.images.offsets.of_time_point(time_point)
+            image_z = int(current_position.z - offset.z)
+            image = image_stack[image_z]
+            extent = (offset.x, offset.x + image.shape[1], offset.y + image.shape[0], offset.y)
+            self._ax.imshow(image, cmap="gray", extent=extent)
 
     def _goto_next(self):
         self._current_position_index += 1
