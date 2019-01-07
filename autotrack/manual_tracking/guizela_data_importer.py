@@ -162,6 +162,11 @@ def _extract_links_from_track(track_file: str, links: Links, min_time_point: int
                 continue
 
             if previous_position is not None:
+                while previous_position.time_point_number() < current_position.time_point_number() - 1:
+                    temp_position = previous_position.with_time_point_number(previous_position.time_point_number() + 1)
+                    links.add_link(previous_position, temp_position)
+                    previous_position = temp_position
+
                 links.add_link(previous_position, current_position)
 
         return track

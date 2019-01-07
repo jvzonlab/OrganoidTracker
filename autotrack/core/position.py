@@ -101,3 +101,7 @@ class Position:
     def with_time_point(self, time_point: Optional[TimePoint]) -> "Position":
         """Returns a copy of this position with the time point set to the given position."""
         return Position(self.x, self.y, self.z, time_point=time_point)
+
+    def with_time_point_number(self, time_point_number: int):
+        """Returns a copy of this position with the time point set to the given position."""
+        return Position(self.x, self.y, self.z, time_point_number=time_point_number)
