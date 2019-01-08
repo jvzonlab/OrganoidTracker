@@ -48,6 +48,12 @@ class AbstractImageVisualizer(Visualizer):
 
     def _load_time_point(self, time_point: TimePoint):
         """Loads the images and other data of the time point."""
+        if self._experiment.first_time_point_number() is None:
+            # Experiment has no data
+            self._time_point = time_point
+            self._time_point_images = None
+            return
+
         if time_point.time_point_number() < self._experiment.first_time_point_number() or \
                 time_point.time_point_number() > self._experiment.last_time_point_number():
             raise ValueError("Time point outside experiment range")
