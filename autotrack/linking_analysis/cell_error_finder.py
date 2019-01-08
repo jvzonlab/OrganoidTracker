@@ -1,5 +1,6 @@
-from typing import Optional
+from typing import Optional, Iterable
 
+from autotrack.core import TimePoint
 from autotrack.core.experiment import Experiment
 from autotrack.core.links import Links
 from autotrack.core.position_collection import PositionCollection
@@ -77,9 +78,21 @@ def _get_highest_mother_score(scores: ScoreCollection, position: Position) -> Op
     return highest_score
 
 
+def apply_on_time_point(experiment: Experiment, time_point: TimePoint):
+    """Checks all positions in the given time point for logical errors, like cell merges, cell dividing into three
+    daughters, cells moving too fast, ect."""
+    apply_on_iterable(experiment, experiment.positions.of_time_point(time_point))
+
+
 def apply_on(experiment: Experiment, *iterable: Position):
-    """Adds errors for all logical inconsistencies for positions in the collection, like cells that spawn out of
-    nowhere, cells that merge together and cells that have three or more daughters."""
+    """Checks all of the given positions for logical errors, like cell merges, cell dividing into three
+    daughters, cells moving too fast, ect."""
+    apply_on_iterable(experiment, iterable)
+
+
+def apply_on_iterable(experiment: Experiment, iterable: Iterable[Position]):
+    """Checks all positions in the given iterable for logical errors, like cell merges, cell dividing into three
+    daughters, cells moving too fast, ect."""
     links = experiment.links
     for position in iterable:
         error = get_error(links, position, experiment.scores, experiment.positions, experiment.images.resolution())

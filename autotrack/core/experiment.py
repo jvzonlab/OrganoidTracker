@@ -53,11 +53,13 @@ class Experiment:
         self._positions.move_position(old_position, position_new)
         return True
 
-    def remove_positions(self, time_point: TimePoint):
-        """Removes the positions and links of a given time point."""
+    def remove_data_of_time_point(self, time_point: TimePoint):
+        """Removes the positions, links and scores of a given time point. Images are not removed, as images are not
+        stored in memory."""
         for position in self._positions.of_time_point(time_point):
             self._links.remove_links_of_position(position)
         self._positions.detach_all_for_time_point(time_point)
+        self.scores.delete_for_time_point(time_point)
 
     def get_time_point(self, time_point_number: int) -> TimePoint:
         """Gets the time point with the given number. Throws ValueError if no such time point exists. This method is

@@ -185,3 +185,10 @@ class ScoreCollection:
         except KeyError:
             return None
 
+    def delete_for_time_point(self, time_point: TimePoint):
+        """Deletes all scores for mother cells in the given time point. Does nothing if there are no scores for that
+        time point."""
+        try:
+            del self._all_scores[time_point.time_point_number()]
+        except KeyError:
+            pass  # There is nothing to delete

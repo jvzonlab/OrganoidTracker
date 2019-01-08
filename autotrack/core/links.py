@@ -1,6 +1,7 @@
 from pprint import pprint
 from typing import Optional, Dict, Iterable, List, Set, Union, Tuple, Any, ItemsView, Callable
 
+from autotrack.core import TimePoint
 from autotrack.core.position import Position
 
 

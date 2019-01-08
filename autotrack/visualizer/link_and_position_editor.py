@@ -7,6 +7,7 @@ from autotrack.core import TimePoint
 from autotrack.core.experiment import Experiment
 from autotrack.core.position import Position
 from autotrack.core.shape import ParticleShape
+from autotrack.gui import dialog
 from autotrack.gui.window import Window
 from autotrack.linking_analysis import cell_error_finder, linking_markers
 from autotrack.linking_analysis.linking_markers import EndMarker
@@ -180,11 +181,12 @@ class LinkAndPositionEditor(AbstractEditor):
             **super().get_extra_menu_options(),
             "Edit//Experiment-Edit data axes... (A)": self._show_path_editor,
             "Edit//Experiment-Edit image offsets... (O)": self._show_offset_editor,
-            "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
-            "View//Linking-Lineage errors and warnings (L)": self._show_lineage_errors,
+            "Edit//Deletion-Delete data of time point": self._delete_data_of_time_point,
             "Edit//LineageEnd-Mark as cell death": lambda: self._try_set_end_marker(EndMarker.DEAD),
             "Edit//LineageEnd-Mark as moving out of view": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
-            "Edit//LineageEnd-Remove end marker": lambda: self._try_set_end_marker(None)
+            "Edit//LineageEnd-Remove end marker": lambda: self._try_set_end_marker(None),
+            "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
+            "View//Linking-Lineage errors and warnings (L)": self._show_lineage_errors,
         }
 
     def _on_key_press(self, event: KeyEvent):
@@ -269,6 +271,27 @@ class LinkAndPositionEditor(AbstractEditor):
         from autotrack.visualizer.lineage_errors_visualizer import LineageErrorsVisualizer
         editor = LineageErrorsVisualizer(self._window, time_point=self._time_point, z=self._z)
         activate(editor)
+
+    def _delete_data_of_time_point(self):
+        """Deletes all annotations of a given time point. Shows a confirmation prompt first."""
+        if not dialog.prompt_yes_no("Warning", "Are you sure you want to delete all annotated positions and links from"
+                                               "this time point? This cannot be undone."):
+            return
+        self._experiment.remove_data_of_time_point(self._time_point)
+        self.get_window().get_gui_experiment().undo_redo.clear()
+
+        try:
+            previous_time_point = self._experiment.get_previous_time_point(self._time_point)
+            cell_error_finder.apply_on_time_point(self._experiment, previous_time_point)
+        except ValueError:
+            pass  # Deleted the first time point, so get_previous_time_point fails
+        try:
+            next_time_point = self._experiment.get_next_time_point(self._time_point)
+            cell_error_finder.apply_on_time_point(self._experiment, next_time_point)
+        except ValueError:
+            pass  # Deleted the last time point, so get_next_time_point fails
+
+        self.get_window().redraw_data()
 
     def _try_insert(self, event: LocationEvent):
         if self._selected1 is None or self._selected2 is None:
