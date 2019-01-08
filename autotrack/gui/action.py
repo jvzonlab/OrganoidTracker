@@ -50,9 +50,9 @@ def new(window: Window):
     """Starts a new experiment."""
     if dialog.prompt_yes_no("Confirmation",
                             "Are you sure you want to start a new project? Any unsaved changed will be lost."):
-        window.get_gui_experiment().set_experiment(Experiment())
         visualizer = EmptyVisualizer(window)
         activate(visualizer)
+        window.get_gui_experiment().set_experiment(Experiment())
 
 
 def load_images(window: Window):
