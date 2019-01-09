@@ -3,6 +3,7 @@ from typing import List, Optional, Dict, Any
 from matplotlib.backend_bases import KeyEvent
 
 from autotrack import core
+from autotrack.core import clamp
 from autotrack.core.links import Links
 from autotrack.core.position import Position
 from autotrack.gui.window import Window
@@ -125,7 +126,7 @@ class PositionListVisualizer(Visualizer):
         if image_stack is not None:
             offset = self._experiment.images.offsets.of_time_point(time_point)
             image_z = int(current_position.z - offset.z)
-            image = image_stack[image_z]
+            image = image_stack[clamp(0, image_z, len(image_stack) - 1)]
             extent = (offset.x, offset.x + image.shape[1], offset.y + image.shape[0], offset.y)
             self._ax.imshow(image, cmap="gray", extent=extent)
 
