@@ -171,7 +171,7 @@ class LinkAndPositionEditor(AbstractEditor):
             self._selected2 = self._selected1
             self._selected1 = new_selection
             if self._selected2 is not None and\
-                    abs(self._selected1.time_point_number() - self._selected2.time_point_number()) == 1:
+                    abs(self._selected1.time_point_number() - self._selected2.time_point_number()) != 1:
                 self._selected2 = None  # Can only select two positions if they are in consecutive time points
         self.draw_view()
         self.update_status("Selected:\n        " + str(self._selected1) + "\n        " + str(self._selected2))
