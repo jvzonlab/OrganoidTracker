@@ -171,8 +171,8 @@ class LinkAndPositionEditor(AbstractEditor):
             self._selected2 = self._selected1
             self._selected1 = new_selection
             if self._selected2 is not None and\
-                    self._selected1.time_point_number() == self._selected2.time_point_number():
-                self._selected2 = None  # We want only one positions selected for a single time point
+                    abs(self._selected1.time_point_number() - self._selected2.time_point_number()) == 1:
+                self._selected2 = None  # Can only select two positions if they are in consecutive time points
         self.draw_view()
         self.update_status("Selected:\n        " + str(self._selected1) + "\n        " + str(self._selected2))
 
@@ -299,7 +299,7 @@ class LinkAndPositionEditor(AbstractEditor):
             position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
             connections = []
             if self._selected1 is not None \
-                    and self._selected1.time_point_number() != self._time_point.time_point_number():
+                    and abs(self._selected1.time_point_number() - self._time_point.time_point_number()) == 1:
                 connections.append(self._selected1)  # Add link to already selected position
 
             self._selected1 = position
