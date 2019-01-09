@@ -15,6 +15,7 @@ from autotrack.gui.gui_experiment import GuiExperiment
 from autotrack.gui.undo_redo import UndoRedo
 from autotrack.gui.window import Window
 from autotrack.imaging import tifffolder, io
+from autotrack.linking_analysis import linking_markers
 from autotrack.visualizer import activate
 from autotrack.visualizer.empty_visualizer import EmptyVisualizer
 
@@ -197,6 +198,20 @@ def rename_experiment(window: Window):
 
 def set_image_resolution(window: Window):
     image_resolution_dialog.popup_resolution_setter(window.get_gui_experiment())
+
+
+def view_statistics(window: Window):
+    experiment = window.get_experiment()
+    if experiment.last_time_point_number() is None:
+        raise UserError("Statistics", "No data is loaded. Cannot calculate statistics.")
+    time_point_count = experiment.last_time_point_number() - experiment.first_time_point_number() + 1
+    position_count = len(experiment.positions)
+    links_count = len(experiment.links)
+    errors_count = sum(1 for error in linking_markers.find_errored_positions(experiment.links))
+    dialog.popup_message("Statistics", f"There are {time_point_count} time points loaded. {position_count} positions "
+                                       f" are annotated and {links_count} links have been created."
+                                       f"\n\nThere are {errors_count} warnings and errors remaining for you to look at,"
+                                       f" so {errors_count/position_count*100:.02f}% of all positions has an error.")
 
 
 def ask_exit(gui_experiment: GuiExperiment):

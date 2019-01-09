@@ -386,8 +386,18 @@ class Links:
             for next_track in track._next_tracks:
                 yield previous_position, next_track.find_first_position()
 
-            # (links to previous track are NOT returned, those will be included by that previous track as links to the
-            # next track)
+            # (links to previous track are NOT returned as those links will already be included by that previous track
+            # as links to the next track)
+
+    def __len__(self) -> int:
+        """Returns the total number of links."""
+        total = 0
+        for track in self._tracks:
+            total += len(track) - 1  # A track of three cells contains two links
+            total += len(track._next_tracks)  # Links to next tracks are also links
+            # (links to previous track are NOT counted as those links will already be included by that previous track
+            # as links to the next track)
+        return total
 
     def copy(self) -> "Links":
         """Returns a copy of all the links, so that you can modify that data set without affecting this one."""

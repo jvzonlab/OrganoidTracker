@@ -119,6 +119,7 @@ class MainWindow(Window):
             "Edit//Experiment-Rename experiment...": lambda: action.rename_experiment(self),
             "Edit//Experiment-Set image resolution...": lambda: action.set_image_resolution(self),
             "View//Toggle-Toggle showing axis numbers": lambda: action.toggle_axis(self.get_figure()),
+            "View//Statistics-View statitistics...": lambda: action.view_statistics(self),
         }
 
         for plugin in self.get_plugins():
