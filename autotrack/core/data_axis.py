@@ -24,7 +24,12 @@ class DataAxisPosition:
 
 class DataAxis:
     """A curve (curved line) trough the positions. This can be used to measure how far the positions are along this
-     curve."""
+     curve.
+
+     An offset specifies the zero-point of the axis. A checkpoint (relative to the offset) specifies some point after
+     which a newregion starts. For example, in intestinal organoids this is used to mark the boundary between the crypt
+     and the villus.
+     """
 
     _x_list: List[float]
     _y_list: List[float]
@@ -32,6 +37,7 @@ class DataAxis:
 
     _interpolation: Optional[Tuple[List[float], List[float]]]
     _offset: float
+    _checkpoint_without_offset: float
 
     def __init__(self):
         self._x_list = []
@@ -39,6 +45,7 @@ class DataAxis:
         self._z = None
         self._interpolation = None
         self._offset = 0
+        self._checkpoint_without_offset = 0
 
     def add_point(self, x: float, y: float, z: float):
         """Adds a new point to the path."""
@@ -162,6 +169,8 @@ class DataAxis:
         copy = DataAxis()
         for i in range(len(self._x_list)):
             copy.add_point(self._x_list[i], self._y_list[i], self._z)
+        copy._offset = self._offset
+        copy._checkpoint_without_offset = self._checkpoint_without_offset
         return copy
 
     def remove_point(self, x: float, y: float):
@@ -193,10 +202,19 @@ class DataAxis:
         update_offset_for_positions."""
         self._offset = float(offset)
 
-    def get_offset(self):
+    def get_offset(self) -> float:
         """Gets the offset used in calls to get_path_position_2d and path_position_to_xy. Note that these methods apply
         the offset automatically, so except for saving/loading purposes there should be no need to call this method."""
         return self._offset
+
+    def set_checkpoint(self, checkpoint: float):
+        """Updates the checkpoint. See the class docs for what a checkpoint is. If you update the offset later on,
+        the checkpoint will change relative to the offset, so that its absolute position (xyz) will stay the same."""
+        self._checkpoint_without_offset = checkpoint - self._offset
+
+    def get_checkpoint(self) -> float:
+        """Gets the checkpoint. See the class docs for what a checkpoint is."""
+        return self._checkpoint_without_offset + self._offset
 
 
 def _distance(x1, y1, x2, y2):
