@@ -49,12 +49,33 @@ class _AddPointAction(UndoableAction):
         return f"Removed point at ({self._new_point.x:.0f}, {self._new_point.y:.0f}) from path"
 
 
+class _SetCheckpointAction(UndoableAction):
+    _data_axis: DataAxis
+    _new_checkpoint: float
+    _old_checkpoint: Optional[float]
+
+    def __init__(self, data_axis: DataAxis, new_checkpoint: float):
+        self._data_axis = data_axis
+        self._new_checkpoint = new_checkpoint
+        self._old_checkpoint = data_axis.get_checkpoint()
+
+    def do(self, experiment: Experiment) -> str:
+        self._data_axis.set_checkpoint(self._new_checkpoint)
+        return "Inserted checkpoint"
+
+    def undo(self, experiment: Experiment) -> str:
+        self._data_axis.set_checkpoint(self._old_checkpoint)
+        if self._old_checkpoint is None:
+            return "Deleted checkpoint"
+        return "Restored original checkpoint"
+
+
 class DataAxisEditor(AbstractEditor):
-    """Editor for paths. Double-click to (de)select a path.
-    Press Insert to start a new path if no path is selected.
-    Press Delete to delete the whole selected path.
+    """Editor for data axes. Double-click to (de)select a path.
+    Draw the data axis by adding points using the Insert key. Use Delete to delete a data axis.
+    Add a checkpoint to a path using the . (point) key.
     Press C to copy a selected path from another time point to this time point.
-    Press P to view the position of each cell on the nearest data axis."""
+    Press P to view the position of each cell on the nearest data axis. Positions after the checkpoint are marked with a star."""
 
     _selected_path: Optional[DataAxis]
     _selected_path_time_point: Optional[TimePoint]
@@ -126,7 +147,8 @@ class DataAxisEditor(AbstractEditor):
             return
 
         background_color = (1, 1, 1, 0.8) if axis_position.axis == self._selected_path else (0, 1, 0, 0.8)
-        self._draw_annotation(position, f"{axis_position.pos:.1f}", background_color=background_color)
+        star = "*" if axis_position.is_after_checkpoint() else ""
+        self._draw_annotation(position, f"{star}{axis_position.pos:.1f}", background_color=background_color)
 
     def _draw_data_axis(self, data_axis: DataAxis, id: int, color: str, marker_size_max: int):
         if data_axis == self._get_selected_path_of_current_time_point():
@@ -163,6 +185,8 @@ class DataAxisEditor(AbstractEditor):
             self._copy_axis_to_current_time_point()
         elif event.key == "p":
             self._toggle_viewing_axis_positions()
+        elif event.key == ".":
+            self._set_checkpoint(event.xdata, event.ydata)
         else:
             super()._on_key_press(event)
 
@@ -182,3 +206,19 @@ class DataAxisEditor(AbstractEditor):
         data_editor = LinkAndPositionEditor(self._window, time_point=self._time_point, z=self._z,
                                             display_settings=self._display_settings)
         activate(data_editor)
+
+    def _set_checkpoint(self, x: float, y: float):
+        if self._selected_path is None:
+            self.update_status("No path selected, cannot insert a checkpoint")
+            return
+        if self._selected_path_time_point != self._time_point:
+            self.update_status("Cannot insert a checkpoint at a different time point")
+            return
+        on_axis = self._selected_path.to_position_on_axis(Position(x, y, self._z))
+        if on_axis is None:
+            self.update_status("Cannot set a checkpoint here on this axis - add more points to the axis first")
+            return
+        if on_axis.distance > 20:
+            self.update_status("Cannot set a checkpoint here - mouse is not near selected axis")
+            return
+        self._perform_action(_SetCheckpointAction(self._selected_path, on_axis.pos))

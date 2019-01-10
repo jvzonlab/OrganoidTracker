@@ -21,6 +21,13 @@ class DataAxisPosition:
         self.pos = pos
         self.distance = distance
 
+    def is_after_checkpoint(self) -> bool:
+        """Returns True if the data axis has a checkpoint specified and this position is behind that checkpoint."""
+        checkpoint = self.axis.get_checkpoint()
+        if checkpoint is None:
+            return False
+        return self.pos > checkpoint
+
 
 class DataAxis:
     """A curve (curved line) trough the positions. This can be used to measure how far the positions are along this
@@ -37,7 +44,7 @@ class DataAxis:
 
     _interpolation: Optional[Tuple[List[float], List[float]]]
     _offset: float
-    _checkpoint_without_offset: float
+    _checkpoint_without_offset: Optional[float]
 
     def __init__(self):
         self._x_list = []
@@ -45,7 +52,7 @@ class DataAxis:
         self._z = None
         self._interpolation = None
         self._offset = 0
-        self._checkpoint_without_offset = 0
+        self._checkpoint_without_offset = None
 
     def add_point(self, x: float, y: float, z: float):
         """Adds a new point to the path."""
@@ -207,13 +214,18 @@ class DataAxis:
         the offset automatically, so except for saving/loading purposes there should be no need to call this method."""
         return self._offset
 
-    def set_checkpoint(self, checkpoint: float):
+    def set_checkpoint(self, checkpoint: Optional[float]):
         """Updates the checkpoint. See the class docs for what a checkpoint is. If you update the offset later on,
         the checkpoint will change relative to the offset, so that its absolute position (xyz) will stay the same."""
+        if checkpoint is None:
+            self._checkpoint_without_offset = None
+            return
         self._checkpoint_without_offset = checkpoint - self._offset
 
-    def get_checkpoint(self) -> float:
+    def get_checkpoint(self) -> Optional[float]:
         """Gets the checkpoint. See the class docs for what a checkpoint is."""
+        if self._checkpoint_without_offset is None:
+            return None
         return self._checkpoint_without_offset + self._offset
 
 

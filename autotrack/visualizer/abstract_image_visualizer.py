@@ -257,7 +257,7 @@ class AbstractImageVisualizer(Visualizer):
             self._ax.plot(origin_pos[0], origin_pos[1], marker="*", markerfacecolor=core.COLOR_CELL_CURRENT,
                           markeredgecolor="black", markersize=max(11, 18 - dz))
         checkpoint = data_axis.get_checkpoint()
-        if checkpoint > 0:
+        if checkpoint is not None:
             checkpoint_pos = data_axis.from_position_on_axis(checkpoint)
             if checkpoint_pos is not None:
                 self._ax.plot(checkpoint_pos[0], checkpoint_pos[1], marker="*", markerfacecolor=core.COLOR_CELL_CURRENT,
