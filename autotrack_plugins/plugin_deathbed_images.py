@@ -8,6 +8,7 @@ from typing import Any, List, Optional, Dict
 import numpy
 
 from autotrack.core import UserError
+from autotrack.core.data_axis import DataAxisCollection, DataAxisPosition
 from autotrack.core.image_loader import ImageLoader
 from autotrack.core.links import Links
 from autotrack.core.position import Position
@@ -30,9 +31,11 @@ class _Deathbed:
     """Represents the final positions of a position before it died."""
 
     positions: List[Position]  # List of positions. Death at index 0, one time point before at index 1, etc.
+    axis_positions: List[Optional[DataAxisPosition]]  # Same list, but now on the data axis
 
-    def __init__(self, positions: List[Position]):
+    def __init__(self, positions: List[Position], axis_positions: List[Optional[DataAxisPosition]]):
         self.positions = positions
+        self.axis_positions = axis_positions
 
     def image_min_x(self) -> int:
         return int(min((position.x for position in self.positions))) - _MARGIN
@@ -48,13 +51,17 @@ class _Deathbed:
 
     def get_file_name(self, suffix: str) -> str:
         death_position = self.positions[0]
-        return f"x{death_position.x:.0f}-y{death_position.y:.0f}-z{death_position.z:.0f}" \
+        death_axis_position = self.axis_positions[0]
+        death_axis_str = f"a{death_axis_position.pos:.0f}-" if death_axis_position is not None else ""
+        return f"{death_axis_str}x{death_position.x:.0f}-y{death_position.y:.0f}-z{death_position.z:.0f}" \
             f"-t{death_position.time_point_number()}{suffix}"
 
 
 def _generate_deathbed_images(window: Window):
     experiment = window.get_experiment()
-    if not experiment.links.has_links():
+    data_axes = experiment.data_axes
+    links = experiment.links
+    if not links.has_links():
         raise UserError("Deathbed images", "No links found. Therefore, we cannot find cell deaths.")
 
     steps_back = dialog.prompt_int("Deathbed images", "How many time steps do you want to look before the cell was "
@@ -64,10 +71,16 @@ def _generate_deathbed_images(window: Window):
         return
 
     deathbeds = list()
-    for position in linking_markers.find_death_positions(experiment.links):
-        before_death_list = position_connection_finder.find_previous_positions(position, experiment.links, steps_back)
-        if before_death_list is not None:
-            deathbeds.append(_Deathbed([position] + before_death_list))
+    for position in linking_markers.find_death_positions(links):
+        before_death_list = position_connection_finder.find_previous_positions(position, links, steps_back)
+
+        if before_death_list is None:
+            continue
+
+        complete_position_list = [position] + before_death_list
+        complete_axis_position_list = [data_axes.to_position_on_original_axis(links, pos)
+                                       for pos in complete_position_list]
+        deathbeds.append(_Deathbed(complete_position_list, complete_axis_position_list))
 
     if len(deathbeds) == 0:
         raise UserError("Deathbed images", "No deathbed images found. Are there no cell deaths, or is the number of"
