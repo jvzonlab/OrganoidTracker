@@ -23,12 +23,12 @@ class PositionListVisualizer(Visualizer):
     __last_position_by_class = dict()  # Static variable
 
     def __init__(self, window: Window, all_positions: List[Position], chosen_position: Optional[Position] = None,
-                 show_next_image: bool = False):
+                 display_settings: Optional[DisplaySettings] = None):
         """Creates a viewer for a list of positions. The positions will automatically be sorted by time_point number.
         chosen_position is a position that is used as a starting point for the viewer, but only if it appears in the
         list
         """
-        super().__init__(window)
+        super().__init__(window, display_settings=display_settings)
         self._position_list = all_positions
         self._position_list.sort(key=lambda position: position.time_point_number())
         self._show_closest_or_stored_position(chosen_position)  # Calling a self.method during construction is bad...

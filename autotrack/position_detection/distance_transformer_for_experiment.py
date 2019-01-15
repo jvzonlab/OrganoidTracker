@@ -15,7 +15,7 @@ def perform_for_experiment(experiment: Experiment, output_folder: str, block_siz
     Path(output_folder).mkdir(parents=True, exist_ok=True)
     for time_point in experiment.time_points():
         print("Working on time point " + str(time_point.time_point_number()) + "...")
-        image = bits.image_to_8bit(experiment.get_image_stack(time_point))
+        image = bits.image_to_8bit(experiment.images.get_image_stack(time_point))
         threshold = numpy.empty_like(image)
 
         # Distance transform from threshold

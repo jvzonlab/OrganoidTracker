@@ -1,13 +1,19 @@
 from os import path
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 
 import tifffile
 from numpy import ndarray
 import numpy
 
 from autotrack.core import TimePoint
-from autotrack.core.image_loader import ImageLoader
+from autotrack.core.image_loader import ImageLoader, ImageChannel
 from autotrack.core.experiment import Experiment
+
+class _OnlyChannel(ImageChannel):
+    pass
+
+
+_CHANNELS = [_OnlyChannel()]
 
 
 def load_images_from_folder(experiment: Experiment, folder: str, file_name_format: str,
@@ -60,10 +66,12 @@ class TiffImageLoader(ImageLoader):
                 self._image_size_zyx = first_image_stack.shape
         return self._image_size_zyx
 
-    def get_image_array(self, time_point: TimePoint) -> Optional[ndarray]:
+    def get_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
         if time_point.time_point_number() < self._min_time_point or\
                 time_point.time_point_number() > self._max_time_point:
             return None
+        if image_channel != _CHANNELS[0]:
+            return None  # Asking for an image channel that doesn't exist
 
         file_name = path.join(self._folder, self._file_name_format % time_point.time_point_number())
         if not path.exists(file_name):
@@ -80,6 +88,9 @@ class TiffImageLoader(ImageLoader):
                 outer = numpy.array((array,))
                 return outer
             return None
+
+    def get_channels(self) -> List[ImageChannel]:
+        return _CHANNELS
 
     def first_time_point_number(self) -> Optional[int]:
         return self._min_time_point

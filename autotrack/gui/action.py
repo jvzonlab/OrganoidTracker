@@ -9,12 +9,12 @@ from matplotlib.figure import Figure
 
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
-from autotrack.gui import dialog, image_resolution_dialog
+from autotrack.gui import dialog, image_resolution_dialog, option_choose_dialog
 from autotrack.gui.dialog import popup_message_cancellable
 from autotrack.gui.gui_experiment import GuiExperiment
 from autotrack.gui.undo_redo import UndoRedo
 from autotrack.gui.window import Window
-from autotrack.imaging import tifffolder, io
+from autotrack.imaging import tifffolder, io, lif, liffile
 from autotrack.linking_analysis import linking_markers
 from autotrack.visualizer import activate
 from autotrack.visualizer.empty_visualizer import EmptyVisualizer
@@ -65,10 +65,23 @@ def load_images(window: Window):
         return  # Cancelled
     full_path = dialog.prompt_load_file("Select first image file", [
         ("TIF file", "*.tif"),
-        ("TIFF file", "*.tiff")])
+        ("TIFF file", "*.tiff"),
+        ("LIF file", "*.lif")])
     if not full_path:
         return  # Cancelled
     directory, file_name = path.split(full_path)
+
+    if file_name.endswith(".lif"):
+        # LIF file loading
+        from autotrack.imaging import liffile
+        reader = lif.Reader(full_path)
+        series = [header.getName() for header in reader.getSeriesHeaders()]
+        serie_index = option_choose_dialog.popup_image_getter("Choose an image serie", "Choose an image serie", "Image serie:", series)
+        if serie_index is not None:
+            liffile.load_from_lif_file(window.get_experiment().images, full_path, reader, serie_index)
+            window.redraw_all()
+        return
+
     file_name_pattern = _find_pattern(file_name)
     if file_name_pattern is None:
         dialog.popup_error("Could not read file pattern", "Could not find 't01' (or similar) in the file name \"" +

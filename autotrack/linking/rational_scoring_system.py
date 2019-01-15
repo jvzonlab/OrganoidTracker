@@ -17,8 +17,6 @@ class RationalScoringSystem(MotherScoringSystem):
 
     def calculate(self, images: Images, position_shapes: PositionCollection, family: Family) -> Score:
         mother = family.mother
-        if str(mother) == "cell at (290.00, 138.00, 10.00) at time point 116":
-            print("Here")
         daughter1, daughter2 = family.daughters
 
         mother_image_stack = images.get_image(mother.time_point())

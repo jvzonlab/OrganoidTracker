@@ -6,6 +6,7 @@ from autotrack.core.experiment import Experiment
 from autotrack.core.position import Position
 from autotrack.gui.window import Window
 from autotrack.linking import cell_division_finder
+from autotrack.visualizer import DisplaySettings
 from autotrack.visualizer.position_list_visualizer import PositionListVisualizer
 
 
@@ -20,7 +21,7 @@ class CellDivisionVisualizer(PositionListVisualizer):
 
     def __init__(self, window: Window):
         super().__init__(window, all_positions=_get_mothers(window.get_experiment()),
-                         show_next_image=True)
+                         display_settings=DisplaySettings(show_next_time_point=True))
 
     def get_message_no_positions(self):
         return "No mothers found. Is the linking data missing?"

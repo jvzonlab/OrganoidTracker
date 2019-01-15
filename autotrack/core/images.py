@@ -4,7 +4,7 @@ import numpy
 from numpy import ndarray
 
 from autotrack.core import TimePoint, UserError
-from autotrack.core.image_loader import ImageLoader
+from autotrack.core.image_loader import ImageLoader, ImageChannel
 from autotrack.core.position import Position
 from autotrack.core.resolution import ImageResolution
 
@@ -15,27 +15,30 @@ class _CachedImageLoader(ImageLoader):
     """Wrapper that caches the last few loaded images."""
 
     _internal: ImageLoader
-    _image_cache: List[Tuple[int, ndarray]]
+    _image_cache: List[Tuple[int, ImageChannel, ndarray]]
 
     def __init__(self, wrapped: ImageLoader):
         self._image_cache = []
         self._internal = wrapped
 
-    def _add_to_cache(self, time_point_number: int, image: ndarray):
+    def _add_to_cache(self, time_point_number: int, image_channel: ImageChannel, image: ndarray):
         if len(self._image_cache) > 5:
             self._image_cache.pop(0)
-        self._image_cache.append((time_point_number, image))
+        self._image_cache.append((time_point_number, image_channel, image))
 
-    def get_image_array(self, time_point: TimePoint) -> Optional[ndarray]:
+    def get_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
         time_point_number = time_point.time_point_number()
         for entry in self._image_cache:
-            if entry[0] == time_point_number:
-                return entry[1]
+            if entry[0] == time_point_number and entry[1] == image_channel:
+                return entry[2]
 
         # Cache miss
-        image = self._internal.get_image_array(time_point)
-        self._add_to_cache(time_point_number, image)
+        image = self._internal.get_image_array(time_point, image_channel)
+        self._add_to_cache(time_point_number, image_channel, image)
         return image
+
+    def get_channels(self) -> List[ImageChannel]:
+        return self._internal.get_channels()
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
         return self._internal.get_image_size_zyx()
@@ -171,7 +174,7 @@ class Images:
 
     def get_image(self, time_point: TimePoint) -> Optional[Image]:
         """Gets an image along with offset information, or None if there is no image available for that time point."""
-        array = self._image_loader.get_image_array(time_point)
+        array = self.get_image_stack(time_point)
         if array is None:
             return None
         return Image(array, self._offsets.of_time_point(time_point))
@@ -183,9 +186,16 @@ class Images:
             return image_loader
         return self._image_loader
 
-    def get_image_stack(self, time_point: TimePoint) -> Optional[ndarray]:
+    def get_image_stack(self, time_point: TimePoint, image_channel: Optional[ImageChannel] = None) -> Optional[ndarray]:
         """Loads an image using the current image loader. Returns None if there is no image for this time point."""
-        return self._image_loader.get_image_array(time_point)
+        if image_channel is None:
+            # Find the default image channel
+            channels = self._image_loader.get_channels()
+            if len(channels) == 0:
+                return None
+            image_channel = channels[0]
+
+        return self._image_loader.get_image_array(time_point, image_channel)
 
     def set_resolution(self, resolution: Optional[ImageResolution]):
         """Sets the image resolution."""

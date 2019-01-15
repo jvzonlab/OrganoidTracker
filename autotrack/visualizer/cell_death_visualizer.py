@@ -19,7 +19,7 @@ class CellTrackEndVisualizer(PositionListVisualizer):
 
     def __init__(self, window: Window, focus_position: Optional[Position]):
         super().__init__(window, chosen_position=focus_position,
-                         all_positions=_get_end_of_tracks(window.get_experiment()), show_next_image=False)
+                         all_positions=_get_end_of_tracks(window.get_experiment()))
 
     def get_message_no_positions(self):
         return "No ending cell tracks found. Is the linking data missing?"

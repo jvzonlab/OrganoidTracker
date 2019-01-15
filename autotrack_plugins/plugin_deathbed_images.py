@@ -9,7 +9,7 @@ import numpy
 
 from autotrack.core import UserError
 from autotrack.core.data_axis import DataAxisCollection, DataAxisPosition
-from autotrack.core.image_loader import ImageLoader
+from autotrack.core.image_loader import ImageLoader, ImageChannel
 from autotrack.core.links import Links
 from autotrack.core.position import Position
 from autotrack.gui import dialog
@@ -100,11 +100,13 @@ def _generate_deathbed_images(window: Window):
 class _ImageGeneratingTask(Task):
 
     _deathbeds: List[_Deathbed]
-    _image_loader: ImageLoader()
+    _image_loader: ImageLoader
+    _image_channel: ImageChannel
     _output_folder: str
 
     def __init__(self, image_loader: ImageLoader, deathbeds: List[_Deathbed], output_folder: str):
         self._image_loader = image_loader.copy()  # We will use this image loader on another thread
+        self._image_channel = self._image_loader.get_channels()[0]  # Just use the first channel
         self._deathbeds = deathbeds
         self._output_folder = output_folder
 
@@ -118,7 +120,8 @@ class _ImageGeneratingTask(Task):
             for i in range(len(deathbed.positions)):
                 image_index = len(deathbed.positions) - i - 1
                 position = deathbed.positions[i]
-                image = bits.image_to_8bit(self._image_loader.get_image_array(position.time_point()))
+                image = bits.image_to_8bit(self._image_loader.get_image_array(position.time_point(),
+                                                                              self._image_channel))
                 z = min(max(0, int(position.z)), len(image) - 1)
 
                 cropper.crop_2d(image, min_x, min_y, z, out_array[image_index, :, :, 0])

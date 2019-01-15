@@ -9,6 +9,7 @@ from matplotlib.figure import Figure, Axes
 
 from autotrack import core
 from autotrack.core import TimePoint
+from autotrack.core.image_loader import ImageChannel
 from autotrack.core.position import Position
 from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog
@@ -22,11 +23,13 @@ class DisplaySettings:
     show_next_time_point: bool
     show_images: bool
     show_reconstruction: bool
+    image_channel: Optional[ImageChannel]  # Set to None to use the default image channel
 
     def __init__(self, show_next_time_point: bool = False, show_images: bool = True, show_reconstruction: bool = False):
         self.show_next_time_point = show_next_time_point
         self.show_images = show_images
         self.show_reconstruction = show_reconstruction
+        self.image_channel = None
 
     KEY_SHOW_NEXT_IMAGE_ON_TOP = "n"
     KEY_SHOW_IMAGES = "i"
@@ -38,13 +41,18 @@ class Visualizer:
     _window: Window
     _fig: Figure
     _ax: Axes
+    _display_settings: DisplaySettings
 
-    def __init__(self, window: Window):
+    def __init__(self, window: Window, *, display_settings: Optional[DisplaySettings] = None):
         if not isinstance(window, Window):
             raise ValueError("window is not a Window")
         self._window = window
         self._fig = window.get_figure()
         self._ax = self._fig.gca()
+
+        if display_settings is None:
+            display_settings = DisplaySettings()
+        self._display_settings = display_settings
 
     @property
     def _experiment(self) -> Experiment:
@@ -152,7 +160,7 @@ class Visualizer:
     def load_image(self, time_point: TimePoint, show_next_time_point: bool) -> Optional[ndarray]:
         """Creates an image suitable for display purposes. IF show_next_time_point is set to True, then then a color
         image will be created with the next image in red, and the current image in green."""
-        time_point_images = self._experiment.get_image_stack(time_point)
+        time_point_images = self._experiment.images.get_image_stack(time_point, self._display_settings.image_channel)
         if time_point_images is None:
             return None
         if show_next_time_point:
@@ -162,7 +170,8 @@ class Visualizer:
             rgb_images[:,:,:,1] = time_point_images  # Green channel is current image
             try:
                 next_time_point = self._experiment.get_next_time_point(time_point)
-                next_time_point_images = self._experiment.get_image_stack(next_time_point)
+                next_time_point_images = self._experiment.images.get_image_stack(next_time_point,
+                                                                                 self._display_settings.image_channel)
 
                 # Check if we need to translate the next image
                 offsets = self._experiment.images.offsets

@@ -29,7 +29,6 @@ class AbstractImageVisualizer(Visualizer):
     _time_point_images: ndarray = None
     _z: int
     __positions_near_visible_layer: List[Position]
-    _display_settings: DisplaySettings
 
     # The color map should typically not be transferred when switching to another viewer, so it is not part of the
     # display_settings property
@@ -37,9 +36,8 @@ class AbstractImageVisualizer(Visualizer):
 
     def __init__(self, window: Window, *, time_point: Optional[TimePoint] = None, z: int = 14,
                  display_settings: DisplaySettings = None):
-        super().__init__(window)
+        super().__init__(window, display_settings=display_settings)
 
-        self._display_settings = DisplaySettings() if display_settings is None else display_settings
         if time_point is None:
             time_point = TimePoint(window.get_experiment().first_time_point_number())
         self._z = int(z)
@@ -294,6 +292,8 @@ class AbstractImageVisualizer(Visualizer):
                 self._toggle_showing_reconstruction,
             "Navigate//Layer-Above layer (Up)": lambda: self._move_in_z(1),
             "Navigate//Layer-Below layer (Down)": lambda: self._move_in_z(-1),
+            "Navigate//Channel-Next channel (>)": lambda: self._move_in_channel(1),
+            "Navigate//Channel-Previous channel (<)": lambda: self._move_in_channel(-1),
             "Navigate//Time-Next time point (Right)": lambda: self._move_in_time(1),
             "Navigate//Time-Previous time point (Left)": lambda: self._move_in_time(-1),
             "Navigate//Time-Other time point... (/t*)": time_point_prompt
@@ -308,6 +308,10 @@ class AbstractImageVisualizer(Visualizer):
             self._move_in_time(-1)
         elif event.key == "right":
             self._move_in_time(1)
+        elif event.key == ",":
+            self._move_in_channel(-1)
+        elif event.key == ".":
+            self._move_in_channel(1)
         elif event.key == DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP:
             self._toggle_showing_next_time_point()
         elif event.key == DisplaySettings.KEY_SHOW_IMAGES:
@@ -378,5 +382,27 @@ class AbstractImageVisualizer(Visualizer):
             self._load_time_point(TimePoint(new_time_point_number))
             self.draw_view()
             self.update_status(self.get_default_status())
+        except ValueError:
+            pass
+
+    def _move_in_channel(self, dc: int):
+        channels = self._experiment.images.image_loader().get_channels()
+        if len(channels) < 2:
+            # Nothing to choose, just use the default
+            self._display_settings.image_channel = None
+            self.update_status("There is only one image channel available, so we cannot switch channels.")
+            return
+
+        try:
+            old_index = channels.index(self._display_settings.image_channel)
+        except ValueError:
+            old_index = 0
+        new_index = (old_index + dc) % len(channels)
+        self._display_settings.image_channel = channels[new_index]
+
+        try:
+            self._load_time_point(self._time_point)  # Reload image
+            self.draw_view()
+            self.update_status(f"Switched to channel {new_index + 1} of {len(channels)}")
         except ValueError:
             pass
