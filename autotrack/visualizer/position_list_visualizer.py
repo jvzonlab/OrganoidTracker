@@ -18,7 +18,6 @@ class PositionListVisualizer(Visualizer):
 
     _current_position_index: int = -1
     _position_list = List[Position]
-    _show_next_image: bool
 
     __last_position_by_class = dict()  # Static variable
 
@@ -32,7 +31,6 @@ class PositionListVisualizer(Visualizer):
         self._position_list = all_positions
         self._position_list.sort(key=lambda position: position.time_point_number())
         self._show_closest_or_stored_position(chosen_position)  # Calling a self.method during construction is bad...
-        self._show_next_image = show_next_image
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
@@ -109,7 +107,7 @@ class PositionListVisualizer(Visualizer):
             delta_time = 1
             if connected_position.time_point_number() < main_position.time_point_number():
                 delta_time = -1
-                if self._show_next_image:
+                if self._display_settings.show_next_time_point:
                     continue  # Showing the previous position only makes things more confusing here
 
             color = core.COLOR_CELL_NEXT if delta_time == 1 else core.COLOR_CELL_PREVIOUS
@@ -122,7 +120,7 @@ class PositionListVisualizer(Visualizer):
     def _show_image(self):
         current_position = self._position_list[self._current_position_index]
         time_point = current_position.time_point()
-        image_stack = self.load_image(time_point, self._show_next_image)
+        image_stack = self.load_image(time_point, self._display_settings.show_next_time_point)
         if image_stack is not None:
             offset = self._experiment.images.offsets.of_time_point(time_point)
             image_z = int(current_position.z - offset.z)
@@ -147,14 +145,12 @@ class PositionListVisualizer(Visualizer):
 
         if self._current_position_index < 0 or self._current_position_index >= len(self._position_list):
             # Don't know where to go
-            image_visualizer = StandardImageVisualizer(self._window, display_settings=
-                                                       DisplaySettings(show_next_time_point=self._show_next_image))
+            image_visualizer = StandardImageVisualizer(self._window, display_settings=self._display_settings)
         else:
             mother = self._position_list[self._current_position_index]
             image_visualizer = StandardImageVisualizer(self._window,
                                                        time_point=mother.time_point(), z=int(mother.z),
-                                                       display_settings=DisplaySettings(
-                                                           show_next_time_point=self._show_next_image))
+                                                       display_settings=self._display_settings)
         activate(image_visualizer)
 
     def _on_key_press(self, event: KeyEvent):
@@ -163,7 +159,7 @@ class PositionListVisualizer(Visualizer):
         elif event.key == "right":
             self._goto_next()
         elif event.key == DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP:
-            self._show_next_image = not self._show_next_image
+            self._display_settings.show_next_time_point = not self._display_settings.show_next_time_point
             self.draw_view()
         elif event.key == "escape":
             self._exit_view()
