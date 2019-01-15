@@ -141,6 +141,9 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
             mask.add_from_labeled(watershed_image, cell_id + 1)  # Background is 0, so cell 0 uses color 1
 
             center_zyx = position_centers[cell_id + 1]
+            if numpy.any(numpy.isnan(center_zyx)):
+                print("No center of mass for cell " + str(center_zyx))
+                continue  # No center of mass for this cell id
             intensity = image[int(center_zyx[0]), int(center_zyx[1]), int(center_zyx[2])]
             gaussians.append(Gaussian(intensity, center_zyx[2], center_zyx[1], center_zyx[0], 50, 50, 2, 0, 0, 0))
         mask.dilate_xy(blur_radius // 2)
