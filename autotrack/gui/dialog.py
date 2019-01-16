@@ -24,9 +24,14 @@ def _window() -> QWidget:
     return active_window
 
 
-def prompt_int(title: str, question: str, min: int=-2147483647, max: int=2147483647) -> Optional[int]:
+def prompt_int(title: str, question: str, minimum: int = -2147483647, maximum: int = 2147483647) -> Optional[int]:
     """Asks the user to enter an integer. Returns None if the user pressed Cancel or closed the dialog box."""
-    result, ok = QInputDialog.getInt(_window(), title, question, min=min, max=max)
+    result, ok = QInputDialog.getInt(_window(), title, question, min=minimum, max=maximum)
+    return result if ok else None
+
+
+def prompt_float(title: str, question: str, minimum: float = -1.0e10, maximum: float = 1.0e10) -> Optional[float]:
+    result, ok = QInputDialog.getDouble(_window(), title, question, min=minimum, max=maximum)
     return result if ok else None
 
 
@@ -228,5 +233,3 @@ def open_file(filepath: str):
         _os.startfile(filepath)
     elif _os.name == 'posix':
         _subprocess.call(('xdg-open', filepath))
-
-

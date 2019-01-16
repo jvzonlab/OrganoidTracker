@@ -66,7 +66,7 @@ def _generate_deathbed_images(window: Window):
 
     steps_back = dialog.prompt_int("Deathbed images", "How many time steps do you want to look before the cell was "
                                                       "considered dead?\nUse 0 to look at only the first moment when "
-                                                      "the cell was considered dead.", min=0)
+                                                      "the cell was considered dead.", minimum=0)
     if steps_back is None:
         return
 

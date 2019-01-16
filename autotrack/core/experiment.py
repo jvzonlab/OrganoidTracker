@@ -3,6 +3,7 @@ from typing import Optional, List, Tuple, Iterable
 from numpy import ndarray
 
 from autotrack.core import TimePoint, Name, UserError, min_none, max_none
+from autotrack.core.connections import Connections
 from autotrack.core.image_loader import ImageLoader
 from autotrack.core.images import Images
 from autotrack.core.links import Links
@@ -23,6 +24,7 @@ class Experiment:
     scores: ScoreCollection
     _links: Links
     _images: Images
+    _connections: Connections
     _name: Name
     data_axes: DataAxisCollection
     _image_resolution: Optional[ImageResolution] = None
@@ -34,23 +36,23 @@ class Experiment:
         self.data_axes = DataAxisCollection()
         self._links = Links()
         self._images = Images()
+        self._connections = Connections()
 
     def remove_position(self, position: Position):
         """Removes both a position and its links from the experiment."""
         self._positions.detach_position(position)
         self._links.remove_links_of_position(position)
 
-    def move_position(self, old_position: Position, position_new: Position) -> bool:
+    def move_position(self, position_old: Position, position_new: Position) -> bool:
         """Moves the position of a position, preserving any links. (So it's different from remove-and-readd.) The shape
         of a position is not preserved, though. Throws ValueError when the position is moved to another time point. If
         the new position has not time point specified, it is set to the time point o the existing position."""
-        position_new.check_time_point(old_position.time_point())  # Make sure both have the same time point
+        position_new.check_time_point(position_old.time_point())  # Make sure both have the same time point
 
-        # Replace in linking network
-        self._links.replace_position(old_position, position_new)
-
-        # Replace in position collection
-        self._positions.move_position(old_position, position_new)
+        # Replace in all collections
+        self._links.replace_position(position_old, position_new)
+        self._connections.replace_position(position_old, position_new)
+        self._positions.move_position(position_old, position_new)
         return True
 
     def remove_data_of_time_point(self, time_point: TimePoint):
@@ -143,6 +145,18 @@ class Experiment:
         if not isinstance(images, Images):
             raise TypeError("images mut be an Images object, was " + repr(images))
         self._images = images
+
+    @property
+    def connections(self) -> Connections:
+        """Gets the connections, which are used to group positions at the same time point."""
+        return self._connections
+
+    @connections.setter
+    def connections(self, connections: Connections):
+        """Sets the connections, which are used to group positions at the same time point."""
+        if not isinstance(connections, Connections):
+            raise TypeError("connections mut be a Connections object, was " + repr(connections))
+        self._connections = connections
 
     @property
     def division_lookahead_time_points(self):

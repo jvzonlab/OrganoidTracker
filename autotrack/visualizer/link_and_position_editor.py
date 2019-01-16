@@ -4,6 +4,7 @@ from matplotlib.backend_bases import KeyEvent, MouseEvent, LocationEvent
 
 from autotrack import core
 from autotrack.core import TimePoint
+from autotrack.core.connections import Connections
 from autotrack.core.experiment import Experiment
 from autotrack.core.position import Position
 from autotrack.core.shape import ParticleShape
@@ -121,6 +122,24 @@ class _MarkLineageEndAction(UndoableAction):
         return f"Re-added the {self.old_marker.get_display_name()}-marker to {self.position}"
 
 
+class _ReplaceConnectionsAction(UndoableAction):
+
+    _old_connections: Connections
+    _new_connections: Connections
+
+    def __init__(self, old_connections: Connections, new_connections: Connections):
+        self._old_connections = old_connections
+        self._new_connections = new_connections
+
+    def do(self, experiment: Experiment) -> str:
+        experiment.connections = self._new_connections
+        return f"Created {len(self._new_connections)} new connections"
+
+    def undo(self, experiment: Experiment) -> str:
+        experiment.connections = self._old_connections
+        return "Restored the previous connections"
+
+
 class LinkAndPositionEditor(AbstractEditor):
     """Editor for cell links and positions. Use the Insert key to insert new cells or links, and Delete to delete
      them."""
@@ -181,7 +200,8 @@ class LinkAndPositionEditor(AbstractEditor):
             **super().get_extra_menu_options(),
             "Edit//Experiment-Edit data axes... (A)": self._show_path_editor,
             "Edit//Experiment-Edit image offsets... (O)": self._show_offset_editor,
-            "Edit//Deletion-Delete data of time point": self._delete_data_of_time_point,
+            "Edit//Batch-Delete data of time point": self._delete_data_of_time_point,
+            "Edit//Batch-Connect positions by distance...": self._connect_positions_by_distance,
             "Edit//LineageEnd-Mark as cell death": lambda: self._try_set_end_marker(EndMarker.DEAD),
             "Edit//LineageEnd-Mark as moving out of view": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
             "Edit//LineageEnd-Remove end marker": lambda: self._try_set_end_marker(None),
@@ -292,6 +312,17 @@ class LinkAndPositionEditor(AbstractEditor):
             pass  # Deleted the last time point, so get_next_time_point fails
 
         self.get_window().redraw_data()
+
+    def _connect_positions_by_distance(self):
+        distance_um = dialog.prompt_float("Maximum distance", "Up to what distance (μm) should all positions be"
+                                                              " connected?", minimum=0)
+        if distance_um is None:
+            return
+
+        from autotrack.connecting.connector_by_distance import ConnectorByDistance
+        connector = ConnectorByDistance(distance_um)
+        connections = connector.create_connections(self._experiment)
+        self._perform_action(_ReplaceConnectionsAction(self._experiment.connections, connections))
 
     def _try_insert(self, event: LocationEvent):
         if self._selected1 is None or self._selected2 is None:

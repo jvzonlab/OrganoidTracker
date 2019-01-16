@@ -3,6 +3,7 @@ from typing import List, Union, Optional, Iterable, Dict, Any
 import cv2
 import numpy
 from matplotlib.backend_bases import KeyEvent
+from matplotlib.collections import LineCollection
 from matplotlib.colors import Colormap
 from numpy.core.multiarray import ndarray
 from tifffile import tifffile
@@ -101,6 +102,7 @@ class AbstractImageVisualizer(Visualizer):
         self.__positions_near_visible_layer.clear()
         self._draw_image()
         self._draw_positions()
+        self._draw_connections()
         self._draw_data_axes()
         self._draw_extra()
         self._window.set_figure_title(self._get_figure_title())
@@ -194,6 +196,21 @@ class AbstractImageVisualizer(Visualizer):
     def _draw_error(self, position: Position, dz: int):
         self._ax.plot(position.x, position.y, 'X', color='black', markeredgecolor='white',
                       markersize=19 - abs(dz), markeredgewidth=2)
+
+    def _draw_connections(self):
+        lines = []
+        for position1, position2 in self._experiment.connections.of_time_point(self._time_point):
+            min_display_z = min(position1.z, position2.z) - self.MAX_Z_DISTANCE
+            max_display_z = max(position1.z, position2.z) + self.MAX_Z_DISTANCE
+            if self._z < min_display_z or self._z > max_display_z:
+                continue
+
+            line = (position1.x, position1.y), (position2.x, position2.y)
+            lines.append(line)
+        colors = [core.COLOR_CELL_CURRENT]
+        linestyles = ["dotted"]
+        linewidths = [2]
+        self._ax.add_collection(LineCollection(lines, colors=colors, linestyles=linestyles, linewidths=linewidths))
 
     def _draw_links(self, position: Position):
         """Draws links between the positions. Returns 1 if there is 1 error: the baseline links don't match the actual

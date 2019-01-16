@@ -3,12 +3,13 @@ import json
 import os
 from json import JSONEncoder
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple
 
 import numpy
 from pandas import DataFrame
 
 from autotrack.core import shape, TimePoint, UserError
+from autotrack.core.connections import Connections
 from autotrack.core.experiment import Experiment
 from autotrack.core.images import ImageOffsets
 from autotrack.core.links import Links
@@ -80,6 +81,9 @@ def _load_json_data_file(file_name: str, min_time_point: int, max_time_point: in
         if "data_axes" in data:
             _parse_data_axes_format(experiment, data["data_axes"], min_time_point, max_time_point)
 
+        if "connections" in data:
+            _parse_connections_format(experiment, data["connections"], min_time_point, max_time_point)
+
         if "family_scores" in data:
             experiment.scores.add_scored_families(data["family_scores"])
 
@@ -145,6 +149,23 @@ def _parse_data_axes_format(experiment: Experiment, axes_data: List[Dict], min_t
             path.add_point(points_x[i], points_y[i], z)
         path.set_offset(path_json["offset"])
         experiment.data_axes.add_data_axis(TimePoint(time_point_number), path)
+
+
+def _parse_connections_format(experiment: Experiment, connections_data: Dict[str, List[List[Position]]],
+                              min_time_point: int, max_time_point: int):
+    """Adds all connections from the serialized format to the Connections object."""
+    connections = experiment.connections
+    for time_point_str, connections_list in connections_data.items():
+        time_point_number = int(time_point_str)
+        if time_point_number < min_time_point or time_point_number > max_time_point:
+            continue
+
+        for connection in connections_list:
+            position1 = connection[0]
+            position2 = connection[1]
+
+            connections.add(position1.with_time_point_number(time_point_number),
+                            position2.with_time_point_number(time_point_number))
 
 
 def _add_d3_data(links: Links, data: Dict, min_time_point: int = -100000, max_time_point: int = 100000):
@@ -298,6 +319,16 @@ def _encode_data_axes_to_json(data_axes: DataAxisCollection) -> List[Dict]:
     return json_list
 
 
+def _encode_connections_to_json(connections: Connections) -> Dict[str, List[List[Position]]]:
+    connections_dict = dict()
+    for time_point in connections.time_points():
+        connections_json = list()
+        for position1, position2 in connections.of_time_point(time_point):
+            connections_json.append([position1.with_time_point(None), position2.with_time_point(None)])
+        connections_dict[str(time_point.time_point_number())] = connections_json
+    return connections_dict
+
+
 def save_data_to_json(experiment: Experiment, json_file_name: str):
     """Saves positions, shapes, scores and links to a JSON file. The file should end with the extension FILE_EXTENSION.
     """
@@ -322,6 +353,10 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
     # Save data axes
     if experiment.data_axes.has_axes():
         save_data["data_axes"] = _encode_data_axes_to_json(experiment.data_axes)
+
+    # Save connections
+    if experiment.connections.has_connections():
+        save_data["connections"] = _encode_connections_to_json(experiment.connections)
 
     # Save image resolution
     try:
