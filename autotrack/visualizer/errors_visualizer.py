@@ -75,10 +75,13 @@ class ErrorsVisualizer(PositionListVisualizer):
     def get_title(self, position_list: List[Position], current_position_index: int):
         position = position_list[current_position_index]
         error = linking_markers.get_error_marker(self._experiment.links, position)
-        return f"{error.get_severity().name} {current_position_index + 1} / {len(position_list)} "\
-            f" of lineage {self._current_lineage_index + 1} / {len(self._problematic_lineages)} " \
+        type = error.get_severity().name if error is not None else "Position"
+        message = error.get_message() if error is not None else "Error was suppressed"
+
+        return f"{type} {current_position_index + 1} / {len(position_list)} "\
+               f" of lineage {self._current_lineage_index + 1} / {len(self._problematic_lineages)} " \
                f"  ({self._total_number_of_warnings} warnings in total)" +\
-            "\n" + error.get_message() + "\n" + str(position)
+               "\n" + message + "\n" + str(position)
 
     def _on_command(self, command: str) -> bool:
         if command == "recheck":
@@ -148,8 +151,11 @@ class ErrorsVisualizer(PositionListVisualizer):
         position = self._position_list[self._current_position_index]
         links = self._experiment.links
         error = linking_markers.get_error_marker(links, position)
+        if error is None:
+            self.update_status(f"Warning for {position} was already suppressed")
+            return
         linking_markers.suppress_error_marker(links, position, error)
-        del self._position_list[self._current_position_index]
+        self._total_number_of_warnings -= 1
         self.draw_view()
         self.update_status(f"Suppressed warning for {position}")
 
