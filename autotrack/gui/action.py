@@ -49,11 +49,12 @@ def toggle_axis(figure: Figure):
 
 def new(window: Window):
     """Starts a new experiment."""
-    if dialog.prompt_yes_no("Confirmation",
-                            "Are you sure you want to start a new project? Any unsaved changed will be lost."):
-        visualizer = EmptyVisualizer(window)
-        activate(visualizer)
-        window.get_gui_experiment().set_experiment(Experiment())
+    if not ask_save_unsaved_changes(window.get_gui_experiment()):
+        return  # Cancelled
+
+    visualizer = EmptyVisualizer(window)
+    activate(visualizer)
+    window.get_gui_experiment().set_experiment(Experiment())
 
 
 def load_images(window: Window):
