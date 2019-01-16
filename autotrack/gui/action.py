@@ -58,10 +58,12 @@ def new(window: Window):
 
 def load_images(window: Window):
     # Show an OK/cancel box, but with an INFO icon instead of a question mark
-    if not popup_message_cancellable("Image loading", "Images are expected to be 3D grayscale TIF files. Each TIF file "
-                               "represents a single time point.\n\n"
-                               "Please select the TIF file of the first time point. The file name of the image must "
-                               "contain \"t1\", \"t01\", \"_1.\" or similar in the file name."):
+    if not popup_message_cancellable("Image loading",
+                                     "Images are expected to be 3D grayscale files. Both TIF series and LIF files are "
+                                     "supported.\n\n"
+                                     "For TIF files, the program expects a series of files, each file representing a "
+                                     "single time point. Select the file of the first time point, which must have "
+                                     "\"t1\", \"t01\", \"_1.\" or similar in the file name."):
         return  # Cancelled
     full_path = dialog.prompt_load_file("Select first image file", [
         ("TIF file", "*.tif"),
