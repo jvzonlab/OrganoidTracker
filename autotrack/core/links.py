@@ -305,9 +305,20 @@ class Links:
             raise ValueError("The data_name 'id' is used to store the position itself.")
         data_of_positions = self._position_data.get(data_name)
         if data_of_positions is None:
+            if value is None:
+                return  # No value was stored already, so no need to change anything
+
+            # Intialize dict for this data type
             data_of_positions = dict()
             self._position_data[data_name] = data_of_positions
-        data_of_positions[position] = value
+
+        if value is None:
+            # Delete
+            if position in data_of_positions:
+                del data_of_positions[position]
+        else:
+            # Store
+            data_of_positions[position] = value
 
     def find_links_of(self, position: Position) -> Iterable[Position]:
         """Gets all links of a position, both to the past and the future."""
