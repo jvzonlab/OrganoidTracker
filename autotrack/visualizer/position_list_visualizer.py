@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Type
 
 from matplotlib.backend_bases import KeyEvent
 
@@ -19,7 +19,7 @@ class PositionListVisualizer(Visualizer):
     _current_position_index: int = -1
     _position_list = List[Position]
 
-    __last_position_by_class = dict()  # Static variable
+    __last_position_by_class: Dict[Type, Position] = dict()  # Static variable
 
     def __init__(self, window: Window, all_positions: List[Position], chosen_position: Optional[Position] = None,
                  display_settings: Optional[DisplaySettings] = None):
@@ -60,12 +60,12 @@ class PositionListVisualizer(Visualizer):
         except ValueError:
             pass  # Ignore, last position is no longer avalable
 
-    def _get_last_position(self):
+    def _get_last_position(self) -> Optional[Position]:
         """Gets the index we were at last time a visualizer of this kind was open."""
         try:
             return PositionListVisualizer.__last_position_by_class[type(self)]
         except KeyError:
-            return -1
+            return None
 
     def get_message_no_positions(self):
         return "No cells found. Is there some data missing?"
