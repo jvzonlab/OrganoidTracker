@@ -83,6 +83,14 @@ class _ConnectionsByTimePoint:
             for position2 in positions2:
                 yield position1, position2
 
+    def find_connections_starting_at(self, position: Position) -> List[Position]:
+        """Returns connections starting from the given position. Note: connections are stored internally as going from
+        the lowest position (x, then y, then z) to the highest position. This method only returns connections going from
+        a position, not connections going to a position."""
+        if position in self._connections:
+            return list(self._connections[position])
+        return []
+
     def __len__(self) -> int:
         """Returns the total number of connections (lines)."""
         sum = 0
@@ -184,3 +192,13 @@ class Connections:
     def has_connections(self) -> bool:
         """Returns True if there is at least one connection stored."""
         return len(self._by_time_point) > 0
+
+    def find_connections_starting_at(self, position: Position) -> List[Position]:
+        """Returns connections starting from the given position. Note: connections are stored internally as going from
+        the lowest position (x, then y, then z) to the highest position. This method only returns connections going from
+        a position, not connections going to a position."""
+        time_point_number = position.time_point_number()
+        connections = self._by_time_point.get(time_point_number)
+        if connections is None:
+            return []
+        return connections.find_connections_starting_at(position)
