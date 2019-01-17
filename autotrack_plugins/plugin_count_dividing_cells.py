@@ -5,6 +5,8 @@ from matplotlib.figure import Figure
 from autotrack.core import UserError
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
+from autotrack.linking import intestinal_organoid_cell_types
+from autotrack.linking.intestinal_organoid_cell_types import IntestinalOrganoidCellType
 from autotrack.linking_analysis import cell_fate_finder
 from autotrack.linking_analysis.cell_fate_finder import CellFate, CellFateType
 
@@ -28,10 +30,14 @@ def _show_number_of_dividing_cells(window: Window):
     time_point_hours = []
     dividing_counts_min = []
     dividing_counts_max = []
+    paneth_counts = []
+    total_counts = []
 
     for time_point in experiment.time_points():
         dividing_count_min = 0
         dividing_count_max = 0
+        paneth_count = 0
+        total_count = 0
         for position in experiment.positions.of_time_point(time_point):
             fate = cell_fate_finder.get_fate(experiment, position)
             if fate.type == CellFateType.WILL_DIVIDE:
@@ -40,20 +46,33 @@ def _show_number_of_dividing_cells(window: Window):
             elif fate.type == CellFateType.UNKNOWN:
                 dividing_count_max += 1  # Could be dividing, but we're not sure
 
+            cell_type = intestinal_organoid_cell_types.get_cell_type(experiment.links, position)
+            if cell_type == IntestinalOrganoidCellType.PANETH:
+                paneth_count += 1
+
+            total_count += 1
+
         time_point_hours.append(time_point.time_point_number() * resolution.time_point_interval_h)
         dividing_counts_min.append(dividing_count_min)
         dividing_counts_max.append(dividing_count_max)
+        paneth_counts.append(paneth_count)
+        total_counts.append(total_count)
 
     dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_figure(figure, time_point_hours,
                                                                                  dividing_counts_min,
-                                                                                 dividing_counts_max))
+                                                                                 dividing_counts_max,
+                                                                                 paneth_counts,
+                                                                                 total_counts))
 
 
 def _draw_figure(figure: Figure, time_point_hours: List[int], dividing_counts_min: List[int],
-                 dividing_counts_max: List[int]):
+                 dividing_counts_max: List[int], paneth_counts: List[int], total_counts: List[int]):
     axes = figure.gca()
     axes.set_title("Number of dividing cells over time")
-    axes.plot(time_point_hours, dividing_counts_min)
+    axes.plot(time_point_hours, dividing_counts_min, label="Dividing cells")
     axes.fill_between(time_point_hours, dividing_counts_min, dividing_counts_max)
-    axes.set_ylabel("Number of dividing cells (min and max)")
+    axes.plot(time_point_hours, paneth_counts, color="red", label="Paneth cells")
+    axes.plot(time_point_hours, total_counts, color="black", label="All cells")
+    axes.set_ylabel("Number of cells (min and max)")
     axes.set_xlabel("Time (h)")
+    axes.legend()

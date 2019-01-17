@@ -15,6 +15,8 @@ from autotrack.core.links import Links
 from autotrack.core.position_collection import PositionCollection
 from autotrack.core.position import Position
 from autotrack.core.resolution import ImageResolution
+from autotrack.linking import intestinal_organoid_cell_types
+from autotrack.linking.intestinal_organoid_cell_types import IntestinalOrganoidCellType
 from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.linking_markers import EndMarker
 from autotrack.manual_tracking.track_lib import Track
@@ -29,6 +31,7 @@ def _load_links(tracks_dir: str, min_time_point: int = 0, max_time_point: int = 
     tracks = _read_track_files(tracks_dir, links, min_time_point=min_time_point, max_time_point=max_time_point)
     _read_lineage_file(tracks_dir, links, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
     _read_deaths_file(tracks_dir, links, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
+    _read_paneths_file(tracks_dir, links, tracks)
 
     return links
 
@@ -137,6 +140,24 @@ def _read_deaths_file(tracks_dir: str, links: Links, tracks_by_id: List[Track], 
             last_position_position = track.x[-1]
             last_position = Position(*last_position_position, time_point_number=last_position_time)
             linking_markers.set_track_end_marker(links, last_position, EndMarker.DEAD)
+
+
+def _read_paneths_file(tracks_dir: str, links: Links, tracks_by_id: List[Track]):
+    """Adds all marked cell deaths to the linking network."""
+    _fix_python_path_for_pickle()
+    file = os.path.join(tracks_dir, "paneth.p")
+    if not os.path.exists(file):
+        return  # No crypt axis stored
+
+    print("Reading Paneth cell file")
+    with open(file, 'rb') as file_handle:
+        paneth_cell_numbers = pickle.load(file_handle, encoding="latin1")
+        for paneth_cell_number in paneth_cell_numbers:
+            track = tracks_by_id[paneth_cell_number]
+            last_position_time = track.t[-1]
+            last_position_position = track.x[-1]
+            last_position = Position(*last_position_position, time_point_number=last_position_time)
+            intestinal_organoid_cell_types.set_cell_type(links, last_position, IntestinalOrganoidCellType.PANETH)
 
 
 def _get_cell_in_time_point(track: Track, time_point_number: int) -> Position:
