@@ -16,7 +16,7 @@ _Line = List[Tuple[float, float]]  # Typedef of a line going from point to point
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Graph//Spindle-Mitotic spindle//Angle of spindle over time...": lambda: _view_spindle_angle(window)
+        "Graph//Spindle-Angle of spindle over time...": lambda: _view_spindle_angle(window)
     }
 
 
