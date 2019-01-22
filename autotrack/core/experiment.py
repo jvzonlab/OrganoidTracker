@@ -164,3 +164,10 @@ class Experiment:
         the cell divided? If the experiment continues for at least this many time points, then we can safely assume that
          the cell did not divide."""
         return 80
+
+    def merge(self, other: "Experiment"):
+        """Merges the position, linking and connections data of two experiments. Images, resolution and scores are not
+        yet merged."""
+        self.positions.add_positions_and_shapes(other.positions)
+        self.links.add_links(other.links)
+        self.connections.add_connections(other.connections)

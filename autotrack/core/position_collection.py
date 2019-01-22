@@ -12,7 +12,6 @@ class _PositionsAtTimePoint:
 
     def __init__(self):
         self._positions = dict()
-        self._mother_scores = dict()
 
     def positions(self) -> AbstractSet[Position]:
         return self._positions.keys()
@@ -50,6 +49,13 @@ class _PositionsAtTimePoint:
 
     def __len__(self):
         return len(self._positions)
+
+    def copy(self) -> "_PositionsAtTimePoint":
+        """Gets a deep copy of this object. Changes to the returned object will not affect this object, and vice versa.
+        """
+        copy = _PositionsAtTimePoint()
+        copy._positions = self._positions.copy()
+        return copy
 
 
 class PositionCollection:
@@ -177,3 +183,15 @@ class PositionCollection:
     def has_positions(self) -> bool:
         """Returns True if there are any positions stored here."""
         return len(self._all_positions) > 0
+
+    def add_positions_and_shapes(self, other: "PositionCollection"):
+        """Adds all positions and shapes of the other collection to this collection."""
+        for time_point_number, other_positions in other._all_positions.items():
+            if time_point_number in self._all_positions:
+                # Merge positions
+                self_positions = self._all_positions[time_point_number]
+                for position, shape in other_positions.positions_and_shapes().items():
+                    self_positions.add_position(position, shape)
+            else:
+                # Just copy in
+                self._all_positions[time_point_number] = other_positions.copy()

@@ -42,9 +42,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     def get_extra_menu_options(self):
         return {
             **super().get_extra_menu_options(),
-            "Edit//Add-Add positions and shapes...": self._ask_add_positions_from_file,
-            "Edit//Add-Add links, scores and warnings...": self._ask_add_links_from_file,
-            "Edit//Add-Add positions and links from Guizela's format...": self._ask_add_guizela_tracks,
+            "Edit//Experiment-Merge tracking data...": self._ask_merge_experiments,
             "Edit//Experiment-Manually change data... (C)": self._show_data_editor,
             "Edit//Automatic-Cell detection...": self._show_cell_detector,
             "View//Cells-Cell divisions... (M)": self._show_mother_cells,
@@ -136,29 +134,13 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         from autotrack.visualizer.cell_death_visualizer import CellTrackEndVisualizer
         activate(CellTrackEndVisualizer(self._window, None))
 
-    def _ask_add_positions_from_file(self):
-        cell_file = dialog.prompt_load_file("Select positions file", [("JSON file", "*.json")])
-        if not cell_file:
-            return  # Cancelled
-
-        io.load_positions_and_shapes_from_json(self._experiment, cell_file)
-        self.draw_view()
-
-    def _ask_add_links_from_file(self):
-        link_file = dialog.prompt_load_file("Select link file",
+    def _ask_merge_experiments(self):
+        link_file = dialog.prompt_load_file("Select data file",
                                             [(io.FILE_EXTENSION.upper() + " files", "*." + io.FILE_EXTENSION),
                                              ("JSON files", "*.json")])
         if not link_file:
             return  # Cancelled
 
-        io.load_linking_result(self._experiment, str(link_file))
-        self.draw_view()
-
-    def _ask_add_guizela_tracks(self):
-        """Loads the tracks in Guizela's format."""
-        folder = dialog.prompt_directory("Open folder with Guizela's tracks...")
-        if not folder:
-            return  # Cancelled
-
-        guizela_data_importer.add_data_to_experiment(self._experiment, folder)
+        new_experiment = io.load_data_file(link_file)
+        self._experiment.merge(new_experiment)
         self.get_window().redraw_data()

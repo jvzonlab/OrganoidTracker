@@ -102,6 +102,13 @@ class _ConnectionsByTimePoint:
         """Returns True if there are no connections stored for this time point."""
         return len(self._connections) == 0
 
+    def copy(self) -> "_ConnectionsByTimePoint":
+        """Gets a deep copy of this object. Changes to the returned object will not affect this object, and vice versa.
+        """
+        copy = _ConnectionsByTimePoint()
+        copy._connections = self._connections.copy()
+        return copy
+
 
 class Connections:
     """Holds the connections of an experiment."""
@@ -202,3 +209,15 @@ class Connections:
         if connections is None:
             return []
         return connections.find_connections_starting_at(position)
+
+    def add_connections(self, other: "Connections"):
+        """Merges all connections in the other collection with this collection."""
+        for time_point_number, other_connections in other._by_time_point.items():
+            if time_point_number in self._by_time_point:
+                # Merge connections
+                self_connections = self._by_time_point[time_point_number]
+                for position1, position2 in other_connections.get_all():
+                    self_connections.add(position1, position2)
+            else:
+                # Just copy in
+                self._by_time_point[time_point_number] = other_connections.copy()
