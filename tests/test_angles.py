@@ -29,6 +29,18 @@ class TestAngles(unittest.TestCase):
         self.assertEquals(60, angles.direction_change(240, 300))
         self.assertEquals(60, angles.direction_change(60, 120))
 
+    def test_change_direction_with_flip(self):
+        # Rotations to the right
+        self.assertEquals(30, angles.direction_change_of_line(0, 30))
+        self.assertEquals(0, angles.direction_change_of_line(0, 180))
+        self.assertEquals(10, angles.direction_change_of_line(0, 190))
+        self.assertEquals(20, angles.direction_change_of_line(170, 190))
+        self.assertEquals(10, angles.direction_change_of_line(355, 5))
+
+        # Rotations to the left
+        self.assertEquals(30, angles.direction_change_of_line(30, 0))
+        self.assertEquals(10, angles.direction_change_of_line(5, 355))
+
     def test_flipped(self):
         self.assertEquals(190, angles.flipped(10))
         self.assertEquals(10, angles.flipped(190))

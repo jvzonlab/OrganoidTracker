@@ -28,6 +28,18 @@ def direction_change(angle1: float, angle2: float) -> float:
     return difference
 
 
+def direction_change_of_line(angle1: float, angle2: float) -> float:
+    """Returns a value from 0 to 90 to how much the direction needs to change to go from angle1 to angle2. Flipped
+    angles are considered equal, so 10 degrees is equal to 190 degrees. To go from 5 degrees to 190 degrees, you
+    therefore need to turn only 5 degrees."""
+    # 170 and 190: 20 degrees to the right
+    # 350 and 10: 20 degrees to the right
+
+    change = abs(direction_change(angle1, angle2))
+    change_flipped = abs(direction_change(angle1, flipped(angle2)))
+    return min(change, change_flipped)
+
+
 def flipped(angle: float) -> float:
     """Gets the direction flipped 180*, so exactly in the opposite direction. The returned direction is from 0
     (inclusive) to 360 (exclusive).

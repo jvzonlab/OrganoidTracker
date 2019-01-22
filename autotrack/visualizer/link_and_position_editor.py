@@ -122,6 +122,23 @@ class _MarkLineageEndAction(UndoableAction):
         return f"Re-added the {self.old_marker.get_display_name()}-marker to {self.position}"
 
 
+class _DeleteConnectionAction(UndoableAction):
+    _position1: Position
+    _position2: Position
+
+    def __init__(self, position1: Position, position2: Position):
+        self._position1 = position1
+        self._position2 = position2
+
+    def do(self, experiment: Experiment) -> str:
+        experiment.connections.remove(self._position1, self._position2)
+        return f"Removed connection between {self._position1} and {self._position2}"
+
+    def undo(self, experiment: Experiment):
+        experiment.connections.add(self._position1, self._position2)
+        return f"Added connection between {self._position1} and {self._position2}"
+
+
 class _ReplaceConnectionsAction(UndoableAction):
 
     _old_connections: Connections
@@ -190,7 +207,7 @@ class LinkAndPositionEditor(AbstractEditor):
             self._selected2 = self._selected1
             self._selected1 = new_selection
             if self._selected2 is not None and\
-                    abs(self._selected1.time_point_number() - self._selected2.time_point_number()) != 1:
+                    abs(self._selected1.time_point_number() - self._selected2.time_point_number()) > 1:
                 self._selected2 = None  # Can only select two positions if they are in consecutive time points
         self.draw_view()
         self.update_status("Selected:\n        " + str(self._selected1) + "\n        " + str(self._selected2))
@@ -245,6 +262,10 @@ class LinkAndPositionEditor(AbstractEditor):
         elif self._selected2 is None:  # Delete cell and its links
             old_links = self._experiment.links.find_links_of(self._selected1)
             self._perform_action(ReversedAction(_InsertPositionAction(self._selected1, list(old_links))))
+        elif self._experiment.connections.exists(self._selected1, self._selected2):  # Delete a connection
+            position1, position2 = self._selected1, self._selected2
+            self._selected1, self._selected2 = None, None
+            self._perform_action(_DeleteConnectionAction(position1, position2))
         elif self._experiment.links.contains_link(self._selected1, self._selected2):  # Delete link between cells
             position1, position2 = self._selected1, self._selected2
             self._selected1, self._selected2 = None, None
