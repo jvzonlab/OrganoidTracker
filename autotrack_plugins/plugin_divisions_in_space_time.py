@@ -9,6 +9,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from autotrack.core import UserError, TimePoint
 from autotrack.core.experiment import Experiment
+from autotrack.core.links import Links
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
 from autotrack.linking import cell_division_finder
@@ -72,11 +73,12 @@ class _SpaceTimeGrid:
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Graph//Cell cycle-Cell cycle lengths over space and time...": lambda: _show_graph(window)
+        "Graph//Cell cycle-Cell cycle lengths over space and time...": lambda: _show_cycle_lengths(window),
+        "Graph//Cell cycle-Longest cell cycles over space and time...": lambda: _show_longest_cycles(window)
     }
 
 
-def _draw_graph(figure: Figure, grid: _SpaceTimeGrid):
+def _draw_cycle_lengths(figure: Figure, grid: _SpaceTimeGrid, *, title: str = "Cell cycle lengths over space and time"):
     axes = figure.gca()
     image = grid.to_image()
     image_width = image.shape[1] * _TIME_POINTS_PER_CELL
@@ -90,10 +92,12 @@ def _draw_graph(figure: Figure, grid: _SpaceTimeGrid):
     axes.invert_yaxis()
     axes.set_xlabel("Time (time points)")
     axes.set_ylabel("Distance from crypt bottom (pixels)")
-    axes.set_title("Cell cycle lengths over space and time")
+    axes.set_title(title)
 
 
-def _get_graphing_data(experiment: Experiment) -> _SpaceTimeGrid:
+def _get_graphing_data(experiment: Experiment, *, min_cycle_length: int = 0) -> _SpaceTimeGrid:
+    """Builds a grid of all cell cycle lengths in the experiment. Using min_cycle_length, you can exclude any cell
+    cycle length that you think is too short."""
     grid = _SpaceTimeGrid()
     links = experiment.links
     if not links.has_links():
@@ -104,13 +108,14 @@ def _get_graphing_data(experiment: Experiment) -> _SpaceTimeGrid:
     families = cell_division_finder.find_families(links)
     i = 0
     for family in families:
-        i+=1
+        # Find all daughter cells that will divide again, record the duration of their upcoming cell cycle length
+        i += 1
         for position in family.daughters:
             next_division = cell_division_finder.get_next_division(links, position)
             if next_division is None:
                 continue
             cell_cycle_length = particle_age_finder.get_age(links, next_division.mother)
-            if cell_cycle_length is None:
+            if cell_cycle_length is None or cell_cycle_length < min_cycle_length:
                 continue
 
             while True:
@@ -128,15 +133,41 @@ def _get_graphing_data(experiment: Experiment) -> _SpaceTimeGrid:
     return grid
 
 
-def _show_graph(window: Window):
+def _show_cycle_lengths(window: Window):
     grid = _get_graphing_data(window.get_experiment())
-
     if grid.is_empty():
         raise UserError("No cell cycles found", "No complete cell cycles were found in the linking data."
                                                 " Cannot plot anything.")
-    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_graph(figure, grid))
+
+    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_cycle_lengths(figure, grid))
 
 
-# experiment = Experiment()
-# links_extractor.add_data_to_experiment(experiment, r"S:\groups\zon-group\guizela\multiphoton\organoids\17-07-28_weekend_H2B-mCherry\nd799xy08-stacks\analyzed")
-# cProfile.run("grid = _get_graphing_data(experiment)")
+def _show_longest_cycles(window: Window):
+    experiment = window.get_experiment()
+    longest_cycles_percentile = 10
+
+    all_cell_cycle_lengths = _get_all_cell_cycle_lengths(experiment.links)
+    min_cycle_length = int(numpy.percentile(all_cell_cycle_lengths, 100 - longest_cycles_percentile))
+
+    grid = _get_graphing_data(window.get_experiment(), min_cycle_length=min_cycle_length)
+    if grid.is_empty():
+        raise UserError("No cell cycles found", "No complete cell cycles were found in the linking data."
+                                                " Cannot plot anything.")
+
+    title = f"Cell cycle lengths over space and time of {longest_cycles_percentile}% longest cycles"
+    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_cycle_lengths(figure, grid, title=title))
+
+
+def _get_all_cell_cycle_lengths(links: Links) -> List[int]:
+    """Gets all cell cycle lengths that are in the experiment."""
+    all_cell_cycle_lengths = []
+    for family in cell_division_finder.find_families(links):
+        for daughter in family.daughters:
+            next_division = cell_division_finder.get_next_division(links, daughter)
+            if next_division is None:
+                continue
+            cell_cycle_length = particle_age_finder.get_age(links, next_division.mother)
+            if cell_cycle_length is None:
+                continue
+            all_cell_cycle_lengths.append(cell_cycle_length)
+    return all_cell_cycle_lengths

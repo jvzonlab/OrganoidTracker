@@ -12,4 +12,6 @@ def get_age(links: Links, position: Position) -> Optional[int]:
     track = links.get_track(position)
     if track is None:
         return 0
+    if len(track.get_previous_tracks()) == 0:
+        return None  # Don't know what happened before, so return None
     return track.get_age(position)
