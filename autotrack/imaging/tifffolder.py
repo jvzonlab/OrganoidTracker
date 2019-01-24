@@ -61,7 +61,7 @@ class TiffImageLoader(ImageLoader):
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
         """Just get the size of the image at the first time point, and cache it."""
         if self._image_size_zyx is None:
-            first_image_stack = self.get_image_array(TimePoint(self._min_time_point))
+            first_image_stack = self.get_image_array(TimePoint(self._min_time_point), _CHANNELS[0])
             if first_image_stack is not None:
                 self._image_size_zyx = first_image_stack.shape
         return self._image_size_zyx
