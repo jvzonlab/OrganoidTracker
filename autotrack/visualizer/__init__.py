@@ -12,11 +12,13 @@ from autotrack.core import TimePoint
 from autotrack.core.image_loader import ImageChannel
 from autotrack.core.position import Position
 from autotrack.core.experiment import Experiment
+from autotrack.core.typing import MPLColor
 from autotrack.gui import dialog
 from autotrack.gui.threading import Task
 from autotrack.gui.window import Window
 from autotrack.imaging import cropper
 from autotrack.linking.nearby_position_finder import find_closest_position
+from autotrack.linking_analysis import linking_markers
 
 
 class DisplaySettings:
@@ -197,6 +199,15 @@ class Visualizer:
             i += 1
         rgb_images.clip(min=0, max=1, out=rgb_images)
         return rgb_images
+
+    def _get_type_color(self, position: Position) -> MPLColor:
+        """Gets the color that the given position should be annotated with, based on the type of the position. Usually
+        this color is used to decorate the edge of the position marker."""
+        position_type = self.get_window().get_gui_experiment().get_position_type(
+            linking_markers.get_position_type(self._experiment.links, position))
+        if position_type is None:
+            return "black"
+        return position_type.mpl_color
 
     @staticmethod
     def get_closest_position(positions: Iterable[Position], x: Optional[int], y: Optional[int], z: Optional[int],

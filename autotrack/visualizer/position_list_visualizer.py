@@ -88,7 +88,8 @@ class PositionListVisualizer(Visualizer):
 
         current_position = self._position_list[self._current_position_index]
         shape = self._experiment.positions.get_shape(current_position)
-        shape.draw2d(current_position.x, current_position.y, 0, 0, self._ax, core.COLOR_CELL_CURRENT)
+        edge_color = self._get_type_color(current_position)
+        shape.draw2d(current_position.x, current_position.y, 0, 0, self._ax, core.COLOR_CELL_CURRENT, edge_color)
         self._draw_connections(self._experiment.links, current_position)
         self._window.set_figure_title(self.get_title(self._position_list, self._current_position_index))
 
@@ -115,7 +116,9 @@ class PositionListVisualizer(Visualizer):
 
             self._ax.plot([connected_position.x, main_position.x], [connected_position.y, main_position.y],
                           color=color, linestyle=line_style, linewidth=line_width)
-            position_shape.draw2d(connected_position.x, connected_position.y, 0, delta_time, self._ax, color)
+            edge_color = self._get_type_color(connected_position)
+            position_shape.draw2d(connected_position.x, connected_position.y, 0, delta_time, self._ax, color,
+                                  edge_color)
 
     def _show_image(self):
         current_position = self._position_list[self._current_position_index]
