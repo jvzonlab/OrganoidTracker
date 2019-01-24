@@ -15,6 +15,10 @@ class _FilePlugin(Plugin):
         self.__module_name = module_name
         self.__loaded_script = importlib.import_module(module_name)
 
+    def init(self, window: Window):
+        if hasattr(self.__loaded_script, 'init'):
+            self.__loaded_script.init(window)
+
     def get_menu_items(self, window: Window):
         if hasattr(self.__loaded_script, 'get_menu_items'):
             return self.__loaded_script.get_menu_items(window)

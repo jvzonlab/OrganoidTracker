@@ -15,15 +15,11 @@ class LinkingTrack:
     _next_tracks: List["LinkingTrack"]
     _previous_tracks: List["LinkingTrack"]
 
-    # Any extra data for a track, like the cell type in organoids
-    _track_data: Dict[str, Any]
-
-    def __init__(self, positions_by_time_point: List[Position], track_data: Dict[str, Any]):
+    def __init__(self, positions_by_time_point: List[Position]):
         self._min_time_point_number = positions_by_time_point[0].time_point_number()
         self._positions_by_time_point = positions_by_time_point
         self._next_tracks = list()
         self._previous_tracks = list()
-        self._track_data = track_data
 
     def _get_by_time_point(self, time_point_number: int) -> Position:
         if time_point_number < self._min_time_point_number \
@@ -110,21 +106,6 @@ class LinkingTrack:
     def __len__(self):
         """Gets the time length of the track, in number of time points."""
         return len(self._positions_by_time_point)
-
-    def get_track_data(self, data_name: str) -> Union[str, int, None]:
-        """Gets extra data that applies to the complete track, like the cell type."""
-        return self._track_data.get(data_name)
-
-    def set_track_data(self, data_name: str, value: Union[str, int, None]):
-        """Sets extra data for the whole track. Use None to delete data."""
-        if value is None:
-            # Try to delete if it exists
-            try:
-                del self._track_data[data_name]
-            except KeyError:
-                pass
-        else:
-            self._track_data[data_name] = value
 
 
 class Links:
@@ -279,12 +260,12 @@ class Links:
                 return
 
         if track1 is None:  # Create new mini-track
-            track1 = LinkingTrack([position1], dict())
+            track1 = LinkingTrack([position1])
             self._tracks.append(track1)
             self._position_to_track[position1] = track1
 
         if track2 is None:  # Create new mini-track
-            track2 = LinkingTrack([position2], dict())
+            track2 = LinkingTrack([position2])
             self._tracks.append(track2)
             self._position_to_track[position2] = track2
 
@@ -313,13 +294,6 @@ class Links:
         if data_of_positions is None:
             return None
         return data_of_positions.get(position)
-
-    def get_track_data(self, position: Position, data_name: str) -> Union[str, int, None]:
-        """Gets the attribute of the position that applies to the complete track. Returns None if not found."""
-        track = self.get_track(position)
-        if track is None:
-            return None
-        return track.get_track_data(data_name)
 
     def set_position_data(self, position: Position, data_name: str, value: Union[str, int, None]):
         """Adds or overwrites the given attribute for the given position. Set value to None to delete the attribute.
@@ -352,7 +326,8 @@ class Links:
         track = self.get_track(position)
         if track is None:
             return False
-        track.set_track_data(name, value)
+        for position in track.positions():
+            self.set_position_data(position, name, value)
         return True
 
     def find_links_of(self, position: Position) -> Iterable[Position]:
@@ -451,7 +426,7 @@ class Links:
 
         # Copy over tracks
         for track in self._tracks:
-            copied_track = LinkingTrack(track._positions_by_time_point.copy(), track._track_data.copy())
+            copied_track = LinkingTrack(track._positions_by_time_point.copy())
             copy._tracks.append(copied_track)
             for position in track.positions():
                 copy._position_to_track[position] = copied_track
@@ -483,7 +458,7 @@ class Links:
         del old_track._positions_by_time_point[split_index:]
 
         # Create a new track, add all connections
-        track_after_split = LinkingTrack(positions_after_split, old_track._track_data.copy())
+        track_after_split = LinkingTrack(positions_after_split)
         track_after_split._next_tracks = old_track._next_tracks
         for new_next_track in track_after_split._next_tracks:
             new_next_track._update_link_to_previous(was=old_track, will_be=track_after_split)
@@ -513,9 +488,6 @@ class Links:
         if gap_length != 0:
             first_track._positions_by_time_point += [None] * gap_length
         first_track._positions_by_time_point += second_track._positions_by_time_point
-
-        # Merge all track data
-        first_track._track_data.update(second_track._track_data)
 
         # Update registries
         self._tracks.remove(second_track)

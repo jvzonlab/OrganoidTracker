@@ -10,12 +10,13 @@ from numpy import ndarray
 from autotrack.core.ellipse import EllipseStack, Ellipse
 from autotrack.core.gaussian import Gaussian
 from autotrack.core.mask import Mask
+from autotrack.core.typing import MPLColor
 
 
 class ParticleShape:
     """Represents the shape of a position. No absolute position data is stored here."""
 
-    def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
+    def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: MPLColor, edge_color: MPLColor):
         """Draws a shape in 2d, at the given x and y. dz is how many z layers we are removed from the actual position,
         dt the same, but for time steps. Both dz and dt can be negative. area is the drawing surface, and color is the
         desired color.
@@ -87,11 +88,11 @@ class EllipseShape(ParticleShape):
         self._original_area = original_area
         self._eccentric = eccentric
 
-    def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
+    def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: MPLColor, edge_color: MPLColor):
         if abs(dz) > 3:
             return
         fill = dt == 0
-        edgecolor = 'white' if fill else color
+        edgecolor = edge_color if fill else color
         alpha = max(0.1, 0.5 - abs(dz / 6))
         area.add_artist(mpl_Ellipse(xy=(x + self._ellipse.x, y + self._ellipse.y),
                                     width=self._ellipse.width, height=self._ellipse.height, angle=self._ellipse.angle,
@@ -135,8 +136,8 @@ class EllipseShape(ParticleShape):
 
 class UnknownShape(ParticleShape):
 
-    def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
-        draw_marker_2d(x, y, dz, dt, area, color)
+    def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: MPLColor, edge_color: MPLColor):
+        draw_marker_2d(x, y, dz, dt, area, color, edge_color)
 
     def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
         self.default_draw3d_color(x, y, z, dt, image, color)
@@ -158,8 +159,8 @@ class GaussianShape(ParticleShape):
     def __init__(self, gaussian: Gaussian):
         self._gaussian = gaussian
 
-    def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
-        draw_marker_2d(x, y, dz, dt, area, color)
+    def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: MPLColor, edge_color: MPLColor):
+        draw_marker_2d(x, y, dz, dt, area, color, edge_color)
 
         dz_for_gaussian = int(dz - self._gaussian.mu_z)
         if abs(dz) > 3 or dt != 0:
@@ -212,7 +213,7 @@ class EllipseStackShape(ParticleShape):
         self._ellipse_stack = ellipse_stack
         self._center_ellipse = center_ellipse
 
-    def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: str):
+    def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: MPLColor, edge_color: MPLColor):
         draw_marker_2d(x, y, dz, dt, area, color)
         fill = dt == 0
         edgecolor = 'white' if fill else color
@@ -251,13 +252,13 @@ class EllipseStackShape(ParticleShape):
         return self._ellipse_stack[self._center_ellipse]
 
 
-def draw_marker_2d(x: float, y: float, dz: int, dt: int, area: Axes, color: str):
+def draw_marker_2d(x: float, y: float, dz: int, dt: int, area: Axes, color: MPLColor, edge_color: MPLColor):
     """The default (point) representation of a shape. Implementation can fall back on this if they want."""
     if abs(dz) > 3:
         return
     marker_style = 's' if dz == 0 else 'o'
     marker_size = max(1, 7 - abs(dz) - abs(dt))
-    area.plot(x, y, marker_style, color=color, markeredgecolor='black', markersize=marker_size, markeredgewidth=1)
+    area.plot(x, y, marker_style, color=color, markeredgecolor=edge_color, markersize=marker_size, markeredgewidth=1)
 
 
 def from_list(list: List) -> ParticleShape:

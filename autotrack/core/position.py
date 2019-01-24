@@ -1,5 +1,5 @@
 import math
-from typing import Optional
+from typing import Optional, Tuple
 
 from autotrack.core import TimePoint
 from autotrack.core.resolution import ImageResolution
@@ -105,3 +105,42 @@ class Position:
     def with_time_point_number(self, time_point_number: int):
         """Returns a copy of this position with the time point set to the given position."""
         return Position(self.x, self.y, self.z, time_point_number=time_point_number)
+
+
+class PositionType:
+    """Used to represent the type of a position. Is it a biological cell? And of what type? Or does it mark something
+    else?"""
+
+    _save_name: str
+    _display_name: str
+    _color: Tuple[int, int, int]  # RGB color, values from 0 to 255 (inclusive)
+    _mpl_color: Tuple[float, float, float]  # RGB color, values from 0.0 to 1.0 (inclusive). Suitable for Matplotlib.
+
+    def __init__(self, save_name: str, display_name: str, color: Tuple[int, int, int]):
+        self._save_name = save_name.upper()
+        self._display_name = display_name
+        self._color = color
+        self._mpl_color = (color[0] / 255, color[1] / 255, color[2] / 255)
+
+    @property
+    def color(self) -> Tuple[int, int, int]:
+        """Gets the color used to mark positions of this type."""
+        return self._color
+
+    @property
+    def mpl_color(self) -> Tuple[float, float, float]:
+        """Gets the color used to mark positions of this type. Color is suitable for use in Matplotlib."""
+        return self._mpl_color
+
+    @property
+    def save_name(self) -> str:
+        """Gets the name used to save the type. Will always be uppercase."""
+        return self._save_name
+
+    @property
+    def display_name(self) -> str:
+        """Gets a name used solely for display purposes."""
+        return self._display_name
+
+    def __str__(self) -> str:
+        return self._display_name

@@ -27,7 +27,6 @@ class Experiment:
     _connections: Connections
     _name: Name
     data_axes: DataAxisCollection
-    _image_resolution: Optional[ImageResolution] = None
 
     def __init__(self):
         self._name = Name()
@@ -42,6 +41,7 @@ class Experiment:
         """Removes both a position and its links from the experiment."""
         self._positions.detach_position(position)
         self._links.remove_links_of_position(position)
+        self._connections.remove_connections_of_position(position)
 
     def move_position(self, position_old: Position, position_new: Position) -> bool:
         """Moves the position of a position, preserving any links. (So it's different from remove-and-readd.) The shape

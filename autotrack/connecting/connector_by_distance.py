@@ -32,4 +32,4 @@ class ConnectorByDistance:
                     continue   # Don't connect to self
                 distance_um = position1.distance_um(position2, resolution)
                 if distance_um <= self._max_distance_um:
-                    connections.add(position1, position2)
+                    connections.add_connection(position1, position2)

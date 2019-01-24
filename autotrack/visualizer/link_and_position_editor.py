@@ -1,4 +1,4 @@
-from typing import Optional, List, Set
+from typing import Optional, List, Set, Dict
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent, LocationEvent
 
@@ -6,7 +6,7 @@ from autotrack import core
 from autotrack.core import TimePoint
 from autotrack.core.connections import Connections
 from autotrack.core.experiment import Experiment
-from autotrack.core.position import Position
+from autotrack.core.position import Position, PositionType
 from autotrack.core.shape import ParticleShape
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
@@ -122,7 +122,7 @@ class _MarkLineageEndAction(UndoableAction):
         return f"Re-added the {self.old_marker.get_display_name()}-marker to {self.position}"
 
 
-class _DeleteConnectionAction(UndoableAction):
+class _InsertConnectionAction(UndoableAction):
     _position1: Position
     _position2: Position
 
@@ -131,12 +131,12 @@ class _DeleteConnectionAction(UndoableAction):
         self._position2 = position2
 
     def do(self, experiment: Experiment) -> str:
-        experiment.connections.remove(self._position1, self._position2)
-        return f"Removed connection between {self._position1} and {self._position2}"
+        experiment.connections.add_connection(self._position1, self._position2)
+        return f"Added connection between {self._position1} and {self._position2}"
 
     def undo(self, experiment: Experiment):
-        experiment.connections.add(self._position1, self._position2)
-        return f"Added connection between {self._position1} and {self._position2}"
+        experiment.connections.remove_connection(self._position1, self._position2)
+        return f"Removed connection between {self._position1} and {self._position2}"
 
 
 class _ReplaceConnectionsAction(UndoableAction):
@@ -155,6 +155,27 @@ class _ReplaceConnectionsAction(UndoableAction):
     def undo(self, experiment: Experiment) -> str:
         experiment.connections = self._old_connections
         return "Restored the previous connections"
+
+
+class _SetAllAsType(UndoableAction):
+    _previous_position_types: Dict[Position, str]
+    _type: PositionType
+
+    def __init__(self, previous_position_types: Dict[Position, str], new_type: PositionType):
+        self._previous_position_types = previous_position_types
+        self._type = new_type
+
+    def do(self, experiment: Experiment) -> str:
+        links = experiment.links
+        for position in links.find_all_positions():
+            linking_markers.set_position_type(links, position, self._type.save_name)
+        return f"All positions in the whole experiment are now of the type \"{self._type.display_name}\""
+
+    def undo(self, experiment: Experiment) -> str:
+        links = experiment.links
+        for position in links.find_all_positions():
+            linking_markers.set_position_type(links, position, self._previous_position_types.get(position))
+        return f"Reset all positions to their previous type"
 
 
 class LinkAndPositionEditor(AbstractEditor):
@@ -213,7 +234,7 @@ class LinkAndPositionEditor(AbstractEditor):
         self.update_status("Selected:\n        " + str(self._selected1) + "\n        " + str(self._selected2))
 
     def get_extra_menu_options(self):
-        return {
+        options = {
             **super().get_extra_menu_options(),
             "Edit//Experiment-Edit data axes... (A)": self._show_path_editor,
             "Edit//Experiment-Edit image offsets... (O)": self._show_offset_editor,
@@ -225,6 +246,12 @@ class LinkAndPositionEditor(AbstractEditor):
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
             "View//Linking-Lineage errors and warnings (L)": self._show_lineage_errors,
         }
+
+        # Add options for changing position types
+        for position_type in self.get_window().get_gui_experiment().get_position_types():
+            options["Edit//Batch-Set type of all positions//" + position_type.display_name] \
+                = lambda: self._set_all_positions_to_type(position_type)
+        return options
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "c":
@@ -262,10 +289,10 @@ class LinkAndPositionEditor(AbstractEditor):
         elif self._selected2 is None:  # Delete cell and its links
             old_links = self._experiment.links.find_links_of(self._selected1)
             self._perform_action(ReversedAction(_InsertPositionAction(self._selected1, list(old_links))))
-        elif self._experiment.connections.exists(self._selected1, self._selected2):  # Delete a connection
+        elif self._experiment.connections.contains_connection(self._selected1, self._selected2):  # Delete a connection
             position1, position2 = self._selected1, self._selected2
             self._selected1, self._selected2 = None, None
-            self._perform_action(_DeleteConnectionAction(position1, position2))
+            self._perform_action(ReversedAction(_InsertConnectionAction(position1, position2)))
         elif self._experiment.links.contains_link(self._selected1, self._selected2):  # Delete link between cells
             position1, position2 = self._selected1, self._selected2
             self._selected1, self._selected2 = None, None
@@ -357,12 +384,24 @@ class LinkAndPositionEditor(AbstractEditor):
             self._selected1 = position
             self._perform_action(_InsertPositionAction(position, connections))
         elif self._selected1.time_point_number() == self._selected2.time_point_number():
-            self.update_status("The two selected cells are in exactly the same time point - cannot insert link.")
+            # Insert connection between two positions
+            if self._experiment.connections.contains_connection(self._selected1, self._selected2):
+                self.update_status("A connection already exists between the selected positions.")
+                return
+            position1, position2 = self._selected1, self._selected2
+            self._selected1, self._selected2 = None, None
+            self._perform_action(_InsertConnectionAction(position1, position2))
         elif abs(self._selected1.time_point_number() - self._selected2.time_point_number()) > 1:
             self.update_status("The two selected cells are not in consecutive time points - cannot insert link.")
         else:
             # Insert link between two positions
+            if self._experiment.links.contains_link(self._selected1, self._selected2):
+                self.update_status("A link already exists between the selected positions.")
+                return
             position1, position2 = self._selected1, self._selected2
             self._selected1, self._selected2 = None, None
             self._perform_action(_InsertLinkAction(position1, position2))
 
+    def _set_all_positions_to_type(self, position_type: PositionType):
+        """Sets all cells in the experiment to the given type."""
+        self._perform_action(_SetAllAsType(linking_markers.get_position_types(self._experiment.links), position_type))

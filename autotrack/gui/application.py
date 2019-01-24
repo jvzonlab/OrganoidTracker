@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, Set
 
 
 class Plugin:
@@ -6,6 +6,10 @@ class Plugin:
     Represents a plugin. Plugins can add new data visualizers or provide support for more file types.
     Instead of writing a plugin, you can also write a script that uses the classes in core and imaging.
     """
+
+    def init(self, window: "Window"):
+        """Called once to run initialization code."""
+        pass
 
     def get_menu_items(self, window: "Window") -> Dict[str, Any]:
         """

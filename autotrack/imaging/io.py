@@ -164,8 +164,8 @@ def _parse_connections_format(experiment: Experiment, connections_data: Dict[str
             position1 = connection[0]
             position2 = connection[1]
 
-            connections.add(position1.with_time_point_number(time_point_number),
-                            position2.with_time_point_number(time_point_number))
+            connections.add_connection(position1.with_time_point_number(time_point_number),
+                                       position2.with_time_point_number(time_point_number))
 
 
 def _add_d3_data(links: Links, data: Dict, min_time_point: int = -100000, max_time_point: int = 100000):

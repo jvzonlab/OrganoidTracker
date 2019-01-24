@@ -4,6 +4,7 @@ from matplotlib.collections import LineCollection
 from matplotlib.figure import Figure
 
 from autotrack.core.connections import Connections
+from autotrack.core.experiment import Experiment
 from autotrack.core.links import Links
 from autotrack.core.position import Position
 from autotrack.gui import dialog
@@ -12,6 +13,8 @@ from autotrack.imaging import angles
 from matplotlib import colors, cm
 
 from autotrack.imaging.grapher import colorline
+
+from . import plugin_spindle_markers
 
 _DIVIDER = 50
 
@@ -41,14 +44,18 @@ def _view_spindle_angle(window: Window):
     dialog.popup_figure(window.get_gui_experiment(), lambda figure: _show_figure(figure, angle_lists))
 
 
-def _get_spindle_angles_list(experiment) -> List[_Line]:
+def _get_spindle_angles_list(experiment: Experiment) -> List[_Line]:
     links = experiment.links
     connections = experiment.connections
     minutes_per_time_point = experiment.images.resolution().time_point_interval_m
     angle_lists = []
     for track in experiment.links.find_all_tracks():
         first_position = track.find_first_position()
+        if not plugin_spindle_markers.is_part_of_spindle(links, first_position):
+            continue
         for connected_position in connections.find_connections_starting_at(first_position):
+            if not plugin_spindle_markers.is_part_of_spindle(links, connected_position):
+                continue
             angle_list = _create_angles_list(links, connections,
                                              first_position, connected_position, minutes_per_time_point)
             angle_lists.append(angle_list)
@@ -81,7 +88,8 @@ def _create_angles_list(links: Links, connections: Connections, position1: Posit
     angle_list = []
     original_angle = angles.direction_2d(position1, position2)
     time_point = 0
-    while connections.exists(position1, position2):
+    while connections.contains_connection(position1, position2) and plugin_spindle_markers.is_part_of_spindle(links, position1)\
+            and plugin_spindle_markers.is_part_of_spindle(links, position2):
         angle = angles.direction_2d(position1, position2)
         relative_angle = angles.direction_change_of_line(original_angle, angle)
         angle_list.append((time_point * minutes_per_time_point, relative_angle))
@@ -113,7 +121,7 @@ def _show_figure(figure: Figure, angle_lists: List[_Line]):
     highest_time = _get_highest_time(angle_lists)
     rotating_list = [angle_list.angles for angle_list in angle_lists if angle_list.is_rotating()]
     not_rotating_list = [angle_list.angles for angle_list in angle_lists if not angle_list.is_rotating()]
-    color_names = ["lightgray"] * 1 + ["black"] + (["lightgray"] * 20)
+    color_names = colors.TABLEAU_COLORS
     color_codes = [colors.to_rgba(name, 1) for name in color_names]
 
     axes = figure.subplots(2, sharex=True)

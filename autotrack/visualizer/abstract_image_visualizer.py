@@ -175,9 +175,10 @@ class AbstractImageVisualizer(Visualizer):
             self._draw_position(position, color, dz, dt)
 
     def _draw_position(self, position: Position, color: str, dz: int, dt: int):
+        links = self._experiment.links
+
         if abs(dz) <= self.MAX_Z_DISTANCE:
             # Draw error marker
-            links = self._experiment.links
             if linking_markers.get_error_marker(links, position) is not None:
                 self._draw_error(position, dz)
 
@@ -188,10 +189,14 @@ class AbstractImageVisualizer(Visualizer):
         self._draw_links(position)
 
         # Draw position
+        position_type = self.get_window().get_gui_experiment().get_position_type(
+            linking_markers.get_position_type(links, position))
+        edge_color = "black" if position_type is None else position_type.mpl_color
         if self._display_settings.show_reconstruction:  # Showing a 3D reconstruction, so don't display a 2D one too
-            shape.draw_marker_2d(position.x, position.y, dz, dt, self._ax, color)
+            shape.draw_marker_2d(position.x, position.y, dz, dt, self._ax, color, edge_color)
         else:
-            self._experiment.positions.get_shape(position).draw2d(position.x, position.y, dz, dt, self._ax, color)
+            self._experiment.positions.get_shape(position).draw2d(
+                position.x, position.y, dz, dt, self._ax, color, edge_color)
 
     def _draw_error(self, position: Position, dz: int):
         self._ax.plot(position.x, position.y, 'X', color='black', markeredgecolor='white',

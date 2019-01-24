@@ -139,6 +139,7 @@ class MainWindow(Window):
         """Adds the given list of plugins to the list of active plugins."""
         for plugin in plugins:
             self.__plugins.append(plugin)
+            plugin.init(self)
 
     def reload_plugins(self) -> int:
         """Reloads all plugins from disk. You should update the window after calling this. Returns the number of

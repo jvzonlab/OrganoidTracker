@@ -5,9 +5,7 @@ from matplotlib.figure import Figure
 from autotrack.core import UserError
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
-from autotrack.linking import intestinal_organoid_cell_types
-from autotrack.linking.intestinal_organoid_cell_types import IntestinalOrganoidCellType
-from autotrack.linking_analysis import cell_fate_finder
+from autotrack.linking_analysis import cell_fate_finder, linking_markers
 from autotrack.linking_analysis.cell_fate_finder import CellFate, CellFateType
 
 
@@ -46,8 +44,8 @@ def _show_number_of_dividing_cells(window: Window):
             elif fate.type == CellFateType.UNKNOWN:
                 dividing_count_max += 1  # Could be dividing, but we're not sure
 
-            cell_type = intestinal_organoid_cell_types.get_cell_type(experiment.links, position)
-            if cell_type == IntestinalOrganoidCellType.PANETH:
+            cell_type = linking_markers.get_position_type(experiment.links, position)
+            if cell_type == "PANETH":
                 paneth_count += 1
 
             total_count += 1

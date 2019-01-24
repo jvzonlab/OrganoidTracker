@@ -15,8 +15,6 @@ from autotrack.core.links import Links
 from autotrack.core.position_collection import PositionCollection
 from autotrack.core.position import Position
 from autotrack.core.resolution import ImageResolution
-from autotrack.linking import intestinal_organoid_cell_types
-from autotrack.linking.intestinal_organoid_cell_types import IntestinalOrganoidCellType
 from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.linking_markers import EndMarker
 from autotrack.manual_tracking.track_lib import Track
@@ -154,10 +152,9 @@ def _read_paneths_file(tracks_dir: str, links: Links, tracks_by_id: List[Track])
         paneth_cell_numbers = pickle.load(file_handle, encoding="latin1")
         for paneth_cell_number in paneth_cell_numbers:
             track = tracks_by_id[paneth_cell_number]
-            last_position_time = track.t[-1]
-            last_position_position = track.x[-1]
-            last_position = Position(*last_position_position, time_point_number=last_position_time)
-            intestinal_organoid_cell_types.set_cell_type(links, last_position, IntestinalOrganoidCellType.PANETH)
+            for i in range(len(track.x)):
+                position = Position(*track.x[i], time_point_number=track.t[i])
+                linking_markers.set_position_type(links, position, "PANETH")
 
 
 def _get_cell_in_time_point(track: Track, time_point_number: int) -> Position:

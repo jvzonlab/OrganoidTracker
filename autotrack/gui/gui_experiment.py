@@ -1,6 +1,7 @@
-from typing import Callable, List, Dict, Any
+from typing import Callable, List, Dict, Any, Iterable, Optional
 
 from autotrack.core.experiment import Experiment
+from autotrack.core.position import PositionType
 from autotrack.gui.undo_redo import UndoRedo
 
 
@@ -43,6 +44,7 @@ class GuiExperiment:
     _data_updated_handlers: _EventListeners
     _any_updated_event: _EventListeners
     _command_handlers: _EventListeners
+    _position_types: Dict[str, PositionType]
 
     def __init__(self, experiment: Experiment):
         self._experiment = experiment
@@ -51,6 +53,7 @@ class GuiExperiment:
         self._data_updated_handlers = _EventListeners()
         self._any_updated_event = _EventListeners()
         self._command_handlers = _EventListeners()
+        self._position_types = dict()
 
     @property  # read-only
     def undo_redo(self) -> UndoRedo:
@@ -82,6 +85,21 @@ class GuiExperiment:
         self._data_updated_handlers.remove(source_to_remove)
         self._any_updated_event.remove(source_to_remove)
         self._command_handlers.remove(source_to_remove)
+
+    def register_position_type(self, position_type: PositionType):
+        """Registers a new position type (overwriting any existing one with the same save name)."""
+        self._position_types[position_type.save_name] = position_type
+
+    def get_position_types(self) -> Iterable[PositionType]:
+        """Gets all registered position types."""
+        return self._position_types.values()
+
+    def get_position_type(self, save_name: Optional[str]) -> Optional[PositionType]:
+        """Gets the position type using the given save name. Returns None if no position type exists for that save name.
+        """
+        if save_name is None:
+            return None
+        return self._position_types.get(save_name)
 
     def set_experiment(self, experiment: Experiment):
         self._experiment = experiment

@@ -77,6 +77,17 @@ class _ConnectionsByTimePoint:
             connections_position1.remove(position2)  # Remove this connection, but more remain
         return True
 
+    def remove_connections_of_position(self, position: Position):
+        # Delete as key
+        try:
+            del self._connections[position]
+        except KeyError:
+            pass
+
+        # Delete as value
+        for position1, positions2 in self._connections.items():
+            positions2.discard(position)
+
     def get_all(self) -> Iterable[Tuple[Position, Position]]:
         """Gets all connections of this time point."""
         for position1, positions2 in self._connections.items():
@@ -118,7 +129,7 @@ class Connections:
     def __init__(self):
         self._by_time_point = dict()
 
-    def add(self, position1: Position, position2: Position):
+    def add_connection(self, position1: Position, position2: Position):
         """Adds a connection between the two positions. They must be in the same time point."""
         position1.check_time_point(position2.time_point())
         if position1 == position2:
@@ -133,7 +144,7 @@ class Connections:
             self._by_time_point[time_point_number] = connections
         connections.add(position1, position2)
 
-    def remove(self, position1: Position, position2: Position) -> bool:
+    def remove_connection(self, position1: Position, position2: Position) -> bool:
         """Removes a connection between the given positions. Does nothing if no such connection exists. Returns True if
         a connection was removed."""
         if position1.time_point_number() != position2.time_point_number():
@@ -164,7 +175,7 @@ class Connections:
             return
         connections.replace_position(position_old, position_new)
 
-    def exists(self, position1: Position, position2: Position) -> bool:
+    def contains_connection(self, position1: Position, position2: Position) -> bool:
         """Returns True if a connection between the two positions exists."""
         if position1.time_point_number() != position2.time_point_number():
             return False
@@ -221,3 +232,13 @@ class Connections:
             else:
                 # Just copy in
                 self._by_time_point[time_point_number] = other_connections.copy()
+
+    def remove_connections_of_position(self, position: Position):
+        """Removes all connections to or from the position."""
+        time_point_number = position.time_point_number()
+        if time_point_number is None:
+            raise ValueError(f"Please specify a time point number for {position}")
+        connections = self._by_time_point.get(time_point_number)
+        if connections is None:
+            return
+        connections.remove_connections_of_position(position)

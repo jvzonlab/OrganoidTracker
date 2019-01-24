@@ -2,7 +2,7 @@
 which are placed in an Experiment. A TimePoint also stores scores of possible mother-daughter cell combinations.
 An Experiment also stores an ImageLoader and up to two cell links networks (stored as Graph objects)."""
 import re
-from typing import Optional, Iterable, Union
+from typing import Optional, Iterable, Union, Tuple
 
 COLOR_CELL_NEXT = "red"
 COLOR_CELL_PREVIOUS = "blue"

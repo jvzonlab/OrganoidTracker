@@ -65,9 +65,9 @@ class Visualizer:
         for image in self._ax.images:
             colorbar = image.colorbar
             if colorbar is not None:
-                colorbar.remove()
+                colorbar.remove_connection()
         for text in self._fig.texts:
-            text.remove()
+            text.remove_connection()
 
         xlim, ylim = self._ax.get_xlim(), self._ax.get_ylim()
         self._ax.clear()

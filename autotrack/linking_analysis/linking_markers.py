@@ -1,7 +1,7 @@
 """Extra markers used to describe the linking data. For example, you can mark the end of a lineage as a cell death."""
 
 from enum import Enum
-from typing import Optional, Iterable
+from typing import Optional, Iterable, Dict
 
 from autotrack.core.links import Links
 from autotrack.core.position import Position
@@ -109,3 +109,25 @@ def set_error_marker(links: Links, position: Position, error: Optional[Error]):
         links.set_position_data(position, "error", None)
     else:
         links.set_position_data(position, "error", error.value)
+
+
+def get_position_type(links: Links, position: Position) -> Optional[str]:
+    """Gets the type of the cell in UPPERCASE, interpreted as the intestinal organoid cell type."""
+    type = links.get_position_data(position, "type")
+    if type is None:
+        return None
+    return type.upper()
+
+
+def set_position_type(links: Links, position: Position, type: Optional[str]):
+    """Sets the type of the cell. Set to None to delete the cell type."""
+    type_str = type.upper() if type is not None else None
+    links.set_position_data(position, "type", type_str)
+
+
+def get_position_types(links: Links) -> Dict[Position, str]:
+    """Gets all known cell types, with the names in UPPERCASE."""
+    types = dict()
+    for position, name in links.find_all_positions_with_data("type"):
+        types[position] = name.upper()
+    return types
