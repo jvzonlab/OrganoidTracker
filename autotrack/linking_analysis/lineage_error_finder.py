@@ -2,6 +2,7 @@
 
 from typing import List, Optional, Set, AbstractSet, Dict, Iterable
 
+from autotrack.core.experiment import Experiment
 from autotrack.core.links import Links, LinkingTrack
 from autotrack.core.position import Position
 from autotrack.linking_analysis import linking_markers
@@ -37,6 +38,25 @@ def _group_by_track(links: Links, positions: Iterable[Position]) -> Dict[Linking
         else:
             track_to_positions[track] = [position]
     return track_to_positions
+
+
+def delete_problematic_lineages(experiment: Experiment):
+    """This deletes all positions in a lineage with errors. What remains should be a clean experiment with just the
+    corrected data."""
+
+    # We cannot remove positions during iteration, so remember the positions to remove in a list
+    positions_to_remove = list()
+
+    # Find all positions to remove
+    lineages_with_errors = get_problematic_lineages(experiment.links, set())
+    for lineage in lineages_with_errors:
+        for track in lineage.start.find_all_descending_tracks(include_self=True):
+            for position in track.positions():
+                positions_to_remove.append(position)
+
+    # Actually remove them
+    for position in positions_to_remove:
+        experiment.remove_position(position)
 
 
 def get_problematic_lineages(links: Links, crumbs: AbstractSet[Position]) -> List[LineageWithErrors]:

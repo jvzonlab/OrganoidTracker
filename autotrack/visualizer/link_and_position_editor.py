@@ -238,7 +238,8 @@ class LinkAndPositionEditor(AbstractEditor):
             **super().get_extra_menu_options(),
             "Edit//Experiment-Edit data axes... (A)": self._show_path_editor,
             "Edit//Experiment-Edit image offsets... (O)": self._show_offset_editor,
-            "Edit//Batch-Delete data of time point": self._delete_data_of_time_point,
+            "Edit//Batch-Delete data of time point...": self._delete_data_of_time_point,
+            "Edit//Batch-Delete all tracks with errors...": self._delete_tracks_with_errors,
             "Edit//Batch-Connect positions by distance...": self._connect_positions_by_distance,
             "Edit//LineageEnd-Mark as cell death": lambda: self._try_set_end_marker(EndMarker.DEAD),
             "Edit//LineageEnd-Mark as moving out of view": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
@@ -358,6 +359,18 @@ class LinkAndPositionEditor(AbstractEditor):
             cell_error_finder.apply_on_time_point(self._experiment, next_time_point)
         except ValueError:
             pass  # Deleted the last time point, so get_next_time_point fails
+
+        self.get_window().redraw_data()
+
+    def _delete_tracks_with_errors(self):
+        """Deletes all lineages where at least a single error was present."""
+        if not dialog.prompt_yes_no("Warning", "Are you sure you want to delete all tracks with at least a single error"
+                                               " in them? This cannot be undone."):
+            return
+        self.get_window().get_gui_experiment().undo_redo.clear()
+
+        from autotrack.linking_analysis import lineage_error_finder
+        lineage_error_finder.delete_problematic_lineages(self._experiment)
 
         self.get_window().redraw_data()
 

@@ -81,6 +81,8 @@ class UndoRedo:
             return "No more actions to redo."
 
     def clear(self):
-        """Clears both the undo and redo queue."""
+        """Clears both the undo and redo queue. THis is useful if you just performed a big action that cannot be undone.
+        """
         self._undo_queue.clear()
         self._redo_queue.clear()
+        self._unsaved_changes_count = 1000000  # This makes sure that the save prompt will be triggered
