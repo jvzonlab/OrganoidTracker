@@ -83,6 +83,10 @@ class ImageOffsetEditor(ExitableImageVisualizer):
             self._experiment.images.offsets.update_offset(*offset, self._time_point.time_point_number() + 1,
                                                           self._experiment.last_time_point_number())
             self._regenerate_image()
+            new_offset = self._experiment.images.offsets.of_time_point(
+                self._experiment.get_next_time_point(self._time_point))
+            self.update_status("Updated the offset for this and all following time points. Offset of this time point"
+                               " towards the next is now " + str((new_offset.x, new_offset.y, new_offset.z)))
         else:
             super()._on_key_press(event)
 
