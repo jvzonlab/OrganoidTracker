@@ -112,14 +112,55 @@ class Image:
 
     @property
     def array(self):
-        """Gets the raw array."""
+        """Gets the raw array. Note that the array indices are not translated, so the position self.offset appears at
+        index (0,0,0) in the array."""
         return self._array
+
+    @array.setter
+    def array(self, value: ndarray):
+        """Sets the raw array. Make sure the new array has the same (x,y,z) size as the old array."""
+        if value.shape != self._array.shape:
+            raise ValueError("Cannot change size of array")
+        self._array = value
 
     @property
     def offset(self) -> Position:
         """Gets the offset of the array. If the offset is (10, 2, 0), then a position at (11, 2, 0) will appear in the
         array at index (1, 2, 0)"""
         return self._offset
+
+    @property
+    def min_x(self) -> int:
+        """Gets the lowest X coord for which the image has a value."""
+        return int(self._offset.x)
+
+    @property
+    def min_y(self) -> int:
+        """Gets the lowest X coord for which the image has a value."""
+        return int(self._offset.y)
+
+    @property
+    def min_z(self) -> int:
+        """Gets the lowest X coord for which the image has a value."""
+        return int(self._offset.z)
+
+    @property
+    def limit_x(self) -> int:
+        """Gets the limit in the x direction. If the image has an offset of 10 and a size of 20, the limit will be 30.
+        """
+        return int(self._offset.x) + self._array.shape[2]
+
+    @property
+    def limit_y(self) -> int:
+        """Gets the limit in the y direction. If the image has an offset of 10 and a size of 20, the limit will be 30.
+        """
+        return int(self._offset.y) + self._array.shape[1]
+
+    @property
+    def limit_z(self) -> int:
+        """Gets the limit in the z direction. If the image has an offset of 10 and a size of 20, the limit will be 30.
+        """
+        return int(self._offset.z) + self._array.shape[0]
 
 
 class Images:
@@ -200,3 +241,11 @@ class Images:
     def set_resolution(self, resolution: Optional[ImageResolution]):
         """Sets the image resolution."""
         self._resolution = resolution
+
+    def copy(self) -> "Images":
+        """Returns a copy of this images object. Any changes to the copy won't affect this object and vice versa."""
+        copy = Images()
+        copy._image_loader = self._image_loader.copy()
+        copy._resolution = self._resolution  # No copy, as this object is immutable
+        copy._offsets = self._offsets.copy()
+        return copy

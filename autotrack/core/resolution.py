@@ -2,7 +2,8 @@ from typing import Tuple
 
 
 class ImageResolution:
-    """Represents the resolution of a 3D image. X and y resolution must be equal."""
+    """Represents the resolution of a 3D image. X and y resolution must be equal. The fields in this class should be
+    treated as immutable: don't modify their values after creation."""
     pixel_size_zyx_um: Tuple[float, float, float]
     time_point_interval_m: float  # Time between time points in minutes
 

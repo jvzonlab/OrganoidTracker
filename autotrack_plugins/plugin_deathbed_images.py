@@ -7,9 +7,10 @@ from typing import Any, List, Optional, Dict
 
 import numpy
 
-from autotrack.core import UserError
+from autotrack.core import UserError, clamp
 from autotrack.core.data_axis import DataAxisCollection, DataAxisPosition
 from autotrack.core.image_loader import ImageLoader, ImageChannel
+from autotrack.core.images import Images
 from autotrack.core.links import Links
 from autotrack.core.position import Position
 from autotrack.gui import dialog
@@ -94,19 +95,17 @@ def _generate_deathbed_images(window: Window):
                         f"A file already exists at {output_folder}. Therefore, we cannot create a directory there.")
     os.mkdir(output_folder)
 
-    window.get_scheduler().add_task(_ImageGeneratingTask(experiment.images.image_loader(), deathbeds, output_folder))
+    window.get_scheduler().add_task(_ImageGeneratingTask(experiment.images, deathbeds, output_folder))
 
 
 class _ImageGeneratingTask(Task):
 
     _deathbeds: List[_Deathbed]
-    _image_loader: ImageLoader
-    _image_channel: ImageChannel
+    _images: Images
     _output_folder: str
 
-    def __init__(self, image_loader: ImageLoader, deathbeds: List[_Deathbed], output_folder: str):
-        self._image_loader = image_loader.copy()  # We will use this image loader on another thread
-        self._image_channel = self._image_loader.get_channels()[0]  # Just use the first channel
+    def __init__(self, images: Images, deathbeds: List[_Deathbed], output_folder: str):
+        self._images = images.copy()  # We will use this image loader on another thread
         self._deathbeds = deathbeds
         self._output_folder = output_folder
 
@@ -120,9 +119,9 @@ class _ImageGeneratingTask(Task):
             for i in range(len(deathbed.positions)):
                 image_index = len(deathbed.positions) - i - 1
                 position = deathbed.positions[i]
-                image = bits.image_to_8bit(self._image_loader.get_image_array(position.time_point(),
-                                                                              self._image_channel))
-                z = min(max(0, int(position.z)), len(image) - 1)
+                image = self._images.get_image(position.time_point())
+                image.array = bits.image_to_8bit(image.array)
+                z = clamp(image.min_z, int(position.z), image.limit_z - 1)
 
                 cropper.crop_2d(image, min_x, min_y, z, out_array[image_index, :, :, 0])
                 out_array[image_index, :, :, 1] = out_array[image_index, :, :, 0]  # Update green channel too
