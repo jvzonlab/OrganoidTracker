@@ -12,3 +12,5 @@ def update_positions_for_changed_offsets(experiment: Experiment, previous_offset
         for position in set(experiment.positions.of_time_point(time_point)):
             #            ^ Make a copy so that collection is not modified while iterating over it
             experiment.move_position(position, position.add_pos(change_in_offset))
+        for id, data_axis in experiment.data_axes.of_time_point(time_point):
+            data_axis.move_points(change_in_offset)

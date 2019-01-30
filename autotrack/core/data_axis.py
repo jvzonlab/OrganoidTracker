@@ -228,6 +228,13 @@ class DataAxis:
             return None
         return self._checkpoint_without_offset + self._offset
 
+    def move_points(self, delta: Position):
+        """Translates all points in this path with the specified amount."""
+        self._x_list = [x + delta.x for x in self._x_list]
+        self._y_list = [y + delta.y for y in self._y_list]
+        self._z += int(delta.z)
+
+        self._interpolation = None  # Invalidate previous interpolation
 
 def _distance(x1, y1, x2, y2):
     """Distance between two points."""
