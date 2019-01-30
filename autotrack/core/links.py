@@ -200,13 +200,22 @@ class Links:
         if old_position.time_point_number() != position_new.time_point_number():
             raise ValueError("Cannot replace with position at another time point")
 
+        # Update in track
         track = self._position_to_track.get(old_position)
         if track is None:
             return
-
         track._positions_by_time_point[position_new.time_point_number() - track._min_time_point_number] = position_new
+
+        # Update reference to track
         del self._position_to_track[old_position]
         self._position_to_track[position_new] = track
+
+        # Update position data
+        for data_name, data_dict in self._position_data.items():
+            if old_position in data_dict:
+                old_value = data_dict[old_position]
+                del data_dict[old_position]
+                data_dict[position_new] = old_value
 
     def has_links(self) -> bool:
         """Returns True if the graph is not None."""
