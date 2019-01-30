@@ -35,7 +35,8 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         if event.button == 1:
             position = self._get_position_at(event.xdata, event.ydata)
             if position is not None:
-                self.update_status(f"Clicked on {position}")
+                data = dict(self._experiment.links.find_all_data_of_position(position))
+                self.update_status(f"Clicked on {position}. Data: {data}")
         else:
             super()._on_mouse_click(event)
 
@@ -48,6 +49,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             "View//Cells-Cell divisions... (M)": self._show_mother_cells,
             "View//Cells-Track ends and cell deaths... (/deaths)": self._show_dead_cells,
             "View//Tracks-Track follower... (T)": self._show_track_follower,
+            "View//Tracks-Movement arrows...": self._show_movement_arrows,
             "View//Tracks-Cell fates...": self._show_cell_fates,
             "View//Tracks-Whole lineage fates...": self._show_lineage_fates,
         }
@@ -85,6 +87,12 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         from autotrack.visualizer.track_visualizer import TrackVisualizer
         track_visualizer = TrackVisualizer(self._window, self._time_point, self._z, self._display_settings)
         activate(track_visualizer)
+
+    def _show_movement_arrows(self):
+        from autotrack.visualizer.cell_movement_visualizer import CellMovementVisualizer
+        movement_visualizer = CellMovementVisualizer(self._window, time_point=self._time_point, z=self._z,
+                                                     display_settings=self._display_settings)
+        activate(movement_visualizer)
 
     def _show_cell_detector(self):
         if self._experiment.get_image_stack(self._time_point) is None:

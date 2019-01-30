@@ -21,7 +21,7 @@ class LinkingTrack:
         self._next_tracks = list()
         self._previous_tracks = list()
 
-    def _get_by_time_point(self, time_point_number: int) -> Position:
+    def get_by_time_point(self, time_point_number: int) -> Position:
         if time_point_number < self._min_time_point_number \
                 or time_point_number >= self._min_time_point_number + len(self._positions_by_time_point):
             raise IndexError(f"Time point {time_point_number} outside track")
@@ -367,7 +367,7 @@ class Links:
 
             # Check if there is nothing in between
             for time_point_number in range(position1.time_point_number() + 1, position2.time_point_number()):
-                if track1._get_by_time_point(time_point_number) is not None:
+                if track1.get_by_time_point(time_point_number) is not None:
                     return  # There's a position in between, so the specified link doesn't exist
 
             # Split directly after position1
