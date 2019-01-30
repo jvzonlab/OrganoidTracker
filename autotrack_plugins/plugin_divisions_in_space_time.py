@@ -17,6 +17,7 @@ from autotrack.linking_analysis import particle_age_finder
 
 _TIME_POINTS_PER_CELL = 3
 _PIXELS_PER_CELL = 5
+_OUT_OF_ORDINARY_PERCENTILE = 10
 
 
 class _Cell:
@@ -48,7 +49,7 @@ class _SpaceTimeGrid:
             self._data.append([])  # Add empty lists
 
         space_list = self._data[time_point_bucket]
-        space_bucket = int(position_on_crypt_axis / _PIXELS_PER_CELL)
+        space_bucket = max(0, int(position_on_crypt_axis / _PIXELS_PER_CELL))
         while len(space_list) <= space_bucket:
             space_list.append(_Cell())
 
@@ -73,8 +74,10 @@ class _SpaceTimeGrid:
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Graph//Cell cycle-Cell cycle lengths over space and time...": lambda: _show_cycle_lengths(window),
-        "Graph//Cell cycle-Longest cell cycles over space and time...": lambda: _show_longest_cycles(window)
+        "Graph//Cell cycle-Cell cycle lengths over space and time//All cycles...": lambda: _show_cycle_lengths(window),
+        "Graph//Cell cycle-Cell cycle lengths over space and time//Longest...": lambda: _show_longest_cycles(window),
+        "Graph//Cell cycle-Cell cycle lengths over space and time//Shortest...": lambda: _show_shortest_cycles(window),
+        "Graph//Cell cycle-Cell cycle lengths over space and time//Middle...": lambda: _show_middle_cycles(window)
     }
 
 
@@ -95,7 +98,8 @@ def _draw_cycle_lengths(figure: Figure, grid: _SpaceTimeGrid, *, title: str = "C
     axes.set_title(title)
 
 
-def _get_graphing_data(experiment: Experiment, *, min_cycle_length: int = 0) -> _SpaceTimeGrid:
+def _get_graphing_data(experiment: Experiment, *, min_cycle_length: int = 0, max_cycle_length: int = 1000000
+                       ) -> _SpaceTimeGrid:
     """Builds a grid of all cell cycle lengths in the experiment. Using min_cycle_length, you can exclude any cell
     cycle length that you think is too short."""
     grid = _SpaceTimeGrid()
@@ -115,7 +119,8 @@ def _get_graphing_data(experiment: Experiment, *, min_cycle_length: int = 0) -> 
             if next_division is None:
                 continue
             cell_cycle_length = particle_age_finder.get_age(links, next_division.mother)
-            if cell_cycle_length is None or cell_cycle_length < min_cycle_length:
+            if cell_cycle_length is None or cell_cycle_length < min_cycle_length \
+                    or cell_cycle_length > max_cycle_length:
                 continue
 
             while True:
@@ -144,17 +149,47 @@ def _show_cycle_lengths(window: Window):
 
 def _show_longest_cycles(window: Window):
     experiment = window.get_experiment()
-    longest_cycles_percentile = 10
 
     all_cell_cycle_lengths = _get_all_cell_cycle_lengths(experiment.links)
-    min_cycle_length = int(numpy.percentile(all_cell_cycle_lengths, 100 - longest_cycles_percentile))
+    min_cycle_length = int(numpy.percentile(all_cell_cycle_lengths, 100 - _OUT_OF_ORDINARY_PERCENTILE))
 
     grid = _get_graphing_data(window.get_experiment(), min_cycle_length=min_cycle_length)
     if grid.is_empty():
         raise UserError("No cell cycles found", "No complete cell cycles were found in the linking data."
                                                 " Cannot plot anything.")
 
-    title = f"Cell cycle lengths over space and time of {longest_cycles_percentile}% longest cycles"
+    title = f"Cell cycle lengths over space and time of {_OUT_OF_ORDINARY_PERCENTILE}% longest cycles"
+    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_cycle_lengths(figure, grid, title=title))
+
+
+def _show_shortest_cycles(window: Window):
+    experiment = window.get_experiment()
+
+    all_cell_cycle_lengths = _get_all_cell_cycle_lengths(experiment.links)
+    max_cycle_length = int(numpy.percentile(all_cell_cycle_lengths, _OUT_OF_ORDINARY_PERCENTILE))
+
+    grid = _get_graphing_data(window.get_experiment(), max_cycle_length=max_cycle_length)
+    if grid.is_empty():
+        raise UserError("No cell cycles found", "No complete cell cycles were found in the linking data."
+                                                " Cannot plot anything.")
+
+    title = f"Cell cycle lengths over space and time of {_OUT_OF_ORDINARY_PERCENTILE}% shortest cycles"
+    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_cycle_lengths(figure, grid, title=title))
+
+
+def _show_middle_cycles(window: Window):
+    experiment = window.get_experiment()
+
+    all_cell_cycle_lengths = _get_all_cell_cycle_lengths(experiment.links)
+    min_cycle_length = int(numpy.percentile(all_cell_cycle_lengths, 50 - _OUT_OF_ORDINARY_PERCENTILE/2))
+    max_cycle_length = int(numpy.percentile(all_cell_cycle_lengths, 50 + _OUT_OF_ORDINARY_PERCENTILE/2))
+
+    grid = _get_graphing_data(window.get_experiment(), min_cycle_length=min_cycle_length, max_cycle_length=max_cycle_length)
+    if grid.is_empty():
+        raise UserError("No cell cycles found", "No complete cell cycles were found in the linking data."
+                                                " Cannot plot anything.")
+
+    title = f"Cell cycle lengths over space and time of {_OUT_OF_ORDINARY_PERCENTILE}% middle-length cycles"
     dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_cycle_lengths(figure, grid, title=title))
 
 
