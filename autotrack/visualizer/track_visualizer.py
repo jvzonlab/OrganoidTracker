@@ -5,6 +5,7 @@ from matplotlib.backend_bases import KeyEvent, MouseEvent
 from matplotlib.figure import Figure, Axes
 
 from autotrack.core import UserError, TimePoint
+from autotrack.core.experiment import Experiment
 from autotrack.core.links import Links, LinkingTrack
 from autotrack.core.position import Position
 from autotrack.core.resolution import ImageResolution
@@ -76,6 +77,38 @@ def _plot_displacements(axes: Axes, resolution: ImageResolution, track: LinkingT
     axes.plot(time_point_numbers, displacements, color=matplotlib.cm.Set1(lineage_id), label=label)
 
 
+def _plot_data_axes_locations(axes: Axes, experiment: Experiment, track: LinkingTrack, lineage_id: int):
+    data_axes = experiment.data_axes
+    links = experiment.links
+    resolution = experiment.images.resolution()
+
+    data_axis_locations_um = list()
+    time_point_numbers = list()
+
+    # Connect line with previous track
+    positions = list(track.positions())
+    previous_tracks = track.get_previous_tracks()
+    if len(previous_tracks) == 1:
+        positions.insert(0, previous_tracks.pop().find_last_position())
+
+    # Plot current track
+    for position in positions:
+        data_axis_location = data_axes.to_position_on_original_axis(links, position)
+        if data_axis_location is None:
+            continue
+
+        data_axis_locations_um.append(data_axis_location.pos * resolution.pixel_size_x_um)
+        time_point_numbers.append(position.time_point_number())
+
+    if len(data_axis_locations_um) == 0:
+        raise UserError("No data axes", "No data axes found. Did you forget to draw a data axis for the positions of"
+                                        "this track?")
+
+    # End of this cell track: either start multiple new ones (division) or stop tracking
+    label = None if track.get_previous_tracks() else "Lineage " + str(lineage_id)
+    axes.plot(time_point_numbers, data_axis_locations_um, color=matplotlib.cm.Set1(lineage_id), label=label)
+
+
 class TrackVisualizer(ExitableImageVisualizer):
     """Shows the trajectory of one or multiple particles. Double-click a particle to select it. Double click it again to
     deselect it. Double-click on an empty area to deselect all particles."""
@@ -116,7 +149,8 @@ class TrackVisualizer(ExitableImageVisualizer):
     def get_extra_menu_options(self):
         return {
             **super().get_extra_menu_options(),
-            "Graph//Over time-Cell displacement over time...": self._show_displacement,
+            "Graph//Over time-Displacement over time...": self._show_displacement,
+            "Graph//Over time-Axes positions over time...": self._show_data_axes_locations,
         }
 
     def _show_displacement(self):
@@ -134,6 +168,24 @@ class TrackVisualizer(ExitableImageVisualizer):
             for i, lineage in enumerate(self._selected_lineages):
                 for track in lineage.find_all_tracks():
                     _plot_displacements(axes, resolution, track, i + 1)
+            if len(self._selected_lineages) > 1:
+                axes.legend()
+
+        dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
+
+    def _show_data_axes_locations(self):
+        if len(self._selected_lineages) == 0:
+            raise UserError("No cell track selected", "No cell track selected, so we cannot plot anything. Double-click"
+                                                      " on a cell to select a track.")
+
+        def draw_function(figure: Figure):
+            axes = figure.gca()
+            axes.set_xlabel("Time (time points)")
+            axes.set_ylabel("Position on axis (μm)")
+            axes.set_title("Movement of cells on axis")
+            for i, lineage in enumerate(self._selected_lineages):
+                for track in lineage.find_all_tracks():
+                    _plot_data_axes_locations(axes, self._experiment, track, i + 1)
             if len(self._selected_lineages) > 1:
                 axes.legend()
 
