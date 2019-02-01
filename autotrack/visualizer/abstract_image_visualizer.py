@@ -102,6 +102,7 @@ class AbstractImageVisualizer(Visualizer):
         self.__positions_near_visible_layer.clear()
         self._draw_image()
         self._draw_positions()
+        self._draw_links()
         self._draw_connections()
         self._draw_data_axes()
         self._draw_extra()
@@ -185,9 +186,6 @@ class AbstractImageVisualizer(Visualizer):
             # Make position selectable
             self.__positions_near_visible_layer.append(position)
 
-        # Draw links
-        self._draw_links(position)
-
         # Draw position
         position_type = self.get_window().get_gui_experiment().get_position_type(
             linking_markers.get_position_type(links, position))
@@ -203,6 +201,7 @@ class AbstractImageVisualizer(Visualizer):
                       markersize=19 - abs(dz), markeredgewidth=2)
 
     def _draw_connections(self):
+        """Draws all connections. A connection indicates that two positions are not the same, but are related."""
         lines = []
         for position1, position2 in self._experiment.connections.of_time_point(self._time_point):
             min_display_z = min(position1.z, position2.z) - self.MAX_Z_DISTANCE
@@ -217,49 +216,24 @@ class AbstractImageVisualizer(Visualizer):
         linewidths = [2]
         self._ax.add_collection(LineCollection(lines, colors=colors, linestyles=linestyles, linewidths=linewidths))
 
-    def _draw_links(self, position: Position):
-        """Draws links between the positions. Returns 1 if there is 1 error: the baseline links don't match the actual
-        links.
-        """
-        links_base = self._experiment.links.find_links_of(position)
-        if position.time_point_number() > self._time_point.time_point_number():
-            # Draw links that go to past
-            links_base = [p for p in links_base if p.time_point_number() < position.time_point_number()]
-        elif position.time_point_number() < self._time_point.time_point_number():
-            # Draw links that go to future
-            links_base = [p for p in links_base if p.time_point_number() > position.time_point_number()]
-        else:
-            # Only draw links that go multiple steps into the past or future. Links that go one step into the past
-            # or future are already drawn by the above functions
-            links_base = [p for p in links_base if abs(p.time_point_number() - position.time_point_number()) >= 2]
-
-        self._draw_given_links(position, links_base)
-
-    def _draw_given_links(self, position, links, line_style='solid', line_width=1):
-        position_dt = numpy.sign(position.time_point_number() - self._time_point.time_point_number())
-        for linked_position in links:
-            linked_position_dt = numpy.sign(linked_position.time_point_number() - self._time_point.time_point_number())
-            # link_dt is negative when drawing to past, positive when drawing to the future and 0 when drawing from the
-            # past to the future (so it is skipping this time point)
-            link_dt = position_dt + linked_position_dt
-
-            min_display_z = min(linked_position.z, position.z) - self.MAX_Z_DISTANCE
-            max_display_z = max(linked_position.z, position.z) + self.MAX_Z_DISTANCE
+    def _draw_links(self):
+        """Draws all links. A link indicates that one position is the same a another position in another time point."""
+        lines = []
+        colors = []
+        for position1, position2 in self._experiment.links.of_time_point(self._time_point):
+            min_display_z = min(position1.z, position2.z) - self.MAX_Z_DISTANCE
+            max_display_z = max(position1.z, position2.z) + self.MAX_Z_DISTANCE
             if self._z < min_display_z or self._z > max_display_z:
                 continue
-            if link_dt < 0:
-                # Drawing to past
-                if not self._display_settings.show_next_time_point:
-                    self._ax.plot([position.x, linked_position.x], [position.y, linked_position.y], linestyle=line_style,
-                                  color=core.COLOR_CELL_PREVIOUS, linewidth=line_width)
-            elif link_dt > 0:
-                # Drawing to future
-                self._ax.plot([position.x, linked_position.x], [position.y, linked_position.y], linestyle=line_style,
-                              color=core.COLOR_CELL_NEXT, linewidth=line_width)
-            else:
-                # Drawing from past to future, skipping this time point
-                self._ax.plot([position.x, linked_position.x], [position.y, linked_position.y], linestyle=line_style,
-                              color=core.COLOR_CELL_CURRENT, linewidth=line_width)
+
+            line = (position1.x, position1.y), (position2.x, position2.y)
+            lines.append(line)
+            color = core.COLOR_CELL_NEXT if position2.time_point_number() > position1.time_point_number()\
+                else core.COLOR_CELL_PREVIOUS
+            colors.append(color)
+
+        linewidths = [1]
+        self._ax.add_collection(LineCollection(lines, colors=colors, linewidths=linewidths))
 
     def _draw_data_axes(self):
         """Draws the data axis, which is usually the crypt axis."""

@@ -593,3 +593,21 @@ class Links:
                 return track.find_first_position()
             else:
                 track = previous_tracks.pop()
+
+    def of_time_point(self, time_point: TimePoint) -> Iterable[Tuple[Position, Position]]:
+        """Returns all links where one of the two positions is in that time point. The first position in each tuple is
+        in the given time point, the second one is one time point earlier or later."""
+        time_point_number = time_point.time_point_number()
+        for track in self._tracks:
+            track_min_time_point_number = track._min_time_point_number
+            if track_min_time_point_number > time_point_number:
+                continue
+            track_max_time_point_number = track.max_time_point_number()
+            if track_max_time_point_number < time_point_number:
+                continue
+            # Track crosses this time point
+            position = track.get_by_time_point(time_point_number)
+            for past_position in track._find_pasts(time_point_number):
+                yield position, past_position
+            for future_position in track._find_futures(time_point_number):
+                yield position, future_position
