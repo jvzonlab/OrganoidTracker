@@ -68,7 +68,7 @@ def create_labels(positions: Iterable[Position], image_offset: Position, output:
     output: integer image, which will contain the labels. label 1 == position 0, label 2 == position 1, etc."""
     i = 1
     for position in positions:
-        image_position = position.subtract_pos(image_offset)
+        image_position = position - image_offset
         try:
             z = int(image_position.z)
             if z == -1 or z == output.shape[0]:

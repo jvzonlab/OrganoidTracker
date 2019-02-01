@@ -177,7 +177,7 @@ class Visualizer:
 
                 # Check if we need to translate the next image
                 offsets = self._experiment.images.offsets
-                relative_offset = offsets.of_time_point(time_point).subtract_pos(offsets.of_time_point(next_time_point))
+                relative_offset = offsets.of_time_point(time_point) - offsets.of_time_point(next_time_point)
                 if relative_offset.x != 0 or relative_offset.y != 0 or relative_offset.z != 0:
                     original_images = next_time_point_images
                     next_time_point_images = numpy.zeros_like(original_images)
