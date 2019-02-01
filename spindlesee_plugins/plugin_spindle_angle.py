@@ -27,7 +27,7 @@ class _Line:
         self.angles = angles
 
     def is_rotating(self) -> bool:
-        return abs(self.angles[-1][1]) > _DIVIDER
+        return abs(self.angles[0][1]) > _DIVIDER
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -86,13 +86,11 @@ def _create_angles_list(links: Links, connections: Connections, position1: Posit
     """Gets a list of (minute, angle) points for the mitotic spindle."""
     position_list = []
     angle_list = []
-    original_angle = angles.direction_2d(position1, position2)
     time_point = 0
     while connections.contains_connection(position1, position2) and plugin_spindle_markers.is_part_of_spindle(links, position1)\
             and plugin_spindle_markers.is_part_of_spindle(links, position2):
         angle = angles.direction_2d(position1, position2)
-        relative_angle = angles.direction_change_of_line(original_angle, angle)
-        angle_list.append((time_point * minutes_per_time_point, relative_angle))
+        angle_list.append((time_point * minutes_per_time_point, angle))
         position_list.append((position1, position2))
 
         # Find positions in next time point
@@ -105,13 +103,19 @@ def _create_angles_list(links: Links, connections: Connections, position1: Posit
         position1 = futures1.pop()
         position2 = futures2.pop()
         time_point += 1
+
+    # Make angles relative to final angle
+    if len(angle_list) > 0:
+        final_time, final_angle = angle_list[-1]
+        angle_list = [(final_time - time, angles.direction_change_of_line(final_angle, angle)) for time, angle in angle_list]
+
     return _Line(position_list, angle_list)
 
 
 def _get_highest_time(angle_lists: List[_Line]) -> float:
     highest_time = 0
     for line in angle_lists:
-        highest_line_time = line.angles[-1][0]  # Highest time will be the x coord of the last entry
+        highest_line_time = line.angles[0][0]  # Highest time will be the x coord of the first entry
         if highest_line_time > highest_time:
             highest_time = highest_line_time
     return highest_time
@@ -125,7 +129,7 @@ def _show_figure(figure: Figure, angle_lists: List[_Line]):
     color_codes = [colors.to_rgba(name, 1) for name in color_names]
 
     axes = figure.subplots(2, sharex=True)
-    axes[0].set_xlim(0, highest_time)
+    axes[0].set_xlim(highest_time, 0)
     axes[0].set_ylim(-5, 95)
     axes[0].set_title('Rotation of spindle since start of mitosis')
     axes[0].add_collection(LineCollection(rotating_list, colors=color_codes))
@@ -133,5 +137,5 @@ def _show_figure(figure: Figure, angle_lists: List[_Line]):
 
     axes[1].set_ylim(-5, 95)
     axes[1].add_collection(LineCollection(not_rotating_list, colors=color_codes))
-    axes[1].set_xlabel("Time since spindle appeared (minutes)")
+    axes[1].set_xlabel("Time until spindle disappears (minutes)")
     axes[1].set_ylabel(f"Less than {_DIVIDER} degrees")
