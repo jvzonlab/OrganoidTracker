@@ -126,6 +126,30 @@ class Position:
         """Returns a copy of this position with the time point set to the given position."""
         return Position(self.x, self.y, self.z, time_point_number=time_point_number)
 
+    def interpolate(self, to_pos: "Position") -> List["Position"]:
+        """Gets a time-interpolated list of positions. If you have positions A and B, with one time point in between,
+        then a list will be returned of three elements: [A, I, B], with I an interpolated position. If there are two
+        time points in between, then a list of four elements will be returned, and so on.
+
+        If there are no time points in between the two positions, then the two positions are simply returned. If both
+        positions are in the same time point, then this method will raise ValueError. The returned list will always
+        start with the earliest position first."""
+        from_pos = self
+        if to_pos.time_point_number() < from_pos.time_point_number():
+            to_pos, from_pos = from_pos, to_pos
+        delta_time = to_pos.time_point_number() - from_pos.time_point_number()
+        if delta_time == 1:
+            return [from_pos, to_pos]
+        if delta_time == 0:
+            raise ValueError(f"The {self} is at the same time point as {to_pos}")
+
+        return_list = [from_pos]
+        for i in range(1, delta_time):
+            fraction = i / delta_time
+            position = to_pos * fraction + from_pos * (1 - fraction)
+            return_list.append(position.with_time_point_number(from_pos.time_point_number() + i))
+        return_list.append(to_pos)
+        return return_list
 
 class PositionType:
     """Used to represent the type of a position. Is it a biological cell? And of what type? Or does it mark something

@@ -19,27 +19,41 @@ from autotrack.gui.undo_redo import UndoableAction, ReversedAction
 
 class _InsertLinkAction(UndoableAction):
     """Used to insert a link between two positions."""
-    position1: Position
-    position2: Position
+    all_positions = List[Position]
 
     def __init__(self, position1: Position, position2: Position):
-        self.position1 = position1
-        self.position2 = position2
-        if position1.time_point_number() == position2.time_point_number():
-            raise ValueError(f"The {position1} is at the same time point as {position2}")
+        self.all_positions = position1.interpolate(position2)
 
     def do(self, experiment: Experiment):
-        experiment.links.add_link(self.position1, self.position2)
-        cell_error_finder.apply_on(experiment, self.position1, self.position2)
-        return f"Inserted link between {self.position1} and {self.position2}"
+        previous_position = None
+
+        # Add the interpolated positions
+        for position in self.all_positions:
+            experiment.positions.add(position)
+
+        # Add links
+        for position in self.all_positions:
+            if previous_position is not None:
+                experiment.links.add_link(position, previous_position)
+            previous_position = position
+
+        cell_error_finder.apply_on(experiment, *self.all_positions)
+        return f"Inserted link between {self.all_positions[0]} and {self.all_positions[-1]}"
 
     def undo(self, experiment: Experiment):
-        experiment.links.remove_link(self.position1, self.position2)
-        cell_error_finder.apply_on(experiment, self.position1, self.position2)
-        return f"Removed link between {self.position1} and {self.position2}"
+        if len(self.all_positions) == 2:
+            # Remove just a link
+            experiment.links.remove_link(*self.all_positions)
+        else:
+            # Remove links and interpolated positions
+            for position in self.all_positions[1:-1]:
+                experiment.remove_position(position)
+
+        cell_error_finder.apply_on(experiment, self.all_positions[0], self.all_positions[-1])
+        return f"Removed link between {self.all_positions[0]} and {self.all_positions[-1]}"
 
 
-class _InsertPositionAction(UndoableAction):
+class _DeletePositionAction(UndoableAction):
     """Used to insert a position."""
 
     position: Position
@@ -50,6 +64,11 @@ class _InsertPositionAction(UndoableAction):
         self.linked_positions = linked_positions
 
     def do(self, experiment: Experiment):
+        experiment.remove_position(self.position)
+        cell_error_finder.apply_on(experiment, *self.linked_positions)
+        return f"Removed {self.position}"
+
+    def undo(self, experiment: Experiment):
         experiment.positions.add(self.position)
         for linked_position in self.linked_positions:
             experiment.links.add_link(self.position, linked_position)
@@ -62,11 +81,6 @@ class _InsertPositionAction(UndoableAction):
             return_value += f" with a connection to {self.linked_positions[0]}"
 
         return return_value + "."
-
-    def undo(self, experiment: Experiment):
-        experiment.remove_position(self.position)
-        cell_error_finder.apply_on(experiment, *self.linked_positions)
-        return f"Removed {self.position}"
 
 
 class _MovePositionAction(UndoableAction):
@@ -227,9 +241,6 @@ class LinkAndPositionEditor(AbstractEditor):
         else:
             self._selected2 = self._selected1
             self._selected1 = new_selection
-            if self._selected2 is not None and\
-                    abs(self._selected1.time_point_number() - self._selected2.time_point_number()) > 1:
-                self._selected2 = None  # Can only select two positions if they are in consecutive time points
         self.draw_view()
         self.update_status("Selected:\n        " + str(self._selected1) + "\n        " + str(self._selected2))
 
@@ -289,7 +300,7 @@ class LinkAndPositionEditor(AbstractEditor):
             self.update_status("You need to select a cell first")
         elif self._selected2 is None:  # Delete cell and its links
             old_links = self._experiment.links.find_links_of(self._selected1)
-            self._perform_action(ReversedAction(_InsertPositionAction(self._selected1, list(old_links))))
+            self._perform_action(_DeletePositionAction(self._selected1, list(old_links)))
         elif self._experiment.connections.contains_connection(self._selected1, self._selected2):  # Delete a connection
             position1, position2 = self._selected1, self._selected2
             self._selected1, self._selected2 = None, None
@@ -389,13 +400,14 @@ class LinkAndPositionEditor(AbstractEditor):
         if self._selected1 is None or self._selected2 is None:
             # Insert new position
             position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
-            connections = []
-            if self._selected1 is not None \
-                    and abs(self._selected1.time_point_number() - self._time_point.time_point_number()) == 1:
-                connections.append(self._selected1)  # Add link to already selected position
-
-            self._selected1 = position
-            self._perform_action(_InsertPositionAction(position, connections))
+            if self._selected1 is not None:
+                connection = self._selected1
+                self._selected1 = position
+                self._perform_action(_InsertLinkAction(position, connection))  # Add link to already selected position
+            else:
+                # Add new position without links
+                self._selected1 = position
+                self._perform_action(ReversedAction(_DeletePositionAction(position, [])))
         elif self._selected1.time_point_number() == self._selected2.time_point_number():
             # Insert connection between two positions
             if self._experiment.connections.contains_connection(self._selected1, self._selected2):
@@ -404,8 +416,6 @@ class LinkAndPositionEditor(AbstractEditor):
             position1, position2 = self._selected1, self._selected2
             self._selected1, self._selected2 = None, None
             self._perform_action(_InsertConnectionAction(position1, position2))
-        elif abs(self._selected1.time_point_number() - self._selected2.time_point_number()) > 1:
-            self.update_status("The two selected cells are not in consecutive time points - cannot insert link.")
         else:
             # Insert link between two positions
             if self._experiment.links.contains_link(self._selected1, self._selected2):
