@@ -302,6 +302,8 @@ class DataAxisCollection:
         every position is assigned to a single axis, and will never switch to another axis during its lifetime."""
         first_position = links.get_first_position_of(position)
         first_axis_position = self._to_position_on_axis(first_position)
+        if first_axis_position is None:
+            return None
         for axis_id, axis in self.of_time_point(position.time_point()):
             if axis_id == first_axis_position.axis_id:
                 position = axis.to_position_on_axis(position)
