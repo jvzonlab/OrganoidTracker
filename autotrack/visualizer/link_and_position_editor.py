@@ -400,7 +400,7 @@ class LinkAndPositionEditor(AbstractEditor):
         if self._selected1 is None or self._selected2 is None:
             # Insert new position
             position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
-            if self._selected1 is not None:
+            if self._selected1 is not None and self._selected1.time_point() != self._time_point:
                 connection = self._selected1
                 self._selected1 = position
                 self._perform_action(_InsertLinkAction(position, connection))  # Add link to already selected position
