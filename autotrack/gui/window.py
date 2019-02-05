@@ -1,7 +1,8 @@
 import re
 from typing import Callable, Dict, List, Any, Optional, Union, Iterable, Tuple
 
-from PyQt5.QtWidgets import QMainWindow, QLabel, QMenuBar, QAction, QMenu
+from PyQt5.QtGui import QKeySequence
+from PyQt5.QtWidgets import QMainWindow, QLabel, QMenuBar, QAction, QMenu, QShortcut
 from matplotlib.figure import Figure
 
 from autotrack.core.experiment import Experiment
@@ -164,16 +165,20 @@ class _MenuData:
                 sub_menu = qmenu.addMenu(item_label)
                 item_action.to_qmenu(sub_menu)
             else:  # Single action
-                action = QAction(item_label, qmenu)
-                action.triggered.connect(_with_safeguard(item_action))
-                qmenu.addAction(action)
+                text, shortcut = self._parse_item_label(item_label)
+                if shortcut:
+                    qmenu.addAction(text, _with_safeguard(item_action), shortcut)
+                else:
+                    qmenu.addAction(text, _with_safeguard(item_action))
 
     def add_menu_entry(self, name: str, action: Callable):
         """Examples:
 
-            self.add_menu_entry("Lineages-Show lineage tree...", _show_lineage_tree)
+        >>> self.add_menu_entry("Lineages-Show lineage tree... [Ctrl+L]", lambda: ...)
+        Adds a menu option named "Show lineage tree...". Category is "Lineages". Shortcut is CONTROL+L.
 
-            self.add_menu_entry("Analysis-Cell deaths/Distance-Distance between neighbor cells...", _show_distances)
+        >>> self.add_menu_entry("Analysis-Cell deaths//Distance-Distance between neighbor cells...", lambda: ...)
+        Adds a menu option to the Cell deaths submenu.
         """
         split_by_slashes = name.split("//")
         part_for_this_menu = split_by_slashes[0]
@@ -200,6 +205,12 @@ class _MenuData:
 
     def __repr__(self) -> str:
         return f"<_MenuData, {len(list(self.items()))} items>"
+
+    def _parse_item_label(self, item_label: str) -> Tuple[str, Optional[str]]:
+        if " [" in item_label and item_label.endswith("]"):
+            index = item_label.index("[")
+            return item_label[0:index - 1], item_label[index + 1:-1]
+        return item_label, None
 
 
 def _simple_menu_dict_to_nested(menu_items: Dict[str, Any]) -> _MenuData:

@@ -280,40 +280,20 @@ class AbstractImageVisualizer(Visualizer):
         return {
             **super().get_extra_menu_options(),
             "File//Export-Export image...": self._export_images,
-            "View//Toggle-Toggle showing two time points (" + DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + ")":
+            "View//Toggle-Toggle showing two time points [" + DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + "]":
                 self._toggle_showing_next_time_point,
-            "View//Toggle-Toggle showing images (" + DisplaySettings.KEY_SHOW_IMAGES.upper() + ")":
+            "View//Toggle-Toggle showing images [" + DisplaySettings.KEY_SHOW_IMAGES.upper() + "]":
                 self._toggle_showing_images,
-            "View//Toggle-Toggle showing reconstruction (" + DisplaySettings.KEY_SHOW_RECONSTRUCTION.upper() + ")":
+            "View//Toggle-Toggle showing reconstruction [" + DisplaySettings.KEY_SHOW_RECONSTRUCTION.upper() + "]":
                 self._toggle_showing_reconstruction,
-            "Navigate//Layer-Above layer (Up)": lambda: self._move_in_z(1),
-            "Navigate//Layer-Below layer (Down)": lambda: self._move_in_z(-1),
-            "Navigate//Channel-Next channel (>)": lambda: self._move_in_channel(1),
-            "Navigate//Channel-Previous channel (<)": lambda: self._move_in_channel(-1),
-            "Navigate//Time-Next time point (Right)": lambda: self._move_in_time(1),
-            "Navigate//Time-Previous time point (Left)": lambda: self._move_in_time(-1),
+            "Navigate//Layer-Above layer [Up]": lambda: self._move_in_z(1),
+            "Navigate//Layer-Below layer [Down]": lambda: self._move_in_z(-1),
+            "Navigate//Channel-Next channel [.]": lambda: self._move_in_channel(1),
+            "Navigate//Channel-Previous channel [,]": lambda: self._move_in_channel(-1),
+            "Navigate//Time-Next time point [Right]": lambda: self._move_in_time(1),
+            "Navigate//Time-Previous time point [Left]": lambda: self._move_in_time(-1),
             "Navigate//Time-Other time point... (/t*)": time_point_prompt
         }
-
-    def _on_key_press(self, event: KeyEvent):
-        if event.key == "up":
-            self._move_in_z(1)
-        elif event.key == "down":
-            self._move_in_z(-1)
-        elif event.key == "left":
-            self._move_in_time(-1)
-        elif event.key == "right":
-            self._move_in_time(1)
-        elif event.key == ",":
-            self._move_in_channel(-1)
-        elif event.key == ".":
-            self._move_in_channel(1)
-        elif event.key == DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP:
-            self._toggle_showing_next_time_point()
-        elif event.key == DisplaySettings.KEY_SHOW_IMAGES:
-            self._toggle_showing_images()
-        elif event.key == DisplaySettings.KEY_SHOW_RECONSTRUCTION:
-            self._toggle_showing_reconstruction()
 
     def _on_command(self, command: str) -> bool:
         if len(command) > 0 and command[0] == "t":

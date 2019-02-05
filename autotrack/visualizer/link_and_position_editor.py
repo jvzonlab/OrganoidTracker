@@ -247,8 +247,8 @@ class LinkAndPositionEditor(AbstractEditor):
     def get_extra_menu_options(self):
         options = {
             **super().get_extra_menu_options(),
-            "Edit//Experiment-Edit data axes... (A)": self._show_path_editor,
-            "Edit//Experiment-Edit image offsets... (O)": self._show_offset_editor,
+            "Edit//Experiment-Edit data axes... [A]": self._show_path_editor,
+            "Edit//Experiment-Edit image offsets... [O]": self._show_offset_editor,
             "Edit//Batch-Delete data of time point...": self._delete_data_of_time_point,
             "Edit//Batch-Delete all tracks with errors...": self._delete_tracks_with_errors,
             "Edit//Batch-Connect positions by distance...": self._connect_positions_by_distance,
@@ -256,7 +256,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//LineageEnd-Mark as moving out of view": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
             "Edit//LineageEnd-Remove end marker": lambda: self._try_set_end_marker(None),
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
-            "View//Linking-Lineage errors and warnings (L)": self._show_lineage_errors,
+            "View//Linking-Lineage errors and warnings [L]": self._show_lineage_errors,
         }
 
         # Add options for changing position types
@@ -271,12 +271,6 @@ class LinkAndPositionEditor(AbstractEditor):
         elif event.key == "e":
             position = self._get_position_at(event.xdata, event.ydata)
             self._show_linking_errors(position)
-        elif event.key == "l":
-            self._show_lineage_errors()
-        elif event.key == "a":
-            self._show_path_editor()
-        elif event.key == "o":
-            self._show_offset_editor()
         elif event.key == "insert":
             self._try_insert(event)
         elif event.key == "delete":

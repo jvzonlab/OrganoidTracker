@@ -16,8 +16,8 @@ class Plugin:
         Used to add menu items that must always be visible. Example:
 
             return {
-                "File/Import-Import my format...": lambda: my_code_here(),
-                "View/Analysis-Useful analysis screen here...": lambda: my_other_code_here()
+                "File//Import-Import my format... [Ctrl+W]": lambda: my_code_here(),
+                "View//Analysis-Useful analysis screen here...": lambda: my_other_code_here()
             }
         """
         return {}

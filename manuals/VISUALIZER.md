@@ -60,13 +60,13 @@ from autotrack.gui import dialog
 
 def get_menu_items(window):
     return {
-        "Tools//Messages-Show Hello World...":
+        "Tools//Messages-Show Hello World... [Ctrl+W]":
             lambda: dialog.popup_message("My Title", "Hello World!"),
         "Tools//Messages-Show other message...":
             lambda: dialog.popup_message("My Title", "Nice weather, isn't it?")
     }
 ```
 
-The `get_menu_items` function is automatically called. It is used here to add some custom menu options. The options are shown in the "Tools" menu, in the "Messages" category. (The name of the category is never shown, but menu options in the same category will always appear next to each other.)
+The `get_menu_items` function is automatically called. It is used here to add some custom menu options. The options are shown in the "Tools" menu, in the "Messages" category. (The name of the category is never shown, but menu options in the same category will always appear next to each other.) Ctrl+W is the shortcut for the menu option.
 
 You can call any method in the Python standard library, the Autotrack API (see API.md) and its dependencies. There is no sandbox implemented. You can access the currently loaded experiment using `window.get_experiment()`. o show a matplotlib figure, use `dialog.popup_figure(..)`.

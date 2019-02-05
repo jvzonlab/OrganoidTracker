@@ -11,19 +11,13 @@ class ExitableImageVisualizer(AbstractImageVisualizer):
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
             **super().get_extra_menu_options(),
-            "View//Exit-Exit this view (Esc)": self._exit_view,
+            "View//Exit-Exit this view [Esc]": self._exit_view,
         }
 
     def _exit_view(self):
         from autotrack.visualizer.standard_image_visualizer import StandardImageVisualizer
         image_visualizer = StandardImageVisualizer(self._window, self._time_point, self._z, self._display_settings)
         activate(image_visualizer)
-
-    def _on_key_press(self, event: KeyEvent):
-        if event.key == "escape":
-            self._exit_view()
-        else:
-            super()._on_key_press(event)
 
     def _on_command(self, command: str) -> bool:
         if command == "help":

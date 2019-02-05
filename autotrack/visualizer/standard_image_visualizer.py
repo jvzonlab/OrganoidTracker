@@ -44,24 +44,18 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         return {
             **super().get_extra_menu_options(),
             "Edit//Experiment-Merge tracking data...": self._ask_merge_experiments,
-            "Edit//Experiment-Manually change data... (C)": self._show_data_editor,
+            "Edit//Experiment-Manually change data... [C]": self._show_data_editor,
             "Edit//Automatic-Cell detection...": self._show_cell_detector,
-            "View//Cells-Cell divisions... (M)": self._show_mother_cells,
-            "View//Cells-Track ends and cell deaths... (/deaths)": self._show_dead_cells,
-            "View//Tracks-Track follower... (T)": self._show_track_follower,
+            "View//Cells-Cell divisions... [M]": self._show_mother_cells,
+            "View//Cells-Track ends and cell deaths...": self._show_dead_cells,
+            "View//Tracks-Track follower... [T]": self._show_track_follower,
             "View//Tracks-Movement arrows...": self._show_movement_arrows,
             "View//Tracks-Cell fates...": self._show_cell_fates,
             "View//Tracks-Whole lineage fates...": self._show_lineage_fates,
         }
 
     def _on_key_press(self, event: KeyEvent):
-        if event.key == "t":
-            self._show_track_follower()
-        elif event.key == "m":
-            self._show_mother_cells()
-        elif event.key == "c":
-            self._show_data_editor()
-        elif event.key == "v":  # show volume info
+        if event.key == "v":  # show volume info
             position = self._get_position_at(event.xdata, event.ydata)
             if position is None:
                 self.update_status("No position at mouse position")
@@ -124,12 +118,6 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         activate(editor)
 
     def _on_command(self, command: str) -> bool:
-        if command == "deaths":
-            self._show_dead_cells()
-            return True
-        if command == "divisions":
-            self._show_mother_cells()
-            return True
         if command == "help":
             self.update_status("Available commands:\n"
                                "/deaths - views cell deaths.\n"

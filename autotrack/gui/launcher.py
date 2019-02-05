@@ -107,15 +107,15 @@ class MainWindow(Window):
         from autotrack.gui import action
 
         menu_items = {
-            "File//New-New project...": lambda: action.new(self),
-            "File//SaveLoad-Load images...": lambda: action.load_images(self),
-            "File//SaveLoad-Load tracking data...": lambda: action.load_tracking_data(self),
-            "File//SaveLoad-Save tracking data...": lambda: action.save_tracking_data(self.get_gui_experiment()),
+            "File//New-New project... [Ctrl+N]": lambda: action.new(self),
+            "File//SaveLoad-Load images... [Ctrl+I]": lambda: action.load_images(self),
+            "File//SaveLoad-Load tracking data... [Ctrl+O]": lambda: action.load_tracking_data(self),
+            "File//SaveLoad-Save tracking data... [Ctrl+S]": lambda: action.save_tracking_data(self.get_gui_experiment()),
             "File//Export-Export detection data only...": lambda: action.export_positions_and_shapes(self.get_experiment()),
             "File//Export-Export linking data only...": lambda: action.export_links(self.get_experiment()),
             "File//Export-Export to Guizela's file format...": lambda: action.export_links_guizela(self.get_experiment()),
-            "File//Plugins-Reload all plugins...": lambda: action.reload_plugins(self),
-            "File//Exit-Exit (Alt+F4)": lambda: action.ask_exit(self.get_gui_experiment()),
+            "File//Plugins-Reload all plugins... [Alt+F5]": lambda: action.reload_plugins(self),
+            "File//Exit-Exit [Alt+F4]": lambda: action.ask_exit(self.get_gui_experiment()),
             "Edit//Experiment-Rename experiment...": lambda: action.rename_experiment(self),
             "Edit//Experiment-Set image resolution...": lambda: action.set_image_resolution(self),
             "View//Toggle-Toggle showing axis numbers": lambda: action.toggle_axis(self.get_figure()),
@@ -131,7 +131,7 @@ class MainWindow(Window):
         from autotrack.gui import action
 
         return {
-            "Help//Basic-Contents...": action.show_manual,
+            "Help//Basic-Contents... [F1]": action.show_manual,
             "Help//Basic-About": action.about_the_program,
         }
 
