@@ -131,8 +131,8 @@ class MainWindow(Window):
         from autotrack.gui import action
 
         return {
-            "Help/Basic-Contents...": action.show_manual,
-            "Help/Basic-About": action.about_the_program,
+            "Help//Basic-Contents...": action.show_manual,
+            "Help//Basic-About": action.about_the_program,
         }
 
     def install_plugins(self, plugins: Iterable[Plugin]):
