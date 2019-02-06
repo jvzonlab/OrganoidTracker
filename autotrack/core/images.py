@@ -1,4 +1,4 @@
-from typing import Dict, Optional, List, Tuple
+from typing import Dict, Optional, List, Tuple, Iterable
 
 import numpy
 from numpy import ndarray
@@ -249,3 +249,12 @@ class Images:
         copy._resolution = self._resolution  # No copy, as this object is immutable
         copy._offsets = self._offsets.copy()
         return copy
+
+    def time_points(self) -> Iterable[TimePoint]:
+        """Gets all time points for which images are available."""
+        min_time_point_number = self._image_loader.first_time_point_number()
+        max_time_point_number = self._image_loader.last_time_point_number()
+        if min_time_point_number is None or max_time_point_number is None:
+            return
+        for time_point_number in range(min_time_point_number, max_time_point_number + 1):
+            yield TimePoint(time_point_number)

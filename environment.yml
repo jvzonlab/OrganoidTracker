@@ -1,65 +1,95 @@
 name: autotrack
 channels:
+  - aaronzs
   - chaubold
   - conda-forge
   - defaults
 dependencies:
-  - dpct=1.2.post9=py36_0_g60a13b3
-  - lemon=1.2.4=vc14he1aa984_3
+  - absl-py=0.7.0=py36_1000
+  - astor=0.7.1=py_0
   - atomicwrites=1.2.1=py36_0
-  - boost=1.63.0=py36_vc14_5
-  - boost-cpp=1.63.0=vc14_2
-  - freetype=2.8.1=vc14_0
-  - mahotas=1.4.4=py36h830ac7b_0
-  - more-itertools=4.3.0=py36_0
-  - networkx=2.1=py36_0
-  - openssl=1.0.2p=hfa6e2cd_0
-  - pandas=0.23.4=py36h830ac7b_0
-  - pip=10.0.1=py36_0
-  - pytest=3.7.4=py36_0
-  - setuptools=40.2.0=py36_0
-  - shapely=1.6.4=py36hc90234e_0
-  - sip=4.19.8=py36h6538335_0
-  - six=1.11.0=py36_1
-  - tifffile=0.15.1=py36_1
-  - wheel=0.31.1=py36_0
   - attrs=18.2.0=py36h28b3542_0
   - blas=1.0=mkl
-  - ca-certificates=2018.03.07=0
-  - certifi=2018.8.24=py36_1
+  - boost=1.63.0=py36_vc14_5
+  - boost-cpp=1.63.0=vc14_2
+  - ca-certificates=2018.11.29=ha4d7672_0
+  - certifi=2018.11.29=py36_1000
+  - cloudpickle=0.7.0=py_0
   - colorama=0.3.9=py36h029ae33_0
   - cycler=0.10.0=py36h009560c_0
+  - cytoolz=0.9.0.1=py36hfa6e2cd_1001
+  - dask-core=1.1.1=py_0
   - decorator=4.3.0=py36_0
+  - dpct=1.2.post9=py36_0_g60a13b3
+  - freetype=2.8.1=vc14_0
+  - gast=0.2.1.post0=py_0
   - geos=3.6.2=h9ef7328_2
+  - grpcio=1.16.0=py36hbb4b082_1000
   - hdf5=1.10.2=hac2f561_1
   - icc_rt=2017.0.4=h97af966_0
   - icu=58.2=ha66f8fd_1
+  - imageio=2.4.1=py36_1000
   - intel-openmp=2018.0.3=0
   - jpeg=9b=hb83a4c4_2
   - kiwisolver=1.0.1=py36h6538335_0
+  - lemon=1.2.4=vc14he1aa984_3
   - libopencv=3.4.1=h875b8b8_3
   - libpng=1.6.34=h79bbb47_0
+  - libprotobuf=3.6.1=h1a1b453_1000
   - libtiff=4.0.9=h36446d0_2
+  - m2w64-gcc-libgfortran=5.3.0=6
+  - m2w64-gcc-libs=5.3.0=7
+  - m2w64-gcc-libs-core=5.3.0=7
+  - m2w64-gmp=6.1.0=2
+  - m2w64-libwinpthread-git=5.0.0.4634.697f757=2
+  - mahotas=1.4.4=py36h830ac7b_0
+  - markdown=2.6.11=py_0
   - matplotlib=2.2.2=py36h153e9ff_1
   - mkl=2018.0.3=1
   - mkl_fft=1.0.4=py36h1e22a9b_1
   - mkl_random=1.0.1=py36h77b88f5_1
+  - more-itertools=4.3.0=py36_0
+  - msys2-conda-epoch=20160418=1
+  - networkx=2.1=py36_0
   - numpy=1.15.1=py36ha559c80_0
   - numpy-base=1.15.1=py36h8128ebf_0
+  - olefile=0.46=py_0
   - opencv=3.4.1=py36h6fd60c2_3
+  - openssl=1.0.2p=hfa6e2cd_1002
+  - pandas=0.23.4=py36h830ac7b_0
+  - pillow=5.2.0=py36_0
+  - pip=10.0.1=py36_0
   - pluggy=0.7.1=py36h28b3542_0
+  - protobuf=3.6.1=py36he025d50_1001
   - py=1.6.0=py36_0
   - py-opencv=3.4.1=py36h1b0d24d_3
   - pyparsing=2.2.0=py36_1
   - pyqt=5.9.2=py36h6538335_2
+  - pytest=3.7.4=py36_0
   - python=3.6.6=hea74fb7_0
   - python-dateutil=2.7.3=py36_0
   - pytz=2018.5=py36_0
+  - pywavelets=1.0.1=py36h452e1ab_1000
   - qt=5.9.6=vc14h62aca36_0
+  - scikit-image=0.14.2=py36h6538335_0
   - scipy=1.1.0=py36h4f6bf74_1
+  - setuptools=40.2.0=py36_0
+  - shapely=1.6.4=py36hc90234e_0
+  - sip=4.19.8=py36h6538335_0
+  - six=1.11.0=py36_1
   - sqlite=3.24.0=h7602738_0
+  - tensorboard=1.9.0=py36_0
+  - tensorflow-gpu=1.9.0=py36_0
+  - termcolor=1.1.0=py_2
+  - tifffile=0.15.1=py36_1
+  - tk=8.6.9=hfa6e2cd_1000
+  - toolz=0.9.0=py_1
   - tornado=5.1=py36hfa6e2cd_0
   - vc=14=h0510ff6_3
   - vs2015_runtime=14.0.25123=3
+  - werkzeug=0.14.1=py_0
+  - wheel=0.31.1=py36_0
   - wincertstore=0.2=py36h7fe50ca_0
   - zlib=1.2.11=h8395fce_2
+prefix: F:\miniconda3\envs\autotrack
+

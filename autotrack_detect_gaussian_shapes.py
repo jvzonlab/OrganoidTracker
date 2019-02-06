@@ -12,7 +12,7 @@ Parameters: (all sizes are in pixels)
   already looks like Gaussians, the smaller this size can be
 - min_segmentation_distance: used for recognizing cell boundaries in a watershed transform
 """
-from autotrack.imaging import tifffolder, io
+from autotrack.imaging import tifffolder, io, general_image_loader
 from autotrack.config import ConfigFile
 from autotrack.position_detection import gaussian_detector_for_experiment
 from autotrack.core.resolution import ImageResolution
@@ -46,8 +46,8 @@ experiment = io.load_data_file(_positions_input_file, min_time_point=_min_time_p
 resolution = ImageResolution(_pixel_size_x_um, _pixel_size_y_um, _pixel_size_z_um, _time_point_duration_m)
 experiment.images.set_resolution(resolution)
 print("Discovering images...")
-tifffolder.load_images_from_folder(experiment, _images_folder, _images_format,
-                                   min_time_point=_min_time_point, max_time_point=_max_time_point)
+general_image_loader.load_images(experiment, _images_folder, _images_format,
+                                 min_time_point=_min_time_point, max_time_point=_max_time_point)
 print("Running detection...")
 _min_segmentation_distance = (_min_segmentation_distance_x, _min_segmentation_distance_y, _min_segmentation_distance_z)
 gaussian_detector_for_experiment.perform_for_experiment(experiment, threshold_block_size=_threshold_block_size,
