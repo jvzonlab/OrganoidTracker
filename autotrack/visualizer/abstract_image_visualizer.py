@@ -300,7 +300,10 @@ class AbstractImageVisualizer(Visualizer):
             time_point_str = command[1:]
             try:
                 new_time_point_number = int(time_point_str.strip())
-                self._move_to_time(new_time_point_number)
+                if not self._move_to_time(new_time_point_number):
+                    self.update_status(f"Time point {new_time_point_number} doesn't exist. Available range is "
+                                       + str(self._experiment.first_time_point_number()) + " to "
+                                       + str(self._experiment.last_time_point_number()) + ", inclusive)")
             except ValueError:
                 self.update_status("Cannot read number: " + time_point_str)
             return True
@@ -339,15 +342,14 @@ class AbstractImageVisualizer(Visualizer):
 
     def _move_to_time(self, new_time_point_number: int) -> bool:
         try:
-            self._load_time_point(TimePoint(new_time_point_number))
+            time_point = self._experiment.get_time_point(new_time_point_number)
+        except ValueError:
+            return False
+        else:
+            self._load_time_point(time_point)
             self.draw_view()
             self.update_status("Moved to time point " + str(new_time_point_number) + "!")
             return True
-        except ValueError:
-            self.update_status("Unknown time point: " + str(new_time_point_number) + " (range is "
-                               + str(self._experiment.first_time_point_number()) + " to "
-                               + str(self._experiment.last_time_point_number()) + ", inclusive)")
-            return False
 
     def _move_in_time(self, dt: int):
         self._color_map = AbstractImageVisualizer._color_map
@@ -355,11 +357,13 @@ class AbstractImageVisualizer(Visualizer):
         old_time_point_number = self._time_point.time_point_number()
         new_time_point_number = old_time_point_number + dt
         try:
-            self._load_time_point(TimePoint(new_time_point_number))
-            self.draw_view()
-            self.update_status(self.get_default_status())
+            time_point = self._experiment.get_time_point(new_time_point_number)
         except ValueError:
             pass
+        else:
+            self._load_time_point(time_point)
+            self.draw_view()
+            self.update_status(self.get_default_status())
 
     def _move_in_channel(self, dc: int):
         channels = self._experiment.images.image_loader().get_channels()
