@@ -62,6 +62,7 @@ dependencies:
   - pluggy=0.7.1=py36h28b3542_0
   - protobuf=3.6.1=py36he025d50_1001
   - py=1.6.0=py36_0
+  - py-gfm=0.1.4=py_0
   - py-opencv=3.4.1=py36h1b0d24d_3
   - pyparsing=2.2.0=py36_1
   - pyqt=5.9.2=py36h6538335_2

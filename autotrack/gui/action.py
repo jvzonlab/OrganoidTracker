@@ -193,7 +193,7 @@ def _error_message(error: Exception):
 
 
 def show_manual():
-    dialog.open_file(path.join(path.dirname(path.abspath(sys.argv[0])), "manuals", "VISUALIZER.pdf"))
+    dialog.popup_manual()
 
 
 def about_the_program():
