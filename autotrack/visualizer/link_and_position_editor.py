@@ -1,4 +1,4 @@
-from typing import Optional, List, Set, Dict
+from typing import Optional, List, Set, Dict, Iterable
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent, LocationEvent
 
@@ -6,6 +6,7 @@ from autotrack import core
 from autotrack.core import TimePoint
 from autotrack.core.connections import Connections
 from autotrack.core.experiment import Experiment
+from autotrack.core.particle import Particle
 from autotrack.core.position import Position, PositionType
 from autotrack.core.shape import ParticleShape
 from autotrack.gui import dialog
@@ -56,31 +57,47 @@ class _InsertLinkAction(UndoableAction):
 class _DeletePositionAction(UndoableAction):
     """Used to insert a position."""
 
-    position: Position
-    linked_positions: List[Position]
+    particle: Particle
 
-    def __init__(self, position: Position, linked_positions: List[Position]):
-        self.position = position
-        self.linked_positions = linked_positions
+    def __init__(self, particle: Particle):
+        self.particle = particle
 
-    def do(self, experiment: Experiment):
-        experiment.remove_position(self.position)
-        cell_error_finder.apply_on(experiment, *self.linked_positions)
-        return f"Removed {self.position}"
+    def do(self, experiment: Experiment) -> str:
+        experiment.remove_position(self.particle.position)
+        cell_error_finder.apply_on(experiment, *self.particle.links)
+        return f"Removed {self.particle.position}"
 
-    def undo(self, experiment: Experiment):
-        experiment.positions.add(self.position)
-        for linked_position in self.linked_positions:
-            experiment.links.add_link(self.position, linked_position)
-        cell_error_finder.apply_on(experiment, self.position, *self.linked_positions)
+    def undo(self, experiment: Experiment) -> str:
+        self.particle.restore(experiment)
+        cell_error_finder.apply_on(experiment, self.particle.position, *self.particle.links)
 
-        return_value = f"Added {self.position}"
-        if len(self.linked_positions) > 1:
-            return_value += " with connections to " + (" and ".join((str(p) for p in self.linked_positions)))
-        if len(self.linked_positions) == 1:
-            return_value += f" with a connection to {self.linked_positions[0]}"
+        return_value = f"Added {self.particle.position}"
+        if len(self.particle.links) > 1:
+            return_value += " with connections to " + (" and ".join((str(p) for p in self.particle.links)))
+        if len(self.particle.links) == 1:
+            return_value += f" with a connection to {self.particle.links[0]}"
 
         return return_value + "."
+
+
+class _DeletePositionsAction(UndoableAction):
+
+    _particles: List[Particle]
+
+    def __init__(self, particles: Iterable[Particle]):
+        self._particles = list(particles)
+
+    def do(self, experiment: Experiment):
+        experiment.remove_positions((particle.position for particle in self._particles))
+        for particle in self._particles:  # Check linked particles for errors
+            cell_error_finder.apply_on(experiment, *particle.links)
+        return f"Removed {len(self._particles)} positions"
+
+    def undo(self, experiment: Experiment):
+        for particle in self._particles:
+            particle.restore(experiment)
+            cell_error_finder.apply_on(experiment, particle.position, *particle.links)
+        return f"Re-added {len(self._particles)} positions"
 
 
 class _MovePositionAction(UndoableAction):
@@ -251,6 +268,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Experiment-Edit image offsets... [O]": self._show_offset_editor,
             "Edit//Batch-Delete data of time point...": self._delete_data_of_time_point,
             "Edit//Batch-Delete all tracks with errors...": self._delete_tracks_with_errors,
+            "Edit//Batch-Delete all positions in a rectangle...": self._show_positions_in_rectangle_deleter,
             "Edit//Batch-Connect positions by distance...": self._connect_positions_by_distance,
             "Edit//LineageEnd-Mark as cell death": lambda: self._try_set_end_marker(EndMarker.DEAD),
             "Edit//LineageEnd-Mark as moving out of view": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
@@ -293,8 +311,7 @@ class LinkAndPositionEditor(AbstractEditor):
         if self._selected1 is None:
             self.update_status("You need to select a cell first")
         elif self._selected2 is None:  # Delete cell and its links
-            old_links = self._experiment.links.find_links_of(self._selected1)
-            self._perform_action(_DeletePositionAction(self._selected1, list(old_links)))
+            self._perform_action(_DeletePositionAction(Particle.from_position(self._experiment, self._selected1)))
         elif self._experiment.connections.contains_connection(self._selected1, self._selected2):  # Delete a connection
             position1, position2 = self._selected1, self._selected2
             self._selected1, self._selected2 = None, None
@@ -346,26 +363,17 @@ class LinkAndPositionEditor(AbstractEditor):
         editor = LineageErrorsVisualizer(self._window, time_point=self._time_point, z=self._z)
         activate(editor)
 
+    def _show_positions_in_rectangle_deleter(self):
+        from autotrack.visualizer.position_in_rectangle_deleter import PositionsInRectangleDeleter
+        editor = PositionsInRectangleDeleter(self._window, time_point=self._time_point, z=self._z,
+                                             display_settings=self._display_settings)
+        activate(editor)
+
     def _delete_data_of_time_point(self):
         """Deletes all annotations of a given time point. Shows a confirmation prompt first."""
-        if not dialog.prompt_yes_no("Warning", "Are you sure you want to delete all annotated positions and links from"
-                                               "this time point? This cannot be undone."):
-            return
-        self._experiment.remove_data_of_time_point(self._time_point)
-        self.get_window().get_gui_experiment().undo_redo.clear()
-
-        try:
-            previous_time_point = self._experiment.get_previous_time_point(self._time_point)
-            cell_error_finder.apply_on_time_point(self._experiment, previous_time_point)
-        except ValueError:
-            pass  # Deleted the first time point, so get_previous_time_point fails
-        try:
-            next_time_point = self._experiment.get_next_time_point(self._time_point)
-            cell_error_finder.apply_on_time_point(self._experiment, next_time_point)
-        except ValueError:
-            pass  # Deleted the last time point, so get_next_time_point fails
-
-        self.get_window().redraw_data()
+        positions = self._experiment.positions.of_time_point(self._time_point)
+        particles = (Particle.from_position(self._experiment, position) for position in positions)
+        self._perform_action(_DeletePositionsAction(particles))
 
     def _delete_tracks_with_errors(self):
         """Deletes all lineages where at least a single error was present."""

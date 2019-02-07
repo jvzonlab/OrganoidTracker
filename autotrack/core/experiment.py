@@ -38,13 +38,23 @@ class Experiment:
         self._connections = Connections()
 
     def remove_position(self, position: Position):
-        """Removes both a position and its links from the experiment."""
-        self._positions.detach_position(position)
-        self._links.remove_links_of_position(position)
-        self._connections.remove_connections_of_position(position)
+        """Removes a position and its links and other data from the experiment."""
+        self.remove_positions([position])
 
-        time_point = position.time_point()
-        self.data_axes.update_for_changed_positions(time_point, self._positions.of_time_point(time_point))
+    def remove_positions(self, positions: Iterable[Position]):
+        """Removes multiple positions and their links and other data from the experiment. If you have multiple positions
+        to delete, it is more efficient to call this method than to call remove_position many times."""
+        affected_time_points = set()
+        for position in positions:
+            self._positions.detach_position(position)
+            self._links.remove_links_of_position(position)
+            self._connections.remove_connections_of_position(position)
+
+            affected_time_points.add(position.time_point())
+
+        # Update the data axes origins for all affected time points
+        for time_point in affected_time_points:
+            self.data_axes.update_for_changed_positions(time_point, self._positions.of_time_point(time_point))
 
     def move_position(self, position_old: Position, position_new: Position) -> bool:
         """Moves the position of a position, preserving any links. (So it's different from remove-and-readd.) The shape
@@ -60,14 +70,6 @@ class Experiment:
         time_point = position_new.time_point()
         self.data_axes.update_for_changed_positions(time_point, self._positions.of_time_point(time_point))
         return True
-
-    def remove_data_of_time_point(self, time_point: TimePoint):
-        """Removes the positions, links and scores of a given time point. Images are not removed, as images are not
-        stored in memory."""
-        for position in self._positions.of_time_point(time_point):
-            self._links.remove_links_of_position(position)
-        self._positions.detach_all_for_time_point(time_point)
-        self.scores.delete_for_time_point(time_point)
 
     def get_time_point(self, time_point_number: int) -> TimePoint:
         """Gets the time point with the given number. Throws ValueError if no such time point exists. This method is

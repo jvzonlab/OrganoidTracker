@@ -3,6 +3,7 @@ from typing import Optional, Dict, Iterable, List, Set, Union, Tuple, Any, Items
 
 from autotrack.core import TimePoint
 from autotrack.core.position import Position
+from autotrack.core.typing import DataType
 
 
 class LinkingTrack:
@@ -115,7 +116,7 @@ class Links:
 
     _tracks: List[LinkingTrack]
     _position_to_track: Dict[Position, LinkingTrack]
-    _position_data: Dict[str, Dict[Position, Any]]
+    _position_data: Dict[str, Dict[Position, DataType]]
 
     def __init__(self):
         self._tracks = []
@@ -297,14 +298,14 @@ class Links:
         track2._previous_tracks.append(track1)
         self._try_merge(track1, track2)
 
-    def get_position_data(self, position: Position, data_name: str) -> Union[str, int, None]:
+    def get_position_data(self, position: Position, data_name: str) -> Optional[DataType]:
         """Gets the attribute of the position with the given name. Returns None if not found."""
         data_of_positions = self._position_data.get(data_name)
         if data_of_positions is None:
             return None
         return data_of_positions.get(position)
 
-    def set_position_data(self, position: Position, data_name: str, value: Union[str, int, None]):
+    def set_position_data(self, position: Position, data_name: str, value: Optional[DataType]):
         """Adds or overwrites the given attribute for the given position. Set value to None to delete the attribute.
 
         Note: this is a low-level API. See the linking_markers module for more high-level methods, for example for how
@@ -328,16 +329,6 @@ class Links:
         else:
             # Store
             data_of_positions[position] = value
-
-    def set_track_data(self, position: Position, name: str, value: Union[str, int, None]) -> bool:
-        """Sets extra data for the whole track of the position (so from the start/last division to the end/next
-        division.) Returns False if the position is not part of a track."""
-        track = self.get_track(position)
-        if track is None:
-            return False
-        for position in track.positions():
-            self.set_position_data(position, name, value)
-        return True
 
     def find_links_of(self, position: Position) -> Iterable[Position]:
         """Gets all links of a position, both to the past and the future."""
@@ -574,7 +565,7 @@ class Links:
         """Gets all tracks, even tracks that have another track before them."""
         yield from self._tracks
 
-    def find_all_data_of_position(self, position: Position) -> Iterable[Tuple[str, Any]]:
+    def find_all_data_of_position(self, position: Position) -> Iterable[Tuple[str, DataType]]:
         """Finds all stored data of a given position."""
         for data_name, data_values in self._position_data.items():
             data_value = data_values.get(position)

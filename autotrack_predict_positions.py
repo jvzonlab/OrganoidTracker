@@ -1,6 +1,7 @@
 """Predictions particle positions using an already-trained convolutional neural network."""
 
 from autotrack.config import ConfigFile
+from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
 from autotrack.core.resolution import ImageResolution
 from autotrack.imaging import general_image_loader, io
@@ -21,7 +22,7 @@ general_image_loader.load_images(experiment, _images_folder, _images_format,
                                  min_time_point=_min_time_point, max_time_point=_max_time_point)
 try:
     experiment.images.resolution()
-except ValueError:
+except UserError:
     # Need to read resolution
     _pixel_size_x_um = float(config.get_or_default("pixel_size_x_um", str(0.32), store_in_defaults=True))
     _pixel_size_y_um = float(config.get_or_default("pixel_size_y_um", str(0.32), store_in_defaults=True))
