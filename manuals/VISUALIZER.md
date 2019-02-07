@@ -1,16 +1,12 @@
 Autotrack manual
 ================
 
-Installation
-------------
-First, install Anaconda or Miniconda. Then, open an Anaconda Prompt and run the following commands:
+* [Installation instructions](INSTALLATION.md)
+* [Scripts reference](SCRIPTS.md)
+* [Programming API](API.md)
+* [Tutorial for semi-automated tracking](AUTOMATIC_TRACKING.md)
 
-    conda env create -f environment.yml
-    activate autotrack
-
-(On macOs or Linux, run `source activate autotrack` instead of `activate autotrack`.)
-
-Then, run `python autotrack.py` to start the program.
+Welcome to the Autotrack manual! This document will tell you how to use the "visualizer", the program that displays all the images and the annotations.
 
 Navigating around
 -----------------
