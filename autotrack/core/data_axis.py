@@ -372,3 +372,13 @@ class DataAxisCollection:
                 max_time_point_number = time_point.time_point_number()
         self._min_time_point_number = min_time_point_number
         self._max_time_point_number = max_time_point_number
+
+    def update_for_changed_positions(self, time_point: TimePoint, new_positions: Iterable[Position]):
+        """If the positions of a time point have changed, this method must be called to update the zero point of all
+        axes.
+        """
+        data_axes = self._data_axes.get(time_point)
+        if data_axes is None:
+            return
+        for data_axis in data_axes:
+            data_axis.update_offset_for_positions(new_positions)

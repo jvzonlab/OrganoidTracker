@@ -43,6 +43,9 @@ class Experiment:
         self._links.remove_links_of_position(position)
         self._connections.remove_connections_of_position(position)
 
+        time_point = position.time_point()
+        self.data_axes.update_for_changed_positions(time_point, self._positions.of_time_point(time_point))
+
     def move_position(self, position_old: Position, position_new: Position) -> bool:
         """Moves the position of a position, preserving any links. (So it's different from remove-and-readd.) The shape
         of a position is not preserved, though. Throws ValueError when the position is moved to another time point. If
@@ -53,6 +56,9 @@ class Experiment:
         self._links.replace_position(position_old, position_new)
         self._connections.replace_position(position_old, position_new)
         self._positions.move_position(position_old, position_new)
+
+        time_point = position_new.time_point()
+        self.data_axes.update_for_changed_positions(time_point, self._positions.of_time_point(time_point))
         return True
 
     def remove_data_of_time_point(self, time_point: TimePoint):
