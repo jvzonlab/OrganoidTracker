@@ -2,7 +2,7 @@ from typing import List, Dict
 
 from autotrack.core.experiment import Experiment
 from autotrack.core.position import Position
-from autotrack.core.shape import ParticleShape
+from autotrack.core.shape import ParticleShape, UnknownShape
 from autotrack.core.typing import DataType
 
 
@@ -17,6 +17,17 @@ class Particle:
         shape = experiment.positions.get_shape(position)
         data = dict(experiment.links.find_all_data_of_position(position))
         return Particle(position, shape, links, data)
+
+    @staticmethod
+    def just_position(position: Position) -> "Particle":
+        """Creates a particle for a position that has no known shape, no links and no data."""
+        return Particle(position, UnknownShape(), list(), dict())
+
+    @staticmethod
+    def position_with_links(position: Position, *, links: List[Position]) -> "Particle":
+        """Creates a particle for a position that has no known shape and no data, but that has links to the given
+        positions."""
+        return Particle(position, UnknownShape(), links, dict())
 
     position: Position
     shape: ParticleShape

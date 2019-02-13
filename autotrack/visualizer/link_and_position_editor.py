@@ -29,7 +29,7 @@ class _InsertLinkAction(UndoableAction):
         previous_position = None
 
         # Add the interpolated positions
-        for position in self.all_positions:
+        for position in self.all_positions[1:-1]:
             experiment.positions.add(position)
 
         # Add links
@@ -54,7 +54,7 @@ class _InsertLinkAction(UndoableAction):
         return f"Removed link between {self.all_positions[0]} and {self.all_positions[-1]}"
 
 
-class _DeletePositionAction(UndoableAction):
+class _InsertPositionAction(UndoableAction):
     """Used to insert a position."""
 
     particle: Particle
@@ -63,11 +63,6 @@ class _DeletePositionAction(UndoableAction):
         self.particle = particle
 
     def do(self, experiment: Experiment) -> str:
-        experiment.remove_position(self.particle.position)
-        cell_error_finder.apply_on(experiment, *self.particle.links)
-        return f"Removed {self.particle.position}"
-
-    def undo(self, experiment: Experiment) -> str:
         self.particle.restore(experiment)
         cell_error_finder.apply_on(experiment, self.particle.position, *self.particle.links)
 
@@ -78,6 +73,11 @@ class _DeletePositionAction(UndoableAction):
             return_value += f" with a connection to {self.particle.links[0]}"
 
         return return_value + "."
+
+    def undo(self, experiment: Experiment) -> str:
+        experiment.remove_position(self.particle.position)
+        cell_error_finder.apply_on(experiment, *self.particle.links)
+        return f"Removed {self.particle.position}"
 
 
 class _DeletePositionsAction(UndoableAction):
@@ -311,7 +311,8 @@ class LinkAndPositionEditor(AbstractEditor):
         if self._selected1 is None:
             self.update_status("You need to select a cell first")
         elif self._selected2 is None:  # Delete cell and its links
-            self._perform_action(_DeletePositionAction(Particle.from_position(self._experiment, self._selected1)))
+            particle_to_delete = Particle.from_position(self._experiment, self._selected1)
+            self._perform_action(ReversedAction(_InsertPositionAction(particle_to_delete)))
         elif self._experiment.connections.contains_connection(self._selected1, self._selected2):  # Delete a connection
             position1, position2 = self._selected1, self._selected2
             self._selected1, self._selected2 = None, None
@@ -399,17 +400,37 @@ class LinkAndPositionEditor(AbstractEditor):
         self._perform_action(_ReplaceConnectionsAction(self._experiment.connections, connections))
 
     def _try_insert(self, event: LocationEvent):
-        if self._selected1 is None or self._selected2 is None:
-            # Insert new position
-            position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
-            if self._selected1 is not None and self._selected1.time_point() != self._time_point:
+        if self._selected1 is None:
+            # Add new position without links
+            self._selected1 = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
+            self._perform_action(_InsertPositionAction(Particle.just_position(self._selected1)))
+        elif self._selected2 is None:
+            # Insert new position with link to self._selected1
+            mouse_position = self._get_position_at(event.xdata, event.ydata)
+            is_new_position = False
+            if mouse_position is None or abs(mouse_position.time_point_number() -
+                                             self._selected1.time_point_number()) != 1:
+                # Just create a new position, position on mouse is not suitable
+                mouse_position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
+                is_new_position = True
+                if self._display_settings.show_next_time_point and self._selected1.time_point() == self._time_point:
+                    # Insert in next time point when showing two time points, and inserting in this time point wouldn't
+                    # be possible
+                    mouse_position = mouse_position.with_time_point_number(mouse_position.time_point_number() + 1)
+
+            if self._selected1.time_point() != mouse_position.time_point():
                 connection = self._selected1
-                self._selected1 = position
-                self._perform_action(_InsertLinkAction(position, connection))  # Add link to already selected position
+                self._selected1 = mouse_position
+
+                # Insert link from selected point to new point
+                if is_new_position:
+                    new_particle = Particle.position_with_links(mouse_position, links=[connection])
+                    self._perform_action(_InsertPositionAction(new_particle))
+                else:
+                    self._perform_action(_InsertLinkAction(mouse_position, connection))
             else:
-                # Add new position without links
-                self._selected1 = position
-                self._perform_action(ReversedAction(_DeletePositionAction(position, [])))
+                self.update_status("You already have a position in the same time point selected. Cannot insert a new"
+                                   "position with a link to that position.")
         elif self._selected1.time_point_number() == self._selected2.time_point_number():
             # Insert connection between two positions
             if self._experiment.connections.contains_connection(self._selected1, self._selected2):
