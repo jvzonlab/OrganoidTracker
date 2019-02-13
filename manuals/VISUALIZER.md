@@ -24,7 +24,7 @@ The links and positions editor
 ----------
 If you press `C` from the main screen, you can make changes to the data. In the editor, you can select up to two cells at once by double-clicking them. Using the Insert, Shift and Delete keys, you can insert, shift or delete cells or links. Press `C` again to exit the view.
 
-If you press the Insert key while having two cells selected, a link will be inserted between them. If you press the Insert key while having no cells selected, a new cell position will be added at your mouse position. If you press the Insert key while having only one cell selected, a new cell will be inserted with a link to the selected cell.
+If you press the Insert key while having two cells selected, a link will be inserted between them. If you press the Insert key while having no cells selected, a new cell position will be added at your mouse position. If you press the Insert key while having only one cell selected, a link will be inserted from the currently selected cell to the position where your mouse is. If there is no cell position at your mouse, a new one will be created.
 
 If you press the Delete key while having two cells selected, the link between those cells will be deleted. If you press Delete while having only a single cell selected, that cell will be delted.
 
