@@ -72,7 +72,7 @@ def _generate_deathbed_images(window: Window):
         return
 
     deathbeds = list()
-    for position in linking_markers.find_death_positions(links):
+    for position in linking_markers.find_death_and_shed_positions(links):
         before_death_list = position_connection_finder.find_previous_positions(position, links, steps_back)
 
         if before_death_list is None:

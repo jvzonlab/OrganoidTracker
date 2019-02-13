@@ -12,6 +12,7 @@ class LineageFate:
 
     divisions: int = 0  # How many divisions are there in the lineage?
     deaths: int = 0  # How many cell deaths are there in the lineage?
+    sheds: int = 0  # How many cell shedding events are there in the lineage?
     errors: int = 0  # How many warnings are still in the lineage?
     ends: int = 0  # How many lineage ends (including cell deaths) are still in the lineage?
 
@@ -41,6 +42,8 @@ def _get_sub_cell_fate(position: Position, links: Links, lineage_fate: LineageFa
                 lineage_fate.ends += 1  # Ignore lineage ends in the last time point
             if linking_markers.get_track_end_marker(links, position) == EndMarker.DEAD:
                 lineage_fate.deaths += 1
+            if linking_markers.get_track_end_marker(links, position) == EndMarker.SHED:
+                lineage_fate.sheds += 1
             return
         else:
             position = next_positions.pop()

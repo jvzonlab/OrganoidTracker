@@ -47,7 +47,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             "Edit//Experiment-Manually change data... [C]": self._show_data_editor,
             "Edit//Automatic-Cell detection...": self._show_cell_detector,
             "View//Cells-Cell divisions... [M]": self._show_mother_cells,
-            "View//Cells-Track ends and cell deaths...": self._show_dead_cells,
+            "View//Cells-Cell shedding and deaths... [S]": self._show_dead_cells,
             "View//Tracks-Track follower... [T]": self._show_track_follower,
             "View//Tracks-Movement arrows...": self._show_movement_arrows,
             "View//Tracks-Cell fates...": self._show_cell_fates,

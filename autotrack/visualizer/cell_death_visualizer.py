@@ -3,13 +3,13 @@ from typing import List, Optional
 from autotrack.core.experiment import Experiment
 from autotrack.core.position import Position
 from autotrack.gui.window import Window
-from autotrack.linking_analysis import lineage_end_finder, linking_markers
+from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.errors import Error
 from autotrack.visualizer.position_list_visualizer import PositionListVisualizer
 
 
 def _get_end_of_tracks(experiment: Experiment) -> List[Position]:
-    return list(lineage_end_finder.find_ended_tracks(experiment.links, experiment.last_time_point_number()))
+    return list(linking_markers.find_death_and_shed_positions(experiment.links))
 
 
 class CellTrackEndVisualizer(PositionListVisualizer):

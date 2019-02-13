@@ -37,7 +37,7 @@ def _draw_figure(experiment: Experiment, figure: Figure):
     axes.set_xlabel("Minutes before death")
     axes.set_ylabel("Average distance to two nearest cells (μm)")
 
-    dead_cells = list(linking_markers.find_death_positions(links))
+    dead_cells = list(linking_markers.find_death_and_shed_positions(links))
     previous_times = numpy.array(range(_STEPS_BACK + 1)) * resolution.time_point_interval_m
     all_distances = numpy.full((len(dead_cells), len(previous_times)), fill_value=numpy.nan, dtype=numpy.float32)
 

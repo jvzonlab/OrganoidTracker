@@ -271,6 +271,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Batch-Delete all positions in a rectangle...": self._show_positions_in_rectangle_deleter,
             "Edit//Batch-Connect positions by distance...": self._connect_positions_by_distance,
             "Edit//LineageEnd-Mark as cell death": lambda: self._try_set_end_marker(EndMarker.DEAD),
+            "Edit//LineageEnd-Mark as cell shedding": lambda: self._try_set_end_marker(EndMarker.SHED),
             "Edit//LineageEnd-Mark as moving out of view": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
             "Edit//LineageEnd-Remove end marker": lambda: self._try_set_end_marker(None),
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,

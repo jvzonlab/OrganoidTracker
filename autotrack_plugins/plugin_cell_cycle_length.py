@@ -73,7 +73,8 @@ class _CellFateVar(_ThirdVar):
 
         if combined_fate == CellFateType.WILL_DIVIDE:
             return 1
-        elif combined_fate == CellFateType.JUST_MOVING or combined_fate == CellFateType.WILL_DIE:
+        elif combined_fate == CellFateType.JUST_MOVING or combined_fate == CellFateType.WILL_DIE\
+                or combined_fate == CellFateType.WILL_SHED:
             return 0
         else:
             return 0.5

@@ -10,14 +10,26 @@ from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualiz
 
 
 def _lineage_fate_to_text(lineage_fate: Optional[LineageFate]):
+    # Special cases
     if lineage_fate is None or lineage_fate.errors > 0:
         return "?"
-    if lineage_fate.divisions > 0:
-        if lineage_fate.deaths > 0:
-            return f"{lineage_fate.divisions}, {lineage_fate.deaths}X"
-        return str(lineage_fate.divisions)
-    if lineage_fate.deaths > 0:
+    if lineage_fate.deaths == 1 and lineage_fate.sheds == 0 and lineage_fate.divisions == 0:
         return "X"
+    if lineage_fate.deaths == 0 and lineage_fate.sheds == 1 and lineage_fate.divisions == 0:
+        return "S"
+
+    # Normal cases
+    values = []
+    if lineage_fate.divisions > 0:
+        values.append(str(lineage_fate.divisions))
+    if lineage_fate.deaths > 0:
+        values.append(f"{lineage_fate.deaths}X")
+    if lineage_fate.sheds > 0:
+        values.append(f"{lineage_fate.sheds}S")
+    if len(values) > 0:
+        return str.join(", ", values)
+
+    # No interesting events
     if lineage_fate.ends > 0:
         return "~|"
     return "~"

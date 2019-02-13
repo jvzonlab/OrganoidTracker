@@ -11,6 +11,7 @@ from autotrack.linking_analysis.errors import Error
 class EndMarker(Enum):
     DEAD = 1
     OUT_OF_VIEW = 2
+    SHED = 3
 
     def get_display_name(self):
         """Gets a user-friendly display name."""
@@ -43,11 +44,12 @@ def set_track_end_marker(links: Links, position: Position, end_marker: Optional[
         links.set_position_data(position, "ending", end_marker.name.lower())
 
 
-def find_death_positions(links: Links) -> Iterable[Position]:
-    """Gets all positions that were marked as dead."""
+def find_death_and_shed_positions(links: Links) -> Iterable[Position]:
+    """Gets all positions that were marked as a cell death or a cell shedding event."""
     death_marker = EndMarker.DEAD.name.lower()
+    shed_marker = EndMarker.SHED.name.lower()
     for position, ending_marker in links.find_all_positions_with_data("ending"):
-        if ending_marker == death_marker:
+        if ending_marker == death_marker or ending_marker == shed_marker:
             yield position
 
 
