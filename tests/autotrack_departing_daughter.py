@@ -13,12 +13,23 @@ import numpy as np
 def get_symmetry(links, track_1, track_2):
     """Returns True if symmetric (both divide or both don't divide), False otherwise."""
     if len(track_1) == 0 or len(track_2) == 0:
-        # cells are dead
-        return 'cells are dead'
+        # cells are dead, so it's symmetric
+        return True
     elif len(track_1) == 2 or len(track_2)==2:
-        return 'cells are divided'
+        # Cells are both dividing, so it's symmetric
+        return True
     else:
-        return False
+        # One cell divides, other does not
+        end_marker1 = linking_markers.get_track_end_marker(experiment.links, track_1.find_last_position())
+        end_marker2 = linking_markers.get_track_end_marker(experiment.links, track_2.find_last_position())
+        # max_time_point_number = track_1.time_point_number() + experiment.division_lookahead_time_points
+        if end_marker1 == EndMarker.DEAD or end_marker2 == EndMarker.DEAD:
+            # Cell died, other divided, so asymmetric
+            return False
+        # One of the cells went out of the view, so we can no longer track it
+        # No idea if it's symmetric or not, but let's assume so
+        return True
+
 
 # Loading a new experiment from existing data
 experiment = io.load_data_file(
@@ -43,15 +54,7 @@ for mother in mothers:
         if get_symmetry(experiment.links, track_1, track_2):
             print('cells are symmetric')
         else:
-            end_marker = linking_markers.get_track_end_marker(experiment.links, track_1.find_last_position())
-            # max_time_point_number = track_1.time_point_number() + experiment.division_lookahead_time_points
-            if end_marker == EndMarker.DEAD:
-                # Cell died
-                print ('cell died')
-            else:
-                # Cell went out of the view
-                # if track_1.time_point_number() > max_time_point_number:
-                print ('cell moved')
+            print("cells are not symmetric")
 
         print("Track goes from time point", track_1.min_time_point_number(), track_2.min_time_point_number(), "to",
               track_1.max_time_point_number(), track_2.max_time_point_number(), "after which",
