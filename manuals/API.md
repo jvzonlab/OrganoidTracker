@@ -144,3 +144,23 @@ print("Track goes from time point", track.min_time_point_number(), "to",
 ```
 
 The `track.get_next_tracks()` method never returns only one track. It returns either zero tracks (if the lineage ended there) or two tracks (if the cell divided), representing the tracks of a daughter cell.
+
+If it returns zero tracks, then either the cell died, or it went out of the view. You can check for a cell death like this:
+
+```python
+from autotrack.core.experiment import Experiment
+from autotrack.linking_analysis import linking_markers
+from autotrack.linking_analysis.linking_markers import EndMarker
+
+experiment = Experiment()
+position = ...
+
+track = experiment.links.get_track(position)
+end_marker = linking_markers.get_track_end_marker(experiment.links, track.find_last_position())
+if end_marker == EndMarker.DEAD:
+    # Cell died
+    ...
+else:
+    # Cell went out of the view
+    ...
+```
