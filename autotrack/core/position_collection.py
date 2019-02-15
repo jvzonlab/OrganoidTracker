@@ -78,7 +78,7 @@ class PositionCollection:
         """Removes all positions for a given time point, if any."""
         if time_point.time_point_number() in self._all_positions:
             del self._all_positions[time_point.time_point_number()]
-            self._update_min_max_time_points_for_removal()
+            self._recalculate_min_max_time_points()
 
     def add(self, position: Position, shape: Optional[ParticleShape] = None):
         """Adds a position, optionally with the given shape. The position must have a time point specified."""
@@ -101,7 +101,7 @@ class PositionCollection:
         if self._max_time_point_number is None or new_time_point_number > self._max_time_point_number:
             self._max_time_point_number = new_time_point_number
 
-    def _update_min_max_time_points_for_removal(self):
+    def _recalculate_min_max_time_points(self):
         """Bookkeeping: recalculates min and max time point if a time point was removed."""
         # Reset min and max, then repopulate by readding all time points
         self._min_time_point_number = None
@@ -137,7 +137,7 @@ class PositionCollection:
             # Remove time point entirely if necessary
             if positions_at_time_point.is_empty():
                 del self._all_positions[position.time_point_number()]
-                self._update_min_max_time_points_for_removal()
+                self._recalculate_min_max_time_points()
 
     def of_time_point_with_shapes(self, time_point: TimePoint) -> Dict[Position, ParticleShape]:
         """Gets all positions and shapes of a time point. New positions must be added using self.add(...), not using
@@ -195,3 +195,5 @@ class PositionCollection:
             else:
                 # Just copy in
                 self._all_positions[time_point_number] = other_positions.copy()
+
+        self._recalculate_min_max_time_points()

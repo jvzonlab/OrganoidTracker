@@ -13,6 +13,7 @@ class CellFateType(Enum):
     JUST_MOVING = 1
     WILL_DIVIDE = 2
     WILL_DIE = 3
+    WILL_SHED = 4
 
 
 class CellFate:
@@ -33,10 +34,16 @@ def get_fate(experiment: Experiment, position: Position) -> CellFate:
 
     while True:
         next_positions = links.find_futures(position)
-        if len(next_positions) == 0 and linking_markers.get_track_end_marker(links, position) == EndMarker.DEAD:
-            # Actual cell death
-            time_points_remaining = position.time_point_number() - starting_position.time_point_number()
-            return CellFate(CellFateType.WILL_DIE, time_points_remaining)
+        if len(next_positions) == 0:
+            marker = linking_markers.get_track_end_marker(links, position)
+            if marker == EndMarker.DEAD:
+                # Actual cell death
+                time_points_remaining = position.time_point_number() - starting_position.time_point_number()
+                return CellFate(CellFateType.WILL_DIE, time_points_remaining)
+            elif marker == EndMarker.SHED:
+                # Cell shedding
+                time_points_remaining = position.time_point_number() - starting_position.time_point_number()
+                return CellFate(CellFateType.WILL_SHED, time_points_remaining)
 
         if len(next_positions) == 0 or linking_markers.get_error_marker(links, position) is not None:
             # Stop following the cell: it has an error, or it moved out of view

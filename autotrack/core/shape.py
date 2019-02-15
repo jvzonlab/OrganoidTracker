@@ -195,7 +195,8 @@ class GaussianShape(ParticleShape):
 
     def ellipse(self) -> Ellipse:
         ellipse = self._gaussian.to_ellipse()
-        if max(ellipse.width, ellipse.height) / min(ellipse.width, ellipse.height) > 1000:
+        if max(ellipse.width, ellipse.height) / min(ellipse.width, ellipse.height) > 1000 or ellipse.height > 10000\
+                or ellipse.width > 10000:
             return super().ellipse()  # Cannot draw this ellipse
         return ellipse
 

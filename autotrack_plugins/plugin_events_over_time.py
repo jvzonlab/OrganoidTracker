@@ -27,7 +27,7 @@ def _view_births_and_deaths(window: Window):
         cumulative_births[cell_division.time_point_number():] += 1  # Add 1 to all time points after the cell division
 
     cumulative_deaths = numpy.zeros(experiment.last_time_point_number(), dtype=numpy.int32)  # Initialize array
-    for cell_death in linking_markers.find_death_positions(experiment.links):  # Iterate over all cell deaths
+    for cell_death in linking_markers.find_death_and_shed_positions(experiment.links):  # Iterate over all cell deaths
         cumulative_deaths[cell_death.time_point_number():] += 1  # Add 1 to all time points after the cell death
 
     dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_figure(figure, cumulative_births, cumulative_deaths))

@@ -233,3 +233,9 @@ def open_file(filepath: str):
         _os.startfile(filepath)
     elif _os.name == 'posix':
         _subprocess.call(('xdg-open', filepath))
+
+
+def popup_manual():
+    """Shows the manual of the program."""
+    from autotrack.gui import help_dialog
+    help_dialog.show_help(_window())

@@ -11,7 +11,7 @@ def find_undetected_positions(labeled_image: ndarray, positions: Iterable[Positi
     used_ids = dict()
     found_errors = dict()
     for position in positions:
-        image_position = position.subtract_pos(image_offset)
+        image_position = position - image_offset
         try:
             id = labeled_image[int(image_position.z), int(image_position.y), int(image_position.x)]
             if id == 0:

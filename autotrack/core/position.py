@@ -1,5 +1,5 @@
 import math
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union, List
 
 from autotrack.core import TimePoint
 from autotrack.core.resolution import ImageResolution
@@ -77,10 +77,12 @@ class Position:
         """Returns True if the X, Y and Z are exactly zero. Time is ignored."""
         return self.x == 0 and self.y == 0 and self.z == 0
 
-    def subtract_pos(self, other: "Position") -> "Position":
+    def __sub__(self, other: "Position") -> "Position":
         """Returns a new position (without a time specified) that is the difference between this position and the other
         position. The time point of the other position is ignored, the time point of the new position will be equal to
         the time point of this position."""
+        if not isinstance(other, Position):
+            return NotImplemented
         return Position(self.x - other.x, self.y - other.y, self.z - other.z, time_point_number=self._time_point_number)
 
     def check_time_point(self, time_point: TimePoint):
@@ -90,13 +92,31 @@ class Position:
             raise ValueError(f"Time points don't match: self is in {self._time_point_number}, other in"
                              f" {time_point.time_point_number()}")
 
-    def add_pos(self, other: "Position") -> "Position":
+    def __add__(self, other: "Position") -> "Position":
         """Returns a new position (without a time specified) that is the sum of this position and the other position.
         The time point of the other position is ignored, the time point of the new position will be equal to the time
         point of this position."""
+        if not isinstance(other, Position):
+            return NotImplemented
         if other.x == 0 and other.y == 0 and other.z == 0:
             return self  # No need to add anything
         return Position(self.x + other.x, self.y + other.y, self.z + other.z, time_point_number=self._time_point_number)
+
+    def __mul__(self, other: float) -> "Position":
+        """Scalar multiplication. The time point number is unaffected."""
+        if not isinstance(other, float) and not isinstance(other, int):
+            return NotImplemented
+        if other == 1:
+            return self
+        return Position(self.x * other, self.y * other, self.z * other, time_point_number=self._time_point_number)
+
+    def __truediv__(self, other) -> "Position":
+        """Scalar division. The time point number is unaffected."""
+        if not isinstance(other, float) and not isinstance(other, int):
+            return NotImplemented
+        if other == 1:
+            return self
+        return Position(self.x / other, self.y / other, self.z / other, time_point_number=self._time_point_number)
 
     def with_time_point(self, time_point: Optional[TimePoint]) -> "Position":
         """Returns a copy of this position with the time point set to the given position."""
@@ -106,6 +126,30 @@ class Position:
         """Returns a copy of this position with the time point set to the given position."""
         return Position(self.x, self.y, self.z, time_point_number=time_point_number)
 
+    def interpolate(self, to_pos: "Position") -> List["Position"]:
+        """Gets a time-interpolated list of positions. If you have positions A and B, with one time point in between,
+        then a list will be returned of three elements: [A, I, B], with I an interpolated position. If there are two
+        time points in between, then a list of four elements will be returned, and so on.
+
+        If there are no time points in between the two positions, then the two positions are simply returned. If both
+        positions are in the same time point, then this method will raise ValueError. The returned list will always
+        start with the earliest position first."""
+        from_pos = self
+        if to_pos.time_point_number() < from_pos.time_point_number():
+            to_pos, from_pos = from_pos, to_pos
+        delta_time = to_pos.time_point_number() - from_pos.time_point_number()
+        if delta_time == 1:
+            return [from_pos, to_pos]
+        if delta_time == 0:
+            raise ValueError(f"The {self} is at the same time point as {to_pos}")
+
+        return_list = [from_pos]
+        for i in range(1, delta_time):
+            fraction = i / delta_time
+            position = to_pos * fraction + from_pos * (1 - fraction)
+            return_list.append(position.with_time_point_number(from_pos.time_point_number() + i))
+        return_list.append(to_pos)
+        return return_list
 
 class PositionType:
     """Used to represent the type of a position. Is it a biological cell? And of what type? Or does it mark something

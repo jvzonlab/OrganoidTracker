@@ -10,8 +10,27 @@ from autotrack.core.resolution import ImageResolution
 from autotrack.imaging import lif
 
 
-def load_from_lif_file(images: Images, file: str, reader: lif.Reader, serie_index: int):
-    images.image_loader(_LifImageLoader(file, reader, serie_index))
+def load_from_lif_file(images: Images, file: str, series_name: str, min_time_point: int = 0,
+                         max_time_point: int = 1000000000):
+    """Sets up the experimental images for a LIF file that is not yet opened."""
+    reader = lif.Reader(file)
+
+    # Find index of series
+    series_index = None
+    for index, header in enumerate(reader.getSeriesHeaders()):
+        if header.getName() == series_name:
+            series_index = index
+    if series_index is None:
+        raise ValueError("No series matched the given name. Available names: "
+                         + str([header.getName() for header in reader.getSeriesHeaders()]))
+
+    load_from_lif_reader(images, file, reader, series_index, min_time_point, max_time_point)
+
+
+def load_from_lif_reader(images: Images, file: str, reader: lif.Reader, serie_index: int, min_time_point: int = 0,
+                         max_time_point: int = 1000000000):
+    """Sets up the experimental images for an already opened LIF file."""
+    images.image_loader(_LifImageLoader(file, reader, serie_index, min_time_point, max_time_point))
     serie_header = reader.getSeriesHeaders()[serie_index]
     dimensions: List[Element] = serie_header.getDimensions()
     images.set_resolution(_dimensions_to_resolution(dimensions))
@@ -69,8 +88,7 @@ class _LifImageLoader(ImageLoader):
 
     _channels: List[_IndexedChannel]
 
-    def __init__(self, file: str, reader: lif.Reader, serie_index: int, min_time_point: int = 0,
-                 max_time_point: int = 1000000000):
+    def __init__(self, file: str, reader: lif.Reader, serie_index: int, min_time_point: int, max_time_point: int):
         self._file = file
         self._serie = reader.getSeries()[serie_index]
         self._channels = [_IndexedChannel(i) for i, channel in enumerate(self._serie.getChannels())]
@@ -110,8 +128,8 @@ class _LifImageLoader(ImageLoader):
         x_size = dimensions[0].getAttribute("NumberOfElements")
         y_size = dimensions[1].getAttribute("NumberOfElements")
         z_size = dimensions[2].getAttribute("NumberOfElements")
-        return z_size, y_size, x_size
+        return int(z_size), int(y_size), int(x_size)
 
-    def copy(self) -> "LifImageLoader":
+    def copy(self) -> "_LifImageLoader":
         return _LifImageLoader(self._file, lif.Reader(self._file), self._serie_index, self._min_time_point_number,
                                self._max_time_point_number)

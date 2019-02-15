@@ -83,7 +83,8 @@ class _Bin:
         return self._dividing_count + self._nondividing_count + self._unknown_count
 
     def add_data_point(self, cell_fate: CellFateType):
-        if cell_fate == CellFateType.JUST_MOVING or cell_fate == CellFateType.WILL_DIE:
+        if cell_fate == CellFateType.JUST_MOVING or cell_fate == CellFateType.WILL_DIE\
+                or cell_fate == CellFateType.WILL_SHED:
             self._nondividing_count += 1
         elif cell_fate == CellFateType.WILL_DIVIDE:
             self._dividing_count += 1

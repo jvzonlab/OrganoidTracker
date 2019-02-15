@@ -73,7 +73,7 @@ class _SetCheckpointAction(UndoableAction):
 class DataAxisEditor(AbstractEditor):
     """Editor for data axes. Double-click to (de)select a path.
     Draw the data axis by adding points using the Insert key. Use Delete to delete a data axis.
-    Add a checkpoint to a path using the . (point) key.
+    Add a checkpoint to a path using the X key.
     Press C to copy a selected path from another time point to this time point.
     Press P to view the position of each cell on the nearest data axis. Positions after the checkpoint are marked with a star."""
 
@@ -91,8 +91,8 @@ class DataAxisEditor(AbstractEditor):
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
             **super().get_extra_menu_options(),
-            "View//Toggle-Toggle showing data axis positions": self._toggle_viewing_axis_positions,
-            "Edit//Copy-Copy axis to this time point (C)": self._copy_axis_to_current_time_point,
+            "View//Toggle-Toggle showing data axis positions [P]": self._toggle_viewing_axis_positions,
+            "Edit//Copy-Copy axis to this time point [C]": self._copy_axis_to_current_time_point,
         }
 
     def _toggle_viewing_axis_positions(self):
@@ -181,11 +181,7 @@ class DataAxisEditor(AbstractEditor):
             else:
                 self._select_path(None)
                 self._perform_action(ReversedAction(_AddPathAction(selected_path, self._time_point)))
-        elif event.key == "c":
-            self._copy_axis_to_current_time_point()
-        elif event.key == "p":
-            self._toggle_viewing_axis_positions()
-        elif event.key == ".":
+        elif event.key == "x":
             self._set_checkpoint(event.xdata, event.ydata)
         else:
             super()._on_key_press(event)

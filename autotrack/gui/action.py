@@ -81,7 +81,7 @@ def load_images(window: Window):
         series = [header.getName() for header in reader.getSeriesHeaders()]
         serie_index = option_choose_dialog.popup_image_getter("Choose an image serie", "Choose an image serie", "Image serie:", series)
         if serie_index is not None:
-            liffile.load_from_lif_file(window.get_experiment().images, full_path, reader, serie_index)
+            liffile.load_from_lif_reader(window.get_experiment().images, full_path, reader, serie_index)
             window.redraw_all()
         return
 
@@ -193,7 +193,7 @@ def _error_message(error: Exception):
 
 
 def show_manual():
-    dialog.open_file(path.join(path.dirname(path.abspath(sys.argv[0])), "manuals", "VISUALIZER.pdf"))
+    dialog.popup_manual()
 
 
 def about_the_program():

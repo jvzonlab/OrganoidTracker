@@ -60,9 +60,10 @@ def get_error(links: Links, position: Position, scores: ScoreCollection, positio
                 return Error.SHRUNK_A_LOT
 
         # Check movement distance (fast movement is only allowed when a cell is launched into its death)
-        if past_position.distance_um(position, resolution) > 10 and \
-                linking_markers.get_track_end_marker(links, position) != EndMarker.DEAD:
-            return Error.MOVED_TOO_FAST
+        if past_position.distance_um(position, resolution) > 10:
+            end_marker = linking_markers.get_track_end_marker(links, position)
+            if end_marker != EndMarker.DEAD and end_marker != EndMarker.SHED:
+                return Error.MOVED_TOO_FAST
     return None
 
 

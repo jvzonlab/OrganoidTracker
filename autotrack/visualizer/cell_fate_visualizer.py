@@ -12,6 +12,8 @@ def _cell_fate_to_text(cell_fate: CellFate):
         return "~"
     if cell_fate.type == CellFateType.WILL_DIE:
         return "X in " + str(cell_fate.time_points_remaining)
+    if cell_fate.type == CellFateType.WILL_SHED:
+        return "S in " + str(cell_fate.time_points_remaining)
     if cell_fate.type == CellFateType.WILL_DIVIDE:
         return "Div in " + str(cell_fate.time_points_remaining)
     return "?"
@@ -20,8 +22,10 @@ def _cell_fate_to_text(cell_fate: CellFate):
 def _cell_fate_to_color(cell_fate: CellFate):
     if cell_fate.type == CellFateType.WILL_DIVIDE:
         return "green"
-    if cell_fate.type == CellFateType.WILL_DIE:
+    if cell_fate.type == CellFateType.WILL_SHED:
         return "blue"
+    if cell_fate.type == CellFateType.WILL_DIE:
+        return "red"
     return "black"
 
 

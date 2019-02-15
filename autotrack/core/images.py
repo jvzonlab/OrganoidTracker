@@ -1,4 +1,4 @@
-from typing import Dict, Optional, List, Tuple
+from typing import Dict, Optional, List, Tuple, Iterable
 
 import numpy
 from numpy import ndarray
@@ -83,7 +83,7 @@ class ImageOffsets:
         offset = Position(dx, dy, dz)
         for time_point_number in range(min_time_point, max_time_point + 1):
             current_offset = self._offset.get(time_point_number, _ZERO)
-            self._offset[time_point_number] = current_offset.add_pos(offset)
+            self._offset[time_point_number] = current_offset + offset
 
     def to_list(self) -> List[Position]:
         """Exports this offset list as a list of offsets with time points specified."""
@@ -204,7 +204,7 @@ class Images:
         image_size_zyx = self._image_loader.get_image_size_zyx()
         if image_size_zyx is None:
             return None
-        image_position = position.subtract_pos(self._offsets.of_time_point(position.time_point()))
+        image_position = position - self._offsets.of_time_point(position.time_point())
         if image_position.x < margin_xy or image_position.x >= image_size_zyx[2] - margin_xy:
             return False
         if image_position.y < margin_xy or image_position.y >= image_size_zyx[1] - margin_xy:
@@ -249,3 +249,12 @@ class Images:
         copy._resolution = self._resolution  # No copy, as this object is immutable
         copy._offsets = self._offsets.copy()
         return copy
+
+    def time_points(self) -> Iterable[TimePoint]:
+        """Gets all time points for which images are available."""
+        min_time_point_number = self._image_loader.first_time_point_number()
+        max_time_point_number = self._image_loader.last_time_point_number()
+        if min_time_point_number is None or max_time_point_number is None:
+            return
+        for time_point_number in range(min_time_point_number, max_time_point_number + 1):
+            yield TimePoint(time_point_number)

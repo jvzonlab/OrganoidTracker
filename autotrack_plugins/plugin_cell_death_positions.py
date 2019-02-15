@@ -23,7 +23,7 @@ def _view_cell_death_locations(window: Window):
     if not data_axes.has_axes():
         raise UserError("Dead cells", "No crypt axes where found. Cannot determine positions of dead cells.")
 
-    dead_cells = linking_markers.find_death_positions(experiment.links)
+    dead_cells = linking_markers.find_death_and_shed_positions(experiment.links)
     crypt_positions = dict()
     for dead_cell in dead_cells:
         crypt_position = data_axes.to_position_on_original_axis(experiment.links, dead_cell)

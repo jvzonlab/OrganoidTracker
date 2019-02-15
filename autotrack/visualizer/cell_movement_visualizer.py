@@ -9,6 +9,9 @@ from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualiz
 class CellMovementVisualizer(ExitableImageVisualizer):
     """Shows how each cell move during the experiment using arrows."""
 
+    def _draw_links(self):
+        pass  # Don't draw links
+
     def _draw_position(self, position: Position, color: str, dz: int, dt: int):
         if abs(dz) > self.MAX_Z_DISTANCE or dt != 0:
             return

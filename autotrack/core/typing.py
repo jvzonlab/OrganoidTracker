@@ -6,3 +6,11 @@ MPLColor = Union[
     str,
     float
 ]
+
+# Types that are used as metadata for positions. They can safely be stored.
+DataType = Union[
+    float,
+    int,
+    str,
+    bool
+]

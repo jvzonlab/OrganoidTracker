@@ -10,22 +10,34 @@ from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualiz
 
 
 def _lineage_fate_to_text(lineage_fate: Optional[LineageFate]):
+    # Special cases
     if lineage_fate is None or lineage_fate.errors > 0:
         return "?"
-    if lineage_fate.divisions > 0:
-        if lineage_fate.deaths > 0:
-            return f"{lineage_fate.divisions}, {lineage_fate.deaths}X"
-        return str(lineage_fate.divisions)
-    if lineage_fate.deaths > 0:
+    if lineage_fate.deaths == 1 and lineage_fate.sheds == 0 and lineage_fate.divisions == 0:
         return "X"
+    if lineage_fate.deaths == 0 and lineage_fate.sheds == 1 and lineage_fate.divisions == 0:
+        return "S"
+
+    # Normal cases
+    values = []
+    if lineage_fate.divisions > 0:
+        values.append(str(lineage_fate.divisions))
+    if lineage_fate.deaths > 0:
+        values.append(f"{lineage_fate.deaths}X")
+    if lineage_fate.sheds > 0:
+        values.append(f"{lineage_fate.sheds}S")
+    if len(values) > 0:
+        return str.join(", ", values)
+
+    # No interesting events
     if lineage_fate.ends > 0:
         return "~|"
     return "~"
 
 
 class LineageFateVisualizer(ExitableImageVisualizer):
-    """Shows how each cell will develop during the experiment. Note: time points past the current time point are not
-    included. Legend:
+    """Shows how each cell will develop during the experiment. Colors represent the final position on the data axis.
+    Label legend:
     ?   no reliable linking data available.
     X   cell died,   ~|   lineage ended for some other reason.
     4   cell divided four times. "4, 1X" means cell divided four times, one offspring cell died."
@@ -50,7 +62,7 @@ class LineageFateVisualizer(ExitableImageVisualizer):
 
         positions = self._experiment.positions.of_time_point(time_point)
         links = self._experiment.links
-        last_time_point_number = self._experiment.last_time_point_number()
+        last_time_point_number = self._experiment.positions.last_time_point_number()
         result = dict()
         for position in positions:
             result[position] = lineage_fate_finder.get_lineage_fate(position, links, last_time_point_number)

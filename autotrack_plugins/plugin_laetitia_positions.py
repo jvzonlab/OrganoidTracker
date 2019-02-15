@@ -104,7 +104,7 @@ def _import_file(experiment: Experiment, directory: str, file_name: str, z_offse
     # Add new cells to the time point
     for row in range(len(coords)):
         position = Position(coords[row, 2], coords[row, 1], (coords[row, 0] / Z_OVERSCALED) + z_offset,
-                            time_point=time_point).add_pos(image_offset)
+                            time_point=time_point) + image_offset
 
         experiment.positions.add(position)
 
@@ -116,7 +116,7 @@ def _export_file(positions: AbstractSet[Position], image_offset: Position, file_
 
     row = 0
     for position in positions:
-        position_in_image = position.subtract_pos(image_offset)
+        position_in_image = position - image_offset
         array[row, 2] = round(position_in_image.x)
         array[row, 1] = round(position_in_image.y)
         array[row, 0] = round((position_in_image.z - z_offset) * Z_OVERSCALED)

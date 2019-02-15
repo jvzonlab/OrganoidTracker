@@ -302,6 +302,8 @@ class DataAxisCollection:
         every position is assigned to a single axis, and will never switch to another axis during its lifetime."""
         first_position = links.get_first_position_of(position)
         first_axis_position = self._to_position_on_axis(first_position)
+        if first_axis_position is None:
+            return None
         for axis_id, axis in self.of_time_point(position.time_point()):
             if axis_id == first_axis_position.axis_id:
                 position = axis.to_position_on_axis(position)
@@ -370,3 +372,13 @@ class DataAxisCollection:
                 max_time_point_number = time_point.time_point_number()
         self._min_time_point_number = min_time_point_number
         self._max_time_point_number = max_time_point_number
+
+    def update_for_changed_positions(self, time_point: TimePoint, new_positions: Iterable[Position]):
+        """If the positions of a time point have changed, this method must be called to update the zero point of all
+        axes.
+        """
+        data_axes = self._data_axes.get(time_point)
+        if data_axes is None:
+            return
+        for data_axis in data_axes:
+            data_axis.update_offset_for_positions(new_positions)

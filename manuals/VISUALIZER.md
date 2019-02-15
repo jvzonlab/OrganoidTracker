@@ -1,16 +1,12 @@
 Autotrack manual
 ================
 
-Installation
-------------
-First, install Anaconda or Miniconda. Then, open an Anaconda Prompt and run the following commands:
+* [Installation instructions](INSTALLATION.md)
+* [Scripts reference](SCRIPTS.md)
+* [Programming API](API.md)
+* [Tutorial for semi-automated tracking](AUTOMATIC_TRACKING.md)
 
-    conda env create -f environment.yml
-    activate autotrack
-
-(On macOs or Linux, run `source activate autotrack` instead of `activate autotrack`.)
-
-Then, run `python autotrack.py` to start the program.
+Welcome to the Autotrack manual! This document will tell you how to use the "visualizer", the program that displays all the images and the annotations.
 
 Navigating around
 -----------------
@@ -28,7 +24,7 @@ The links and positions editor
 ----------
 If you press `C` from the main screen, you can make changes to the data. In the editor, you can select up to two cells at once by double-clicking them. Using the Insert, Shift and Delete keys, you can insert, shift or delete cells or links. Press `C` again to exit the view.
 
-If you press the Insert key while having two cells selected, a link will be inserted between them. If you press the Insert key while having no cells selected, a new cell position will be added at your mouse position. If you press the Insert key while having only one cell selected, a new cell will be inserted with a link to the selected cell.
+If you press the Insert key while having two cells selected, a link will be inserted between them. If you press the Insert key while having no cells selected, a new cell position will be added at your mouse position. If you press the Insert key while having only one cell selected, a link will be inserted from the currently selected cell to the position where your mouse is. If there is no cell position at your mouse, a new one will be created.
 
 If you press the Delete key while having two cells selected, the link between those cells will be deleted. If you press Delete while having only a single cell selected, that cell will be delted.
 
@@ -60,13 +56,13 @@ from autotrack.gui import dialog
 
 def get_menu_items(window):
     return {
-        "Tools//Messages-Show Hello World...":
+        "Tools//Messages-Show Hello World... [Ctrl+W]":
             lambda: dialog.popup_message("My Title", "Hello World!"),
         "Tools//Messages-Show other message...":
             lambda: dialog.popup_message("My Title", "Nice weather, isn't it?")
     }
 ```
 
-The `get_menu_items` function is automatically called. It is used here to add some custom menu options. The options are shown in the "Tools" menu, in the "Messages" category. (The name of the category is never shown, but menu options in the same category will always appear next to each other.)
+The `get_menu_items` function is automatically called. It is used here to add some custom menu options. The options are shown in the "Tools" menu, in the "Messages" category. (The name of the category is never shown, but menu options in the same category will always appear next to each other.) Ctrl+W is the shortcut for the menu option.
 
 You can call any method in the Python standard library, the Autotrack API (see API.md) and its dependencies. There is no sandbox implemented. You can access the currently loaded experiment using `window.get_experiment()`. o show a matplotlib figure, use `dialog.popup_figure(..)`.
