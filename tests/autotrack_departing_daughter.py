@@ -3,14 +3,22 @@ import math
 from autotrack.imaging import io
 from autotrack.linking import cell_division_finder
 from autotrack.core.experiment import Experiment
+from autotrack.linking_analysis import linking_markers
+from autotrack.linking_analysis.linking_markers import EndMarker
 from autotrack.core import TimePoint
 import matplotlib.pyplot as plt
 import numpy as np
 
-def is_symmmetric(links, track1, track2):
-    """Returns True if symmetric (both divide or both don't divide), False otherwise."""
-    ...
 
+def get_symmetry(links, track_1, track_2):
+    """Returns True if symmetric (both divide or both don't divide), False otherwise."""
+    if len(track_1) == 0 or len(track_2) == 0:
+        # cells are dead
+        return 'cells are dead'
+    elif len(track_1) == 2 or len(track_2)==2:
+        return 'cells are divided'
+    else:
+        return False
 
 # Loading a new experiment from existing data
 experiment = io.load_data_file(
@@ -32,9 +40,18 @@ for mother in mothers:
     if distance_sqrt < 35:
         track_1 = experiment.links.get_track(daughter1)
         track_2 = experiment.links.get_track(daughter2)
-        if is_symmmetric(experiment.links, track_1, track_2):
-            ...
+        if get_symmetry(experiment.links, track_1, track_2):
+            print('cells are symmetric')
         else:
+            end_marker = linking_markers.get_track_end_marker(experiment.links, track_1.find_last_position())
+            # max_time_point_number = track_1.time_point_number() + experiment.division_lookahead_time_points
+            if end_marker == EndMarker.DEAD:
+                # Cell died
+                print ('cell died')
+            else:
+                # Cell went out of the view
+                # if track_1.time_point_number() > max_time_point_number:
+                print ('cell moved')
 
         print("Track goes from time point", track_1.min_time_point_number(), track_2.min_time_point_number(), "to",
               track_1.max_time_point_number(), track_2.max_time_point_number(), "after which",
