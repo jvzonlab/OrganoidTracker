@@ -7,6 +7,11 @@ from autotrack.core import TimePoint
 import matplotlib.pyplot as plt
 import numpy as np
 
+def is_symmmetric(links, track1, track2):
+    """Returns True if symmetric (both divide or both don't divide), False otherwise."""
+    ...
+
+
 # Loading a new experiment from existing data
 experiment = io.load_data_file(
     "S:/AMOLF/groups/zon-group/guizela/multiphoton/organoids/17-07-28_weekend_H2B-mCherry/nd799xy20-stacks/Automatic analysis/31-1_correctdata.aut")
@@ -27,6 +32,10 @@ for mother in mothers:
     if distance_sqrt < 35:
         track_1 = experiment.links.get_track(daughter1)
         track_2 = experiment.links.get_track(daughter2)
+        if is_symmmetric(experiment.links, track_1, track_2):
+            ...
+        else:
+
         print("Track goes from time point", track_1.min_time_point_number(), track_2.min_time_point_number(), "to",
               track_1.max_time_point_number(), track_2.max_time_point_number(), "after which",
               len(track_1.get_next_tracks()), len(track_2.get_next_tracks()),
