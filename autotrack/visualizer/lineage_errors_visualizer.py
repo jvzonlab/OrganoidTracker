@@ -61,11 +61,11 @@ class LineageErrorsVisualizer(ExitableImageVisualizer):
                 verified_lineages.add(position)
         self._verified_lineages = verified_lineages
 
-    def _draw_position(self, position: Position, color: str, dz: int, dt: int) -> int:
+    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int) -> int:
         if dt != 0 or abs(dz) > 3:
-            return super()._draw_position(position, color, dz, dt)
+            return super()._on_position_draw(position, color, dz, dt)
 
         verified = position in self._verified_lineages
         color = color if verified else "gray"
         self._draw_selection(position, color)
-        return super()._draw_position(position, color, dz, dt)
+        return super()._on_position_draw(position, color, dz, dt)

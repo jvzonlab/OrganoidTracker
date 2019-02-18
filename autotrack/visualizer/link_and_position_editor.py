@@ -239,8 +239,7 @@ class LinkAndPositionEditor(AbstractEditor):
             color = core.COLOR_CELL_PREVIOUS
         elif position.time_point_number() > self._time_point.time_point_number():
             color = core.COLOR_CELL_NEXT
-        self._ax.plot(position.x, position.y, 'o', markersize=25, color=(0,0,0,0), markeredgecolor=color,
-                      markeredgewidth=5)
+        self._draw_selection(position, color)
 
     def _on_mouse_click(self, event: MouseEvent):
         if not event.dblclick:

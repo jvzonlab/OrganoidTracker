@@ -119,10 +119,10 @@ class TrackVisualizer(ExitableImageVisualizer):
         super().__init__(window, time_point=time_point, z=z, display_settings=display_settings)
         self._selected_lineages = list()
 
-    def _draw_position(self, position: Position, color: str, dz: int, dt: int):
+    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int):
         if abs(dz) > 3 or len(self._selected_lineages) == 0:
             # Draw normally
-            super()._draw_position(position, color, dz, dt)
+            super()._on_position_draw(position, color, dz, dt)
             return
 
         for i, lineage in enumerate(self._selected_lineages):
@@ -134,14 +134,14 @@ class TrackVisualizer(ExitableImageVisualizer):
                 # There are multiple tracks show
                 self._draw_annotation(position, str(i + 1))
             else:
-                super()._draw_position(position, color, dz, dt)  # Draw normally
+                super()._on_position_draw(position, color, dz, dt)  # Draw normally
 
             # Mark as selected
             self._draw_selection(position, color)
             return
 
         # Didn't draw any selection marker, so draw normally
-        super()._draw_position(position, color, dz, dt)
+        super()._on_position_draw(position, color, dz, dt)
 
     def _get_figure_title(self):
         return f"Tracks at time point {self._time_point.time_point_number()} (z={self._z})"

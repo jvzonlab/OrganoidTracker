@@ -124,8 +124,12 @@ class AbstractImageVisualizer(Visualizer):
 
         Note: this method will draw the selection marker even if the given position is in another time point, or even on
         a completely different z layer. So only call this method if you want to have a marker visible."""
-        self._ax.plot(position.x, position.y, 'o', markersize=25, color=(0, 0, 0, 0), markeredgecolor=color,
-                      markeredgewidth=5)
+        dz = self._z - round(position.z)
+        time_point_number = position.time_point_number()
+        dt = 0 if time_point_number is None else self._time_point.time_point_number() - time_point_number
+        self._ax.plot(position.x, position.y, 'o', markersize=25, color=(0, 0, 0, 0), markeredgecolor=color, markeredgewidth=5)
+        self._experiment.positions.get_shape(position).draw2d(
+            position.x, position.y, dz, dt, self._ax, color, "black")
 
     def _draw_annotation(self, position: Position, text: str, *, text_color: MPLColor = "black",
                          background_color: MPLColor = (1, 1, 1, 0.8)):
@@ -168,37 +172,54 @@ class AbstractImageVisualizer(Visualizer):
         self._draw_positions_of_time_point(self._time_point)
 
     def _draw_positions_of_time_point(self, time_point: TimePoint, color: str = core.COLOR_CELL_CURRENT):
+        links = self._experiment.links
         dt = time_point.time_point_number() - self._time_point.time_point_number()
+
+        circles_x_list, circles_y_list, circles_edge_colors, circles_marker_sizes = list(), list(), list(), list()
+        crosses_x_list, crosses_y_list = list(), list()
+        squares_x_list, squares_y_list, squares_edge_colors = list(), list(), list()
+        square_marker_size = max(1, 7 - abs(dt)) ** 2
+
         for position in self._experiment.positions.of_time_point(time_point):
             dz = self._z - round(position.z)
+            if abs(dz) > self.MAX_Z_DISTANCE:
+                continue
 
-            # Draw the position itself (as a square or circle, depending on its depth)
-            self._draw_position(position, color, dz, dt)
+            # Draw the position, making it selectable
+            self._on_position_draw(position, color, dz, dt)
 
-    def _draw_position(self, position: Position, color: str, dz: int, dt: int):
-        links = self._experiment.links
-
-        if abs(dz) <= self.MAX_Z_DISTANCE:
-            # Draw error marker
+            # Add error marker
             if linking_markers.get_error_marker(links, position) is not None:
-                self._draw_error(position, dz)
+                crosses_x_list.append(position.x)
+                crosses_y_list.append(position.y)
 
-            # Make position selectable
-            self.__positions_near_visible_layer.append(position)
+            # Add marker
+            position_type = self.get_window().get_gui_experiment().get_position_type(
+                linking_markers.get_position_type(links, position))
+            edge_color = "black" if position_type is None else position_type.mpl_color
+            if dz != 0:
+                # Draw position as circle
+                circles_x_list.append(position.x)
+                circles_y_list.append(position.y)
+                circles_edge_colors.append(edge_color)
+                circles_marker_sizes.append(max(1, 7 - abs(dz) - abs(dt)) ** 2)
+            else:
+                # Draw position as square
+                squares_x_list.append(position.x)
+                squares_y_list.append(position.y)
+                squares_edge_colors.append(edge_color)
 
-        # Draw position
-        position_type = self.get_window().get_gui_experiment().get_position_type(
-            linking_markers.get_position_type(links, position))
-        edge_color = "black" if position_type is None else position_type.mpl_color
-        if self._display_settings.show_reconstruction:  # Showing a 3D reconstruction, so don't display a 2D one too
-            shape.draw_marker_2d(position.x, position.y, dz, dt, self._ax, color, edge_color)
-        else:
-            self._experiment.positions.get_shape(position).draw2d(
-                position.x, position.y, dz, dt, self._ax, color, edge_color)
+        self._ax.scatter(crosses_x_list, crosses_y_list, marker='X', facecolor='black', edgecolors="white",
+                         s=17**2, linewidths=2)
+        self._ax.scatter(circles_x_list, circles_y_list, s=circles_marker_sizes, facecolor=color,
+                         edgecolors=circles_edge_colors, linewidths=1, marker="o")
+        self._ax.scatter(squares_x_list, squares_y_list, s=square_marker_size, facecolor=color,
+                         edgecolors=squares_edge_colors, linewidths=1, marker="s")
 
-    def _draw_error(self, position: Position, dz: int):
-        self._ax.plot(position.x, position.y, 'X', color='black', markeredgecolor='white',
-                      markersize=19 - abs(dz), markeredgewidth=2)
+    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int):
+        """Called whenever a position is being drawn."""
+        # Make position selectable
+        self.__positions_near_visible_layer.append(position)
 
     def _draw_connections(self):
         """Draws all connections. A connection indicates that two positions are not the same, but are related."""

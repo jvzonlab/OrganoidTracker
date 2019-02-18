@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any, Type
 from matplotlib.backend_bases import KeyEvent
 
 from autotrack import core
-from autotrack.core import clamp
+from autotrack.core import clamp, shape
 from autotrack.core.links import Links
 from autotrack.core.position import Position
 from autotrack.gui.window import Window
@@ -90,6 +90,7 @@ class PositionListVisualizer(Visualizer):
         shape = self._experiment.positions.get_shape(current_position)
         edge_color = self._get_type_color(current_position)
         shape.draw2d(current_position.x, current_position.y, 0, 0, self._ax, core.COLOR_CELL_CURRENT, edge_color)
+        shape.draw_marker_2d(current_position.x, current_position.y, 0, 0, self._ax, core.COLOR_CELL_CURRENT, edge_color)
         self._draw_connections(self._experiment.links, current_position)
         self._window.set_figure_title(self.get_title(self._position_list, self._current_position_index))
 
@@ -112,13 +113,13 @@ class PositionListVisualizer(Visualizer):
                     continue  # Showing the previous position only makes things more confusing here
 
             color = core.COLOR_CELL_NEXT if delta_time == 1 else core.COLOR_CELL_PREVIOUS
-            position_shape = self._experiment.positions.get_shape(connected_position)
+            dz = round(self._position_list[self._current_position_index].z) - round(connected_position.z)
 
             self._ax.plot([connected_position.x, main_position.x], [connected_position.y, main_position.y],
                           color=color, linestyle=line_style, linewidth=line_width)
             edge_color = self._get_type_color(connected_position)
-            position_shape.draw2d(connected_position.x, connected_position.y, 0, delta_time, self._ax, color,
-                                  edge_color)
+            shape.draw_marker_2d(connected_position.x, connected_position.y, dz, delta_time, self._ax, color,
+                                             edge_color)
 
     def _show_image(self):
         current_position = self._position_list[self._current_position_index]

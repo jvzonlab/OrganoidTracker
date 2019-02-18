@@ -23,6 +23,10 @@ class ParticleShape:
         """
         raise NotImplementedError()
 
+    def draw_marker_2d(self, x, y, dz, dt, area, color, edge_color):
+        """Draws a simple marker."""
+        draw_marker_2d(x, y, dz, dt, area, color, edge_color)
+
     def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
         """Draws a shape in 3d to a color image."""
         raise NotImplementedError()
@@ -137,7 +141,7 @@ class EllipseShape(ParticleShape):
 class UnknownShape(ParticleShape):
 
     def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: MPLColor, edge_color: MPLColor):
-        draw_marker_2d(x, y, dz, dt, area, color, edge_color)
+        area.plot(x, y, 'o', markersize=25, color=(0, 0, 0, 0), markeredgecolor=color, markeredgewidth=5)
 
     def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
         self.default_draw3d_color(x, y, z, dt, image, color)
@@ -160,14 +164,10 @@ class GaussianShape(ParticleShape):
         self._gaussian = gaussian
 
     def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: MPLColor, edge_color: MPLColor):
-        draw_marker_2d(x, y, dz, dt, area, color, edge_color)
-
         dz_for_gaussian = int(dz - self._gaussian.mu_z)
-        if abs(dz) > 3 or dt != 0:
-            return
         ellipse = self.ellipse()
         fill = False
-        alpha = max(0.1, 0.5 - abs(dz_for_gaussian / 6))
+        alpha = max(0.2, 0.8 - abs(dz_for_gaussian / 6))
         area.add_artist(mpl_Ellipse(xy=(x + ellipse.x, y + ellipse.y),
                                     width=ellipse.width, height=ellipse.height, angle=ellipse.angle,
                                     fill=fill, edgecolor=color, linestyle="dashed", linewidth=2,
@@ -215,7 +215,6 @@ class EllipseStackShape(ParticleShape):
         self._center_ellipse = center_ellipse
 
     def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: MPLColor, edge_color: MPLColor):
-        draw_marker_2d(x, y, dz, dt, area, color)
         fill = dt == 0
         edgecolor = 'white' if fill else color
         ellipse = self._ellipse_stack.get_ellipse(self._center_ellipse + dz)

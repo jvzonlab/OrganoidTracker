@@ -12,7 +12,7 @@ class CellMovementVisualizer(ExitableImageVisualizer):
     def _draw_links(self):
         pass  # Don't draw links
 
-    def _draw_position(self, position: Position, color: str, dz: int, dt: int):
+    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int):
         if abs(dz) > self.MAX_Z_DISTANCE or dt != 0:
             return
 

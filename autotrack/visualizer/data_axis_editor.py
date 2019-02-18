@@ -136,14 +136,14 @@ class DataAxisEditor(AbstractEditor):
             return None  # Don't draw paths of other time points
         return self._selected_path
 
-    def _draw_position(self, position: Position, color: str, dz: int, dt: int):
+    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int):
         if not self._draw_axis_positions or dt != 0 or abs(dz) > 3:
-            super()._draw_position(position, color, dz, dt)
+            super()._on_position_draw(position, color, dz, dt)
             return
 
         axis_position = self._experiment.data_axes.to_position_on_original_axis(self._experiment.links, position)
         if axis_position is None:
-            super()._draw_position(position, color, dz, dt)
+            super()._on_position_draw(position, color, dz, dt)
             return
 
         background_color = (1, 1, 1, 0.8) if axis_position.axis == self._selected_path else (0, 1, 0, 0.8)

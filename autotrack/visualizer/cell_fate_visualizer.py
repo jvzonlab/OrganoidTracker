@@ -54,7 +54,7 @@ class CellFateVisualizer(ExitableImageVisualizer):
             result[position] = cell_fate_finder.get_fate(self._experiment, position)
         self._cell_fates = result
 
-    def _draw_position(self, position: Position, color: str, dz: int, dt: int):
+    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int):
         if dt == 0 and abs(dz) <= 3:
             cell_fate = self._cell_fates.get(position)
             if cell_fate is None:

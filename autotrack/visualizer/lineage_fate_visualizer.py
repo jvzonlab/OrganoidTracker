@@ -107,7 +107,7 @@ class LineageFateVisualizer(ExitableImageVisualizer):
             return None  # No crypt axes recorded
         return crypt_axis_position_total / crypt_axis_position_count
 
-    def _draw_position(self, position: Position, color: str, dz: int, dt: int):
+    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int):
         if dt != 0 or abs(dz) > 3:
             return
 
