@@ -267,7 +267,8 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Experiment-Edit image offsets... [O]": self._show_offset_editor,
             "Edit//Batch-Delete data of time point...": self._delete_data_of_time_point,
             "Edit//Batch-Delete all tracks with errors...": self._delete_tracks_with_errors,
-            "Edit//Batch-Delete all positions in a rectangle...": self._show_positions_in_rectangle_deleter,
+            "Edit//Batch-Delete all tracks not in the first time point...": self._delete_tracks_not_in_first_time_point,
+            "Edit//Batch-Delete all positions in a rectangle... [R]": self._show_positions_in_rectangle_deleter,
             "Edit//Batch-Connect positions by distance...": self._connect_positions_by_distance,
             "Edit//LineageEnd-Mark as cell death": lambda: self._try_set_end_marker(EndMarker.DEAD),
             "Edit//LineageEnd-Mark as cell shedding": lambda: self._try_set_end_marker(EndMarker.SHED),
@@ -387,6 +388,19 @@ class LinkAndPositionEditor(AbstractEditor):
         lineage_error_finder.delete_problematic_lineages(self._experiment)
 
         self.get_window().redraw_data()
+
+    def _delete_tracks_not_in_first_time_point(self):
+        """Deletes all lineages where at least a single error was present."""
+        if not dialog.prompt_yes_no("Warning", "Are you sure you want to delete all lineages that do not reach the"
+                                               " first time point? This cannot be undone."):
+            return
+        self.get_window().get_gui_experiment().undo_redo.clear()
+
+        from autotrack.linking_analysis import links_filter
+        links_filter.delete_lineages_not_in_first_time_point(self._experiment)
+
+        self.get_window().redraw_data()
+
 
     def _connect_positions_by_distance(self):
         distance_um = dialog.prompt_float("Maximum distance", "Up to what distance (μm) should all positions be"
