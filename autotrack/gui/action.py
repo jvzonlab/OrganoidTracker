@@ -167,7 +167,7 @@ def export_links_guizela(experiment: Experiment):
             return
 
     from autotrack.manual_tracking import guizela_data_exporter
-    guizela_data_exporter.export_links(links, links_folder, comparisons_folder)
+    guizela_data_exporter.export_links(links, experiment.images.offsets, links_folder, comparisons_folder)
 
 
 def save_tracking_data(gui_experiment: GuiExperiment) -> bool:

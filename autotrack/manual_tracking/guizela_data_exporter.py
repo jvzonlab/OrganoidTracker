@@ -7,11 +7,14 @@ from typing import List, Any, Optional, Dict
 import numpy
 
 from autotrack.core import UserError
+from autotrack.core.images import ImageOffsets
 from autotrack.core.links import Links
 from autotrack.core.position import Position
+from autotrack.linking_analysis import linking_markers
+from autotrack.linking_analysis.linking_markers import EndMarker
 
 
-def export_links(links: Links, output_folder: str, comparison_folder: Optional[str] = None):
+def export_links(links: Links, offsets: ImageOffsets, output_folder: str, comparison_folder: Optional[str] = None):
     """Exports the links of the experiment in Guizela's file format."""
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
@@ -21,7 +24,7 @@ def export_links(links: Links, output_folder: str, comparison_folder: Optional[s
     if comparison_folder is not None and not os.path.isdir(comparison_folder):
         raise UserError("Output folder is not actually a folder",
                         "Cannot fix track ids - comparison folder does not exist.")
-    exporter = _TrackExporter(links)
+    exporter = _TrackExporter(links, offsets)
     if comparison_folder is not None:
         exporter.synchronize_ids_with_folder(comparison_folder)
     exporter.export_tracks(output_folder)
@@ -31,17 +34,21 @@ class _TrackExporter:
 
     _next_track_id: int = 0
     _links: Links
+    _offsets: ImageOffsets
 
     _mother_daughter_pairs: List[List[int]]
+    _dead_track_ids: List[int]
     _tracks_by_id: Dict[int, Any]
 
-    def __init__(self, links: Links):
+    def __init__(self, links: Links, offsets: ImageOffsets):
         self._links = links
+        self._offsets = offsets
         self._mother_daughter_pairs = []
+        self._dead_track_ids = []
         self._tracks_by_id = {}
 
         # Convert graph to list of tracks
-        for position in self._links.find_appeared_cells():
+        for position in self._links.find_appeared_positions():
             self._add_track_including_child_tracks(position, self._get_new_track_id())
 
     def _add_track_including_child_tracks(self, position: Position, track_id: int):
@@ -64,11 +71,17 @@ class _TrackExporter:
                 self._add_track_including_child_tracks(daughter_2, track_id_2)
                 break
             if len(future_positions) == 0:
+                end_marker = linking_markers.get_track_end_marker(self._links, position)
+                if end_marker == EndMarker.DEAD or end_marker == EndMarker.SHED:
+                    # Actual cell dead, mark as such
+                    self._dead_track_ids.append(track_id)
                 break  # End of track
 
             # Add point to track
             position = future_positions.pop()
-            track.add_point(x=numpy.array([position.x, position.y, position.z]), t=position.time_point_number())
+            moved_position = position + self._offsets.of_time_point(position.time_point())
+            track.add_point(x=numpy.array([moved_position.x, moved_position.y, moved_position.z]),
+                            t=position.time_point_number())
 
         self._tracks_by_id[track_id] = track
 
@@ -82,8 +95,6 @@ class _TrackExporter:
                 track = pickle.load(handle, encoding="latin-1")
                 first_time_point_number = track.t[0]
                 first_xyz = track.x[0]
-                if str(first_xyz) == "[313.33617459 303.61768616  14.        ]":
-                    print(f"Searching for track start at {first_xyz} at t={first_time_point_number}")
                 matching_track_id = self._find_track_id_beginning_at(first_time_point_number, *first_xyz)
                 if matching_track_id is not None:
                     self._swap_ids(track_id, matching_track_id)
@@ -113,6 +124,8 @@ class _TrackExporter:
                     pickle.dump(track, handle)
         with open(os.path.join(output_folder, "lineages.p"), "wb") as handle:
             pickle.dump(self._mother_daughter_pairs, handle)
+        with open(os.path.join(output_folder, "dead_cells.p"), "wb") as handle:
+            pickle.dump(self._dead_track_ids, handle)
 
     def _swap_ids(self, id1: int, id2: int):
         """All tracks with id1 will have id2, and vice versa."""
@@ -129,6 +142,20 @@ class _TrackExporter:
         new_track_1 = self._tracks_by_id.get(id2)
         self._tracks_by_id[id1] = new_track_1
         self._tracks_by_id[id2] = new_track_2
+
+        # Swap ids in cell deaths
+        id1_dead = id1 in self._dead_track_ids
+        id2_dead = id2 in self._dead_track_ids
+        if id1_dead and not id2_dead:
+            # Swap id1 with id2
+            self._dead_track_ids.remove(id1)
+            self._dead_track_ids.append(id2)
+        elif not id1_dead and id2_dead:
+            # Swap id2 with id1
+            self._dead_track_ids.remove(id2)
+            self._dead_track_ids.append(id1)
+        else:
+            pass  # Both or none were dead - no need to swap
 
     def _get_new_track_id(self) -> int:
         track_id = self._next_track_id
