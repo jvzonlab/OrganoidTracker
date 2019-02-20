@@ -1,15 +1,13 @@
-from typing import List, Union, Optional, Iterable, Dict, Any
+from typing import List, Union, Optional, Dict, Any
 
 import cv2
-import numpy
-from matplotlib.backend_bases import KeyEvent
 from matplotlib.collections import LineCollection
 from matplotlib.colors import Colormap
 from numpy.core.multiarray import ndarray
 from tifffile import tifffile
 
 from autotrack import core
-from autotrack.core import TimePoint, shape
+from autotrack.core import TimePoint
 from autotrack.core.data_axis import DataAxis
 from autotrack.core.position import Position
 from autotrack.core.typing import MPLColor
@@ -328,8 +326,22 @@ class AbstractImageVisualizer(Visualizer):
             except ValueError:
                 self.update_status("Cannot read number: " + time_point_str)
             return True
+        if command.startswith("goto "):
+            split = command.split(" ")
+            if len(split) != 5:
+                self.update_status("Syntax: /goto <x> <y> <z> <t>")
+                return True
+            try:
+                x, y, z, t = float(split[1]), float(split[2]), float(split[3]), int(split[4])
+            except ValueError:
+                self.update_status(f"Invalid number in \"{command}\". Syntax: /goto <x> <y> <z> <t>")
+            else:
+                if not self._move_to_position(Position(x, y, z, time_point_number=t)):
+                    self.update_status("Cannot go to point at time point " + str(t))
+            return True
         if command == "help":
-            self.update_status("/t20: Jump to time point 20 (also works for other time points)")
+            self.update_status("/t20: Jump to time point 20 (also works for other time points)"
+                               "\n/goto <x> <y> <z> <t>: Directly jump to that point")
             return True
         return False
 
@@ -370,6 +382,22 @@ class AbstractImageVisualizer(Visualizer):
             self._load_time_point(time_point)
             self.draw_view()
             self.update_status("Moved to time point " + str(new_time_point_number) + "!")
+            return True
+
+    def _move_to_position(self, position: Position) -> bool:
+        try:
+            time_point = self._experiment.get_time_point(position.time_point_number())
+        except ValueError:
+            return False
+        else:
+            self._load_time_point(time_point)
+            self._ax.set_xlim(position.x - 50, position.x + 50)
+            self._ax.set_ylim(position.y + 50, position.y - 50)
+            self._ax.set_autoscale_on(False)
+            self._z = round(position.z)
+            self._clamp_z()
+            self.draw_view()
+            self.update_status(f"Moved to {position}")
             return True
 
     def _move_in_time(self, dt: int):
