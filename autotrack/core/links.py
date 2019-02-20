@@ -236,13 +236,14 @@ class Links:
             return set()
         return track._find_pasts(position.time_point_number())
 
-    def find_appeared_cells(self, time_point_number_to_ignore: Optional[int] = None) -> Iterable[Position]:
+    def find_appeared_positions(self, time_point_number_to_ignore: Optional[int] = None) -> Iterable[Position]:
         """This method gets all positions that "popped up out of nothing": that have no links to the past. You can give
         this method a time point number to ignore. Usually, this would be the first time point number of the experiment,
         as cells that have no links to the past in the first time point are not that interesting."""
         for track in self._tracks:
             if time_point_number_to_ignore is None or time_point_number_to_ignore != track._min_time_point_number:
-                yield track.find_first_position()
+                if len(track.get_previous_tracks()) == 0:
+                    yield track.find_first_position()
 
     def add_link(self, position1: Position, position2: Position):
         """Adds a link between the positions. The linking network will be initialized if necessary."""
@@ -330,7 +331,7 @@ class Links:
             # Store
             data_of_positions[position] = value
 
-    def find_links_of(self, position: Position) -> Iterable[Position]:
+    def find_links_of(self, position: Position) -> Set[Position]:
         """Gets all links of a position, both to the past and the future."""
         track = self._position_to_track.get(position)
         if track is None:

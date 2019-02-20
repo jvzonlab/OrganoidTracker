@@ -61,7 +61,7 @@ def _add_out_of_view_markers(links: Links, position: Position):
 def _remove_spurs(experiment: Experiment):
     """Removes all very short tracks that end in a cell death."""
     links = experiment.links
-    for position in list(links.find_appeared_cells()):
+    for position in list(links.find_appeared_positions()):
         _check_for_and_remove_spur(experiment, links, position)
 
 

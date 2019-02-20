@@ -115,8 +115,8 @@ def compare_links(ground_truth: Experiment, scratch: Experiment, max_distance_um
     report = ComparisonReport()
     report.title = "Links comparison"
     comparing = _Comparing(ground_truth.images.resolution(), ground_truth.links, scratch.links, max_distance_um)
-    lineage_starts_ground_truth = ground_truth.links.find_appeared_cells()
-    lineage_starts_scratch = set(scratch.links.find_appeared_cells())
+    lineage_starts_ground_truth = ground_truth.links.find_appeared_positions()
+    lineage_starts_scratch = set(scratch.links.find_appeared_positions())
     for lineage_start_ground_truth in lineage_starts_ground_truth:
         lineage_start_scratch = _find_closest_in(lineage_starts_scratch, lineage_start_ground_truth, max_distance_um,
                                                  ground_truth.images.resolution())
