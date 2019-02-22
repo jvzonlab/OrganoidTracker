@@ -420,6 +420,7 @@ class LinkAndPositionEditor(AbstractEditor):
             self._perform_action(_InsertPositionAction(Particle.just_position(self._selected1)))
         elif self._selected2 is None:
             # Insert new position with link to self._selected1
+            # Find at which position the mouse is pointing
             mouse_position = self._get_position_at(event.xdata, event.ydata)
             is_new_position = False
             if mouse_position is None or abs(mouse_position.time_point_number() -
@@ -432,7 +433,7 @@ class LinkAndPositionEditor(AbstractEditor):
                     # be possible
                     mouse_position = mouse_position.with_time_point_number(mouse_position.time_point_number() + 1)
 
-            if self._selected1.time_point() != mouse_position.time_point():
+            if abs(mouse_position.time_point_number() - self._selected1.time_point_number()) == 1:
                 connection = self._selected1
                 self._selected1 = mouse_position
 
@@ -443,8 +444,8 @@ class LinkAndPositionEditor(AbstractEditor):
                 else:
                     self._perform_action(_InsertLinkAction(mouse_position, connection))
             else:
-                self.update_status("You already have a position in the same time point selected. Cannot insert a new"
-                                   "position with a link to that position.")
+                self.update_status("Cannot insert link. You have one position selected, which is not in the previous or"
+                                   " next time point.")
         elif self._selected1.time_point_number() == self._selected2.time_point_number():
             # Insert connection between two positions
             if self._experiment.connections.contains_connection(self._selected1, self._selected2):
