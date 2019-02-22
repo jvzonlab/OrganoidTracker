@@ -1,7 +1,7 @@
 from typing import Callable, List, Dict, Any, Iterable, Optional
 
 from autotrack.core.experiment import Experiment
-from autotrack.core.position import PositionType
+from autotrack.core.position import PositionType, Position
 from autotrack.gui.undo_redo import UndoRedo
 
 
@@ -116,3 +116,9 @@ class GuiExperiment:
     def execute_command(self, command: str):
         """Calls all registered command handlers with the given argument. Used when a user entered a command."""
         self._command_handlers.call_all(command)
+
+    def goto_position(self, position: Position):
+        """Moves the view towards the given position. The position must have a time point set."""
+        if position.time_point_number() is None:
+            raise ValueError("No time point number set")
+        self.execute_command(f"goto {position.x} {position.y} {position.z} {position.time_point_number()}")

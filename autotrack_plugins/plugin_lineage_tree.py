@@ -1,9 +1,13 @@
-from typing import Dict, Any, Tuple, Set
+from typing import Dict, Any, Tuple, Set, Optional
+
+from matplotlib.backend_bases import PickEvent, MouseEvent
 
 from autotrack.core import UserError
 from autotrack.core.links import LinkingTrack, Links
+from autotrack.core.position import Position
 from autotrack.core.resolution import ImageResolution
 from autotrack.gui import dialog
+from autotrack.gui.location_map import LocationMap
 from autotrack.gui.window import Window
 from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.lineage_drawing import LineageDrawing
@@ -31,6 +35,8 @@ def _get_track_x(linking_track: LinkingTrack):
 
 class LineageTreeVisualizer(Visualizer):
 
+    _location_map: Optional[LocationMap] = None
+
     def draw_view(self):
         self._clear_axis()
 
@@ -49,14 +55,26 @@ class LineageTreeVisualizer(Visualizer):
             return 0, 0, 0
 
         resolution = ImageResolution(1, 1, 1, 60)
-        width = LineageDrawing(links).draw_lineages_colored(self._ax, color_getter, resolution)
+        self._location_map = LocationMap()
+        width = LineageDrawing(links).draw_lineages_colored(self._ax, color_getter, resolution, self._location_map)
 
         self._ax.set_ylabel("Time (time points)")
         self._ax.set_ylim([experiment.last_time_point_number(), experiment.first_time_point_number() - 1])
         self._ax.set_xlim([-0.1, width + 0.1])
 
-        self.update_status("Note: this lineage tree updates live.")
+        self.update_status("Double-click somewhere in the lineage tree to jump to that cell. Note: this lineage tree updates live.")
         self._fig.canvas.draw()
+
+    def _on_mouse_click(self, event: MouseEvent):
+        if not event.dblclick:
+            return
+        if self._location_map is None:
+            return
+        position: Position = self._location_map.get_nearby(int(event.xdata), int(event.ydata))
+        if position is None:
+            return
+        self.get_window().get_gui_experiment().goto_position(position)
+        self.update_status("Focused main window on " + str(position))
 
     def _find_tracks_with_errors(self) -> Set[LinkingTrack]:
         links = self._experiment.links

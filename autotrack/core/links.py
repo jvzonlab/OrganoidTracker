@@ -25,7 +25,8 @@ class LinkingTrack:
     def get_by_time_point(self, time_point_number: int) -> Position:
         if time_point_number < self._min_time_point_number \
                 or time_point_number >= self._min_time_point_number + len(self._positions_by_time_point):
-            raise IndexError(f"Time point {time_point_number} outside track")
+            raise IndexError(f"Time point {time_point_number} outside track from {self._min_time_point_number} to"
+                             f" {self.max_time_point_number()}")
         return self._positions_by_time_point[time_point_number - self._min_time_point_number]
 
     def _find_pasts(self, time_point_number: int) -> Set[Position]:

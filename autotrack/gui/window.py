@@ -113,10 +113,6 @@ class Window:
         """Gets the undo/redo handler. Any actions performed through this handler can be undone."""
         return self.__gui_experiment.undo_redo
 
-    def execute_command(self, command: str):
-        """Calls all registered command handlers with the given argument. Used when a user entered a command."""
-        self.__gui_experiment.execute_command(command)
-
     def _get_default_menu(self) -> Dict[str, Any]:
         return dict()
 

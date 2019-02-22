@@ -10,6 +10,8 @@ from autotrack.core.typing import MPLColor
 
 # Type definition: a color getter is a function that takes an int (time point) and the linking track, and returns a
 # Matplotlib color
+from autotrack.gui.location_map import LocationMap
+
 _ColorGetter = Callable[[int, LinkingTrack], MPLColor]
 
 
@@ -75,47 +77,17 @@ class LineageDrawing:
         (x_curr, x_end, line_list) = self._get_sublineage_draw_data(lineage, 0, 0, [])
         return x_end, line_list
 
-    def draw_lineages(self, axes: Axes, show_cell_id: bool = False):
-        """Draws a lineage tree of the links without color. Returns the width of the lineage in Matplotlib pixels."""
-        x_offset = 0
-        for lineage in self.links.find_starting_tracks():
-            width = self._draw_single_lineage(axes, lineage, x_offset, show_cell_id)
-            x_offset += width
-        return x_offset
-
-    def _draw_single_lineage(self, axes: Axes, lineage: LinkingTrack, x_offset: int, show_cell_id: bool) -> int:
-        """Draws a single lineage. Returns the width of the lineage tree in Matplotlib pixels."""
-        (diagram_width, line_list) = self._get_lineage_draw_data(lineage)
-
-        for l in line_list:
-            X = l[0]
-            T = l[1]
-            linking_track: LinkingTrack = l[2]
-            if len(T) == 2:
-                # two timepoints T, so this is a vertical line
-                # plot line
-                axes.plot([x_offset + X[0], x_offset + X[0]], T, '-k')
-                if show_cell_id:
-                    # print cell id
-                    cell = linking_track.find_first_position()
-                    axes.annotate(f"({cell.x:.1f}, {cell.y:.1f}, {cell.z:.1f})", (x_offset + X[0], T[0]))
-            if len(X) == 2:
-                # two x positions, so this a horizontal line indicating division
-                # plot line
-                axes.plot([x_offset + X[0], x_offset + X[1]], [T[0], T[0]], '-k')
-        return diagram_width
-
-    def draw_lineages_colored(self, axes: Axes, color_getter: _ColorGetter, image_resolution: ImageResolution):
+    def draw_lineages_colored(self, axes: Axes, color_getter: _ColorGetter, image_resolution: ImageResolution, location_map: LocationMap):
         """Draws lineage trees that are color coded. You can for example color cells by z position, by track
         length, etc. Returns the width of the lineage tree in Matplotlib pixels."""
         x_offset = 0
         for lineage in self.links.find_starting_tracks():
-            width = self._draw_single_lineage_colored(axes, lineage, x_offset, color_getter, image_resolution)
+            width = self._draw_single_lineage_colored(axes, lineage, x_offset, color_getter, image_resolution, location_map)
             x_offset += width
         return x_offset
 
     def _draw_single_lineage_colored(self, ax: Axes, lineage: LinkingTrack, x_offset: int, color_getter: _ColorGetter,
-                                     image_resolution: ImageResolution) -> int:
+                                     image_resolution: ImageResolution, location_map: LocationMap) -> int:
         """Draw lineage with given function used for color. You can for example color cells by z position, by track
         length, etc. Returns the width of the lineage tree in Matplotlib pixels."""
         (diagram_width, line_list) = self._get_lineage_draw_data(lineage)
@@ -131,7 +103,7 @@ class LineageDrawing:
                 # get x position of line
                 X = line[0][0]
                 # and cell id
-                linking_track = line[2]
+                linking_track: LinkingTrack = line[2]
 
                 # get indeces of timepoints that bound the time interbal T[0],T[1]
                 time_point_min = time_points_of_line[0]
@@ -142,10 +114,12 @@ class LineageDrawing:
                     t0 = time_point_of_line * image_resolution.time_point_interval_h
                     t1 = (time_point_of_line + 1) * image_resolution.time_point_interval_h
                     # get color corresponding to current z value
-                    color_val = color_getter(time_point_of_line, linking_track)
+                    color_val = color_getter(time_point_of_line + 1, linking_track)
                     # save line data
                     lines_XY.append([(x_offset + X, t0), (x_offset + X, t1)])
                     lines_col.append(color_val)
+                    location_map.set(int(x_offset + X), int(t1),
+                                     linking_track.get_by_time_point(time_point_of_line + 1))
             if len(time_points_of_line) == 1:
                 ### single timepoint T, so a horizontal line
                 # get x position of line
@@ -163,6 +137,8 @@ class LineageDrawing:
                 lines_XY.append(
                     [(x_offset + X[0], time), (x_offset + X[1], time)])
                 lines_col.append(color_val)
+                location_map.set_area(int(x_offset + X[0]), int(time), int(x_offset + X[1]), int(time),
+                                      linking_track.get_by_time_point(time_point_of_line))
 
         line_segments = LineCollection(lines_XY, colors=lines_col, lw=1.5)
         ax.add_collection(line_segments)

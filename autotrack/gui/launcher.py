@@ -195,7 +195,7 @@ def _commandbox_execute(command: str, window: Window, main_figure: QWidget):
     if command.startswith("/"):
         command = command[1:]  # Strip off the command slash
     main_figure.setFocus()
-    window.execute_command(command)
+    window.get_gui_experiment().execute_command(command)
 
 
 def _commandbox_autofocus(event: KeyEvent, command_box: QLineEdit):

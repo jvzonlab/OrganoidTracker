@@ -4,7 +4,7 @@ from typing import Iterable, Optional, Union, Dict, Any, Tuple
 
 import numpy
 from numpy import ndarray
-from matplotlib.backend_bases import KeyEvent, MouseEvent
+from matplotlib.backend_bases import KeyEvent, MouseEvent, PickEvent
 from matplotlib.figure import Figure, Axes
 
 from autotrack import core
@@ -135,6 +135,9 @@ class Visualizer:
     def _on_mouse_click(self, event: MouseEvent):
         pass
 
+    def _on_pick(self, event: PickEvent):
+        pass
+
     def attach(self):
         self._window.setup_menu(self.get_extra_menu_options())
         self._window.set_window_title(self._get_window_title())
@@ -143,6 +146,7 @@ class Visualizer:
         self._window.register_event_handler("data_updated_event", self.refresh_data)
         self._window.register_event_handler("any_updated_event", self.refresh_all)
         self._window.register_event_handler("command_event", self._on_command_raw)
+        self._window.register_event_handler("pick_event", self._on_pick)
 
     def detach(self):
         self._window.unregister_event_handlers()
@@ -224,7 +228,7 @@ class Visualizer:
         search_position = Position(x, y, z, time_point=time_point)
         return find_closest_position(positions, search_position, ignore_z=ignore_z, max_distance=max_distance)
 
-    def get_window(self):
+    def get_window(self) -> Window:
         return self._window
 
 
