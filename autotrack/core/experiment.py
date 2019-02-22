@@ -124,6 +124,12 @@ class Experiment:
         """Gets all positions of all time points."""
         return self._positions
 
+    @positions.setter
+    def positions(self, positions: PositionCollection):
+        if not isinstance(positions, PositionCollection):
+            raise TypeError(f"positions must be a {PositionCollection.__name__} object, was " + repr(positions))
+        self._positions = positions
+
     @property
     def name(self) -> Name:
         # Don't allow to replace the Name object
@@ -139,7 +145,7 @@ class Experiment:
     def links(self, links: Links):
         """Sets the links to the given value. May not be None."""
         if not isinstance(links, Links):
-            raise TypeError("links must be a Links object, was " + repr(links))
+            raise TypeError(f"links must be a {Links.__name__} object, was " + repr(links))
         self._links = links
 
     @property
@@ -151,7 +157,7 @@ class Experiment:
     def images(self, images: Images):
         """Sets the images to the given value. May not be None."""
         if not isinstance(images, Images):
-            raise TypeError("images mut be an Images object, was " + repr(images))
+            raise TypeError(f"images mut be an {Images.__name__} object, was " + repr(images))
         self._images = images
 
     @property
@@ -163,7 +169,7 @@ class Experiment:
     def connections(self, connections: Connections):
         """Sets the connections, which are used to group positions at the same time point."""
         if not isinstance(connections, Connections):
-            raise TypeError("connections mut be a Connections object, was " + repr(connections))
+            raise TypeError(f"connections mut be a {Connections.__name__} object, was " + repr(connections))
         self._connections = connections
 
     @property

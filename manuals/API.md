@@ -5,7 +5,9 @@ Parts of Autotrack are pretty general, and can be used for any kind of position.
 
 Note: any method, function and field that has a name starting with an underscore (`_`) should not be used by external code. Ask if there is an alternative way to do it.
 
-## Saving and loading data
+## Working with existing data
+
+### Saving and loading
 
 We have different data file formats. One is the original file format used by Guizela, another is my file format, which stores everything in a single file.
 
@@ -28,7 +30,7 @@ experiment = io.load_data_file("path/to/data/lineages.p")
 io.save_data_to_json(experiment, "my_file_name.aut")
 ```
 
-## Finding positions
+### Finding positions
 
 If you want to get the detected positions on a certain time point, you can do it like this:
 
@@ -80,7 +82,7 @@ N = 2
 nearby_position_finder.find_close_positions(..., around=..., tolerance=N)
 ```
 
-## Working with links
+### Working with links
 The connections between positions at different time points are called links. This is how you can check if two positions have a link between each other:
 
 ```python
@@ -111,7 +113,7 @@ The resulting set will usually have a size of 1, as it just returns the position
 
 The set of past positions will usually have a size of 1. A size of 0 occurs if the position just went into the view in this time point, or if the time point is the first time point of the experiment.
 
-## Working with biological lineage trees
+### Working with biological lineage trees
 Imagine a lineage tree like this:
 
 ```
@@ -163,4 +165,31 @@ if end_marker == EndMarker.DEAD:
 else:
     # Cell went out of the view
     ...
+```
+
+## Displaying data graphically
+You can of course save data files and then manually open them. However, you can also directly open the visualizer from a script, with your data already loaded. Say, you have an image that you want to display:
+
+```python
+from autotrack.core.experiment import Experiment
+from autotrack.core.images import Images
+from autotrack.gui import launcher
+from autotrack.imaging.single_image_loader import SingleImageLoader
+from autotrack.visualizer import standard_image_visualizer
+
+array = ... # Some single color 3D numpy array, representing an image
+
+# Set up Images object
+images = Images()
+images.image_loader(SingleImageLoader(array))
+# ... you could also load LIF files, TIFF files, set a resolution, etc.
+
+# Set up Experiment object, holding the given images
+experiment = Experiment()
+experiment.images = images
+# ... you can add any data you want to the experiment
+
+# Open the visualizer
+standard_image_visualizer.show(experiment)
+launcher.mainloop()  # Necessary! Google "event loop" for details
 ```

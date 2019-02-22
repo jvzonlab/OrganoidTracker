@@ -18,6 +18,7 @@
 #
 # for python 2.5, useless in 2.6
 import struct, io, re, os.path, subprocess, shlex, sys
+from typing import List
 from xml.dom.minidom import parse
 
 import numpy
@@ -420,7 +421,7 @@ class Reader(Header):
             memorysize, = struct.unpack("Q", self.f.read(8))
         return memorysize
 
-    def getSeries(self):
+    def getSeries(self) -> List["Serie"]:
         if not hasattr(self, '__series'):
             try:
                 self.__series = [
