@@ -128,6 +128,7 @@ def predict(images: Images, checkpoint_dir: str, out_dir: Optional[str] = None, 
     image_size_z = image_size_zyx[0]
     output_size_z = _next_multiple_of_32(image_size_z)
     output_offset_z = (output_size_z - image_size_z) // 2
+    resolution = images.resolution()
 
     estimator = tf.estimator.Estimator(model_fn=partial(build_fcn_model, use_cpu=False), model_dir=checkpoint_dir)
     predictions = estimator.predict(input_fn=lambda: _input_fn(images, split_in_four))
@@ -173,13 +174,13 @@ def predict(images: Images, checkpoint_dir: str, out_dir: Optional[str] = None, 
         if out_dir is not None:
             image_name = "image-" + str(time_point.time_point_number())
             tifffile.imsave(os.path.join(out_dir, '{}.tif'.format(image_name)), prediction)
-        im, z_divisor = _reconstruct_volume(prediction, images.resolution()) # interpolate between layers for peak detection
+        im, z_divisor = _reconstruct_volume(prediction, resolution) # interpolate between layers for peak detection
 
         #can do the same thing with data to visualize
         # imsource, _ = _reconstruct_volume(numpy.squeeze(p['data']))
 
         # Comparison between image_max and im to find the coordinates of local maxima
-        coordinates = peak_local_max(im, min_distance=10, threshold_abs=0.1)
+        coordinates = peak_local_max(im, min_distance=round(3.2 / resolution.pixel_size_x_um), threshold_abs=0.1)
         for coordinate in coordinates:
             pos = Position(coordinate[2], coordinate[1], coordinate[0] / z_divisor - output_offset_z,
                            time_point=time_point) + image_offset
