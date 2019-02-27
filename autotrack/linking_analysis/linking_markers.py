@@ -1,7 +1,7 @@
 """Extra markers used to describe the linking data. For example, you can mark the end of a lineage as a cell death."""
 
 from enum import Enum
-from typing import Optional, Iterable, Dict
+from typing import Optional, Iterable, Dict, Set
 
 from autotrack.core.links import Links
 from autotrack.core.position import Position
@@ -127,9 +127,9 @@ def set_position_type(links: Links, position: Position, type: Optional[str]):
     links.set_position_data(position, "type", type_str)
 
 
-def get_position_types(links: Links) -> Dict[Position, str]:
-    """Gets all known cell types, with the names in UPPERCASE."""
+def get_position_types(links: Links, positions: Set[Position]) -> Dict[Position, Optional[str]]:
+    """Gets all known cell types of the given positions, with the names in UPPERCASE."""
     types = dict()
-    for position, name in links.find_all_positions_with_data("type"):
-        types[position] = name.upper()
+    for position in positions:
+        types[position] = get_position_type(links, position)
     return types

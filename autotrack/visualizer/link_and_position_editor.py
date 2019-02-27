@@ -11,7 +11,7 @@ from autotrack.core.position import Position, PositionType
 from autotrack.core.shape import ParticleShape
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
-from autotrack.linking_analysis import cell_error_finder, linking_markers
+from autotrack.linking_analysis import cell_error_finder, linking_markers, lineage_positions_finder
 from autotrack.linking_analysis.linking_markers import EndMarker
 from autotrack.visualizer import DisplaySettings, activate
 from autotrack.visualizer.abstract_editor import AbstractEditor
@@ -198,9 +198,9 @@ class _SetAllAsType(UndoableAction):
 
     def do(self, experiment: Experiment) -> str:
         links = experiment.links
-        for position in links.find_all_positions():
+        for position in self._previous_position_types.keys():
             linking_markers.set_position_type(links, position, self._type.save_name)
-        return f"All positions in the whole experiment are now of the type \"{self._type.display_name}\""
+        return f"All positions in the lineage tree are now of the type \"{self._type.display_name}\""
 
     def undo(self, experiment: Experiment) -> str:
         links = experiment.links
@@ -280,8 +280,10 @@ class LinkAndPositionEditor(AbstractEditor):
 
         # Add options for changing position types
         for position_type in self.get_window().get_gui_experiment().get_position_types():
-            options["Edit//Batch-Set type of all positions//" + position_type.display_name] \
-                = lambda: self._set_all_positions_to_type(position_type)
+            # Create copy of position_type variable to avoid it changing in loop iteration
+            action = lambda bound_position_type = position_type: self._set_all_positions_to_type(bound_position_type)
+
+            options["Edit//Type-Set type of track//" + position_type.display_name] = action
         return options
 
     def _on_key_press(self, event: KeyEvent):
@@ -465,4 +467,13 @@ class LinkAndPositionEditor(AbstractEditor):
 
     def _set_all_positions_to_type(self, position_type: PositionType):
         """Sets all cells in the experiment to the given type."""
-        self._perform_action(_SetAllAsType(linking_markers.get_position_types(self._experiment.links), position_type))
+        if self._selected1 is None:
+            self.update_status("You need to select a position first.")
+            return
+        if self._selected2 is not None:
+            self.update_status("You have multiple positions selected - please unselect one.")
+            return
+
+        positions = lineage_positions_finder.find_all_positions_in_lineage_of(self._experiment.links, self._selected1)
+        old_position_types = linking_markers.get_position_types(self._experiment.links, set(positions))
+        self._perform_action(_SetAllAsType(old_position_types, position_type))
