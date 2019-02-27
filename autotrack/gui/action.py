@@ -138,18 +138,6 @@ def export_positions_and_shapes(experiment: Experiment):
     io.save_positions_and_shapes_to_json(experiment, positions_file)
 
 
-def export_links(experiment: Experiment):
-    links = experiment.links
-    if not links.has_links():
-        raise UserError("No links", "Cannot export links; there are no links created.")
-
-    links_file = dialog.prompt_save_file("Save links as...", [("JSON file", "*.json")])
-    if not links_file:
-        return  # Cancelled
-
-    io.save_links_to_json(experiment.links, links_file)
-
-
 def export_links_guizela(experiment: Experiment):
     links = experiment.links
     if not links.has_links():

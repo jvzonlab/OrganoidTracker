@@ -231,16 +231,6 @@ def _my_decoder(json_object):
     return json_object
 
 
-def save_links_to_json(links: Links, json_file_name: str):
-    """Saves position linking data to a JSON file. File follows the d3.js format, like the example here:
-    http://bl.ocks.org/mbostock/4062045 """
-    data = _links_to_d3_data(links)
-
-    _create_parent_directories(json_file_name)
-    with open(json_file_name, 'w') as handle:
-        json.dump(data, handle, cls=_MyEncoder)
-
-
 def _links_to_d3_data(links: Links) -> Dict:
     """Return data in D3.js node-link format that is suitable for JSON serialization
     and use in Javascript documents."""

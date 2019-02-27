@@ -112,7 +112,6 @@ class MainWindow(Window):
             "File//SaveLoad-Load tracking data... [Ctrl+O]": lambda: action.load_tracking_data(self),
             "File//SaveLoad-Save tracking data... [Ctrl+S]": lambda: action.save_tracking_data(self.get_gui_experiment()),
             "File//Export-Export detection data only...": lambda: action.export_positions_and_shapes(self.get_experiment()),
-            "File//Export-Export linking data only...": lambda: action.export_links(self.get_experiment()),
             "File//Export-Export to Guizela's file format...": lambda: action.export_links_guizela(self.get_experiment()),
             "File//Plugins-Reload all plugins... [Alt+F5]": lambda: action.reload_plugins(self),
             "File//Exit-Exit [Alt+F4]": lambda: action.ask_exit(self.get_gui_experiment()),
