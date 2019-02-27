@@ -194,7 +194,7 @@ class AbstractImageVisualizer(Visualizer):
             # Add marker
             position_type = self.get_window().get_gui_experiment().get_position_type(
                 linking_markers.get_position_type(links, position))
-            edge_color = "black" if position_type is None else position_type.mpl_color
+            edge_color = (0, 0, 0) if position_type is None else position_type.mpl_color
             if dz != 0:
                 # Draw position as circle
                 circles_x_list.append(position.x)

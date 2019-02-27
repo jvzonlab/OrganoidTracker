@@ -47,6 +47,19 @@ logger.setLevel(logging.DEBUG)
 tf.logging.set_verbosity(tf.logging.INFO)
 
 
+def _get_slices(volume_zyx: Tuple[int, int, int], slice_size_zyx: Tuple[int, int, int], slice_margin_zyx: Tuple[int, int, int]):
+    start_x, start_y, start_z = 0, 0, 0
+    while start_z < volume_zyx[0]:
+        while start_y < volume_zyx[1]:
+            while start_x < volume_zyx[2]:
+                yield ((start_z - slice_margin_zyx[0], start_z + slice_size_zyx[0] + slice_margin_zyx[0]),
+                       (start_y - slice_margin_zyx[1], start_y + slice_size_zyx[1] + slice_margin_zyx[1]),
+                       (start_x - slice_margin_zyx[2], start_x + slice_size_zyx[0] + slice_margin_zyx[2]))
+                start_x += slice_size_zyx[2]
+            start_y += slice_size_zyx[1]
+        start_z += slice_size_zyx[0]
+
+
 def _reconstruct_volume(multi_im: ndarray, resolution: ImageResolution) -> Tuple[ndarray, int]:
     """Reconstructs a volume so that the xy scale is roughly equal to the z scale. Returns the used scale."""
     # Make sure that
@@ -83,7 +96,7 @@ def _next_multiple_of_32(number: int) -> int:
     return math.ceil(number / 32) * 32
 
 
-def _input_fn(images: Images, split_in_four: bool):
+def _input_fn(images: Images, split: bool):
     image_size_zyx = images.image_loader().get_image_size_zyx()
     image_size_x = image_size_zyx[2]
     image_size_z = image_size_zyx[0]
@@ -96,7 +109,7 @@ def _input_fn(images: Images, split_in_four: bool):
             z = int((data.shape[0] - image_data.shape[0]) / 2)
             data[z: z + image_data.shape[0], :, :] = image_data
 
-            if split_in_four:
+            if split:
                 part_xy_size = image_size_x // 2 + 64
                 yield {'data': data[numpy.newaxis, numpy.newaxis, :, :part_xy_size, :part_xy_size]}  # Top left
                 yield {'data': data[numpy.newaxis, numpy.newaxis, :, :part_xy_size, -part_xy_size:]}  # Top right

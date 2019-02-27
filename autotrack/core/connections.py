@@ -102,6 +102,14 @@ class _ConnectionsByTimePoint:
             return list(self._connections[position])
         return []
 
+    def find_connections(self, position: Position) -> Iterable[Position]:
+        """Finds all connections starting and going to the given position."""
+        for start, ends in self._connections.items():
+            if start == position:
+                yield from ends
+            if position in ends:
+                yield start
+
     def __len__(self) -> int:
         """Returns the total number of connections (lines)."""
         sum = 0
@@ -220,6 +228,20 @@ class Connections:
         if connections is None:
             return []
         return connections.find_connections_starting_at(position)
+
+    def find_connections(self, position: Position):
+        """Finds connections starting from and going to the given position. See find_connections_starting_at for
+        details. This method is slower than find_connections_starting_at, as it has to do more lookups.
+
+        Note: if you are looping over all positions in a time point, and then finding their connections, every
+        connection will be found twice if you use this method (the connection from A to B will be returned, but also the
+        connection from B to A). If you use find_connections_starting_at, you won't have this problem: only the
+        connection from A to B will be returned."""
+        time_point_number = position.time_point_number()
+        connections = self._by_time_point.get(time_point_number)
+        if connections is None:
+            return []
+        return connections.find_connections(position)
 
     def add_connections(self, other: "Connections"):
         """Merges all connections in the other collection with this collection."""
