@@ -3,7 +3,7 @@ import json
 import os
 from json import JSONEncoder
 from pathlib import Path
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Iterable
 
 import numpy
 from pandas import DataFrame
@@ -231,13 +231,13 @@ def _my_decoder(json_object):
     return json_object
 
 
-def _links_to_d3_data(links: Links) -> Dict:
+def _links_to_d3_data(links: Links, positions: Iterable[Position]) -> Dict:
     """Return data in D3.js node-link format that is suitable for JSON serialization
     and use in Javascript documents."""
     nodes = list()
 
     # Save nodes and store extra data
-    for position in links.find_all_positions():
+    for position in positions:
         node = {
             "id": position
         }
@@ -333,7 +333,7 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
 
     # Save links
     if experiment.links.has_links():
-        save_data["links"] = _links_to_d3_data(experiment.links)
+        save_data["links"] = _links_to_d3_data(experiment.links, experiment.positions)
 
     # Save scores of families
     scored_families = list(experiment.scores.all_scored_families())
