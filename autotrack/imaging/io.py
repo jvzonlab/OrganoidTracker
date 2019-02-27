@@ -195,6 +195,8 @@ def _add_d3_data(links: Links, data: Dict, min_time_point: int = -100000, max_ti
 class _MyEncoder(JSONEncoder):
     def default(self, o):
         if isinstance(o, Position):
+            if o.time_point_number() is None:
+                return {"x": o.x, "y": o.y, "z": o.z}
             return {"x": o.x, "y": o.y, "z": o.z, "_time_point_number": o.time_point_number()}
         if isinstance(o, Score):
             return o.__dict__
