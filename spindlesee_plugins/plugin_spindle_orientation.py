@@ -6,11 +6,9 @@ positions to the lumen position must also be drawn.
 
 from typing import Dict, Any, List, Tuple, Optional
 
-import numpy
 from matplotlib.collections import LineCollection
 from matplotlib.figure import Figure
 
-from autotrack.core import UserError
 from autotrack.core.connections import Connections
 from autotrack.core.experiment import Experiment
 from autotrack.core.links import Links
@@ -18,9 +16,7 @@ from autotrack.core.position import Position
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
 from autotrack.imaging import angles
-from matplotlib import colors, cm
-
-from autotrack.imaging.grapher import colorline
+from autotrack.util.mpl_helper import SANDER_APPROVED_COLORS
 
 from . import plugin_spindle_markers
 
@@ -49,7 +45,7 @@ def _view_spindle_angle(window: Window):
     experiment = window.get_experiment()
     angle_lists = _get_spindle_angles_list(experiment)
 
-    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _show_figure(figure, angle_lists))
+    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _show_figure(figure, angle_lists), size_cm=(8,5))
 
 
 def _get_spindle_angles_list(experiment: Experiment) -> List[_Line]:
@@ -136,14 +132,19 @@ def _get_highest_time(angle_lists: List[_Line]) -> float:
 def _show_figure(figure: Figure, angle_lists: List[_Line]):
     highest_time = _get_highest_time(angle_lists)
     raw_angle_list = [angle_list.angles for angle_list in angle_lists]
-    color_names = colors.TABLEAU_COLORS
-    color_codes = [colors.to_rgba(name, 1) for name in color_names]
+    last_angle_list = [angle_list.angles[0] for angle_list in angle_lists]
+    last_angle_list_x, last_angle_list_y = [x_y[0] for x_y in last_angle_list], [x_y[1] for x_y in last_angle_list]
+    first_angle_list = [angle_list.angles[-1] for angle_list in angle_lists]
+    first_angle_list_x, first_angle_list_y = [x_y[0] for x_y in first_angle_list], [x_y[1] for x_y in first_angle_list]
 
     axes = figure.gca()
-    axes.set_xlim(highest_time, 0)
+    axes.set_xlim(highest_time + 3, -3)
     axes.set_ylim(-5, 95)
     axes.set_title('Rotation of spindle compared to lumen')
-    axes.add_collection(LineCollection(raw_angle_list, colors=color_codes))
+    axes.plot([min(axes.get_xlim()), max(axes.get_xlim())], [45, 45], color="lightgray")
+    axes.scatter(last_angle_list_x, last_angle_list_y, 81, color=SANDER_APPROVED_COLORS)
+    axes.scatter(first_angle_list_x, first_angle_list_y, 81, marker="X", color=SANDER_APPROVED_COLORS)
+    axes.add_collection(LineCollection(raw_angle_list, colors=SANDER_APPROVED_COLORS, linewidths=[2]))
     axes.set_ylabel(f"Rotation (degrees)")
     axes.set_xlabel("Time until spindle disappears (minutes)")
 

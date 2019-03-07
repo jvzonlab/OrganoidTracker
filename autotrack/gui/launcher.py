@@ -4,11 +4,11 @@ from os import path
 from typing import Callable, List, Iterable, Optional
 from typing import Dict, Any
 
-from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QKeyEvent, QPalette, QCloseEvent
 from PyQt5.QtWidgets import QMainWindow, QSizePolicy
 from PyQt5.QtWidgets import QWidget, QApplication, QVBoxLayout, QLabel, QLineEdit
+from matplotlib import pyplot
 from matplotlib.backend_bases import KeyEvent
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
 from matplotlib.figure import Figure
@@ -171,6 +171,8 @@ def _window_close(window: Window, event: QCloseEvent):
 def launch_window(experiment: Experiment) -> MainWindow:
     """Launches a window with an empty figure. Doesn't start the main loop yet. Use and activate a visualizer to add
     some interactiveness."""
+    pyplot.rcParams['svg.fonttype'] = 'none'
+
     # Create matplotlib figure
     fig = Figure(figsize=(12, 12), dpi=95)
 

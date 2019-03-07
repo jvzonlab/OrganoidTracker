@@ -2,11 +2,15 @@
 which are placed in an Experiment. A TimePoint also stores scores of possible mother-daughter cell combinations.
 An Experiment also stores an ImageLoader and up to two cell links networks (stored as Graph objects)."""
 import re
-from typing import Optional, Iterable, Union, Tuple
+from typing import Optional, Iterable, Union
+
+from matplotlib import colors
 
 COLOR_CELL_NEXT = "red"
 COLOR_CELL_PREVIOUS = "blue"
 COLOR_CELL_CURRENT = "lime"
+
+CM_TO_INCH = 0.393700787  # 1 cm is this many inches
 
 
 class UserError(Exception):
