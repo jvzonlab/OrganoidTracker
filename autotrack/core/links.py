@@ -230,6 +230,13 @@ class Links:
             return set()
         return track._find_futures(position.time_point_number())
 
+    def find_single_future(self, position: Position) -> Optional[Position]:
+        """If the given position is linked to exactly one other position, then that position is returned."""
+        futures = self.find_futures(position)
+        if len(futures) == 1:
+            return futures.pop()
+        return None
+
     def find_pasts(self, position: Position) -> Set[Position]:
         """Returns all connections to the past."""
         track = self._position_to_track.get(position)

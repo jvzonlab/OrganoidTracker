@@ -23,3 +23,8 @@ def is_part_of_spindle(links: Links, position: Position) -> bool:
 def is_lumen(links: Links, position: Position) -> bool:
     """Return True if the given position is part of a lumen."""
     return linking_markers.get_position_type(links, position) == "LUMEN"
+
+
+def is_part_of_midbody(links, position: Position) -> bool:
+    """Returns True if the given position is part of the mitotic midbody."""
+    return linking_markers.get_position_type(links, position) == "MIDBODY"
