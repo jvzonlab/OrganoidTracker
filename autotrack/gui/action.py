@@ -212,10 +212,11 @@ def view_statistics(window: Window):
     position_count = len(experiment.positions)
     links_count = len(experiment.links)
     errors_count = sum(1 for error in linking_markers.find_errored_positions(experiment.links))
+    errors_percentage = errors_count/position_count*100 if position_count > 0 else 0
     dialog.popup_message("Statistics", f"There are {time_point_count} time points loaded. {position_count} positions "
                                        f" are annotated and {links_count} links have been created."
                                        f"\n\nThere are {errors_count} warnings and errors remaining for you to look at,"
-                                       f" so {errors_count/position_count*100:.02f}% of all positions has an error.")
+                                       f" so {errors_percentage:.02f}% of all positions has an error.")
 
 
 def ask_exit(gui_experiment: GuiExperiment):
