@@ -45,9 +45,11 @@ def _dimensions_to_resolution(dimensions: List[Element]) -> ImageResolution:
     for dimension in dimensions:
         axis = int(dimension.getAttribute("DimID"))
         axis_name = lif.dimName[axis]
-        length = float(dimension.getAttribute("Length"))
+        total_length = float(dimension.getAttribute("Length"))
         number_of_elements = int(dimension.getAttribute("NumberOfElements"))
-        unit_length = length / (number_of_elements - 1)
+        unit_length = 0 if number_of_elements == 1 else total_length / (number_of_elements - 1)
+        #             ^ no resolution exists if you only have one element.
+        # Example: what is the time resolution if you have just 1 time point?
 
         if axis_name == "X" or axis_name == "Y" or axis_name == "Z":
             if dimension.getAttribute("Unit") != "m":
