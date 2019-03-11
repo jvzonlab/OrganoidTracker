@@ -19,7 +19,7 @@
 # for python 2.5, useless in 2.6
 import struct, io, re, os.path, subprocess, shlex, sys
 from typing import List
-from xml.dom.minidom import parse
+from xml.dom.minidom import parse, Element, Document
 
 import numpy
 import numpy as np
@@ -34,6 +34,14 @@ dimName = {1: "X",
            7: "XT Slices",
            8: "TSlices", }
 channelTag = ["Gray", "Red", "Green", "Blue"]
+
+
+def _count_children(el: Element) -> int:
+    """Counts how many tags there are inside the Children tag inside the given tag."""
+    count = 0
+    for children_tag in el.getElementsByTagName("Children"):
+        count += len(children_tag.childNodes)
+    return count
 
 
 class Header:
@@ -123,9 +131,9 @@ stripping time stamps and non ascii characters
             self.__seriesHeaders = [
                 SerieHeader(el)
                 for el in self.xmlHeader.documentElement.getElementsByTagName('Element')[1:]
-                # have to remove some nodes also named "Element" introduced in later versions of LIF
+                # Ignore parent Elements and Elements with a special name
                 if el.getAttribute('Name') not in ['BleachPointROISet', 'DCROISet', 'IOManagerConfiguation']
-                   and not el.getAttribute('Name').startswith("Mark_and_Find")
+                   and _count_children(el) == 0
             ]
         return self.__seriesHeaders
 
@@ -168,12 +176,21 @@ stripping time stamps and non ascii characters
 class SerieHeader:
     """The part of the XML header of a Leica LIF files concerning a given serie"""
 
-    def __init__(self, serieElement):
+    root: Element
+
+    def __init__(self, serieElement: Element):
         self.root = serieElement
 
     def getName(self):
         if not hasattr(self, '__name'):
-            self.__name = self.root.getAttribute("Name")
+            node = self.root
+            names = []
+            while not isinstance(node, Document) and node.tagName == "Element":
+                names.insert(0, node.getAttribute("Name"))
+                node = node.parentNode.parentNode
+            if len(names) > 0:
+                del names[0]  # Delete highest entry, which is something useless like "Project"
+            self.__name = " » ".join(names)
         return self.__name
 
     def isPreview(self):
@@ -531,7 +548,8 @@ class Serie(SerieHeader):
         ham = np.hamming(self.get2DShape()[0]) * np.atleast_2d(np.hamming(self.get2DShape()[1])).T
         a = rfft2(self.get2DSlice(T=t0, Z=Z) * ham)
         b = rfft2(self.get2DSlice(T=t1, Z=Z) * ham)
-        R = a*numpy.complex(numpy.real(b), -numpy.imag(b)/numpy.abs(a*numpy.complex(numpy.real(b), -numpy.imag(b))))
+        R = a * numpy.complex(numpy.real(b),
+                              -numpy.imag(b) / numpy.abs(a * numpy.complex(numpy.real(b), -numpy.imag(b))))
         return irfft2(R)
 
     def getDispl2D(self, t0=0, t1=1, Z=0):
@@ -620,5 +638,3 @@ def getRadius(ngb, center, zratio=1, rmin=3, rmax=10, precision=0.1):
             fi * np.exp(-np.arange(len(fi)) / 13.5))
         )[rmin / precision:]
     )
-
-
