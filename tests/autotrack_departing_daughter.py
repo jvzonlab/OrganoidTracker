@@ -16,21 +16,26 @@ experiment = io.load_data_file("S:/AMOLF/groups/zon-group/guizela/multiphoton/or
 # Store mothers cell
 mothers = cell_division_finder.find_mothers(experiment.links)
 
-# Empty list for distance
+# Empty list
 distance_list = []
 distance_36min_list = []
-count_1 = 0
-count_2 = 0
-count_3 = 0
-count_4 = 0
-symmetry =[]
+dz_0_list = []
+dz_1_list = []
+dz_2_list = []
+dz_3_list = []
+dz_4_list = []
+dz_5_list = []
+dz_6_list = []
+dz_7_list = []
+
+
 
 def get_symmetry(links, track_1, track_2):
     """Returns True if symmetric (both divide or both don't divide), False otherwise."""
     if len(track_1) == 0 or len(track_2) == 0:
         # cells are dead, so it's symmetric
         return True
-    elif len(track_1) == 2 or len(track_2)==2:
+    elif len(track_1) == 2 or len(track_2) == 2:
         # Cells are both dividing, so it's symmetric
         return True
     else:
@@ -44,40 +49,35 @@ def get_symmetry(links, track_1, track_2):
         # No idea if it's symmetric or not, but let's assume so
         return True
 
+
 # Get position and distance for every mother cells and their daughters
 for mother in mothers:
     daughter1, daughter2 = experiment.links.find_futures(mother)
     distance = daughter1.distance_squared(daughter2)
     distance_sqrt = math.sqrt(distance)
-
-
-    while True:
-        next_daughters1 = experiment.links.find_futures(daughter1)
-        next_daughters2 = experiment.links.find_futures(daughter2)
-        if len(next_daughters1) != 1 or len(next_daughters2) != 1:
-            break
-        daughter1 = next_daughters1.pop()
-        daughter2 = next_daughters2.pop()
-        distance = daughter1.distance_squared(daughter2)
-        distance_sqrt = math.sqrt(distance)
-        distance_um = experiment.images.resolution().pixel_size_x_um * distance_sqrt
-
-        # Compare the distance of daughter cells in different time point
-        if daughter1.time_point_number() == mother.time_point_number() + 7:
-            distance_list.append(distance_um)
-            distance_36min_list.append(distance_36mins)
-            if distance_um > 11 or distance_36mins > 11 :
-                count_1 = count_1 + 1
-                print(count_1, 'mother', mother, 'daughter', daughter1, daughter2, 'with distance:', distance_um)
-            else:
+    distance_um = experiment.images.resolution().pixel_size_x_um * distance_sqrt
+    dz_1 = daughter1.z - daughter2.z
+    dz_2 = daughter2.z - daughter1.z
+    if dz_1 == 1 or dz_2 == 1 :
+        while True:
+            next_daughters1 = experiment.links.find_futures(daughter1)
+            next_daughters2 = experiment.links.find_futures(daughter2)
+            if len(next_daughters1) != 1 or len(next_daughters2) != 1:
+                break
+            daughter1 = next_daughters1.pop()
+            daughter2 = next_daughters2.pop()
+            distance = daughter1.distance_squared(daughter2)
+            # Compare the distance of daughter cells in different time point
+            if daughter1.time_point_number() == mother.time_point_number() + 7:
+                distance_list.append(distance_um)
+                #count_1 = count_1 + 1
+                print( distance_um)
 
 
 
-#plt.hist(distance_list, color = "lightgreen")
-# .. Loop has ended, now our list is complete
-# Make plot for distance comparison
-#plt.plot(distance_sqrt, symmetry)
-#plt.xlabel('Distance between the center of nucleus (μm)')
-#plt.suptitle('The Distance Between Sister Cells After 2 hours')
-plt.scatter(distance_list, distance_36min_list)
+plt.hist(distance_list)
+plt.xlabel('Distance between the center of nucleus with z > 1 after division(μm)')
 #plt.show()
+
+
+
