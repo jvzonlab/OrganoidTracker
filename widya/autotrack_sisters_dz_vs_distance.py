@@ -25,28 +25,14 @@ dz_4_list = []
 dz_5_list = []
 dz_6_list = []
 dz_7_list = []
-
-
-
-def get_symmetry(links, track_1, track_2):
-    """Returns True if symmetric (both divide or both don't divide), False otherwise."""
-    if len(track_1) == 0 or len(track_2) == 0:
-        # cells are dead, so it's symmetric
-        return True
-    elif len(track_1) == 2 or len(track_2) == 2:
-        # Cells are both dividing, so it's symmetric
-        return True
-    else:
-        # One cell divides, other does not
-        end_marker1 = linking_markers.get_track_end_marker(experiment.links, track_1.find_last_position())
-        end_marker2 = linking_markers.get_track_end_marker(experiment.links, track_2.find_last_position())
-        if end_marker1 == EndMarker.DEAD or end_marker2 == EndMarker.DEAD:
-            # Cell died, other divided, so asymmetric
-            return False
-        # One of the cells went out of the view, so we can no longer track it
-        # No idea if it's symmetric or not, but let's assume so
-        return True
-
+dz_0_distance = []
+dz_1_distance = []
+dz_2_distance = []
+dz_3_distance = []
+dz_4_distance = []
+dz_5_distance = []
+dz_6_distance = []
+dz_7_distance = []
 
 # Get position and distance for every mother cells and their daughters
 for mother in mothers:
@@ -56,28 +42,47 @@ for mother in mothers:
     distance_um = experiment.images.resolution().pixel_size_x_um * distance_sqrt
     dz = abs(daughter1.z - daughter2.z)
     while True:
-        next_daughters1 = experiment.links.find_futures(daughter1)
-        next_daughters2 = experiment.links.find_futures(daughter2)
-        if len(next_daughters1) != 1 or len(next_daughters2) != 1:
-            break
-        daughter1 = next_daughters1.pop()
-        daughter2 = next_daughters2.pop()
-        distance = daughter1.distance_squared(daughter2)
-        # Compare the distance of daughter cells in different time point
-        if daughter1.time_point_number() == mother.time_point_number() + 7:
-            if dz == 0:
-                dz_0_list.append(dz)
-            elif dz == 1:
-                dz_1_list.append(dz)
-            ...
-            #count_1 = count_1 + 1
-            print( distance_um)
+                next_daughters1 = experiment.links.find_futures(daughter1)
+                next_daughters2 = experiment.links.find_futures(daughter2)
+                if len(next_daughters1) != 1 or len(next_daughters2) != 1:
+                    break
+                daughter1 = next_daughters1.pop()
+                daughter2 = next_daughters2.pop()
+                distance = daughter1.distance_squared(daughter2)
+                # Compare the distance of daughter cells in different time point
+                if daughter1.time_point_number() == mother.time_point_number() + 7:
+                    if dz == 0:
+                        dz_0_list.append(dz)
+                        dz_0_distance.append(distance_um)
+                    elif dz == 1:
+                        dz_1_list.append(dz)
+                        dz_1_distance.append(distance_um)
+                    elif dz == 2:
+                        dz_2_list.append(dz)
+                        dz_2_distance.append(distance_um)
+                    elif dz == 3:
+                        dz_3_list.append(dz)
+                        dz_3_distance.append(distance_um)
+                    elif dz == 4:
+                        dz_4_list.append(dz)
+                        dz_4_distance.append(distance_um)
+                    elif dz == 5:
+                        dz_5_list.append(dz)
+                        dz_5_distance.append(distance_um)
+                    elif dz == 6:
+                        dz_6_list.append(dz)
+                        dz_6_distance.append(distance_um)
+                    elif dz == 7:
+                        dz_7_list.append(dz)
+                        dz_7_distance.append(distance_um)
 
 
 
-plt.xlabel('Distance between the center of nucleus with z > 1 after division(μm)')
-#plt.show()
-
-print("avg(dz = 0) =", np.mean(dz_0_list))
-print("avg(dz = 1) = ", np.mean(dz_1_list))
-...
+print("avg(dz = 0) = ", np.mean(dz_0_list), np.mean(dz_0_distance))
+print("avg(dz = 1) = ", np.mean(dz_1_list), np.mean(dz_1_distance))
+print("avg(dz = 2) = ", np.mean(dz_2_list), np.mean(dz_2_distance))
+print("avg(dz = 3) = ", np.mean(dz_3_list), np.mean(dz_3_distance))
+print("avg(dz = 4) = ", np.mean(dz_4_list), np.mean(dz_4_distance))
+print("avg(dz = 5) = ", np.mean(dz_5_list), np.mean(dz_5_distance))
+print("avg(dz = 6) = ", np.mean(dz_6_list), np.mean(dz_6_distance))
+print("avg(dz = 7) = ", np.mean(dz_7_list), np.mean(dz_7_distance))
