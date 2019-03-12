@@ -17,8 +17,6 @@ experiment = io.load_data_file("S:/AMOLF/groups/zon-group/guizela/multiphoton/or
 mothers = cell_division_finder.find_mothers(experiment.links)
 
 # Empty list
-distance_list = []
-distance_36min_list = []
 dz_0_list = []
 dz_1_list = []
 dz_2_list = []
@@ -56,28 +54,30 @@ for mother in mothers:
     distance = daughter1.distance_squared(daughter2)
     distance_sqrt = math.sqrt(distance)
     distance_um = experiment.images.resolution().pixel_size_x_um * distance_sqrt
-    dz_1 = daughter1.z - daughter2.z
-    dz_2 = daughter2.z - daughter1.z
-    if dz_1 == 1 or dz_2 == 1 :
-        while True:
-            next_daughters1 = experiment.links.find_futures(daughter1)
-            next_daughters2 = experiment.links.find_futures(daughter2)
-            if len(next_daughters1) != 1 or len(next_daughters2) != 1:
-                break
-            daughter1 = next_daughters1.pop()
-            daughter2 = next_daughters2.pop()
-            distance = daughter1.distance_squared(daughter2)
-            # Compare the distance of daughter cells in different time point
-            if daughter1.time_point_number() == mother.time_point_number() + 7:
-                distance_list.append(distance_um)
-                #count_1 = count_1 + 1
-                print( distance_um)
+    dz = abs(daughter1.z - daughter2.z)
+    while True:
+        next_daughters1 = experiment.links.find_futures(daughter1)
+        next_daughters2 = experiment.links.find_futures(daughter2)
+        if len(next_daughters1) != 1 or len(next_daughters2) != 1:
+            break
+        daughter1 = next_daughters1.pop()
+        daughter2 = next_daughters2.pop()
+        distance = daughter1.distance_squared(daughter2)
+        # Compare the distance of daughter cells in different time point
+        if daughter1.time_point_number() == mother.time_point_number() + 7:
+            if dz == 0:
+                dz_0_list.append(dz)
+            elif dz == 1:
+                dz_1_list.append(dz)
+            ...
+            #count_1 = count_1 + 1
+            print( distance_um)
 
 
 
-plt.hist(distance_list)
 plt.xlabel('Distance between the center of nucleus with z > 1 after division(μm)')
 #plt.show()
 
-
-
+print("avg(dz = 0) =", np.mean(dz_0_list))
+print("avg(dz = 1) = ", np.mean(dz_1_list))
+...
