@@ -71,19 +71,33 @@ def prompt_load_file(title: str, file_types: List[Tuple[str, str]]) -> Optional[
 
     Returns None if the user pressed Cancel. This function automatically adds an "All supported files" option.
     """
+    file_name, _ = QFileDialog.getOpenFileName(_window(), title, "", _to_file_types_str(file_types))
+    if not file_name:
+        return None
+    return file_name
+
+
+def prompt_load_multiple_files(title: str, file_types: List[Tuple[str, str]]) -> List[str]:
+    """Shows a prompt that asks the user to open multiple files. Example:
+
+        prompt_load_files("Choose images", [("PNG file", "*.png"), ("JPEG file", "*.jpg")])
+
+    Returns an empty list if the user pressed Cancel. This function automatically adds an "All supported files" option.
+    """
+    file_names, _ = QFileDialog.getOpenFileNames(_window(), title, "", _to_file_types_str(file_types))
+    if not file_names:
+        return []
+    return file_names
+
+
+def _to_file_types_str(file_types: List[Tuple[str, str]]) -> str:
     if len(file_types) > 1:
         # Create option "All supported file types"
         extensions = set()
         for name, extension in file_types:
             extensions.add(extension)
         file_types = [("All supported file types", ";".join(extensions))] + file_types
-    file_types_str = ";;".join((name + "("+extension+ ")" for name, extension in file_types))
-
-    file_name, _ = QFileDialog.getOpenFileName(_window(), title, "", file_types_str)
-    if not file_name:
-        return None
-    return file_name
-
+    return ";;".join((name + "("+extension+ ")" for name, extension in file_types))
 
 def prompt_directory(title: str) -> Optional[str]:
     """Shows a prompt that asks the user to select a directory. Returns None if the user pressed Cancel."""
