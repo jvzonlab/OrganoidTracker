@@ -56,7 +56,7 @@ class Experiment:
         for time_point in affected_time_points:
             self.data_axes.update_for_changed_positions(time_point, self._positions.of_time_point(time_point))
 
-    def move_position(self, position_old: Position, position_new: Position) -> bool:
+    def move_position(self, position_old: Position, position_new: Position):
         """Moves the position of a position, preserving any links. (So it's different from remove-and-readd.) The shape
         of a position is not preserved, though. Throws ValueError when the position is moved to another time point. If
         the new position has not time point specified, it is set to the time point o the existing position."""
@@ -69,7 +69,30 @@ class Experiment:
 
         time_point = position_new.time_point()
         self.data_axes.update_for_changed_positions(time_point, self._positions.of_time_point(time_point))
-        return True
+
+    def _scale_to_resolution(self, new_resolution: ImageResolution):
+        """Scales this experiment so that it has a different resolution."""
+        try:
+            old_resolution = self._images.resolution()
+        except UserError:
+            pass  # No resolution was set, do nothing
+        else:
+            x_factor = new_resolution.pixel_size_x_um / old_resolution.pixel_size_x_um
+            z_factor = new_resolution.pixel_size_z_um / old_resolution.pixel_size_z_um
+            t_factor = new_resolution.time_point_interval_m / old_resolution.time_point_interval_m
+            if t_factor < 0.9 or t_factor > 1.1:
+                # We cannot scale in time, unfortunately. Links must go from one time point to the next time point.
+                # So we throw an error if the scale changes too much
+                raise ValueError("Cannot change time scale")
+            if abs(x_factor - 1) < 0.0001 and abs(z_factor - 1) < 0.0001:
+                return  # Nothing to scale
+            scale_factor = Position(x_factor, x_factor, z_factor)
+            print(f"Scaling to {scale_factor}")
+            for time_point in self.time_points():
+                positions = list(self.positions.of_time_point(time_point))
+                for position in positions:
+                    self.move_position(position, position * scale_factor)
+        self.images.set_resolution(new_resolution)
 
     def get_time_point(self, time_point_number: int) -> TimePoint:
         """Gets the time point with the given number. Throws ValueError if no such time point exists. This method is
@@ -182,6 +205,15 @@ class Experiment:
     def merge(self, other: "Experiment"):
         """Merges the position, linking and connections data of two experiments. Images, resolution and scores are not
         yet merged."""
+
+        # Scale the other experiment first
+        try:
+            resolution = self.images.resolution()
+        except UserError:
+            pass
+        else:
+            other._scale_to_resolution(resolution)
+
         self.positions.add_positions_and_shapes(other.positions)
         self.links.add_links(other.links)
         self.connections.add_connections(other.connections)

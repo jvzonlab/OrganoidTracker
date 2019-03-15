@@ -102,12 +102,17 @@ class Position:
             return self  # No need to add anything
         return Position(self.x + other.x, self.y + other.y, self.z + other.z, time_point_number=self._time_point_number)
 
-    def __mul__(self, other: float) -> "Position":
-        """Scalar multiplication. The time point number is unaffected."""
-        if not isinstance(other, float) and not isinstance(other, int):
+    def __mul__(self, other: Union[float, "Position"]) -> "Position":
+        """Multiplication. If you multiply with a number a, this will return a position (x * a, y * a, z * a).
+        If you multiply with another position, (x * a.x, y * a.y, z * a.z) will be returned. The time point number is
+        unaffected."""
+        if not isinstance(other, float) and not isinstance(other, int) and not isinstance(other, Position):
             return NotImplemented
         if other == 1:
             return self
+        if isinstance(other, Position):
+            return Position(self.x * other.x, self.y * other.y, self.z * other.z,
+                            time_point_number=self.time_point_number())
         return Position(self.x * other, self.y * other, self.z * other, time_point_number=self._time_point_number)
 
     def __truediv__(self, other) -> "Position":
