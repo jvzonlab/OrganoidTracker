@@ -229,7 +229,7 @@ class Connections:
             return []
         return connections.find_connections_starting_at(position)
 
-    def find_connections(self, position: Position):
+    def find_connections(self, position: Position) -> Iterable[Position]:
         """Finds connections starting from and going to the given position. See find_connections_starting_at for
         details. This method is slower than find_connections_starting_at, as it has to do more lookups.
 
