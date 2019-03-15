@@ -1,36 +1,42 @@
 from typing import Dict, Any, List, Tuple
 
 import numpy
+from matplotlib import cm
+from matplotlib.axes import Axes
 from matplotlib.collections import LineCollection
 from matplotlib.figure import Figure
 
 from autotrack.core import UserError
-from autotrack.core.connections import Connections
 from autotrack.core.experiment import Experiment
-from autotrack.core.links import Links
-from autotrack.core.position import Position
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
 from autotrack.imaging import angles
-from matplotlib import colors, cm
-
 from autotrack.imaging.grapher import colorline
-
+from autotrack.util.mpl_helper import SANDER_APPROVED_COLORS
 from . import plugin_spindle_markers
+from .plugin_spindle_markers import Spindle
 
-_DIVIDER = 50
+_DIVIDER = 45
 
 
 class _Line:
-    angles: List[Tuple[float, float]]  # List of time and angle tuples. First element is last time point
-    positions: List[Tuple[Position, Position]]
+    angles: List[Tuple[float, float]]  # List of (time, angle) tuples. First element is last time point
+    spindle: Spindle
 
-    def __init__(self, positions: List[Tuple[Position, Position]], angles: List[Tuple[float, float]]):
-        self.positions = positions
+    def __init__(self, spindle: Spindle, angles: List[Tuple[float, float]]):
+        self.spindle = spindle
         self.angles = angles
 
     def is_rotating(self) -> bool:
         return abs(self.angles[0][1]) > _DIVIDER
+
+    def get_rotation(self) -> float:
+        """Gets the change in angle from the first to the last time point"""
+        return self.angles[0][1]
+
+    def get_duration(self) -> float:
+        """Gets the time that the spindle was visible."""
+        return self.angles[0][0]
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -45,7 +51,7 @@ def _view_spindle_angle(window: Window):
     experiment = window.get_experiment()
     angle_lists = _get_spindle_angles_list(experiment)
 
-    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _show_figure(figure, angle_lists))
+    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _show_figure(figure, angle_lists), size_cm=(8,9))
 
 
 def _view_average_spindle_rotation(window: Window):
@@ -71,16 +77,9 @@ def _get_spindle_angles_list(experiment: Experiment) -> List[_Line]:
     connections = experiment.connections
     minutes_per_time_point = experiment.images.resolution().time_point_interval_m
     angle_lists = []
-    for track in experiment.links.find_all_tracks():
-        first_position = track.find_first_position()
-        if not plugin_spindle_markers.is_part_of_spindle(links, first_position):
-            continue
-        for connected_position in connections.find_connections_starting_at(first_position):
-            if not plugin_spindle_markers.is_part_of_spindle(links, connected_position):
-                continue
-            angle_list = _create_angles_list(links, connections,
-                                             first_position, connected_position, minutes_per_time_point)
-            angle_lists.append(angle_list)
+    for spindle in plugin_spindle_markers.find_all_spindles(links, connections):
+        angle_list = _create_angles_list(spindle, minutes_per_time_point)
+        angle_lists.append(angle_list)
     return angle_lists
 
 
@@ -95,39 +94,29 @@ def _view_spindle_locations(window: Window):
     figure = window.get_figure()
     axes = figure.gca()
     for angle_list in angle_lists:
-        axes.plot([start.x for start in angle_list.positions[0]], [start.y for start in angle_list.positions[0]],
+        spindle = angle_list.spindle
+        axes.plot([spindle.positions1[0].x, spindle.positions2[0].x],
+                  [spindle.positions1[0].y, spindle.positions2[0].y],
                   color="lightgray", linewidth=3)
-        axes.plot([end.x for end in angle_list.positions[-1]], [end.y for end in angle_list.positions[-1]], color="red",
-                  linewidth=3)
-        axes.add_collection(colorline([_mean(pos[0].x, pos[1].x) for pos in angle_list.positions],
-                                      [_mean(pos[0].y, pos[1].y) for pos in angle_list.positions],
+        axes.plot([spindle.positions1[-1].x, spindle.positions2[-1].x],
+                  [spindle.positions1[-1].y, spindle.positions2[-1].y],
+                  color="red", linewidth=3)
+        axes.add_collection(colorline([_mean(pos[0].x, pos[1].x) for pos in zip(spindle.positions1, spindle.positions2)],
+                                      [_mean(pos[0].y, pos[1].y) for pos in zip(spindle.positions1, spindle.positions2)],
                                       cmap=cm.get_cmap('Reds'),
                                       linewidth=1))
     figure.canvas.draw()
 
 
-def _create_angles_list(links: Links, connections: Connections, position1: Position, position2: Position,
-                        minutes_per_time_point: float) -> _Line:
+def _create_angles_list(spindle: Spindle, minutes_per_time_point: float) -> _Line:
     """Gets a list of (minute, angle) points for the mitotic spindle."""
-    position_list = []
     angle_list = []
     time_point = 0
-    while connections.contains_connection(position1, position2) and plugin_spindle_markers.is_part_of_spindle(links,
-                                                                                                              position1) \
-            and plugin_spindle_markers.is_part_of_spindle(links, position2):
+    for position1, position2 in zip(spindle.positions1, spindle.positions2):
         angle = angles.direction_2d(position1, position2)
         angle_list.append((time_point * minutes_per_time_point, angle))
-        position_list.append((position1, position2))
-
-        # Find positions in next time point
-        futures1 = links.find_futures(position1)
-        futures2 = links.find_futures(position2)
-        if len(futures1) != 1 or len(futures2) != 1:
-            break
 
         # Advance to next time point
-        position1 = futures1.pop()
-        position2 = futures2.pop()
         time_point += 1
 
     # Make angles relative to final angle
@@ -136,13 +125,13 @@ def _create_angles_list(links: Links, connections: Connections, position1: Posit
         angle_list = [(final_time - time, angles.direction_change_of_line(final_angle, angle)) for time, angle in
                       angle_list]
 
-    return _Line(position_list, angle_list)
+    return _Line(spindle, angle_list)
 
 
 def _get_highest_time(angle_lists: List[_Line]) -> float:
     highest_time = 0
     for line in angle_lists:
-        highest_line_time = line.angles[0][0]  # Highest time will be the x coord of the first entry
+        highest_line_time = line.get_duration()  # Highest time will be the x coord of the first entry
         if highest_line_time > highest_time:
             highest_time = highest_line_time
     return highest_time
@@ -150,19 +139,29 @@ def _get_highest_time(angle_lists: List[_Line]) -> float:
 
 def _show_figure(figure: Figure, angle_lists: List[_Line]):
     highest_time = _get_highest_time(angle_lists)
-    rotating_list = [angle_list.angles for angle_list in angle_lists if angle_list.is_rotating()]
-    not_rotating_list = [angle_list.angles for angle_list in angle_lists if not angle_list.is_rotating()]
-    color_names = colors.TABLEAU_COLORS
-    color_codes = [colors.to_rgba(name, 1) for name in color_names]
+    lumen_list = [angle_list for angle_list in angle_lists if angle_list.spindle.lumen is not None]
+    not_lumen_list = [angle_list for angle_list in angle_lists if angle_list.spindle.lumen is None]
 
-    axes = figure.subplots(2, sharex=True)
+    angles_of_list = [l.angles for l in lumen_list]
+    angles_of_non_list = [l.angles for l in not_lumen_list]
+    average_of_list = numpy.mean([angle_list.get_duration() for angle_list in lumen_list])
+    average_of_non_list = numpy.mean([angle_list.get_duration() for angle_list in not_lumen_list])
+
+    figure.suptitle("Rotation of spindle over time")
+    axes: Tuple[Axes, Axes] = figure.subplots(2, sharex=True)
     axes[0].set_xlim(highest_time, 0)
     axes[0].set_ylim(-5, 95)
-    axes[0].set_title('Rotation of spindle since start of mitosis')
-    axes[0].add_collection(LineCollection(rotating_list, colors=color_codes))
-    axes[0].set_ylabel(f"More than {_DIVIDER} degrees")
-
+    axes[0].add_collection(LineCollection(angles_of_list, colors=SANDER_APPROVED_COLORS))
+    axes[0].set_title(f"Clearly next to a lumen", fontdict={"fontsize": "medium"})
+    axes[0].text(highest_time - 3, 1, f"Avg. duration: {average_of_list:.1f} min")
     axes[1].set_ylim(-5, 95)
-    axes[1].add_collection(LineCollection(not_rotating_list, colors=color_codes))
+    axes[1].add_collection(LineCollection(angles_of_non_list, colors=SANDER_APPROVED_COLORS))
     axes[1].set_xlabel("Time until spindle disappears (minutes)")
-    axes[1].set_ylabel(f"Less than {_DIVIDER} degrees")
+    axes[1].set_title(f"No clear lumen visible", fontdict={"fontsize": "medium"})
+    axes[1].text(highest_time - 3, 80, f"Avg. duration: {average_of_non_list:.1f} min")
+    for ax in axes:
+        ax.tick_params(direction="in", bottom=True, top=True, left=True, right=True, which="both")
+        ax.set_yticks([0, 45, 90], minor=False)
+        ax.set_yticks([15, 30, 60, 75], minor=True)
+        ax.plot([min(ax.get_xlim()), max(ax.get_xlim())], [_DIVIDER, _DIVIDER], color="lightgray")
+    figure.text(0.01, 0.5, 'Rotation of spindle (degrees)', va='center', rotation='vertical')

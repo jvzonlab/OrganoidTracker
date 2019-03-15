@@ -98,8 +98,6 @@ def _create_angles_list(links: Links, connections: Connections, position1: Posit
     # Find lumen
     lumen = None
     for connection in connections.find_connections(position1):
-        if connection.time_point_number() == 26 and connection.x > 660:
-            print(connection)
         if plugin_spindle_markers.is_lumen(links, connection):
             lumen = connection
     if lumen is not None and not connections.contains_connection(position2, lumen):
@@ -130,8 +128,6 @@ def _get_highest_time(angle_lists: List[_Line]) -> float:
 
 
 def _show_figure(figure: Figure, angle_lists: List[_Line]):
-    for angle_list in angle_lists:
-        print(angle_list.positions)
     highest_time = _get_highest_time(angle_lists)
     raw_angle_list = [angle_list.angles for angle_list in angle_lists]
     last_angle_list = [angle_list.angles[0] for angle_list in angle_lists]
@@ -140,9 +136,9 @@ def _show_figure(figure: Figure, angle_lists: List[_Line]):
     first_angle_list_x, first_angle_list_y = [x_y[0] for x_y in first_angle_list], [x_y[1] for x_y in first_angle_list]
 
     axes = figure.gca()
-    axes.tick_params(direction="in", bottom=True, top=True, left=True, right=True, which="both")
     axes.set_xlim(highest_time + 3, -3)
     axes.set_ylim(-5, 95)
+    axes.tick_params(direction="in", bottom=True, top=True, left=True, right=True, which="both")
     axes.set_yticks([0, 45, 90], minor=False)
     axes.set_yticks([15, 30, 60, 75], minor=True)
     axes.set_title('Rotation of spindle compared to lumen')
