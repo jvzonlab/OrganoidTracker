@@ -89,6 +89,9 @@ class Window:
         """Gets the experiment that is being shown."""
         return self.__gui_experiment.experiment
 
+    def get_experiments(self) -> Iterable[Experiment]:
+        return self.__gui_experiment.get_experiments()
+
     def get_gui_experiment(self) -> GuiExperiment:
         """Gets the GUI experiment, which stores the experiment along with undo/redo data, and some other non-saveable
         data."""

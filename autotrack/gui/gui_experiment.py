@@ -32,6 +32,14 @@ class _EventListeners:
             for listener in listeners:
                 listener(*args)
 
+class _SingleGuiExperiment:
+    experiment: Experiment
+    undo_redo: UndoRedo
+
+    def __init__(self, experiment: Experiment):
+        self.experiment = experiment
+        self.undo_redo = UndoRedo()
+
 
 class GuiExperiment:
     """Used to store the experiment, along with some data that is only relevant within a GUI app, but that doesn't
@@ -39,16 +47,14 @@ class GuiExperiment:
 
     KNOWN_EVENTS = {"data_updated_event", "any_updated_event", "command_event"}
 
-    _experiment: Experiment
-    _undo_redo: UndoRedo
+    _experiments: List[_SingleGuiExperiment]
     _data_updated_handlers: _EventListeners
     _any_updated_event: _EventListeners
     _command_handlers: _EventListeners
     _position_types: Dict[str, PositionType]
 
     def __init__(self, experiment: Experiment):
-        self._experiment = experiment
-        self._undo_redo = UndoRedo()
+        self._experiments = [_SingleGuiExperiment(experiment)]
 
         self._data_updated_handlers = _EventListeners()
         self._any_updated_event = _EventListeners()
@@ -57,11 +63,11 @@ class GuiExperiment:
 
     @property  # read-only
     def undo_redo(self) -> UndoRedo:
-        return self._undo_redo
+        return self._experiments[-1].undo_redo
 
     @property  # read-only
     def experiment(self) -> Experiment:
-        return self._experiment
+        return self._experiments[-1].experiment
 
     def register_event_handler(self, event: str, source: str, action: Callable):
         """Registers an event handler. Supported events:
@@ -101,9 +107,29 @@ class GuiExperiment:
             return None
         return self._position_types.get(save_name)
 
-    def set_experiment(self, experiment: Experiment):
-        self._experiment = experiment
+    def add_experiment(self, experiment: Experiment):
+        # Remove current experiment if it contains no data
+        if self.experiment.first_time_point_number() is None:
+            self.remove_experiment(self.experiment)
+
+        # Add new experiment
+        self._experiments.append(_SingleGuiExperiment(experiment))
         self._any_updated_event.call_all()
+
+    def get_experiments(self) -> Iterable[Experiment]:
+        """Gets all currently loaded experiments."""
+        for gui_experiment in self._experiments:
+            yield gui_experiment.experiment
+
+    def remove_experiment(self, experiment: Experiment):
+        """Removes the given experiment from the list of loaded experiments. If no experiments are remaining, an empty
+        one will be initialized."""
+        for i in range(len(self._experiments)):
+            if self._experiments[i].experiment is experiment:
+                del self._experiments[i]
+                break
+        if len(self._experiments) == 0:  # Prevent list from being empty
+            self._experiments.append(_SingleGuiExperiment(Experiment()))
 
     def redraw_data(self):
         """Redraws the main figure using the latest values from the experiment."""

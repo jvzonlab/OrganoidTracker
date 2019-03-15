@@ -54,7 +54,14 @@ def new(window: Window):
 
     visualizer = EmptyVisualizer(window)
     activate(visualizer)
-    window.get_gui_experiment().set_experiment(Experiment())
+    window.get_gui_experiment().add_experiment(Experiment())
+
+
+def close_experiment(window: Window):
+    """Closes the current experiment."""
+    if not ask_save_unsaved_changes(window.get_gui_experiment()):
+        return  # Cancelled
+    window.get_gui_experiment().remove_experiment(window.get_experiment())
 
 
 def load_images(window: Window):
@@ -127,8 +134,7 @@ def load_tracking_data(window: Window):
     # Transfer image loader from old experiment
     new_experiment.images.image_loader(window.get_experiment().images.image_loader())
 
-    window.get_gui_experiment().set_experiment(new_experiment)
-    window.redraw_data()
+    window.get_gui_experiment().add_experiment(new_experiment)
 
 
 def export_positions_and_shapes(experiment: Experiment):
