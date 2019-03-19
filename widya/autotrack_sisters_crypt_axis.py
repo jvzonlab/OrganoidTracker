@@ -42,14 +42,15 @@ for mother in mothers:
             daughter1 = next_daughters1.pop()
             daughter2 = next_daughters2.pop()
             # get the distance of sister cells to the axis
-            #pos_axis_d1 = experiment.data_axes.to_position_on_original_axis(experiment.links, daughter1).pos
-            #pos_axis_d2 = experiment.data_axes.to_position_on_original_axis(experiment.links, daughter2).pos
-            #distance_um_d1 = experiment.images.resolution().pixel_size_x_um * pos_axis_d1
-            #distance_um_d2 = experiment.images.resolution().pixel_size_x_um * pos_axis_d2
+            pos_axis_d1 = experiment.data_axes.to_position_on_original_axis(experiment.links, daughter1).pos
+            pos_axis_d2 = experiment.data_axes.to_position_on_original_axis(experiment.links, daughter2).pos
+            distance_um_d1 = experiment.images.resolution().pixel_size_x_um * pos_axis_d1
+            distance_um_d2 = experiment.images.resolution().pixel_size_x_um * pos_axis_d2
+            distance_d1_d2 = distance_um_d1 or distance_um_d2
             if daughter1.time_point_number() == mother.time_point_number() + 10:
-                if distance_um_2 > 30:
-                #sister1_pos_axis.append(distance_um_d1)
-                #sister2_pos_axis.append(distance_um_d2)
+                sister1_pos_axis.append(distance_um_d1)
+                sister2_pos_axis.append(distance_um_d2)
+                if distance_d1_d2 > 40:
                     track_1 = experiment.links.get_track(daughter1)
                     track_2 = experiment.links.get_track(daughter2)
                 # check symmetry
@@ -61,10 +62,10 @@ for mother in mothers:
                         print(count_2, mother, daughter1, daughter2, "cells are not symmetric")
 
 
-#plt.hist(sister1_pos_axis, color ='lightblue')
+plt.hist(sister1_pos_axis, color ='lightblue')
 #plt.hist(sister2_pos_axis, color ='blue')
-plt.hist(mother_pos_axis, color ='lightgreen')
+#plt.hist(mother_pos_axis, color ='lightgreen')
 plt.xlabel('Distance (um)')
-#plt.suptitle('Sister cell distance to axis')
-plt.suptitle('Mother cells distance to axis')
+plt.suptitle('Sister cell distance to axis')
+#lt.suptitle('Mother cells distance to axis')
 plt.show()
