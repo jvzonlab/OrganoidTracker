@@ -4,6 +4,7 @@ from autotrack.core.connections import Connections
 from autotrack.core.links import Links, LinkingTrack
 from autotrack.core.position import Position, PositionType
 from autotrack.gui.window import Window
+from autotrack.imaging import angles
 from autotrack.linking_analysis import linking_markers
 
 SPINDLE = PositionType("SPINDLE", "mitotic spindle", (200, 200, 0))
@@ -57,6 +58,12 @@ class Spindle:
 
     def __str__(self):
         return f"{len(self.positions1)} spindle positions, {len(self.midbody)} midbody positions"
+
+    def get_orientation_change(self) -> float:
+        """Gets how many degrees the orientation of the spindle changed."""
+        first_orientation = angles.direction_2d(self.positions1[0], self.positions2[0])
+        last_orientation = angles.direction_2d(self.positions1[-1], self.positions2[-1])
+        return angles.direction_change_of_line(first_orientation, last_orientation)
 
 
 def _find_spindle(links: Links, connections: Connections, track: LinkingTrack) -> Optional[Spindle]:

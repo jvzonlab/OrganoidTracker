@@ -139,25 +139,25 @@ def _get_highest_time(angle_lists: List[_Line]) -> float:
 
 def _show_figure(figure: Figure, angle_lists: List[_Line]):
     highest_time = _get_highest_time(angle_lists)
-    lumen_list = [angle_list for angle_list in angle_lists if angle_list.spindle.lumen is not None]
-    not_lumen_list = [angle_list for angle_list in angle_lists if angle_list.spindle.lumen is None]
+    midbody_list = [angle_list for angle_list in angle_lists if len(angle_list.spindle.midbody) > 0]
+    no_midbody_list = [angle_list for angle_list in angle_lists if len(angle_list.spindle.midbody) == 0]
 
-    angles_of_list = [l.angles for l in lumen_list]
-    angles_of_non_list = [l.angles for l in not_lumen_list]
-    average_of_list = numpy.mean([angle_list.get_duration() for angle_list in lumen_list])
-    average_of_non_list = numpy.mean([angle_list.get_duration() for angle_list in not_lumen_list])
+    angles_of_list = [l.angles for l in midbody_list]
+    angles_of_non_list = [l.angles for l in no_midbody_list]
+    average_of_list = numpy.mean([angle_list.get_duration() for angle_list in midbody_list])
+    average_of_non_list = numpy.mean([angle_list.get_duration() for angle_list in no_midbody_list])
 
     figure.suptitle("Rotation of spindle over time")
     axes: Tuple[Axes, Axes] = figure.subplots(2, sharex=True)
     axes[0].set_xlim(highest_time, 0)
     axes[0].set_ylim(-5, 95)
     axes[0].add_collection(LineCollection(angles_of_list, colors=SANDER_APPROVED_COLORS))
-    axes[0].set_title(f"Clearly next to a lumen", fontdict={"fontsize": "medium"})
+    axes[0].set_title(f"Shows a midbody", fontdict={"fontsize": "medium"})
     axes[0].text(highest_time - 3, 1, f"Avg. duration: {average_of_list:.1f} min")
     axes[1].set_ylim(-5, 95)
     axes[1].add_collection(LineCollection(angles_of_non_list, colors=SANDER_APPROVED_COLORS))
     axes[1].set_xlabel("Time until spindle disappears (minutes)")
-    axes[1].set_title(f"No clear lumen visible", fontdict={"fontsize": "medium"})
+    axes[1].set_title(f"Shows no midbody", fontdict={"fontsize": "medium"})
     axes[1].text(highest_time - 3, 80, f"Avg. duration: {average_of_non_list:.1f} min")
     for ax in axes:
         ax.tick_params(direction="in", bottom=True, top=True, left=True, right=True, which="both")
