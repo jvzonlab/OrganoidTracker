@@ -59,11 +59,11 @@ def _get_x_min_avg_max(angle_lists: List[_Line]) -> Tuple[List[float], List[floa
     avg_minus_std_list = list()
     avg_list = list()
     avg_plus_std_list = list()
-    for i in range(1, length_of_list):
+    for i in range(1, length_of_list + 1):
         angle_values = list()
         time_value = 0
         for angle_list in angle_lists:
-            if len(angle_list.angles) > i:
+            if len(angle_list.angles) >= i:
                 time_value = angle_list.angles[-i][0]
                 angle_values.append(angle_list.angles[-i][1])
 
@@ -78,6 +78,7 @@ def _get_x_min_avg_max(angle_lists: List[_Line]) -> Tuple[List[float], List[floa
 def _view_spindle_angle(window: Window):
     experiment = window.get_experiment()
     angle_lists = _get_spindle_angles_list(experiment)
+    angle_lists = [angle_list for angle_list in angle_lists if angle_list.get_duration() <= 25]
 
     dialog.popup_figure(window.get_gui_experiment(), lambda figure: _show_figure(figure, angle_lists), size_cm=(8,9))
 
@@ -184,7 +185,7 @@ def _show_figure(figure: Figure, angle_lists: List[_Line]):
     avg_non_t_list, avg_non_min_list, avg_non_avg_list, avg_non_max_list = _get_x_min_avg_max(non_rotating_list)
 
     figure.suptitle("Rotation of spindle over time")
-    axes: Tuple[Tuple[Axes, Axes], Tuple[Axes, Axes]] = figure.subplots(nrows=2, ncols=2, sharex="col", sharey=True)
+    axes: Tuple[Tuple[Axes, Axes], Tuple[Axes, Axes]] = figure.subplots(nrows=2, ncols=2, sharex=True, sharey=True)
 
     for row in axes:
         for ax in row:
@@ -193,18 +194,17 @@ def _show_figure(figure: Figure, angle_lists: List[_Line]):
             ax.set_yticks([15, 30, 60, 75], minor=True)
             ax.set_ylim(-5, 95)
 
-    axes[0][0].set_xlim(highest_time, 0)
+    axes[0][0].set_xlim(highest_time + 3, 0)
     _draw_horline(axes[0][0])
     axes[0][0].add_collection(LineCollection(angles_of_list, colors=SANDER_APPROVED_COLORS))
     axes[0][0].set_title(f"More than 45 degrees", fontdict={"fontsize": "medium"})
-    axes[0][0].text(highest_time - 3, 1, f"Avg. duration: {average_of_list:.1f} min")
+    #axes[0][0].text(highest_time - 3, 1, f"Avg. duration: {average_of_list:.1f} min")
     _draw_horline(axes[1][0])
     axes[1][0].add_collection(LineCollection(angles_of_non_list, colors=SANDER_APPROVED_COLORS))
     axes[1][0].set_xlabel("Time until spindle disappears (minutes)")
     axes[1][0].set_title(f"Less than 45 degrees", fontdict={"fontsize": "medium"})
-    axes[1][0].text(highest_time - 3, 80, f"Avg. duration: {average_of_non_list:.1f} min")
+    #axes[1][0].text(highest_time - 3, 80, f"Avg. duration: {average_of_non_list:.1f} min")
     _draw_horline(axes[0][1])
-    axes[0][1].set_xlim(25, 0)
     axes[0][1].plot(avg_t_list, avg_avg_list, color="#0984e3")
     axes[0][1].fill_between(avg_t_list, avg_min_list, avg_max_list, facecolor="#74b9ff")
     _draw_horline(axes[1][1])
