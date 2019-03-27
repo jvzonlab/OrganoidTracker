@@ -270,8 +270,14 @@ def save_positions_and_shapes_to_json(experiment: Experiment, json_file_name: st
     data_structure = _encode_positions_and_shapes(experiment.positions)
 
     _create_parent_directories(json_file_name)
+
+    json_file_name_old = json_file_name + ".OLD"
+    if os.path.exists(json_file_name):
+        os.rename(json_file_name, json_file_name_old)
     with open(json_file_name, 'w') as handle:
         json.dump(data_structure, handle, cls=_MyEncoder)
+    if os.path.exists(json_file_name_old):
+        os.remove(json_file_name_old)
 
 
 def _encode_positions_and_shapes(positions_and_shapes: PositionCollection):
@@ -364,8 +370,13 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
     save_data["image_offsets"] = experiment.images.offsets.to_list()
 
     _create_parent_directories(json_file_name)
+    json_file_name_old = json_file_name + ".OLD"
+    if os.path.exists(json_file_name):
+        os.rename(json_file_name, json_file_name_old)
     with open(json_file_name, 'w') as handle:
         json.dump(save_data, handle, cls=_MyEncoder)
+    if os.path.exists(json_file_name_old):
+        os.remove(json_file_name_old)
 
 
 def load_links_from_json(json_file_name: str, min_time_point: int = 0, max_time_point: int = 5000) -> Links:
