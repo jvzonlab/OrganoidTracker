@@ -48,7 +48,7 @@ for mother in mothers:
             track_1 = experiment.links.get_track(daughter1)
             track_2 = experiment.links.get_track(daughter2)
             print(len(track_1.get_next_tracks()), len(track_2.get_next_tracks()))
-            if get_symmetry(experiment.links, track_1, track_2):
+            if get_symmetry(experiment, track_1, track_2):
                 symmetric_2h_list.append(distance_um)
                 symmetric_36_mins_list.append(distance_36mins)
                 count_1 = count_1+1
