@@ -54,7 +54,7 @@ for experiment in experiments:
                 track_2 = experiment.links.get_track(daughter2)
 
                 #print(count_1, len(track_1.get_next_tracks()), len(track_2.get_next_tracks()))
-                if get_symmetry(experiment.links, track_1, track_2):
+                if get_symmetry(experiment, track_1, track_2):
                     symmetric_2h_list.append(distance_um)
                     symmetric_36_mins_list.append(distance_36mins)
                     count_1 = count_1+1
@@ -66,6 +66,7 @@ for experiment in experiments:
                     #print(count_2, mother, daughter1, daughter2, "cells are not symmetric")
             if daughter1.time_point_number() == mother.time_point_number() + 3:
                 distance_36mins = distance_um
+
 
 # .. Loop has ended, now our list is complete
 # Make plot for distance comparison
