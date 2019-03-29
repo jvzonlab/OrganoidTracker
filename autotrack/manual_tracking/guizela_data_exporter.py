@@ -56,7 +56,9 @@ class _TrackExporter:
         _allow_loading_classes_without_namespace()
         import track_lib_v4
 
-        track = track_lib_v4.Track(x=numpy.array([position.x, position.y, position.z]), t=position.time_point_number())
+        moved_position = position - self._offsets.of_time_point(position.time_point())
+        track = track_lib_v4.Track(x=numpy.array([moved_position.x, moved_position.y, moved_position.z]),
+                                   t=position.time_point_number())
 
         while True:
             future_positions = self._links.find_futures(position)
@@ -79,7 +81,7 @@ class _TrackExporter:
 
             # Add point to track
             position = future_positions.pop()
-            moved_position = position + self._offsets.of_time_point(position.time_point())
+            moved_position = position - self._offsets.of_time_point(position.time_point())
             track.add_point(x=numpy.array([moved_position.x, moved_position.y, moved_position.z]),
                             t=position.time_point_number())
 
