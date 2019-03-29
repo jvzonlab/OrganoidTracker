@@ -9,14 +9,14 @@ def get_symmetry(experiment: Experiment, track_1: LinkingTrack, track_2: Linking
     if fate_1.type == CellFateType.WILL_DIVIDE and fate_2.type == CellFateType.WILL_DIVIDE:
         # Both are dividing
         return True
-    if (fate_1.type == CellFateType.WILL_DIE or fate_1.type == CellFateType.WILL_SHED)\
-            and (fate_2.type == CellFateType.WILL_DIE or fate_2.type == CellFateType.WILL_SHED):
-        # Both are dieing
+    if fate_1.type == CellFateType.WILL_DIVIDE or (fate_1.type == CellFateType.WILL_DIE or fate_1.type == CellFateType.WILL_SHED)\
+            and fate_2.type == CellFateType.WILL_DIVIDE or (fate_2.type == CellFateType.WILL_DIE or fate_2.type == CellFateType.WILL_SHED):
+        # One dead or shed, one divide
         return True
     if fate_1.type == CellFateType.JUST_MOVING and fate_2.type == CellFateType.JUST_MOVING:
         # Both are moving
         return True
     if fate_1.type == CellFateType.UNKNOWN or fate_2.type == CellFateType.UNKNOWN:
-        # Don't know
-        return ...
+        # Don't know the fate of one of the cells
+        return False
     return False
