@@ -65,9 +65,13 @@ for experiment in experiments:
                     track_1 = experiment.links.get_track(daughter1)
                     track_2 = experiment.links.get_track(daughter2)
                     # check symmetry
-                    if get_symmetry(experiment.links, track_1, track_2):
+
+                    if get_symmetry(experiment, track_1, track_2):
                         symmetric.append(distance_um_2)
                         #symmetric.append(d_pos)
+
+                    if get_symmetry(experiment, track_1, track_2):
+
                         count_1 = count_1 + 1
                         #print(count_1, "cells are symmetric")
                     else:
@@ -134,4 +138,5 @@ plt.xlabel('Position in crypt-villus axis(μm)')
 plt.ylabel('Amount of cells')
 #plt.suptitle('Differences in Position in Cyrpt-Villus Axis Between Two Sister Cells')
 plt.suptitle('Mother Cells Positions in Crypt-Villus Axis')
+
 plt.show()
