@@ -12,6 +12,7 @@ from widya.autotrack_get_symmetry import get_symmetry
 # List
 mother_pos_axis = []
 asymmetric = []
+symmetric = []
 #sister1_pos_axis =[]
 #sister2_pos_axis = []
 sisters_distance_list =[]
@@ -65,41 +66,72 @@ for experiment in experiments:
                     track_2 = experiment.links.get_track(daughter2)
                     # check symmetry
                     if get_symmetry(experiment.links, track_1, track_2):
+                        symmetric.append(distance_um_2)
+                        #symmetric.append(d_pos)
                         count_1 = count_1 + 1
                         #print(count_1, "cells are symmetric")
                     else:
-                        asymmetric.append(d_pos)
+                        #asymmetric.append(d_pos)
+                        asymmetric.append(distance_um_2)
                         count_2 = count_2 + 1
                         #print(count_2, mother, distance_um_2, "cells are not symmetric")
                         #print(count_2, mother, d_pos, "cells are not symmetric")
 
 plt.rcParams["font.family"] = "arial"
 
-# Scott's rule
+# Scott's rule histogram
 stdv_mother = np.std(mother_pos_axis)
 stdv_sister = np.std(sisters_distance_list)
-stdv_asym = np.std(asymmetric)
+mean_mother = np.average(mother_pos_axis)
+mean_sister = np.average(sisters_distance_list)
+#print (mean_mother)
+#print (mean_sister)
+
 n_mother = len(mother_pos_axis)
-n_asym = len(asymmetric)
+#n_asym = len(asymmetric)
 n_sister = len(sisters_distance_list)
-h_m = (3.5*(stdv_mother))/(math.pow(n_mother, 1/3))
-h_a = (3.5*(stdv_asym))/(math.pow(n_asym, 1/3))
-h_s = (3.5*(stdv_sister))/(math.pow(n_sister, 1/3))
-#print(h_a)
-#plt.hist(mother_pos_axis, bins=[0, h_m, h_m*2, h_m*3, h_m*4, h_m*5, h_m*6, h_m*7, h_m*8, h_m*9, h_m*10, h_m*11,h_m*12,h_m*13, h_m*14, h_m*15, h_m*16], color ='lightblue')
+h_m_1 = (3.5*(stdv_mother))/(math.pow(n_mother, 1/3))
+h_s_1 = (3.5*(stdv_sister))/(math.pow(n_sister, 1/3))
+
+plt.hist(mother_pos_axis, bins=[0, h_m_1, h_m_1*2, h_m_1*3, h_m_1*4, h_m_1*5, h_m_1*6, h_m_1*7, h_m_1*8, h_m_1*9, h_m_1*10, h_m_1*11,h_m_1*12,h_m_1*13, h_m_1*14, h_m_1*15, h_m_1*16], color ='lightblue')
 
 #plt.hist(mother_pos_axis, bins = [0,10,20,30,40,50,60,70,80,90], color ='lightblue')
-plt.hist(sisters_distance_list,bins =[0, h_s, h_s*2, h_s*3, h_s*4, h_s*5, h_s*6, h_s*7, h_s*8, h_s*9, h_s*10, h_s*11,h_s*12, h_s*13, h_s*14], color ='lightblue')
+#plt.hist(sisters_distance_list,bins =[0, h_s_1, h_s_1*2, h_s_1*3, h_s_1*4, h_s_1*5, h_s_1*6, h_s_1*7, h_s_1*8, h_s_1*9, h_s_1*10, h_s_1*11,h_s_1*12, h_s_1*13, h_s_1*14], color ='lightblue')
+
+#symmetric mother plot
+plt.hist(symmetric,  bins=[0, h_m_1, h_m_1*2, h_m_1*3, h_m_1*4, h_m_1*5, h_m_1*6, h_m_1*7, h_m_1*8, h_m_1*9, h_m_1*10, h_m_1*11,h_m_1*12,h_m_1*13, h_m_1*14, h_m_1*15, h_m_1*16], color ='darksalmon')
 
 #asymmetric mother plot
-#plt.hist(asymmetric, bins=[0, h_a, h_a*2, h_a*3, h_a*4, h_a*5, h_a*6, h_a*7, h_a*8, h_a*9, h_a*10], color ='red')
+plt.hist(asymmetric,  bins=[0, h_m_1, h_m_1*2, h_m_1*3, h_m_1*4, h_m_1*5, h_m_1*6, h_m_1*7, h_m_1*8, h_m_1*9, h_m_1*10, h_m_1*11,h_m_1*12,h_m_1*13, h_m_1*14, h_m_1*15, h_m_1*16], color ='red')
+
+#symmetric sister plot
+#plt.hist(symmetric, bins =[0, h_s_1, h_s_1*2, h_s_1*3, h_s_1*4, h_s_1*5, h_s_1*6, h_s_1*7, h_s_1*8, h_s_1*9, h_s_1*10, h_s_1*11,h_s_1*12, h_s_1*13, h_s_1*14], color ='darksalmon')
+
 
 #asymmetric sister plot
-plt.hist(asymmetric, bins=[0, h_a, h_a*2, h_a*3, h_a*4], color ='red')
+#plt.hist(asymmetric, bins =[0, h_s_1, h_s_1*2, h_s_1*3, h_s_1*4, h_s_1*5, h_s_1*6, h_s_1*7, h_s_1*8, h_s_1*9, h_s_1*10, h_s_1*11,h_s_1*12, h_s_1*13, h_s_1*14], color ='red')
 
-#plt.xlabel('Position in crypt-villus axis(μm)')
-plt.xlabel('Differences in position in crypt-villus axis (μm)')
+#Freedman–Diaconis' choice plot (change the std deviation to 2iQR)
+iqr_mother = np.percentile(mother_pos_axis, 75, interpolation='higher') - np.percentile(mother_pos_axis, 25, interpolation='lower')
+iqr_sisters = np.percentile(sisters_distance_list, 75, interpolation='higher') - np.percentile(sisters_distance_list, 25, interpolation='lower')
+h_m_2 = (2*(iqr_mother))/(math.pow(n_mother, 1/3))
+h_s_2= (2*(iqr_sisters))/(math.pow(n_sister, 1/3))
+
+#plt.hist(mother_pos_axis, bins=[0, h_m_2, h_m_2*2, h_m_2*3, h_m_2*4, h_m_2*5, h_m_2*6, h_m_2*7, h_m_2*8, h_m_2*9, h_m_2*10, h_m_2*11,h_m_2*12,h_m_2*13, h_m_2*14, h_m_2*15, h_m_2*16,h_m_2*17], color ='lightblue')
+
+#plt.hist(sisters_distance_list,bins =[0, h_s_2, h_s_2*2, h_s_2*3, h_s_2*4, h_s_2*5, h_s_2*6, h_s_2*7, h_s_2*8, h_s_2*9, h_s_2*10, h_s_2*11,h_s_2*12, h_s_2*13, h_s_2*14, h_s_2*15], color ='lightblue')
+
+#asymmetric mother plot
+#plt.hist(asymmetric, bins=[0, h_m_2, h_m_2*2, h_m_2*3, h_m_2*4, h_m_2*5, h_m_2*6, h_m_2*7, h_m_2*8, h_m_2*9, h_m_2*10, h_m_2*11,h_m_2*12,h_m_2*13, h_m_2*14, h_m_2*15, h_m_2*16, h_m_2*17], color ='red')
+
+#asymmetric sister plot
+#plt.hist(asymmetric, bins =[0, h_s_2, h_s_2*2, h_s_2*3, h_s_2*4, h_s_2*5, h_s_2*6, h_s_2*7, h_s_2*8, h_s_2*9, h_s_2*10, h_s_2*11,h_s_2*12, h_s_2*13, h_s_2*14, h_s_2*15], color ='red')
+
+
+
+plt.xlabel('Position in crypt-villus axis(μm)')
+#plt.xlabel('Differences in position in crypt-villus axis (μm)')
 plt.ylabel('Amount of cells')
-plt.suptitle('Differences in Position in Cyrpt-Villus Axis Between Two Sister Cells')
-#plt.suptitle('Mother Cells Positions in Crypt-Villus Axis')
+#plt.suptitle('Differences in Position in Cyrpt-Villus Axis Between Two Sister Cells')
+plt.suptitle('Mother Cells Positions in Crypt-Villus Axis')
 plt.show()
