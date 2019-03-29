@@ -7,31 +7,30 @@ from autotrack.linking_analysis import linking_markers
 from autotrack.linking_analysis.linking_markers import EndMarker
 import matplotlib.pyplot as plt
 import numpy as np
+
+
+# Loading a new experiment from existing data
 from widya.autotrack_get_symmetry import get_symmetry
 
+experiment = io.load_data_file(
+    "S:/AMOLF/groups/zon-group/guizela/multiphoton/organoids/17-07-28_weekend_H2B-mCherry/nd799xy20-stacks/Automatic analysis/31-1_correctdata.aut")
+
+# Store mothers cell
+mothers = cell_division_finder.find_mothers(experiment.links)
+
 # Empty list for distance
+distance_2h_list = []
+distance_36mins_list = []
 symmetric_36_mins_list = []
 symmetric_2h_list = []
 asymmetric_36_mins_list = []
 asymmetric_2h_list = []
-distance_2h_list =[]
-distance_36mins_list = []
 count_1 = 0
 count_2 = 0
 
-experiments =[
-    io.load_data_file("S:/AMOLF/groups/zon-group/guizela/multiphoton/organoids/17-07-28_weekend_H2B-mCherry/nd799xy20-stacks/Automatic analysis/15-3_with_axis.aut"),
-    io.load_data_file("S:/AMOLF/groups/zon-group/guizela/multiphoton/organoids/17-04-18_weekend_H2B-mCherry/nd410xy12-stacks/analyzed/with_axes(widya).aut"),
-    io.load_data_file("S:/AMOLF/groups/zon-group/guizela/multiphoton/organoids/17-06-23_weekend_H2B-mCherry/nd478xy09-stacks/analyzed/with_axes_widya.aut"),
-    io.load_data_file("S:/AMOLF/groups/zon-group/guizela/multiphoton/organoids/17-07-28_weekend_H2B-mCherry/nd799xy16-stacks/analyzed/updated_axes_widya.aut"),
-    io.load_data_file("S:/AMOLF/groups/zon-group/guizela/multiphoton/organoids/17-07-28_weekend_H2B-mCherry/nd799xy08-stacks/analyzed/lineages.p")
-]
-for experiment in experiments:
-# Store mothers cell
-    mothers = cell_division_finder.find_mothers(experiment.links)
 
 # Get position and distance for every mother cells and their daughters
-    for mother in mothers:
+for mother in mothers:
         daughter1, daughter2 = experiment.links.find_futures(mother)
         distance_1 = daughter1.distance_squared(daughter2)
         distance_sqrt_1 = math.sqrt(distance_1)
@@ -70,10 +69,9 @@ for experiment in experiments:
 
 # .. Loop has ended, now our list is complete
 # Make plot for distance comparison
-plt.rcParams["font.family"] = "arial"
-plt.scatter(symmetric_2h_list, symmetric_36_mins_list, c = "aquamarine")
-plt.scatter(asymmetric_2h_list, asymmetric_36_mins_list, c ="coral")
-plt.xlabel('Distance between sister cells nuclei after 2 hours (μm)')
-plt.ylabel('Distance between sister cells nuclei after 36 mins (μm)')
-plt.suptitle('Distance between sister cells after 2 hours v. 36 mins')
+plt.scatter(symmetric_2h_list, symmetric_36_mins_list, c = "blue")
+plt.scatter(asymmetric_2h_list, asymmetric_36_mins_list, c ="yellow")
+plt.xlabel('distance between sister cells nuclei after 2 hours')
+plt.ylabel('distance between sister cells nuclei after 36 mins')
+plt.suptitle('Sister cells distances after 2 hours v. 36 mins')
 plt.show()
