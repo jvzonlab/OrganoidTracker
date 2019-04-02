@@ -11,7 +11,7 @@ from autotrack.imaging import lif
 
 
 def load_from_lif_file(images: Images, file: str, series_name: str, min_time_point: int = 0,
-                         max_time_point: int = 1000000000):
+                       max_time_point: int = 1000000000):
     """Sets up the experimental images for a LIF file that is not yet opened."""
     reader = lif.Reader(file)
 

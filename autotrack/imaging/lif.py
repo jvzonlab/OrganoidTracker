@@ -181,7 +181,7 @@ class SerieHeader:
     def __init__(self, serieElement: Element):
         self.root = serieElement
 
-    def getName(self):
+    def getName(self) -> str:
         if not hasattr(self, '__name'):
             node = self.root
             names = []
@@ -190,8 +190,11 @@ class SerieHeader:
                 node = node.parentNode.parentNode
             if len(names) > 0:
                 del names[0]  # Delete highest entry, which is something useless like "Project"
-            self.__name = " » ".join(names)
+            self.__name = " >> ".join(names)
         return self.__name
+
+    def getDisplayName(self) -> str:
+        return self.getName().replace(" >> ", " » ")
 
     def isPreview(self):
         if not hasattr(self, '__isPreview'):

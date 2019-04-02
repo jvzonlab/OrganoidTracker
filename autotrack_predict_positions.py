@@ -5,8 +5,8 @@ from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
 from autotrack.core.resolution import ImageResolution
 from autotrack.imaging import general_image_loader, io
-from autotrack.imaging.limited_z_image_loader import LimitedZImageLoader
 from autotrack.position_detection_cnn import predicter
+from autotrack.position_detection_cnn.background_supressing_image_loader import BackgroundSupressingImageLoader
 
 experiment = Experiment()
 
@@ -36,9 +36,9 @@ _output_file = config.get_or_default("output_file", "Automatic positions.aut")
 config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
-experiment.images.image_loader(experiment.images.image_loader())
+experiment.images.image_loader(BackgroundSupressingImageLoader(experiment.images.image_loader()))
 print("Using neural networks to predict positions...")
-positions = predicter.predict(experiment.images, _checkpoints_folder, split_in_four=True, out_dir="out")
+positions = predicter.predict(experiment.images, _checkpoints_folder, split=True, out_dir="out")
 experiment.positions.add_positions_and_shapes(positions)
 
 print("Saving file...")

@@ -85,7 +85,7 @@ def load_images(window: Window):
         # LIF file loading
         from autotrack.imaging import liffile
         reader = lif.Reader(full_path)
-        series = [header.getName() for header in reader.getSeriesHeaders()]
+        series = [header.getDisplayName() for header in reader.getSeriesHeaders()]
         serie_index = option_choose_dialog.popup_image_getter("Choose an image serie", "Choose an image serie", "Image serie:", series)
         if serie_index is not None:
             liffile.load_from_lif_reader(window.get_experiment().images, full_path, reader, serie_index)

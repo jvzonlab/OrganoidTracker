@@ -21,12 +21,12 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
+import itertools
 import logging
 import math
 import os
 from functools import partial
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Iterable, List, TypeVar
 from numpy import ndarray
 
 import numpy
@@ -39,6 +39,8 @@ from autotrack.core.images import Images
 from autotrack.core.position import Position
 from autotrack.core.position_collection import PositionCollection
 from autotrack.core.resolution import ImageResolution
+from autotrack.imaging import image_slicer
+from autotrack.imaging.image_slicer import Slicer3d
 from autotrack.position_detection_cnn.convolutional_neural_network import build_fcn_model
 
 logging.basicConfig()
@@ -47,17 +49,23 @@ logger.setLevel(logging.DEBUG)
 tf.logging.set_verbosity(tf.logging.INFO)
 
 
-def _get_slices(volume_zyx: Tuple[int, int, int], slice_size_zyx: Tuple[int, int, int], slice_margin_zyx: Tuple[int, int, int]):
-    start_x, start_y, start_z = 0, 0, 0
-    while start_z < volume_zyx[0]:
-        while start_y < volume_zyx[1]:
-            while start_x < volume_zyx[2]:
-                yield ((start_z - slice_margin_zyx[0], start_z + slice_size_zyx[0] + slice_margin_zyx[0]),
-                       (start_y - slice_margin_zyx[1], start_y + slice_size_zyx[1] + slice_margin_zyx[1]),
-                       (start_x - slice_margin_zyx[2], start_x + slice_size_zyx[0] + slice_margin_zyx[2]))
-                start_x += slice_size_zyx[2]
-            start_y += slice_size_zyx[1]
-        start_z += slice_size_zyx[0]
+_IMAGE_PART_SIZE = (28, 256, 256)  # ZYX size of the image if split is True
+_IMAGE_PART_MARGIN = (2, 32, 32)  # Margin inside the image part
+_IMAGE_PART_SIZE_PLUS_MARGIN = (_IMAGE_PART_SIZE[0] + 2 * _IMAGE_PART_MARGIN[0],
+                                _IMAGE_PART_SIZE[1] + 2 * _IMAGE_PART_MARGIN[1],
+                                _IMAGE_PART_SIZE[2] + 2 * _IMAGE_PART_MARGIN[2])
+
+
+def _get_slices(volume: Tuple[int, int, int]) -> Iterable[Slicer3d]:
+    return image_slicer.get_slices(volume, _IMAGE_PART_SIZE, _IMAGE_PART_MARGIN)
+
+
+T = TypeVar('T')
+def _cycle(list: List[T]) -> Iterable[T]:
+    """Generator that returns the elements in the list ad infinitum."""
+    while True:
+        for elem in list:
+            yield elem
 
 
 def _reconstruct_volume(multi_im: ndarray, resolution: ImageResolution) -> Tuple[ndarray, int]:
@@ -110,17 +118,14 @@ def _input_fn(images: Images, split: bool):
             data[z: z + image_data.shape[0], :, :] = image_data
 
             if split:
-                part_xy_size = image_size_x // 2 + 64
-                yield {'data': data[numpy.newaxis, numpy.newaxis, :, :part_xy_size, :part_xy_size]}  # Top left
-                yield {'data': data[numpy.newaxis, numpy.newaxis, :, :part_xy_size, -part_xy_size:]}  # Top right
-                yield {'data': data[numpy.newaxis, numpy.newaxis, :, -part_xy_size:, :part_xy_size]}  # Bottom left
-                yield {'data': data[numpy.newaxis, numpy.newaxis, :, -part_xy_size:, -part_xy_size:]}  # Bottom right
+                for slice in _get_slices(data.shape):
+                    slice_data = slice.slice(data)
+                    yield {'data': slice_data[numpy.newaxis, numpy.newaxis, :, :, :]}
             else:
                 yield {'data': data[numpy.newaxis, numpy.newaxis, :, :, :]}
 
-    if split_in_four:
-        part_xy_size = image_size_x // 2 + 64
-        output_shape = [1, 1, _next_multiple_of_32(image_size_z), part_xy_size, part_xy_size]
+    if split:
+        output_shape = [1, 1, _IMAGE_PART_SIZE_PLUS_MARGIN[0], _IMAGE_PART_SIZE_PLUS_MARGIN[1], _IMAGE_PART_SIZE_PLUS_MARGIN[2]]
     else:
         output_shape = [1, 1, _next_multiple_of_32(image_size_z), image_size_x, image_size_x]
     dataset = tf.data.Dataset.from_generator(gen_images,
@@ -131,7 +136,7 @@ def _input_fn(images: Images, split: bool):
     return next_features
 
 
-def predict(images: Images, checkpoint_dir: str, out_dir: Optional[str] = None, split_in_four: bool = False
+def predict(images: Images, checkpoint_dir: str, out_dir: Optional[str] = None, split: bool = False
             ) -> PositionCollection:
     min_time_point_number = images.image_loader().first_time_point_number()
     if min_time_point_number is None:
@@ -144,16 +149,17 @@ def predict(images: Images, checkpoint_dir: str, out_dir: Optional[str] = None, 
     resolution = images.resolution()
 
     estimator = tf.estimator.Estimator(model_fn=partial(build_fcn_model, use_cpu=False), model_dir=checkpoint_dir)
-    predictions = estimator.predict(input_fn=lambda: _input_fn(images, split_in_four))
+    predictions = estimator.predict(input_fn=lambda: _input_fn(images, split))
 
     if out_dir is not None:
         if not os.path.exists(out_dir):
             os.mkdir(out_dir)
 
-    half_x_size = image_size_x // 2
-    complete_prediction = numpy.empty((output_size_z, image_size_x, image_size_x),
-                                      dtype=numpy.float32) if split_in_four else None
     all_positions = PositionCollection()
+
+    slices = list(_get_slices((output_size_z, image_size_x, image_size_x))) if split else []
+    complete_prediction = numpy.empty((output_size_z, image_size_x, image_size_x), dtype=numpy.float32)\
+        if split else None
 
     for index, p in enumerate(predictions):
 
@@ -161,22 +167,17 @@ def predict(images: Images, checkpoint_dir: str, out_dir: Optional[str] = None, 
         prediction = numpy.squeeze(p['prediction'])
 
         # If the image was split: reconstruct the larger image from the four parts
-        if split_in_four:
-            sub_index = index % 4
-            if sub_index == 0:
-                complete_prediction[:, :half_x_size, :half_x_size] = prediction[:, :half_x_size, :half_x_size]
-                continue
-            elif sub_index == 1:
-                complete_prediction[:, :half_x_size, -half_x_size:] = prediction[:, :half_x_size, -half_x_size:]
-                continue
-            elif sub_index == 2:
-                complete_prediction[:, -half_x_size:, :half_x_size] = prediction[:, -half_x_size:, :half_x_size]
-                continue
+        if split:
+            sub_index = index % len(slices)
+            slicer = slices[sub_index]
+            slicer.place_slice_in_volume(prediction, complete_prediction)
+
+            if sub_index < len(slices) - 1:
+                continue  # More subimages to add
 
             # Prediction is now completed
-            complete_prediction[:, -half_x_size:, -half_x_size:] = prediction[:, -half_x_size:, -half_x_size:]
             prediction = complete_prediction
-            image_index = index // 4
+            image_index = index // len(slices)
         else:
             image_index = index
 
@@ -185,7 +186,7 @@ def predict(images: Images, checkpoint_dir: str, out_dir: Optional[str] = None, 
         image_offset = images.offsets.of_time_point(time_point)
 
         if out_dir is not None:
-            image_name = "image-" + str(time_point.time_point_number())
+            image_name = "image_" + str(time_point.time_point_number())
             tifffile.imsave(os.path.join(out_dir, '{}.tif'.format(image_name)), prediction)
         im, z_divisor = _reconstruct_volume(prediction, resolution) # interpolate between layers for peak detection
 
