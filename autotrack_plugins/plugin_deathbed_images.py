@@ -24,7 +24,7 @@ _MARGIN = 40
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-         "Graph//Cell deaths-Cell deaths//Movie-Deathbed images...": lambda: _generate_deathbed_images(window),
+         "Graph//Cell cycle-Cell deaths//Deathbed images...": lambda: _generate_deathbed_images(window),
     }
 
 

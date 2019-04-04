@@ -13,7 +13,7 @@ from autotrack.linking_analysis import linking_markers
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Graph//Cell cycle-Cell births and deaths over time...": lambda: _view_births_and_deaths(window)
+        "Graph//Cell cycle-Death and division events//Graph-Cumulative amounts over time...": lambda: _view_births_and_deaths(window)
     }
 
 

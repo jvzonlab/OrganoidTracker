@@ -194,7 +194,7 @@ def predict(images: Images, checkpoint_dir: str, out_dir: Optional[str] = None, 
         # imsource, _ = _reconstruct_volume(numpy.squeeze(p['data']))
 
         # Comparison between image_max and im to find the coordinates of local maxima
-        coordinates = peak_local_max(im, min_distance=round(3.2 / resolution.pixel_size_x_um), threshold_abs=0.1)
+        coordinates = peak_local_max(im, min_distance=round(2.9 / resolution.pixel_size_x_um), threshold_abs=0.1)
         for coordinate in coordinates:
             pos = Position(coordinate[2], coordinate[1], coordinate[0] / z_divisor - output_offset_z,
                            time_point=time_point) + image_offset

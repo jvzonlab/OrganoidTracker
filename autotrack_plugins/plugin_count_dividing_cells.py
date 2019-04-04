@@ -13,7 +13,7 @@ def get_menu_items(window: Window):
     # This function is automatically called for any file named plugin_ ... .py in the plugins folder
     # You need to return a dictionary of menu options here
     return {
-        "Graph//Cell cycle-Number of dividing cells...":
+        "Graph//Cell cycle-Cell cycle//Number of dividing cells over time...":
             lambda: _show_number_of_dividing_cells(window)
     }
 

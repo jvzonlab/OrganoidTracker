@@ -74,10 +74,10 @@ class _SpaceTimeGrid:
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Graph//Cell cycle-Cell cycle lengths over space and time//All cycles...": lambda: _show_cycle_lengths(window),
-        "Graph//Cell cycle-Cell cycle lengths over space and time//Longest...": lambda: _show_longest_cycles(window),
-        "Graph//Cell cycle-Cell cycle lengths over space and time//Shortest...": lambda: _show_shortest_cycles(window),
-        "Graph//Cell cycle-Cell cycle lengths over space and time//Middle...": lambda: _show_middle_cycles(window)
+        "Graph//Cell cycle-Cell cycle//Space/time-Lengths over space and time//All cycles...": lambda: _show_cycle_lengths(window),
+        "Graph//Cell cycle-Cell cycle//Space/time-Lengths over space and time//Longest...": lambda: _show_longest_cycles(window),
+        "Graph//Cell cycle-Cell cycle//Space/time-Lengths over space and time//Shortest...": lambda: _show_shortest_cycles(window),
+        "Graph//Cell cycle-Cell cycle//Space/time-Lengths over space and time//Middle...": lambda: _show_middle_cycles(window)
     }
 
 

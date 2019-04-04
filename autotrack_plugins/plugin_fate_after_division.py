@@ -13,7 +13,7 @@ from autotrack.linking_analysis.cell_fate_finder import CellFateType
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Graph//Cell cycle-Chance of division...": lambda: _show_chance_of_division(window)
+        "Graph//Cell cycle-Cell cycle//Chance of division for each cycle length...": lambda: _show_chance_of_division(window)
     }
 
 
