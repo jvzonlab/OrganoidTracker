@@ -86,8 +86,11 @@ def perform_gaussian_fit(original_image: ndarray, guess: Gaussian) -> Gaussian:
     return perform_gaussian_mixture_fit(original_image, [guess])[0]
 
 
-def perform_gaussian_mixture_fit(original_image: ndarray, guesses: Iterable[Gaussian]) -> List[Gaussian]:
+def perform_gaussian_mixture_fit(original_image: ndarray, guesses: List[Gaussian]) -> List[Gaussian]:
     """Fits multiple Gaussians to the image (a Gaussian Mixture Model). Initial seeds must be given."""
+    if len(guesses) > 30:
+        raise ValueError(f"Minimization failed: too many parameters (tried to fit {len(guesses)} Gaussian functions)")
+
     model_and_image_difference = _ModelAndImageDifference(original_image)
 
     guesses_list = []
@@ -128,6 +131,7 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
         # To keep the fitting procedure easy, we try to fit as few cells at the same time as possible
         # Only overlapping nuclei should be fit together. Overlap is detected using ellipses.
         cell_ids = cluster.get_tags()
+        print(f"Fitting {len(cell_ids)} cells...")
         bounding_box = _merge_bounding_boxes(bounding_boxes, cell_ids)
         bounding_box.expand(x=blur_radius, y=blur_radius, z=0)
 

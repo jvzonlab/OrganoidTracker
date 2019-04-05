@@ -98,6 +98,9 @@ class EllipseCluster:
         """Gets the tags of all stacks. The returned order matches the order of self.guess_gaussians(...)"""
         return [stack.get_tag() for stack in self._stacks]
 
+    def __repr__(self) -> str:
+        return f"<EllipseCluster({len(self._stacks)} ellipse stacks)>"
+
 
 def get_ellipse_stacks_from_watershed(watershed: ndarray) -> List[TaggedEllipseStack]:
     """Gets ellipse stacks from a watershed image. The stack tagged as nr. 0 is constructed from label 1, stack 1 from
