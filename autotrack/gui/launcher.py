@@ -173,6 +173,7 @@ def launch_window(experiment: Experiment) -> MainWindow:
     """Launches a window with an empty figure. Doesn't start the main loop yet. Use and activate a visualizer to add
     some interactiveness."""
     pyplot.rcParams['svg.fonttype'] = 'none'
+    pyplot.rcParams["font.family"] = "Arial, Helvetica, sans-serif"
 
     # Create matplotlib figure
     fig = Figure(figsize=(12, 12), dpi=95)
