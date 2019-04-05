@@ -3,9 +3,6 @@ from typing import Dict, Any, List, Optional, Iterable
 import numpy
 from matplotlib.figure import Figure
 
-from autotrack.core.connections import Connections
-from autotrack.core.links import LinkingTrack, Links
-from autotrack.core.position import Position
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
 from . import plugin_spindle_markers
