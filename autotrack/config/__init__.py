@@ -18,7 +18,7 @@ class ConfigFile:
         self._section_name = section_name
 
         self._config = RawConfigParser()
-        self._config.read(self.FILE_NAME)
+        self._config.read(self.FILE_NAME, encoding="UTF-8")
 
         # Create some sections
         if "DEFAULTS" not in self._config:
