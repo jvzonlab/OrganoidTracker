@@ -13,6 +13,8 @@ class Axis:
     def delete_point(self):
         self.x = self.x[:-1]
 
+    def __repr__(self):
+        return "Axis(" + repr(self.x) + ", " + repr(self.t) + ")"
 
 def add_axis_to_axes_list(x, t, axes_list):
     axes_list.append(Axis(x, t))
