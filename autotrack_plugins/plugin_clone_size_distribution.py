@@ -12,7 +12,7 @@ from autotrack.gui.threading import Task
 from autotrack.gui.window import Window
 from autotrack.linking_analysis.lineage_division_count import get_division_count_in_lineage
 
-_LINEAGE_FOLLOW_TIME_H = 35
+_LINEAGE_FOLLOW_TIME_H = 60
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -77,7 +77,7 @@ def _get_clone_sizes_list(links: Links, time_point_window: int, first_time_point
         for track in links.find_all_tracks_in_time_point(view_start_time_point):
             # Process a single lineage in that time point
             division_count = get_division_count_in_lineage(track, links, view_end_time_point)
-            if division_count is not None and division_count > 0:
+            if division_count is not None:
                 clone_sizes.append(division_count + 1)
     return numpy.array(clone_sizes, dtype=numpy.int32)
 
