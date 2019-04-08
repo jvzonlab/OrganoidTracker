@@ -131,9 +131,10 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         activate(CellTrackEndVisualizer(self._window, None))
 
     def _ask_merge_experiments(self):
-        link_files = dialog.prompt_load_multiple_files("Select data file(s)",
-                                                       [(io.FILE_EXTENSION.upper() + " files", "*." + io.FILE_EXTENSION),
-                                                       ("JSON files", "*.json")])
+        link_files = dialog.prompt_load_multiple_files("Select data file", [
+            (io.FILE_EXTENSION.upper() + " file", "*." + io.FILE_EXTENSION),
+            ("Detection or linking files", "*.json"),
+            ("Guizela's tracking files", "lineages.p")])
         if len(link_files) == 0:
             return  # Cancelled
 
