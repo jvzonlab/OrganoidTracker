@@ -29,6 +29,7 @@ def export_links(links: Links, offsets: ImageOffsets, output_folder: str, compar
         exporter.synchronize_ids_with_folder(comparison_folder)
     exporter.export_tracks(output_folder)
 
+
 class _TrackExporter:
     """Used to export tracks in Guizela's file format, preferably using the original track ids."""
 
@@ -38,6 +39,7 @@ class _TrackExporter:
 
     _mother_daughter_pairs: List[List[int]]
     _dead_track_ids: List[int]
+    _paneth_track_ids: List[int]
     _tracks_by_id: Dict[int, Any]
 
     def __init__(self, links: Links, offsets: ImageOffsets):
@@ -45,6 +47,7 @@ class _TrackExporter:
         self._offsets = offsets
         self._mother_daughter_pairs = []
         self._dead_track_ids = []
+        self._paneth_track_ids = []
         self._tracks_by_id = {}
 
         # Convert graph to list of tracks
@@ -59,6 +62,8 @@ class _TrackExporter:
         moved_position = position - self._offsets.of_time_point(position.time_point())
         track = track_lib_v4.Track(x=numpy.array([moved_position.x, moved_position.y, moved_position.z]),
                                    t=position.time_point_number())
+        if linking_markers.get_position_type(self._links, position) == "PANETH":
+            self._paneth_track_ids.append(track_id)
 
         while True:
             future_positions = self._links.find_futures(position)
@@ -145,19 +150,23 @@ class _TrackExporter:
         self._tracks_by_id[id1] = new_track_1
         self._tracks_by_id[id2] = new_track_2
 
-        # Swap ids in cell deaths
-        id1_dead = id1 in self._dead_track_ids
-        id2_dead = id2 in self._dead_track_ids
-        if id1_dead and not id2_dead:
+        # Swap ids in cell deaths and Paneth cell lists
+        self._swap_in_list(self._dead_track_ids, id1, id2)
+        self._swap_in_list(self._paneth_track_ids, id1, id2)
+
+    def _swap_in_list(self, list: List[int], id1: int, id2: int):
+        id1_affected = id1 in list
+        id2_affected = id2 in list
+        if id1_affected and not id2_affected:
             # Swap id1 with id2
-            self._dead_track_ids.remove(id1)
-            self._dead_track_ids.append(id2)
-        elif not id1_dead and id2_dead:
+            list.remove(id1)
+            list.append(id2)
+        elif not id1_affected and id2_affected:
             # Swap id2 with id1
-            self._dead_track_ids.remove(id2)
-            self._dead_track_ids.append(id1)
+            list.remove(id2)
+            list.append(id1)
         else:
-            pass  # Both or none were dead - no need to swap
+            pass  # Both or none were affected - no need to swap
 
     def _get_new_track_id(self) -> int:
         track_id = self._next_track_id
