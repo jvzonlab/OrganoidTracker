@@ -4,6 +4,21 @@ from autotrack.linking_analysis.cell_fate_finder import get_fate, CellFateType
 
 
 def get_symmetry(experiment: Experiment, track_1: LinkingTrack, track_2: LinkingTrack):
+    if not get_symmetry_single_generation(experiment, track_1, track_2):
+        return False
+
+    next_tracks_1 = track_1.get_next_tracks()
+    next_tracks_2 = track_1.get_next_tracks()
+    if len(next_tracks_1) != 2 or len(next_tracks_2) != 2:
+        # One (or both) of the daughter cells didn't divide
+        return True
+
+    # Both daughter cells divided, but what happens after?
+    track_1_1, track_1_2 = next_tracks_1
+    track_2_1, track_2_2 = next_tracks_2
+
+
+def get_symmetry_single_generation(experiment: Experiment, track_1: LinkingTrack, track_2: LinkingTrack):
     fate_1 = get_fate(experiment, track_1.find_first_position())
     fate_2 = get_fate(experiment, track_2.find_first_position())
     if fate_1.type == CellFateType.WILL_DIVIDE:
