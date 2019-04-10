@@ -67,7 +67,7 @@ class ConfigFile:
         """Saves the configuration if it was changed. Returns True if the file was saved, False otherwise."""
         if not self.made_changes:
             return
-        with open(self.FILE_NAME, 'w') as config_writing:
+        with open(self.FILE_NAME, 'w', encoding="UTF-8") as config_writing:
             self._config.write(config_writing)
         print("Configuration file was updated automatically. Please review the settings in the"
               " [" + self._section_name + "] section to check if they are correct, then rerun this command.")
