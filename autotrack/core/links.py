@@ -257,9 +257,9 @@ class Links:
         """Adds a link between the positions. The linking network will be initialized if necessary."""
         dt = position1.time_point_number() - position2.time_point_number()
         if dt == 0:
-            raise ValueError("Positions are in the same time point")
+            raise ValueError(f"Positions are in the same time point: {position1} cannot be linked to {position2}")
         if abs(dt) > 1:
-            raise ValueError("Link skipped a time point")
+            raise ValueError(f"Link skipped a time point: {position1} cannot be linked to {position2}")
 
         track1 = self._position_to_track.get(position1)
         track2 = self._position_to_track.get(position2)
