@@ -15,11 +15,13 @@ def get_symmetry(experiment: Experiment, track_1: LinkingTrack, track_2: Linking
         if fate_2.type == CellFateType.WILL_DIVIDE:
             return True
         if fate_2.type == CellFateType.WILL_SHED or fate_2.type == CellFateType.WILL_DIE:
+            print("UNKOWN didn't get filtered out - this is an error!")
             return True  # Maybe it would be symmetric if the sister didn't die
         print("Error: unkown cell type", fate_2.type)
         return True
 
     if fate_1.type == CellFateType.WILL_DIE or fate_1.type == CellFateType.WILL_SHED:
+        print("UNKOWN didn't get filtered out - this is an error!")
         return True
 
     if fate_1.type == CellFateType.UNKNOWN:
@@ -35,6 +37,7 @@ def get_symmetry(experiment: Experiment, track_1: LinkingTrack, track_2: Linking
         if fate_2.type == CellFateType.WILL_DIVIDE:
             return False
         if fate_2.type == CellFateType.WILL_SHED or fate_2.type == CellFateType.WILL_DIE:
+            print("UNKOWN didn't get filtered out - this is an error!")
             return True  # Maybe it would be symmetric if the sister didn't die
         print("Error: unkown cell type", fate_2.type)
         return True
