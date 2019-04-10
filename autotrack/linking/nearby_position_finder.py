@@ -94,6 +94,8 @@ def find_closest_n_positions(positions: Iterable[Position], around: Position, ma
     closest_positions = []
 
     for position in positions:
+        if position == around:
+            continue
         distance_squared = position.distance_squared(around)
         if distance_squared > max_distance_squared:
             continue
