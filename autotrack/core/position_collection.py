@@ -161,7 +161,7 @@ class PositionCollection:
         """Gets the last time point (inclusive) that contains positions, or None if there are no positions stored."""
         return self._max_time_point_number
 
-    def exists(self, position: Position) -> bool:
+    def contains_position(self, position: Position) -> bool:
         """Returns whether the given position is part of the experiment."""
         positions_at_time_point = self._all_positions.get(position.time_point_number())
         if positions_at_time_point is None:

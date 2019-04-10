@@ -223,9 +223,9 @@ class LinkAndPositionEditor(AbstractEditor):
         self._selected1 = selected_position
 
     def _draw_extra(self):
-        if self._selected1 is not None and not self._experiment.positions.exists(self._selected1):
+        if self._selected1 is not None and not self._experiment.positions.contains_position(self._selected1):
             self._selected1 = None
-        if self._selected2 is not None and not self._experiment.positions.exists(self._selected2):
+        if self._selected2 is not None and not self._experiment.positions.contains_position(self._selected2):
             self._selected2 = None
 
         self._draw_highlight(self._selected1)
