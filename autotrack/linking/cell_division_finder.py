@@ -19,7 +19,7 @@ def get_next_division(links: Links, position: Position) -> Optional[Family]:
         return None
 
     next_tracks = track.get_next_tracks()
-    if len(next_tracks) == 0:
+    if len(next_tracks) < 2:
         return None
 
     next_daughters = [next_track.find_first_position() for next_track in next_tracks]

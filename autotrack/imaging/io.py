@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import List, Dict, Any, Tuple, Iterable
 
 import numpy
-from pandas import DataFrame
 
 from autotrack.core import shape, TimePoint, UserError
 from autotrack.core.connections import Connections
@@ -292,8 +291,11 @@ def _encode_positions_and_shapes(positions_and_shapes: PositionCollection):
     return data_structure
 
 
-def save_dataframe_to_csv(data_frame: DataFrame, csv_file_name: str):
+def save_dataframe_to_csv(data_frame, csv_file_name: str):
     """Saves the data frame to a CSV file, creating necessary parent directories first."""
+    from pandas import DataFrame  # Pandas is quite slow to load, so only load it inside this method
+    assert isinstance(data_frame, DataFrame)
+
     _create_parent_directories(csv_file_name)
     try:
         data_frame.to_csv(csv_file_name, index=False)
