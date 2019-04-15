@@ -15,6 +15,7 @@ from autotrack.gui.window import Window
 from autotrack.linking import cell_division_finder
 from autotrack.linking_analysis import cell_fate_finder, particle_age_finder
 from autotrack.linking_analysis.cell_fate_finder import CellFateType
+from autotrack.util.moving_average import MovingAverage
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -44,7 +45,7 @@ class _ThirdVar:
         return 1
 
     def show_average(self) -> bool:
-        return False
+        return True
 
     def get_cmap(self) -> str:
         return "Greys"
@@ -86,33 +87,6 @@ class _CellFateVar(_ThirdVar):
         return "Cell fate after next division (1 = divides)"
 
 
-def _calculate_moving_average(x_values: ndarray, y_values: ndarray, window_size: int = 21
-                              ) -> Tuple[ndarray, ndarray, ndarray]:
-    """Simply moving average calculating for the given x and y values. Returns x, mean y and standard deviation y
-    values."""
-    extend = window_size / 2
-
-    x_min = x_values.min()
-    x_max = x_values.max()
-
-    x_moving_average = list()
-    y_moving_average = list()
-    y_moving_average_stdev = list()
-    for x in range(int(x_min), int(x_max) + 1):
-        # Construct a boolean area on which x values to use
-        used_y_values = y_values[(x_values >= x - extend) & (x_values <= x + extend)]
-
-        if len(used_y_values) < 2:
-            continue
-        x_moving_average.append(x)
-        y_moving_average.append(used_y_values.mean())
-        y_moving_average_stdev.append(numpy.std(used_y_values, ddof=1))
-
-    return numpy.array(x_moving_average, dtype=numpy.float32),\
-           numpy.array(y_moving_average, dtype=numpy.float32),\
-           numpy.array(y_moving_average_stdev, dtype=numpy.float32)
-
-
 def _draw_cell_cycle_length(figure: Figure, links: Links, time_point_duration_h: float,
                             third_variable_getter: _ThirdVar):
     previous_cycle_durations = list()
@@ -147,17 +121,13 @@ def _draw_cell_cycle_length(figure: Figure, links: Links, time_point_duration_h:
     plot_limit = max(previous_cycle_durations.max(), cycle_durations.max()) * 1.1
 
     window_size = 11
-    x_moving_average, y_moving_average, y_moving_average_stdev \
-        = _calculate_moving_average(previous_cycle_durations, cycle_durations, window_size=window_size)
+    moving_average = MovingAverage(previous_cycle_durations, cycle_durations, window_width=window_size)
 
     axes = figure.gca()
     axes.plot(numpy.arange(plot_start, plot_limit), numpy.arange(plot_start, plot_limit), color="orange",
               label="Equal durations line")
     if third_variable_getter.show_average():
-        axes.plot(x_moving_average, y_moving_average, color="blue", linewidth=2,
-                  label=f"Moving average ({window_size} time points)")
-        axes.fill_between(x_moving_average, y_moving_average - y_moving_average_stdev,
-                          y_moving_average + y_moving_average_stdev, color="blue", alpha=0.2)
+        moving_average.plot(label=f"Moving average ({window_size} time points)")
 
     if third_variable_getter.get_colobar_label() is not None:
         scatterplot = axes.scatter(x=previous_cycle_durations, y=cycle_durations, c=third_variables, s=25, lw=1,
