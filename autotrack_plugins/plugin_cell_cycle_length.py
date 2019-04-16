@@ -127,7 +127,7 @@ def _draw_cell_cycle_length(figure: Figure, links: Links, time_point_duration_h:
     axes.plot(numpy.arange(plot_start, plot_limit), numpy.arange(plot_start, plot_limit), color="orange",
               label="Equal durations line")
     if third_variable_getter.show_average():
-        moving_average.plot(label=f"Moving average ({window_size} time points)")
+        moving_average.plot(axes, label=f"Moving average ({window_size} time points)")
 
     if third_variable_getter.get_colobar_label() is not None:
         scatterplot = axes.scatter(x=previous_cycle_durations, y=cycle_durations, c=third_variables, s=25, lw=1,
