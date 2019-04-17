@@ -12,7 +12,7 @@ from autotrack.gui.threading import Task
 from autotrack.gui.window import Window
 from autotrack.linking_analysis.lineage_division_count import get_division_count_in_lineage
 
-_LINEAGE_FOLLOW_TIME_H = 60
+_LINEAGE_FOLLOW_TIME_H = 40
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -38,34 +38,9 @@ def _show_clone_size_distribution(window: Window):
     print("Time point window is", time_point_window)
 
     # Run the task on another thread, as calculating is quite slow
-    window.get_scheduler().add_task(_CloneDistributionTask(window.get_gui_experiment(), links, time_point_window,
-                                                            experiment.first_time_point_number(),
-                                                            experiment.last_time_point_number()))
-
-
-class _CloneDistributionTask(Task):
-
-    _links: Links
-    _time_point_window: int
-    _first_time_point_number: int
-    _last_time_point_number: int
-    _name: Name
-    _gui_experiment: GuiExperiment
-
-    def __init__(self, gui_experiment: GuiExperiment, links: Links, time_point_window: int, first_time_point_number: int,
-                 last_time_point_number: int):
-        self._gui_experiment = gui_experiment
-        self._links = links.copy()  # Copy so that we can safely access this on another thread
-        self._time_point_window = time_point_window
-        self._first_time_point_number = first_time_point_number
-        self._last_time_point_number = last_time_point_number
-
-    def compute(self) -> ndarray:
-        return _get_clone_sizes_list(self._links, self._time_point_window, self._first_time_point_number,
-                                      self._last_time_point_number)
-
-    def on_finished(self, clone_sizes: ndarray):
-        dialog.popup_figure(self._gui_experiment, lambda figure: _draw_clone_sizes(figure, clone_sizes))
+    clone_sizes = _get_clone_sizes_list(links, time_point_window, experiment.first_time_point_number(),
+                                                            experiment.last_time_point_number())
+    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_clone_sizes(figure, clone_sizes))
 
 
 def _get_clone_sizes_list(links: Links, time_point_window: int, first_time_point_number: int, last_time_point_number: int) -> ndarray:
