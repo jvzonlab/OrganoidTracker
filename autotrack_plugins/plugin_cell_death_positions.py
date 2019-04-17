@@ -8,7 +8,6 @@ from autotrack.gui import dialog
 from autotrack.gui.window import Window
 from autotrack.linking import cell_division_finder
 from autotrack.linking_analysis import linking_markers
-from autotrack.util.mpl_helper import SANDER_APPROVED_COLORS
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
