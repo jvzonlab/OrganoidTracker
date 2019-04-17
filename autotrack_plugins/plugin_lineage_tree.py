@@ -59,8 +59,10 @@ class LineageTreeVisualizer(Visualizer):
         width = LineageDrawing(links).draw_lineages_colored(self._ax, color_getter, resolution, self._location_map)
 
         self._ax.set_ylabel("Time (time points)")
-        self._ax.set_ylim([experiment.last_time_point_number(), experiment.first_time_point_number() - 1])
-        self._ax.set_xlim([-0.1, width + 0.1])
+        if self._ax.get_xlim() == (0, 1):
+            # Only change axis if the default values were used
+            self._ax.set_ylim([experiment.last_time_point_number(), experiment.first_time_point_number() - 1])
+            self._ax.set_xlim([-0.1, width + 0.1])
 
         self.update_status("Double-click somewhere in the lineage tree to jump to that cell. Note: this lineage tree updates live.")
         self._fig.canvas.draw()
