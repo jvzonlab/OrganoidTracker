@@ -40,6 +40,8 @@ class _SingleGuiExperiment:
         self.experiment = experiment
         self.undo_redo = UndoRedo()
 
+    def __repr__(self) -> str:
+        return "<Experiment " + self.experiment.name.get_save_name() + ">"
 
 class GuiExperiment:
     """Used to store the experiment, along with some data that is only relevant within a GUI app, but that doesn't
@@ -110,7 +112,7 @@ class GuiExperiment:
     def add_experiment(self, experiment: Experiment):
         # Remove current experiment if it contains no data
         if self.experiment.first_time_point_number() is None:
-            self.remove_experiment(self.experiment)
+            self._remove_experiment_without_opdate(self.experiment)
 
         # Add new experiment
         self._experiments.append(_SingleGuiExperiment(experiment))
@@ -121,15 +123,20 @@ class GuiExperiment:
         for gui_experiment in self._experiments:
             yield gui_experiment.experiment
 
-    def remove_experiment(self, experiment: Experiment):
-        """Removes the given experiment from the list of loaded experiments. If no experiments are remaining, an empty
-        one will be initialized."""
+    def _remove_experiment_without_opdate(self, experiment: Experiment):
+        """Removes an experiment. Does not add a new experiment in case the list becomes empty."""
         for i in range(len(self._experiments)):
             if self._experiments[i].experiment is experiment:
                 del self._experiments[i]
-                break
+                return
+
+    def remove_experiment(self, experiment: Experiment):
+        """Removes the given experiment from the list of loaded experiments. If no experiments are remaining, an empty
+        one will be initialized."""
+        self._remove_experiment_without_opdate(experiment)
         if len(self._experiments) == 0:  # Prevent list from being empty
             self._experiments.append(_SingleGuiExperiment(Experiment()))
+        self._any_updated_event.call_all()
 
     def redraw_data(self):
         """Redraws the main figure using the latest values from the experiment."""
