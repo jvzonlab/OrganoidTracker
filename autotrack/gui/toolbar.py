@@ -1,7 +1,7 @@
-from typing import Callable
+from typing import Callable, List
 
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QMainWindow, QToolBar
+from PyQt5.QtWidgets import QMainWindow, QToolBar, QComboBox
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 
@@ -19,15 +19,38 @@ class Toolbar(NavigationToolbar2QT):
         ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
     )
 
-    # Handlers for the toolbar buttons
+    # Handlers for the toolbar buttons - set by another class
     new_handler = lambda e: ...
     save_handler = lambda e: ...
     load_handler = lambda e: ...
     image_handler= lambda e: ...
     home_handler = lambda e: ...
+    experiment_select_handler = lambda experiment_number: ...
+
+    _experiment_selector_box: QComboBox
+    _old_experiment_names: List[str] = []
 
     def __init__(self, canvas: FigureCanvasQTAgg, parent: QMainWindow):
         super().__init__(canvas, parent)
+
+        # Add experiment selector
+        self._experiment_selector_box = QComboBox(self)
+        self.update_selectable_experiments([])
+        self.addSeparator()
+        self.addWidget(self._experiment_selector_box)
+
+    def update_selectable_experiments(self, experiment_names: List[str]):
+        if len(experiment_names) == 0:
+            experiment_names = ["<no data loaded>"]
+
+        # Don't update GUI if not necessary
+        if experiment_names == self._old_experiment_names:
+            return
+        self._old_experiment_names = experiment_names
+
+        self._experiment_selector_box.clear()
+        for experiment_name in experiment_names:
+            self._experiment_selector_box.addItem(experiment_name)
 
     def _init_toolbar(self):
         # Add some additional buttons
@@ -49,3 +72,4 @@ class Toolbar(NavigationToolbar2QT):
 
     def save_figure(self):
         self._call(self.save_handler)
+

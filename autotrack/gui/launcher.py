@@ -211,11 +211,16 @@ def _connect_toolbar_actions(toolbar: Toolbar, window: Window):
     def image(*args):
         from autotrack.gui import action
         action.load_images(window)
+    def update_experiment_list(*args):
+        experiment_names = [str(experiment.name) for experiment in window.get_gui_experiment().get_experiments()]
+        toolbar.update_selectable_experiments(experiment_names)
     toolbar.new_handler = new
     toolbar.home_handler = home
     toolbar.save_handler = save
     toolbar.load_handler = load
     toolbar.image_handler = image
+    window.get_gui_experiment().register_event_handler("any_updated_event", "toolbar", update_experiment_list)
+    window.get_gui_experiment().register_event_handler("data_updated_event", "toolbar", update_experiment_list)
 
 
 def _commandbox_execute(command: str, window: Window, main_figure: QWidget):
