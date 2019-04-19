@@ -17,6 +17,7 @@ from autotrack.core.experiment import Experiment
 from autotrack.gui import APP_NAME
 from autotrack.gui.application import Plugin
 from autotrack.gui.gui_experiment import GuiExperiment
+from autotrack.gui.icon_getter import get_icon
 from autotrack.gui.toolbar import Toolbar
 from autotrack.gui.window import Window
 
@@ -49,7 +50,7 @@ class _MyQMainWindow(QMainWindow):
         super().__init__()
         self.setBaseSize(800, 700)
         self.setWindowTitle(APP_NAME)
-        self.setWindowIcon(QIcon(path.join(path.dirname(path.abspath(sys.argv[0])), 'autotrack', 'gui', 'icon.ico')))
+        self.setWindowIcon(get_icon("icon.ico"))
 
         # Initialize main grid
         main_frame = QWidget(parent=self)
@@ -196,13 +197,25 @@ def launch_window(experiment: Experiment) -> MainWindow:
 
 
 def _connect_toolbar_actions(toolbar: Toolbar, window: Window):
+    def new(*args):
+        from autotrack.gui import action
+        action.new(window)
     def home(*args):
         window.get_gui_experiment().execute_command("exit")
     def save(*args):
         from autotrack.gui import action
         action.save_tracking_data(window.get_gui_experiment())
+    def load(*args):
+        from autotrack.gui import action
+        action.load_tracking_data(window)
+    def image(*args):
+        from autotrack.gui import action
+        action.load_images(window)
+    toolbar.new_handler = new
     toolbar.home_handler = home
     toolbar.save_handler = save
+    toolbar.load_handler = load
+    toolbar.image_handler = image
 
 
 def _commandbox_execute(command: str, window: Window, main_figure: QWidget):
