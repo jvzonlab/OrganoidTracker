@@ -17,6 +17,7 @@ from autotrack.core.experiment import Experiment
 from autotrack.gui import APP_NAME
 from autotrack.gui.application import Plugin
 from autotrack.gui.gui_experiment import GuiExperiment
+from autotrack.gui.toolbar import Toolbar
 from autotrack.gui.window import Window
 
 
@@ -39,6 +40,7 @@ class _MyQMainWindow(QMainWindow):
 
     command_box: _CommandBox
     title: QLabel
+    toolbar: Toolbar
     status_box: QLabel
     mpl_canvas: FigureCanvasQTAgg
     close_handler: Optional[Callable[[QCloseEvent], None]] = None
@@ -83,8 +85,8 @@ class _MyQMainWindow(QMainWindow):
         self.mpl_canvas.mpl_connect("key_release_event", partial(_commandbox_autofocus, command_box=self.command_box))
         self.command_box.escape_handler = lambda: self.mpl_canvas.setFocus()
 
-        toolbar = NavigationToolbar2QT(self.mpl_canvas, self)
-        self.addToolBar(toolbar)
+        self.toolbar = Toolbar(self.mpl_canvas, self)
+        self.addToolBar(self.toolbar)
 
     def closeEvent(self, event: QCloseEvent):
         try:
@@ -187,11 +189,20 @@ def launch_window(experiment: Experiment) -> MainWindow:
 
     q_window.command_box.enter_handler = partial(_commandbox_execute, window=window, main_figure=q_window.mpl_canvas)
     q_window.close_handler = lambda close_event: _window_close(window, close_event)
-
-    window.setup_menu(dict())  # This draws the menu
+    _connect_toolbar_actions(q_window.toolbar, window)
 
     q_window.show()
     return window
+
+
+def _connect_toolbar_actions(toolbar: Toolbar, window: Window):
+    def home(*args):
+        window.get_gui_experiment().execute_command("exit")
+    def save(*args):
+        from autotrack.gui import action
+        action.save_tracking_data(window.get_gui_experiment())
+    toolbar.home_handler = home
+    toolbar.save_handler = save
 
 
 def _commandbox_execute(command: str, window: Window, main_figure: QWidget):
