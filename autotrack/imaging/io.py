@@ -47,7 +47,7 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
     elif file_name.lower().endswith(".p"):
         return _load_guizela_data_file(file_name, min_time_point, max_time_point)
     else:
-        raise ValueError("Cannot load data from file " + file_name)
+        raise ValueError(f"Cannot load data from file \"{file_name}\": it is of an unknown format")
 
 
 def _load_json_data_file(file_name: str, min_time_point: int, max_time_point: int):
