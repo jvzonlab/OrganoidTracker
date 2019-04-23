@@ -50,6 +50,7 @@ class GuiExperiment:
     KNOWN_EVENTS = {"data_updated_event", "any_updated_event", "command_event"}
 
     _experiments: List[_SingleGuiExperiment]
+    _selected_experiment: int
     _data_updated_handlers: _EventListeners
     _any_updated_event: _EventListeners
     _command_handlers: _EventListeners
@@ -57,6 +58,7 @@ class GuiExperiment:
 
     def __init__(self, experiment: Experiment):
         self._experiments = [_SingleGuiExperiment(experiment)]
+        self._selected_experiment = 0
 
         self._data_updated_handlers = _EventListeners()
         self._any_updated_event = _EventListeners()
@@ -69,7 +71,7 @@ class GuiExperiment:
 
     @property  # read-only
     def experiment(self) -> Experiment:
-        return self._experiments[-1].experiment
+        return self._experiments[self._selected_experiment].experiment
 
     def register_event_handler(self, event: str, source: str, action: Callable):
         """Registers an event handler. Supported events:
@@ -116,6 +118,7 @@ class GuiExperiment:
 
         # Add new experiment
         self._experiments.append(_SingleGuiExperiment(experiment))
+        self._selected_experiment = len(self._experiments) - 1
         self._any_updated_event.call_all()
 
     def get_experiments(self) -> Iterable[Experiment]:
@@ -136,6 +139,8 @@ class GuiExperiment:
         self._remove_experiment_without_opdate(experiment)
         if len(self._experiments) == 0:  # Prevent list from being empty
             self._experiments.append(_SingleGuiExperiment(Experiment()))
+        if self._selected_experiment >= len(self._experiments):
+            self._selected_experiment = len(self._experiments) - 1
         self._any_updated_event.call_all()
 
     def redraw_data(self):
@@ -155,3 +160,10 @@ class GuiExperiment:
         if position.time_point_number() is None:
             raise ValueError("No time point number set")
         self.execute_command(f"goto {position.x} {position.y} {position.z} {position.time_point_number()}")
+
+    def select_experiment(self, index: int):
+        """Sets the experiment with the given index (from get_experiments()) as the visible experiment."""
+        if index < 0 or index >= len(self._experiments):
+            raise ValueError(f"Out of range: {index}")
+        self._selected_experiment = index
+        self._any_updated_event.call_all()

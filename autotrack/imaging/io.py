@@ -3,7 +3,7 @@ import json
 import os
 from json import JSONEncoder
 from pathlib import Path
-from typing import List, Dict, Any, Tuple, Iterable
+from typing import List, Dict, Any, Tuple, Iterable, Optional
 
 import numpy
 
@@ -29,30 +29,33 @@ def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: 
         _parse_shape_format(experiment, time_points, min_time_point, max_time_point)
 
 
-def _load_guizela_data_file(file_name: str, min_time_point: int, max_time_point: int) -> Experiment:
+def _load_guizela_data_file(experiment: Experiment, file_name: str, min_time_point: int, max_time_point: int):
     """Starting from a random *.p file in a directory, this loads all data according to Guizela's format from that
     directory."""
-    experiment = Experiment()
     from autotrack.manual_tracking import guizela_data_importer
     print("File name", file_name)
     guizela_data_importer.add_data_to_experiment(experiment, os.path.dirname(file_name), min_time_point, max_time_point)
-    return experiment
 
 
-def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int = 5000) -> Experiment:
+def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int = 5000, *,
+                   experiment: Optional[Experiment] = None) -> Experiment:
     """Loads some kind of data file. This should support all data formats of our research group. Raises ValueError if
-    the file fails to load."""
+    the file fails to load. All data is dumped into the given experiment object."""
+    if experiment is None:
+        experiment = Experiment()
+
     if file_name.lower().endswith("." + FILE_EXTENSION) or file_name.lower().endswith(".json"):
-        return _load_json_data_file(file_name, min_time_point, max_time_point)
+        _load_json_data_file(experiment, file_name, min_time_point, max_time_point)
+        return experiment
     elif file_name.lower().endswith(".p"):
-        return _load_guizela_data_file(file_name, min_time_point, max_time_point)
+        _load_guizela_data_file(experiment, file_name, min_time_point, max_time_point)
+        return experiment
     else:
         raise ValueError(f"Cannot load data from file \"{file_name}\": it is of an unknown format")
 
 
-def _load_json_data_file(file_name: str, min_time_point: int, max_time_point: int):
+def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point: int, max_time_point: int):
     """Loads any kind of JSON file."""
-    experiment = Experiment()
     with open(file_name) as handle:
         data = json.load(handle, object_hook=_my_decoder)
 
@@ -102,7 +105,6 @@ def _load_json_data_file(file_name: str, min_time_point: int, max_time_point: in
 
         if "image_offsets" in data:
             experiment.images.offsets = ImageOffsets(data["image_offsets"])
-    return experiment
 
 
 def load_linking_result(experiment: Experiment, json_file_name: str):

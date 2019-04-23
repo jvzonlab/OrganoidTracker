@@ -25,7 +25,7 @@ class Toolbar(NavigationToolbar2QT):
     load_handler = lambda e: ...
     image_handler= lambda e: ...
     home_handler = lambda e: ...
-    experiment_select_handler = lambda experiment_number: ...
+    experiment_select_handler = lambda e, experiment_number: ...
 
     _experiment_selector_box: QComboBox
     _old_experiment_names: List[str] = []
@@ -35,22 +35,25 @@ class Toolbar(NavigationToolbar2QT):
 
         # Add experiment selector
         self._experiment_selector_box = QComboBox(self)
-        self.update_selectable_experiments([])
+        self._experiment_selector_box.currentIndexChanged.connect(
+            lambda index: self._call(lambda: self.experiment_select_handler(index) if index != -1 else ...))
+        self.update_selectable_experiments([], 0)
         self.addSeparator()
         self.addWidget(self._experiment_selector_box)
 
-    def update_selectable_experiments(self, experiment_names: List[str]):
+    def update_selectable_experiments(self, experiment_names: List[str], selected_index: int):
         if len(experiment_names) == 0:
             experiment_names = ["<no data loaded>"]
 
         # Don't update GUI if not necessary
-        if experiment_names == self._old_experiment_names:
-            return
-        self._old_experiment_names = experiment_names
+        if experiment_names != self._old_experiment_names:
+            self._old_experiment_names = experiment_names
 
-        self._experiment_selector_box.clear()
-        for experiment_name in experiment_names:
-            self._experiment_selector_box.addItem(experiment_name)
+            self._experiment_selector_box.clear()
+            for experiment_name in experiment_names:
+                self._experiment_selector_box.addItem(experiment_name)
+
+        self._experiment_selector_box.setCurrentIndex(selected_index)
 
     def _init_toolbar(self):
         # Add some additional buttons
