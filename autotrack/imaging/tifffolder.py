@@ -19,11 +19,11 @@ _CHANNELS = [_OnlyChannel()]
 def load_images_from_folder(experiment: Experiment, folder: str, file_name_format: str,
                             min_time_point: Optional[int] = None, max_time_point: Optional[int] = None):
     if min_time_point is None:
-        min_time_point = 1
+        min_time_point = 0
     if max_time_point is None:
         max_time_point = 5000
 
-    min_time_point = max(1, min_time_point)
+    min_time_point = max(0, min_time_point)
 
     # Create time points for all discovered image files
     time_point_number = min_time_point
@@ -31,6 +31,8 @@ def load_images_from_folder(experiment: Experiment, folder: str, file_name_forma
         file_name = path.join(folder, file_name_format % time_point_number)
 
         if not path.isfile(file_name):
+            if time_point_number == 0:
+                continue  # Not a fatal error if time point number 0 doesn't exist
             break
 
         time_point_number += 1
@@ -78,7 +80,7 @@ class TiffImageLoader(ImageLoader):
             return None
         with tifffile.TiffFile(file_name, movie=True) as f:
             # noinspection PyTypeChecker
-            array = f.asarray(maxworkers=None)  # maxworkers=None makes image loader work on half of all cores
+            array = numpy.squeeze(f.asarray(maxworkers=None))  # maxworkers=None makes image loader work on half of all cores
             if array.shape[-1] == 3 or array.shape[-1] == 4:
                 # Convert RGB to grayscale
                 array = numpy.dot(array[...,:3], [0.299, 0.587, 0.114])

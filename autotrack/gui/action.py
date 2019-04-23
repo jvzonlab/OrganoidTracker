@@ -110,6 +110,12 @@ def _find_pattern(file_name: str) -> Optional[str]:
         start, end = counting_part.start(0), counting_part.end(0)
         return file_name[0:start] + "t%0" + str(end - start - 1) + "d" + file_name[end:]
 
+    # Support T001
+    counting_part = re.search('T0*1', file_name)
+    if counting_part is not None:
+        start, end = counting_part.start(0), counting_part.end(0)
+        return file_name[0:start] + "T%0" + str(end - start - 1) + "d" + file_name[end:]
+
     # Support _001.
     counting_part = re.search('_0*1\.', file_name)
     if counting_part is not None:
