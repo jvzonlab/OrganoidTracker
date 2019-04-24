@@ -343,6 +343,9 @@ class AbstractImageVisualizer(Visualizer):
             self.update_status("/t20: Jump to time point 20 (also works for other time points)"
                                "\n/goto <x> <y> <z> <t>: Directly jump to that point")
             return True
+        if command == "exit":
+            self.update_status("You're already in the home screen.")
+            return True
         return False
 
     def _toggle_showing_next_time_point(self):
