@@ -2,7 +2,10 @@
 import math
 
 from autotrack.core.position import Position
+from autotrack.core.resolution import ImageResolution
+from autotrack.core.vector import Vector3
 
+_ZERO_POS = Position(0, 0, 0)
 
 def direction_2d(position1: Position, position2: Position) -> float:
     """Gets the direction from the given position to the given position, with 0* pointing upwards."""
@@ -64,3 +67,23 @@ def mirrored(angle: float, mirror_angle: float) -> float:
         mirror_angle = flipped(mirror_angle)
         change = direction_change(angle, mirror_angle)
     return (mirror_angle + change) % 360
+
+
+def right_hand_rule(a: Vector3, b: Vector3, c: Vector3):
+    """Returns the angle formed by A -> B -> C using the 'right-hand rule' from B. Based on
+    https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points . The result is
+    equal to angle_between_vectors(b - a, c - b)."""
+    ab_dot_bc = (b - a).dot(c - b)
+
+    length_ab = a.distance(b)
+    length_bc = b.distance(c)
+
+    return math.degrees(math.acos(ab_dot_bc / (length_ab * length_bc)))
+
+
+def angle_between_vectors(vector1: Vector3, vector2: Vector3) -> float:
+    """Returns the angle between the two vectors. Will be between 0 and 180."""
+    length1 = vector1.length()
+    length2 = vector2.length()
+
+    return math.degrees(math.acos((vector1.dot(vector2) / (length1 * length2))))

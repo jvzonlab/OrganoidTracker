@@ -23,5 +23,9 @@ class ImageResolution:
         return self.pixel_size_zyx_um[2]
 
     @property
+    def pixel_size_y_um(self) -> float:
+        return self.pixel_size_zyx_um[1]
+
+    @property
     def pixel_size_z_um(self) -> float:
         return self.pixel_size_zyx_um[0]

@@ -7,6 +7,12 @@ from scipy import interpolate
 from autotrack.core import TimePoint
 from autotrack.core.links import Links
 from autotrack.core.position import Position
+from autotrack.core.resolution import ImageResolution
+from autotrack.core.vector import Vector3
+from autotrack.imaging import angles
+
+
+_REFERENCE = Vector3(0, 0, -1)
 
 
 class DataAxisPosition:
@@ -27,6 +33,27 @@ class DataAxisPosition:
         if checkpoint is None:
             return False
         return self.pos > checkpoint
+
+    def calculate_angle(self, position: Position, resolution: ImageResolution) -> float:
+        """Calculates the angle from this point on the data axis to the given position."""
+
+        # Calculate angle from 0 to 180
+        closest_position_on_axis = self.axis.from_position_on_axis(self.pos)
+        if closest_position_on_axis is None:
+            print(position)
+        closest_position_on_axis = Position(closest_position_on_axis[0], closest_position_on_axis[1], self.axis.get_z()).to_vector_um(resolution)
+
+        vector_towards_axis = position.to_vector_um(resolution) - closest_position_on_axis
+        angle = angles.angle_between_vectors(vector_towards_axis, _REFERENCE)
+
+        # Make angle negative
+        next_position_on_axis = self.axis.from_position_on_axis(self.pos + 1)
+        next_position_on_axis = Position(next_position_on_axis[0], next_position_on_axis[1], self.axis.get_z()).to_vector_um(resolution)
+        aa = _REFERENCE.cross(vector_towards_axis)
+        bb = aa.dot(next_position_on_axis - closest_position_on_axis)
+        angle = numpy.sign(bb) * angle
+
+        return angle
 
 
 class DataAxis:
@@ -125,6 +152,7 @@ class DataAxis:
         distance_on_line = numpy.sqrt(distance_to_start_of_line_squared - min_distance_to_line_squared)
 
         raw_path_position = combined_length_of_previous_lines + distance_on_line
+
         return DataAxisPosition(self, raw_path_position - self._offset, math.sqrt(min_distance_to_line_squared))
 
     def from_position_on_axis(self, path_position: float) -> Optional[Tuple[float, float]]:
@@ -141,7 +169,9 @@ class DataAxis:
         while True:
             line_length = _distance(x_values[line_index - 1], y_values[line_index - 1],
                                     x_values[line_index], y_values[line_index])
-            if raw_path_position < line_length:
+            if raw_path_position < line_length or line_index == len(x_values) - 1:
+                # If the position is on this line segment, or it's the last line segment, then interpolate (or
+                # extrapolate) the position on that line
                 line_dx = x_values[line_index] - x_values[line_index - 1]
                 line_dy = y_values[line_index] - y_values[line_index - 1]
                 travelled_fraction = raw_path_position / line_length
@@ -150,8 +180,6 @@ class DataAxis:
 
             raw_path_position -= line_length
             line_index += 1
-            if line_index >= len(x_values):
-                return None
 
     def get_direction_marker(self) -> str:
         """Returns a char thar represents the general direction of this path: ">", "<", "^" or "v". The (0,0) coord

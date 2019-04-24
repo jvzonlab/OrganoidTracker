@@ -3,6 +3,7 @@ from typing import Optional, Tuple, Union, List
 
 from autotrack.core import TimePoint
 from autotrack.core.resolution import ImageResolution
+from autotrack.core.vector import Vector3
 
 
 class Position:
@@ -155,6 +156,10 @@ class Position:
             return_list.append(position.with_time_point_number(from_pos.time_point_number() + i))
         return_list.append(to_pos)
         return return_list
+
+    def to_vector_um(self, resolution: ImageResolution) -> Vector3:
+        return Vector3(self.x * resolution.pixel_size_x_um, self.y * resolution.pixel_size_y_um, self.z * resolution.pixel_size_z_um)
+
 
 class PositionType:
     """Used to represent the type of a position. Is it a biological cell? And of what type? Or does it mark something

@@ -1,5 +1,6 @@
 import unittest
 
+from autotrack.core.vector import Vector3
 from autotrack.imaging import angles
 
 
@@ -52,3 +53,9 @@ class TestAngles(unittest.TestCase):
 
         self.assertEquals(10, angles.mirrored(350, mirror_angle=0))
         self.assertEquals(10, angles.mirrored(350, mirror_angle=180))
+
+    def test_right_hand_rule(self):
+        a = Vector3(1, 2, 3)
+        b = Vector3(3, 2, 1)
+        c = Vector3(1, 1, 1)
+        self.assertAlmostEqual(129.23152048, angles.right_hand_rule(a, b, c))
