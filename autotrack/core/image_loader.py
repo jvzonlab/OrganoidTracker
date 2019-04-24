@@ -42,4 +42,4 @@ class ImageLoader:
 
     def copy(self) -> "ImageLoader":
         """Copies the image loader, so that you can use it on another thread."""
-        raise NotImplementedError()
+        return self

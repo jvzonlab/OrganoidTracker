@@ -44,7 +44,7 @@ class _CachedImageLoader(ImageLoader):
         return self._internal.get_image_size_zyx()
 
     def uncached(self) -> ImageLoader:
-        return self._internal
+        return self._internal.uncached()
 
     def first_time_point_number(self) -> Optional[int]:
         return self._internal.first_time_point_number()
