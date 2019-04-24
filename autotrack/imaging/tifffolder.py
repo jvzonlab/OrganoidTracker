@@ -32,7 +32,10 @@ def load_images_from_folder(experiment: Experiment, folder: str, file_name_forma
 
         if not path.isfile(file_name):
             if time_point_number == 0:
-                continue  # Not a fatal error if time point number 0 doesn't exist
+                # Not a fatal error if time point number 0 doesn't exist
+                time_point_number += 1
+                min_time_point += 1
+                continue
             break
 
         time_point_number += 1
