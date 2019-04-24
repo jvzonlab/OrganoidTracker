@@ -103,6 +103,9 @@ def _read_lineage_file(tracks_dir: str, links: Links, tracks: List[Track], min_t
     with open(lineage_file, "rb") as file_handle:
         lineages = pickle.load(file_handle, encoding='latin1')
         for lineage in lineages:
+            if lineage[0] not in tracks or lineage[1] not in tracks or lineage[2] not in tracks:
+                print("Skipping division", lineage, ", not all tracks are found (there are", len(tracks), "tracks)")
+                continue
             mother_track = tracks[lineage[0]]
             child_track_1 = tracks[lineage[1]]
             child_track_2 = tracks[lineage[2]]
