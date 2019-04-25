@@ -1,12 +1,10 @@
 from typing import List, Optional, Dict, Any
 
-import math
 from matplotlib.axes import Axes
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 from matplotlib.patches import RegularPolygon
 
 from autotrack.core import TimePoint
-from autotrack.core.data_axis import DataAxisPosition
 from autotrack.core.experiment import Experiment
 from autotrack.core.position import Position
 from autotrack.gui import dialog
@@ -154,6 +152,22 @@ class _LatticePlot(Visualizer):
                 self.update_status(f"Moved to time point {self._time_point.time_point_number()}")
             except ValueError:
                 self.update_status("There is no next time point.")
+        elif event.key == "up" or event.key == "down":
+            axis_ids = []
+            for axis_id, data_axis in self._experiment.data_axes.of_time_point(self._time_point):
+                axis_ids.append(axis_id)
+            if len(axis_ids) == 0:
+                self.update_status("No crypt axes found in time point")
+                return
+            current_index = axis_ids.index(self._axis_id)
+            if event.key == "up":
+                current_index = (current_index + 1) % len(axis_ids)
+            else:
+                current_index = (current_index - 1) % len(axis_ids)
+            self._axis_id = axis_ids[current_index]
+            self.draw_view()
+            if len(axis_ids) > 1:
+                self.update_status(f"Now showing data axis {self._axis_id}")
         else:
             super()._on_key_press(event)
 
