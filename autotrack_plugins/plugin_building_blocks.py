@@ -159,7 +159,10 @@ class _LatticePlot(Visualizer):
             if len(axis_ids) == 0:
                 self.update_status("No crypt axes found in time point")
                 return
-            current_index = axis_ids.index(self._axis_id)
+            try:
+                current_index = axis_ids.index(self._axis_id)
+            except ValueError:
+                current_index = 0
             if event.key == "up":
                 current_index = (current_index + 1) % len(axis_ids)
             else:
