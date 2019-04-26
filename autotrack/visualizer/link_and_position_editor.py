@@ -268,7 +268,8 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Batch-Delete data of time point...": self._delete_data_of_time_point,
             "Edit//Batch-Delete all tracks with errors...": self._delete_tracks_with_errors,
             "Edit//Batch-Delete all tracks not in the first time point...": self._delete_tracks_not_in_first_time_point,
-            "Edit//Batch-Delete all positions in a rectangle... [R]": self._show_positions_in_rectangle_deleter,
+            "Edit//Batch-Delete all positions in a rectangle...": self._show_positions_in_rectangle_deleter,
+            "Edit//Batch-Delete all positions without links...": self._delete_positions_without_links,
             "Edit//Batch-Connect positions by distance...": self._connect_positions_by_distance,
             "Edit//LineageEnd-Mark as cell death": lambda: self._try_set_end_marker(EndMarker.DEAD),
             "Edit//LineageEnd-Mark as cell shedding": lambda: self._try_set_end_marker(EndMarker.SHED),
@@ -374,10 +375,19 @@ class LinkAndPositionEditor(AbstractEditor):
         activate(editor)
 
     def _delete_data_of_time_point(self):
-        """Deletes all annotations of a given time point. Shows a confirmation prompt first."""
+        """Deletes all annotations of a given time point."""
         positions = self._experiment.positions.of_time_point(self._time_point)
         particles = (Particle.from_position(self._experiment, position) for position in positions)
         self._perform_action(_DeletePositionsAction(particles))
+
+    def _delete_positions_without_links(self):
+        """Deletes all positions that have no links."""
+        particles_without_links = []
+        links = self._experiment.links
+        for position in self._experiment.positions:
+            if not links.contains_position(position):
+                particles_without_links.append(Particle.from_position(self._experiment, position))
+        self._perform_action(_DeletePositionsAction(particles_without_links))
 
     def _delete_tracks_with_errors(self):
         """Deletes all lineages where at least a single error was present."""
