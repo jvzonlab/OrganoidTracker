@@ -11,7 +11,7 @@ def get_age(links: Links, position: Position) -> Optional[int]:
     """Gets how many time steps ago this cell was born"""
     track = links.get_track(position)
     if track is None:
-        return 0
+        return None  # Not in a track, cannot calculate
     if len(track.get_previous_tracks()) == 0:
         return None  # Don't know what happened before, so return None
     return track.get_age(position)
