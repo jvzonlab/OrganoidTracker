@@ -197,6 +197,7 @@ def popup_visualizer(experiment: GuiExperiment, visualizer_class: ClassVar):
     visualizer: Visualizer = visualizer_class(window)
     visualizer.attach()
     visualizer.draw_view()
+    visualizer.update_status(visualizer.get_default_status())
 
 
 def popup_figure(experiment: GuiExperiment, draw_function: Callable[[Figure], None], *,
