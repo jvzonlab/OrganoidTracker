@@ -64,6 +64,7 @@ class AbstractImageVisualizer(Visualizer):
         self._time_point = time_point
         self._time_point_images = time_point_images
         self._clamp_z()
+        self._clamp_channel()
 
     def _export_images(self):
         if self._time_point_images is None:
@@ -370,11 +371,31 @@ class AbstractImageVisualizer(Visualizer):
             self.draw_view()
 
     def _clamp_z(self):
+        """Makes sure a valid z pos is selected. Changes the z if not."""
         image_z_offset = int(self._experiment.images.offsets.of_time_point(self._time_point).z)
         if self._z < image_z_offset:
             self._z = image_z_offset
         if self._time_point_images is not None and self._z >= len(self._time_point_images) + image_z_offset:
             self._z = len(self._time_point_images) + image_z_offset - 1
+
+    def _clamp_channel(self):
+        """Makes sure a valid channel is selected. Changes the channel if not."""
+        available_channels = self._experiment.images.image_loader().get_channels()
+
+        # Handle 1 or 0 channels
+        if len(available_channels) == 1:
+            self._display_settings.image_channel = available_channels[0]
+            return
+        if len(available_channels) == 0:
+            self._display_settings.image_channel = None
+            return
+
+        # Handle two or more channels
+        try:
+            available_channels.index(self._display_settings.image_channel)
+        except ValueError:
+            # Didn't select a valid channel, switch to first one
+            self._display_settings.image_channel = available_channels[0]
 
     def _move_to_time(self, new_time_point_number: int) -> bool:
         try:
