@@ -83,6 +83,9 @@ def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point:
         if "data_axes" in data:
             _parse_data_axes_format(experiment, data["data_axes"], min_time_point, max_time_point)
 
+        if "data_axes_meta" in data:
+            _parse_data_axes_meta_format(experiment, data["data_axes_meta"])
+
         if "connections" in data:
             _parse_connections_format(experiment, data["connections"], min_time_point, max_time_point)
 
@@ -150,6 +153,17 @@ def _parse_data_axes_format(experiment: Experiment, axes_data: List[Dict], min_t
             path.add_point(points_x[i], points_y[i], z)
         path.set_offset(path_json["offset"])
         experiment.data_axes.add_data_axis(TimePoint(time_point_number), path)
+
+
+def _parse_data_axes_meta_format(experiment: Experiment, axes_meta: Dict[str, Dict[str, str]]):
+    """Currently parses the type of each axis that was drawn."""
+    for key, value in axes_meta.items():
+        axis_id = int(key)
+
+        # Currently, the only supported key is "marker"
+        if "marker" in value:
+            marker = str(value["marker"])
+            experiment.data_axes.set_marker_name(axis_id, marker)
 
 
 def _parse_connections_format(experiment: Experiment, connections_data: Dict[str, List[List[Position]]],
@@ -321,6 +335,13 @@ def _encode_data_axes_to_json(data_axes: DataAxisCollection) -> List[Dict]:
     return json_list
 
 
+def _encode_data_axes_meta_to_json(data_axes: DataAxisCollection) -> Dict[str, Dict[str, str]]:
+    json_dict = {}
+    for axis_id, marker_name in data_axes.get_marker_names():
+        json_dict[str(axis_id)] = {"marker": marker_name}
+    return json_dict
+
+
 def _encode_connections_to_json(connections: Connections) -> Dict[str, List[List[Position]]]:
     connections_dict = dict()
     for time_point in connections.time_points():
@@ -355,6 +376,7 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
     # Save data axes
     if experiment.data_axes.has_axes():
         save_data["data_axes"] = _encode_data_axes_to_json(experiment.data_axes)
+        save_data["data_axes_meta"] = _encode_data_axes_meta_to_json(experiment.data_axes)
 
     # Save connections
     if experiment.connections.has_connections():

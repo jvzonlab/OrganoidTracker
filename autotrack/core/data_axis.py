@@ -7,6 +7,7 @@ from scipy import interpolate
 from autotrack.core import TimePoint
 from autotrack.core.links import Links
 from autotrack.core.position import Position
+from autotrack.core.marker import Marker
 from autotrack.core.resolution import ImageResolution
 from autotrack.core.vector import Vector3
 from autotrack.imaging import angles
@@ -288,11 +289,13 @@ class DataAxisCollection:
     """Holds the paths of all time points in an experiment."""
 
     _data_axes: Dict[TimePoint, List[DataAxis]]
+    _data_axes_markers: Dict[int, str]
     _min_time_point_number: Optional[int]
     _max_time_point_number: Optional[int]
 
     def __init__(self):
         self._data_axes = dict()
+        self._data_axes_markers = dict()
         self._min_time_point_number = None
         self._max_time_point_number = None
 
@@ -410,3 +413,33 @@ class DataAxisCollection:
             return
         for data_axis in data_axes:
             data_axis.update_offset_for_positions(new_positions)
+
+    def set_marker(self, axis_id: int, axis_marker: Optional[Marker]):
+        """Sets the marker of the specified data axes across all time points  High-level version of set_marker_name."""
+        save_name = None
+        if axis_marker is not None:
+            if not axis_marker.applies_to(DataAxis):
+                raise ValueError(f"Type {axis_marker} cannot be applied to a data axis")
+
+            save_name = axis_marker.save_name
+        self.set_marker_name(axis_id, save_name)
+
+    def set_marker_name(self, axis_id: int, axis_marker: Optional[str]):
+        """Sets the marker of the specified data axes across all time points """
+        if axis_marker is None:
+            # Remove
+            if axis_id in self._data_axes_markers:
+                del self._data_axes_markers[axis_id]
+            return
+
+        # Set marker
+        self._data_axes_markers[axis_id] = axis_marker.upper()
+
+    def get_marker_name(self, axis_id: int) -> Optional[str]:
+        """Gets the marker of the data axes with the given id."""
+        return self._data_axes_markers.get(axis_id)
+
+    def get_marker_names(self) -> Iterable[Tuple[int, str]]:
+        """Gets all registered axis markers."""
+        for axis_id, marker_name in self._data_axes_markers.items():
+            yield axis_id, marker_name

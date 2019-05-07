@@ -44,6 +44,7 @@ def _load_crypt_axis(tracks_dir: str, positions: PositionCollection, paths: Data
         return  # No crypt axis stored
 
     print("Reading crypt axes file")
+    paths.set_marker_name(1, "CRYPT")  # We will import 1 axis, and that one will be the crypt axis
     with open(file, 'rb') as file_handle:
         axes = pickle.load(file_handle, encoding="latin1")
         for axis in axes:
@@ -103,7 +104,7 @@ def _read_lineage_file(tracks_dir: str, links: Links, tracks: List[Track], min_t
     with open(lineage_file, "rb") as file_handle:
         lineages = pickle.load(file_handle, encoding='latin1')
         for lineage in lineages:
-            if lineage[0] not in tracks or lineage[1] not in tracks or lineage[2] not in tracks:
+            if lineage[0] >= len(tracks) or lineage[1] >= len(tracks) or lineage[2] >= len(tracks):
                 print("Skipping division", lineage, ", not all tracks are found (there are", len(tracks), "tracks)")
                 continue
             mother_track = tracks[lineage[0]]

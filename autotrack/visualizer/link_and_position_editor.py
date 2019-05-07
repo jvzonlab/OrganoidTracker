@@ -7,7 +7,8 @@ from autotrack.core import TimePoint
 from autotrack.core.connections import Connections
 from autotrack.core.experiment import Experiment
 from autotrack.core.particle import Particle
-from autotrack.core.position import Position, PositionType
+from autotrack.core.position import Position
+from autotrack.core.marker import Marker
 from autotrack.core.shape import ParticleShape
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
@@ -190,9 +191,9 @@ class _ReplaceConnectionsAction(UndoableAction):
 
 class _SetAllAsType(UndoableAction):
     _previous_position_types: Dict[Position, str]
-    _type: PositionType
+    _type: Marker
 
-    def __init__(self, previous_position_types: Dict[Position, str], new_type: PositionType):
+    def __init__(self, previous_position_types: Dict[Position, str], new_type: Marker):
         self._previous_position_types = previous_position_types
         self._type = new_type
 
@@ -280,7 +281,7 @@ class LinkAndPositionEditor(AbstractEditor):
         }
 
         # Add options for changing position types
-        for position_type in self.get_window().get_gui_experiment().get_position_types():
+        for position_type in self.get_window().get_gui_experiment().get_registered_markers(Position):
             # Create copy of position_type variable to avoid it changing in loop iteration
             action = lambda bound_position_type = position_type: self._set_all_positions_to_type(bound_position_type)
 
@@ -475,7 +476,7 @@ class LinkAndPositionEditor(AbstractEditor):
             self._selected1, self._selected2 = None, None
             self._perform_action(_InsertLinkAction(position1, position2))
 
-    def _set_all_positions_to_type(self, position_type: PositionType):
+    def _set_all_positions_to_type(self, position_type: Marker):
         """Sets all cells in the experiment to the given type."""
         if self._selected1 is None:
             self.update_status("You need to select a position first.")

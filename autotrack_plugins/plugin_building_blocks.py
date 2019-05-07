@@ -114,7 +114,7 @@ class _Lattice:
                 min_x = min(x, min_x)
                 max_x = max(x, max_x)
 
-                position_type = gui_experiment.get_position_type(element.position_type)
+                position_type = gui_experiment.get_marker_by_save_name(element.position_type)
                 color = self._get_color(element.position_fate, element.position_age)
                 edge_color = "gray" if position_type is None else position_type.mpl_color
                 edge_width = 1 if position_type is None else 2

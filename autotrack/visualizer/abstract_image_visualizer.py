@@ -193,7 +193,7 @@ class AbstractImageVisualizer(Visualizer):
                 crosses_y_list.append(position.y)
 
             # Add marker
-            position_type = self.get_window().get_gui_experiment().get_position_type(
+            position_type = self.get_window().get_gui_experiment().get_marker_by_save_name(
                 linking_markers.get_position_type(links, position))
             edge_color = (0, 0, 0) if position_type is None else position_type.mpl_color
             if dz != 0:

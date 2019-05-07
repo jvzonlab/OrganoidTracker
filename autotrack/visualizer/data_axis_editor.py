@@ -5,6 +5,7 @@ from matplotlib.backend_bases import KeyEvent, MouseEvent
 from autotrack.core import TimePoint
 from autotrack.core.experiment import Experiment
 from autotrack.core.position import Position
+from autotrack.core.marker import Marker
 from autotrack.core.data_axis import DataAxis
 from autotrack.gui.undo_redo import UndoableAction, ReversedAction
 from autotrack.gui.window import Window
@@ -49,6 +50,26 @@ class _AddPointAction(UndoableAction):
         return f"Removed point at ({self._new_point.x:.0f}, {self._new_point.y:.0f}) from path"
 
 
+class _SetMarkerAction(UndoableAction):
+    _axis_id: int
+    _new_marker: Marker
+    _old_marker: Optional[Marker]
+
+    def __init__(self, axis_id: int, new_marker: Marker, old_marker: Optional[Marker]):
+        self._axis_id = axis_id
+        self._new_marker = new_marker
+        self._old_marker = old_marker
+
+    def do(self, experiment: Experiment) -> str:
+        experiment.data_axes.set_marker(self._axis_id, self._new_marker)
+        return f"Marked axis {self._axis_id} as {self._new_marker.display_name}"
+
+    def undo(self, experiment: Experiment) -> str:
+        experiment.data_axes.set_marker(self._axis_id, self._old_marker)
+        if self._old_marker is None:
+            return f"Removed marker for axis {self._axis_id}"
+        return f"Marked axis {self._axis_id} again as {self._old_marker.display_name}"
+
 class _SetCheckpointAction(UndoableAction):
     _data_axis: DataAxis
     _new_checkpoint: float
@@ -89,11 +110,19 @@ class DataAxisEditor(AbstractEditor):
         self._draw_axis_positions = False
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
-        return {
+        options = {
             **super().get_extra_menu_options(),
             "View//Toggle-Toggle showing data axis positions [P]": self._toggle_viewing_axis_positions,
             "Edit//Copy-Copy axis to this time point [C]": self._copy_axis_to_current_time_point,
         }
+
+        # Add options for changing axis types
+        for position_type in self.get_window().get_gui_experiment().get_registered_markers(DataAxis):
+            # Create copy of position_type variable to avoid it changing in loop iteration
+            action = lambda bound_position_type=position_type: self._mark_axis(bound_position_type)
+
+            options["Edit//Type-Set type of axis//" + position_type.display_name] = action
+        return options
 
     def _toggle_viewing_axis_positions(self):
         self._draw_axis_positions = not self._draw_axis_positions
@@ -158,7 +187,14 @@ class DataAxisEditor(AbstractEditor):
         super()._draw_data_axis(data_axis, id, color, marker_size_max)
 
         pos_x, pos_y = data_axis.get_points_2d()
-        self._ax.annotate(f"Axis {id}", (pos_x[0], pos_y[0] + 10), fontsize=12, fontweight="bold", color=color)
+        self._ax.annotate(self._get_axis_label(id), (pos_x[0], pos_y[0] + 10), fontsize=12, fontweight="bold", color=color)
+
+    def _get_axis_label(self, axis_id: int) -> str:
+        marker_name = self._experiment.data_axes.get_marker_name(axis_id)
+        marker = self._window.get_gui_experiment().get_marker_by_save_name(marker_name)
+        if marker is None:
+            return f"Axis {axis_id}"
+        return f"Axis {axis_id}: {marker.display_name}"
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "insert":
@@ -218,3 +254,17 @@ class DataAxisEditor(AbstractEditor):
             self.update_status("Cannot set a checkpoint here - mouse is not near selected axis")
             return
         self._perform_action(_SetCheckpointAction(self._selected_path, on_axis.pos))
+
+    def _mark_axis(self, axis_marker: Marker):
+        selected_axis_id = None
+        for axis_id, axis in self._experiment.data_axes.of_time_point(self._selected_path_time_point):
+            if axis is self._selected_path:
+                selected_axis_id = axis_id
+
+        if self._selected_path is None or selected_axis_id is None:
+            self.update_status("No axis selected - cannot set type")
+            return
+
+        old_marker_name = self._experiment.data_axes.get_marker_name(selected_axis_id)
+        old_marker = self._window.get_gui_experiment().get_marker_by_save_name(old_marker_name)
+        self._perform_action(_SetMarkerAction(selected_axis_id, axis_marker, old_marker))

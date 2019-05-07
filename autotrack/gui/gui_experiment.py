@@ -1,7 +1,8 @@
-from typing import Callable, List, Dict, Any, Iterable, Optional
+from typing import Callable, List, Dict, Any, Iterable, Optional, Type
 
 from autotrack.core.experiment import Experiment
-from autotrack.core.position import PositionType, Position
+from autotrack.core.position import Position
+from autotrack.core.marker import Marker
 from autotrack.gui.undo_redo import UndoRedo
 
 
@@ -32,6 +33,7 @@ class _EventListeners:
             for listener in listeners:
                 listener(*args)
 
+
 class _SingleGuiExperiment:
     experiment: Experiment
     undo_redo: UndoRedo
@@ -54,7 +56,7 @@ class GuiExperiment:
     _data_updated_handlers: _EventListeners
     _any_updated_event: _EventListeners
     _command_handlers: _EventListeners
-    _position_types: Dict[str, PositionType]
+    _registered_markers: Dict[str, Marker]
 
     def __init__(self, experiment: Experiment):
         self._experiments = [_SingleGuiExperiment(experiment)]
@@ -63,7 +65,7 @@ class GuiExperiment:
         self._data_updated_handlers = _EventListeners()
         self._any_updated_event = _EventListeners()
         self._command_handlers = _EventListeners()
-        self._position_types = dict()
+        self._registered_markers = dict()
 
     @property  # read-only
     def undo_redo(self) -> UndoRedo:
@@ -96,20 +98,22 @@ class GuiExperiment:
         self._any_updated_event.remove(source_to_remove)
         self._command_handlers.remove(source_to_remove)
 
-    def register_position_type(self, position_type: PositionType):
+    def register_marker(self, marker: Marker):
         """Registers a new position type (overwriting any existing one with the same save name)."""
-        self._position_types[position_type.save_name] = position_type
+        self._registered_markers[marker.save_name] = marker
 
-    def get_position_types(self) -> Iterable[PositionType]:
-        """Gets all registered position types."""
-        return self._position_types.values()
+    def get_registered_markers(self, type: Type) -> Iterable[Marker]:
+        """Gets all registered markers for the given type. For example, you can ask all registered cell types using
+        get_registered_markers(Position)."""
+        for marker in self._registered_markers.values():
+            if marker.applies_to(type):
+                yield marker
 
-    def get_position_type(self, save_name: Optional[str]) -> Optional[PositionType]:
-        """Gets the position type using the given save name. Returns None if no position type exists for that save name.
-        """
+    def get_marker_by_save_name(self, save_name: Optional[str]) -> Optional[Marker]:
+        """Gets the marker using the given save name. Returns None if no marker exists for that save name."""
         if save_name is None:
             return None
-        return self._position_types.get(save_name)
+        return self._registered_markers.get(save_name)
 
     def add_experiment(self, experiment: Experiment):
         # Remove current experiment if it contains no data

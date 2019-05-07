@@ -2,23 +2,24 @@ from typing import List, Optional, Iterable
 
 from autotrack.core.connections import Connections
 from autotrack.core.links import Links, LinkingTrack
-from autotrack.core.position import Position, PositionType
+from autotrack.core.position import Position
+from autotrack.core.marker import Marker
 from autotrack.gui.window import Window
 from autotrack.imaging import angles
 from autotrack.linking_analysis import linking_markers
 
-SPINDLE = PositionType("SPINDLE", "mitotic spindle", (200, 200, 0))
-LUMEN = PositionType("LUMEN", "lumen", (30, 30, 30))
-MIDBODY = PositionType("MIDBODY", "mitotic midbody", (255, 0, 0))
-EDGE = PositionType("EDGE", "organoid edge", (255, 255, 255))
+SPINDLE = Marker([Position], "SPINDLE", "mitotic spindle", (200, 200, 0))
+LUMEN = Marker([Position], "LUMEN", "lumen", (30, 30, 30))
+MIDBODY = Marker([Position], "MIDBODY", "mitotic midbody", (255, 0, 0))
+EDGE = Marker([Position], "EDGE", "organoid edge", (255, 255, 255))
 
 
 def init(window: Window):
     gui_experiment = window.get_gui_experiment()
-    gui_experiment.register_position_type(SPINDLE)
-    gui_experiment.register_position_type(LUMEN)
-    gui_experiment.register_position_type(MIDBODY)
-    gui_experiment.register_position_type(EDGE)
+    gui_experiment.register_marker(SPINDLE)
+    gui_experiment.register_marker(LUMEN)
+    gui_experiment.register_marker(MIDBODY)
+    gui_experiment.register_marker(EDGE)
 
 
 def is_part_of_spindle(links: Links, position: Position) -> bool:
