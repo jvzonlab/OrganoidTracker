@@ -3,13 +3,13 @@ import unittest
 import numpy
 
 from autotrack.core.position import Position
-from autotrack.core.data_axis import DataAxis
+from autotrack.core.spline import Spline
 
 
 class TestDataAxis(unittest.TestCase):
 
     def test_horizontal_path(self):
-        path = DataAxis()
+        path = Spline()
         path.add_point(0, 0, 0)
         path.add_point(10, 0, 0)
         path.add_point(20, 0, 0)
@@ -21,7 +21,7 @@ class TestDataAxis(unittest.TestCase):
         self.assertEquals(19, path.to_position_on_axis(Position(19, 3, 3)).pos)  # Test a position next to the path
 
     def test_vertical_path(self):
-        path = DataAxis()
+        path = Spline()
         path.add_point(0, 0, 0)
         path.add_point(0, 10, 0)
         path.add_point(0, 20, 0)
@@ -29,7 +29,7 @@ class TestDataAxis(unittest.TestCase):
         self.assertEquals("v", path.get_direction_marker())
 
     def test_diagonal_path(self):
-        path = DataAxis()
+        path = Spline()
         path.add_point(0, 0, 0)
         path.add_point(1, 1, 0)
         path.add_point(2, 2, 0)
@@ -37,7 +37,7 @@ class TestDataAxis(unittest.TestCase):
         self.assertEquals(numpy.sqrt(2), path.to_position_on_axis(Position(1, 1, 0)).pos)
 
     def test_segments_of_different_length(self):
-        path = DataAxis()
+        path = Spline()
         path.add_point(0, 0, 0)
         path.add_point(10, 0, 0)
         path.add_point(30, 20, 0)
@@ -50,7 +50,7 @@ class TestDataAxis(unittest.TestCase):
         self.assertAlmostEqual(0, y, places=1)
 
     def test_reposition_offset(self):
-        path = DataAxis()
+        path = Spline()
         path.add_point(0, 0, 0)
         path.add_point(10, 0, 0)
         path.add_point(20, 0, 0)

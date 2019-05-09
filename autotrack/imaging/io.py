@@ -14,7 +14,7 @@ from autotrack.core.images import ImageOffsets
 from autotrack.core.links import Links
 from autotrack.core.position_collection import PositionCollection
 from autotrack.core.position import Position
-from autotrack.core.data_axis import DataAxisCollection, DataAxis
+from autotrack.core.spline import SplineCollection, Spline
 from autotrack.core.resolution import ImageResolution
 from autotrack.core.score import ScoredFamily, Score, Family
 
@@ -145,25 +145,29 @@ def _parse_data_axes_format(experiment: Experiment, axes_data: List[Dict], min_t
         time_point_number = path_json["_time_point_number"]
         if time_point_number < min_time_point or time_point_number > max_time_point:
             continue
-        path = DataAxis()
+        path = Spline()
         points_x = path_json["x_list"]
         points_y = path_json["y_list"]
         z = path_json["z"]
         for i in range(len(points_x)):
             path.add_point(points_x[i], points_y[i], z)
         path.set_offset(path_json["offset"])
-        experiment.data_axes.add_data_axis(TimePoint(time_point_number), path)
+        if "checkpoint" in path_json:
+            path.set_checkpoint(path_json["checkpoint"])
+        spline_id = int(path_json["id"]) if "id" in path_json else None
+        experiment.splines.add_spline(TimePoint(time_point_number), path, spline_id)
 
 
 def _parse_data_axes_meta_format(experiment: Experiment, axes_meta: Dict[str, Dict[str, str]]):
     """Currently parses the type of each axis that was drawn."""
     for key, value in axes_meta.items():
-        axis_id = int(key)
+        spline_id = int(key)
 
-        # Currently, the only supported key is "marker"
-        if "marker" in value:
+        # Currently, the only supported keys are "marker" and "is_axis"
+        if "marker" in value and "is_axis" in value:
             marker = str(value["marker"])
-            experiment.data_axes.set_marker_name(axis_id, marker)
+            is_axis = bool(value["is_axis"])
+            experiment.splines.set_marker_name(spline_id, marker, is_axis)
 
 
 def _parse_connections_format(experiment: Experiment, connections_data: Dict[str, List[List[Position]]],
@@ -320,25 +324,27 @@ def save_dataframe_to_csv(data_frame, csv_file_name: str):
         raise e
 
 
-def _encode_data_axes_to_json(data_axes: DataAxisCollection) -> List[Dict]:
+def _encode_data_axes_to_json(data_axes: SplineCollection) -> List[Dict]:
     json_list = list()
-    for data_axis, time_point in data_axes.all_data_axes():
-        points_x, points_y = data_axis.get_points_2d()
+    for spline_id, time_point, spline in data_axes.all_splines():
+        points_x, points_y = spline.get_points_2d()
         json_object = {
             "_time_point_number": time_point.time_point_number(),
             "x_list": points_x,
             "y_list": points_y,
-            "z": data_axis.get_z(),
-            "offset": data_axis.get_offset()
+            "z": spline.get_z(),
+            "offset": spline.get_offset(),
+            "checkpoint": spline.get_checkpoint(),
+            "id": spline_id
         }
         json_list.append(json_object)
     return json_list
 
 
-def _encode_data_axes_meta_to_json(data_axes: DataAxisCollection) -> Dict[str, Dict[str, str]]:
+def _encode_data_axes_meta_to_json(splines: SplineCollection) -> Dict[str, Dict[str, str]]:
     json_dict = {}
-    for axis_id, marker_name in data_axes.get_marker_names():
-        json_dict[str(axis_id)] = {"marker": marker_name}
+    for spline_id, marker_name in splines.get_marker_names():
+        json_dict[str(spline_id)] = {"marker": marker_name, "is_axis": splines.is_axis(spline_id)}
     return json_dict
 
 
@@ -374,9 +380,9 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
         save_data["family_scores"] = scored_families
 
     # Save data axes
-    if experiment.data_axes.has_axes():
-        save_data["data_axes"] = _encode_data_axes_to_json(experiment.data_axes)
-        save_data["data_axes_meta"] = _encode_data_axes_meta_to_json(experiment.data_axes)
+    if experiment.splines.has_splines():
+        save_data["data_axes"] = _encode_data_axes_to_json(experiment.splines)
+        save_data["data_axes_meta"] = _encode_data_axes_meta_to_json(experiment.splines)
 
     # Save connections
     if experiment.connections.has_connections():

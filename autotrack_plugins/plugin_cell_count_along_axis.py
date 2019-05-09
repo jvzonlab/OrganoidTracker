@@ -3,7 +3,7 @@ from typing import Dict, Any, List, Optional
 from matplotlib.figure import Figure
 
 from autotrack.core import UserError, TimePoint
-from autotrack.core.data_axis import DataAxis
+from autotrack.core.spline import Spline
 from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
@@ -38,7 +38,7 @@ def _view_crypt_axis_positions(window: Window):
 
 def _get_crypt_axis_positions(experiment: Experiment, time_point: Optional[TimePoint]) -> Dict[int, List[float]]:
     """Gets all used crypt axis positions."""
-    data_axes = experiment.data_axes
+    data_axes = experiment.splines
     links = experiment.links
 
     return_value = dict()

@@ -130,7 +130,7 @@ def _get_graphing_data(experiment: Experiment, *, min_cycle_length: int = 0, max
 
                 position = next_positions.pop()
                 time_point = position.time_point()
-                position_on_crypt_axis = experiment.data_axes.to_position_on_original_axis(experiment.links, position)
+                position_on_crypt_axis = experiment.splines.to_position_on_original_axis(experiment.links, position)
                 if position_on_crypt_axis is None:
                     continue
 

@@ -9,7 +9,7 @@ from typing import List
 import numpy
 
 from autotrack.core import TimePoint
-from autotrack.core.data_axis import DataAxisCollection, DataAxis
+from autotrack.core.spline import SplineCollection, Spline
 from autotrack.core.experiment import Experiment
 from autotrack.core.links import Links
 from autotrack.core.position_collection import PositionCollection
@@ -34,7 +34,7 @@ def _load_links(tracks_dir: str, min_time_point: int = 0, max_time_point: int = 
     return links
 
 
-def _load_crypt_axis(tracks_dir: str, positions: PositionCollection, paths: DataAxisCollection, min_time_point: int,
+def _load_crypt_axis(tracks_dir: str, positions: PositionCollection, paths: SplineCollection, min_time_point: int,
                      max_time_point: int):
     """Loads the axis of the crypt and saves it as a Path to the experiment. The offset of path will be set such that
     the bottom-most position has a crypt axis position of 0."""
@@ -44,21 +44,21 @@ def _load_crypt_axis(tracks_dir: str, positions: PositionCollection, paths: Data
         return  # No crypt axis stored
 
     print("Reading crypt axes file")
-    paths.set_marker_name(1, "CRYPT")  # We will import 1 axis, and that one will be the crypt axis
+    paths.set_marker_name(1, "CRYPT", True)  # We will import 1 axis, and that one will be the crypt axis
     with open(file, 'rb') as file_handle:
         axes = pickle.load(file_handle, encoding="latin1")
         for axis in axes:
             if axis.t < min_time_point or axis.t > max_time_point:
                 continue
 
-            path = DataAxis()
+            path = Spline()
             axis.x.reverse()  # Guizela's paths are defined in exactly the opposite way of what we want
             for position in axis.x:  # axis.x == [[x,y,z],[x,y,z],[x,y,z],...]
                 path.add_point(position[0], position[1], position[2])
 
             time_point = TimePoint(axis.t)
             path.update_offset_for_positions(positions.of_time_point(time_point))
-            paths.add_data_axis(time_point, path)
+            paths.add_spline(time_point, path, None)
 
 
 def add_data_to_experiment(experiment: Experiment, tracks_dir: str, min_time_point: int = 0, max_time_point: int = 500):
@@ -69,7 +69,7 @@ def add_data_to_experiment(experiment: Experiment, tracks_dir: str, min_time_poi
         positions.add(position)
     experiment.links.add_links(links)
     experiment.images.set_resolution(ImageResolution(0.32, 0.32, 2, 12))
-    _load_crypt_axis(tracks_dir, experiment.positions, experiment.data_axes, min_time_point, max_time_point)
+    _load_crypt_axis(tracks_dir, experiment.positions, experiment.splines, min_time_point, max_time_point)
 
 
 def _read_track_files(tracks_dir: str, links: Links, min_time_point: int = 0, max_time_point: int = 5000

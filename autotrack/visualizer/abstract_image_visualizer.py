@@ -8,7 +8,7 @@ from tifffile import tifffile
 
 from autotrack import core
 from autotrack.core import TimePoint
-from autotrack.core.data_axis import DataAxis
+from autotrack.core.spline import Spline
 from autotrack.core.position import Position
 from autotrack.core.typing import MPLColor
 from autotrack.gui import dialog
@@ -257,13 +257,13 @@ class AbstractImageVisualizer(Visualizer):
 
     def _draw_data_axes(self):
         """Draws the data axis, which is usually the crypt axis."""
-        for axis_id, data_axis in self._experiment.data_axes.of_time_point(self._time_point):
+        for axis_id, data_axis in self._experiment.splines.of_time_point(self._time_point):
             self._draw_data_axis(data_axis, axis_id, color=core.COLOR_CELL_CURRENT, marker_size_max=10)
 
-    def _draw_data_axis(self, data_axis: DataAxis, id: int, color: str, marker_size_max: int):
+    def _draw_data_axis(self, data_axis: Spline, id: int, color: str, marker_size_max: int):
         """Draws a single data axis. Usually, we use this as the crypt axis."""
         dz = abs(data_axis.get_z() - self._z)
-        marker = data_axis.get_direction_marker()
+        marker = data_axis.get_direction_marker() if self._experiment.splines.is_axis(id) else "o"
         linewidth = 3 if dz == 0 else 1
 
         origin_pos = data_axis.from_position_on_axis(0)

@@ -81,7 +81,7 @@ class LineageFateVisualizer(ExitableImageVisualizer):
 
     def _calculate_final_crypt_axis_position(self, position: Position) -> Optional[float]:
         links = self._experiment.links
-        axes = self._experiment.data_axes
+        axes = self._experiment.splines
 
         track = links.get_track(position)
         if track is None:
@@ -95,7 +95,7 @@ class LineageFateVisualizer(ExitableImageVisualizer):
                 continue  # This is not a final track (but for example a dividing track), ignore
 
             last_position = descending_track.find_last_position()
-            crypt_axis_position = axes.to_position_on_original_axis(links, last_position)
+            crypt_axis_position = axes.to_position_on_original_axis(links, last_position, axis_type=None)
             if crypt_axis_position is None:
                 # No crypt axes defined for this time point
                 continue

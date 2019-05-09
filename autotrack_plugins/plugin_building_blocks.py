@@ -58,7 +58,7 @@ class _Lattice:
         entries = []
 
         for position in experiment.positions.of_time_point(time_point):
-            axis_position = experiment.data_axes.to_position_on_original_axis(experiment.links, position)
+            axis_position = experiment.splines.to_position_on_original_axis(experiment.links, position)
             if axis_position is None or axis_position.axis_id != required_axis_id:
                 continue
             cell_type = linking_markers.get_position_type(experiment.links, position)
@@ -166,7 +166,7 @@ class _LatticePlot(Visualizer):
         self._lattice = _Lattice()
         self._time_point = TimePoint(experiment.first_time_point_number())
         self._axis_id = -1
-        for axis_id, data_axis in experiment.data_axes.of_time_point(self._time_point):
+        for axis_id, data_axis in experiment.splines.of_time_point(self._time_point):
             self._axis_id = axis_id
             break
 
@@ -188,7 +188,7 @@ class _LatticePlot(Visualizer):
                 self.update_status("There is no next time point.")
         elif event.key == "up" or event.key == "down":
             axis_ids = []
-            for axis_id, data_axis in self._experiment.data_axes.of_time_point(self._time_point):
+            for axis_id, data_axis in self._experiment.splines.of_time_point(self._time_point):
                 axis_ids.append(axis_id)
             if len(axis_ids) == 0:
                 self.update_status("No crypt axes found in time point")

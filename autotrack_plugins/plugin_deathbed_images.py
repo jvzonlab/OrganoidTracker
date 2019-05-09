@@ -8,7 +8,7 @@ from typing import Any, List, Optional, Dict
 import numpy
 
 from autotrack.core import UserError, clamp
-from autotrack.core.data_axis import DataAxisCollection, DataAxisPosition
+from autotrack.core.spline import SplineCollection, DataAxisPosition
 from autotrack.core.image_loader import ImageLoader, ImageChannel
 from autotrack.core.images import Images
 from autotrack.core.links import Links
@@ -60,7 +60,7 @@ class _Deathbed:
 
 def _generate_deathbed_images(window: Window):
     experiment = window.get_experiment()
-    data_axes = experiment.data_axes
+    data_axes = experiment.splines
     links = experiment.links
     if not links.has_links():
         raise UserError("Deathbed images", "No links found. Therefore, we cannot find cell deaths.")

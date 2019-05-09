@@ -9,7 +9,7 @@ from autotrack.core.images import Images
 from autotrack.core.links import Links
 from autotrack.core.position_collection import PositionCollection
 from autotrack.core.position import Position
-from autotrack.core.data_axis import DataAxisCollection
+from autotrack.core.spline import SplineCollection
 from autotrack.core.resolution import ImageResolution
 from autotrack.core.score import ScoreCollection
 
@@ -26,13 +26,13 @@ class Experiment:
     _images: Images
     _connections: Connections
     _name: Name
-    data_axes: DataAxisCollection
+    splines: SplineCollection
 
     def __init__(self):
         self._name = Name()
         self._positions = PositionCollection()
         self.scores = ScoreCollection()
-        self.data_axes = DataAxisCollection()
+        self.splines = SplineCollection()
         self._links = Links()
         self._images = Images()
         self._connections = Connections()
@@ -54,7 +54,7 @@ class Experiment:
 
         # Update the data axes origins for all affected time points
         for time_point in affected_time_points:
-            self.data_axes.update_for_changed_positions(time_point, self._positions.of_time_point(time_point))
+            self.splines.update_for_changed_positions(time_point, self._positions.of_time_point(time_point))
 
     def move_position(self, position_old: Position, position_new: Position):
         """Moves the position of a position, preserving any links. (So it's different from remove-and-readd.) The shape
@@ -68,7 +68,7 @@ class Experiment:
         self._positions.move_position(position_old, position_new)
 
         time_point = position_new.time_point()
-        self.data_axes.update_for_changed_positions(time_point, self._positions.of_time_point(time_point))
+        self.splines.update_for_changed_positions(time_point, self._positions.of_time_point(time_point))
 
     def _scale_to_resolution(self, new_resolution: ImageResolution):
         """Scales this experiment so that it has a different resolution."""
@@ -109,13 +109,13 @@ class Experiment:
         """Gets the first time point of the experiment where there is data (images and/or positions)."""
         return min_none(self._images.image_loader().first_time_point_number(),
                         self._positions.first_time_point_number(),
-                        self.data_axes.first_time_point_number())
+                        self.splines.first_time_point_number())
 
     def last_time_point_number(self) -> Optional[int]:
         """Gets the last time point (inclusive) of the experiment where there is data (images and/or positions)."""
         return max_none(self._images.image_loader().last_time_point_number(),
                         self._positions.last_time_point_number(),
-                        self.data_axes.last_time_point_number())
+                        self.splines.last_time_point_number())
 
     def get_previous_time_point(self, time_point: TimePoint) -> TimePoint:
         """Gets the time point directly before the given time point. Throws ValueError if the given time point is the

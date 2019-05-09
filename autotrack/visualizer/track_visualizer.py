@@ -78,7 +78,7 @@ def _plot_displacements(axes: Axes, resolution: ImageResolution, track: LinkingT
 
 
 def _plot_data_axes_locations(axes: Axes, experiment: Experiment, track: LinkingTrack, lineage_id: int):
-    data_axes = experiment.data_axes
+    data_axes = experiment.splines
     links = experiment.links
     resolution = experiment.images.resolution()
 

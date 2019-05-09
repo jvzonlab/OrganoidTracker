@@ -17,20 +17,20 @@ _REFERENCE = Vector3(0, 0, -1)
 
 
 class DataAxisPosition:
-    axis: "DataAxis"  # The data axis at a particular time point.
+    spline: "Spline"  # The data axis at a particular time point.
     axis_id: int  # Used to identify the data axis over multiple time points.
     pos: float  # The position on the data axis.
     distance: float  # The distance from the point to the nearest point on the data axis.
 
-    def __init__(self, axis: "DataAxis", pos: float, distance: float):
-        self.axis = axis
+    def __init__(self, axis: "Spline", pos: float, distance: float):
+        self.spline = axis
         self.axis_id = 0
         self.pos = pos
         self.distance = distance
 
     def is_after_checkpoint(self) -> bool:
         """Returns True if the data axis has a checkpoint specified and this position is behind that checkpoint."""
-        checkpoint = self.axis.get_checkpoint()
+        checkpoint = self.spline.get_checkpoint()
         if checkpoint is None:
             return False
         return self.pos > checkpoint
@@ -39,17 +39,17 @@ class DataAxisPosition:
         """Calculates the angle from this point on the data axis to the given position."""
 
         # Calculate angle from 0 to 180
-        closest_position_on_axis = self.axis.from_position_on_axis(self.pos)
+        closest_position_on_axis = self.spline.from_position_on_axis(self.pos)
         if closest_position_on_axis is None:
             print(position)
-        closest_position_on_axis = Position(closest_position_on_axis[0], closest_position_on_axis[1], self.axis.get_z()).to_vector_um(resolution)
+        closest_position_on_axis = Position(closest_position_on_axis[0], closest_position_on_axis[1], self.spline.get_z()).to_vector_um(resolution)
 
         vector_towards_axis = position.to_vector_um(resolution) - closest_position_on_axis
         angle = angles.angle_between_vectors(vector_towards_axis, _REFERENCE)
 
         # Make angle negative
-        next_position_on_axis = self.axis.from_position_on_axis(self.pos + 1)
-        next_position_on_axis = Position(next_position_on_axis[0], next_position_on_axis[1], self.axis.get_z()).to_vector_um(resolution)
+        next_position_on_axis = self.spline.from_position_on_axis(self.pos + 1)
+        next_position_on_axis = Position(next_position_on_axis[0], next_position_on_axis[1], self.spline.get_z()).to_vector_um(resolution)
         aa = _REFERENCE.cross(vector_towards_axis)
         bb = aa.dot(next_position_on_axis - closest_position_on_axis)
         angle = numpy.sign(bb) * angle
@@ -57,7 +57,7 @@ class DataAxisPosition:
         return angle
 
 
-class DataAxis:
+class Spline:
     """A curve (curved line) trough the positions. This can be used to measure how far the positions are along this
      curve.
 
@@ -200,9 +200,9 @@ class DataAxis:
         # Paths are only equal if they are the same instence
         return other is self
 
-    def copy(self) -> "DataAxis":
+    def copy(self) -> "Spline":
         """Returns a copy of this path. Changes to this path will not affect the copy and vice versa."""
-        copy = DataAxis()
+        copy = Spline()
         for i in range(len(self._x_list)):
             copy.add_point(self._x_list[i], self._y_list[i], self._z)
         copy._offset = self._offset
@@ -285,17 +285,19 @@ def _distance_to_line_segment_squared(line_x1, line_y1, line_x2, line_y2, point_
                              line_x1 + t * (line_x2 - line_x1), line_y1 + t * (line_y2 - line_y1))
 
 
-class DataAxisCollection:
+class SplineCollection:
     """Holds the paths of all time points in an experiment."""
 
-    _data_axes: Dict[TimePoint, List[DataAxis]]
-    _data_axes_markers: Dict[int, str]
+    _splines: Dict[TimePoint, Dict[int, Spline]]
+    _spline_markers: Dict[int, str]  # Map of spline id -> name
+    _spline_is_axis: Dict[int, bool]  # Map of spline_id -> bool
     _min_time_point_number: Optional[int]
     _max_time_point_number: Optional[int]
 
     def __init__(self):
-        self._data_axes = dict()
-        self._data_axes_markers = dict()
+        self._splines = dict()
+        self._spline_markers = dict()
+        self._spline_is_axis = dict()
         self._min_time_point_number = None
         self._max_time_point_number = None
 
@@ -307,19 +309,22 @@ class DataAxisCollection:
         """Gets the last time point (inclusive) that contains data axes, or None if there are no axes stored."""
         return self._max_time_point_number
 
-    def of_time_point(self, time_point: TimePoint) -> Iterable[Tuple[int, DataAxis]]:
+    def of_time_point(self, time_point: TimePoint) -> Iterable[Tuple[int, Spline]]:
         """Gets the data axes of the time point along with their id, or an empty collection if that time point has no
         paths defined."""
-        data_axes = self._data_axes.get(time_point)
-        if data_axes is None:
+        splines = self._splines.get(time_point)
+        if splines is None:
             return []
-        for i, data_axis in enumerate(data_axes):
-            yield i + 1, data_axis
+        for spline_id, spline in splines.items():
+            yield spline_id, spline
 
-    def _to_position_on_axis(self, position: Position) -> Optional[DataAxisPosition]:
+    def to_position_on_spline(self, position: Position, only_axis=False) -> Optional[DataAxisPosition]:
         # Find the closest axis, return position on that axis
         lowest_distance_position = None
         for axis_id, data_axis in self.of_time_point(position.time_point()):
+            if only_axis and not self._spline_is_axis.get(axis_id):
+                continue  # Ignore axes of this type
+
             axis_position = data_axis.to_position_on_axis(position)
             if axis_position is None:
                 continue
@@ -332,7 +337,7 @@ class DataAxisCollection:
         """Gets the position on the axis that was closest in the first time point this position appeared. In this way,
         every position is assigned to a single axis, and will never switch to another axis during its lifetime."""
         first_position = links.get_first_position_of(position)
-        first_axis_position = self._to_position_on_axis(first_position)
+        first_axis_position = self.to_position_on_spline(first_position, only_axis=True)
         if first_axis_position is None:
             return None
         for axis_id, axis in self.of_time_point(position.time_point()):
@@ -342,12 +347,17 @@ class DataAxisCollection:
                     position.axis_id = axis_id
                 return position
 
-    def add_data_axis(self, time_point: TimePoint, path: DataAxis):
-        """Adds a new data axis to the given time point. Existing axes are left untouched."""
-        existing_data_axes = self._data_axes.get(time_point)
-        if existing_data_axes is None:
+    def add_spline(self, time_point: TimePoint, path: Spline, spline_id: Optional[int]):
+        """Adds a new spline to the given time point. If another spline with that id already exists in the time point,
+        it is overwritten. If spline_id is None, a new id will be assigned."""
+        existing_splines = self._splines.get(time_point)
+        if existing_splines is None:
+            # No splines yet for that time point
+            if spline_id is None:
+                spline_id = 1
+
             # Add data for a new time point
-            self._data_axes[time_point] = [path]
+            self._splines[time_point] = {spline_id: path}
 
             # Update min/max time points
             if self._max_time_point_number is None or time_point.time_point_number() > self._max_time_point_number:
@@ -355,48 +365,67 @@ class DataAxisCollection:
             if self._min_time_point_number is None or time_point.time_point_number() < self._min_time_point_number:
                 self._min_time_point_number = time_point.time_point_number()
         else:
-            existing_data_axes.append(path)
+            if spline_id is None:
+                # Find a free spline id
+                spline_id = 1
+                while spline_id in existing_splines:
+                    spline_id += 1
+            existing_splines[spline_id] = path
 
-    def remove_data_axis(self, time_point: TimePoint, path: DataAxis):
+    def remove_spline(self, time_point: TimePoint, spline_to_remove: Spline):
         """Removes the given data axis from the given time point. Does nothing if the data axis is not used for the
         given time point."""
-        existing_paths = self._data_axes.get(time_point)
+        existing_paths = self._splines.get(time_point)
         if existing_paths is None:
             return
-        try:
-            existing_paths.remove(path)
-            if len(existing_paths) == 0:
-                # We just removed the last path of this time point
-                del self._data_axes[time_point]
-                if time_point.time_point_number() == self._min_time_point_number\
-                        or time_point.time_point_number() == self._max_time_point_number:
-                    self._recalculate_min_max_time_point()  # Removed first or last time point, calculate new min/max
-        except ValueError:
-            pass  # Ignore, path is not in list
 
-    def exists(self, path: DataAxis, time_point: TimePoint) -> bool:
+        # Find spline id
+        spline_id_to_remove = None
+        for spline_id, spline in existing_paths.items():
+            if spline == spline_to_remove:
+                spline_id_to_remove = spline_id
+                break
+        if spline_id_to_remove is None:
+            return  # Ignore, spline is not in list
+
+        del existing_paths[spline_id_to_remove]
+        if len(existing_paths) == 0:
+            # We just removed the last path of this time point
+            del self._splines[time_point]
+            if time_point.time_point_number() == self._min_time_point_number\
+                    or time_point.time_point_number() == self._max_time_point_number:
+                self._recalculate_min_max_time_point()  # Removed first or last time point, calculate new min/max
+
+    def exists(self, path: Spline, time_point: TimePoint) -> bool:
         """Returns True if the path exists in this path collection at the given time point, False otherwise."""
-        paths = self._data_axes.get(time_point)
+        paths = self._splines.get(time_point)
         if paths is None:
             return False
-        return path in paths
+        for found_path in paths.values():
+            if found_path == path:
+                return True
+        return False
 
-    def has_axes(self) -> bool:
+    def is_axis(self, spline_id: int) -> bool:
+        """Returns true if the spline with the given id is an axis."""
+        return bool(self._spline_is_axis.get(spline_id))
+
+    def has_splines(self) -> bool:
         """Returns True if there are any paths stored in this collection. """
-        return len(self._data_axes) > 0
+        return len(self._splines) > 0
 
-    def all_data_axes(self) -> Iterable[Tuple[DataAxis, TimePoint]]:
+    def all_splines(self) -> Iterable[Tuple[int, TimePoint, Spline]]:
         """Gets all paths. Note that a single time point can have multiple paths."""
-        for time_point, paths in self._data_axes.items():
-            for path in paths:
-                yield path, time_point
+        for time_point, paths in self._splines.items():
+            for spline_id, spline in paths.items():
+                yield spline_id, time_point, spline
 
     def _recalculate_min_max_time_point(self):
         """Recalculates the min/max time point based on the current data axis map. Call this method when the last axis
         of a time point has been removed."""
         min_time_point_number = None
         max_time_point_number = None
-        for time_point in self._data_axes.keys():
+        for time_point in self._splines.keys():
             if min_time_point_number is None or time_point.time_point_number() < min_time_point_number:
                 min_time_point_number = time_point.time_point_number()
             if max_time_point_number is None or time_point.time_point_number() > max_time_point_number:
@@ -408,38 +437,43 @@ class DataAxisCollection:
         """If the positions of a time point have changed, this method must be called to update the zero point of all
         axes.
         """
-        data_axes = self._data_axes.get(time_point)
-        if data_axes is None:
+        splines = self._splines.get(time_point)
+        if splines is None:
             return
-        for data_axis in data_axes:
-            data_axis.update_offset_for_positions(new_positions)
+        for spline in splines.values():
+            spline.update_offset_for_positions(new_positions)
 
     def set_marker(self, axis_id: int, axis_marker: Optional[Marker]):
-        """Sets the marker of the specified data axes across all time points  High-level version of set_marker_name."""
+        """Sets the marker of the specified data axes across all time points. High-level version of set_marker_name.
+        If the marker has the extra data "is_axis": true, then the spline will be used as an axis."""
         save_name = None
+        is_data_axis = False
         if axis_marker is not None:
-            if not axis_marker.applies_to(DataAxis):
+            if not axis_marker.applies_to(Spline):
                 raise ValueError(f"Type {axis_marker} cannot be applied to a data axis")
 
             save_name = axis_marker.save_name
-        self.set_marker_name(axis_id, save_name)
+            is_data_axis = bool(axis_marker.extra("is_axis"))
+        self.set_marker_name(axis_id, save_name, is_data_axis)
 
-    def set_marker_name(self, axis_id: int, axis_marker: Optional[str]):
+    def set_marker_name(self, axis_id: int, axis_marker: Optional[str], is_data_axis: bool):
         """Sets the marker of the specified data axes across all time points """
         if axis_marker is None:
             # Remove
-            if axis_id in self._data_axes_markers:
-                del self._data_axes_markers[axis_id]
+            if axis_id in self._spline_markers:
+                del self._spline_markers[axis_id]
+                del self._spline_is_axis[axis_id]
             return
 
         # Set marker
-        self._data_axes_markers[axis_id] = axis_marker.upper()
+        self._spline_markers[axis_id] = axis_marker.upper()
+        self._spline_is_axis[axis_id] = is_data_axis
 
     def get_marker_name(self, axis_id: int) -> Optional[str]:
         """Gets the marker of the data axes with the given id."""
-        return self._data_axes_markers.get(axis_id)
+        return self._spline_markers.get(axis_id)
 
     def get_marker_names(self) -> Iterable[Tuple[int, str]]:
-        """Gets all registered axis markers."""
-        for axis_id, marker_name in self._data_axes_markers.items():
+        """Gets all registered axis markers as (id, name)."""
+        for axis_id, marker_name in self._spline_markers.items():
             yield axis_id, marker_name

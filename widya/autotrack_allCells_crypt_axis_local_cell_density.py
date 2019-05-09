@@ -25,7 +25,7 @@ cells_density = []
 for experiment_number, experiment in enumerate(experiments):
     for cell in experiment.positions:
         # get the distance of all cells to the axis
-        pos_axis = experiment.data_axes.to_position_on_original_axis(experiment.links, cell).pos
+        pos_axis = experiment.splines.to_position_on_original_axis(experiment.links, cell).pos
         distance_um = experiment.images.resolution().pixel_size_x_um * pos_axis
         cell_pos_axis.append(distance_um)
 

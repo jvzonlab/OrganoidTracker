@@ -18,15 +18,15 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
 
 def _view_cell_death_locations(window: Window):
     experiment = window.get_experiment()
-    data_axes = experiment.data_axes
+    data_axes = experiment.splines
     resolution = experiment.images.resolution()
 
-    if not data_axes.has_axes():
+    if not data_axes.has_splines():
         raise UserError("Dead cells", "No crypt axes where found. Cannot determine positions of dead cells.")
 
     death_crypt_positions = dict()
     for dead_cell in linking_markers.find_death_and_shed_positions(experiment.links):
-        crypt_position = data_axes.to_position_on_original_axis(experiment.links, dead_cell)
+        crypt_position = data_axes.to_position_on_original_axis(experiment.links, dead_cell, axis_type=None)
         if crypt_position is not None:
             if crypt_position.axis_id not in death_crypt_positions:
                 death_crypt_positions[crypt_position.axis_id] = []

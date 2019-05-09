@@ -43,8 +43,8 @@ for experiment_number, experiment in enumerate(experiments):
             continue
 
         # get the distance of sister cells to the axis
-        pos_axis_d1 = experiment.data_axes.to_position_on_original_axis(experiment.links, daughter1).pos
-        pos_axis_d2 = experiment.data_axes.to_position_on_original_axis(experiment.links, daughter2).pos
+        pos_axis_d1 = experiment.splines.to_position_on_original_axis(experiment.links, daughter1).pos
+        pos_axis_d2 = experiment.splines.to_position_on_original_axis(experiment.links, daughter2).pos
         distance_um_d1 = experiment.images.resolution().pixel_size_x_um * pos_axis_d1
         distance_um_d2 = experiment.images.resolution().pixel_size_x_um * pos_axis_d2
         d_pos = abs(distance_um_d1 - distance_um_d2)

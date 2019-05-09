@@ -27,7 +27,7 @@ for experiment_number, experiment in enumerate(experiments):
     # Get position for every mother cells and their daughters
     for mother in mothers:
         # get the distance of mother to the axis
-        pos_axis = experiment.data_axes.to_position_on_original_axis(experiment.links, mother).pos
+        pos_axis = experiment.splines.to_position_on_original_axis(experiment.links, mother).pos
         distance_um = experiment.images.resolution().pixel_size_x_um * pos_axis
         mother_pos_axis = []
         mother_pos_axis.append(distance_um)
