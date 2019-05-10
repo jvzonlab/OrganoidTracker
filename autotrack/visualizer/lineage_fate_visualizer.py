@@ -95,7 +95,7 @@ class LineageFateVisualizer(ExitableImageVisualizer):
                 continue  # This is not a final track (but for example a dividing track), ignore
 
             last_position = descending_track.find_last_position()
-            crypt_axis_position = axes.to_position_on_original_axis(links, last_position, axis_type=None)
+            crypt_axis_position = axes.to_position_on_original_axis(links, last_position)
             if crypt_axis_position is None:
                 # No crypt axes defined for this time point
                 continue
