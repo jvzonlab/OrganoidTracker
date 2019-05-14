@@ -1,8 +1,10 @@
 from typing import Optional
 
+from matplotlib import pyplot
 from matplotlib.backend_bases import KeyEvent, MouseEvent
+from matplotlib.figure import Figure
 
-from autotrack.core import TimePoint
+from autotrack.core import TimePoint, UserError
 from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog
 from autotrack.gui.launcher import launch_window
@@ -43,6 +45,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     def get_extra_menu_options(self):
         return {
             **super().get_extra_menu_options(),
+            "File//Export-Export 2D depth-colored image...": self._export_depth_colored_image,
             "Edit//Experiment-Merge tracking data...": self._ask_merge_experiments,
             "Edit//Experiment-Manually change data... [C]": self._show_data_editor,
             "Edit//Automatic-Cell detection...": self._show_cell_detector,
@@ -76,6 +79,20 @@ class StandardImageVisualizer(AbstractImageVisualizer):
                                    str(particle_flow_calculator.get_flow_to_next(links, positions_of_time_point, position)))
         else:
             super()._on_key_press(event)
+
+    def _export_depth_colored_image(self):
+        image_3d = self._experiment.images.get_image_stack(self._time_point, self._display_settings.image_channel)
+        if image_3d is None:
+            raise UserError("No image available", "There is no image available for this time point.")
+
+        file = dialog.prompt_save_file("Image location", [("PNG file", "*.png")])
+        if file is None:
+            return
+
+        from autotrack.imaging import depth_colored_image_creator
+        image_2d = depth_colored_image_creator.create_image(image_3d)
+        pyplot.imsave(file, image_2d)
+
 
     def _show_track_follower(self):
         from autotrack.visualizer.track_visualizer import TrackVisualizer

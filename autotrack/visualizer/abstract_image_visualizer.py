@@ -299,7 +299,7 @@ class AbstractImageVisualizer(Visualizer):
                             + max_str + ".")
         return {
             **super().get_extra_menu_options(),
-            "File//Export-Export image...": self._export_images,
+            "File//Export-Export 3D image...": self._export_images,
             "View//Toggle-Toggle showing two time points [" + DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + "]":
                 self._toggle_showing_next_time_point,
             "View//Toggle-Toggle showing images [" + DisplaySettings.KEY_SHOW_IMAGES.upper() + "]":
