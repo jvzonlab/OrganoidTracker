@@ -51,6 +51,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             "Edit//Automatic-Cell detection...": self._show_cell_detector,
             "View//Cells-Cell divisions... [M]": self._show_mother_cells,
             "View//Cells-Cell shedding and deaths... [S]": self._show_dead_cells,
+            "View//Cells-Cell density...": self._show_cell_density,
             "View//Tracks-Track follower... [T]": self._show_track_follower,
             "View//Tracks-Movement arrows...": self._show_movement_arrows,
             "View//Tracks-Cell fates...": self._show_cell_fates,
@@ -146,6 +147,11 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     def _show_dead_cells(self):
         from autotrack.visualizer.cell_death_visualizer import CellTrackEndVisualizer
         activate(CellTrackEndVisualizer(self._window, None))
+
+    def _show_cell_density(self):
+        from autotrack.visualizer.cell_density_visualizer import CellDensityVisualizer
+        activate(CellDensityVisualizer(self._window, time_point=self._time_point, z=self._z,
+                                       display_settings=self._display_settings))
 
     def _ask_merge_experiments(self):
         link_files = dialog.prompt_load_multiple_files("Select data file", [
