@@ -32,17 +32,17 @@ class Position:
         else:
             self._time_point_number = None
 
-    def distance_squared(self, other: "Position", z_factor: float = 5) -> float:
-        """Gets the squared distance. Working with squared distances instead of normal ones gives a much better
-        performance, as the expensive sqrt(..) function can be avoided."""
-        return (self.x - other.x) ** 2 + (self.y - other.y) ** 2 + ((self.z - other.z) * z_factor) ** 2
-
-    def distance_um(self, other: "Position", resolution: ImageResolution) -> float:
-        """Gets the distance to the other position in micrometers."""
+    def distance_squared(self, other: "Position", resolution: ImageResolution) -> float:
+        """Gets the squared distance in micrometers. Working with squared distances instead of normal ones gives a much
+        better performance, as the expensive sqrt(..) function can be avoided."""
         dx = (self.x - other.x) * resolution.pixel_size_zyx_um[2]
         dy = (self.y - other.y) * resolution.pixel_size_zyx_um[1]
         dz = (self.z - other.z) * resolution.pixel_size_zyx_um[0]
-        return math.sqrt(dx ** 2 + dy ** 2 + dz ** 2)
+        return dx ** 2 + dy ** 2 + dz ** 2
+
+    def distance_um(self, other: "Position", resolution: ImageResolution) -> float:
+        """Gets the distance to the other position in micrometers."""
+        return math.sqrt(self.distance_squared(other, resolution))
 
     def time_point_number(self) -> Optional[int]:
         return self._time_point_number

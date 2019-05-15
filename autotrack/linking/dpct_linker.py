@@ -12,6 +12,7 @@ from typing import Dict, List, Iterable
 from autotrack.core.links import Links
 from autotrack.core.position_collection import PositionCollection
 from autotrack.core.position import Position
+from autotrack.core.resolution import ImageResolution
 from autotrack.core.score import ScoreCollection, Score, ScoredFamily
 
 
@@ -50,15 +51,16 @@ def _to_links(position_ids: _PositionToId, results: Dict) -> Links:
     return links
 
 
-def run(positions: PositionCollection, starting_links: Links, scores: ScoreCollection) -> Links:
+def run(positions: PositionCollection, starting_links: Links, scores: ScoreCollection, resolution: ImageResolution
+        ) -> Links:
     position_ids = _PositionToId()
     weights = {"weights": [
-        10,  # multiplier for linking features?
+        30,  # multiplier for linking features?
         150,  # multiplier for detection of a cell - the higher, the more expensive to omit a cell
         30,  # multiplier for division features - the higher, the cheaper it is to create a cell division
         150,  # multiplier for appearance features - the higher, the more expensive it is to create a cell out of nothing
         100]}  # multiplier for disappearance - the higher, the more expensive an end-of-lineage is
-    input = _create_dpct_graph(position_ids, starting_links, scores, positions,
+    input = _create_dpct_graph(position_ids, starting_links, scores, positions, resolution,
                                positions.first_time_point_number(), positions.last_time_point_number())
     results = dpct.trackFlowBased(input, weights)
     return _to_links(position_ids, results)
@@ -72,7 +74,8 @@ def _scores_involving(daughter: Position, scores: Iterable[ScoredFamily]) -> Ite
 
 
 def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links, scores: ScoreCollection,
-                       shapes: PositionCollection, min_time_point: int, max_time_point: int) -> Dict:
+                       shapes: PositionCollection, resolution: ImageResolution,
+                       min_time_point: int, max_time_point: int) -> Dict:
     segmentation_hypotheses = []
     for position in starting_links.find_all_positions():
         appearance_penalty = 1 if position.time_point_number() > min_time_point else 0
@@ -99,8 +102,8 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links, score
             position1, position2 = position2, position1
 
         volume1, volume2 = shapes.get_shape(position1).volume(), shapes.get_shape(position2).volume()
-        link_penalty = math.sqrt(position1.distance_squared(position2))
-        link_penalty += abs(volume1 - volume2) ** (1 / 3)
+        link_penalty = position1.distance_um(position2, resolution)
+        link_penalty += (abs(volume1 - volume2) ** (1 / 3)) * resolution.pixel_size_x_um * 3
 
         mother_score = _max_score(_scores_involving(position2, scores.of_mother(position1)))
 

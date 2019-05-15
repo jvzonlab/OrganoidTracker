@@ -6,6 +6,7 @@ from typing import Iterable, List, Optional, Set
 from autotrack.core import TimePoint
 from autotrack.core.position_collection import PositionCollection
 from autotrack.core.position import Position
+from autotrack.core.resolution import ImageResolution
 
 
 class _NearestPositions:
@@ -45,7 +46,7 @@ class _NearestPositions:
         return positions
 
 
-def find_close_positions(positions: Iterable[Position], around: Position, tolerance: float,
+def find_close_positions(positions: Iterable[Position], *, around: Position, tolerance: float, resolution: ImageResolution,
                          max_amount: int = 1000) -> List[Position]:
     """Finds the positions nearest to the given position.
 
@@ -62,20 +63,20 @@ def find_close_positions(positions: Iterable[Position], around: Position, tolera
         raise ValueError()
     nearest_positions = _NearestPositions(tolerance)
     for position in positions:
-        nearest_positions.add_candidate(position, position.distance_squared(around, z_factor=3))
+        nearest_positions.add_candidate(position, position.distance_squared(around, resolution))
     return nearest_positions.get_positions(max_amount)
 
 
-def find_closest_position(positions: Iterable[Position], around: Position, ignore_z: bool = False,
-                          max_distance: int = 100000) -> Optional[Position]:
+def find_closest_position(positions: Iterable[Position], *, around: Position, resolution: ImageResolution,
+                          ignore_z: bool = False, max_distance_um: int = 100000) -> Optional[Position]:
     """Gets the position closest ot the given position."""
     closest_position = None
-    closest_distance_squared = max_distance ** 2
+    closest_distance_squared = max_distance_um ** 2
 
     for position in positions:
         if ignore_z:
             around.z = position.z  # Make search ignore z
-        distance = position.distance_squared(around)
+        distance = position.distance_squared(around, resolution)
 
         around_time_point_number = around.time_point_number()
         if around_time_point_number is not None:  # Make positions in same time point closer
@@ -88,15 +89,16 @@ def find_closest_position(positions: Iterable[Position], around: Position, ignor
     return closest_position
 
 
-def find_closest_n_positions(positions: Iterable[Position], around: Position, max_amount: int,
-                             max_distance: int = 100000, ignore_self: bool = True) -> Set[Position]:
-    max_distance_squared = max_distance ** 2
+def find_closest_n_positions(positions: Iterable[Position], *, around: Position, max_amount: int,
+                             resolution: ImageResolution, max_distance_um: float = 100000, ignore_self: bool = True
+                             ) -> Set[Position]:
+    max_distance_squared = max_distance_um ** 2
     closest_positions = []
 
     for position in positions:
         if ignore_self and position == around:
             continue
-        distance_squared = position.distance_squared(around)
+        distance_squared = position.distance_squared(around, resolution)
         if distance_squared > max_distance_squared:
             continue
         if len(closest_positions) < max_amount or closest_positions[-1][0] > distance_squared:

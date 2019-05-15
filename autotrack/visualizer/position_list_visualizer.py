@@ -47,7 +47,7 @@ class PositionListVisualizer(Visualizer):
                 self._current_position_index = self._position_list.index(position)
             except ValueError:
                 # Try nearest position
-                close_match = find_closest_position(self._position_list, position, max_distance=100)
+                close_match = find_closest_position(self._position_list, position, max_distance_um=100)
 
                 if close_match is not None and close_match.time_point_number() == position.time_point_number():
                     self._current_position_index = self._position_list.index(close_match)

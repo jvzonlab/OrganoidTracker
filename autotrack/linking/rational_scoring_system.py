@@ -8,6 +8,7 @@ from autotrack.core.images import Images, Image
 from autotrack.core.mask import create_mask_for, Mask, OutsideImageError
 from autotrack.core.position import Position
 from autotrack.core.position_collection import PositionCollection
+from autotrack.core.resolution import ImageResolution
 from autotrack.core.score import Score, Family
 from autotrack.linking.scoring_system import MotherScoringSystem
 
@@ -38,7 +39,7 @@ class RationalScoringSystem(MotherScoringSystem):
             score_mother_intensities(score, mother, mother_intensities, mother_intensities_next)
             score_daughter_intensities(score, daughter1_intensities, daughter2_intensities,
                                        daughter1_intensities_prev, daughter2_intensities_prev)
-            score_daughter_distances(score, mother, daughter1, daughter2)
+            score_daughter_distances(score, mother, daughter1, daughter2, images.resolution())
             score_using_volumes(score, position_shapes, mother, daughter1, daughter2)
             return score
         except OutsideImageError:
@@ -46,9 +47,10 @@ class RationalScoringSystem(MotherScoringSystem):
             return Score()
 
 
-def score_daughter_distances(score: Score, mother: Position, daughter1: Position, daughter2: Position):
-    m_d1_distance = mother.distance_squared(daughter1)
-    m_d2_distance = mother.distance_squared(daughter2)
+def score_daughter_distances(score: Score, mother: Position, daughter1: Position, daughter2: Position,
+                             resolution: ImageResolution):
+    m_d1_distance = mother.distance_squared(daughter1, resolution)
+    m_d2_distance = mother.distance_squared(daughter2, resolution)
     shorter_distance = m_d1_distance if m_d1_distance < m_d2_distance else m_d2_distance
     longer_distance = m_d1_distance if m_d1_distance > m_d2_distance else m_d2_distance
     if shorter_distance * (6 ** 2) < longer_distance:

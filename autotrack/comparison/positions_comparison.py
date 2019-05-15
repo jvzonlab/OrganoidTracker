@@ -29,7 +29,8 @@ def compare_positions(ground_truth: Experiment, scratch: Experiment, max_distanc
         baseline_positions = set(ground_truth.positions.of_time_point(time_point))
         scratch_positions = set(scratch.positions.of_time_point(time_point))
         for baseline_position in baseline_positions:
-            nearest_in_scratch = find_close_positions(scratch_positions, around=baseline_position, tolerance=1)
+            nearest_in_scratch = find_close_positions(scratch_positions, around=baseline_position, tolerance=1,
+                                                      resolution=resolution)
             if len(nearest_in_scratch) == 0:
                 report.add_data(_DETECTIONS_FALSE_NEGATIVES, baseline_position, "No candidates in the scratch data left.")
                 continue
@@ -42,7 +43,8 @@ def compare_positions(ground_truth: Experiment, scratch: Experiment, max_distanc
 
         # Only the scratch positions with no corresponding baseline position are left
         for scratch_position in scratch_positions:
-            nearest_in_baseline = find_close_positions(baseline_positions, around=scratch_position, tolerance=1)
+            nearest_in_baseline = find_close_positions(baseline_positions, around=scratch_position, tolerance=1,
+                                                       resolution=resolution)
             distance_um = scratch_position.distance_um(nearest_in_baseline[0], resolution)
             if distance_um > 3.3333 * max_distance_um:
                 # Assume cell is in unannotated region

@@ -25,7 +25,7 @@ class AbstractImageVisualizer(Visualizer):
     DEFAULT_SIZE = (30, 500, 500)
 
     _time_point: TimePoint = None
-    _time_point_images: ndarray = None
+    _time_point_images: Optional[ndarray] = None
     _z: int
     __positions_near_visible_layer: List[Position]
 

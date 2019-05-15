@@ -64,7 +64,8 @@ def _draw_figure(experiment: Experiment, figure: Figure):
 
 def _get_average_distance_to_nearest_two_cells(all_positions: PositionCollection, around: Position, resolution: ImageResolution) -> float:
     positions = all_positions.of_time_point(around.time_point())
-    closest_positions = nearby_position_finder.find_closest_n_positions(positions, around, max_amount=2)
+    closest_positions = nearby_position_finder.find_closest_n_positions(positions, around=around, max_amount=2,
+                                                                        resolution=resolution)
     distance1 = closest_positions.pop().distance_um(around, resolution)
     distance2 = closest_positions.pop().distance_um(around, resolution)
     return (distance1 + distance2) / 2

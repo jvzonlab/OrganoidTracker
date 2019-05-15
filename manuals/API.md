@@ -60,12 +60,15 @@ for time_point in experiment.time_points():
 If you want to find the nearest detected position from a set of positions, there are a few pre-made functions for that. For example, this is how to get the nearest four positions around a position at (x, y, z) =  (15, 201, 3):
 
 ```python
+from autotrack.core.resolution import ImageResolution
 from autotrack.core.position import Position
 from autotrack.linking import nearby_position_finder
+
 positions = set()  # This should be list of positions, see above how to get them
+image_resolution = ImageResolution(0.32, 0.32, 2, 12)  # Translation of px to um
 
 around_position = Position(x=15, y=201, z=3)
-nearby_position_finder.find_closest_n_positions(positions, around_position, max_amount=4)
+nearby_position_finder.find_closest_n_positions(positions, around=around_position, max_amount=4, resolution=image_resolution)
 ```
 
 There are a few other functions:

@@ -12,6 +12,7 @@ from autotrack.core import TimePoint
 from autotrack.core.image_loader import ImageChannel
 from autotrack.core.position import Position
 from autotrack.core.experiment import Experiment
+from autotrack.core.resolution import ImageResolution
 from autotrack.core.typing import MPLColor
 from autotrack.gui import dialog
 from autotrack.gui.threading import Task
@@ -225,8 +226,10 @@ class Visualizer:
         if z is None:
             z = 0
             ignore_z = True
+        resolution = ImageResolution(1, 1, 6, 1)  # Just use a random resolution - it's just for clicking after all
         search_position = Position(x, y, z, time_point=time_point)
-        return find_closest_position(positions, search_position, ignore_z=ignore_z, max_distance=max_distance)
+        return find_closest_position(positions, around=search_position, ignore_z=ignore_z,
+                                     max_distance_um=max_distance, resolution=resolution)
 
     def get_window(self) -> Window:
         return self._window

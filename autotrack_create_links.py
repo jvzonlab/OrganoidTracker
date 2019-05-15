@@ -35,7 +35,7 @@ print("Calculating scores of possible mothers...")
 score_system = RationalScoringSystem()
 scores = cell_division_finder.calculates_scores(experiment.images, experiment.positions, possible_links, score_system)
 print("Deciding on what links to use...")
-link_result = dpct_linker.run(experiment.positions, possible_links, scores)
+link_result = dpct_linker.run(experiment.positions, possible_links, scores, experiment.images.resolution())
 print("Applying final touches...")
 experiment.links = link_result
 experiment.scores = scores
