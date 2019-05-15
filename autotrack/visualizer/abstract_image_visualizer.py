@@ -1,17 +1,14 @@
 from typing import List, Union, Optional, Dict, Any
 
-import cv2
 from matplotlib.collections import LineCollection
 from matplotlib.colors import Colormap
 from numpy.core.multiarray import ndarray
-from tifffile import tifffile
 
 from autotrack import core
 from autotrack.core import TimePoint
-from autotrack.core.spline import Spline
 from autotrack.core.position import Position
+from autotrack.core.spline import Spline
 from autotrack.core.typing import MPLColor
-from autotrack.gui import dialog
 from autotrack.gui.dialog import prompt_int, popup_error
 from autotrack.gui.window import Window
 from autotrack.linking_analysis import linking_markers
@@ -65,24 +62,6 @@ class AbstractImageVisualizer(Visualizer):
         self._time_point_images = time_point_images
         self._clamp_z()
         self._clamp_channel()
-
-    def _export_images(self):
-        if self._time_point_images is None:
-            raise core.UserError("No images loaded", "Saving images failed: there are no images loaded")
-        file = dialog.prompt_save_file("Save 3D file as...", [("TIF file", "*.tif")])
-        if file is None:
-            return
-        flat_image = self._time_point_images.ravel()
-
-        image_shape = self._time_point_images.shape
-        if len(image_shape) == 3 and isinstance(self._color_map, Colormap):
-            # Convert grayscale image to colored using the stored color map
-            images: ndarray = self._color_map(flat_image, bytes=True)[:, 0:3]
-            new_shape = (image_shape[0], image_shape[1], image_shape[2], 3)
-            images = images.reshape(new_shape)
-        else:
-            images = cv2.convertScaleAbs(self._time_point_images, alpha=256 / self._time_point_images.max(), beta=0)
-        tifffile.imsave(file, images)
 
     def _guess_image_size(self, time_point):
         images_for_size = self._time_point_images
@@ -299,7 +278,6 @@ class AbstractImageVisualizer(Visualizer):
                             + max_str + ".")
         return {
             **super().get_extra_menu_options(),
-            "File//Export-Export 3D image...": self._export_images,
             "View//Toggle-Toggle showing two time points [" + DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + "]":
                 self._toggle_showing_next_time_point,
             "View//Toggle-Toggle showing images [" + DisplaySettings.KEY_SHOW_IMAGES.upper() + "]":

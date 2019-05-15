@@ -2,7 +2,7 @@ from typing import Optional
 
 from matplotlib import pyplot
 from matplotlib.backend_bases import KeyEvent, MouseEvent
-from matplotlib.figure import Figure
+from tifffile import tifffile
 
 from autotrack.core import TimePoint, UserError
 from autotrack.core.experiment import Experiment
@@ -11,7 +11,6 @@ from autotrack.gui.launcher import launch_window
 from autotrack.gui.window import Window
 from autotrack.imaging import io
 from autotrack.linking_analysis import particle_flow_calculator
-from autotrack.manual_tracking import guizela_data_importer
 from autotrack.visualizer import activate, DisplaySettings
 from autotrack.visualizer.abstract_image_visualizer import AbstractImageVisualizer
 
@@ -45,6 +44,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     def get_extra_menu_options(self):
         return {
             **super().get_extra_menu_options(),
+            "File//Export-Export 3D image...": self._export_3d_image,
             "File//Export-Export 2D depth-colored image...": self._export_depth_colored_image,
             "Edit//Experiment-Merge tracking data...": self._ask_merge_experiments,
             "Edit//Experiment-Manually change data... [C]": self._show_data_editor,
@@ -80,6 +80,16 @@ class StandardImageVisualizer(AbstractImageVisualizer):
                                    str(particle_flow_calculator.get_flow_to_next(links, positions_of_time_point, position)))
         else:
             super()._on_key_press(event)
+
+    def _export_3d_image(self):
+        image_3d = self._experiment.images.get_image_stack(self._time_point, self._display_settings.image_channel)
+        if image_3d is None:
+            raise UserError("No image available", "There is no image available for this time point.")
+
+        file = dialog.prompt_save_file("Save 3D file as...", [("TIF file", "*.tif")])
+        if file is None:
+            return
+        tifffile.imsave(file, image_3d, compress=9)
 
     def _export_depth_colored_image(self):
         image_3d = self._experiment.images.get_image_stack(self._time_point, self._display_settings.image_channel)
