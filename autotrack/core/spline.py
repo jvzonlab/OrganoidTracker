@@ -347,9 +347,9 @@ class SplineCollection:
                     position.axis_id = axis_id
                 return position
 
-    def add_spline(self, time_point: TimePoint, path: Spline, spline_id: Optional[int]):
+    def add_spline(self, time_point: TimePoint, path: Spline, spline_id: Optional[int]) -> int:
         """Adds a new spline to the given time point. If another spline with that id already exists in the time point,
-        it is overwritten. If spline_id is None, a new id will be assigned."""
+        it is overwritten. If spline_id is None, a new id will be assigned. The spline_id is then returned."""
         existing_splines = self._splines.get(time_point)
         if existing_splines is None:
             # No splines yet for that time point
@@ -371,6 +371,7 @@ class SplineCollection:
                 while spline_id in existing_splines:
                     spline_id += 1
             existing_splines[spline_id] = path
+        return spline_id
 
     def remove_spline(self, time_point: TimePoint, spline_to_remove: Spline):
         """Removes the given data axis from the given time point. Does nothing if the data axis is not used for the
@@ -405,6 +406,13 @@ class SplineCollection:
             if found_path == path:
                 return True
         return False
+
+    def get_spline(self, time_point: TimePoint, spline_id: int) -> Optional[Spline]:
+        """Gets the spline with the given id and time point. Returns None if not found."""
+        splines_of_time_point = self._splines.get(time_point)
+        if splines_of_time_point is None:
+            return None
+        return splines_of_time_point.get(spline_id)
 
     def is_axis(self, spline_id: int) -> bool:
         """Returns true if the spline with the given id is an axis."""
