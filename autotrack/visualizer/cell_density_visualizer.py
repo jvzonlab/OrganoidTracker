@@ -44,7 +44,7 @@ class CellDensityVisualizer(ExitableImageVisualizer):
         densities = dict()
 
         for position in positions:
-            cell_density = cell_density_calculator.get_density(positions, around=position, resolution=resolution)
+            cell_density = cell_density_calculator.get_density_mm1(positions, around=position, resolution=resolution)
             if min_density is None or cell_density < min_density:
                 min_density = cell_density
             if max_density is None or cell_density > max_density:

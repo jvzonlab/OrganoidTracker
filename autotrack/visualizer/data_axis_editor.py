@@ -225,17 +225,27 @@ class DataAxisEditor(AbstractEditor):
                                f" already a spline with that id here.")
             return
 
+        previous_spline = None
+        next_spline = None
         try:
-            previous_time_point = self._experiment.get_previous_time_point(self._time_point)
+            previous_spline = self._experiment.splines.get_spline(self._experiment.get_previous_time_point(self._time_point), self._selected_spline_id)
         except ValueError:
-            self.update_status("You are in the first time point; cannot copy spline from previous time point")
-        else:
-            previous_spline = self._experiment.splines.get_spline(previous_time_point, self._selected_spline_id)
-            if previous_spline is None:
-                self.update_status(f"No spline found in previous time point with id {self._selected_spline_id}")
-                return
+            pass
+        try:
+            next_spline = self._experiment.splines.get_spline(self._experiment.get_next_time_point(self._time_point), self._selected_spline_id)
+        except ValueError:
+            pass
+
+        if previous_spline is not None:
             copied_spline = previous_spline.copy()
             self._perform_action(_AddPathAction(copied_spline, self._time_point, self._selected_spline_id))
+            return
+        if next_spline is not None:
+            copied_spline = next_spline.copy()
+            self._perform_action(_AddPathAction(copied_spline, self._time_point, self._selected_spline_id))
+            return
+        self.update_status(f"Neither the previous nor the next time point has a spline with id"
+                           f" {self._selected_spline_id}; cannot copy anything.")
 
     def _exit_view(self):
         from autotrack.visualizer.link_and_position_editor import LinkAndPositionEditor

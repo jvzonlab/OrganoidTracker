@@ -74,7 +74,7 @@ def _draw_cell_events(figure: Figure, mother_crypt_positions: Dict[int, List[flo
             axis.hist(mother_crypt_positions[axis_id], bins=bins, label=f"Divisions", color=division_color)
         if axis_id in cell_densities:
             scaled_axis = axis.twinx()
-            scaled_axis.set_ylabel("Cell density (μm$^{-1}$)")
+            scaled_axis.set_ylabel("Cell density (mm$^{-1}$)")
             scaled_axis.tick_params(axis='y', labelcolor="lime")
             moving_average = MovingAverage(cell_densities[axis_id][0], cell_densities[axis_id][1], window_width=bin_size)
             moving_average.plot(scaled_axis, color="lime")
@@ -104,7 +104,7 @@ def _get_cell_densities(experiment: Experiment) -> Dict[int, Tuple[List[float], 
             if axis_position is None:
                 continue
 
-            density = cell_density_calculator.get_density(
+            density = cell_density_calculator.get_density_mm1(
                 experiment.positions.of_time_point(time_point), position, resolution)
 
             result_tuple = result.get(axis_position.axis_id)
