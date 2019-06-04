@@ -17,6 +17,7 @@ from . import plugin_spindle_markers
 from .plugin_spindle_markers import Spindle
 
 _DIVIDER = 45
+_OSCILLATE_THRESHOLD_DEGREES = 15
 
 
 class _Line:
@@ -38,12 +39,33 @@ class _Line:
         """Gets the time that the spindle was visible."""
         return self.angles[0][0]
 
+    def count_oscillations(self) -> int:
+        """Counts how many times the spindle changed its oscillation"""
+        oscillations = 0
+
+        previous_previous_angle = None
+        previous_angle = None
+        for time, angle in self.angles:
+            if previous_previous_angle is not None:
+                previous_change = previous_previous_angle - previous_angle
+                current_change = previous_angle - angle
+                #if abs(previous_change - current_change) > _OSCILLATE_THRESHOLD_DEGREES:
+                if previous_change < 0 and current_change > 0 or previous_change > 0 and current_change < 0:
+                    # We're changing direction
+                    oscillations += 1
+
+            previous_previous_angle = previous_angle
+            previous_angle = angle
+
+        return oscillations
+
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
         "Graph//Spindle-Angle of spindle over time...": lambda: _view_spindle_angle(window),
         "View//Spindle-Locations of rotating spindles...": lambda: _view_spindle_locations(window),
-        "View//Spindle-Average spindle rotation...": lambda: _view_average_spindle_rotation(window)
+        "View//Spindle-Average spindle rotation...": lambda: _view_average_spindle_rotation(window),
+        "Graph//Spindle-Histogram of oscillations...": lambda: _view_spindle_oscillations_histogram(window)
     }
 
 
@@ -77,8 +99,7 @@ def _get_x_min_avg_max(angle_lists: List[_Line]) -> Tuple[List[float], List[floa
 
 def _view_spindle_angle(window: Window):
     experiment = window.get_experiment()
-    angle_lists = _get_spindle_angles_list(experiment)
-    angle_lists = [angle_list for angle_list in angle_lists if angle_list.get_duration() <= 25]
+    angle_lists = _get_spindle_angles_list(experiment, limit_duration=True)
 
     dialog.popup_figure(window.get_gui_experiment(), lambda figure: _show_figure(figure, angle_lists), size_cm=(8,9))
 
@@ -101,7 +122,38 @@ def _view_average_spindle_rotation(window: Window):
                          f" rotation is {numpy.mean(angle_changes)} degrees.")
 
 
-def _get_spindle_angles_list(experiment: Experiment) -> List[_Line]:
+def _view_spindle_oscillations_histogram(window: Window):
+    experiment = window.get_experiment()
+    angle_lists = _get_spindle_angles_list(experiment, limit_duration=True)
+
+    def draw_graph(figure: Figure):
+        axes: Tuple[Axes, Axes] = figure.subplots(nrows=2, ncols=1, sharex=True, sharey=False)
+        ax_less_45, ax_more_45 = axes
+
+        list_more_45 = [angle_list for angle_list in angle_lists if angle_list.is_rotating()]
+        list_less_45 = [angle_list for angle_list in angle_lists if not angle_list.is_rotating()]
+
+        oscillation_count_more_45 = [angle_list.count_oscillations() for angle_list in list_more_45]
+        oscillation_count_less_45 = [angle_list.count_oscillations() for angle_list in list_less_45]
+
+        max_oscillations = max(max(oscillation_count_less_45), max(oscillation_count_more_45))
+        bins = list(range(max_oscillations + 1))
+        ax_less_45.hist(oscillation_count_less_45, bins=bins, color="#74b9ff")
+        ax_more_45.hist(oscillation_count_more_45, bins=bins, color="#74b9ff")
+
+        ax_less_45.set_title("Less than 45 degrees")
+        ax_more_45.set_title("More then 45 degrees")
+        ax_more_45.set_xlabel("Number of oscillation changes per spindle")
+        ax_more_45.set_yticks([0, 4, 8])
+        ax_less_45.set_ylabel("Amount of spindles")
+        for ax in axes:
+            ax.tick_params(direction="in", bottom=True, top=True, left=True, right=True, which="both")
+            ax.set_xticks(bins)
+
+    dialog.popup_figure(window.get_gui_experiment(), draw_graph, size_cm=(8,9))
+
+
+def _get_spindle_angles_list(experiment: Experiment, limit_duration: bool = False) -> List[_Line]:
     links = experiment.links
     connections = experiment.connections
     minutes_per_time_point = experiment.images.resolution().time_point_interval_m
@@ -109,6 +161,9 @@ def _get_spindle_angles_list(experiment: Experiment) -> List[_Line]:
     for spindle in plugin_spindle_markers.find_all_spindles(links, connections):
         angle_list = _create_angles_list(spindle, minutes_per_time_point)
         angle_lists.append(angle_list)
+
+    if limit_duration:
+        angle_lists = [angle_list for angle_list in angle_lists if angle_list.get_duration() <= 25]
     return angle_lists
 
 
