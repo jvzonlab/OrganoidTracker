@@ -48,7 +48,6 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             "File//Export-Export 2D depth-colored image...": self._export_depth_colored_image,
             "Edit//Experiment-Merge tracking data...": self._ask_merge_experiments,
             "Edit//Experiment-Manually change data... [C]": self._show_data_editor,
-            "Edit//Automatic-Cell detection...": self._show_cell_detector,
             "View//Cells-Cell divisions... [M]": self._show_mother_cells,
             "View//Cells-Cell shedding and deaths... [S]": self._show_dead_cells,
             "View//Cells-Cell density...": self._show_cell_density,
@@ -104,7 +103,6 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         image_2d = depth_colored_image_creator.create_image(image_3d)
         pyplot.imsave(file, image_2d)
 
-
     def _show_track_follower(self):
         from autotrack.visualizer.track_visualizer import TrackVisualizer
         track_visualizer = TrackVisualizer(self._window, self._time_point, self._z, self._display_settings)
@@ -115,13 +113,6 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         movement_visualizer = CellMovementVisualizer(self._window, time_point=self._time_point, z=self._z,
                                                      display_settings=self._display_settings)
         activate(movement_visualizer)
-
-    def _show_cell_detector(self):
-        if self._experiment.get_image_stack(self._time_point) is None:
-            dialog.popup_error("No images", "There are no images loaded, so we cannot detect cells.")
-            return
-        from autotrack.visualizer.detection_visualizer import DetectionVisualizer
-        activate(DetectionVisualizer(self._window, self._time_point, self._z, self._display_settings))
 
     def _show_mother_cells(self):
         from autotrack.visualizer.cell_division_visualizer import CellDivisionVisualizer
