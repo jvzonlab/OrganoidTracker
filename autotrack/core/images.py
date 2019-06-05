@@ -191,7 +191,8 @@ class Images:
     def resolution(self):
         """Gets the image resolution. Raises UserError if you try to get the resolution when none has been set."""
         if self._resolution is None:
-            raise UserError("No image resolution set", "No image resolution was set. Please set a resolution first.")
+            raise UserError("No image resolution set", "No image resolution was set. Please set a resolution first."
+                                                       " This can be done in the Edit menu of the program.")
         return self._resolution
 
     def is_inside_image(self, position: Position, *, margin_xy: int = 0, margin_z: int = 0) -> Optional[bool]:
