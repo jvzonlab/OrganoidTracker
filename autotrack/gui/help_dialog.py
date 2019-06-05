@@ -8,8 +8,10 @@ from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QWidget, QVBoxLayout, QScrollArea, QTextBrowser
 from mdx_gfm import GithubFlavoredMarkdownExtension
 
+from autotrack.core import UserError
+
 _MANUALS_FOLDER = path.join(path.dirname(path.abspath(sys.argv[0])), 'manuals')
-_MAIN_MANUAL = "VISUALIZER.md"
+_MAIN_MANUAL = "INDEX.md"
 _SCROLL_AREA_PALETTE = QPalette()
 _SCROLL_AREA_PALETTE.setColor(QPalette.Background, QtCore.Qt.white)
 _DOCUMENT_STYLE = """
@@ -19,7 +21,7 @@ font-family: Georgia, "Times New Roman", serif;
 
 
 def _file_get_contents(file_name: str):
-    with open(file_name) as file:
+    with open(file_name, encoding="utf8") as file:
         return file.read()
 
 
@@ -30,12 +32,23 @@ class _HelpFile:
     def __init__(self, file_name: str):
         file = path.join(_MANUALS_FOLDER, file_name)
         if not path.isfile(file):
-            raise ValueError(file_name + " does not exist")
+            raise UserError("File not found", file_name + " does not exist")
         file_text = _file_get_contents(file)
         self._html_text = markdown.markdown(file_text,
                           extensions=[GithubFlavoredMarkdownExtension()])
+
+        # Apply a style sheet
         self._html_text = self._html_text.replace("<code", '<code style="font-size: 10pt"')
-        self._html_text = self._html_text.replace("<p>", '<p style="line-height: 140">')
+        self._html_text = self._html_text.replace("<p>", '<p style="line-height: 140; margin: 20px 40px">')
+        self._html_text = self._html_text.replace("<pre", '<pre style="margin: 40px"')
+        self._html_text = self._html_text.replace("<h1>", '<h1 style="margin: 40px 40px 20px 40px">')
+        self._html_text = self._html_text.replace("<h2>", '<h2 style="margin: 40px 40px 20px 40px">')
+        self._html_text = self._html_text.replace("<h3>", '<h3 style="margin: 20px 40px">')
+        self._html_text = self._html_text.replace("<li>", '<li style="line-height: 140">')
+
+        # Extra margins at top and bottom:
+        self._html_text = '<div style="font-size:small; color:gray; text-align: center; font-family: sans-serif">' \
+                          'Autotrack manual</div> ' + self._html_text + ' <div style="height: 40px"></div>'
 
     def html(self):
         return self._html_text
@@ -66,8 +79,9 @@ class _HelpWindow(QMainWindow):
         try:
             help_file = _HelpFile(url.path())
             self._text_view.setText(help_file.html())
-        except ValueError:
-            self._text_view.setText("File " + url.path() + " was not found.")
+        except ValueError as e:
+            from autotrack.gui import dialog
+            dialog.popup_exception(e)
 
 
 def show_help(parent: QWidget):

@@ -1,5 +1,5 @@
-The scripts
-===========
+# The scripts
+[← Back to main page](./INDEX.md)
 
 The following scripts are available:
 

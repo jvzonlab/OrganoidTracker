@@ -1,5 +1,4 @@
-Autotrack manual
-================
+# Autotrack manual
 
 * [Installation instructions](INSTALLATION.md)
 * [Scripts reference](SCRIPTS.md)

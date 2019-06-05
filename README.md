@@ -28,4 +28,4 @@ You can also use Autotrack as a library to write your own scripts. All public fu
 [installation]: manuals/INSTALLATION.md
 [scripts]: manuals/SCRIPTS.md
 [tracking tutorial]: manuals/AUTOMATIC_TRACKING.md
-[visualizer]: manuals/VISUALIZER.md
+[visualizer]: manuals/INDEX.md

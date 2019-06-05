@@ -1,5 +1,5 @@
-Automatic tracking
-==================
+# Automatic tracking
+[← Back to main page](INDEX.md)
 
 The intended workflow is as follows:
 

@@ -1,4 +1,6 @@
 # API reference
+[← Back to main page](INDEX.md)
+
 Autotrack contains many functions for working with experimental data. Those functions should make it possible to plot useful information.
 
 Parts of Autotrack are pretty general, and can be used for any kind of position. Other parts are specialized towards biological cells. Each cell is then represented as a single position.
