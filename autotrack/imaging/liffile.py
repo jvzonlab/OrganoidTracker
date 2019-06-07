@@ -135,3 +135,6 @@ class _LifImageLoader(ImageLoader):
     def copy(self) -> "_LifImageLoader":
         return _LifImageLoader(self._file, lif.Reader(self._file), self._serie_index, self._min_time_point_number,
                                self._max_time_point_number)
+
+    def serialize_to_config(self) -> Tuple[str, str]:
+        return self._file, self._serie.getName()

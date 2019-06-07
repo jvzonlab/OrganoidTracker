@@ -4,7 +4,7 @@ import numpy
 from numpy import ndarray
 
 from autotrack.core import TimePoint, UserError
-from autotrack.core.image_loader import ImageLoader, ImageChannel
+from autotrack.core.image_loader import ImageLoader, ImageChannel, NullImageLoader
 from autotrack.core.position import Position
 from autotrack.core.resolution import ImageResolution
 
@@ -54,6 +54,9 @@ class _CachedImageLoader(ImageLoader):
 
     def copy(self) -> ImageLoader:
         return _CachedImageLoader(self._internal.copy())
+
+    def serialize_to_config(self) -> Tuple[str, str]:
+        return self._internal.serialize_to_config()
 
 
 class ImageOffsets:
@@ -171,7 +174,7 @@ class Images:
     _resolution: Optional[ImageResolution] = None
 
     def __init__(self):
-        self._image_loader = ImageLoader()
+        self._image_loader = NullImageLoader()
         self._offsets = ImageOffsets()
 
     @property

@@ -11,8 +11,10 @@ class SingleImageLoader(ImageLoader):
     """An image loader that just displays a single array. Useful if you're writing a quick script."""
 
     _image: ndarray
+    _file_name: str
 
-    def __init__(self, array: ndarray):
+    def __init__(self, array: ndarray, file_name: str = ""):
+        """The file name is only used for serialize_to_config()"""
         self._image = array
 
     def get_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
@@ -33,4 +35,7 @@ class SingleImageLoader(ImageLoader):
         return [_ONLY_CHANNEL]
 
     def copy(self) -> "ImageLoader":
-        return SingleImageLoader(self._array)
+        return SingleImageLoader(self._array, self._file_name)
+
+    def serialize_to_config(self) -> Tuple[str, str]:
+        return self._file_name, ""

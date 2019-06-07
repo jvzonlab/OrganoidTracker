@@ -15,9 +15,9 @@ Before you start, create a directory that will hold all you analysis data. You c
 Step 1: Obtaining nucleus positions
 -----------------------------------
 
-Obtaining nucleus positions from raw tracking data is currently done using an external program, that is not yet integrated in Autotrack. See the documentation of that program on how to use it. Once you have the positions (those are *.npy files), import them using the Autotrack GUI. Use `File -> Load positions in Laetitia's format` to import the positions and export them again using `File -> Save tracking data...`. You can name the file `Automatic positions.aut`.
+Training is currently done using an external program.
 
-In the future, a machine learning script that outputs all data in the expected format will be added, so that you don't need to install extra programs and convert data.
+Once you have a trained model, you can use it to 
 
 Step 2: Obtaining nucleus shapes
 --------------------------------

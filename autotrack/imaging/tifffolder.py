@@ -105,3 +105,6 @@ class TiffImageLoader(ImageLoader):
 
     def copy(self) -> ImageLoader:
         return TiffImageLoader(self._folder, self._file_name_format, self._min_time_point, self._max_time_point)
+
+    def serialize_to_config(self) -> Tuple[str, str]:
+        return self._folder, self._file_name_format

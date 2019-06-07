@@ -42,3 +42,6 @@ class BackgroundSupressingImageLoader(ImageLoader):
 
     def get_channels(self) -> List[ImageChannel]:
         return self._internal.get_channels()
+
+    def serialize_to_config(self) -> Tuple[str, str]:
+        return self._internal.serialize_to_config()

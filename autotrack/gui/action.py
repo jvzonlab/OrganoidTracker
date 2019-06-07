@@ -12,7 +12,6 @@ from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog, image_resolution_dialog, option_choose_dialog
 from autotrack.gui.dialog import popup_message_cancellable
 from autotrack.gui.gui_experiment import GuiExperiment
-from autotrack.gui.undo_redo import UndoRedo
 from autotrack.gui.window import Window
 from autotrack.imaging import tifffolder, io, lif, liffile
 from autotrack.linking_analysis import linking_markers
@@ -86,7 +85,8 @@ def load_images(window: Window):
         from autotrack.imaging import liffile
         reader = lif.Reader(full_path)
         series = [header.getDisplayName() for header in reader.getSeriesHeaders()]
-        serie_index = option_choose_dialog.popup_image_getter("Choose an image serie", "Choose an image serie", "Image serie:", series)
+        series_index = option_choose_dialog.popup_image_getter("Choose an image serie", "Choose an image serie", "Image serie:", series)
+        series_name = reader.getSeriesHeaders()[series_index].getName()
         if serie_index is not None:
             liffile.load_from_lif_reader(window.get_experiment().images, full_path, reader, serie_index)
             window.redraw_all()
