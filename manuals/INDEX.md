@@ -7,29 +7,34 @@
 
 Welcome to the Autotrack manual! This document will tell you how to use the "visualizer", the program that displays all the images and the annotations.
 
-Navigating around
------------------
-The program consists of a menu bar, a title area, a figure area and a status/help area. The contents of all of these depends on what you're doing. If you enter the cell detection view, then methods relevant to cell detection will be shown. You can always go back to the main view using `View -> Exit this view`.
+Getting started
+---------------
+The program always displays your images in the center. Using the button on the menu bar, or using `File` -> `Load images...` you can load some images. You can load tracking data on top of that, or alternatively you can manually track the cells. The graphical program *cannot* automatically track cells, for this you need to use the other scripts. However, the program can generate configuration files for you, so that you don't need to spend too much time on the command line. 🙂
 
-The program is highly keyboard-dependent, although there are also menu options available for everything. I prefer using the keyboard shortcuts myself, but for people new to this program that is of course no option.
+To load the tracking data, use the button on the menu bar, or use `File` -> `Load tracking data...`. If your tracking data contains links between the time points, then `Graph` -> `Interactive lineage tree...` will show a lineage tree of your tracking data.
 
-For most keyboard shortcuts, a menu option is available. For shortcuts where that wasn't possible (for example because you need to place your mouse above a cell), an explanation text was added to the status/help area.
+Now would be a good moment to verify that you can actually save the tracking data; do so using `File` -> `Save tracking data...` or using the button on the tool bar. 
 
-Many shortcuts consist of a single letter: if you press `E`. the errors and warnings screen is opened. For some other shortcuts, you need to type a bit more: `/deaths` + `ENTER` for example opens up a list of all cell deaths.
+Manual tracking and error correction
+------------------------------------
+You cannot edit tracking data from the main screen. Instead, you need to use `Edit` -> `Manually change data...` to open the data editor (or just press `C`). In this editor, you can select up to two cells at once by double-clicking them. Using the Insert, Shift and Delete keys, you can insert, shift or delete cells or links. Press `C` again to exit the view.
 
-The best way to get used to the program is to just try things. As long as you do not overwrite existing data on disk, nothing can go wrong.
-
-The links and positions editor
-----------
-If you press `C` from the main screen, you can make changes to the data. In the editor, you can select up to two cells at once by double-clicking them. Using the Insert, Shift and Delete keys, you can insert, shift or delete cells or links. Press `C` again to exit the view.
-
-If you press the Insert key while having two cells selected, a link will be inserted between them. If you press the Insert key while having no cells selected, a new cell position will be added at your mouse position. If you press the Insert key while having only one cell selected, a link will be inserted from the currently selected cell to the position where your mouse is. If there is no cell position at your mouse, a new one will be created.
-
-If you press the Delete key while having two cells selected, the link between those cells will be deleted. If you press Delete while having only a single cell selected, that cell will be delted.
+### Working with (cell) positions
+To insert positions, make sure you have no cell selected, and then press the Insert key. To delete that cell position again, make sure that you have only selected that cell, and press the Delete key.
 
 If you press Shift while having a single cell selected, that cell will be moved to your mouse psotion. The shape and links of the cell will be preserved.
 
 Undo and Redo functions are available from the Edit menu. You can also use the Control+Z and Control+Y keyboard shortcuts, respectively.
+
+### Working with links
+To insert links between two positions, select two positions at two consecutive time points and press the Insert key. Select two positions and press Delete to delete the link between the two again.
+
+A nice shortcut exists where if you have selected one single cell, then place your mouse cursor at the next or previous time point, and then press insert. The program will then both insert a position at your mouse cursor and create a link from the selected cell position to the newly added cell positions. This can be used to quickly track cells.
+
+### Futher details
+Links cannot skip time points. If you insert a link between two cells that are not in consecutive time points, then additions cell positions will be created in between the selected time points.
+
+Links are used to tell the program that two cell positions at different time points actually represent the same biological cell. Therefore, you cannot create a link from one cell position in a time point to another cell position in the same time point. If you try anyways, a so-called *connection* will be made. You can write plugins to do something with those connections. You can also automatically create connections for all cells within a certain distance of each other, see `Edit` -> `Connect positions by distance...`
 
 The data axes editor
 --------------------
