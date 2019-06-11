@@ -57,14 +57,14 @@ def create_movie(images: Images) -> ndarray:
     if image_count == 0:
         raise ValueError("No images found")
     image_shape = images.image_loader().get_image_size_zyx()
-    total_image = numpy.zeros((image_count, image_shape[1], image_shape[2], 3), dtype=numpy.float32)
+    total_image = numpy.zeros((image_count, image_shape[1], image_shape[2], 3), dtype=numpy.uint8)
 
     i = 0
     for time_point in images.time_points():
         print(f"Working on time point {time_point.time_point_number()}...")
         image = images.get_image_stack(time_point)
         colored_image = create_image(image)
-        total_image[i] = colored_image[:, :, 0:3]
+        total_image[i] = (colored_image[:, :, 0:3] * 255).astype(numpy.uint8)
 
         i += 1
 
