@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 
 from matplotlib import pyplot
 from matplotlib.backend_bases import KeyEvent, MouseEvent
@@ -8,6 +8,7 @@ from autotrack.core import TimePoint, UserError
 from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog
 from autotrack.gui.launcher import launch_window
+from autotrack.gui.threading import Task
 from autotrack.gui.window import Window
 from autotrack.imaging import io
 from autotrack.linking_analysis import particle_flow_calculator
@@ -45,7 +46,8 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         return {
             **super().get_extra_menu_options(),
             "File//Export-Export 3D image...": self._export_3d_image,
-            "File//Export-Export 2D depth-colored image...": self._export_depth_colored_image,
+            "File//Export-Export 2D depth-colored image//This time point...": self._export_depth_colored_image,
+            "File//Export-Export 2D depth-colored image//All time points...": self._export_depth_colored_movie,
             "Edit//Experiment-Merge tracking data...": self._ask_merge_experiments,
             "Edit//Experiment-Manually change data... [C]": self._show_data_editor,
             "View//Cells-Cell divisions... [M]": self._show_mother_cells,
@@ -102,6 +104,28 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         from autotrack.imaging import depth_colored_image_creator
         image_2d = depth_colored_image_creator.create_image(image_3d)
         pyplot.imsave(file, image_2d)
+
+    def _export_depth_colored_movie(self):
+        if not self._experiment.images.image_loader().has_images():
+            raise UserError("No image available", "There is no image available for the experiment.")
+
+        file = dialog.prompt_save_file("Image location", [("TIFF file", "*.tif")])
+        if file is None:
+            return
+
+        images_copy = self._experiment.images.copy()
+
+        class ImageTask(Task):
+            def compute(self):
+                from autotrack.imaging import depth_colored_image_creator
+                image_movie = depth_colored_image_creator.create_movie(images_copy)
+                tifffile.imsave(file, image_movie, compress=6)
+                return file
+
+            def on_finished(self, result: Any):
+                dialog.popup_message("Movie created", f"Done! The movie is now created at {result}.")
+
+        self._window.get_scheduler().add_task(ImageTask())
 
     def _show_track_follower(self):
         from autotrack.visualizer.track_visualizer import TrackVisualizer

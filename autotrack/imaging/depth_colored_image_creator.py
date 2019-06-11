@@ -3,9 +3,11 @@ import numpy
 import matplotlib.cm
 from PIL import Image
 
+from autotrack.core.images import Images
+
 
 def create_image(image: ndarray, color_map_name: str = "Spectral") -> ndarray:
-    """Creates a 2D image by giving each xy later in the 3D image another color."""
+    """Creates a 2D image (float32, [y, x, RGBA]) by giving each xy later in the 3D image another color."""
     color_map = matplotlib.cm.get_cmap(color_map_name)
 
     black_image = numpy.zeros((image.shape[1], image.shape[2], 4), dtype=numpy.uint8)
@@ -44,3 +46,26 @@ def create_image(image: ndarray, color_map_name: str = "Spectral") -> ndarray:
     color_image = numpy.asarray(color_image_pil, dtype=numpy.float32)
     color_image /= 255  # Scale to 0-1
     return color_image
+
+
+def create_movie(images: Images) -> ndarray:
+    """Creates a movie of 2D images (float32, [time, y, x, RGB]) similar to create_image, but for every time point."""
+    last_time_point = images.image_loader().last_time_point_number()
+    first_time_point = images.image_loader().first_time_point_number()
+
+    image_count = 0 if last_time_point is None else last_time_point - first_time_point + 1
+    if image_count == 0:
+        raise ValueError("No images found")
+    image_shape = images.image_loader().get_image_size_zyx()
+    total_image = numpy.zeros((image_count, image_shape[1], image_shape[2], 3), dtype=numpy.float32)
+
+    i = 0
+    for time_point in images.time_points():
+        print(f"Working on time point {time_point.time_point_number()}...")
+        image = images.get_image_stack(time_point)
+        colored_image = create_image(image)
+        total_image[i] = colored_image[:, :, 0:3]
+
+        i += 1
+
+    return total_image
