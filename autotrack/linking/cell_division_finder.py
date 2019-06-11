@@ -29,6 +29,31 @@ def get_next_division(links: Links, position: Position) -> Optional[Family]:
     return Family(track.find_last_position(), next_daughters[0], next_daughters[1])
 
 
+def get_previous_division(links: Links, position: Position) -> Optional[Family]:
+    """Finds the previous division of a daughter cell. Returns None if the cell is not a daughter cell."""
+    track = links.get_track(position)
+    if track is None:
+        # Position is not part of a track, so it has no links, so there is no previous division
+        return None
+
+    previous_tracks = track.get_previous_tracks()
+    if len(previous_tracks) == 0:
+        return None  # No previous track, cell appeared out of nothing
+    if len(previous_tracks) > 1:
+        raise ValueError(f"Cell {track.find_first_position()} has multiple links to the past")
+
+    previous_track = previous_tracks.pop()
+    sibling_tracks = previous_track.get_next_tracks()
+    if len(sibling_tracks) < 2:
+        return None  # No division here
+
+    siblings = [sibling_track.find_first_position() for sibling_track in sibling_tracks]
+    if len(siblings) != 2:
+        raise ValueError("Cell " + str(previous_track.find_last_position()) + " has multiple daughters: " + str(siblings))
+
+    return Family(previous_track.find_last_position(), siblings[0], siblings[1])
+
+
 def find_mothers(links: Links) -> Set[Position]:
     """Finds all mother cells in a graph. Mother cells are cells with at least two daughter cells."""
     mothers = set()
