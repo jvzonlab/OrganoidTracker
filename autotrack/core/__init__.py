@@ -57,6 +57,11 @@ class Name:
         """Forcibly sets a name."""
         self._name = name
 
+    def get_name(self) -> Optional[str]:
+        """Returns the name, or None if not set.
+        Note: use str(self) if you want "Unnamed" instead of None if there is no name."""
+        return self._name
+
     def get_save_name(self):
         """Gets a name that is safe for file saving. It does not contain characters like / or \\."""
         return re.sub(r'[^A-Za-z0-9_\- ]+', '_', str(self))

@@ -9,7 +9,7 @@ from autotrack.core.experiment import Experiment
 from autotrack.gui import APP_NAME
 from autotrack.gui.gui_experiment import GuiExperiment
 from autotrack.gui.threading import Scheduler
-from autotrack.gui.undo_redo import UndoRedo
+from autotrack.gui.undo_redo import UndoRedo, UndoableAction
 
 
 class Window:
@@ -96,6 +96,13 @@ class Window:
         """Gets the GUI experiment, which stores the experiment along with undo/redo data, and some other non-saveable
         data."""
         return self.__gui_experiment
+
+    def perform_data_action(self, action: UndoableAction):
+        """Performs an action that will change the experiment data. The action will be executed, then the window will
+        be redrawn with an updated status bar."""
+        status = self.get_undo_redo().do(action, self.get_experiment())
+        self.redraw_data()
+        self.set_status(status)
 
     def redraw_data(self):
         """Redraws the main figure using the latest values from the experiment."""

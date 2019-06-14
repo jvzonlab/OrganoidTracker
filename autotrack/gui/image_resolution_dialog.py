@@ -11,6 +11,7 @@ from autotrack.core.experiment import Experiment
 from autotrack.core.resolution import ImageResolution
 from autotrack.gui.gui_experiment import GuiExperiment
 from autotrack.gui.undo_redo import UndoableAction
+from autotrack.gui.window import Window
 
 
 class _ResolutionEditorWindow(QDialog):
@@ -98,9 +99,9 @@ class _UpdateImageResolutionAction(UndoableAction):
         return "Restored image resolution"
 
 
-def popup_resolution_setter(gui_experiment: GuiExperiment):
+def popup_resolution_setter(window: Window):
     """Shows a popup to change the image resolution."""
-    experiment = gui_experiment.experiment
+    experiment = window.get_experiment()
     try:
         image_resolution = experiment.images.resolution()
     except UserError:
@@ -110,4 +111,4 @@ def popup_resolution_setter(gui_experiment: GuiExperiment):
     if result != QDialog.Accepted:
         return
     new_image_resolution = ImageResolution(popup.x_res.value(), popup.y_res.value(), popup.z_res.value(), popup.t_res.value())
-    gui_experiment.undo_redo.do(_UpdateImageResolutionAction(image_resolution, new_image_resolution), experiment)
+    window.perform_data_action(_UpdateImageResolutionAction(image_resolution, new_image_resolution))

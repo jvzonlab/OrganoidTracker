@@ -30,9 +30,7 @@ class AbstractEditor(ExitableImageVisualizer):
     def _perform_action(self, action: UndoableAction):
         self._experiment.images.resolution()  # Will trigger an exception early if no resolution was set
 
-        status = self._window.get_undo_redo().do(action, self._experiment)
-        self.get_window().redraw_data()
-        self.update_status(status)
+        self.get_window().perform_data_action(action)
 
     def _undo(self):
         status = self._window.get_undo_redo().undo(self._experiment)

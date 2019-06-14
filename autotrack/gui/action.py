@@ -12,6 +12,7 @@ from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog, image_resolution_dialog, option_choose_dialog
 from autotrack.gui.dialog import popup_message_cancellable
 from autotrack.gui.gui_experiment import GuiExperiment
+from autotrack.gui.undo_redo import UndoableAction
 from autotrack.gui.window import Window
 from autotrack.imaging import tifffolder, io, lif, liffile
 from autotrack.linking_analysis import linking_markers
@@ -208,17 +209,37 @@ def about_the_program():
                                   " you have agreed to when you used Anaconda to install them.")
 
 
+class _RenameAction(UndoableAction):
+
+    _old_name: Optional[str]
+    _new_name: str
+
+    def __init__(self, old_name: Optional[str], new_name: str):
+        self._old_name = old_name
+        self._new_name = new_name
+
+    def do(self, experiment: Experiment) -> str:
+        experiment.name.set_name(self._new_name)
+        return f"Changed name of experiment to \"{self._new_name}\""
+
+    def undo(self, experiment: Experiment) -> str:
+        experiment.name.set_name(self._old_name)
+        if self._old_name is None:
+            return f"Removed name \"{self._new_name}\" from the expermient"
+        else:
+            return f"Changed name of the experiment back to \"{self._old_name}\""
+
+
 def rename_experiment(window: Window):
     experiment = window.get_experiment()
     name = dialog.prompt_str("Name of the experiment", "Enter a new name for the experiment.",
                              default=str(experiment.name))
     if name:
-        experiment.name.set_name(name)
-        window.set_status("Changed the name of the experiment to \"" + str(experiment.name) + "\".")
+        window.perform_data_action(_RenameAction(experiment.name.get_name(), name))
 
 
 def set_image_resolution(window: Window):
-    image_resolution_dialog.popup_resolution_setter(window.get_gui_experiment())
+    image_resolution_dialog.popup_resolution_setter(window)
 
 
 def view_statistics(window: Window):
