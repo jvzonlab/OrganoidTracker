@@ -200,6 +200,9 @@ def _connect_toolbar_actions(toolbar: Toolbar, window: Window):
     def new(*args):
         from autotrack.gui import action
         action.new(window)
+    def close(*args):
+        from autotrack.gui import action
+        action.close_experiment(window)
     def home(*args):
         window.get_gui_experiment().execute_command("exit")
     def save(*args):
@@ -222,6 +225,7 @@ def _connect_toolbar_actions(toolbar: Toolbar, window: Window):
             experiment_names.append(str(experiment.name))
         toolbar.update_selectable_experiments(experiment_names, selected_index)
     toolbar.new_handler = new
+    toolbar.close_handler = close
     toolbar.home_handler = home
     toolbar.save_handler = save
     toolbar.load_handler = load

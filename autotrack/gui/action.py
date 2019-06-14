@@ -137,16 +137,10 @@ def load_tracking_data(window: Window):
     if file_name is None:
         return  # Cancelled
 
-
-    if window.get_experiment().positions.has_positions():
-        # Need to load data in a separate tab, copy over images
-        new_experiment = io.load_data_file(file_name)
-        new_experiment.images.image_loader(window.get_experiment().images.image_loader().copy())
-        window.get_gui_experiment().add_experiment(new_experiment)
-    else:
-        # Fine to dump tracking data in existing experiment
-        io.load_data_file(file_name, experiment=window.get_experiment())
-        window.redraw_all()
+    # Replace the existing experiment with one with the same images, but the new data
+    new_experiment = io.load_data_file(file_name)
+    new_experiment.images.image_loader(window.get_experiment().images.image_loader().copy())
+    window.get_gui_experiment().replace_selected_experiment(new_experiment)
 
 
 def export_positions_and_shapes(experiment: Experiment):

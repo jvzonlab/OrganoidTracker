@@ -118,11 +118,16 @@ class GuiExperiment:
     def add_experiment(self, experiment: Experiment):
         # Remove current experiment if it contains no data
         if self.experiment.first_time_point_number() is None:
-            self._remove_experiment_without_opdate(self.experiment)
+            self._remove_experiment_without_update(self.experiment)
 
         # Add new experiment
         self._experiments.append(_SingleGuiExperiment(experiment))
         self._selected_experiment = len(self._experiments) - 1
+        self._any_updated_event.call_all()
+
+    def replace_selected_experiment(self, experiment: Experiment):
+        """Discards the currently selected experiment, and replaces it with a new one"""
+        self._experiments[self._selected_experiment] = _SingleGuiExperiment(experiment)
         self._any_updated_event.call_all()
 
     def get_experiments(self) -> Iterable[Experiment]:
@@ -130,7 +135,7 @@ class GuiExperiment:
         for gui_experiment in self._experiments:
             yield gui_experiment.experiment
 
-    def _remove_experiment_without_opdate(self, experiment: Experiment):
+    def _remove_experiment_without_update(self, experiment: Experiment):
         """Removes an experiment. Does not add a new experiment in case the list becomes empty."""
         for i in range(len(self._experiments)):
             if self._experiments[i].experiment is experiment:
@@ -140,7 +145,7 @@ class GuiExperiment:
     def remove_experiment(self, experiment: Experiment):
         """Removes the given experiment from the list of loaded experiments. If no experiments are remaining, an empty
         one will be initialized."""
-        self._remove_experiment_without_opdate(experiment)
+        self._remove_experiment_without_update(experiment)
         if len(self._experiments) == 0:  # Prevent list from being empty
             self._experiments.append(_SingleGuiExperiment(Experiment()))
         if self._selected_experiment >= len(self._experiments):

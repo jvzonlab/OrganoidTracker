@@ -21,6 +21,7 @@ class Toolbar(NavigationToolbar2QT):
 
     # Handlers for the toolbar buttons - set by another class
     new_handler = lambda e: ...
+    close_handler = lambda e: ...
     save_handler = lambda e: ...
     load_handler = lambda e: ...
     image_handler= lambda e: ...
@@ -40,6 +41,8 @@ class Toolbar(NavigationToolbar2QT):
         self.update_selectable_experiments([], 0)
         self.addSeparator()
         self.addWidget(self._experiment_selector_box)
+        self.addAction(get_icon("file_new.png"), "New", lambda *e: self._call(self.new_handler))
+        self.addAction(get_icon("file_close.png"), "Close", lambda *e: self._call(self.close_handler))
 
     def update_selectable_experiments(self, experiment_names: List[str], selected_index: int):
         if len(experiment_names) == 0:
@@ -57,7 +60,6 @@ class Toolbar(NavigationToolbar2QT):
 
     def _init_toolbar(self):
         # Add some additional buttons
-        self.addAction(get_icon("file_new.png"), "New", lambda *e: self._call(self.new_handler))
         self.addAction(get_icon("file_image.png"), "Load images", lambda *e: self._call(self.image_handler))
         self.addAction(get_icon("file_load.png"), "Load tracking data", lambda *e: self._call(self.load_handler))
 
