@@ -87,9 +87,8 @@ def load_images(window: Window):
         reader = lif.Reader(full_path)
         series = [header.getDisplayName() for header in reader.getSeriesHeaders()]
         series_index = option_choose_dialog.popup_image_getter("Choose an image serie", "Choose an image serie", "Image serie:", series)
-        series_name = reader.getSeriesHeaders()[series_index].getName()
-        if serie_index is not None:
-            liffile.load_from_lif_reader(window.get_experiment().images, full_path, reader, serie_index)
+        if series_index is not None:
+            liffile.load_from_lif_reader(window.get_experiment().images, full_path, reader, series_index)
             window.redraw_all()
         return
 
