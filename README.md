@@ -5,7 +5,7 @@ Code for tracking the positions of cells. Tracking consists of two tasks: detect
 
 Installation
 ------------
-Autotrack must be installed using Anaconda. See the [installation] page for details.
+Autotrack must be installed using Anaconda. See the [installation] page for details. If you are updating from an older version of Autotrack, its dependencies might have changed, and in that case you also need to visit the [installation] page.
 
 
 Tracking tutorial

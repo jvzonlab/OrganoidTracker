@@ -10,4 +10,8 @@ To be able to run the scripts, you first need to have Anaconda or Miniconda inst
 
 The first command creates an Anaconda environment named "autotrack" with all dependencies installed. The second command activates this environment.
 
+If you have updated Autotrack, and you want to update the dependencies, execute this command instead:
+
+    conda env update -n autorack -f environment.yml
+
 To test if the software is working, run `python autotrack.py`. A window should pop up, from which you can load images and tracking data.
