@@ -1,5 +1,5 @@
 # This file may be used to create an environment using:
-# $ conda create --name <env> --file <this file>
+# conda create --name autotrack --file spec-file-win64.txt
 # platform: win-64
 @EXPLICIT
 https://conda.anaconda.org/conda-forge/win-64/ca-certificates-2019.3.9-hecc5488_0.tar.bz2
