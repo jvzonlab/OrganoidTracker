@@ -5,7 +5,7 @@ from matplotlib.colors import Colormap
 from numpy.core.multiarray import ndarray
 
 from autotrack import core
-from autotrack.core import TimePoint
+from autotrack.core import TimePoint, UserError
 from autotrack.core.position import Position
 from autotrack.core.spline import Spline
 from autotrack.core.typing import MPLColor
@@ -267,15 +267,17 @@ class AbstractImageVisualizer(Visualizer):
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
         def time_point_prompt():
-            min_str = str(self._experiment.first_time_point_number())
-            max_str = str(self._experiment.last_time_point_number())
-            given = prompt_int("Time point", "Which time point do you want to go to? (" + min_str + "-" + max_str
+            min_value = self._experiment.first_time_point_number()
+            max_value = self._experiment.last_time_point_number()
+            if min_value is None or max_value is None:
+                raise UserError("Time point switching", "No data is loaded. Cannot go to another time point.")
+            given = prompt_int("Time point", f"Which time point do you want to go to? ({min_value}-{max_value}"
                                + ", inclusive)")
             if given is None:
                 return
             if not self._move_to_time(given):
-                popup_error("Out of range", "Oops, time point " + str(given) + " is outside the range " + min_str + "-"
-                            + max_str + ".")
+                raise UserError("Out of range", f"Oops, time point {given} is outside the range {min_value}-"
+                                f"{max_value}.")
         return {
             **super().get_extra_menu_options(),
             "View//Toggle-Toggle showing two time points [" + DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + "]":

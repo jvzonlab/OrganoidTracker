@@ -24,7 +24,7 @@ def find_future_positions_at(links: Links, position: Position, time_point: TimeP
 def _find_future_position_in_track(track: LinkingTrack, time_point: TimePoint) -> Iterable[Position]:
     """Gets the position from a given track, or one of the next tracks."""
     if time_point.time_point_number() <= track.max_time_point_number():
-        yield track.get_by_time_point(time_point.time_point_number())
+        yield track.find_position_at_time_point_number(time_point.time_point_number())
     else:
         for next_track in track.get_next_tracks():
             yield from _find_future_position_in_track(next_track, time_point)
