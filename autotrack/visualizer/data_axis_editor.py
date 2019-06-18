@@ -124,6 +124,7 @@ class DataAxisEditor(AbstractEditor):
 
     def __init__(self, window: Window, *, time_point: Optional[TimePoint] = None, z: int = 14,
                  display_settings: DisplaySettings = None):
+        display_settings.show_splines = True
         super().__init__(window, time_point=time_point, z=z, display_settings=display_settings)
         self._selected_spline_id = None
         self._draw_axis_positions = False

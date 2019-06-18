@@ -241,6 +241,9 @@ class AbstractImageVisualizer(Visualizer):
 
     def _draw_data_axis(self, data_axis: Spline, id: int, color: str, marker_size_max: int):
         """Draws a single data axis. Usually, we use this as the crypt axis."""
+        if not self._display_settings.show_splines:
+            return
+
         dz = abs(data_axis.get_z() - self._z)
         marker = data_axis.get_direction_marker() if self._experiment.splines.is_axis(id) else "o"
         linewidth = 3 if dz == 0 else 1
@@ -286,6 +289,7 @@ class AbstractImageVisualizer(Visualizer):
                 self._toggle_showing_images,
             "View//Toggle-Toggle showing reconstruction [" + DisplaySettings.KEY_SHOW_RECONSTRUCTION.upper() + "]":
                 self._toggle_showing_reconstruction,
+            "View//Toggle-Toggle showing splines": self._toggle_showing_splines,
             "Navigate//Layer-Above layer [Up]": lambda: self._move_in_z(1),
             "Navigate//Layer-Below layer [Down]": lambda: self._move_in_z(-1),
             "Navigate//Channel-Next channel [.]": lambda: self._move_in_channel(1),
@@ -340,6 +344,10 @@ class AbstractImageVisualizer(Visualizer):
     def _toggle_showing_reconstruction(self):
         self._display_settings.show_reconstruction = not self._display_settings.show_reconstruction
         self._move_in_time(0)  # Refreshes image
+
+    def _toggle_showing_splines(self):
+        self._display_settings.show_splines = not self._display_settings.show_splines
+        self.draw_view()
 
     def _move_in_z(self, dz: int):
         old_z = self._z
