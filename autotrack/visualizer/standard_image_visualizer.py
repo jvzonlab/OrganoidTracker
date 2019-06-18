@@ -56,6 +56,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             "View//Tracks-Track follower... [T]": self._show_track_follower,
             "View//Tracks-Movement arrows...": self._show_movement_arrows,
             "View//Tracks-Cell fates...": self._show_cell_fates,
+            "View//Tracks-Cell compartments...": self._show_cell_compartments,
             "View//Tracks-Whole lineage fates...": self._show_lineage_fates,
         }
 
@@ -148,6 +149,12 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         fate_visualizer = CellFateVisualizer(self._window, time_point=self._time_point, z=self._z,
                                              display_settings=self._display_settings)
         activate(fate_visualizer)
+
+    def _show_cell_compartments(self):
+        from autotrack.visualizer.cell_compartment_visualizer import CellCompartmentVisualizer
+        compartment_visualizer = CellCompartmentVisualizer(self._window, time_point=self._time_point, z=self._z,
+                                                           display_settings=self._display_settings)
+        activate(compartment_visualizer)
 
     def _show_lineage_fates(self):
         from autotrack.visualizer.lineage_fate_visualizer import LineageFateVisualizer
