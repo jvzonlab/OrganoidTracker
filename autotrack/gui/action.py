@@ -197,7 +197,10 @@ def show_manual():
 
 def about_the_program():
     dialog.popup_message("About", "Cell detection and linking.\n\n"
-                                  "Originally developed by Rutger Kok in February - July 2018. Copyright AMOLF.\n\n"
+                                  "Developed by Rutger Kok in February 2018 - present. Copyright AMOLF.\n"
+                                  "Splines and alternative data format by Guizela Huelsz-Prince\n"
+                                  "Lineage tree drawing by Jeroen van Zon\n"
+                                  "Convolutional neural network by Laetitia Hebert and Greg Stephens\n\n"
                                   "Various open source packages are used - see their licences, which"
                                   " you have agreed to when you used Anaconda to install them.")
 
