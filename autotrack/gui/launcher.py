@@ -125,9 +125,12 @@ class MainWindow(Window):
             "View//Statistics-View statistics...": lambda: action.view_statistics(self),
         }
 
+        return menu_items
+
+    def _get_plugins_menu(self) -> Dict[str, Any]:
+        menu_items = dict()
         for plugin in self.get_plugins():
             menu_items.update(plugin.get_menu_items(self))
-
         return menu_items
 
     def _get_help_menu(self) -> Dict[str, Any]:

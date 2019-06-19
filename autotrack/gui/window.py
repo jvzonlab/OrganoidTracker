@@ -112,9 +112,11 @@ class Window:
         """Redraws the image using the latest values from the experiment."""
         self.__gui_experiment.redraw_image_and_data()
 
-    def setup_menu(self, extra_items: Dict[str, any]):
+    def setup_menu(self, extra_items: Dict[str, any], *, show_plugins: bool):
         """Update the main menu of the window to contain the given options."""
         menu_items = self._get_default_menu()
+        if show_plugins:
+            menu_items.update(self._get_plugins_menu())
         menu_items.update(extra_items)
         menu_items.update(self._get_help_menu())  # This menu must come last
         _update_menu(self.__q_window, self.__menu, menu_items)
@@ -124,6 +126,10 @@ class Window:
         return self.__gui_experiment.undo_redo
 
     def _get_default_menu(self) -> Dict[str, Any]:
+        return dict()
+
+    def _get_plugins_menu(self) -> Dict[str, Any]:
+        """Returns all menu options added by plugins."""
         return dict()
 
     def _get_help_menu(self) -> Dict[str, Any]:

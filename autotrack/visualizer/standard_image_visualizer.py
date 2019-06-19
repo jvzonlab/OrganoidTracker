@@ -60,6 +60,9 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             "View//Tracks-Whole lineage fates...": self._show_lineage_fates,
         }
 
+    def _get_must_show_plugin_menus(self) -> bool:
+        return True
+
     def _on_key_press(self, event: KeyEvent):
         if event.key == "v":  # show volume info
             position = self._get_position_at(event.xdata, event.ydata)
