@@ -5,7 +5,7 @@ from autotrack.core.links import Links
 from autotrack.core.position import Position
 from autotrack.linking import nearby_position_finder
 
-_NEIGHBOR_COUNT = 3
+_NEIGHBOR_COUNT = 6
 
 
 class CellCompartment(Enum):

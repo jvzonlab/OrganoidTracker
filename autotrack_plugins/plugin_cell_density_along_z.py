@@ -4,6 +4,7 @@ import numpy
 from numpy import ndarray
 from matplotlib.figure import Figure
 
+from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
@@ -12,13 +13,15 @@ from autotrack.linking_analysis import cell_density_calculator, linking_markers
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-         "Graph//Cell density-Average cell density over z...": lambda: _show_cell_density(window),
+         "Graph//Cell cycle-Cell density//Average cell density over z...": lambda: _show_cell_density(window),
     }
 
 
 def _show_cell_density(window: Window):
     densities = _get_average_cell_densities(window.get_experiment())
     z_positions_deaths = _get_z_positions_of_deaths(window.get_experiment())
+    if len(z_positions_deaths) == 0:
+        raise UserError("Cell density", "Found no positions - cannot plot anything.")
     dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_cell_densities(figure, densities, z_positions_deaths))
 
 
