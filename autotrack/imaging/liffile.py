@@ -97,11 +97,13 @@ class _LifImageLoader(ImageLoader):
         self._channels = [_IndexedChannel(i) for i, channel in enumerate(self._serie.getChannels())]
         self._serie_index = serie_index
 
+        # Check if z axis needs to be inverted
         for dimension in self._serie.getDimensions():
             axis = int(dimension.getAttribute("DimID"))
             axis_name = lif.dimName[axis]
             if axis_name == "Z":
                 if dimension.getAttribute("Length")[0] == "-":
+                    # Found a negative length, so axis needs to be inverted
                     self._inverted_z = True
 
         if min_time_point is None:
