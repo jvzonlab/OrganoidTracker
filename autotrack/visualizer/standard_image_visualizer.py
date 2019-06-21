@@ -53,11 +53,16 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             "View//Cells-Cell divisions... [M]": self._show_mother_cells,
             "View//Cells-Cell shedding and deaths... [S]": self._show_dead_cells,
             "View//Cells-Cell density...": self._show_cell_density,
+            "View//Cells-Cell curvature...": self._show_cell_curvature,
             "View//Tracks-Track follower... [T]": self._show_track_follower,
             "View//Tracks-Movement arrows...": self._show_movement_arrows,
             "View//Tracks-Cell fates...": self._show_cell_fates,
+            "View//Tracks-Cell compartments...": self._show_cell_compartments,
             "View//Tracks-Whole lineage fates...": self._show_lineage_fates,
         }
+
+    def _get_must_show_plugin_menus(self) -> bool:
+        return True
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "v":  # show volume info
@@ -149,6 +154,12 @@ class StandardImageVisualizer(AbstractImageVisualizer):
                                              display_settings=self._display_settings)
         activate(fate_visualizer)
 
+    def _show_cell_compartments(self):
+        from autotrack.visualizer.cell_compartment_visualizer import CellCompartmentVisualizer
+        compartment_visualizer = CellCompartmentVisualizer(self._window, time_point=self._time_point, z=self._z,
+                                                           display_settings=self._display_settings)
+        activate(compartment_visualizer)
+
     def _show_lineage_fates(self):
         from autotrack.visualizer.lineage_fate_visualizer import LineageFateVisualizer
         fate_visualizer = LineageFateVisualizer(self._window, time_point=self._time_point, z=self._z,
@@ -176,6 +187,11 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     def _show_cell_density(self):
         from autotrack.visualizer.cell_density_visualizer import CellDensityVisualizer
         activate(CellDensityVisualizer(self._window, time_point=self._time_point, z=self._z,
+                                       display_settings=self._display_settings))
+
+    def _show_cell_curvature(self):
+        from autotrack.visualizer.cell_curvature_visualizer import CellCurvatureVisualizer
+        activate(CellCurvatureVisualizer(self._window, time_point=self._time_point, z=self._z,
                                        display_settings=self._display_settings))
 
     def _ask_merge_experiments(self):

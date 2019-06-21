@@ -4,18 +4,18 @@ import numpy
 from matplotlib.figure import Figure
 from numpy import ndarray
 
-from autotrack.core import TimePoint
+from autotrack.core import TimePoint, UserError
 from autotrack.core.experiment import Experiment
 from autotrack.core.position_collection import PositionCollection
 from autotrack.core.resolution import ImageResolution
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
-from autotrack.linking_analysis import cell_density_calculator
+from autotrack.position_analysis import cell_density_calculator
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-         "Graph//Cell density-Average cell density over time...": lambda: _show_cell_density(window),
+         "Graph//Cell cycle-Cell density//Average cell density over time...": lambda: _show_cell_density(window),
     }
 
 
@@ -23,6 +23,8 @@ def _show_cell_density(window: Window):
     experiment = window.get_experiment()
 
     times_h, densities_um1, densities_stdev_um1 = _get_all_average_densities(experiment)
+    if len(times_h) == 0:
+        raise UserError("Cell density", "Found no cell positions - cannot plot anything.")
     dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_cell_density(figure, times_h, densities_um1,
                                                                                        densities_stdev_um1))
 

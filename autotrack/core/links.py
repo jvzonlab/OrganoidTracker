@@ -22,7 +22,7 @@ class LinkingTrack:
         self._next_tracks = list()
         self._previous_tracks = list()
 
-    def get_by_time_point(self, time_point_number: int) -> Position:
+    def find_position_at_time_point_number(self, time_point_number: int) -> Position:
         if time_point_number < self._min_time_point_number \
                 or time_point_number >= self._min_time_point_number + len(self._positions_by_time_point):
             raise IndexError(f"Time point {time_point_number} outside track from {self._min_time_point_number} to"
@@ -367,7 +367,7 @@ class Links:
 
             # Check if there is nothing in between
             for time_point_number in range(position1.time_point_number() + 1, position2.time_point_number()):
-                if track1.get_by_time_point(time_point_number) is not None:
+                if track1.find_position_at_time_point_number(time_point_number) is not None:
                     return  # There's a position in between, so the specified link doesn't exist
 
             # Split directly after position1
@@ -581,18 +581,34 @@ class Links:
             if data_value is not None:
                 yield data_name, data_value
 
-    def get_first_position_of(self, position: Position):
-        """Rewinds the position back in time, until the first appearance of that position was found."""
+    def get_position_near_time_point_number(self, position: Position, time_point_number: int):
+        """Follows the position backwards or forwards in time through the linking network, until a position as close as
+        possible to the specified time has been reached. If the given position has no links, the same position will just
+        be returned."""
         track = self.get_track(position)
         if track is None:
             return position  # Position has no links
+        if position.time_point_number() == time_point_number:
+            return position  # We're already at the right time point
 
-        while True:
-            previous_tracks = track.get_previous_tracks()
-            if len(previous_tracks) == 0:
-                return track.find_first_position()
-            else:
-                track = previous_tracks.pop()
+        if position.time_point_number() > time_point_number:
+            # Run back in time
+            while track.min_time_point_number() > time_point_number:
+                next_tracks = track.get_previous_tracks()
+                if len(next_tracks) == 0:
+                    return track.find_first_position()  # Cannot go back further
+                else:
+                    track = next_tracks.pop()
+            return track.find_position_at_time_point_number(time_point_number)
+        else:
+            # Run forwards in time
+            while track.max_time_point_number() < time_point_number:
+                next_tracks = track.get_next_tracks()
+                if len(next_tracks) == 0:
+                    return track.find_last_position()  # Cannot go forward further
+                else:
+                    track = next_tracks.pop()
+            return track.find_position_at_time_point_number(time_point_number)
 
     def of_time_point(self, time_point: TimePoint) -> Iterable[Tuple[Position, Position]]:
         """Returns all links where one of the two positions is in that time point. The first position in each tuple is
@@ -606,7 +622,7 @@ class Links:
             if track_max_time_point_number < time_point_number:
                 continue
             # Track crosses this time point
-            position = track.get_by_time_point(time_point_number)
+            position = track.find_position_at_time_point_number(time_point_number)
             for past_position in track._find_pasts(time_point_number):
                 yield position, past_position
             for future_position in track._find_futures(time_point_number):

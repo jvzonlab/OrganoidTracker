@@ -26,12 +26,15 @@ class DisplaySettings:
     show_next_time_point: bool
     show_images: bool
     show_reconstruction: bool
+    show_splines: bool
     image_channel: Optional[ImageChannel]  # Set to None to use the default image channel
 
-    def __init__(self, show_next_time_point: bool = False, show_images: bool = True, show_reconstruction: bool = False):
+    def __init__(self, *, show_next_time_point: bool = False, show_images: bool = True,
+                 show_reconstruction: bool = False, show_data_axes: bool = True):
         self.show_next_time_point = show_next_time_point
         self.show_images = show_images
         self.show_reconstruction = show_reconstruction
+        self.show_splines = show_data_axes
         self.image_channel = None
 
     KEY_SHOW_NEXT_IMAGE_ON_TOP = "n"
@@ -104,7 +107,7 @@ class Visualizer:
 
     def refresh_all(self):
         """Redraws the view after loading the images."""
-        self._window.setup_menu(self.get_extra_menu_options())
+        self._window.setup_menu(self.get_extra_menu_options(), show_plugins=self._get_must_show_plugin_menus())
         self._window.set_window_title(self._get_window_title())
         self.draw_view()
 
@@ -140,7 +143,7 @@ class Visualizer:
         pass
 
     def attach(self):
-        self._window.setup_menu(self.get_extra_menu_options())
+        self._window.setup_menu(self.get_extra_menu_options(), show_plugins=self._get_must_show_plugin_menus())
         self._window.set_window_title(self._get_window_title())
         self._window.register_event_handler("key_press_event", self._on_key_press_raw)
         self._window.register_event_handler("button_press_event", self._on_mouse_click)
@@ -158,6 +161,10 @@ class Visualizer:
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {}
+
+    def _get_must_show_plugin_menus(self) -> bool:
+        """Returns whether the plugin-added menu options must be shown in this visualizer."""
+        return False
 
     def get_default_status(self) -> str:
         """Gets the status normally used when moving between time points or between different visualizers. Use

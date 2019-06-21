@@ -119,7 +119,7 @@ class LineageDrawing:
                     lines_XY.append([(x_offset + X, t0), (x_offset + X, t1)])
                     lines_col.append(color_val)
                     location_map.set(int(x_offset + X), int(t1),
-                                     linking_track.get_by_time_point(time_point_of_line + 1))
+                                     linking_track.find_position_at_time_point_number(time_point_of_line + 1))
             if len(time_points_of_line) == 1:
                 ### single timepoint T, so a horizontal line
                 # get x position of line
@@ -138,7 +138,7 @@ class LineageDrawing:
                     [(x_offset + X[0], time), (x_offset + X[1], time)])
                 lines_col.append(color_val)
                 location_map.set_area(int(x_offset + X[0]), int(time), int(x_offset + X[1]), int(time),
-                                      linking_track.get_by_time_point(time_point_of_line))
+                                      linking_track.find_position_at_time_point_number(time_point_of_line))
 
         line_segments = LineCollection(lines_XY, colors=lines_col, lw=1.5)
         ax.add_collection(line_segments)

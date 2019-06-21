@@ -2,11 +2,12 @@ from typing import Optional, Dict, Any
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 
-from autotrack.core import TimePoint
+from autotrack.core import TimePoint, UserError
 from autotrack.core.experiment import Experiment
 from autotrack.core.position import Position
 from autotrack.core.marker import Marker
 from autotrack.core.spline import Spline
+from autotrack.gui import dialog
 from autotrack.gui.undo_redo import UndoableAction, ReversedAction
 from autotrack.gui.window import Window
 from autotrack.visualizer import activate, DisplaySettings
@@ -94,6 +95,23 @@ class _SetCheckpointAction(UndoableAction):
         return "Restored original checkpoint"
 
 
+class _SetReferenceTimePointAction(UndoableAction):
+    _old_reference_time_point_number: int
+    _new_reference_time_point_number: int
+
+    def __init__(self, old_reference_time_point_number: int, new_reference_time_point_number: int):
+        self._old_reference_time_point_number = old_reference_time_point_number
+        self._new_reference_time_point_number = new_reference_time_point_number
+
+    def do(self, experiment: Experiment) -> str:
+        experiment.splines.reference_time_point_number(self._new_reference_time_point_number)
+        return f"Changed the reference time point number to {self._new_reference_time_point_number}"
+
+    def undo(self, experiment: Experiment) -> str:
+        experiment.splines.reference_time_point_number(self._old_reference_time_point_number)
+        return f"Changed the reference time point number back to {self._old_reference_time_point_number}"
+
+
 class DataAxisEditor(AbstractEditor):
     """Editor for data axes. Double-click to (de)select a path.
     Draw the data axis by adding points using the Insert key. Use Delete to delete a data axis.
@@ -106,6 +124,7 @@ class DataAxisEditor(AbstractEditor):
 
     def __init__(self, window: Window, *, time_point: Optional[TimePoint] = None, z: int = 14,
                  display_settings: DisplaySettings = None):
+        display_settings.show_splines = True
         super().__init__(window, time_point=time_point, z=z, display_settings=display_settings)
         self._selected_spline_id = None
         self._draw_axis_positions = False
@@ -114,7 +133,8 @@ class DataAxisEditor(AbstractEditor):
         options = {
             **super().get_extra_menu_options(),
             "View//Toggle-Toggle showing data axis positions [P]": self._toggle_viewing_axis_positions,
-            "Edit//Copy-Copy axis to this time point [C]": self._copy_axis_to_current_time_point,
+            "Edit//Axes-Change reference time point...": self._set_reference_time_point,
+            "Edit//Axes-Copy axis to this time point [C]": self._copy_axis_to_current_time_point,
         }
 
         # Add options for changing axis types
@@ -277,3 +297,21 @@ class DataAxisEditor(AbstractEditor):
         old_marker_name = self._experiment.splines.get_marker_name(self._selected_spline_id)
         old_marker = self._window.get_gui_experiment().get_marker_by_save_name(old_marker_name)
         self._perform_action(_SetMarkerAction(self._selected_spline_id, axis_marker, old_marker))
+
+    def _set_reference_time_point(self):
+        """Asks the user for a new reference time point."""
+        min_time_point_number = self._experiment.first_time_point_number()
+        max_time_point_number = self._experiment.last_time_point_number()
+        if min_time_point_number is None or max_time_point_number is None:
+            raise UserError("Reference time point", "No data is loaded - cannot change reference time point")
+        reference_time_point_number = self._experiment.splines.reference_time_point_number()
+        explanation = "Data axes are used to follow positions over time accross a trajectory. If you have multiple\n" \
+                      " of such trajectories, then all positions need to be assigned to one of these data axes.\n\n" \
+                      f"Currently, each cell belongs to the data axis that was the closest by in time point" \
+                      f" {reference_time_point_number}. Which\ntime point should it be instead?" \
+                      f" ({min_time_point_number}-{max_time_point_number}, inclusive)"
+        answer = dialog.prompt_int("Reference time point", explanation, minimum=min_time_point_number,
+                                   maximum=max_time_point_number, default=self._time_point.time_point_number())
+        if answer is None:
+            return
+        self._perform_action(_SetReferenceTimePointAction(reference_time_point_number, answer))

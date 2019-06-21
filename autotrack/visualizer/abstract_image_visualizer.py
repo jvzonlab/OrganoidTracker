@@ -5,7 +5,7 @@ from matplotlib.colors import Colormap
 from numpy.core.multiarray import ndarray
 
 from autotrack import core
-from autotrack.core import TimePoint
+from autotrack.core import TimePoint, UserError
 from autotrack.core.position import Position
 from autotrack.core.spline import Spline
 from autotrack.core.typing import MPLColor
@@ -241,6 +241,9 @@ class AbstractImageVisualizer(Visualizer):
 
     def _draw_data_axis(self, data_axis: Spline, id: int, color: str, marker_size_max: int):
         """Draws a single data axis. Usually, we use this as the crypt axis."""
+        if not self._display_settings.show_splines:
+            return
+
         dz = abs(data_axis.get_z() - self._z)
         marker = data_axis.get_direction_marker() if self._experiment.splines.is_axis(id) else "o"
         linewidth = 3 if dz == 0 else 1
@@ -267,15 +270,17 @@ class AbstractImageVisualizer(Visualizer):
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
         def time_point_prompt():
-            min_str = str(self._experiment.first_time_point_number())
-            max_str = str(self._experiment.last_time_point_number())
-            given = prompt_int("Time point", "Which time point do you want to go to? (" + min_str + "-" + max_str
+            min_value = self._experiment.first_time_point_number()
+            max_value = self._experiment.last_time_point_number()
+            if min_value is None or max_value is None:
+                raise UserError("Time point switching", "No data is loaded. Cannot go to another time point.")
+            given = prompt_int("Time point", f"Which time point do you want to go to? ({min_value}-{max_value}"
                                + ", inclusive)")
             if given is None:
                 return
             if not self._move_to_time(given):
-                popup_error("Out of range", "Oops, time point " + str(given) + " is outside the range " + min_str + "-"
-                            + max_str + ".")
+                raise UserError("Out of range", f"Oops, time point {given} is outside the range {min_value}-"
+                                f"{max_value}.")
         return {
             **super().get_extra_menu_options(),
             "View//Toggle-Toggle showing two time points [" + DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + "]":
@@ -284,6 +289,7 @@ class AbstractImageVisualizer(Visualizer):
                 self._toggle_showing_images,
             "View//Toggle-Toggle showing reconstruction [" + DisplaySettings.KEY_SHOW_RECONSTRUCTION.upper() + "]":
                 self._toggle_showing_reconstruction,
+            "View//Toggle-Toggle showing splines": self._toggle_showing_splines,
             "Navigate//Layer-Above layer [Up]": lambda: self._move_in_z(1),
             "Navigate//Layer-Below layer [Down]": lambda: self._move_in_z(-1),
             "Navigate//Channel-Next channel [.]": lambda: self._move_in_channel(1),
@@ -338,6 +344,10 @@ class AbstractImageVisualizer(Visualizer):
     def _toggle_showing_reconstruction(self):
         self._display_settings.show_reconstruction = not self._display_settings.show_reconstruction
         self._move_in_time(0)  # Refreshes image
+
+    def _toggle_showing_splines(self):
+        self._display_settings.show_splines = not self._display_settings.show_splines
+        self.draw_view()
 
     def _move_in_z(self, dz: int):
         old_z = self._z

@@ -211,7 +211,7 @@ class SerieHeader:
             self.__channels = self.root.getElementsByTagName("ChannelDescription")
         return self.__channels
 
-    def getDimensions(self):
+    def getDimensions(self) -> List[Element]:
         if not hasattr(self, '__dimensions'):
             self.__dimensions = self.root.getElementsByTagName(
                 "DimensionDescription")

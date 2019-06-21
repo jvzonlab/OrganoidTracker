@@ -158,16 +158,23 @@ def _parse_data_axes_format(experiment: Experiment, axes_data: List[Dict], min_t
         experiment.splines.add_spline(TimePoint(time_point_number), path, spline_id)
 
 
-def _parse_data_axes_meta_format(experiment: Experiment, axes_meta: Dict[str, Dict[str, str]]):
+def _parse_data_axes_meta_format(experiment: Experiment, axes_meta: Dict[str, object]):
     """Currently parses the type of each axis that was drawn."""
     for key, value in axes_meta.items():
-        spline_id = int(key)
+        if key == "reference_time_point_number" and isinstance(value, int):
+            experiment.splines.reference_time_point_number(value)
+            continue
 
-        # Currently, the only supported keys are "marker" and "is_axis"
-        if "marker" in value and "is_axis" in value:
-            marker = str(value["marker"])
-            is_axis = bool(value["is_axis"])
-            experiment.splines.set_marker_name(spline_id, marker, is_axis)
+        try:
+            spline_id = int(key)
+        except ValueError:
+            continue  # Ignore unknown keys
+        else:
+            # Currently, the only supported keys are "marker" and "is_axis"
+            if isinstance(value, dict) and "marker" in value and "is_axis" in value:
+                marker = str(value["marker"])
+                is_axis = bool(value["is_axis"])
+                experiment.splines.set_marker_name(spline_id, marker, is_axis)
 
 
 def _parse_connections_format(experiment: Experiment, connections_data: Dict[str, List[List[Position]]],
@@ -343,6 +350,7 @@ def _encode_data_axes_to_json(data_axes: SplineCollection) -> List[Dict]:
 
 def _encode_data_axes_meta_to_json(splines: SplineCollection) -> Dict[str, Dict[str, str]]:
     json_dict = {}
+    json_dict["reference_time_point_number"] = splines.reference_time_point_number()
     for spline_id, marker_name in splines.get_marker_names():
         json_dict[str(spline_id)] = {"marker": marker_name, "is_axis": splines.is_axis(spline_id)}
     return json_dict
