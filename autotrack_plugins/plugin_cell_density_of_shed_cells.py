@@ -9,7 +9,8 @@ from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
-from autotrack.linking_analysis import linking_markers, cell_density_calculator, cell_compartment_finder
+from autotrack.linking_analysis import linking_markers, cell_compartment_finder
+from autotrack.position_analysis import cell_density_calculator
 from autotrack.linking_analysis.cell_compartment_finder import CellCompartment
 from autotrack.util.mpl_helper import BAR_COLOR_1, BAR_COLOR_2
 

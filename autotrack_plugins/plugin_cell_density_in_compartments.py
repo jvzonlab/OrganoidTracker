@@ -7,7 +7,8 @@ from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
-from autotrack.linking_analysis import cell_compartment_finder, cell_density_calculator
+from autotrack.linking_analysis import cell_compartment_finder
+from autotrack.position_analysis import cell_density_calculator
 from autotrack.linking_analysis.cell_compartment_finder import CellCompartment
 
 

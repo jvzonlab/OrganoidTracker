@@ -1,4 +1,4 @@
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, Tuple
 
 import numpy
 from numpy import ndarray
@@ -8,7 +8,8 @@ from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
-from autotrack.linking_analysis import cell_density_calculator, linking_markers
+from autotrack.linking_analysis import linking_markers
+from autotrack.position_analysis import cell_density_calculator
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:

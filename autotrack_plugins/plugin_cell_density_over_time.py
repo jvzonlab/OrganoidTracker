@@ -10,7 +10,7 @@ from autotrack.core.position_collection import PositionCollection
 from autotrack.core.resolution import ImageResolution
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
-from autotrack.linking_analysis import cell_density_calculator
+from autotrack.position_analysis import cell_density_calculator
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:

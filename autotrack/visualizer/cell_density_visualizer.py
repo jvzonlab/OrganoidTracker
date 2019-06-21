@@ -5,7 +5,7 @@ import matplotlib
 from autotrack.core import TimePoint
 from autotrack.core.position import Position
 from autotrack.gui.window import Window
-from autotrack.linking_analysis import cell_density_calculator
+from autotrack.position_analysis import cell_density_calculator
 from autotrack.visualizer import DisplaySettings
 from autotrack.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 

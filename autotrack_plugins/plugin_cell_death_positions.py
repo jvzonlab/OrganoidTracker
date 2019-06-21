@@ -8,7 +8,8 @@ from autotrack.core.experiment import Experiment
 from autotrack.gui import dialog
 from autotrack.gui.window import Window
 from autotrack.linking import cell_division_finder
-from autotrack.linking_analysis import linking_markers, cell_density_calculator
+from autotrack.linking_analysis import linking_markers
+from autotrack.position_analysis import cell_density_calculator
 from autotrack.util.moving_average import MovingAverage
 
 
