@@ -78,7 +78,11 @@ def right_hand_rule(a: Vector3, b: Vector3, c: Vector3):
     length_ab = a.distance(b)
     length_bc = b.distance(c)
 
-    return math.degrees(math.acos(ab_dot_bc / (length_ab * length_bc)))
+    try:
+        return math.degrees(math.acos(ab_dot_bc / (length_ab * length_bc)))
+    except ValueError:
+        # Better error message
+        raise ValueError(f"Error calculating angle for {a} {b} {c}")
 
 
 def angle_between_vectors(vector1: Vector3, vector2: Vector3) -> float:
