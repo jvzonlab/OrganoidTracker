@@ -32,7 +32,7 @@ def load_from_lif_reader(images: Images, file: str, reader: lif.Reader, serie_in
     """Sets up the experimental images for an already opened LIF file."""
     images.image_loader(_LifImageLoader(file, reader, serie_index, min_time_point, max_time_point))
     serie_header = reader.getSeriesHeaders()[serie_index]
-    dimensions: List[Element] = serie_header.getDimensions()
+    dimensions = serie_header.getDimensions()
     images.set_resolution(_dimensions_to_resolution(dimensions))
 
 
@@ -87,6 +87,7 @@ class _LifImageLoader(ImageLoader):
 
     _min_time_point_number: int
     _max_time_point_number: int
+    _inverted_z: bool = False
 
     _channels: List[_IndexedChannel]
 
@@ -95,6 +96,13 @@ class _LifImageLoader(ImageLoader):
         self._serie = reader.getSeries()[serie_index]
         self._channels = [_IndexedChannel(i) for i, channel in enumerate(self._serie.getChannels())]
         self._serie_index = serie_index
+
+        for dimension in self._serie.getDimensions():
+            axis = int(dimension.getAttribute("DimID"))
+            axis_name = lif.dimName[axis]
+            if axis_name == "Z":
+                if dimension.getAttribute("Length")[0] == "-":
+                    self._inverted_z = True
 
         if min_time_point is None:
             min_time_point = 0
@@ -123,7 +131,10 @@ class _LifImageLoader(ImageLoader):
             return None
 
         array = self._serie.getFrame(time_point.time_point_number())
-        return array[:, image_channel.index]
+        if self._inverted_z:
+            return array[::-1, image_channel.index]
+        else:
+            return array[:, image_channel.index]
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
         dimensions: List[Element] = self._serie.getDimensions()
