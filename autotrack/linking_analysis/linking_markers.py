@@ -49,6 +49,9 @@ def find_death_and_shed_positions(links: Links) -> Iterable[Position]:
     death_marker = EndMarker.DEAD.name.lower()
     shed_marker = EndMarker.SHED.name.lower()
     for position, ending_marker in links.find_all_positions_with_data("ending"):
+        if len(links.find_futures(position)) > 0:
+            continue  # Not actually ending, ending marker is useless
+
         if ending_marker == death_marker or ending_marker == shed_marker:
             yield position
 
@@ -57,6 +60,9 @@ def find_shed_positions(links: Links) -> Iterable[Position]:
     """Gets all positions that were marked as a cell shedding event."""
     shed_marker = EndMarker.SHED.name.lower()
     for position, ending_marker in links.find_all_positions_with_data("ending"):
+        if len(links.find_futures(position)) > 0:
+            continue  # Not actually ending, ending marker is useless
+
         if ending_marker == shed_marker:
             yield position
 
