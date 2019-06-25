@@ -1,4 +1,4 @@
-from typing import Dict, AbstractSet, Optional
+from typing import Dict, AbstractSet, Optional, Iterable
 
 from autotrack.core import TimePoint
 from autotrack.core.position import Position
@@ -197,3 +197,12 @@ class PositionCollection:
                 self._all_positions[time_point_number] = other_positions.copy()
 
         self._recalculate_min_max_time_points()
+
+    def time_points(self) -> Iterable[TimePoint]:
+        """Returns all time points from the first time point with positions present to the last."""
+        first_time_point_number = self.first_time_point_number()
+        last_time_point_number = self.last_time_point_number()
+        if first_time_point_number is None or last_time_point_number is None:
+            return
+        for i in range(first_time_point_number, last_time_point_number + 1):
+            yield TimePoint(i)
