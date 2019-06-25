@@ -25,6 +25,9 @@ class CellFate:
         self.type = type
         self.time_points_remaining = time_points_remaining
 
+    def __repr__(self) -> str:
+        return "CellFate(" + str(self.type) + ", " + repr(self.time_points_remaining) + ")"
+
 
 def get_fate(experiment: Experiment, position: Position) -> CellFate:
     """Checks if a cell will undergo a division later in the experiment. Returns None if not sure, because we are near
