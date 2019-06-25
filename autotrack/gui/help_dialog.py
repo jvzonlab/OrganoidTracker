@@ -10,7 +10,8 @@ from mdx_gfm import GithubFlavoredMarkdownExtension
 
 from autotrack.core import UserError
 
-_MANUALS_FOLDER = path.join(path.dirname(path.abspath(sys.argv[0])), 'manuals')
+_MANUALS_FOLDER = "manuals"
+_MANUALS_FOLDER_ABSOLUTE = path.join(path.dirname(path.abspath(sys.argv[0])), _MANUALS_FOLDER)
 _MAIN_MANUAL = "INDEX.md"
 _SCROLL_AREA_PALETTE = QPalette()
 _SCROLL_AREA_PALETTE.setColor(QPalette.Background, QtCore.Qt.white)
@@ -30,7 +31,7 @@ class _HelpFile:
     _html_text: str
 
     def __init__(self, file_name: str):
-        file = path.join(_MANUALS_FOLDER, file_name)
+        file = path.join(_MANUALS_FOLDER_ABSOLUTE, file_name)
         if not path.isfile(file):
             raise UserError("File not found", file_name + " does not exist")
         file_text = _file_get_contents(file)
@@ -45,11 +46,11 @@ class _HelpFile:
         self._html_text = self._html_text.replace("<h2>", '<h2 style="margin: 40px 40px 20px 40px">')
         self._html_text = self._html_text.replace("<h3>", '<h3 style="margin: 20px 40px">')
         self._html_text = self._html_text.replace("<li>", '<li style="line-height: 140">')
+        self._html_text = self._html_text.replace(" src=\"", " src=\"" + _MANUALS_FOLDER + "/")  # Change images path
 
         # Extra margins at top and bottom:
         self._html_text = '<div style="font-size:small; color:gray; text-align: center; font-family: sans-serif">' \
                           'Autotrack manual</div> ' + self._html_text + ' <div style="height: 40px"></div>'
-
     def html(self):
         return self._html_text
 
