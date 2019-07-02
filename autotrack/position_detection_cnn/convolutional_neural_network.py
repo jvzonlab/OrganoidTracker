@@ -20,6 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+
+TRAIN_TFRECORD = "train.tfrecord"  # Data file used for model training
+TEST_TFRECORD = "test.tfrecord"  # Data file used for model evaluation
+
+
 import tensorflow as tf
 
 

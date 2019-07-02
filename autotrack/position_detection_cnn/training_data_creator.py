@@ -25,7 +25,7 @@ import logging
 import os
 import random
 import shutil
-from typing import List, Optional
+from typing import List, Optional, Iterable, Tuple
 
 import numpy
 import tensorflow as tf
@@ -34,6 +34,7 @@ from numpy import ndarray
 from autotrack.core import TimePoint
 from autotrack.core.experiment import Experiment
 from autotrack.core.images import Images
+from autotrack.position_detection_cnn.convolutional_neural_network import TRAIN_TFRECORD, TEST_TFRECORD
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -61,12 +62,12 @@ class _ImageWithPositions:
         return f"{self.experiment_name} t{self._time_point.time_point_number()}"
 
 
-def _create_serialized_data(image_with_positions: _ImageWithPositions):
+def _create_serialized_data(image_with_positions: _ImageWithPositions, image_size_zyx: Tuple[int, int, int]):
     sub_data_xyz = image_with_positions.xyz_positions
 
     # int64 is an accepted format for serializing in tfrecord
     multi_im = image_with_positions.load_image()
-    if not multi_im:
+    if multi_im is None:
         raise Exception()
 
     # this will create the labels, we create them at this stage
@@ -76,9 +77,9 @@ def _create_serialized_data(image_with_positions: _ImageWithPositions):
     markers = numpy.zeros(multi_im.shape).astype(numpy.float32)
 
     # this fills in the labels volume (markers) with the gaussian disks
-    for z in numpy.unique(sub_data_xyz[:, -1]):
+    for dz in numpy.unique(sub_data_xyz[:, -1]):
         mask = None
-        for xyz in sub_data_xyz[numpy.where(sub_data_xyz[:, -1] == z)]:
+        for xyz in sub_data_xyz[numpy.where(sub_data_xyz[:, -1] == dz)]:
             y, x = numpy.ogrid[-xyz[1]:multi_im.shape[1] - xyz[1], -xyz[0]:multi_im.shape[2] - xyz[0]]
             sigma = 2
             gaussian_mask = (x ** 2 + y ** 2 < 4 ** 2) * numpy.exp(-(x ** 2 + y ** 2) /
@@ -88,20 +89,23 @@ def _create_serialized_data(image_with_positions: _ImageWithPositions):
             else:
                 mask = numpy.where(gaussian_mask == 0, mask, gaussian_mask)
         if mask is not None:
-            if int(z) < len(markers):  # Skip positions that were set outside the images
-                markers[int(z)] = mask
+            if int(dz) < len(markers):  # Skip positions that were set outside the images
+                markers[int(dz)] = mask
 
-    # we need all of the volume to have the same shape, assume it is (32, 512,512)
-    # assume all volumes have a maximum height of 32 and the smaller ones will be padded with zeroes
-    if multi_im.shape[0] > 32 or multi_im.shape[1] != 512 or multi_im.shape[2] != 512:
-        raise Exception()
+    # we need all of the volume to have the same shape
+    # so pad smaller images with zeroes
+    if multi_im.shape[0] > image_size_zyx[0] or multi_im.shape[1] > image_size_zyx[1] or multi_im.shape[2] > image_size_zyx[2]:
+        raise Exception(f"Image is bigger than maximum allowed size. Image is (z,y,x) {multi_im.shape}, max size is"
+                        f" {image_size_zyx}")
 
     # pad data and labels in the same way
-    data = numpy.zeros((32, 512, 512)).astype(numpy.int64)
-    z = int((data.shape[0] - multi_im.shape[0]) / 2)
-    data[z: z + multi_im.shape[0], :, :] = multi_im
-    label = numpy.zeros((32, 512, 512)).astype(numpy.float32)
-    label[z: z + markers.shape[0], :, :] = markers
+    data = numpy.zeros(image_size_zyx).astype(numpy.int64)
+    dz = int((data.shape[0] - multi_im.shape[0]) / 2)
+    dy = int((data.shape[1] - multi_im.shape[1]) / 2)
+    dx = int((data.shape[2] - multi_im.shape[2]) / 2)
+    data[dz: dz + multi_im.shape[0], dy: dy + multi_im.shape[1], dx: dx + multi_im.shape[2]] = multi_im
+    label = numpy.zeros(image_size_zyx).astype(numpy.float32)
+    label[dz: dz + multi_im.shape[0], dy: dy + multi_im.shape[1], dx: dx + multi_im.shape[2]] = markers
 
     # we store data and label with sparse matrix format because the labels are mostly zeros and data also but less
     # this reduces size of tfrecord
@@ -123,7 +127,8 @@ def _create_serialized_data(image_with_positions: _ImageWithPositions):
     return serialized
 
 
-def _make_tfrecord(tfrecord_path: str, image_with_positions_list: List[_ImageWithPositions]):
+def _make_tfrecord(tfrecord_path: str, image_with_positions_list: List[_ImageWithPositions],
+                   image_size_zyx: Tuple[int, int, int]):
     if os.path.exists(tfrecord_path):
         os.remove(tfrecord_path)
 
@@ -132,12 +137,13 @@ def _make_tfrecord(tfrecord_path: str, image_with_positions_list: List[_ImageWit
     for i, image_with_positions in enumerate(image_with_positions_list):
         logging.info('processing file {}/{} for {}'.format(i + 1, len(image_with_positions_list), tfrecord_path))
 
-        tfwriter.write(_create_serialized_data(image_with_positions))
+        tfwriter.write(_create_serialized_data(image_with_positions, image_size_zyx))
 
     tfwriter.close()
 
 
-def create_training_data(experiments: List[Experiment], out_dir: str):
+def create_training_data(experiments: Iterable[Experiment], *, out_dir: str, split_proportion: float = 0.8,
+                         image_size_zyx: Tuple[int, int, int]):
     """
     This script creates the dataset for training in the format tfrecord,
     from images and corresponding annotations (json files)
@@ -145,8 +151,10 @@ def create_training_data(experiments: List[Experiment], out_dir: str):
     """
 
     if os.path.exists(out_dir):
-        shutil.rmtree(out_dir)
-    os.mkdir(out_dir)
+        shutil.rmtree(out_dir)  # This empties the directory, but actually removing
+                                # it may not happen immediately on Windows
+    if not os.path.exists(out_dir):
+        os.mkdir(out_dir)  # Make a new directory if none exists
 
     image_with_positions_list = []
     for experiment in experiments:
@@ -159,7 +167,7 @@ def create_training_data(experiments: List[Experiment], out_dir: str):
             # read positions to numpy array
             positions_xyz = list()
             for position in positions:
-                positions_xyz.append(position[0:3])
+                positions_xyz.append([position.x, position.y, position.z])
             positions_xyz = numpy.array(positions_xyz, dtype=numpy.int32)
 
             image_with_positions_list.append(
@@ -168,11 +176,11 @@ def create_training_data(experiments: List[Experiment], out_dir: str):
     # shuffle images & positions pseudo-randomly and then split into test and training set
     random.seed("using a fixed seed to ensure reproducibility")
     random.shuffle(image_with_positions_list)
-    train_eval_split = int(args.split_proportion * len(image_with_positions_list))
+    train_eval_split = int(split_proportion * len(image_with_positions_list))
     train_files = image_with_positions_list[:train_eval_split]
     test_files = image_with_positions_list[train_eval_split:]
     numpy.savetxt(os.path.join(out_dir, 'train_files.txt'), [str(train_file) for train_file in train_files], fmt="%s")
     numpy.savetxt(os.path.join(out_dir, 'test_files.txt'), [str(test_file) for test_file in test_files], fmt="%s")
 
-    _make_tfrecord(os.path.join(out_dir, "train.tfrecord"), train_files)
-    _make_tfrecord(os.path.join(out_dir, "test.tfrecord"), test_files)
+    _make_tfrecord(os.path.join(out_dir, TRAIN_TFRECORD), train_files, image_size_zyx)
+    _make_tfrecord(os.path.join(out_dir, TEST_TFRECORD), test_files, image_size_zyx)
