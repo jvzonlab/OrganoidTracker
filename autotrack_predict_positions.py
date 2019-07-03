@@ -32,7 +32,7 @@ except UserError:
     resolution = ImageResolution(_pixel_size_x_um, _pixel_size_x_um, _pixel_size_z_um, _time_point_duration_m)
     experiment.images.set_resolution(resolution)
 
-_checkpoints_folder = config.get_or_prompt("checkpoints_folder", "Please paste the path here to the \"checkpoints\" folder containing the trained model.")
+_checkpoint_folder = config.get_or_prompt("checkpoint_folder", "Please paste the path here to the \"checkpoints\" folder containing the trained model.")
 _output_file = config.get_or_default("positions_output_file", "Automatic positions.aut", comment="Output file for the positions, can be viewed using the visualizer program.")
 _debug_folder = config.get_or_default("predictions_output_folder", "", comment="If you want to see the raw prediction images, paste the path to a folder here. In that folder, a prediction image will be placed for each time point.")
 if len(_debug_folder) == 0:
@@ -47,7 +47,7 @@ if not experiment.images.image_loader().has_images():
     exit(1)
 
 print("Using neural networks to predict positions...")
-positions = predicter.predict(experiment.images, _checkpoints_folder, split=True, out_dir=_debug_folder)
+positions = predicter.predict(experiment.images, _checkpoint_folder, split=True, out_dir=_debug_folder)
 experiment.positions.add_positions_and_shapes(positions)
 
 print("Saving file...")

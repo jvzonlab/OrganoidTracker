@@ -291,9 +291,9 @@ def _links_to_d3_data(links: Links, positions: Iterable[Position]) -> Dict:
     }
 
 
-def save_positions_and_shapes_to_json(experiment: Experiment, json_file_name: str):
+def save_positions_to_json(experiment: Experiment, json_file_name: str):
     """Saves a list of positions to disk."""
-    data_structure = _encode_positions_and_shapes(experiment.positions)
+    data_structure = _encode_positions(experiment.positions)
 
     _create_parent_directories(json_file_name)
 
@@ -306,15 +306,25 @@ def save_positions_and_shapes_to_json(experiment: Experiment, json_file_name: st
         os.remove(json_file_name_old)
 
 
+def _encode_positions(positions: PositionCollection):
+    data_structure = {}
+    for time_point in positions.time_points():
+        encoded_positions = []
+        for position in positions.of_time_point(time_point):
+            encoded_positions.append([position.x, position.y, position.z])
+
+        data_structure[str(time_point.time_point_number())] = encoded_positions
+    return data_structure
+
+
 def _encode_positions_and_shapes(positions_and_shapes: PositionCollection):
     data_structure = {}
-    for time_point_number in range(positions_and_shapes.first_time_point_number(), positions_and_shapes.last_time_point_number() + 1):
-        time_point = TimePoint(time_point_number)
-        positions = []
+    for time_point in positions_and_shapes.time_points():
+        encoded_positions = []
         for position, shape in positions_and_shapes.of_time_point_with_shapes(time_point).items():
-            positions.append([position.x, position.y, position.z] + shape.to_list())
+            encoded_positions.append([position.x, position.y, position.z] + shape.to_list())
 
-        data_structure[str(time_point_number)] = positions
+        data_structure[str(time_point.time_point_number())] = encoded_positions
     return data_structure
 
 

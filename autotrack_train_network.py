@@ -85,5 +85,5 @@ trainer.train(tfrecord_dir, checkpoint_dir, patch_size_zyx=patch_shape, image_si
 
 print("")
 print("Done! Was it worth the wait?")
-print("To get an insight in the training, run Tensorboard:")
+print("To get an insight in the training process, run Tensorboard:")
 print("    tensorboard --logdir=" + shlex.quote(path.abspath(checkpoint_dir)))

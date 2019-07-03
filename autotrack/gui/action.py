@@ -142,11 +142,11 @@ def load_tracking_data(window: Window):
     window.get_gui_experiment().replace_selected_experiment(new_experiment)
 
 
-def export_positions_and_shapes(experiment: Experiment):
+def export_positions(experiment: Experiment):
     positions_file = dialog.prompt_save_file("Save positions as...", [("JSON file", "*.json")])
     if not positions_file:
         return  # Cancelled
-    io.save_positions_and_shapes_to_json(experiment, positions_file)
+    io.save_positions_to_json(experiment, positions_file)
 
 
 def export_links_guizela(experiment: Experiment):
