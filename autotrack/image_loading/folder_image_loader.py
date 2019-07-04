@@ -85,7 +85,7 @@ class FolderImageLoader(ImageLoader):
     _file_name_format: str
     _min_time_point: int
     _max_time_point: int
-    _channels: List[ImageChannel]
+    _channels: List[_IndexedChannel]
     _image_size_zyx: Optional[Tuple[int, int, int]]
 
     def __init__(self, folder: str, file_name_format: str, min_time_point: int, max_time_point: int, min_channel: int,
@@ -130,7 +130,10 @@ class FolderImageLoader(ImageLoader):
         return self._max_time_point
 
     def copy(self) -> ImageLoader:
-        return FolderImageLoader(self._folder, self._file_name_format, self._min_time_point, self._max_time_point)
+        channel_indices = [channel.index for channel in self._channels]
+
+        return FolderImageLoader(self._folder, self._file_name_format, self._min_time_point, self._max_time_point,
+                                 min(channel_indices), max(channel_indices))
 
     def serialize_to_config(self) -> Tuple[str, str]:
         return self._folder, self._file_name_format
