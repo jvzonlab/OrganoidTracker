@@ -107,15 +107,19 @@ def _next_multiple_of_32(number: int) -> int:
 def _input_fn(images: Images, split: bool):
     image_size_zyx = images.image_loader().get_image_size_zyx()
     image_size_x = image_size_zyx[2]
+    image_size_y = image_size_zyx[1]
     image_size_z = image_size_zyx[0]
+    image_size_x = max(image_size_x, image_size_y)
+    image_size_y = image_size_x
 
     def gen_images():
         for time_point in images.time_points():
             image_data = numpy.array(images.get_image(time_point).array).astype(numpy.float32)
             image_data = (image_data - numpy.min(image_data)) / (numpy.max(image_data) - numpy.min(image_data))
-            data = numpy.zeros((_next_multiple_of_32(image_size_z), image_size_x, image_size_x)).astype(numpy.float32)
+            data = numpy.zeros((_next_multiple_of_32(image_size_z), _next_multiple_of_32(image_size_y),
+                                _next_multiple_of_32(image_size_x))).astype(numpy.float32)
             z = int((data.shape[0] - image_data.shape[0]) / 2)
-            data[z: z + image_data.shape[0], :, :] = image_data
+            data[z: z + image_data.shape[0], 0:image_data.shape[1], 0:image_data.shape[2]] = image_data
 
             if split:
                 for slice in _get_slices(data.shape):
@@ -127,7 +131,7 @@ def _input_fn(images: Images, split: bool):
     if split:
         output_shape = [1, 1, _IMAGE_PART_SIZE_PLUS_MARGIN[0], _IMAGE_PART_SIZE_PLUS_MARGIN[1], _IMAGE_PART_SIZE_PLUS_MARGIN[2]]
     else:
-        output_shape = [1, 1, _next_multiple_of_32(image_size_z), image_size_x, image_size_x]
+        output_shape = [1, 1, _next_multiple_of_32(image_size_z), _next_multiple_of_32(image_size_y), _next_multiple_of_32(image_size_x)]
     dataset = tf.data.Dataset.from_generator(gen_images,
                                              output_types={'data': tf.float32},
                                              output_shapes={'data': tf.TensorShape(output_shape)})
@@ -143,9 +147,21 @@ def predict(images: Images, checkpoint_dir: str, out_dir: Optional[str] = None, 
         raise ValueError("No images were loaded")
     image_size_zyx = images.image_loader().get_image_size_zyx()
     image_size_x = image_size_zyx[2]
+    image_size_y = image_size_zyx[1]
     image_size_z = image_size_zyx[0]
+    output_size_x = _next_multiple_of_32(image_size_x)
+    output_size_y = _next_multiple_of_32(image_size_y)
     output_size_z = _next_multiple_of_32(image_size_z)
     output_offset_z = (output_size_z - image_size_z) // 2
+
+    output_size_x = max(output_size_x, output_size_y)  # Make image a square
+    output_size_y = output_size_x
+
+    # Try to turn off slit
+    if split and output_size_x <= _IMAGE_PART_SIZE_PLUS_MARGIN[2] and output_size_y <= _IMAGE_PART_SIZE_PLUS_MARGIN[1] \
+            and output_size_x <= _IMAGE_PART_SIZE_PLUS_MARGIN[1]:
+        split = False  # Input image is so small that it doesn't need to be split
+
     resolution = images.resolution()
 
     estimator = tf.estimator.Estimator(model_fn=partial(build_fcn_model, use_cpu=False), model_dir=checkpoint_dir)
@@ -157,8 +173,8 @@ def predict(images: Images, checkpoint_dir: str, out_dir: Optional[str] = None, 
 
     all_positions = PositionCollection()
 
-    slices = list(_get_slices((output_size_z, image_size_x, image_size_x))) if split else []
-    complete_prediction = numpy.empty((output_size_z, image_size_x, image_size_x), dtype=numpy.float32)\
+    slices = list(_get_slices((output_size_z, output_size_y, output_size_x))) if split else []
+    complete_prediction = numpy.empty((output_size_z, output_size_y, output_size_x), dtype=numpy.float32)\
         if split else None
 
     for index, p in enumerate(predictions):

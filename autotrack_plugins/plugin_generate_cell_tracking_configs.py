@@ -1,5 +1,7 @@
 """Generates config files for the cell tracker."""
 import os
+import sys
+import shlex
 from typing import Dict, Optional, Any
 
 from autotrack.config import ConfigFile
@@ -14,6 +16,16 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
          "Process//Standard-Train the neural network...": lambda: _generate_training_config(window),
          "Process//Standard-Detect cells in images...": lambda: _generate_detection_config(window),
     }
+
+
+def _create_run_script(output_folder: str, script_name: str):
+    bat_file = os.path.join(output_folder, script_name + ".bat")
+    script_file = os.path.abspath(script_name + ".py")
+    with open(bat_file, "w") as writer:
+        writer.write(f"""@rem Automatically generated script for running {script_name}
+@echo off
+"{sys.executable}" "{script_file}"
+pause""")
 
 
 def _generate_training_config(window: Window):
@@ -74,6 +86,10 @@ def _generate_training_config(window: Window):
 
     config.get_or_default(f"images_container_{i + 1}", "<stop>")
     config.save_if_changed()
+    _create_run_script(save_directory, "autotrack_train_network")
+    dialog.popup_message("Configuration files created", "The configuration files were created successfully. Please run"
+                                                       " the autotrack_train_network script from that directory:"
+                                                       f"\n\n{save_directory}")
 
 
 def _generate_detection_config(window: Window):
@@ -99,11 +115,14 @@ def _generate_detection_config(window: Window):
     config = ConfigFile("predict_positions", folder_name=save_directory)
     config.get_or_default("images_container", image_loader.serialize_to_config()[0], store_in_defaults=True)
     config.get_or_default("images_pattern", image_loader.serialize_to_config()[1], store_in_defaults=True)
+    config.get_or_default("min_time_point", str(image_loader.first_time_point_number()), store_in_defaults=True)
+    config.get_or_default("max_time_point", str(image_loader.last_time_point_number()), store_in_defaults=True)
     config.get_or_default("pixel_size_x_um", str(resolution.pixel_size_x_um))
     config.get_or_default("pixel_size_z_um", str(resolution.pixel_size_z_um))
     config.get_or_default("time_point_duration_m", str(resolution.time_point_interval_m))
     config.get_or_default("checkpoint_folder", checkpoint_directory)
     config.save_if_changed()
+    _create_run_script(save_directory, "autotrack_predict_positions")
     dialog.popup_message("Configuration file created", "The configuration file was created successfully. Please run"
                                                        " the autotrack_predict_positions script from that directory:"
                                                        f"\n\n{save_directory}")

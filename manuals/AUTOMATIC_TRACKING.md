@@ -15,14 +15,12 @@ Before you start, create a directory that will hold all you analysis data. You c
 Step 1: Obtaining nucleus positions
 -----------------------------------
 
-Training is currently done using an external program.
-
-Once you have a trained model, you can use it to 
+Open the Autotrack GUI, load your images and select `Process` -> `Detect cells in images...`. Select the (already trained) neural network you want to use. You'll end up with a folder containing configuration files. Run the `autotrack_predict_positions.py` script in that directory to put the neural network into action. You'll end up with a file that contains the positions of the cells. Load it into the program to see how the neural network performed.
 
 Step 2: Obtaining nucleus shapes
 --------------------------------
 
-Obtaining nucleus shapes is done using the `autotrack_detect_gaussian_shapes.py` file. Run it from the data analysis directory. It will ask you to set all parameters. Make sure the resolution, the path to the image folder and the path to the positions file are correct, and then run the script again.
+Obtaining nucleus shapes is done using the `autotrack_detect_gaussian_shapes.py` script. Run it from the data analysis directory. It will ask you to set all parameters. Make sure the resolution, the path to the image folder and the path to the positions file are correct, and then run the script again.
 
 Note: this script takes a few minutes to run per time point, so please be patient.
 
