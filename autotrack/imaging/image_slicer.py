@@ -1,6 +1,10 @@
 """For slicing big images into smaller images."""
 from typing import Tuple, Iterable
+
+import numpy
 from numpy import ndarray
+
+from autotrack.imaging import cropper
 
 
 class Slicer3d:
@@ -18,12 +22,29 @@ class Slicer3d:
 
     def __init__(self, start: Tuple[int, int, int], end: Tuple[int, int, int],
                  area_of_interest_start: Tuple[int, int, int], area_of_interest_end: Tuple[int, int, int]):
+        # Some sanity checks
+        if start[0] < 0 or start[1] < 0 or start[2] < 0:
+            raise ValueError(f"start cannot be negative; was {start}")
+        if area_of_interest_start[0] < start[0] or area_of_interest_start[1] < start[1]\
+                or area_of_interest_start[2] < start[2]:
+            raise ValueError(f"area_of_interest cannot start before the start; start={start},"
+                             f" area_of_interest_start={area_of_interest_start}")
+        if area_of_interest_end[0] > end[0] or area_of_interest_end[1] > end[1] or area_of_interest_end[2] > end[2]:
+            raise ValueError(f"area_of_interest cannot end after the end; end={end},"
+                             f" area_of_interest_end={area_of_interest_end}")
+
         self._start = start
         self._end = end
         self._area_of_interest_start = area_of_interest_start
         self._area_of_interest_end = area_of_interest_end
 
     def slice(self, image_3d: ndarray) -> ndarray:
+        if self._end[0] > image_3d.shape[0] or self._end[1] > image_3d.shape[1] or self._end[2] > image_3d.shape[2]:
+            # Need to allocate bigger image to make sure slice is of the right size
+            # Should only happen if the requested slice size is bigger than the original image in at least one dimension
+            new_image = numpy.zeros((self._end[0] - self._start[0], self._end[1] - self._start[1], self._end[2] - self._start[2]))
+            cropper.crop_3d(image_3d, self._start[2], self._start[1], self._start[0], new_image)
+            return new_image
         return image_3d[self._start[0]:self._end[0], self._start[1]:self._end[1], self._start[2]:self._end[2]]
 
     def place_slice_in_volume(self, slice: ndarray, volume: ndarray):
@@ -37,7 +58,7 @@ class Slicer3d:
                         self._area_of_interest_start[2] - self._start[2]:self._area_of_interest_end[2] - self._start[2]]
 
     def __repr__(self) -> str:
-        return f"Slicer3d({self._start}, {self._end}, {self._area_of_interest_start}, {self._area_of_interest_end})"
+        return f"Slicer3d(start={self._start}, end={self._end}, area_of_interest_start={self._area_of_interest_start}, area_of_interest_end={self._area_of_interest_end})"
 
     def __eq__(self, other):
         if not isinstance(other, Slicer3d):
@@ -66,18 +87,20 @@ def get_slices(volume_zyx: Tuple[int, int, int], image_part_size: Tuple[int, int
                 end_y_here = start_y_here + image_part_size[1] + 2 * image_part_margin[1]
                 end_z_here = start_z_here + image_part_size[0] + 2 * image_part_margin[0]
                 if end_x_here > volume_zyx[2]:
-                    start_x_here -= end_x_here - volume_zyx[2]
-                    end_x_here = volume_zyx[2]
+                    start_x_here = max(0, start_x_here - (end_x_here - volume_zyx[2]))
+                    end_x_here = start_x_here + image_part_size[2] + 2 * image_part_margin[2]
                 if end_y_here > volume_zyx[1]:
-                    start_y_here -= end_y_here - volume_zyx[1]
-                    end_y_here = volume_zyx[1]
+                    start_y_here = max(0, start_y_here - (end_y_here - volume_zyx[1]))
+                    end_y_here = start_y_here + image_part_size[1] + 2 * image_part_margin[1]
                 if end_z_here > volume_zyx[0]:
-                    start_z_here -= end_z_here - volume_zyx[0]
-                    end_z_here = volume_zyx[0]
+                    start_z_here = max(0, start_z_here - (end_z_here - volume_zyx[0]))
+                    end_z_here = start_z_here + image_part_size[0] + 2 * image_part_margin[0]
+                end_x = min(start_x + image_part_size[2], end_x_here)  # Don't let the area of interest extend beyond
+                end_y = min(start_y + image_part_size[1], end_y_here)  # the area of the slice
+                end_z = min(start_z + image_part_size[0], end_z_here)
 
                 yield Slicer3d((start_z_here, start_y_here, start_x_here), (end_z_here, end_y_here, end_x_here),
-                               (start_z, start_y, start_x),
-                               (start_z + image_part_size[0], start_y + image_part_size[1], start_x + image_part_size[2]))
+                               (start_z, start_y, start_x), (end_z, end_y, end_x))
                 start_x += image_part_size[2]
             start_y += image_part_size[1]
         start_z += image_part_size[0]
