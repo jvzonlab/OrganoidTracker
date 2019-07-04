@@ -1,6 +1,7 @@
 # Autotrack manual
 
 * [Installation instructions](INSTALLATION.md)
+* [Supported image formats](IMAGE_FORMATS.md)
 * [Scripts reference](SCRIPTS.md)
 * [Programming API](API.md)
 * [Tutorial for semi-automated tracking](AUTOMATIC_TRACKING.md)

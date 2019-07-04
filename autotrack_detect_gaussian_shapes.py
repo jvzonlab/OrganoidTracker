@@ -12,7 +12,8 @@ Parameters: (all sizes are in pixels)
   already looks like Gaussians, the smaller this size can be
 - min_segmentation_distance: used for recognizing cell boundaries in a watershed transform
 """
-from autotrack.imaging import tifffolder, io, general_image_loader
+from autotrack.imaging import io
+from autotrack.image_loading import general_image_loader
 from autotrack.config import ConfigFile
 from autotrack.position_detection import gaussian_detector_for_experiment
 from autotrack.core.resolution import ImageResolution
@@ -20,9 +21,12 @@ from autotrack.core.resolution import ImageResolution
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("detect_gaussian_shapes")
-_images_folder = config.get_or_default("images_folder", "../", store_in_defaults=True)
-_images_format = config.get_or_prompt("images_pattern", "What are the image file names? (Use %03d for a three digits "
-                                                        "representing the time)", store_in_defaults=True)
+_images_folder = config.get_or_prompt("images_container", "If you have a folder of image files, please paste the folder"
+                                      " path here. Else, if you have a LIF file, please paste the path to that file"
+                                      " here.", store_in_defaults=True)
+_images_format = config.get_or_prompt("images_pattern", "What are the image file names? (Use {time:03} for three digits"
+                                      " representing the time point, use {channel} for the channel)",
+                                      store_in_defaults=True)
 _min_time_point = int(config.get_or_default("min_time_point", str(1), store_in_defaults=True))
 _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_in_defaults=True))
 _pixel_size_x_um = float(config.get_or_default("pixel_size_x_um", str(0.32), store_in_defaults=True))

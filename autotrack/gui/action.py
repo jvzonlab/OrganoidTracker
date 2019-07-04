@@ -1,6 +1,4 @@
 import re
-import sys
-from enum import Enum
 from os import path
 from typing import Optional
 
@@ -14,7 +12,9 @@ from autotrack.gui.dialog import popup_message_cancellable
 from autotrack.gui.gui_experiment import GuiExperiment
 from autotrack.gui.undo_redo import UndoableAction
 from autotrack.gui.window import Window
-from autotrack.imaging import tifffolder, io, lif, liffile
+from autotrack.imaging import io
+from autotrack.image_loading import folder_image_loader, liffile_image_loader, _lif
+from autotrack.imaging.image_file_name_pattern_finder import find_time_and_channel_pattern
 from autotrack.linking_analysis import linking_markers
 from autotrack.visualizer import activate
 from autotrack.visualizer.empty_visualizer import EmptyVisualizer
@@ -74,8 +74,7 @@ def load_images(window: Window):
                                      "\"t1\", \"t01\", \"_1.\" or similar in the file name."):
         return  # Cancelled
     full_path = dialog.prompt_load_file("Select first image file", [
-        ("TIF file", "*.tif"),
-        ("TIFF file", "*.tiff"),
+        ("Image per time point", "*.tif;*.tiff;*.png;*.jpg;*.gif"),
         ("LIF file", "*.lif")])
     if not full_path:
         return  # Cancelled
@@ -83,46 +82,24 @@ def load_images(window: Window):
 
     if file_name.endswith(".lif"):
         # LIF file loading
-        from autotrack.imaging import liffile
-        reader = lif.Reader(full_path)
+        reader = _lif.Reader(full_path)
         series = [header.getDisplayName() for header in reader.getSeriesHeaders()]
         series_index = option_choose_dialog.popup_image_getter("Choose an image serie", "Choose an image serie", "Image serie:", series)
         if series_index is not None:
-            liffile.load_from_lif_reader(window.get_experiment().images, full_path, reader, series_index)
+            liffile_image_loader.load_from_lif_reader(window.get_experiment().images, full_path, reader, series_index)
             window.redraw_all()
         return
 
-    file_name_pattern = _find_pattern(file_name)
+    file_name_pattern = find_time_and_channel_pattern(file_name)
     if file_name_pattern is None:
-        dialog.popup_error("Could not read file pattern", "Could not find 't01' (or similar) in the file name \"" +
-                           file_name + "\". Make sure you selected the first image.")
-        return
+        file_name_pattern = file_name  # Don't use a pattern if not available
+        dialog.popup_message("Could not read file pattern", "Could not find 't01' (or similar) in the file name \"" +
+                             file_name + "\", so only one image is loaded. If you want to load a time lapse, see the"
+                             " manual for supported image formats.")
 
     # Load and show images
-    tifffolder.load_images_from_folder(window.get_experiment(), directory, file_name_pattern)
+    folder_image_loader.load_images_from_folder(window.get_experiment(), directory, file_name_pattern)
     window.redraw_all()
-
-
-def _find_pattern(file_name: str) -> Optional[str]:
-    # Support t001
-    counting_part = re.search('t0*1', file_name)
-    if counting_part is not None:
-        start, end = counting_part.start(0), counting_part.end(0)
-        return file_name[0:start] + "t%0" + str(end - start - 1) + "d" + file_name[end:]
-
-    # Support T001
-    counting_part = re.search('T0*1', file_name)
-    if counting_part is not None:
-        start, end = counting_part.start(0), counting_part.end(0)
-        return file_name[0:start] + "T%0" + str(end - start - 1) + "d" + file_name[end:]
-
-    # Support _001.
-    counting_part = re.search('_0*1\.', file_name)
-    if counting_part is not None:
-        start, end = counting_part.start(0), counting_part.end(0)
-        return file_name[0:start] + "_%0" + str(end - start - 2) + "d." + file_name[end:]
-
-    return None
 
 
 def load_tracking_data(window: Window):

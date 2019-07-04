@@ -6,8 +6,8 @@ from os import path
 
 from autotrack.config import ConfigFile, config_type_image_shape, config_type_int
 from autotrack.core.experiment import Experiment
-from autotrack.imaging import io, general_image_loader
-
+from autotrack.imaging import io
+from autotrack.image_loading import general_image_loader
 
 # PARAMETERS
 from autotrack.position_detection_cnn import training_data_creator, trainer
@@ -33,13 +33,14 @@ per_experiment_params = []
 i = 1
 while True:
     params = _PerExperimentParameters()
-    params.images_container = config.get_or_default(f"images_container_{i}", "<stop>", comment=
-                                              "If you have a folder of TIFF files, please paste the path here."
-                                              " Else, if you have a LIF file, please paste the path to that"
-                                              " file here.")
-
-    params.images_pattern = config.get_or_default(f"images_pattern_{i}", "", comment="What are the image file names?"
-                                                   " (Use %03d for three digits representing the time point)")
+    params.images_container = config.get_or_prompt(f"images_container_{i}",
+                                          "If you have a folder of image files, please paste the folder"
+                                          " path here. Else, if you have a LIF file, please paste the path to that file"
+                                          " here.", store_in_defaults=True)
+    params.images_pattern = config.get_or_prompt(f"images_pattern_{i}",
+                                          "What are the image file names? (Use {time:03} for three digits"
+                                          " representing the time point, use {channel} for the channel)",
+                                          store_in_defaults=True)
     params.training_positions_file = config.get_or_default(f"positions_file_{i}", f"positions_{i}.{io.FILE_EXTENSION}",
                                                            comment="What are the detected positions for those images?")
     params.min_time_point = int(config.get_or_default(f"min_time_point_{i}", str(0)))

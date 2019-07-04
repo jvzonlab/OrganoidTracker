@@ -1,3 +1,4 @@
+"""Image loader for LIF files."""
 from typing import Optional, Tuple, List
 from xml.dom.minidom import Element
 
@@ -7,13 +8,13 @@ from autotrack.core import TimePoint
 from autotrack.core.image_loader import ImageLoader, ImageChannel
 from autotrack.core.images import Images
 from autotrack.core.resolution import ImageResolution
-from autotrack.imaging import lif
+from autotrack.image_loading import _lif
 
 
 def load_from_lif_file(images: Images, file: str, series_name: str, min_time_point: int = 0,
                        max_time_point: int = 1000000000):
     """Sets up the experimental images for a LIF file that is not yet opened."""
-    reader = lif.Reader(file)
+    reader = _lif.Reader(file)
 
     # Find index of series
     series_index = None
@@ -27,7 +28,7 @@ def load_from_lif_file(images: Images, file: str, series_name: str, min_time_poi
     load_from_lif_reader(images, file, reader, series_index, min_time_point, max_time_point)
 
 
-def load_from_lif_reader(images: Images, file: str, reader: lif.Reader, serie_index: int, min_time_point: int = 0,
+def load_from_lif_reader(images: Images, file: str, reader: _lif.Reader, serie_index: int, min_time_point: int = 0,
                          max_time_point: int = 1000000000):
     """Sets up the experimental images for an already opened LIF file."""
     images.image_loader(_LifImageLoader(file, reader, serie_index, min_time_point, max_time_point))
@@ -44,7 +45,7 @@ def _dimensions_to_resolution(dimensions: List[Element]) -> ImageResolution:
 
     for dimension in dimensions:
         axis = int(dimension.getAttribute("DimID"))
-        axis_name = lif.dimName[axis]
+        axis_name = _lif.dimName[axis]
         total_length = float(dimension.getAttribute("Length"))
         number_of_elements = int(dimension.getAttribute("NumberOfElements"))
         unit_length = 0 if number_of_elements == 1 else total_length / (number_of_elements - 1)
@@ -82,7 +83,7 @@ class _IndexedChannel(ImageChannel):
 class _LifImageLoader(ImageLoader):
 
     _file: str
-    _serie: lif.Serie
+    _serie: _lif.Serie
     _serie_index: int
 
     _min_time_point_number: int
@@ -91,7 +92,7 @@ class _LifImageLoader(ImageLoader):
 
     _channels: List[_IndexedChannel]
 
-    def __init__(self, file: str, reader: lif.Reader, serie_index: int, min_time_point: int, max_time_point: int):
+    def __init__(self, file: str, reader: _lif.Reader, serie_index: int, min_time_point: int, max_time_point: int):
         self._file = file
         self._serie = reader.getSeries()[serie_index]
         self._channels = [_IndexedChannel(i) for i, channel in enumerate(self._serie.getChannels())]
@@ -100,7 +101,7 @@ class _LifImageLoader(ImageLoader):
         # Check if z axis needs to be inverted
         for dimension in self._serie.getDimensions():
             axis = int(dimension.getAttribute("DimID"))
-            axis_name = lif.dimName[axis]
+            axis_name = _lif.dimName[axis]
             if axis_name == "Z":
                 if dimension.getAttribute("Length")[0] == "-":
                     # Found a negative length, so axis needs to be inverted
@@ -146,7 +147,7 @@ class _LifImageLoader(ImageLoader):
         return int(z_size), int(y_size), int(x_size)
 
     def copy(self) -> "_LifImageLoader":
-        return _LifImageLoader(self._file, lif.Reader(self._file), self._serie_index, self._min_time_point_number,
+        return _LifImageLoader(self._file, _lif.Reader(self._file), self._serie_index, self._min_time_point_number,
                                self._max_time_point_number)
 
     def serialize_to_config(self) -> Tuple[str, str]:

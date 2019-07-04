@@ -4,20 +4,21 @@ from autotrack.config import ConfigFile
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
 from autotrack.core.resolution import ImageResolution
-from autotrack.imaging import general_image_loader, io
+from autotrack.imaging import io
+from autotrack.image_loading import general_image_loader
 from autotrack.position_detection_cnn import predicter
-from autotrack.position_detection_cnn.background_supressing_image_loader import BackgroundSupressingImageLoader
 
 experiment = Experiment()
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("predict_positions")
-_images_folder = config.get_or_prompt("images_container", "If you have a folder of TIFF files, please paste the path here."
-                                                       " Else, if you have a LIF file, please paste the path to that"
-                                                       " file here.", store_in_defaults=True)
-_images_format = config.get_or_prompt("images_pattern", "What are the image file names? (Use %03d for three digits "
-                                                        "representing the time point)", store_in_defaults=True)
+_images_folder = config.get_or_prompt("images_container", "If you have a folder of image files, please paste the folder"
+                                      " path here. Else, if you have a LIF file, please paste the path to that file"
+                                      " here.", store_in_defaults=True)
+_images_format = config.get_or_prompt("images_pattern", "What are the image file names? (Use {time:03} for three digits"
+                                      " representing the time point, use {channel} for the channel)",
+                                      store_in_defaults=True)
 _min_time_point = int(config.get_or_default("min_time_point", str(1), store_in_defaults=True))
 _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_in_defaults=True))
 general_image_loader.load_images(experiment, _images_folder, _images_format,
