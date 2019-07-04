@@ -1,8 +1,8 @@
-"""Tries to find out which image loader to use based on two settings, container and pattern."""
+"""Tries to find out which image loader to use based on two settings, container and patter
+n."""
 import os.path
 
 from autotrack.core.experiment import Experiment
-
 
 def load_images(experiment: Experiment, container: str, pattern: str,
                 min_time_point: int = 0, max_time_point: int = 1000000000):
@@ -14,7 +14,7 @@ def load_images(experiment: Experiment, container: str, pattern: str,
         from autotrack.image_loading import liffile_image_loader
         liffile_image_loader.load_from_lif_file(experiment.images, container, pattern, min_time_point, max_time_point)
         return
-    if os.path.isdir(container) and ("{time:" in pattern or "{time}" in pattern):  # Try as TIF folder
+    if os.path.isdir(container):  # Try as TIF folder
         from autotrack.image_loading import folder_image_loader
         folder_image_loader.load_images_from_folder(experiment, container, pattern, min_time_point, max_time_point)
         return
