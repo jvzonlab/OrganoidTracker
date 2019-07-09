@@ -627,3 +627,10 @@ class Links:
                 yield position, past_position
             for future_position in track._find_futures(time_point_number):
                 yield position, future_position
+
+    def get_track_id(self, track: LinkingTrack) -> Optional[int]:
+        """Gets the track id of the given track. Returns None if the track is not stored in the linking data here."""
+        try:
+            return self._tracks.index(track)
+        except ValueError:
+            return None

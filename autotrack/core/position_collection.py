@@ -206,3 +206,14 @@ class PositionCollection:
             return
         for i in range(first_time_point_number, last_time_point_number + 1):
             yield TimePoint(i)
+
+    def copy(self) -> "PositionCollection":
+        """Creates a copy of this positions collection. Changes made to the copy will not affect this instance and vice
+        versa."""
+        the_copy = PositionCollection()
+        for key, value in self._all_positions.items():
+            the_copy._all_positions[key] = value.copy()
+
+        the_copy._min_time_point_number = self._min_time_point_number
+        the_copy._max_time_point_number = self._max_time_point_number
+        return the_copy
