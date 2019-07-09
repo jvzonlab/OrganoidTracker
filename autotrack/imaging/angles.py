@@ -69,20 +69,32 @@ def mirrored(angle: float, mirror_angle: float) -> float:
     return (mirror_angle + change) % 360
 
 
-def right_hand_rule(a: Vector3, b: Vector3, c: Vector3):
+def right_hand_rule(a: Vector3, b: Vector3, c: Vector3) -> float:
     """Returns the angle formed by A -> B -> C using the 'right-hand rule' from B. Based on
     https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points . The result is
-    equal to angle_between_vectors(b - a, c - b)."""
+    equal to angle_between_vectors(b - a, c - b), except that 180 is returned if a, b and c lie on a straight line."""
     ab_dot_bc = (b - a).dot(c - b)
 
     length_ab = a.distance(b)
     length_bc = b.distance(c)
 
     try:
-        return math.degrees(math.acos(ab_dot_bc / (length_ab * length_bc)))
-    except ValueError:
+        cos_value = ab_dot_bc / (length_ab * length_bc)
+    except ZeroDivisionError as e:
         # Better error message
-        raise ValueError(f"Error calculating angle for {a} {b} {c}")
+        raise ValueError(f"Error calculating angle for {a} {b} {c}: {e}")
+
+    # Correct for rounding errors in float calculations causing a math domain error
+    if 1 <= cos_value <= 1.0000000000000004:
+        return 0
+    elif -1 >= cos_value >= -1.0000000000000004:
+        return 0
+
+    try:
+        return math.degrees(math.acos(cos_value))
+    except ValueError as e:
+        # Better error message
+        raise ValueError(f"Error calculating angle for {a} {b} {c}: {e}")
 
 
 def angle_between_vectors(vector1: Vector3, vector2: Vector3) -> float:

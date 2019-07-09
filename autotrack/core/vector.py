@@ -1,3 +1,5 @@
+from typing import Union
+
 import math
 
 
@@ -28,10 +30,18 @@ class Vector3:
         """Length of this vector."""
         return self.distance(Vector3.ZERO)
 
-    def __add__(self, other: "Vector3") -> "Vector3":
+    def multiply(self, amount: float) -> "Vector3":
+        """Scalar multiplication."""
+        return Vector3(self.x * amount, self.y * amount, self.z * amount)
+
+    def __add__(self, other) -> "Vector3":
+        if not isinstance(other, Vector3):
+            return NotImplemented
         return Vector3(self.x + other.x, self.y + other.y, self.z + other.z)
 
-    def __sub__(self, other: "Vector3") -> "Vector3":
+    def __sub__(self, other) -> "Vector3":
+        if not isinstance(other, Vector3):
+            return NotImplemented
         return Vector3(self.x - other.x, self.y - other.y, self.z - other.z)
 
     def distance(self, other: "Vector3") -> float:
@@ -42,7 +52,7 @@ class Vector3:
         return math.sqrt(dx ** 2 + dy ** 2 + dz ** 2)
 
     def __repr__(self) -> str:
-        return "Vector3(" + ("%.2f" % self.x) + ", " + ("%.2f" % self.y) + ", " + ("%.2f" % self.z) + ")"
+        return "Vector3(" + str(self.x) + ", " + str(self.y) + ", " + str(self.z) + ")"
 
     def __hash__(self) -> int:
         return hash(int(self.x)) ^ hash(int(self.y)) ^ hash(int(self.z))
