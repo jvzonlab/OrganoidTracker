@@ -1,6 +1,6 @@
 """Predictions particle positions using an already-trained convolutional neural network."""
 
-from autotrack.config import ConfigFile
+from autotrack.config import ConfigFile, config_type_bool
 from autotrack.core import UserError
 from autotrack.core.experiment import Experiment
 from autotrack.core.resolution import ImageResolution
@@ -35,6 +35,9 @@ except UserError:
 
 _checkpoint_folder = config.get_or_prompt("checkpoint_folder", "Please paste the path here to the \"checkpoints\" folder containing the trained model.")
 _output_file = config.get_or_default("positions_output_file", "Automatic positions.aut", comment="Output file for the positions, can be viewed using the visualizer program.")
+_split = config.get_or_default("save_video_ram", "true", comment="Whether video RAM should be saved by splitting"
+                                                                 " the images into smaller parts, and processing"
+                                                                 " each part independently.", type=config_type_bool)
 _debug_folder = config.get_or_default("predictions_output_folder", "", comment="If you want to see the raw prediction images, paste the path to a folder here. In that folder, a prediction image will be placed for each time point.")
 if len(_debug_folder) == 0:
     _debug_folder = None
@@ -48,7 +51,7 @@ if not experiment.images.image_loader().has_images():
     exit(1)
 
 print("Using neural networks to predict positions...")
-positions = predicter.predict(experiment.images, _checkpoint_folder, split=True, out_dir=_debug_folder)
+positions = predicter.predict(experiment.images, _checkpoint_folder, split=_split, out_dir=_debug_folder)
 experiment.positions.add_positions_and_shapes(positions)
 
 print("Saving file...")

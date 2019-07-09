@@ -23,6 +23,15 @@ def config_type_image_shape(input: str) -> Tuple[int, int, int]:
     return int(split[2]), int(split[1]), int(split[0])
 
 
+def config_type_bool(input: str) -> bool:
+    input = input.lower()
+    if input in ["true", "yes", "y", "t", "1"]:
+        return True
+    if input in ["false", "no", "n", "f", "0"]:
+        return False
+    raise ValueError("Expected \"True\" or \"False\", got \"" +input+"\"")
+
+
 class ConfigFile:
     """Simple wrapper around ConfigParser"""
 
