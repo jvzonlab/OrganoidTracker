@@ -1,8 +1,8 @@
 """Registers the Stem and Paneth cell type."""
-from autotrack.core.spline import Spline
-from autotrack.core.position import Position
-from autotrack.core.marker import Marker
-from autotrack.gui.window import Window
+from ai_track.core.spline import Spline
+from ai_track.core.position import Position
+from ai_track.core.marker import Marker
+from ai_track.gui.window import Window
 
 
 STEM = Marker([Position], "STEM", "stem cell", (255, 227, 190))

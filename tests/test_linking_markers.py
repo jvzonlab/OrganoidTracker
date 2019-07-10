@@ -1,9 +1,9 @@
 import unittest
 
-from autotrack.core.links import Links
-from autotrack.core.position import Position
-from autotrack.linking_analysis import linking_markers
-from autotrack.linking_analysis.errors import Error
+from ai_track.core.links import Links
+from ai_track.core.position import Position
+from ai_track.linking_analysis import linking_markers
+from ai_track.linking_analysis.errors import Error
 
 
 class TestLinkingMarkers(unittest.TestCase):

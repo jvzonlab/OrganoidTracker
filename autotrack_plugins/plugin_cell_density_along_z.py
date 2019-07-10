@@ -4,12 +4,12 @@ import numpy
 from numpy import ndarray
 from matplotlib.figure import Figure
 
-from autotrack.core import UserError
-from autotrack.core.experiment import Experiment
-from autotrack.gui import dialog
-from autotrack.gui.window import Window
-from autotrack.linking_analysis import linking_markers
-from autotrack.position_analysis import cell_density_calculator
+from ai_track.core import UserError
+from ai_track.core.experiment import Experiment
+from ai_track.gui import dialog
+from ai_track.gui.window import Window
+from ai_track.linking_analysis import linking_markers
+from ai_track.position_analysis import cell_density_calculator
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:

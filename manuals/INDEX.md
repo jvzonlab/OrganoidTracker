@@ -1,4 +1,4 @@
-# Autotrack manual
+# AI_track manual
 
 * [Installation instructions](INSTALLATION.md)
 * [Supported image formats](IMAGE_FORMATS.md)
@@ -6,7 +6,7 @@
 * [Programming API](API.md)
 * [Tutorial for semi-automated tracking](AUTOMATIC_TRACKING.md)
 
-Welcome to the Autotrack manual! This document will tell you how to use the "visualizer", the program that displays all the images and the annotations.
+Welcome to the AI_track manual! This document will tell you how to use the "visualizer", the program that displays all the images and the annotations.
 
 Getting started
 ---------------
@@ -57,10 +57,10 @@ If you select an axis and then press Delete, the whole axis will be deleted.
 Plugin support
 --------------
 
-Any Python file you place in the `autotrack_plugins` folder that has a name starting with `plugin_` (so for example `plugin_extra_images.py`) will automatically be loaded. A very minimal plugin looks like this:
+Any Python file you place in the `ai_track_plugins` folder that has a name starting with `plugin_` (so for example `plugin_extra_images.py`) will automatically be loaded. A very minimal plugin looks like this:
 
 ```python
-from autotrack.gui import dialog
+from ai_track.gui import dialog
 
 def get_menu_items(window):
     return {
@@ -73,4 +73,4 @@ def get_menu_items(window):
 
 The `get_menu_items` function is automatically called. It is used here to add some custom menu options. The options are shown in the "Tools" menu, in the "Messages" category. (The name of the category is never shown, but menu options in the same category will always appear next to each other.) Ctrl+W is the shortcut for the menu option.
 
-You can call any method in the Python standard library, the Autotrack API (see API.md) and its dependencies. There is no sandbox implemented. You can access the currently loaded experiment using `window.get_experiment()`. o show a matplotlib figure, use `dialog.popup_figure(..)`.
+You can call any method in the Python standard library, the AI_track API (see API.md) and its dependencies. There is no sandbox implemented. You can access the currently loaded experiment using `window.get_experiment()`. o show a matplotlib figure, use `dialog.popup_figure(..)`.

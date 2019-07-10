@@ -5,16 +5,16 @@ from matplotlib.axes import Axes
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 from matplotlib.patches import RegularPolygon
 
-from autotrack.core import TimePoint
-from autotrack.core.experiment import Experiment
-from autotrack.core.position import Position
-from autotrack.core.typing import MPLColor
-from autotrack.gui import dialog
-from autotrack.gui.gui_experiment import GuiExperiment
-from autotrack.gui.window import Window
-from autotrack.linking_analysis import linking_markers, cell_fate_finder, particle_age_finder
-from autotrack.linking_analysis.cell_fate_finder import CellFate, CellFateType
-from autotrack.visualizer import Visualizer
+from ai_track.core import TimePoint
+from ai_track.core.experiment import Experiment
+from ai_track.core.position import Position
+from ai_track.core.typing import MPLColor
+from ai_track.gui import dialog
+from ai_track.gui.gui_experiment import GuiExperiment
+from ai_track.gui.window import Window
+from ai_track.linking_analysis import linking_markers, cell_fate_finder, particle_age_finder
+from ai_track.linking_analysis.cell_fate_finder import CellFate, CellFateType
+from ai_track.visualizer import Visualizer
 
 _ROW_HEIGHT_UM = 5.5
 _ROW_WIDTH = 8

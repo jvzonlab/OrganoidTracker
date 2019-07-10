@@ -2,17 +2,17 @@ from typing import Dict, Any, Tuple, Set, Optional
 
 from matplotlib.backend_bases import PickEvent, MouseEvent
 
-from autotrack.core import UserError
-from autotrack.core.links import LinkingTrack, Links
-from autotrack.core.position import Position
-from autotrack.core.resolution import ImageResolution
-from autotrack.gui import dialog
-from autotrack.gui.location_map import LocationMap
-from autotrack.gui.window import Window
-from autotrack.linking_analysis import linking_markers
-from autotrack.linking_analysis.lineage_drawing import LineageDrawing
-from autotrack.linking_analysis.linking_markers import EndMarker
-from autotrack.visualizer import Visualizer
+from ai_track.core import UserError
+from ai_track.core.links import LinkingTrack, Links
+from ai_track.core.position import Position
+from ai_track.core.resolution import ImageResolution
+from ai_track.gui import dialog
+from ai_track.gui.location_map import LocationMap
+from ai_track.gui.window import Window
+from ai_track.linking_analysis import linking_markers
+from ai_track.linking_analysis.lineage_drawing import LineageDrawing
+from ai_track.linking_analysis.linking_markers import EndMarker
+from ai_track.visualizer import Visualizer
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:

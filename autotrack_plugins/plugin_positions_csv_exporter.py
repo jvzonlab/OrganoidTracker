@@ -1,16 +1,16 @@
 import os
 from typing import Tuple, Dict, Any
 
-from autotrack.core import UserError
-from autotrack.core.experiment import Experiment
+from ai_track.core import UserError
+from ai_track.core.experiment import Experiment
 
-from autotrack.core.links import Links
-from autotrack.core.position_collection import PositionCollection
-from autotrack.core.resolution import ImageResolution
-from autotrack.gui import dialog
-from autotrack.gui.threading import Task
-from autotrack.gui.window import Window
-from autotrack.position_analysis import cell_curvature_calculator
+from ai_track.core.links import Links
+from ai_track.core.position_collection import PositionCollection
+from ai_track.core.resolution import ImageResolution
+from ai_track.gui import dialog
+from ai_track.gui.threading import Task
+from ai_track.gui.window import Window
+from ai_track.position_analysis import cell_curvature_calculator
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -98,8 +98,8 @@ class _AsyncExporter(Task):
 
 
 def _write_positions_and_metadata_to_csv(positions: PositionCollection, links: Links, resolution: ImageResolution, folder: str, save_name: str):
-    from autotrack.linking_analysis import lineage_id_creator
-    from autotrack.position_analysis import cell_density_calculator
+    from ai_track.linking_analysis import lineage_id_creator
+    from ai_track.position_analysis import cell_density_calculator
 
     file_prefix = save_name + ".csv."
     for time_point in positions.time_points():

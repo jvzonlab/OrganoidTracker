@@ -5,14 +5,14 @@ import math
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from autotrack.core import UserError
-from autotrack.core.experiment import Experiment
-from autotrack.gui import dialog
-from autotrack.gui.window import Window
-from autotrack.linking_analysis import linking_markers, cell_compartment_finder
-from autotrack.position_analysis import cell_density_calculator
-from autotrack.linking_analysis.cell_compartment_finder import CellCompartment
-from autotrack.util.mpl_helper import BAR_COLOR_1, BAR_COLOR_2
+from ai_track.core import UserError
+from ai_track.core.experiment import Experiment
+from ai_track.gui import dialog
+from ai_track.gui.window import Window
+from ai_track.linking_analysis import linking_markers, cell_compartment_finder
+from ai_track.position_analysis import cell_density_calculator
+from ai_track.linking_analysis.cell_compartment_finder import CellCompartment
+from ai_track.util.mpl_helper import BAR_COLOR_1, BAR_COLOR_2
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:

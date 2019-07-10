@@ -4,13 +4,13 @@ import numpy
 from matplotlib.figure import Figure
 from numpy import ndarray
 
-from autotrack.core import TimePoint, UserError
-from autotrack.core.experiment import Experiment
-from autotrack.core.position_collection import PositionCollection
-from autotrack.core.resolution import ImageResolution
-from autotrack.gui import dialog
-from autotrack.gui.window import Window
-from autotrack.position_analysis import cell_density_calculator
+from ai_track.core import TimePoint, UserError
+from ai_track.core.experiment import Experiment
+from ai_track.core.position_collection import PositionCollection
+from ai_track.core.resolution import ImageResolution
+from ai_track.gui import dialog
+from ai_track.gui.window import Window
+from ai_track.position_analysis import cell_density_calculator
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:

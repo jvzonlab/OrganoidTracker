@@ -5,17 +5,17 @@ from matplotlib.figure import Figure
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from numpy import ndarray
 
-from autotrack.core import UserError
-from autotrack.core.experiment import Experiment
-from autotrack.core.links import Links
-from autotrack.core.position import Position
-from autotrack.core.score import Family
-from autotrack.gui import dialog
-from autotrack.gui.window import Window
-from autotrack.linking import cell_division_finder
-from autotrack.linking_analysis import cell_fate_finder, particle_age_finder
-from autotrack.linking_analysis.cell_fate_finder import CellFateType
-from autotrack.util.moving_average import MovingAverage
+from ai_track.core import UserError
+from ai_track.core.experiment import Experiment
+from ai_track.core.links import Links
+from ai_track.core.position import Position
+from ai_track.core.score import Family
+from ai_track.gui import dialog
+from ai_track.gui.window import Window
+from ai_track.linking import cell_division_finder
+from ai_track.linking_analysis import cell_fate_finder, particle_age_finder
+from ai_track.linking_analysis.cell_fate_finder import CellFateType
+from ai_track.util.moving_average import MovingAverage
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:

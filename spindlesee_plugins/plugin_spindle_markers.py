@@ -1,12 +1,12 @@
 from typing import List, Optional, Iterable
 
-from autotrack.core.connections import Connections
-from autotrack.core.links import Links, LinkingTrack
-from autotrack.core.position import Position
-from autotrack.core.marker import Marker
-from autotrack.gui.window import Window
-from autotrack.imaging import angles
-from autotrack.linking_analysis import linking_markers
+from ai_track.core.connections import Connections
+from ai_track.core.links import Links, LinkingTrack
+from ai_track.core.position import Position
+from ai_track.core.marker import Marker
+from ai_track.gui.window import Window
+from ai_track.imaging import angles
+from ai_track.linking_analysis import linking_markers
 
 SPINDLE = Marker([Position], "SPINDLE", "mitotic spindle", (200, 200, 0))
 LUMEN = Marker([Position], "LUMEN", "lumen", (30, 30, 30))

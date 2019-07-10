@@ -1,9 +1,9 @@
-from autotrack.imaging import io
-from autotrack.linking import cell_division_finder
-from autotrack.core.experiment import Experiment
-from autotrack.core import TimePoint
-from autotrack.linking import nearby_position_finder
-from autotrack.linking.nearby_position_finder import find_closest_n_positions
+from ai_track.imaging import io
+from ai_track.linking import cell_division_finder
+from ai_track.core.experiment import Experiment
+from ai_track.core import TimePoint
+from ai_track.linking import nearby_position_finder
+from ai_track.linking.nearby_position_finder import find_closest_n_positions
 import matplotlib.pyplot as plt
 import numpy as np
 import math

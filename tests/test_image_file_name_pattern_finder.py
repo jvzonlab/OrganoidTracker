@@ -1,5 +1,5 @@
 import unittest
-from autotrack.imaging.image_file_name_pattern_finder import find_time_and_channel_pattern
+from ai_track.imaging.image_file_name_pattern_finder import find_time_and_channel_pattern
 
 
 class TestImageOffsets(unittest.TestCase):

@@ -2,11 +2,11 @@ from typing import List
 
 from matplotlib.figure import Figure
 
-from autotrack.core import UserError
-from autotrack.gui import dialog
-from autotrack.gui.window import Window
-from autotrack.linking_analysis import cell_fate_finder, linking_markers
-from autotrack.linking_analysis.cell_fate_finder import CellFate, CellFateType
+from ai_track.core import UserError
+from ai_track.gui import dialog
+from ai_track.gui.window import Window
+from ai_track.linking_analysis import cell_fate_finder, linking_markers
+from ai_track.linking_analysis.cell_fate_finder import CellFate, CellFateType
 
 
 def get_menu_items(window: Window):

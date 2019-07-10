@@ -1,8 +1,8 @@
 import unittest
 
-from autotrack.core import TimePoint
-from autotrack.core.position import Position
-from autotrack.linking.nearby_position_finder import find_close_positions
+from ai_track.core import TimePoint
+from ai_track.core.position import Position
+from ai_track.linking.nearby_position_finder import find_close_positions
 
 
 class TestFindNearestFew(unittest.TestCase):

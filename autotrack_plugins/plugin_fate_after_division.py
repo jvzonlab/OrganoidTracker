@@ -2,13 +2,13 @@ from typing import Dict, Any, List
 
 from matplotlib.figure import Figure
 
-from autotrack.core import UserError
-from autotrack.core.experiment import Experiment
-from autotrack.gui import dialog
-from autotrack.gui.window import Window
-from autotrack.linking import cell_division_finder
-from autotrack.linking_analysis import cell_fate_finder, particle_age_finder
-from autotrack.linking_analysis.cell_fate_finder import CellFateType
+from ai_track.core import UserError
+from ai_track.core.experiment import Experiment
+from ai_track.gui import dialog
+from ai_track.gui.window import Window
+from ai_track.linking import cell_division_finder
+from ai_track.linking_analysis import cell_fate_finder, particle_age_finder
+from ai_track.linking_analysis.cell_fate_finder import CellFateType
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:

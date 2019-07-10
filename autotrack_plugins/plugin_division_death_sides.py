@@ -2,12 +2,12 @@
 villus axis, and whether there is a correlation between the sides."""
 from typing import Dict, Any, Tuple
 
-from autotrack.core import UserError
-from autotrack.core.experiment import Experiment
-from autotrack.gui import dialog
-from autotrack.gui.window import Window
-from autotrack.linking import cell_division_finder
-from autotrack.linking_analysis import linking_markers
+from ai_track.core import UserError
+from ai_track.core.experiment import Experiment
+from ai_track.gui import dialog
+from ai_track.gui.window import Window
+from ai_track.linking import cell_division_finder
+from ai_track.linking_analysis import linking_markers
 
 
 class _CryptResult:

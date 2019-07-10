@@ -1,9 +1,9 @@
 import unittest
 
-from autotrack.comparison import lineage_comparison
-from autotrack.core.experiment import Experiment
-from autotrack.core.position import Position
-from autotrack.core.resolution import ImageResolution
+from ai_track.comparison import lineage_comparison
+from ai_track.core.experiment import Experiment
+from ai_track.core.position import Position
+from ai_track.core.resolution import ImageResolution
 
 
 def _experiment(*positions: Position) -> Experiment:

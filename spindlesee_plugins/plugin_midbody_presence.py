@@ -3,8 +3,8 @@ from typing import Dict, Any, List, Optional, Iterable
 import numpy
 from matplotlib.figure import Figure
 
-from autotrack.gui import dialog
-from autotrack.gui.window import Window
+from ai_track.gui import dialog
+from ai_track.gui.window import Window
 from . import plugin_spindle_markers
 
 

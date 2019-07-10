@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from autotrack.imaging.image_slicer import get_slices, Slicer3d
+from ai_track.imaging.image_slicer import get_slices, Slicer3d
 
 
 class TestImageSlicer(TestCase):

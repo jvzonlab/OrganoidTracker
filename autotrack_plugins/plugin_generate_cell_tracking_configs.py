@@ -4,11 +4,11 @@ import sys
 import shlex
 from typing import Dict, Optional, Any
 
-from autotrack.config import ConfigFile
-from autotrack.core import UserError
-from autotrack.gui import dialog
-from autotrack.gui.window import Window
-from autotrack.imaging import io
+from ai_track.config import ConfigFile
+from ai_track.core import UserError
+from ai_track.gui import dialog
+from ai_track.gui.window import Window
+from ai_track.imaging import io
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -86,9 +86,9 @@ def _generate_training_config(window: Window):
 
     config.get_or_default(f"images_container_{i + 1}", "<stop>")
     config.save_if_changed()
-    _create_run_script(save_directory, "autotrack_train_network")
+    _create_run_script(save_directory, "ai_track_train_network")
     dialog.popup_message("Configuration files created", "The configuration files were created successfully. Please run"
-                                                       " the autotrack_train_network script from that directory:"
+                                                       " the ai_track_train_network script from that directory:"
                                                        f"\n\n{save_directory}")
 
 
@@ -122,9 +122,9 @@ def _generate_detection_config(window: Window):
     config.get_or_default("time_point_duration_m", str(resolution.time_point_interval_m))
     config.get_or_default("checkpoint_folder", checkpoint_directory)
     config.save_if_changed()
-    _create_run_script(save_directory, "autotrack_predict_positions")
+    _create_run_script(save_directory, "ai_track_predict_positions")
     dialog.popup_message("Configuration file created", "The configuration file was created successfully. Please run"
-                                                       " the autotrack_predict_positions script from that directory:"
+                                                       " the ai_track_predict_positions script from that directory:"
                                                        f"\n\n{save_directory}")
 
 

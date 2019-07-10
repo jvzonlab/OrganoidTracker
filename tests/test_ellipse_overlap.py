@@ -1,6 +1,6 @@
 import unittest
 
-from autotrack.position_detection.ellipse_cluster import Ellipse
+from ai_track.position_detection.ellipse_cluster import Ellipse
 
 class TestFindNearestFew(unittest.TestCase):
 

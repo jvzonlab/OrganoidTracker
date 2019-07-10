@@ -5,14 +5,14 @@ import numpy
 from matplotlib.figure import Figure
 from numpy import ndarray
 
-from autotrack.core.experiment import Experiment
-from autotrack.core.position_collection import PositionCollection
-from autotrack.core.position import Position
-from autotrack.core.resolution import ImageResolution
-from autotrack.gui import dialog
-from autotrack.gui.window import Window
-from autotrack.linking import nearby_position_finder
-from autotrack.linking_analysis import linking_markers, position_connection_finder
+from ai_track.core.experiment import Experiment
+from ai_track.core.position_collection import PositionCollection
+from ai_track.core.position import Position
+from ai_track.core.resolution import ImageResolution
+from ai_track.gui import dialog
+from ai_track.gui.window import Window
+from ai_track.linking import nearby_position_finder
+from ai_track.linking_analysis import linking_markers, position_connection_finder
 
 _STEPS_BACK = 15
 

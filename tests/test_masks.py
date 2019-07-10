@@ -2,10 +2,10 @@ import unittest
 
 import numpy
 
-from autotrack.core.gaussian import Gaussian
-from autotrack.core.images import Image
-from autotrack.core.mask import create_mask_for
-from autotrack.core.shape import EllipseShape, GaussianShape, UnknownShape
+from ai_track.core.gaussian import Gaussian
+from ai_track.core.images import Image
+from ai_track.core.mask import create_mask_for
+from ai_track.core.shape import EllipseShape, GaussianShape, UnknownShape
 
 
 class TestMasks(unittest.TestCase):

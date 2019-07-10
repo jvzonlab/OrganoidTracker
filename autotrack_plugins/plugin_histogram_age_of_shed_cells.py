@@ -2,10 +2,10 @@ from typing import Dict, Any, List
 
 from matplotlib.figure import Figure
 
-from autotrack.core.experiment import Experiment
-from autotrack.gui import dialog
-from autotrack.gui.window import Window
-from autotrack.linking_analysis import linking_markers, particle_age_finder
+from ai_track.core.experiment import Experiment
+from ai_track.gui import dialog
+from ai_track.gui.window import Window
+from ai_track.linking_analysis import linking_markers, particle_age_finder
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:

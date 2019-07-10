@@ -1,9 +1,9 @@
 from typing import Dict, Any
 
-from autotrack.gui.window import Window
-from autotrack.linking import cell_division_finder
-from autotrack.linking_analysis import linking_markers, cell_fate_finder
-from autotrack.linking_analysis.cell_fate_finder import CellFateType
+from ai_track.gui.window import Window
+from ai_track.linking import cell_division_finder
+from ai_track.linking_analysis import linking_markers, cell_fate_finder
+from ai_track.linking_analysis.cell_fate_finder import CellFateType
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:

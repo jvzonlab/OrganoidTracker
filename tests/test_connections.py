@@ -1,7 +1,7 @@
 import unittest
 
-from autotrack.core.connections import Connections
-from autotrack.core.position import Position
+from ai_track.core.connections import Connections
+from ai_track.core.position import Position
 
 
 class TestConnections(unittest.TestCase):

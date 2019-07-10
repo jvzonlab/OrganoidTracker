@@ -1,8 +1,8 @@
 import unittest
 
-from autotrack.core.position import Position
-from autotrack.core.resolution import ImageResolution
-from autotrack.linking.nearby_position_finder import find_closest_n_positions
+from ai_track.core.position import Position
+from ai_track.core.resolution import ImageResolution
+from ai_track.linking.nearby_position_finder import find_closest_n_positions
 
 
 class TestFindNearestFew(unittest.TestCase):

@@ -1,11 +1,11 @@
 import math
 
-from autotrack.imaging import io
-from autotrack.linking import cell_division_finder
-from autotrack.core.experiment import Experiment
-from autotrack.linking_analysis import linking_markers
-from autotrack.linking_analysis.linking_markers import EndMarker
-from autotrack.core import TimePoint
+from ai_track.imaging import io
+from ai_track.linking import cell_division_finder
+from ai_track.core.experiment import Experiment
+from ai_track.linking_analysis import linking_markers
+from ai_track.linking_analysis.linking_markers import EndMarker
+from ai_track.core import TimePoint
 import matplotlib.pyplot as plt
 import numpy as np
 

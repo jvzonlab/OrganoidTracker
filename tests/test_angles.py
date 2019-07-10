@@ -1,7 +1,7 @@
 import unittest
 
-from autotrack.core.vector import Vector3
-from autotrack.imaging import angles
+from ai_track.core.vector import Vector3
+from ai_track.imaging import angles
 
 
 class TestAngles(unittest.TestCase):

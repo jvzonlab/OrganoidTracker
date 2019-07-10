@@ -1,6 +1,6 @@
 import unittest
 
-from autotrack.core.score import Score
+from ai_track.core.score import Score
 
 
 class TestScoreClass(unittest.TestCase):

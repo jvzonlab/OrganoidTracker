@@ -1,6 +1,6 @@
-from autotrack.core.experiment import Experiment
-from autotrack.core.links import LinkingTrack
-from autotrack.linking_analysis.cell_fate_finder import get_fate, CellFateType
+from ai_track.core.experiment import Experiment
+from ai_track.core.links import LinkingTrack
+from ai_track.linking_analysis.cell_fate_finder import get_fate, CellFateType
 
 
 def get_symmetry_multiple_generation(experiment: Experiment, track_1: LinkingTrack, track_2: LinkingTrack):

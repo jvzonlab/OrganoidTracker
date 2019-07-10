@@ -1,6 +1,6 @@
 import unittest
 
-from autotrack.gui.location_map import LocationMap
+from ai_track.gui.location_map import LocationMap
 
 
 class TestLocationMap(unittest.TestCase):

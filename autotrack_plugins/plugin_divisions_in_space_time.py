@@ -7,13 +7,13 @@ import numpy
 from matplotlib.figure import Figure
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from autotrack.core import UserError, TimePoint
-from autotrack.core.experiment import Experiment
-from autotrack.core.links import Links
-from autotrack.gui import dialog
-from autotrack.gui.window import Window
-from autotrack.linking import cell_division_finder
-from autotrack.linking_analysis import particle_age_finder
+from ai_track.core import UserError, TimePoint
+from ai_track.core.experiment import Experiment
+from ai_track.core.links import Links
+from ai_track.gui import dialog
+from ai_track.gui.window import Window
+from ai_track.linking import cell_division_finder
+from ai_track.linking_analysis import particle_age_finder
 
 _TIME_POINTS_PER_CELL = 3
 _PIXELS_PER_CELL = 5

@@ -7,17 +7,17 @@ from typing import Any, List, Optional, Dict
 
 import numpy
 
-from autotrack.core import UserError, clamp
-from autotrack.core.spline import SplineCollection, DataAxisPosition
-from autotrack.core.image_loader import ImageLoader, ImageChannel
-from autotrack.core.images import Images
-from autotrack.core.links import Links
-from autotrack.core.position import Position
-from autotrack.gui import dialog
-from autotrack.gui.threading import Task
-from autotrack.gui.window import Window
-from autotrack.imaging import cropper, bits
-from autotrack.linking_analysis import linking_markers, position_connection_finder
+from ai_track.core import UserError, clamp
+from ai_track.core.spline import SplineCollection, DataAxisPosition
+from ai_track.core.image_loader import ImageLoader, ImageChannel
+from ai_track.core.images import Images
+from ai_track.core.links import Links
+from ai_track.core.position import Position
+from ai_track.gui import dialog
+from ai_track.gui.threading import Task
+from ai_track.gui.window import Window
+from ai_track.imaging import cropper, bits
+from ai_track.linking_analysis import linking_markers, position_connection_finder
 
 _MARGIN = 40
 

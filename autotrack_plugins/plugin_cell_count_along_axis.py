@@ -2,11 +2,11 @@ from typing import Dict, Any, List, Optional
 
 from matplotlib.figure import Figure
 
-from autotrack.core import UserError, TimePoint
-from autotrack.core.spline import Spline
-from autotrack.core.experiment import Experiment
-from autotrack.gui import dialog
-from autotrack.gui.window import Window
+from ai_track.core import UserError, TimePoint
+from ai_track.core.spline import Spline
+from ai_track.core.experiment import Experiment
+from ai_track.gui import dialog
+from ai_track.gui.window import Window
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:

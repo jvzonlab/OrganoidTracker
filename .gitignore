@@ -8,5 +8,5 @@ __pycache__/
 
 # Ignore configuration and data files
 /*.json
-autotrack.ini
+ai_track.ini
 /out/

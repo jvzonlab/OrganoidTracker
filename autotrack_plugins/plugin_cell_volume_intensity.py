@@ -3,13 +3,13 @@ from typing import Optional, Tuple, List, Callable, Dict, Any
 
 from matplotlib.figure import Figure
 
-from autotrack.core import UserError
-from autotrack.core.experiment import Experiment
-from autotrack.core.links import Links
-from autotrack.core.position import Position
-from autotrack.gui import dialog
-from autotrack.gui.window import Window
-from autotrack.linking import cell_division_finder
+from ai_track.core import UserError
+from ai_track.core.experiment import Experiment
+from ai_track.core.links import Links
+from ai_track.core.position import Position
+from ai_track.gui import dialog
+from ai_track.gui.window import Window
+from ai_track.linking import cell_division_finder
 
 GetStatistic = Callable[[Experiment, Position], float]  # A function that gets some statistic of a cell, like its volume
 PointList = Tuple[List[float], List[float]]  # A list of x values and a list of y values

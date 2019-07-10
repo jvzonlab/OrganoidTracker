@@ -9,14 +9,14 @@ from typing import Dict, Any, List, Tuple, Optional
 from matplotlib.collections import LineCollection
 from matplotlib.figure import Figure
 
-from autotrack.core.connections import Connections
-from autotrack.core.experiment import Experiment
-from autotrack.core.links import Links
-from autotrack.core.position import Position
-from autotrack.gui import dialog
-from autotrack.gui.window import Window
-from autotrack.imaging import angles
-from autotrack.util.mpl_helper import SANDER_APPROVED_COLORS
+from ai_track.core.connections import Connections
+from ai_track.core.experiment import Experiment
+from ai_track.core.links import Links
+from ai_track.core.position import Position
+from ai_track.gui import dialog
+from ai_track.gui.window import Window
+from ai_track.imaging import angles
+from ai_track.util.mpl_helper import SANDER_APPROVED_COLORS
 
 from . import plugin_spindle_markers
 

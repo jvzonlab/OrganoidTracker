@@ -5,7 +5,7 @@ Code for tracking the positions of cells. Tracking consists of two tasks: detect
 
 Installation
 ------------
-Autotrack must be installed using Anaconda. See the [installation] page for details. If you are updating from an older version of Autotrack, its dependencies might have changed, and in that case you also need to visit the [installation] page.
+AI_track must be installed using Anaconda. See the [installation] page for details. If you are updating from an older version of AI_track, its dependencies might have changed, and in that case you also need to visit the [installation] page.
 
 
 Tracking tutorial
@@ -14,7 +14,7 @@ After you have installed the software, please see the [tracking tutorial] to get
 
 Visualizer
 ----------
-The `autotrack.py` starts a graphical program that allows you to visualize and edit your data. See the documentation on the [visualizer] page.
+The `ai_track.py` starts a graphical program that allows you to visualize and edit your data. See the documentation on the [visualizer] page.
 
 Scripts
 -------
@@ -22,7 +22,7 @@ Detection and linking must be done from the command line. See the [scripts] page
 
 API
 ---
-You can also use Autotrack as a library to write your own scripts. All public functions in Autotrack have docstrings to explain what they are doing. As a starting point for using the API, see the [API] page.
+You can also use AI_track as a library to write your own scripts. All public functions in AI_track have docstrings to explain what they are doing. As a starting point for using the API, see the [API] page.
 
 [API]: manuals/API.md
 [installation]: manuals/INSTALLATION.md
