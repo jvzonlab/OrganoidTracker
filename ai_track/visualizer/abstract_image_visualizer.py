@@ -134,7 +134,8 @@ class AbstractImageVisualizer(Visualizer):
         if self._display_settings.show_next_time_point or can_show_other_time_points:
             # Only draw positions of next/previous time point if there is linking data, or if we're forced to
             try:
-                self._draw_positions_of_time_point(self._experiment.get_next_time_point(self._time_point), color='red')
+                self._draw_positions_of_time_point(self._experiment.get_next_time_point(self._time_point),
+                                                   color=core.COLOR_CELL_NEXT)
             except ValueError:
                 pass  # There is no next time point, ignore
 
@@ -142,7 +143,7 @@ class AbstractImageVisualizer(Visualizer):
         if not self._display_settings.show_next_time_point and can_show_other_time_points:
             try:
                 self._draw_positions_of_time_point(
-                    self._experiment.get_previous_time_point(self._time_point), color='blue')
+                    self._experiment.get_previous_time_point(self._time_point), color=core.COLOR_CELL_PREVIOUS)
             except ValueError:
                 pass  # There is no previous time point, ignore
 
