@@ -50,6 +50,7 @@ class AbstractImageVisualizer(Visualizer):
             self._time_point_images = None
             return
 
+        self._clamp_channel()
         if self._display_settings.show_images:
             if self._display_settings.show_reconstruction:
                 time_point_images = self.reconstruct_image(time_point, self._guess_image_size(time_point))
@@ -61,7 +62,6 @@ class AbstractImageVisualizer(Visualizer):
         self._time_point = time_point
         self._time_point_images = time_point_images
         self._clamp_z()
-        self._clamp_channel()
 
     def _guess_image_size(self, time_point):
         images_for_size = self._time_point_images
