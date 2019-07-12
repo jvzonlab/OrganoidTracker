@@ -5,8 +5,13 @@ from numpy import ndarray
 from ai_track.core import TimePoint
 
 
-class ImageChannel:
+class ImageChannel(ABC):
     """Represents an image channel - for example, the bright field channel, the red channel, etc."""
+
+    @abstractmethod
+    def __repr__(self) -> str:
+        """Returns some way to recreate this image channel, used for debugging."""
+        pass
 
 
 class ImageLoader(ABC):

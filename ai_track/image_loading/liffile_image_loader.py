@@ -79,6 +79,9 @@ class _IndexedChannel(ImageChannel):
     def __init__(self, index: int):
         self.index = index
 
+    def __repr__(self) -> str:
+        return f"_IndexedChannel({self.index})"
+
 
 class _LifImageLoader(ImageLoader):
 

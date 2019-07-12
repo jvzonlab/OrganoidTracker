@@ -4,6 +4,7 @@ import os.path
 
 from ai_track.core.experiment import Experiment
 
+
 def load_images(experiment: Experiment, container: str, pattern: str,
                 min_time_point: int = 0, max_time_point: int = 1000000000):
     """Loads images from any of the supported formats. The container is a file or a directory, pattern is the format
@@ -13,6 +14,10 @@ def load_images(experiment: Experiment, container: str, pattern: str,
     if container.endswith(".lif"):  # Try as LIF file
         from ai_track.image_loading import liffile_image_loader
         liffile_image_loader.load_from_lif_file(experiment.images, container, pattern, min_time_point, max_time_point)
+        return
+    if container.endswith(".nd2"):
+        from ai_track.image_loading import nd2file_image_loader
+        nd2file_image_loader.load_image_series_from_config(experiment.images, container, pattern, min_time_point, max_time_point)
         return
     if os.path.isdir(container):  # Try as TIF folder
         from ai_track.image_loading import folder_image_loader

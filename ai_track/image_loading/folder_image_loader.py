@@ -20,6 +20,9 @@ class _IndexedChannel(ImageChannel):
     def index(self) -> int:
         return self._index
 
+    def __repr__(self) -> str:
+        return f"_IndexedChannel({self._index})"
+
 
 def _discover_min_time_point_and_channel(folder: str, file_name_format: str, guess_time_point: int) -> Tuple[Optional[int], Optional[int]]:
     for test_time_point in [0, 1, guess_time_point]:

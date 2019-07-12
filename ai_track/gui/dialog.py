@@ -26,7 +26,10 @@ def _window() -> QWidget:
 
 def prompt_int(title: str, question: str, *, minimum: int = -2147483647, maximum: int = 2147483647,
                default=0) -> Optional[int]:
-    """Asks the user to enter an integer. Returns None if the user pressed Cancel or closed the dialog box."""
+    """Asks the user to enter an integer. Returns None if the user pressed Cancel or closed the dialog box. If the
+    minimum is equal to the maximum, that number is returned."""
+    if minimum == maximum:
+        return minimum
     result, ok = QInputDialog.getInt(_window(), title, question, min=minimum, max=maximum, value=default)
     return result if ok else None
 
