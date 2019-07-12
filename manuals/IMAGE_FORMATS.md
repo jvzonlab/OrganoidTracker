@@ -15,7 +15,7 @@ Many biologists save images like `image_0.tif`, `image_1.tif`, `image_2.tif` etc
 
 * Images **ending** with a `_` followed by a number, like `image_0.png`, `image_1.png`, `image_2.png`. The number will be interpreted as a time point number.
 * Images **containing** the letter `t` followed by a number, like `nd56t1.tif`, `nd56t2.tif`. The number will be interpreted as a time point number. A captial `T` instead of a `t` is also allowed.
-* Images **containing** `c{number}`, like `nd56t1c1.tif`, `nd56t1c2.tif`. The number will now be interpreted as a channel. A captial `C` instead of a `c` is also allowed.
+* Images **containing** the letter `c` followed by a number, like `nd56t1c1.tif`, `nd56t1c2.tif`. The number will now be interpreted as a channel. A capital `C` instead of a `c` is also allowed.
 
 Leading zeroes (like in `image_0001.png`) are supported.
 
