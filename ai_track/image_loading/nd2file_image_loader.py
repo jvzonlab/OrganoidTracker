@@ -75,6 +75,7 @@ class _Nd2ImageLoader(ImageLoader):
         self._location = location
 
     def get_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
+        print(f"Getting image for {time_point} {image_channel}")
         if not isinstance(image_channel, _NamedImageChannel) or image_channel not in self._channels:
             return None
         if time_point.time_point_number() < self._min_time_point\
@@ -84,10 +85,12 @@ class _Nd2ImageLoader(ImageLoader):
         frame_number = time_point.time_point_number()
         channel_name = image_channel.name
         depth, height, width = self.get_image_size_zyx()
-        image = numpy.zeros((depth, height, width), dtype=self._nd2_parser.get_dtype_from_metadata())
+        image = None
         for z in self._nd2_parser.metadata["z_levels"]:
             # Using location - 1: Nikon NIS-Elements GUI is one-indexed, but save format is zero-indexed
             frame = self._nd2_parser.get_image_by_attributes(frame_number, self._location - 1, channel_name, z, height, width)
+            if image is None:
+                image = numpy.zeros((depth, height, width), dtype=frame.dtype)
             if len(frame) > 0:
                 image[z] = frame
         return image
