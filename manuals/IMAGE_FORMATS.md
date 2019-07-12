@@ -7,8 +7,8 @@ The program was made with movies of grayscale 3D images in mind. Multiple channe
 * If you try to load a colored image (like a PNG file), then the image will be converted to grayscale.
 * The program is made for tracking cells. Loading a single image is therefore not useful. The program will, after displaying a warning, load the image as a "movie" with only one time point.
 
-## LIF files
-LIF files are used by Leica microscopes, and contain images of all available time points in a single file. To load such a file, simply select `File` -> `Load images...` and select the LIF file. If your LIF file contains multiple time series, you will be prompted to pick one.
+## LIF and ND2 files
+LIF files are used by Leica microscopes while ND2 files are used by Nikon microscopes. Both file types contain images of all available time points in a single file. To load such a file, simply select `File` -> `Load images...` and select the file. If your file contains multiple time series, you will be prompted to pick one.
 
 ## A folder containing one image for every time point
 Many biologists save images like `image_0.tif`, `image_1.tif`, `image_2.tif` etc., with each image representing a single channel of a single time point. If you load an image **from time point 0 or 1**, the program will automatically try to search for other images with a similar naming pattern. The program is able to recognize the following naming patterns:
