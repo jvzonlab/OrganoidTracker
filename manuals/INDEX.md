@@ -1,12 +1,19 @@
 # AI_track manual
 
+Welcome to the AI_track manual! This document will tell you how to use the "visualizer", the program that displays all the images and the annotations.
+
+Tutorials
+---------
+* [Tutorial for semi-automated tracking](AUTOMATIC_TRACKING.md)
+* [Tutorial for writing a plugin for AI_track](PLUGIN_TUTORIAL.md)
+
+
+For reference
+-------------
 * [Installation instructions](INSTALLATION.md)
 * [Supported image formats](IMAGE_FORMATS.md)
 * [Scripts reference](SCRIPTS.md)
 * [Programming API](API.md)
-* [Tutorial for semi-automated tracking](AUTOMATIC_TRACKING.md)
-
-Welcome to the AI_track manual! This document will tell you how to use the "visualizer", the program that displays all the images and the annotations.
 
 Getting started
 ---------------
