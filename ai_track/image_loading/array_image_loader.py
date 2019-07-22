@@ -4,7 +4,14 @@ from ai_track.core import TimePoint
 from ai_track.core.image_loader import ImageLoader, ImageChannel
 from numpy import ndarray
 
-_ONLY_CHANNEL = ImageChannel()
+
+class _DummyImageChannel(ImageChannel):
+
+    def __repr__(self) -> str:
+        return "_ONLY_CHANNEL"
+
+
+_ONLY_CHANNEL = _DummyImageChannel()
 
 
 class SingleImageLoader(ImageLoader):
