@@ -1,14 +1,18 @@
 from typing import List, Union, Optional, Dict, Any
 
+import cv2
+from matplotlib import cm
 from matplotlib.collections import LineCollection
-from matplotlib.colors import Colormap
+from matplotlib.colors import Colormap, Normalize
 from numpy.core.multiarray import ndarray
+from tifffile import tifffile
 
 from ai_track import core
 from ai_track.core import TimePoint, UserError
 from ai_track.core.position import Position
 from ai_track.core.spline import Spline
 from ai_track.core.typing import MPLColor
+from ai_track.gui import dialog
 from ai_track.gui.dialog import prompt_int, popup_error
 from ai_track.gui.window import Window
 from ai_track.linking_analysis import linking_markers
@@ -28,7 +32,7 @@ class AbstractImageVisualizer(Visualizer):
 
     # The color map should typically not be transferred when switching to another viewer, so it is not part of the
     # display_settings property
-    _color_map: Union[str, Colormap] = "gray"
+    _color_map: Colormap = cm.get_cmap("gray")
 
     def __init__(self, window: Window, *, time_point: Optional[TimePoint] = None, z: int = 14,
                  display_settings: DisplaySettings = None):
@@ -284,6 +288,7 @@ class AbstractImageVisualizer(Visualizer):
                                 f"{max_value}.")
         return {
             **super().get_extra_menu_options(),
+            "File//Export-Export 3D image...": self._export_3d_image,
             "View//Toggle-Toggle showing two time points [" + DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + "]":
                 self._toggle_showing_next_time_point,
             "View//Toggle-Toggle showing images [" + DisplaySettings.KEY_SHOW_IMAGES.upper() + "]":
@@ -333,6 +338,24 @@ class AbstractImageVisualizer(Visualizer):
             self.update_status("You're already in the home screen.")
             return True
         return False
+
+    def _export_3d_image(self):
+        if self._time_point_images is None:
+            raise core.UserError("No images loaded", "Saving images failed: there are no images loaded")
+        file = dialog.prompt_save_file("Save 3D file as...", [("TIF file", "*.tif")])
+        if file is None:
+            return
+        flat_image = self._time_point_images.ravel()
+
+        image_shape = self._time_point_images.shape
+        if len(image_shape) == 3 and isinstance(self._color_map, Colormap):
+            # Convert grayscale image to colored using the stored color map
+            images: ndarray = self._color_map(flat_image, bytes=True)[:, 0:3]
+            new_shape = (image_shape[0], image_shape[1], image_shape[2], 3)
+            images = images.reshape(new_shape)
+        else:
+            images = cv2.convertScaleAbs(self._time_point_images, alpha=256 / self._time_point_images.max(), beta=0)
+        tifffile.imsave(file, images, compress=9)
 
     def _toggle_showing_next_time_point(self):
         self._display_settings.show_next_time_point = not self._display_settings.show_next_time_point
@@ -414,8 +437,6 @@ class AbstractImageVisualizer(Visualizer):
             return True
 
     def _move_in_time(self, dt: int):
-        self._color_map = AbstractImageVisualizer._color_map
-
         old_time_point_number = self._time_point.time_point_number()
         new_time_point_number = old_time_point_number + dt
         try:
