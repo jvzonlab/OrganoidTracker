@@ -153,8 +153,7 @@ def create_training_data(experiments: Iterable[Experiment], *, out_dir: str, spl
     if os.path.exists(out_dir):
         shutil.rmtree(out_dir)  # This empties the directory, but actually removing
                                 # it may not happen immediately on Windows
-    if not os.path.exists(out_dir):
-        os.mkdir(out_dir)  # Make a new directory if none exists
+    os.makedirs(out_dir, exist_ok=True)
 
     image_with_positions_list = []
     for experiment in experiments:
