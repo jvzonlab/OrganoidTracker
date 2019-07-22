@@ -36,18 +36,18 @@ while True:
     params.images_container = config.get_or_prompt(f"images_container_{i}",
                                           "If you have a folder of image files, please paste the folder"
                                           " path here. Else, if you have a LIF file, please paste the path to that file"
-                                          " here.", store_in_defaults=True)
+                                          " here.")
+    if params.images_container == "<stop>":
+        break
+
     params.images_pattern = config.get_or_prompt(f"images_pattern_{i}",
-                                          "What are the image file names? (Use {time:03} for three digits"
-                                          " representing the time point, use {channel} for the channel)",
-                                          store_in_defaults=True)
-    params.training_positions_file = config.get_or_default(f"positions_file_{i}", f"positions_{i}.{io.FILE_EXTENSION}",
+                                                 "What are the image file names? (Use {time:03} for three digits"
+                                                 " representing the time point, use {channel} for the channel)")
+    params.training_positions_file = config.get_or_default(f"positions_file_{i}",
+                                                           f"positions_{i}.{io.FILE_EXTENSION}",
                                                            comment="What are the detected positions for those images?")
     params.min_time_point = int(config.get_or_default(f"min_time_point_{i}", str(0)))
     params.max_time_point = int(config.get_or_default(f"max_time_point_{i}", str(9999)))
-
-    if params.images_container == "<stop>":
-        break
     per_experiment_params.append(params)
     i += 1
 
