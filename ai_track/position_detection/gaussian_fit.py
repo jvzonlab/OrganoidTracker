@@ -7,13 +7,15 @@ import cv2
 import mahotas
 import numpy
 import scipy.optimize
+from matplotlib import cm
 from numpy import ndarray
 
 from ai_track.core.bounding_box import bounding_box_from_mahotas, BoundingBox
 from ai_track.core.gaussian import Gaussian
 from ai_track.core.images import Image
 from ai_track.core.mask import create_mask_for
-from ai_track.position_detection import smoothing, ellipse_cluster
+from ai_track.position_detection import smoothing, clusterer
+from ai_track.visualizer.debug_image_visualizer import popup_3d_image
 
 
 class _ModelAndImageDifference:
@@ -117,15 +119,14 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
     """GMM using watershed as seeds. The watershed is used to fit as few Gaussians at the same time as possible."""
     start_time = default_timer()
 
-    # Using ellipses to check which cell overlap
-    ellipse_stacks = ellipse_cluster.get_ellipse_stacks_from_watershed(watershed_image)
-    clusters = ellipse_cluster.find_overlapping_stacks(ellipse_stacks)
-
     # Find out where the positions are
     bounding_boxes = mahotas.labeled.bbox(watershed_image.astype(numpy.int32))
     position_centers = mahotas.center_of_mass(image, watershed_image)
 
-    all_gaussians: List[Optional[Gaussian]] = [None] * len(ellipse_stacks)  # Initialize empty list
+    # Using ellipses to check which cell overlap
+    clusters = clusterer.get_clusters_from_labeled_image(watershed_image, position_centers)
+
+    all_gaussians: List[Optional[Gaussian]] = [None] * len(position_centers)  # Initialize empty list
 
     for cluster in clusters:
         # To keep the fitting procedure easy, we try to fit as few cells at the same time as possible
@@ -142,9 +143,9 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
 
         gaussians = []
         for cell_id in cell_ids:
-            mask.add_from_labeled(watershed_image, cell_id + 1)  # Background is 0, so cell 0 uses color 1
+            mask.add_from_labeled(watershed_image, cell_id)
 
-            center_zyx = position_centers[cell_id + 1]
+            center_zyx = position_centers[cell_id]
             if numpy.any(numpy.isnan(center_zyx)):
                 print("No center of mass for cell " + str(center_zyx))
                 continue  # No center of mass for this cell id
@@ -165,14 +166,15 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
             continue
     end_time = default_timer()
     print("Whole fitting process took " + str(end_time - start_time) + " seconds.")
+    all_gaussians = all_gaussians[1:]  # Remove first element, that's the background of the image
     return all_gaussians
 
 
-def _merge_bounding_boxes(all_boxes: ndarray, cell_ids: List[int]) -> BoundingBox:
+def _merge_bounding_boxes(all_boxes: ndarray, cell_ids: Iterable[int]) -> BoundingBox:
     """Creates a bounding box object that encompasses the bounding boxes of all the given cells."""
     combined_bounding_box = None
     for cell_id in cell_ids:
-        bounding_box = all_boxes[cell_id + 1]  # Background is 0, so cell 0 uses color 1
+        bounding_box = all_boxes[cell_id]
         if combined_bounding_box is None:
             combined_bounding_box = bounding_box
             continue

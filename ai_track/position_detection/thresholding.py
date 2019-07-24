@@ -38,20 +38,8 @@ def adaptive_threshold(image_8bit: ndarray, out: ndarray, block_size: int):
     background_removal(image_8bit, out)
 
 
-def watershedded_threshold(image_8bit: ndarray, image_8bit_smoothed: ndarray, out: ndarray, block_size: int, watershed_size: Tuple[int, int, int]):
+def advanced_threshold(image_8bit: ndarray, out: ndarray, block_size: int):
     adaptive_threshold(image_8bit, out, block_size)
-
-    if watershed_size > image_8bit.shape:
-        return  # Cannot watershed
-
-    watershed, lines = watershedding.watershed_maxima(out, image_8bit_smoothed, watershed_size)
-    _open(lines)
-    out[lines != 0] = 0
-
-
-def advanced_threshold(image_8bit: ndarray, image_8bit_smoothed: ndarray, out: ndarray, block_size: int,
-                       watershed_size: Tuple[int, int, int], positions: Iterable[Position]):
-    watershedded_threshold(image_8bit, image_8bit_smoothed, out, block_size, watershed_size)
 
     curvature_out = numpy.full_like(image_8bit, 255, dtype=numpy.uint8)
     iso_intensity_curvature.get_negative_gaussian_curvatures(image_8bit, ImageDerivatives(), curvature_out)
@@ -59,17 +47,6 @@ def advanced_threshold(image_8bit: ndarray, image_8bit_smoothed: ndarray, out: n
 
     fill_threshold(out)
     background_removal(image_8bit, out)
-    _draw_crosses(positions, out)
-
-
-def _draw_crosses(positions: Iterable[Position], out: ndarray):
-    """Draws squares around the known position positions, so that they are surely included in the threshold."""
-    for position in positions:
-        z = int(position.z)
-        if z < 0 or z >= len(out):
-            continue
-        out[z, int(position.y - 3):int(position.y + 3), int(position.x - 10):int(position.x + 10)] = 255
-        out[z, int(position.y - 10):int(position.y + 10), int(position.x - 3):int(position.x + 3)] = 255
 
 
 def _open(threshold: ndarray):

@@ -37,11 +37,7 @@ _positions_input_file = config.get_or_default("positions_input_file", "Automatic
 _positions_output_file = config.get_or_default("positions_and_fit_output_file", "Gaussian fitted positions.aut")
 
 _threshold_block_size = int(config.get_or_default("threshold_block_size", str(51)))
-_distance_transform_smooth_size = int(config.get_or_default("distance_transform_smooth_size", str(21)))
 _gaussian_fit_smooth_size = int(config.get_or_default("gaussian_fit_smooth_size", str(7)))
-_min_segmentation_distance_x = int(config.get_or_default("min_segmentation_distance_x", str(11)))
-_min_segmentation_distance_y = int(config.get_or_default("min_segmentation_distance_y", str(11)))
-_min_segmentation_distance_z = int(config.get_or_default("min_segmentation_distance_z", str(3)))
 config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
@@ -53,9 +49,6 @@ print("Discovering images...")
 general_image_loader.load_images(experiment, _images_folder, _images_format,
                                  min_time_point=_min_time_point, max_time_point=_max_time_point)
 print("Running detection...")
-_min_segmentation_distance = (_min_segmentation_distance_x, _min_segmentation_distance_y, _min_segmentation_distance_z)
 gaussian_detector_for_experiment.perform_for_experiment(experiment, threshold_block_size=_threshold_block_size,
-                                                        distance_transform_smooth_size=_distance_transform_smooth_size,
-                                                        minimal_distance=_min_segmentation_distance,
                                                         gaussian_fit_smooth_size=_gaussian_fit_smooth_size)
 io.save_data_to_json(experiment, _positions_output_file)

@@ -35,8 +35,6 @@ def distance_transform_to_labels(labels: ndarray, resolution: Tuple[float, float
     labels_inv[labels != 0] = 0
     distance_transform_to_labels = numpy.empty_like(labels, dtype=numpy.float64)
     distance_transform(labels_inv, distance_transform_to_labels, resolution)
-    distance_transform_to_labels[distance_transform_to_labels > 4] = 4
-    distance_transform_to_labels = 4 - distance_transform_to_labels
     return distance_transform_to_labels
 
 

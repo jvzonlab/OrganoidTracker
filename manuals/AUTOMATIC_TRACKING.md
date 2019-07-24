@@ -24,6 +24,11 @@ Obtaining nucleus shapes is done using the `ai_track_detect_gaussian_shapes.py` 
 
 Note: this script takes a few minutes to run per time point, so please be patient.
 
+The script works by fitting 3D Gaussian functions to a blurred version of the original image, starting from the positions from step 1 and a default covariance matrix. To restrict the fitting algorithm, separate clusters of cells are fitted separately. In this way, the fitting algorithm will ignore debris elsewhere in the image. Clusters are found using a quick segmentation: every pixel that has an intensity lower than the local average is background, the rest is foreground (see figure 1). To improve the segmentation, some erosion can be applied, which makes the white areas in the figure 1 smaller.
+
+![Thresholding](images/thresholding.png)  
+*Figure 1: Thresholding, used to separate foreground and background. Gaussian fits are carried out within clumps.*
+
 Step 3: Obtaining links
 -----------------------
 
