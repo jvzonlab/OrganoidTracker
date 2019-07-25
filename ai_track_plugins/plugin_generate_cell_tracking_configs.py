@@ -2,13 +2,16 @@
 import os
 import sys
 import shlex
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, Tuple
 
 from ai_track.config import ConfigFile
 from ai_track.core import UserError
 from ai_track.gui import dialog
 from ai_track.gui.window import Window
 from ai_track.imaging import io
+
+
+_TRAINING_PATCH_SHAPE_ZYX: Tuple[int, int, int] = (32, 64, 64)
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -51,7 +54,7 @@ def _generate_training_config(window: Window):
             return
 
     config.get_or_default("max_training_steps", "100000")
-    config.get_or_default("patch_shape", "64, 64, 32")
+    config.get_or_default("patch_shape", f"{_TRAINING_PATCH_SHAPE_ZYX[2]}, {_TRAINING_PATCH_SHAPE_ZYX[1]}, {_TRAINING_PATCH_SHAPE_ZYX[0]}")
     config.get_or_default("output_folder", "./output")
     config.get_or_default("batch_size", "64")
 
@@ -71,6 +74,12 @@ def _generate_training_config(window: Window):
             if image_size_zyx is None:
                 raise UserError("Image size is not constant", f"No constant size is specified for the loaded images of"
                                 f" project {experiment.name}. Cannot use the project for training.")
+
+            # Make sure image is at least as large as the patch
+            image_size_zyx = list(image_size_zyx)  # From tuple to list - this makes it mutable
+            for i in range(len(image_size_zyx)):
+                image_size_zyx[i] = max(image_size_zyx[i], _TRAINING_PATCH_SHAPE_ZYX[i])
+
             config.get_or_default("image_shape", f"{image_size_zyx[2]}, {image_size_zyx[1]}, {image_size_zyx[0]}")
 
         i = index + 1
