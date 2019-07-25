@@ -115,7 +115,8 @@ def perform_gaussian_mixture_fit(original_image: ndarray, guesses: List[Gaussian
     return result_gaussians
 
 
-def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image: ndarray, blur_radius: int) -> List[Gaussian]:
+def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image: ndarray, blur_radius: int,
+                                                erode_passes: int) -> List[Gaussian]:
     """GMM using watershed as seeds. The watershed is used to fit as few Gaussians at the same time as possible."""
     start_time = default_timer()
 
@@ -124,7 +125,7 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
     position_centers = mahotas.center_of_mass(image, watershed_image)
 
     # Using ellipses to check which cell overlap
-    clusters = clusterer.get_clusters_from_labeled_image(watershed_image, position_centers)
+    clusters = clusterer.get_clusters_from_labeled_image(watershed_image, position_centers, erode_passes)
 
     all_gaussians: List[Optional[Gaussian]] = [None] * len(position_centers)  # Initialize empty list
 

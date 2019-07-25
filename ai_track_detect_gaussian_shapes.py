@@ -14,7 +14,7 @@ Parameters: (all sizes are in pixels)
 """
 from ai_track.imaging import io
 from ai_track.image_loading import general_image_loader
-from ai_track.config import ConfigFile
+from ai_track.config import ConfigFile, config_type_int
 from ai_track.position_detection import gaussian_detector_for_experiment
 from ai_track.core.resolution import ImageResolution
 
@@ -36,8 +36,16 @@ _time_point_duration_m = float(config.get_or_default("time_point_duration_m", st
 _positions_input_file = config.get_or_default("positions_input_file", "Automatic positions.aut")
 _positions_output_file = config.get_or_default("positions_and_fit_output_file", "Gaussian fitted positions.aut")
 
-_threshold_block_size = int(config.get_or_default("threshold_block_size", str(51)))
-_gaussian_fit_smooth_size = int(config.get_or_default("gaussian_fit_smooth_size", str(7)))
+_threshold_block_size = config.get_or_default("adaptive_threshold_block_size", str(51), comment="Size of the block used"
+                                              " for local averaging for thresholding. Must be an odd (not even)"
+                                              " number.", type=config_type_int)
+_cluster_detection_erosion_rounds = config.get_or_default("cluster_detection_erosion_rounds", str(3), comment="Used to "
+                                                          " erode the blobs of foreground, to further separate"
+                                                          " different Gaussian functions.", type=config_type_int)
+_gaussian_fit_smooth_size = config.get_or_default("gaussian_fit_smooth_size", str(7), comment="The Gaussians are fit to"
+                                                  " a smoothed image. This setting controls pixel radius for smoothing."
+                                                  " If you have a particulary noisy or high-res image, you will need to"
+                                                  " increase this value.", type=config_type_int)
 config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
@@ -50,5 +58,8 @@ general_image_loader.load_images(experiment, _images_folder, _images_format,
                                  min_time_point=_min_time_point, max_time_point=_max_time_point)
 print("Running detection...")
 gaussian_detector_for_experiment.perform_for_experiment(experiment, threshold_block_size=_threshold_block_size,
-                                                        gaussian_fit_smooth_size=_gaussian_fit_smooth_size)
+                                                        gaussian_fit_smooth_size=_gaussian_fit_smooth_size,
+                                                        cluster_detection_erosion_rounds=_cluster_detection_erosion_rounds)
+print("Saving...")
 io.save_data_to_json(experiment, _positions_output_file)
+print("Done!")

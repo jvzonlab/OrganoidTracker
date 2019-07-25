@@ -10,13 +10,15 @@ from ai_track.imaging import bits
 from ai_track.position_detection import thresholding, watershedding, gaussian_fit, smoothing
 
 
-def perform_for_experiment(experiment: Experiment, **kwargs):
+def perform_for_experiment(experiment: Experiment, threshold_block_size: int,
+                            gaussian_fit_smooth_size: int, cluster_detection_erosion_rounds: int):
     for time_point in experiment.time_points():
-        _perform_for_time_point(experiment, time_point, **kwargs)
+        _perform_for_time_point(experiment, time_point, threshold_block_size,
+                                gaussian_fit_smooth_size, cluster_detection_erosion_rounds)
 
 
 def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, threshold_block_size: int,
-                            gaussian_fit_smooth_size: int):
+                            gaussian_fit_smooth_size: int, cluster_detection_erosion_rounds: int):
     print("Working on time point " + str(time_point.time_point_number()) + "...")
     # Acquire images
     image_offset = experiment.images.offsets.of_time_point(time_point)
@@ -42,7 +44,8 @@ def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, thres
                                                label_image, len(positions))[0]
 
     # Finally use that for fitting
-    gaussians = gaussian_fit.perform_gaussian_mixture_fit_from_watershed(images, watershed, gaussian_fit_smooth_size)
+    gaussians = gaussian_fit.perform_gaussian_mixture_fit_from_watershed(images, watershed, gaussian_fit_smooth_size,
+                                                                         cluster_detection_erosion_rounds)
     for position, gaussian in zip(positions, gaussians):
         shape = UnknownShape() if gaussian is None \
             else GaussianShape(gaussian

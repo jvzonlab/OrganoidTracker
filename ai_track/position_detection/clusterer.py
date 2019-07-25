@@ -2,7 +2,12 @@ from typing import List, Tuple, Optional, Set, Iterable
 
 import mahotas
 import numpy
+from matplotlib import cm
 from numpy import ndarray
+
+from ai_track.util.mpl_helper import QUALITATIVE_COLORMAP
+from ai_track.visualizer.debug_image_visualizer import popup_3d_image
+
 
 class LabeledCluster:
     """Multiple stacks of ellipses that are so close to each other that a Gaussian mixture model is necessary."""
@@ -20,7 +25,7 @@ class LabeledCluster:
         return f"<LabeledCluster({repr(self._labels)})>"
 
 
-def get_clusters_from_labeled_image(watershed_image: ndarray, positions_zyx_list: ndarray, erode_passes: int = 2) -> List[LabeledCluster]:
+def get_clusters_from_labeled_image(watershed_image: ndarray, positions_zyx_list: ndarray, erode_passes: int) -> List[LabeledCluster]:
     """Gets positions clusters from a watershed image. The tags from all returned clusters are the indices in the
     positions_zyx_list."""
     # Use a watershed to find connected (overlapping) cells
@@ -31,8 +36,10 @@ def get_clusters_from_labeled_image(watershed_image: ndarray, positions_zyx_list
     connected_components_image, count = mahotas.label(threshold)
     connected_components_image = mahotas.cwatershed(numpy.zeros_like(threshold), connected_components_image )
 
-    #connected_components_image[:, 0, 0] = count + 1
-    #popup_3d_image(connected_components_image, "clusters", cm.jet)
+    # If you want to see the image:
+    # connected_components_image[threshold == 0] = 0  # Makes areas outside threshold black
+    # connected_components_image[:, 0, 0] = count + 1  # Makes colors scale the same at every layer
+    # popup_3d_image(connected_components_image, "clusters", QUALITATIVE_COLORMAP)
 
     # Divide positions into clusters
     clusters = [LabeledCluster() for i in range(count)]  # Create N empty lists
