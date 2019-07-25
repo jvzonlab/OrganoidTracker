@@ -44,6 +44,8 @@ def get_clusters_from_labeled_image(watershed_image: ndarray, positions_zyx_list
     # Divide positions into clusters
     clusters = [LabeledCluster() for i in range(count)]  # Create N empty lists
     for i in range(positions_zyx_list.shape[0]):
+        if i == 0:
+            continue  # Position 0 is the background - it doesn't represent a particle
         position_zyx = positions_zyx_list[i]
         if numpy.isnan(position_zyx[0]):
             continue  # No positions for that index in the watershed found
