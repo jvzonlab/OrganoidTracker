@@ -38,7 +38,8 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             position = self._get_position_at(event.xdata, event.ydata)
             if position is not None:
                 data = dict(self._experiment.links.find_all_data_of_position(position))
-                self.update_status(f"Clicked on {position}. Data: {data}")
+                shape = self._experiment.positions.get_shape(position)
+                self.update_status(f"Clicked on {position}.\n  Data: {data}\n  Shape: {shape}")
         else:
             super()._on_mouse_click(event)
 

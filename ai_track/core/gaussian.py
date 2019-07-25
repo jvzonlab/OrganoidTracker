@@ -1,5 +1,5 @@
 import math
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Any
 
 import numpy
 from numpy import ndarray
@@ -158,17 +158,19 @@ class Gaussian:
         new_gaussian.mu_z += dz
         return new_gaussian
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if isinstance(self, other.__class__):
             return self.__dict__ == other.__dict__
         return False
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.a, self.mu_x, self.mu_y, self.mu_z, self.cov_xx, self.cov_yy, self.cov_zz, self.cov_xy,
                      self.cov_xz, self.cov_yz))
 
-    def __repr__(self):
-        return "Gaussian(*" + repr(self.to_list()) + ")"
+    def __repr__(self) -> str:
+        return f"Gaussian(a={self.a:.2f}, mu_x={self.mu_x:.2f}, mu_y={self.mu_y:.2f}, mu_z={self.mu_z:.2f}," \
+               f" cov_xx={self.cov_xx:.2f}, cov_yy={self.cov_yy:.2f}, cov_zz={self.cov_zz:.2f}," \
+               f" cov_xy={self.cov_xy:.2f}, cov_xz={self.cov_xz:.2f}, cov_yz={self.cov_yz:.2f})"
 
 
 def _get_positions(xsize: int, ysize: int, zsize: int) -> ndarray:
