@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
 
 """Script used to train the convolutional neural network, so that it can recognize nuclei in 3D images."""
-import shlex
 from os import path
 
 from ai_track.config import ConfigFile, config_type_image_shape, config_type_int
 from ai_track.core.experiment import Experiment
 from ai_track.imaging import io
 from ai_track.image_loading import general_image_loader
-
-# PARAMETERS
 from ai_track.position_detection_cnn import training_data_creator, trainer
 
 
+# PARAMETERS
 class _PerExperimentParameters:
     images_container: str
     images_pattern: str
@@ -25,6 +23,7 @@ class _PerExperimentParameters:
         general_image_loader.load_images(experiment, self.images_container, self.images_pattern,
                                          min_time_point=self.min_time_point, max_time_point=self.max_time_point)
         return experiment
+
 
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("train_network")
@@ -71,7 +70,7 @@ print("Starting...")
 # Create a generator that will load the experiments on demand
 experiment_provider = (params.to_experiment() for params in per_experiment_params)
 
-print("Note: this script can easily take several hours to complete, or even days on weak graphics cards.")
+print("Note: this script can easily take several hours or even days to complete.")
 print("Creating training files...")
 checkpoint_dir = path.join(output_folder, "checkpoints")
 tfrecord_dir = path.join(output_folder, "tfrecord")
@@ -87,4 +86,4 @@ trainer.train(tfrecord_dir, checkpoint_dir, patch_size_zyx=patch_shape, image_si
 print("")
 print("Done! Was it worth the wait?")
 print("To get an insight in the training process, run Tensorboard:")
-print("    tensorboard --logdir=" + shlex.quote(path.abspath(checkpoint_dir)))
+print("    tensorboard --logdir=\"" + path.abspath(checkpoint_dir) + "\"")

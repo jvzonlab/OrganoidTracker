@@ -114,7 +114,7 @@ class MainWindow(Window):
             "File//SaveLoad-Load images... [Ctrl+I]": lambda: action.load_images(self),
             "File//SaveLoad-Load tracking data... [Ctrl+O]": lambda: action.load_tracking_data(self),
             "File//SaveLoad-Save tracking data... [Ctrl+S]": lambda: action.save_tracking_data(self.get_gui_experiment()),
-            "File//Export-Export positions//JSON, positions only...": lambda: action.export_positions(self.get_experiment()),
+            "File//Export-Export positions//JSON, as pixel coordinates...": lambda: action.export_positions(self.get_experiment()),
             "File//Export-Export to Guizela's file format...": lambda: action.export_links_guizela(self.get_experiment()),
             "File//Plugins-Reload all plugins... [Alt+F5]": lambda: action.reload_plugins(self),
             "File//Exit-Close experiment": lambda: action.close_experiment(self),

@@ -292,8 +292,9 @@ def _links_to_d3_data(links: Links, positions: Iterable[Position]) -> Dict:
 
 
 def save_positions_to_json(experiment: Experiment, json_file_name: str):
-    """Saves a list of positions to disk."""
-    data_structure = _encode_positions(experiment.positions)
+    """Saves a list of positions (pixel coordinate) to disk. Because the offset of the images is not saved, the offset
+    is added to all positions."""
+    data_structure = _encode_positions(experiment.positions, experiment.images.offsets)
 
     _create_parent_directories(json_file_name)
 
@@ -306,12 +307,13 @@ def save_positions_to_json(experiment: Experiment, json_file_name: str):
         os.remove(json_file_name_old)
 
 
-def _encode_positions(positions: PositionCollection):
+def _encode_positions(positions: PositionCollection, offsets: ImageOffsets):
     data_structure = {}
     for time_point in positions.time_points():
+        offset = offsets.of_time_point(time_point)
         encoded_positions = []
         for position in positions.of_time_point(time_point):
-            encoded_positions.append([position.x, position.y, position.z])
+            encoded_positions.append([position.x - offset.x, position.y - offset.y, position.z - offset.z])
 
         data_structure[str(time_point.time_point_number())] = encoded_positions
     return data_structure

@@ -74,7 +74,7 @@ def _generate_training_config(window: Window):
             config.get_or_default("image_shape", f"{image_size_zyx[2]}, {image_size_zyx[1]}, {image_size_zyx[0]}")
 
         i = index + 1
-        positions_file = f"ground_thruth_positions/positions_{i}." + io.FILE_EXTENSION
+        positions_file = f"ground_thruth_positions/positions_{i}.json"
         io.save_positions_to_json(experiment, os.path.join(save_directory, positions_file))
 
         config.get_or_default(f"images_container_{i}", image_loader.serialize_to_config()[0])
