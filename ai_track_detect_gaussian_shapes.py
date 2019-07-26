@@ -29,10 +29,6 @@ _images_format = config.get_or_prompt("images_pattern", "What are the image file
                                       store_in_defaults=True)
 _min_time_point = int(config.get_or_default("min_time_point", str(1), store_in_defaults=True))
 _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_in_defaults=True))
-_pixel_size_x_um = float(config.get_or_default("pixel_size_x_um", str(0.32), store_in_defaults=True))
-_pixel_size_y_um = float(config.get_or_default("pixel_size_y_um", str(0.32), store_in_defaults=True))
-_pixel_size_z_um = float(config.get_or_default("pixel_size_z_um", str(2), store_in_defaults=True))
-_time_point_duration_m = float(config.get_or_default("time_point_duration_m", str(12), store_in_defaults=True))
 _positions_input_file = config.get_or_default("positions_input_file", "Automatic positions.aut")
 _positions_output_file = config.get_or_default("positions_and_fit_output_file", "Gaussian fitted positions.aut")
 
@@ -51,8 +47,6 @@ config.save_and_exit_if_changed()
 
 print("Loading cell positions...")
 experiment = io.load_data_file(_positions_input_file, min_time_point=_min_time_point, max_time_point=_max_time_point)
-resolution = ImageResolution(_pixel_size_x_um, _pixel_size_y_um, _pixel_size_z_um, _time_point_duration_m)
-experiment.images.set_resolution(resolution)
 print("Discovering images...")
 general_image_loader.load_images(experiment, _images_folder, _images_format,
                                  min_time_point=_min_time_point, max_time_point=_max_time_point)
