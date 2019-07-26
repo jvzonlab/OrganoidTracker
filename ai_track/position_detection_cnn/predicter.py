@@ -152,7 +152,7 @@ def predict(images: Images, checkpoint_dir: str, out_dir: Optional[str] = None, 
     output_size_x = _next_multiple_of_32(image_size_x)
     output_size_y = _next_multiple_of_32(image_size_y)
     output_size_z = _next_multiple_of_32(image_size_z)
-    output_offset_z = (output_size_z - image_size_z) // 2
+    output_offset_z = math.ceil((output_size_z - image_size_z) / 2)
 
     output_size_x = max(output_size_x, output_size_y)  # Make image a square
     output_size_y = output_size_x
