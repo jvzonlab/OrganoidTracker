@@ -158,10 +158,8 @@ class AbstractImageVisualizer(Visualizer):
         links = self._experiment.links
         dt = time_point.time_point_number() - self._time_point.time_point_number()
 
-        circles_x_list, circles_y_list, circles_edge_colors, circles_marker_sizes = list(), list(), list(), list()
+        positions_x_list, positions_y_list, positions_edge_colors, positions_marker_sizes = list(), list(), list(), list()
         crosses_x_list, crosses_y_list = list(), list()
-        squares_x_list, squares_y_list, squares_edge_colors = list(), list(), list()
-        square_marker_size = max(1, 7 - abs(dt)) ** 2
 
         for position in self._experiment.positions.of_time_point(time_point):
             dz = self._z - round(position.z)
@@ -180,24 +178,18 @@ class AbstractImageVisualizer(Visualizer):
             position_type = self.get_window().get_gui_experiment().get_marker_by_save_name(
                 linking_markers.get_position_type(links, position))
             edge_color = (0, 0, 0) if position_type is None else position_type.mpl_color
-            if dz != 0:
-                # Draw position as circle
-                circles_x_list.append(position.x)
-                circles_y_list.append(position.y)
-                circles_edge_colors.append(edge_color)
-                circles_marker_sizes.append(max(1, 7 - abs(dz) - abs(dt)) ** 2)
-            else:
-                # Draw position as square
-                squares_x_list.append(position.x)
-                squares_y_list.append(position.y)
-                squares_edge_colors.append(edge_color)
+
+            positions_x_list.append(position.x)
+            positions_y_list.append(position.y)
+            positions_edge_colors.append(edge_color)
+            dz_penalty = 0 if dz == 0 else abs(dz) + 1
+            positions_marker_sizes.append(max(1, 8 - dz_penalty - abs(dt)) ** 2)
 
         self._ax.scatter(crosses_x_list, crosses_y_list, marker='X', facecolor='black', edgecolors="white",
                          s=17**2, linewidths=2)
-        self._ax.scatter(circles_x_list, circles_y_list, s=circles_marker_sizes, facecolor=color,
-                         edgecolors=circles_edge_colors, linewidths=1, marker="o")
-        self._ax.scatter(squares_x_list, squares_y_list, s=square_marker_size, facecolor=color,
-                         edgecolors=squares_edge_colors, linewidths=1, marker="s")
+        marker = "s" if dt == 0 else "o"
+        self._ax.scatter(positions_x_list, positions_y_list, s=positions_marker_sizes, facecolor=color,
+                         edgecolors=positions_edge_colors, linewidths=1, marker=marker)
 
     def _on_position_draw(self, position: Position, color: str, dz: int, dt: int):
         """Called whenever a position is being drawn."""

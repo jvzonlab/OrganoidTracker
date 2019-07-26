@@ -7,7 +7,7 @@ from typing import Optional, Iterable, Union
 from matplotlib import colors
 
 COLOR_CELL_NEXT = "#d63031"
-COLOR_CELL_PREVIOUS = "#0984e3"
+COLOR_CELL_PREVIOUS = "#74b9ff"
 COLOR_CELL_CURRENT = "#00ff77"
 
 CM_TO_INCH = 0.393700787  # 1 cm is this many inches
