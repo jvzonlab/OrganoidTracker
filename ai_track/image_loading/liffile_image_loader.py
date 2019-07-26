@@ -69,7 +69,7 @@ def _dimensions_to_resolution(dimensions: List[Element]) -> ImageResolution:
         else:
             raise ValueError("Unknown DimID: " + axis_name)
 
-    return ImageResolution(pixel_size_x_um, pixel_size_y_um, pixel_size_z_um, time_point_interval_m)
+    return ImageResolution(pixel_size_x_um, pixel_size_y_um, abs(pixel_size_z_um), time_point_interval_m)
 
 
 class _IndexedChannel(ImageChannel):

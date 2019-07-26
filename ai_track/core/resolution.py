@@ -10,6 +10,8 @@ class ImageResolution:
     def __init__(self, pixel_size_x_um: float, pixel_size_y_um: float, pixel_size_z_um: float, time_point_interval_m: float):
         if pixel_size_x_um != pixel_size_y_um:
             raise ValueError("X and Y scale must be equal")
+        if pixel_size_x_um < 0 or pixel_size_z_um < 0 or time_point_interval_m < 0:
+            raise ValueError("Resolution cannot be negative")
 
         self.pixel_size_zyx_um = (pixel_size_z_um, pixel_size_y_um, pixel_size_x_um)
         self.time_point_interval_m = time_point_interval_m
