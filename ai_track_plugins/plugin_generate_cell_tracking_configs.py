@@ -94,7 +94,7 @@ def _generate_training_config(window: Window):
 
 
     config.get_or_default(f"images_container_{i + 1}", "<stop>")
-    config.save_if_changed()
+    config.save()
     _create_run_script(save_directory, "ai_track_train_network")
     dialog.popup_message("Configuration files created", "The configuration files were created successfully. Please run"
                                                        " the ai_track_train_network script from that directory:"
@@ -130,7 +130,7 @@ def _generate_detection_config(window: Window):
     config.get_or_default("pixel_size_z_um", str(resolution.pixel_size_z_um))
     config.get_or_default("time_point_duration_m", str(resolution.time_point_interval_m))
     config.get_or_default("checkpoint_folder", checkpoint_directory)
-    config.save_if_changed()
+    config.save()
     _create_run_script(save_directory, "ai_track_predict_positions")
     dialog.popup_message("Configuration file created", "The configuration file was created successfully. Please run"
                                                        " the ai_track_predict_positions script from that directory:"

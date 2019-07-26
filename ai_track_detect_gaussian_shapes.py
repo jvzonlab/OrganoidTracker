@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """This script is used to detect the shapes of cells, starting from JSON position files and an image folder. It gives a
-single multiveriate Gaussian as output for each image. This is more accurate than just fitting a stack of ellipses, as
+single multivariate Gaussian as output for each image. This is more accurate than just fitting a stack of ellipses, as
 is done in another script. Unfortunately, this script is also much slower.
 
 Parameters: (all sizes are in pixels)

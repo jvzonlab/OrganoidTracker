@@ -41,7 +41,7 @@ _split = config.get_or_default("save_video_ram", "true", comment="Whether video 
 _debug_folder = config.get_or_default("predictions_output_folder", "", comment="If you want to see the raw prediction images, paste the path to a folder here. In that folder, a prediction image will be placed for each time point.")
 if len(_debug_folder) == 0:
     _debug_folder = None
-config.save_if_changed()
+config.save()
 # END OF PARAMETERS
 
 experiment.images.image_loader(experiment.images.image_loader())
