@@ -183,6 +183,7 @@ def launch_window(experiment: Experiment) -> MainWindow:
 
     # Create matplotlib figure
     fig = Figure(figsize=(12, 12), dpi=95)
+    fig.subplots_adjust(left=0.04, bottom=0.04, right=0.99, top=0.98)
 
     # Create empty window
     root = QApplication.instance()
