@@ -10,25 +10,36 @@ from ai_track.gui import dialog
 from ai_track.gui.window import Window
 from ai_track.imaging import io
 
-
 _TRAINING_PATCH_SHAPE_ZYX: Tuple[int, int, int] = (32, 64, 64)
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-         "Process//Standard-Train the neural network...": lambda: _generate_training_config(window),
-         "Process//Standard-Detect cells in images...": lambda: _generate_detection_config(window),
+        "Process//Standard-Train the neural network...": lambda: _generate_training_config(window),
+        "Process//Standard-Detect cells in images...": lambda: _generate_detection_config(window),
+        "Process//Standard-Detect shapes using Gaussian fit...": lambda: _generate_gaussian_fit_configs(window),
     }
 
 
 def _create_run_script(output_folder: str, script_name: str):
-    bat_file = os.path.join(output_folder, script_name + ".bat")
     script_file = os.path.abspath(script_name + ".py")
+
+    # For Windows
+    bat_file = os.path.join(output_folder, script_name + ".bat")
     with open(bat_file, "w") as writer:
         writer.write(f"""@rem Automatically generated script for running {script_name}
 @echo off
 "{sys.executable}" "{script_file}"
 pause""")
+
+    # For Linux
+    sh_file = os.path.join(output_folder, script_name + ".sh")
+    with open(sh_file, "w") as writer:
+        writer.write(f"""#!/bin/bash
+# Automatically generated script for running {script_name}
+{shlex.quote(sys.executable)} {shlex.quote(script_file)}
+""")
+    os.chmod(sh_file, 0o777)
 
 
 def _generate_training_config(window: Window):
@@ -49,12 +60,13 @@ def _generate_training_config(window: Window):
     config = ConfigFile("train_network", folder_name=save_directory)
     if len(experiments) == 1:
         if not dialog.prompt_yes_no("Experiments", "Only one project is open. Training on a single data set is not"
-                                    " recommended. For a quick test it's fine, but ideally you should have a more"
-                                    " data sets loaded.\n\nDo you want to continue with just this data set?"):
+                                                   " recommended. For a quick test it's fine, but ideally you should have a more"
+                                                   " data sets loaded.\n\nDo you want to continue with just this data set?"):
             return
 
     config.get_or_default("max_training_steps", "100000")
-    config.get_or_default("patch_shape", f"{_TRAINING_PATCH_SHAPE_ZYX[2]}, {_TRAINING_PATCH_SHAPE_ZYX[1]}, {_TRAINING_PATCH_SHAPE_ZYX[0]}")
+    config.get_or_default("patch_shape",
+                          f"{_TRAINING_PATCH_SHAPE_ZYX[2]}, {_TRAINING_PATCH_SHAPE_ZYX[1]}, {_TRAINING_PATCH_SHAPE_ZYX[0]}")
     config.get_or_default("output_folder", "./output")
     config.get_or_default("batch_size", "64")
 
@@ -63,17 +75,17 @@ def _generate_training_config(window: Window):
         image_loader = experiment.images.image_loader()
         if not image_loader.has_images():
             raise UserError("No images", f"No images were loaded in project {experiment.name}, so it cannot be used"
-            f" for training. Please make sure that all open projects are suitable for training.")
+                                         f" for training. Please make sure that all open projects are suitable for training.")
         if not experiment.positions.has_positions():
             raise UserError("No positions", f"No tracking data was found in project {experiment.name}, so it cannot be"
-            f" used for training. Please make sure that all open projects are suitable for training.")
+                                            f" used for training. Please make sure that all open projects are suitable for training.")
 
         if index == 0:
             # Save expected image shape
             image_size_zyx = image_loader.get_image_size_zyx()
             if image_size_zyx is None:
                 raise UserError("Image size is not constant", f"No constant size is specified for the loaded images of"
-                                f" project {experiment.name}. Cannot use the project for training.")
+                                                              f" project {experiment.name}. Cannot use the project for training.")
 
             # Make sure image is at least as large as the patch
             image_size_zyx = list(image_size_zyx)  # From tuple to list - this makes it mutable
@@ -92,13 +104,12 @@ def _generate_training_config(window: Window):
         config.get_or_default(f"max_time_point_{i}", str(experiment.positions.last_time_point_number()))
         config.get_or_default(f"positions_file_{i}", positions_file)
 
-
     config.get_or_default(f"images_container_{i + 1}", "<stop>")
     config.save()
     _create_run_script(save_directory, "ai_track_train_network")
     dialog.popup_message("Configuration files created", "The configuration files were created successfully. Please run"
-                                                       " the ai_track_train_network script from that directory:"
-                                                       f"\n\n{save_directory}")
+                                                        " the ai_track_train_network script from that directory:"
+                                                        f"\n\n{save_directory}")
 
 
 def _generate_detection_config(window: Window):
@@ -110,7 +121,7 @@ def _generate_detection_config(window: Window):
                                      " first.")
     resolution = experiment.images.resolution()  # Checks if resolution has been set
 
-    checkpoint_directory =  _get_checkpoints_folder()
+    checkpoint_directory = _get_checkpoints_folder()
     if checkpoint_directory is None:
         return
 
@@ -137,6 +148,59 @@ def _generate_detection_config(window: Window):
                                                        f"\n\n{save_directory}")
 
 
+def _generate_gaussian_fit_configs(window: Window):
+    experiment = window.get_experiment()
+    image_loader = experiment.images.image_loader()
+    if not image_loader.has_images():
+        raise UserError("No images", "No images were loaded, so we have nothing to fit the Gaussian functions to."
+                                     " Please load some images first.")
+    if not experiment.positions.has_positions():
+        raise UserError("No positions", "No positions were found. The Gaussian fit requires starting points as seeds."
+                                        " You can obtain points manually or using the convolutional neural network. See"
+                                        " the automatic tracking tutorial in the help files for more information.")
+
+    # Erosion
+    erode_option = dialog.prompt_options("Cell overlap", "How much visual overlap do you have in your images between"
+                                         " the visible objects (nuclei, cells, whatever you are imaging)?\n"
+                                         "\nOption 1: almost none at all"
+                                         "\nOption 2: a bit"
+                                         "\nOption 3: a lot of objects are connected with neighbor objects"
+                                         "\n\nThe quality of the Gaussian fit is the best if you pick option 1."
+                                         " However, if all your objects overlap, then it will try to fit Gaussian"
+                                         " functions for all of them together, which is computationally very"
+                                         " expensive.", option_1="Option 1", option_2="Option 2", option_3="Option 3")
+    if erode_option is None:
+        return
+    print(erode_option)
+    erode_passes = 0
+    if erode_option == 2:
+        erode_passes = 2
+    elif erode_option == 3:
+        erode_passes = 3
+
+    save_directory = dialog.prompt_save_file("Output directory", [("Folder", "*")])
+    if save_directory is None:
+        return
+    positions_file = "positions." + io.FILE_EXTENSION
+    io.save_data_to_json(experiment, os.path.join(save_directory, positions_file))
+
+    config = ConfigFile("detect_gaussian_shapes", folder_name=save_directory)
+    config.get_or_default("images_container", image_loader.serialize_to_config()[0], store_in_defaults=True)
+    config.get_or_default("images_pattern", image_loader.serialize_to_config()[1], store_in_defaults=True)
+    config.get_or_default("min_time_point", str(image_loader.first_time_point_number()), store_in_defaults=True)
+    config.get_or_default("max_time_point", str(image_loader.last_time_point_number()), store_in_defaults=True)
+    config.get_or_default("positions_input_file", "./" + positions_file)
+    config.get_or_default("positions_and_fit_output_file", "./Gaussian fitted positions." + io.FILE_EXTENSION)
+    config.get_or_default("adaptive_threshold_block_size", str(51))
+    config.get_or_default("cluster_detection_erosion_rounds", str(erode_passes))
+    config.get_or_default("gaussian_fit_smooth_size", str(7))
+    config.save()
+    _create_run_script(save_directory, "ai_track_detect_gaussian_shapes")
+    dialog.popup_message("Configuration file created", "The configuration file was created successfully. Please run "
+                                                       "the ai_track_detect_gaussian_shapes script from that directory:"
+                                                       f"\n\n{save_directory}")
+
+
 def _get_checkpoints_folder() -> Optional[str]:
     if not dialog.popup_message_cancellable("Checkpoints folder",
                                             "First, we will ask you where you have stored the checkpoints folder, which contains the trained model."):
@@ -152,4 +216,3 @@ def _get_checkpoints_folder() -> Optional[str]:
         dialog.popup_error("Not a checkpoint folder",
                            "The selected folder does not contain a trained model; it contains no 'checkpoint' file."
                            " Please select another folder. Typically, this folder is named `checkpoints`.")
-
