@@ -36,6 +36,7 @@ def nearest_neighbor(experiment: Experiment, tolerance: float = 1.0) -> Links:
 def _add_nearest_edges(links: Links, positions: PositionCollection, images: Images, time_point_previous: TimePoint,
                        time_point_current: TimePoint, tolerance: float):
     """Adds edges pointing towards previous time point, making the shortest one the preferred."""
+    resolution = images.resolution()
     for position in positions.of_time_point(time_point_current):
         # Check if position was inside the image in the previous time point
         previous_position = position.with_time_point(time_point_previous)
@@ -44,13 +45,15 @@ def _add_nearest_edges(links: Links, positions: PositionCollection, images: Imag
             continue  # Skip, position will go out of view
 
         # If yes, make links to previous time point
-        nearby_list = find_close_positions(positions.of_time_point(time_point_previous), position, tolerance, max_amount=5)
+        nearby_list = find_close_positions(positions.of_time_point(time_point_previous), around=position,
+                                           tolerance=tolerance, max_amount=5, resolution=resolution)
         for nearby_position in nearby_list:
             links.add_link(position, nearby_position)
 
 
 def _add_nearest_edges_extra(links: Links, positions: PositionCollection, images: Images, time_point_current: TimePoint, time_point_next: TimePoint, tolerance: float):
     """Adds edges to the next time point, which is useful if _add_edges missed some possible links."""
+    resolution = images.resolution()
     for position in positions.of_time_point(time_point_current):
         # Check if position is still inside the image in the next time point
         next_position = position.with_time_point(time_point_next)
@@ -59,6 +62,7 @@ def _add_nearest_edges_extra(links: Links, positions: PositionCollection, images
             continue  # Skip, position will go out of view
 
         # If yes, make links to next time point
-        nearby_list = find_close_positions(positions.of_time_point(time_point_next), position, tolerance, max_amount=5)
+        nearby_list = find_close_positions(positions.of_time_point(time_point_next), around=position,
+                                           tolerance=tolerance, max_amount=5, resolution=resolution)
         for nearby_position in nearby_list:
             links.add_link(position, nearby_position)
