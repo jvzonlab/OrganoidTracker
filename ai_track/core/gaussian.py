@@ -28,7 +28,12 @@ class Gaussian:
     cov_xz: float
     cov_yz: float
 
-    def __init__(self, a, mu_x, mu_y, mu_z, cov_xx, cov_yy, cov_zz, cov_xy, cov_xz, cov_yz):
+    def __init__(self, a: float, mu_x: float, mu_y: float, mu_z: float, cov_xx: float, cov_yy: float, cov_zz: float,
+                 cov_xy: float, cov_xz: float, cov_yz: float):
+        if cov_xx < 0 or cov_yy < 0 or cov_zz < 0:
+            raise ValueError(f"Standard deviations cannot be negative."
+                             f" cov_xx={cov_xx}, cov_yy={cov_yy}, cov_zz={cov_zz}")
+
         self.a = a
         self.mu_x = mu_x
         self.mu_y = mu_y

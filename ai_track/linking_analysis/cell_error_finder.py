@@ -12,16 +12,21 @@ from ai_track.linking_analysis.errors import Error
 from ai_track.linking_analysis.linking_markers import EndMarker
 
 
-def apply(experiment: Experiment):
+def apply(experiment: Experiment) -> int:
     """Adds errors for all logical inconsistencies in the graph, like cells that spawn out of nowhere, cells that
-    merge together and cells that have three or more daughters."""
+    merge together and cells that have three or more daughters. Returns the amount of errors."""
     links = experiment.links
     scores = experiment.scores
     positions = experiment.positions
     resolution = experiment.images.resolution()
+
+    count = 0
     for position in links.find_all_positions():
         error = get_error(links, position, scores, positions, resolution)
         linking_markers.set_error_marker(links, position, error)
+        if error is not None:
+            count += 1
+    return count
 
 
 def get_error(links: Links, position: Position, scores: ScoreCollection, positions: PositionCollection,

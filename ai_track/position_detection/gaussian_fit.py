@@ -1,5 +1,5 @@
 """Code for fitting cells to Gaussian functions."""
-
+import sys
 from timeit import default_timer
 from typing import List, Iterable, Dict, Optional
 
@@ -34,23 +34,29 @@ class _ModelAndImageDifference:
         self._last_gaussians = dict()
 
     def difference_with_image(self, params: ndarray) -> float:
-        self._draw_gaussians_to_scratch_image(params)
+        if not self._draw_gaussians_to_scratch_image(params):
+            return sys.float_info.max
 
         self._scratch_image -= self._data_image
         self._scratch_image **= 2
         sum = self._scratch_image.sum()
         return sum
 
-    def _draw_gaussians_to_scratch_image(self, params: ndarray):
-        # Makes self._scratch_image equal to ∑g(x)
+    def _draw_gaussians_to_scratch_image(self, params: ndarray) -> bool:
+        """Makes self._scratch_image equal to ∑g(x). Returns False if mathematically impossible parameters are given."""
         self._scratch_image.fill(0)
         last_gaussians_new = dict()
         for i in range(0, len(params), 10):
             gaussian_params = params[i:i + 10]
-            gaussian = Gaussian(*gaussian_params)
-            cached_image = self._last_gaussians.get(gaussian)
-            last_gaussians_new[gaussian] = gaussian.draw(self._scratch_image, cached_image)
+            try:
+                gaussian = Gaussian(*gaussian_params)
+            except ValueError:
+                return False
+            else:
+                cached_image = self._last_gaussians.get(gaussian)
+                last_gaussians_new[gaussian] = gaussian.draw(self._scratch_image, cached_image)
         self._last_gaussians = last_gaussians_new
+        return True
 
     def gradient(self, params: ndarray) -> ndarray:
         """Calculates the gradient of self.difference_with_image for all of the possible parameters."""

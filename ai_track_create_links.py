@@ -3,7 +3,7 @@
 """Creates links between known nucleus positions at different time points. Nucleus shape information (as obtained by
 a Gaussian fit) is necessary for this."""
 
-from ai_track.config import ConfigFile
+from ai_track.config import ConfigFile, config_type_int
 from ai_track.imaging import io
 from ai_track.image_loading import general_image_loader
 from ai_track.linking import nearest_neighbor_linker, dpct_linker, cell_division_finder
@@ -23,6 +23,20 @@ _min_time_point = int(config.get_or_default("min_time_point", str(1), store_in_d
 _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_in_defaults=True))
 _positions_file = config.get_or_default("positions_file", "Gaussian fitted positions.aut")
 _margin_xy = int(config.get_or_default("margin_xy", str(50)))
+_link_weight = config.get_or_default("weight_links", str(20), comment="Penalty for link distance. Make this value"
+                                      " higher if you're getting too many long-distance links. Lower this value if"
+                                      " you're not getting enough links.", type=config_type_int)
+_detection_weight = config.get_or_default("weight_detections", str(150), comment="Penalty for ignoring a detection."
+                                           " Make this value higher if too many cells do not get any links.",
+                                          type=config_type_int)
+_division_weight = config.get_or_default("weight_division", str(30), comment="Score for creating a division. The"
+                                         " higher, the more cell divisions will be created (although the volume of the"
+                                         " cells still needs to be OK before any division is considered at all..",
+                                         type=config_type_int)
+_appearance_weight = config.get_or_default("weight_appearance", str(150), comment="Penalty for starting a track out of"
+                                           " nowhere.", type=config_type_int)
+_dissappearance_weight = config.get_or_default("weight_dissappearance", str(100), comment="Penalty for ending a track.",
+                                               type=config_type_int)
 _links_output_file = config.get_or_default("output_file", "Automatic links.aut")
 config.save_and_exit_if_changed()
 # END OF PARAMETERS
@@ -36,17 +50,23 @@ general_image_loader.load_images(experiment, _images_folder, _images_format,
 print("Performing nearest-neighbor linking...")
 possible_links = nearest_neighbor_linker.nearest_neighbor(experiment, tolerance=2)
 print("Calculating scores of possible mothers...")
-score_system = RationalScoringSystem()
-scores = cell_division_finder.calculates_scores(experiment.images, experiment.positions, possible_links, score_system)
+if experiment.scores.has_scores():
+    print("    found existing scores, using those instead")
+    scores = experiment.scores
+else:
+    score_system = RationalScoringSystem()
+    scores = cell_division_finder.calculates_scores(experiment.images, experiment.positions, possible_links, score_system)
 print("Deciding on what links to use...")
-link_result = dpct_linker.run(experiment.positions, possible_links, scores, experiment.images.resolution())
+link_result = dpct_linker.run(experiment.positions, possible_links, scores, experiment.images.resolution(),
+                              link_weight=_link_weight, detection_weight=_detection_weight,
+                              division_weight=_division_weight, appearance_weight=_appearance_weight,
+                              dissappearance_weight=_dissappearance_weight)
 print("Applying final touches...")
 experiment.links = link_result
 experiment.scores = scores
 links_postprocessor.postprocess(experiment, margin_xy=_margin_xy)
 print("Checking results for common errors...")
-cell_error_finder.apply(experiment)
+warning_count = cell_error_finder.apply(experiment)
 print("Writing results to file...")
 io.save_data_to_json(experiment, _links_output_file)
-
-print("Done!")
+print(f"Done! Found {warning_count} potential errors in the data.")

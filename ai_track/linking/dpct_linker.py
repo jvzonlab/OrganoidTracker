@@ -51,15 +51,24 @@ def _to_links(position_ids: _PositionToId, results: Dict) -> Links:
     return links
 
 
-def run(positions: PositionCollection, starting_links: Links, scores: ScoreCollection, resolution: ImageResolution
-        ) -> Links:
+def run(positions: PositionCollection, starting_links: Links, scores: ScoreCollection, resolution: ImageResolution,
+        *, link_weight: int, detection_weight: int, division_weight: int, appearance_weight: int,
+        dissappearance_weight: int) -> Links:
+    """
+    Calculates the optimal links, based on the given starting points and weights.
+    :param positions: The positions.
+    :param starting_links: Basic linking network that includes all possible links.
+    :param scores: Scores, for deciding whether something is a cell division.
+    :param resolution: Resolution.
+    :param link_weight: multiplier for linking features - the higher, the more expensive to create a link.
+    :param detection_weight: multiplier for detection of a cell - the higher, the more expensive to omit a cell
+    :param division_weight: multiplier for division features - the higher, the cheaper it is to create a cell division
+    :param appearance_weight: multiplier for appearance features - the higher, the more expensive it is to create a cell out of nothing
+    :param dissappearance_weight: multiplier for disappearance - the higher, the more expensive an end-of-lineage is
+    :return:
+    """
     position_ids = _PositionToId()
-    weights = {"weights": [
-        30,  # multiplier for linking features?
-        150,  # multiplier for detection of a cell - the higher, the more expensive to omit a cell
-        30,  # multiplier for division features - the higher, the cheaper it is to create a cell division
-        150,  # multiplier for appearance features - the higher, the more expensive it is to create a cell out of nothing
-        100]}  # multiplier for disappearance - the higher, the more expensive an end-of-lineage is
+    weights = {"weights": [link_weight, detection_weight, division_weight, appearance_weight, dissappearance_weight]}
     input = _create_dpct_graph(position_ids, starting_links, scores, positions, resolution,
                                positions.first_time_point_number(), positions.last_time_point_number())
     results = dpct.trackFlowBased(input, weights)
@@ -103,7 +112,7 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links, score
 
         volume1, volume2 = shapes.get_shape(position1).volume(), shapes.get_shape(position2).volume()
         link_penalty = position1.distance_um(position2, resolution)
-        link_penalty += (abs(volume1 - volume2) ** (1 / 3)) * resolution.pixel_size_x_um * 3
+        link_penalty += (abs(volume1 - volume2) ** (1 / 3)) * resolution.pixel_size_x_um
 
         mother_score = _max_score(_scores_involving(position2, scores.of_mother(position1)))
 
