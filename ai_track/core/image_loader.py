@@ -49,9 +49,10 @@ class ImageLoader(ABC):
         """Serializes this image loader into a path and a file/series name. This can be stored in configuration files."""
         pass
 
+    @abstractmethod
     def copy(self) -> "ImageLoader":
         """Copies the image loader, so that you can use it on another thread."""
-        return self
+        pass
 
     def uncached(self) -> "ImageLoader":
         """If this loader is a caching wrapper around another loader, this method returns one loader below. Otherwise,
@@ -69,6 +70,9 @@ class ImageLoader(ABC):
 
 
 class NullImageLoader(ImageLoader):
+
+    def copy(self) -> "ImageLoader":
+        return self  # No need to copy, object holds no data
 
     def get_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
         return None

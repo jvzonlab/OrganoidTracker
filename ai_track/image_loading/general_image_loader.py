@@ -3,6 +3,7 @@ n."""
 import os.path
 
 from ai_track.core.experiment import Experiment
+from ai_track.image_loading.noise_suppressing_filter import NoiseSuppressingFilter
 
 
 def load_images(experiment: Experiment, container: str, pattern: str,
