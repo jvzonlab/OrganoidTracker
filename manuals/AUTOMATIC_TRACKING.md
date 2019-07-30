@@ -15,7 +15,7 @@ Before you start, create a directory that will hold all you analysis data. You c
 Step 1: Obtaining nucleus positions
 -----------------------------------
 
-Open the AI_track GUI, load your images and select `Process` -> `Detect cells in images...`. Select the (already trained) neural network you want to use. You'll end up with a folder containing configuration files. Run the `ai_track_predict_positions` script in that directory to put the neural network into action. (On Windows, double-click the BAT file. On Linux/macOs, run the SH file instead.) You'll end up with a file that contains the positions of the cells. Load it into the program to see how the neural network performed.
+Open the AI_track GUI, load your images and select `Process` -> `Detect cells in images...`. Select the already trained neural network that you want to use. ([See here for how to train a model](./TRAINING_THE_NETWORK.md).) You'll end up with a folder containing configuration files. Run the `ai_track_predict_positions` script in that directory to put the neural network into action. (On Windows, double-click the BAT file. On Linux/macOs, run the SH file instead.) You'll end up with a file that contains the positions of the cells. Load it into the program to see how the neural network performed.
 
 If you want to debug what the program is doing, open the `ai_track.ini` file and give the `predictions_output_folder` setting a value, for example `test`. If you run the script again, it will create a folder with that name (`test` in this example) and place images there indicating how likely it is to find a cell there.
 

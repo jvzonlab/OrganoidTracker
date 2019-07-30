@@ -6,6 +6,7 @@ Tutorials
 ---------
 * [Tutorial for semi-automated tracking](AUTOMATIC_TRACKING.md)
 * [Tutorial for writing a plugin for AI_track](PLUGIN_TUTORIAL.md)
+* [Tutorial for training a neural network](TRAINING_THE_NETWORK.md)
 
 
 For reference
