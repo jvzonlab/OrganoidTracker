@@ -184,6 +184,21 @@ class PositionCollection:
         """Returns True if there are any positions stored here."""
         return len(self._all_positions) > 0
 
+    def guess_has_shapes(self) -> bool:
+        """Runs through the first 1000 positions, and returns True if any of them has a shape defined."""
+        i = 0
+        for positions in self._all_positions.values():
+            for position, shape in positions.positions_and_shapes():
+                if not isinstance(shape, UnknownShape):
+                    return True  # Found a shape
+                i += 1
+                if i >= 1000:
+                    # Didn't find any shape in the first 1000 positions - assume none of the positions have a shape
+                    return False
+
+        # Less than 1000 positions, and none of them had a shape
+        return False
+
     def add_positions_and_shapes(self, other: "PositionCollection"):
         """Adds all positions and shapes of the other collection to this collection."""
         for time_point_number, other_positions in other._all_positions.items():

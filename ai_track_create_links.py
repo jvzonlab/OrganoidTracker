@@ -25,7 +25,7 @@ _positions_file = config.get_or_default("positions_file", "Gaussian fitted posit
 _margin_xy = int(config.get_or_default("margin_xy", str(50)))
 _link_weight = config.get_or_default("weight_links", str(20), comment="Penalty for link distance. Make this value"
                                       " higher if you're getting too many long-distance links. Lower this value if"
-                                      " you're not getting enough links.", type=config_type_int)
+                                      " you're not ge tting enough links.", type=config_type_int)
 _detection_weight = config.get_or_default("weight_detections", str(150), comment="Penalty for ignoring a detection."
                                            " Make this value higher if too many cells do not get any links.",
                                           type=config_type_int)
@@ -38,7 +38,7 @@ _appearance_weight = config.get_or_default("weight_appearance", str(150), commen
 _dissappearance_weight = config.get_or_default("weight_dissappearance", str(100), comment="Penalty for ending a track.",
                                                type=config_type_int)
 _links_output_file = config.get_or_default("output_file", "Automatic links.aut")
-config.save_and_exit_if_changed()
+config.save()
 # END OF PARAMETERS
 
 

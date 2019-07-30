@@ -7,6 +7,7 @@ from typing import Dict, Optional, Any, Tuple
 from ai_track.config import ConfigFile
 from ai_track.core import UserError
 from ai_track.gui import dialog
+from ai_track.gui.dialog import DefaultOption
 from ai_track.gui.window import Window
 from ai_track.imaging import io
 
@@ -18,6 +19,7 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
         "Process//Standard-Train the neural network...": lambda: _generate_training_config(window),
         "Process//Standard-Detect cells in images...": lambda: _generate_detection_config(window),
         "Process//Standard-Detect shapes using Gaussian fit...": lambda: _generate_gaussian_fit_configs(window),
+        "Process//Standard-Create links between time points...": lambda: _generate_linking_config(window)
     }
 
 
@@ -40,6 +42,13 @@ pause""")
 {shlex.quote(sys.executable)} {shlex.quote(script_file)}
 """)
     os.chmod(sh_file, 0o777)
+
+
+def _popup_confirmaton(output_folder: str, script_name: str, ):
+    if dialog.prompt_options("Configuration files created", f"The configuration files were created successfully. Please"
+                             f" run the {script_name} script from that directory:\n\n{output_folder}",
+                             option_1="Open that directory", option_default=DefaultOption.OK) == 1:
+        dialog.open_file(output_folder)
 
 
 def _generate_training_config(window: Window):
@@ -107,9 +116,8 @@ def _generate_training_config(window: Window):
     config.get_or_default(f"images_container_{i + 1}", "<stop>")
     config.save()
     _create_run_script(save_directory, "ai_track_train_network")
-    dialog.popup_message("Configuration files created", "The configuration files were created successfully. Please run"
-                                                        " the ai_track_train_network script from that directory:"
-                                                        f"\n\n{save_directory}")
+    _popup_confirmaton(save_directory, "ai_track_train_network")
+
 
 
 def _generate_detection_config(window: Window):
@@ -143,9 +151,7 @@ def _generate_detection_config(window: Window):
     config.get_or_default("checkpoint_folder", checkpoint_directory)
     config.save()
     _create_run_script(save_directory, "ai_track_predict_positions")
-    dialog.popup_message("Configuration file created", "The configuration file was created successfully. Please run"
-                                                       " the ai_track_predict_positions script from that directory:"
-                                                       f"\n\n{save_directory}")
+    _popup_confirmaton(save_directory, "ai_track_predict_positions")
 
 
 def _generate_gaussian_fit_configs(window: Window):
@@ -196,10 +202,41 @@ def _generate_gaussian_fit_configs(window: Window):
     config.get_or_default("gaussian_fit_smooth_size", str(7))
     config.save()
     _create_run_script(save_directory, "ai_track_detect_gaussian_shapes")
-    dialog.popup_message("Configuration file created", "The configuration file was created successfully. Please run "
-                                                       "the ai_track_detect_gaussian_shapes script from that directory:"
-                                                       f"\n\n{save_directory}")
+    _popup_confirmaton(save_directory, "ai_track_detect_gaussian_shapes")
 
+
+def _generate_linking_config(window: Window):
+    experiment = window.get_experiment()
+    image_loader = experiment.images.image_loader()
+    if not image_loader.has_images():
+        raise UserError("No images", "No images were loaded, so we cannot use various heuristics to see how likely a"
+                                     " cell is a dividing cell. Please load some images first.")
+    if not experiment.positions.has_positions():
+        raise UserError("No positions found", "No cell positions loaded. The linking algorithm links existing cell"
+                                              " positions together. You can obtain cell positions using a neural"
+                                              " network, see the manual.")
+    if not experiment.positions.guess_has_shapes():
+        if not dialog.prompt_yes_no("No shapes", "No cell shape information found. While not strictly required, it is"
+                                    " highlyrecommended to run a Gaussian fit first. If we know the shape of"
+                                    " cells, it is easier to tell which cell is which over different time"
+                                    " points.\nDo you want to continue anyways (not recommended)?"):
+            return
+
+    save_directory = dialog.prompt_save_file("Output directory", [("Folder", "*")])
+    if save_directory is None:
+        return
+    positions_file = "positions." + io.FILE_EXTENSION
+    io.save_data_to_json(experiment, os.path.join(save_directory, positions_file))
+    config = ConfigFile("create_links", folder_name=save_directory)
+    config.get_or_default("images_container", image_loader.serialize_to_config()[0], store_in_defaults=True)
+    config.get_or_default("images_pattern", image_loader.serialize_to_config()[1], store_in_defaults=True)
+    config.get_or_default("min_time_point", str(image_loader.first_time_point_number()), store_in_defaults=True)
+    config.get_or_default("max_time_point", str(image_loader.last_time_point_number()), store_in_defaults=True)
+    config.get_or_default("positions_file", "./" + positions_file)
+    config.get_or_default("output_file", "./Automatic links." + io.FILE_EXTENSION)
+    config.save()
+    _create_run_script(save_directory, "ai_track_create_links")
+    _popup_confirmaton(save_directory, "ai_track_create_links")
 
 def _get_checkpoints_folder() -> Optional[str]:
     if not dialog.popup_message_cancellable("Checkpoints folder",

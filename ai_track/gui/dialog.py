@@ -53,25 +53,36 @@ def prompt_confirmation(title: str, question: str):
     return result == QMessageBox.Ok
 
 
-def prompt_options(title: str, question: str, *, option_1: str, option_2: str, option_3: Optional[str] = None
+class DefaultOption(Enum):
+    OK = "OK"
+    CANCEL = "CANCEL"
+
+
+def prompt_options(title: str, question: str, *, option_1: str, option_2: Optional[str] = None,
+                   option_3: Optional[str] = None, option_default: DefaultOption = DefaultOption.CANCEL
                    ) -> Optional[int]:
-    """Shows two or three options to choose from, and additionally a cancel button. Returns None if the cancel button
-    was pressed, returns a number (1, 2 or 3, depending on the picked option) otherwise."""
+    """Shows two or three options to choose from, and additionally a cancel button. Returns None if the default button
+    (either Cancel or Ok) was pressed, returns a number (1, 2 or 3, depending on the picked option) otherwise."""
 
     # Set up window
     box = QMessageBox(_window())
     box.setWindowTitle(title)
     box.setText(question)
-    button_count = 2
+    button_count = 1
     box.addButton(QPushButton(option_1), QMessageBox.ActionRole)
-    box.addButton(QPushButton(option_2), QMessageBox.ActionRole)
-    if option_3 is not None:
+    if option_2 is not None:
         button_count += 1
-        box.addButton(QPushButton(option_3), QMessageBox.ActionRole)
-    box.addButton(QMessageBox.Cancel)
+        box.addButton(QPushButton(option_2), QMessageBox.ActionRole)
+        if option_3 is not None:
+            button_count += 1
+            box.addButton(QPushButton(option_3), QMessageBox.ActionRole)
+    if option_default == DefaultOption.OK:
+        box.addButton(QMessageBox.Ok)
+    else:
+        box.addButton(QMessageBox.Cancel)
 
     result = box.exec_()
-    if result == QMessageBox.Cancel:
+    if result == QMessageBox.Cancel or result == QMessageBox.Ok:
         # Clicked the last button, which is always Cancel
         return None
     return result + 1  # + 1 to make it correspond to the numbering of option_1, option_2, etc.
