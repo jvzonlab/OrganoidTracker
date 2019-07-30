@@ -139,7 +139,8 @@ class Visualizer:
     def _on_mouse_click(self, event: MouseEvent):
         pass
 
-    def _on_pick(self, event: PickEvent):
+    def _on_scroll(self, event: MouseEvent):
+        """Called when scrolling. event.button will be "up" or "down"."""
         pass
 
     def attach(self):
@@ -150,7 +151,7 @@ class Visualizer:
         self._window.register_event_handler("data_updated_event", self.refresh_data)
         self._window.register_event_handler("any_updated_event", self.refresh_all)
         self._window.register_event_handler("command_event", self._on_command_raw)
-        self._window.register_event_handler("pick_event", self._on_pick)
+        self._window.register_event_handler("scroll_event", self._on_scroll)
 
     def detach(self):
         self._window.unregister_event_handlers()

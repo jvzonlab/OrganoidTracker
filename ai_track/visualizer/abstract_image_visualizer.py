@@ -2,6 +2,7 @@ from typing import List, Union, Optional, Dict, Any
 
 import cv2
 from matplotlib import cm
+from matplotlib.backend_bases import MouseEvent
 from matplotlib.collections import LineCollection
 from matplotlib.colors import Colormap, Normalize
 from numpy.core.multiarray import ndarray
@@ -296,6 +297,13 @@ class AbstractImageVisualizer(Visualizer):
             "Navigate//Time-Previous time point [Left]": lambda: self._move_in_time(-1),
             "Navigate//Time-Other time point... (/t*)": time_point_prompt
         }
+
+    def _on_scroll(self, event: MouseEvent):
+        """Move in z."""
+        if event.button == 'up':
+            self._move_in_z(1)
+        else:
+            self._move_in_z(-1)
 
     def _on_command(self, command: str) -> bool:
         if len(command) > 0 and command[0] == "t":
