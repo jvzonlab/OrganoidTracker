@@ -15,8 +15,8 @@ from ai_track.position_analysis import cell_curvature_calculator
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "File//Export-Export positions//CSV, positions only...": lambda: _export_positions_as_csv(window, metadata=False),
-        "File//Export-Export positions//CSV, positions and metadata...": lambda: _export_positions_as_csv(window, metadata=True),
+        "File//Export-Export positions//CSV, as μm coordinates...": lambda: _export_positions_as_csv(window, metadata=False),
+        "File//Export-Export positions//CSV, as μm coordinates with metadata...": lambda: _export_positions_as_csv(window, metadata=True),
     }
 
 
