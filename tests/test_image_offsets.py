@@ -1,8 +1,8 @@
 import unittest
 
-from autotrack.core import TimePoint
-from autotrack.core.images import ImageOffsets
-from autotrack.core.position import Position
+from ai_track.core import TimePoint
+from ai_track.core.images import ImageOffsets
+from ai_track.core.position import Position
 
 
 class TestImageOffsets(unittest.TestCase):

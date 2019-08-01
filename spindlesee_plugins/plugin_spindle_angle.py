@@ -6,13 +6,13 @@ from matplotlib.axes import Axes
 from matplotlib.collections import LineCollection
 from matplotlib.figure import Figure
 
-from autotrack.core import UserError
-from autotrack.core.experiment import Experiment
-from autotrack.gui import dialog
-from autotrack.gui.window import Window
-from autotrack.imaging import angles
-from autotrack.imaging.grapher import colorline
-from autotrack.util.mpl_helper import SANDER_APPROVED_COLORS
+from ai_track.core import UserError
+from ai_track.core.experiment import Experiment
+from ai_track.gui import dialog
+from ai_track.gui.window import Window
+from ai_track.imaging import angles
+from ai_track.imaging.grapher import colorline
+from ai_track.util.mpl_helper import SANDER_APPROVED_COLORS
 from . import plugin_spindle_markers
 from .plugin_spindle_markers import Spindle
 

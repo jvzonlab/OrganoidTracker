@@ -1,7 +1,7 @@
 import numpy
 import unittest
 
-from autotrack.core.gaussian import Gaussian
+from ai_track.core.gaussian import Gaussian
 
 
 class TestGaussians(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 
-from autotrack.core import min_none, max_none
+from ai_track.core import min_none, max_none
 
 
 class TestMinMax(unittest.TestCase):

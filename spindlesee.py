@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 """Starts an empty window with the plugins from the Spindlesee folder.."""
-from autotrack.core.experiment import Experiment
-from autotrack.gui import plugin_loader
-from autotrack.gui.launcher import launch_window, mainloop
-from autotrack.visualizer.empty_visualizer import EmptyVisualizer
-from autotrack.visualizer import activate
+from ai_track.core.experiment import Experiment
+from ai_track.gui import plugin_loader
+from ai_track.gui.launcher import launch_window, mainloop
+from ai_track.visualizer.empty_visualizer import EmptyVisualizer
+from ai_track.visualizer import activate
 
 experiment = Experiment()
 window = launch_window(experiment)

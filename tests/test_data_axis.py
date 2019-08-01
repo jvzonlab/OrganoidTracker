@@ -2,8 +2,8 @@ import unittest
 
 import numpy
 
-from autotrack.core.position import Position
-from autotrack.core.spline import Spline
+from ai_track.core.position import Position
+from ai_track.core.spline import Spline
 
 
 class TestDataAxis(unittest.TestCase):

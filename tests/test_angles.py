@@ -1,7 +1,7 @@
 import unittest
 
-from autotrack.core.vector import Vector3
-from autotrack.imaging import angles
+from ai_track.core.vector import Vector3
+from ai_track.imaging import angles
 
 
 class TestAngles(unittest.TestCase):
@@ -59,3 +59,16 @@ class TestAngles(unittest.TestCase):
         b = Vector3(3, 2, 1)
         c = Vector3(1, 1, 1)
         self.assertAlmostEqual(129.23152048, angles.right_hand_rule(a, b, c))
+
+    def test_right_hand_rule_on_straight_line(self):
+        a = Vector3(1, 0, 0)
+        b = Vector3(3, 0, 0)
+        c = Vector3(5, 0, 0)
+        self.assertAlmostEqual(180, angles.right_hand_rule(a, b, c))
+
+    def test_right_hand_rule_difficult(self):
+        # This one caused a crash earlier
+        a = Vector3(71.68, 81.92, 10.0)
+        b = Vector3(77.12, 88.96000000000001, 10.0)
+        c = Vector3(81.63334669338678, 94.80080160320641, 10.0)
+        self.assertAlmostEqual(180, angles.right_hand_rule(a, b, c))
