@@ -90,7 +90,7 @@ class ErrorsVisualizer(PositionListVisualizer):
         return super()._on_command(command)
 
     def _recheck_errors(self):
-        cell_error_finder.apply(self._experiment)
+        cell_error_finder.find_errors_in_experiment(self._experiment)
         # Recalculate everything
         selected_position = None
         if 0 <= self._current_position_index < len(self._position_list):

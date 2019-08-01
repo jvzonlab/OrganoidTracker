@@ -66,7 +66,7 @@ experiment.links = link_result
 experiment.scores = scores
 links_postprocessor.postprocess(experiment, margin_xy=_margin_xy)
 print("Checking results for common errors...")
-warning_count = cell_error_finder.apply(experiment)
+warning_count = cell_error_finder.find_errors_in_experiment(experiment)
 print("Writing results to file...")
 io.save_data_to_json(experiment, _links_output_file)
 print(f"Done! Found {warning_count} potential errors in the data.")

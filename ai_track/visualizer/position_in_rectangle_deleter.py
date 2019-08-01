@@ -24,13 +24,13 @@ class _DeletePositionsAction(UndoableAction):
     def do(self, experiment: Experiment):
         experiment.remove_positions((particle.position for particle in self._particles))
         for particle in self._particles:  # Check linked particles for errors
-            cell_error_finder.apply_on(experiment, *particle.links)
+            cell_error_finder.find_errors_in_positions_and_all_dividing_cells(experiment, *particle.links)
         return f"Removed all {len(self._particles)} positions within the rectangle"
 
     def undo(self, experiment: Experiment):
         for particle in self._particles:
             particle.restore(experiment)
-            cell_error_finder.apply_on(experiment, particle.position, *particle.links)
+            cell_error_finder.find_errors_in_positions_and_all_dividing_cells(experiment, particle.position, *particle.links)
         return f"Re-added {len(self._particles)} positions"
 
 

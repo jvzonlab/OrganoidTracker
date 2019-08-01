@@ -7,12 +7,13 @@ from ai_track.core.position_collection import PositionCollection
 from ai_track.core.position import Position
 from ai_track.core.resolution import ImageResolution
 from ai_track.core.score import Score, ScoreCollection, Family
+from ai_track.linking import cell_division_finder
 from ai_track.linking_analysis import linking_markers, particle_age_finder
 from ai_track.linking_analysis.errors import Error
 from ai_track.linking_analysis.linking_markers import EndMarker
 
 
-def apply(experiment: Experiment) -> int:
+def find_errors_in_experiment(experiment: Experiment) -> int:
     """Adds errors for all logical inconsistencies in the graph, like cells that spawn out of nowhere, cells that
     merge together and cells that have three or more daughters. Returns the amount of errors."""
     links = experiment.links
@@ -44,7 +45,7 @@ def get_error(links: Links, position: Position, scores: ScoreCollection, positio
             if score is None or score.is_unlikely_mother():
                 return Error.LOW_MOTHER_SCORE
         age = particle_age_finder.get_age(links, position)
-        if age is not None and age < 5:
+        if age is not None and age * resolution.time_point_interval_h <= 10:
             return Error.YOUNG_MOTHER
 
     past_positions = links.find_pasts(position)
@@ -84,19 +85,17 @@ def _get_highest_mother_score(scores: ScoreCollection, position: Position) -> Op
     return highest_score
 
 
-def apply_on_time_point(experiment: Experiment, time_point: TimePoint):
-    """Checks all positions in the given time point for logical errors, like cell merges, cell dividing into three
-    daughters, cells moving too fast, ect."""
-    apply_on_iterable(experiment, experiment.positions.of_time_point(time_point))
+def find_errors_in_positions_and_all_dividing_cells(experiment: Experiment, *iterable: Position):
+    """Checks all of the given positions and all dividing cells in the experiment for logical errors, like cell merges,
+    cell dividing into three daughters, cells moving too fast, ect. The reason dividing cells are also checked is that
+    otherwise it's not possible to detect when a young mother cell is no longer a young mother cell because far away in
+    time some link changed."""
+    positions = set(iterable)
+    positions |= cell_division_finder.find_mothers(experiment.links)
+    _find_errors_in_iterable(experiment, positions)
 
 
-def apply_on(experiment: Experiment, *iterable: Position):
-    """Checks all of the given positions for logical errors, like cell merges, cell dividing into three
-    daughters, cells moving too fast, ect."""
-    apply_on_iterable(experiment, iterable)
-
-
-def apply_on_iterable(experiment: Experiment, iterable: Iterable[Position]):
+def _find_errors_in_iterable(experiment: Experiment, iterable: Iterable[Position]):
     """Checks all positions in the given iterable for logical errors, like cell merges, cell dividing into three
     daughters, cells moving too fast, ect."""
     links = experiment.links
