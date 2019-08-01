@@ -198,7 +198,7 @@ class Visualizer:
                                     int(relative_offset.z), output=next_time_point_images)
 
                 rgb_images[:,:,:,0] = next_time_point_images # Red channel is next image
-            except KeyError:
+            except ValueError:
                 pass  # There is no next time point, ignore
             time_point_images = rgb_images / rgb_images.max()
         return time_point_images
