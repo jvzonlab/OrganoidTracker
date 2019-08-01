@@ -2,7 +2,7 @@ from typing import Dict, AbstractSet, Optional, Iterable
 
 from ai_track.core import TimePoint
 from ai_track.core.position import Position
-from ai_track.core.shape import ParticleShape, UnknownShape
+from ai_track.core.shape import ParticleShape, UnknownShape, UNKNOWN_SHAPE
 
 
 class _PositionsAtTimePoint:
@@ -23,7 +23,7 @@ class _PositionsAtTimePoint:
         """Gets the shape of a position. Returns UnknownShape if the given position is not part of this time point."""
         shape = self._positions.get(position)
         if shape is None:
-            return UnknownShape()
+            return UNKNOWN_SHAPE
         return shape
 
     def add_position(self, position: Position, position_shape: Optional[ParticleShape]):
@@ -32,7 +32,7 @@ class _PositionsAtTimePoint:
         if position_shape is None:
             if position in self._positions:
                 return  # Don't overwrite known shape with an unknown shape.
-            position_shape = UnknownShape()  # Don't use None as value in the dict
+            position_shape = UNKNOWN_SHAPE  # Don't use None as value in the dict
         self._positions[position] = position_shape
 
     def detach_position(self, position: Position) -> bool:
@@ -150,7 +150,7 @@ class PositionCollection:
     def get_shape(self, position: Position) -> ParticleShape:
         positions_at_time_point = self._all_positions.get(position.time_point_number())
         if positions_at_time_point is None:
-            return UnknownShape()
+            return UNKNOWN_SHAPE
         return positions_at_time_point.get_shape(position)
 
     def first_time_point_number(self) -> Optional[int]:

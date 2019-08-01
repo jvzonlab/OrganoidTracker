@@ -2,7 +2,7 @@ from typing import List, Dict
 
 from ai_track.core.experiment import Experiment
 from ai_track.core.position import Position
-from ai_track.core.shape import ParticleShape, UnknownShape
+from ai_track.core.shape import ParticleShape, UnknownShape, UNKNOWN_SHAPE
 from ai_track.core.typing import DataType
 
 
@@ -21,13 +21,13 @@ class Particle:
     @staticmethod
     def just_position(position: Position) -> "Particle":
         """Creates a particle for a position that has no known shape, no links and no data."""
-        return Particle(position, UnknownShape(), list(), dict())
+        return Particle(position, UNKNOWN_SHAPE, list(), dict())
 
     @staticmethod
     def position_with_links(position: Position, *, links: List[Position]) -> "Particle":
         """Creates a particle for a position that has no known shape and no data, but that has links to the given
         positions."""
-        return Particle(position, UnknownShape(), links, dict())
+        return Particle(position, UNKNOWN_SHAPE, links, dict())
 
     position: Position
     shape: ParticleShape

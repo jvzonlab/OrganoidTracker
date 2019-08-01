@@ -244,6 +244,14 @@ class Links:
             return set()
         return track._find_pasts(position.time_point_number())
 
+    def find_single_past(self, position: Position) -> Optional[Position]:
+        """If the position has a single link to the previous time point, then this method returns that linked position.
+        Otherwise, it returns None."""
+        pasts = self.find_pasts(position)
+        if len(pasts) == 1:
+            return pasts.pop()
+        return None
+
     def find_appeared_positions(self, time_point_number_to_ignore: Optional[int] = None) -> Iterable[Position]:
         """This method gets all positions that "popped up out of nothing": that have no links to the past. You can give
         this method a time point number to ignore. Usually, this would be the first time point number of the experiment,

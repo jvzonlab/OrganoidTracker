@@ -5,7 +5,7 @@ import numpy
 from ai_track.core.gaussian import Gaussian
 from ai_track.core.images import Image
 from ai_track.core.mask import create_mask_for
-from ai_track.core.shape import EllipseShape, GaussianShape, UnknownShape
+from ai_track.core.shape import EllipseShape, GaussianShape, UnknownShape, UNKNOWN_SHAPE
 
 
 class TestMasks(unittest.TestCase):
@@ -15,7 +15,7 @@ class TestMasks(unittest.TestCase):
         image = Image(numpy.random.normal(loc=5,scale=2,size=(3,50,50)))
         mask = create_mask_for(image)
 
-        ellipse = UnknownShape()
+        ellipse = UNKNOWN_SHAPE
         ellipse.draw_mask(mask, 23.01, 25, 1)
         masked_image = mask.create_masked_and_normalized_image(image)
 

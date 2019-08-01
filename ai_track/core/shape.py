@@ -139,6 +139,8 @@ class EllipseShape(ParticleShape):
 
 
 class UnknownShape(ParticleShape):
+    """Used when no shape was found. Don't use `isinstance(obj, UnknownShape)`, just use `obj.is_unknown()`.
+    It is not necessary to create new instances of this object, just use the UNKNOWN_SHAPE constant."""
 
     def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: MPLColor, edge_color: MPLColor):
         area.plot(x, y, 'o', markersize=25, color=(0, 0, 0, 0), markeredgecolor=color, markeredgewidth=5)
@@ -154,6 +156,10 @@ class UnknownShape(ParticleShape):
 
     def to_list(self):
         return []
+
+
+# No need to create new unknown shape - any instance is the same after all. Just use this instance.
+UNKNOWN_SHAPE = UnknownShape()
 
 
 class GaussianShape(ParticleShape):
