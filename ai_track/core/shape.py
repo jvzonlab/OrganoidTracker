@@ -70,6 +70,11 @@ class ParticleShape:
         if len(mask_array) == 1:
             cv2.circle(mask_array[0], (int(x - mask.offset_x), int(y - mask.offset_y)), color=1, radius=20, thickness=cv2.FILLED)
 
+    def is_failed(self) -> bool:
+        """Returns True if an attempt was made to detemine the shape of the position, but for whatever reason it
+         failed."""
+        return False
+
 
 class EllipseShape(ParticleShape):
     """Represents an ellipsoidal shape. The shape only stores 2D information. This class was previously used to store
@@ -142,6 +147,11 @@ class UnknownShape(ParticleShape):
     """Used when no shape was found. Don't use `isinstance(obj, UnknownShape)`, just use `obj.is_unknown()`.
     It is not necessary to create new instances of this object, just use the UNKNOWN_SHAPE constant."""
 
+    _is_failed: bool
+
+    def __init__(self, *, is_failed: bool):
+        self._is_failed = is_failed
+
     def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: MPLColor, edge_color: MPLColor):
         area.plot(x, y, 'o', markersize=25, color=(0, 0, 0, 0), markeredgecolor=color, markeredgewidth=5)
 
@@ -155,11 +165,17 @@ class UnknownShape(ParticleShape):
         return True
 
     def to_list(self):
+        if self._is_failed:
+            return ["failed"]
         return []
+
+    def is_failed(self) -> bool:
+        return self._is_failed
 
 
 # No need to create new unknown shape - any instance is the same after all. Just use this instance.
-UNKNOWN_SHAPE = UnknownShape()
+UNKNOWN_SHAPE = UnknownShape(is_failed=False)
+FAILED_SHAPE = UnknownShape(is_failed=True)
 
 
 class GaussianShape(ParticleShape):
@@ -269,9 +285,11 @@ def draw_marker_2d(x: float, y: float, dz: int, dt: int, area: Axes, color: MPLC
 
 def from_list(list: List) -> ParticleShape:
     if len(list) == 0:
-        return UnknownShape()
+        return UNKNOWN_SHAPE
     type = list[0]
-    if type == "ellipse":
+    if type == "failed":
+        return FAILED_SHAPE
+    elif type == "ellipse":
         return EllipseShape(*list[1:])
     elif type == "gaussian":
         return GaussianShape(Gaussian(*list[1:]))

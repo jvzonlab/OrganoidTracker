@@ -5,7 +5,7 @@ import numpy
 
 from ai_track.core import TimePoint
 from ai_track.core.experiment import Experiment
-from ai_track.core.shape import GaussianShape, UnknownShape, UNKNOWN_SHAPE
+from ai_track.core.shape import GaussianShape, FAILED_SHAPE
 from ai_track.imaging import bits
 from ai_track.position_detection import thresholding, watershedding, gaussian_fit, smoothing
 
@@ -47,7 +47,7 @@ def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, thres
     gaussians = gaussian_fit.perform_gaussian_mixture_fit_from_watershed(images, watershed, gaussian_fit_smooth_size,
                                                                          cluster_detection_erosion_rounds)
     for position, gaussian in zip(positions, gaussians):
-        shape = UNKNOWN_SHAPE if gaussian is None \
+        shape = FAILED_SHAPE if gaussian is None \
             else GaussianShape(gaussian
                                .translated(image_offset.x, image_offset.y, image_offset.z)
                                .translated(-position.x, -position.y, -position.z))
