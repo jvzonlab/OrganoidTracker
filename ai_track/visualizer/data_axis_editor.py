@@ -305,6 +305,8 @@ class DataAxisEditor(AbstractEditor):
         if min_time_point_number is None or max_time_point_number is None:
             raise UserError("Reference time point", "No data is loaded - cannot change reference time point")
         reference_time_point_number = self._experiment.splines.reference_time_point_number()
+        if reference_time_point_number is None:
+            reference_time_point_number = min_time_point_number
         explanation = "Data axes are used to follow positions over time accross a trajectory. If you have multiple\n" \
                       " of such trajectories, then all positions need to be assigned to one of these data axes.\n\n" \
                       f"Currently, each cell belongs to the data axis that was the closest by in time point" \

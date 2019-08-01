@@ -313,7 +313,8 @@ class SplineCollection:
 
     def reference_time_point_number(self, number: Optional[int] = None) -> Optional[int]:
         """Gets or sets the reference time point number. The reference time point is used to define the "original"
-        axis on which a point resides."""
+        axis on which a point resides. Returns None when getting the time point number if there are no data axes
+        provided."""
         if number is None:
             # Get the reference time point
             if self._reference_time_point_number is None:
@@ -352,7 +353,10 @@ class SplineCollection:
     def to_position_on_original_axis(self, links: Links, position: Position) -> Optional[DataAxisPosition]:
         """Gets the position on the axis that was closest in the first time point this position appeared. In this way,
         every position is assigned to a single axis, and will never switch to another axis during its lifetime."""
-        first_position = links.get_position_near_time_point_number(position, self.reference_time_point_number())
+        reference_time_point_number = self.reference_time_point_number()
+        if reference_time_point_number is None:
+            return None
+        first_position = links.get_position_near_time_point_number(position, reference_time_point_number)
         first_axis_position = self.to_position_on_spline(first_position, only_axis=True)
         if first_axis_position is None:
             return None
