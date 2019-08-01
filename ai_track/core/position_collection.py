@@ -188,7 +188,7 @@ class PositionCollection:
         """Runs through the first 1000 positions, and returns True if any of them has a shape defined."""
         i = 0
         for positions in self._all_positions.values():
-            for position, shape in positions.positions_and_shapes():
+            for position, shape in positions.positions_and_shapes().items():
                 if not isinstance(shape, UnknownShape):
                     return True  # Found a shape
                 i += 1
