@@ -36,6 +36,12 @@ def get_track_end_marker(links: Links, position: Position) -> Optional[EndMarker
     return EndMarker[ending_str.upper()]
 
 
+def is_live(links: Links, position: Position) -> bool:
+    """Returns true if the position is a live cell, i.e. it does not have a shed or death marker."""
+    end_marker = get_track_end_marker(links, position)
+    return end_marker != EndMarker.DEAD and end_marker != EndMarker.SHED
+
+
 def set_track_end_marker(links: Links, position: Position, end_marker: Optional[EndMarker]):
     """Sets a reason why the track ended at the given point."""
     if end_marker is None:

@@ -17,6 +17,7 @@ from ai_track.core.position import Position
 from ai_track.core.spline import SplineCollection, Spline
 from ai_track.core.resolution import ImageResolution
 from ai_track.core.score import ScoredFamily, Score, Family
+from ai_track.linking_analysis import linking_markers
 
 FILE_EXTENSION = "aut"
 
@@ -293,8 +294,9 @@ def _links_to_d3_data(links: Links, positions: Iterable[Position]) -> Dict:
 
 def save_positions_to_json(experiment: Experiment, json_file_name: str):
     """Saves a list of positions (pixel coordinate) to disk. Because the offset of the images is not saved, the offset
-    is added to all positions."""
-    data_structure = _encode_positions(experiment.positions, experiment.images.offsets)
+    is added to all positions. This method is mainly intended to export training data for neural networks, so it will
+    ignore dead cells."""
+    data_structure = _encode_image_positions(experiment)
 
     _create_parent_directories(json_file_name)
 
@@ -307,13 +309,18 @@ def save_positions_to_json(experiment: Experiment, json_file_name: str):
         os.remove(json_file_name_old)
 
 
-def _encode_positions(positions: PositionCollection, offsets: ImageOffsets):
+def _encode_image_positions(experiment: Experiment):
+    positions = experiment.positions
+    offsets = experiment.images.offsets
+    links = experiment.links
+
     data_structure = {}
     for time_point in positions.time_points():
         offset = offsets.of_time_point(time_point)
         encoded_positions = []
         for position in positions.of_time_point(time_point):
-            encoded_positions.append([position.x - offset.x, position.y - offset.y, position.z - offset.z])
+            if linking_markers.is_live(links, position):
+                encoded_positions.append([position.x - offset.x, position.y - offset.y, position.z - offset.z])
 
         data_structure[str(time_point.time_point_number())] = encoded_positions
     return data_structure
