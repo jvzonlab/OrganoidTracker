@@ -3,6 +3,7 @@ import numpy
 import matplotlib.cm
 from PIL import Image
 
+from ai_track.core.image_loader import ImageChannel
 from ai_track.core.images import Images
 
 
@@ -48,7 +49,7 @@ def create_image(image: ndarray, color_map_name: str = "Spectral") -> ndarray:
     return color_image
 
 
-def create_movie(images: Images) -> ndarray:
+def create_movie(images: Images, channel: ImageChannel) -> ndarray:
     """Creates a movie of 2D images (float32, [time, y, x, RGB]) similar to create_image, but for every time point."""
     last_time_point = images.image_loader().last_time_point_number()
     first_time_point = images.image_loader().first_time_point_number()
@@ -62,7 +63,7 @@ def create_movie(images: Images) -> ndarray:
     i = 0
     for time_point in images.time_points():
         print(f"Working on time point {time_point.time_point_number()}...")
-        image = images.get_image_stack(time_point)
+        image = images.get_image_stack(time_point, channel)
         colored_image = create_image(image)
         total_image[i] = (colored_image[:, :, 0:3] * 255).astype(numpy.uint8)
 

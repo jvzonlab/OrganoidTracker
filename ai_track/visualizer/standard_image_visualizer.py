@@ -109,11 +109,12 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             return
 
         images_copy = self._experiment.images.copy()
+        channel = self._display_settings.image_channel
 
         class ImageTask(Task):
             def compute(self):
                 from ai_track.imaging import depth_colored_image_creator
-                image_movie = depth_colored_image_creator.create_movie(images_copy)
+                image_movie = depth_colored_image_creator.create_movie(images_copy, channel)
                 tifffile.imsave(file, image_movie, compress=6)
                 return file
 
