@@ -99,7 +99,9 @@ def _get_x_min_avg_max(angle_lists: List[_Line]) -> Tuple[List[float], List[floa
 
 def _view_spindle_angle(window: Window):
     experiment = window.get_experiment()
-    angle_lists = _get_spindle_angles_list(experiment, limit_duration=True)
+    angle_lists = []
+    for experiment in window.get_experiments():
+        angle_lists += _get_spindle_angles_list(experiment, limit_duration=True)
 
     dialog.popup_figure(window.get_gui_experiment(), lambda figure: _show_figure(figure, angle_lists), size_cm=(8,9))
 

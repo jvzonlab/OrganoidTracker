@@ -42,8 +42,10 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
 
 
 def _view_spindle_angle(window: Window):
-    experiment = window.get_experiment()
-    angle_lists = _get_spindle_angles_list(experiment)
+    angle_lists = []
+    for experiment in window.get_experiments():
+        angle_lists += _get_spindle_angles_list(experiment)
+    print(len(angle_lists))
 
     dialog.popup_figure(window.get_gui_experiment(), lambda figure: _show_figure(figure, angle_lists), size_cm=(8,5))
 
