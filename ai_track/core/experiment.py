@@ -83,7 +83,8 @@ class Experiment:
             if t_factor < 0.9 or t_factor > 1.1:
                 # We cannot scale in time, unfortunately. Links must go from one time point to the next time point.
                 # So we throw an error if the scale changes too much
-                raise ValueError("Cannot change time scale")
+                raise ValueError(f"Cannot change time scale; existing scale {old_resolution.time_point_interval_m},"
+                                 f" new scale {new_resolution.time_point_interval_m}")
             if abs(x_factor - 1) < 0.0001 and abs(z_factor - 1) < 0.0001:
                 return  # Nothing to scale
             scale_factor = Position(x_factor, x_factor, z_factor)
