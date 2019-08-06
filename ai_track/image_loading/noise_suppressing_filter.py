@@ -11,9 +11,12 @@ from ai_track.position_detection import thresholding
 
 class NoiseSuppressingFilter(ImageLoader):
     _internal: ImageLoader
+    _noise_limit: int  # Scaled 0 to 255
 
-    def __init__(self, image_loader: ImageLoader):
+    def __init__(self, image_loader: ImageLoader, noise_limit: float = 0.08):
+        """noise_limit = 0.5 would remove all pixels of less than 50% of the max intensity of the image."""
         self._internal = image_loader
+        self._noise_limit = int(noise_limit * 255)
 
     def get_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
         array = self._internal.get_image_array(time_point, image_channel)
@@ -22,7 +25,7 @@ class NoiseSuppressingFilter(ImageLoader):
 
         # Remove all pixels outside the threshold
         array = bits.image_to_8bit(array)
-        array[array < 40] = 0
+        array[array < self._noise_limit] = 0
         return array
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
