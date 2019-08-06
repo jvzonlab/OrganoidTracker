@@ -48,9 +48,12 @@ def load_images_from_folder(experiment: Experiment, folder: str, file_name_forma
         file_name = path.join(folder, file_name_format.format(time=max_found_time_point, channel=min_channel))
         if not path.isfile(file_name):
             if min_channel == 0:
-                # Not a fatal error if channel 0 doesn't exist
-                min_channel += 1
-                continue
+                # Not a fatal error if channel 0 doesn't exist, but channel 1 does exist
+                next_channel_file_name = path.join(folder, file_name_format.format(time=max_found_time_point,
+                                                                                   channel=min_channel + 1))
+                if path.isfile(next_channel_file_name):
+                    min_channel += 1
+                    continue
             if max_found_time_point == 0:
                 # Not a fatal error if time point number 0 doesn't exist
                 max_found_time_point += 1

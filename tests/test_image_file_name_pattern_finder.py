@@ -14,3 +14,5 @@ class TestImageOffsets(unittest.TestCase):
 
     def test_time_and_channel(self):
         self.assertEquals("nd799xy08t{time:03}c{channel}.tif", find_time_and_channel_pattern("nd799xy08t001c1.tif"))
+        self.assertEquals("Mark_and_Find 001_Position001_C{channel}_T{time:02}.tif",
+                          find_time_and_channel_pattern("Mark_and_Find 001_Position001_C0_T00.tif"))

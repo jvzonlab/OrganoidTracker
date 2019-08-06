@@ -51,13 +51,13 @@ def _find_channel_pattern(file_name: str) -> Optional[str]:
     """Given a file name like "image_t1_c1.png", returns "image_t1_c{channel}.png". Returns None if no pattern for the time can
     be found."""
     # Support c001
-    counting_part = re.search('c0*1', file_name)
+    counting_part = re.search('c0*[01]', file_name)
     if counting_part is not None:
         start, end = counting_part.start(0), counting_part.end(0)
         return _fixup_pattern("channel", file_name[0:start] + "c{channel:0" + str(end - start - 1) + "}" + file_name[end:])
 
     # Support C001
-    counting_part = re.search('C0*1', file_name)
+    counting_part = re.search('C0*[01]', file_name)
     if counting_part is not None:
         start, end = counting_part.start(0), counting_part.end(0)
         return _fixup_pattern("channel", file_name[0:start] + "C{channel:0" + str(end - start - 1) + "}" + file_name[end:])
