@@ -35,8 +35,9 @@ def prompt_int(title: str, question: str, *, minimum: int = -2147483647, maximum
     return result if ok else None
 
 
-def prompt_float(title: str, question: str, minimum: float = -1.0e10, maximum: float = 1.0e10) -> Optional[float]:
-    result, ok = QInputDialog.getDouble(_window(), title, question, min=minimum, max=maximum)
+def prompt_float(title: str, question: str, minimum: float = -1.0e10, maximum: float = 1.0e10, default: float = 0
+                 ) -> Optional[float]:
+    result, ok = QInputDialog.getDouble(_window(), title, question, min=minimum, max=maximum, value=default)
     return result if ok else None
 
 

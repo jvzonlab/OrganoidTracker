@@ -45,7 +45,7 @@ if len(_debug_folder) == 0:
 config.save()
 # END OF PARAMETERS
 
-experiment.images.image_loader(NoiseSuppressingFilter(experiment.images.image_loader()))
+experiment.images.filters.append(NoiseSuppressingFilter())
 if not experiment.images.image_loader().has_images():
     print("No images were found. Please check the configuration file and make sure that you have stored images at"
           " the specified location.")

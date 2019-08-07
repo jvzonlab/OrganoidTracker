@@ -5,7 +5,7 @@ from scipy.ndimage import morphology
 import tifffile
 
 from ai_track.core.experiment import Experiment
-from ai_track.imaging import bits
+from ai_track.util import bits
 from ai_track.position_detection import thresholding
 from os import path
 

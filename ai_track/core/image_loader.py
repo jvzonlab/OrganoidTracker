@@ -91,3 +91,23 @@ class NullImageLoader(ImageLoader):
 
     def serialize_to_config(self) -> Tuple[str, str]:
         return "", ""
+
+
+class ImageFilter:
+    """Filter for images, for example to enhance the contrast."""
+
+    @abstractmethod
+    def filter(self, image_8bit: ndarray):
+        """Filters the given input array, which is a grayscale array with values from 0 to 255. The input array will be
+        modified."""
+        raise NotImplementedError()
+
+    @abstractmethod
+    def copy(self):
+        """Copies the filter, such that changes to this filter have no effect on the copy, and vice versa."""
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_name(self) -> str:
+        """Returns a user-friendly name, like "Enhance contrast" or "Suppress noise"."""
+        raise NotImplementedError()

@@ -105,14 +105,16 @@ def _write_positions_and_metadata_to_csv(positions: PositionCollection, links: L
     for time_point in positions.time_points():
         file_name = os.path.join(folder, file_prefix + str(time_point.time_point_number()))
         with open(file_name, "w") as file_handle:
-            file_handle.write("x,y,z,density_mm1,curvature_angle,lineage_id\n")
+            file_handle.write("x,y,z,density_mm1,curvature_angle,lineage_id,original_track_id\n")
             positions_of_time_point = positions.of_time_point(time_point)
             for position in positions_of_time_point:
                 lineage_id = lineage_id_creator.get_lineage_id(links, position)
+                original_track_id = lineage_id_creator.get_original_track_id(links, position)
                 curvature = cell_curvature_calculator.get_curvature_angle(positions, position, resolution)
                 density = cell_density_calculator.get_density_mm1(positions_of_time_point, position, resolution)
 
                 vector = position.to_vector_um(resolution)
-                file_handle.write(f"{vector.x},{vector.y},{vector.z},{density},{curvature},{lineage_id}\n")
+                file_handle.write(f"{vector.x},{vector.y},{vector.z},{density},{curvature},"
+                                  f"{lineage_id},{original_track_id}\n")
 
 

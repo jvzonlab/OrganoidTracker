@@ -1,12 +1,12 @@
 from typing import Dict, Optional, List, Tuple, Iterable
 
-import numpy
 from numpy import ndarray
 
 from ai_track.core import TimePoint, UserError
-from ai_track.core.image_loader import ImageLoader, ImageChannel, NullImageLoader
+from ai_track.core.image_loader import ImageLoader, ImageChannel, NullImageLoader, ImageFilter
 from ai_track.core.position import Position
 from ai_track.core.resolution import ImageResolution
+from ai_track.util import bits
 
 _ZERO = Position(0, 0, 0)
 
@@ -172,10 +172,12 @@ class Images:
     _image_loader: ImageLoader
     _offsets: ImageOffsets
     _resolution: Optional[ImageResolution] = None
+    _filters: List[ImageFilter]
 
     def __init__(self):
         self._image_loader = NullImageLoader()
         self._offsets = ImageOffsets()
+        self._filters = []
 
     @property
     def offsets(self):
@@ -240,7 +242,14 @@ class Images:
                 return None
             image_channel = channels[0]
 
-        return self._image_loader.get_image_array(time_point, image_channel)
+        array = self._image_loader.get_image_array(time_point, image_channel)
+        if len(self._filters) > 0:
+            # Apply all filters
+            image_8bit = bits.image_to_8bit(array)
+            for image_filter in self._filters:
+                image_filter.filter(image_8bit)
+            array = image_8bit
+        return array
 
     def set_resolution(self, resolution: Optional[ImageResolution]):
         """Sets the image resolution."""
@@ -252,6 +261,7 @@ class Images:
         copy._image_loader = self._image_loader.copy()
         copy._resolution = self._resolution  # No copy, as this object is immutable
         copy._offsets = self._offsets.copy()
+        copy._filters = [filter.copy() for filter in self._filters]
         return copy
 
     def time_points(self) -> Iterable[TimePoint]:
@@ -262,3 +272,8 @@ class Images:
             return
         for time_point_number in range(min_time_point_number, max_time_point_number + 1):
             yield TimePoint(time_point_number)
+
+    @property
+    def filters(self) -> List[ImageFilter]:
+        """Gets a mutable list of all filters applied to the images."""
+        return self._filters
