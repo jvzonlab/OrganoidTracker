@@ -175,7 +175,7 @@ class DataAxisEditor(AbstractEditor):
             return None
         return selected_spline
 
-    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int):
+    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int) -> bool:
         if not self._draw_axis_positions or dt != 0 or abs(dz) > 3:
             super()._on_position_draw(position, color, dz, dt)
             return

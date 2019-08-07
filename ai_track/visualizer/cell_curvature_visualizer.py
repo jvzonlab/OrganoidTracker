@@ -49,7 +49,7 @@ class CellCurvatureVisualizer(ExitableImageVisualizer):
 
         self._position_to_curvature = curvatures
 
-    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int):
+    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int) -> bool:
         color_map = matplotlib.cm.get_cmap("jet")
 
         curvature = self._position_to_curvature.get(position)
@@ -59,3 +59,4 @@ class CellCurvatureVisualizer(ExitableImageVisualizer):
             curvature_color = color_map(min(1, curvature_scaled))
         if dt == 0 and abs(dz) <= 3:
             self._draw_selection(position, curvature_color)
+        return True

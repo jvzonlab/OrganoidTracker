@@ -1,5 +1,6 @@
-﻿# Installation instructions
-[← Back to main page](INDEX.md)
+﻿Installation instructions
+=========================
+[← Back to main page](./INDEX.md)
 
 To be able to run the scripts, you first need to have Anaconda or Miniconda installed. Then, open an Anaconda Prompt and use `cd` to navigate to this directory. Run the following two commands:
 

@@ -55,7 +55,7 @@ class CellDensityVisualizer(ExitableImageVisualizer):
         self._max_cell_density = max_density
         self._position_to_density = densities
 
-    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int):
+    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int) -> bool:
         color_map = matplotlib.cm.get_cmap("jet")
 
         density = self._position_to_density.get(position)
@@ -64,3 +64,4 @@ class CellDensityVisualizer(ExitableImageVisualizer):
             density_color = color_map((density - self._min_cell_density)/(self._max_cell_density - self._min_cell_density))
         if dt == 0 and abs(dz) <= 3:
             self._draw_selection(position, density_color)
+        return True

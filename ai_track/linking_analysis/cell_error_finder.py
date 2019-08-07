@@ -121,8 +121,18 @@ def find_errors_in_positions_and_all_dividing_cells(experiment: Experiment, *ite
     cell dividing into three daughters, cells moving too fast, ect. The reason dividing cells are also checked is that
     otherwise it's not possible to detect when a young mother cell is no longer a young mother cell because far away in
     time some link changed."""
-    positions = set(iterable)
-    positions |= cell_division_finder.find_mothers(experiment.links)
+    positions = set()
+
+    # Add given positions and links
+    for position in iterable:
+        positions.add(position)
+        positions |= experiment.links.find_links_of(position)
+
+    # Add mother and daughter cells
+    for family in cell_division_finder.find_families(experiment.links):
+        positions.add(family.mother)
+        positions |= family.daughters
+
     _find_errors_in_iterable(experiment, positions)
 
 

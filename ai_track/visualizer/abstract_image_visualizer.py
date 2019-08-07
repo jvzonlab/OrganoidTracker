@@ -168,7 +168,8 @@ class AbstractImageVisualizer(Visualizer):
                 continue
 
             # Draw the position, making it selectable
-            self._on_position_draw(position, color, dz, dt)
+            if not self._on_position_draw(position, color, dz, dt):
+                continue
 
             # Add error marker
             if linking_markers.get_error_marker(links, position) is not None:
@@ -192,10 +193,11 @@ class AbstractImageVisualizer(Visualizer):
         self._ax.scatter(positions_x_list, positions_y_list, s=positions_marker_sizes, facecolor=color,
                          edgecolors=positions_edge_colors, linewidths=1, marker=marker)
 
-    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int):
-        """Called whenever a position is being drawn."""
+    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int) -> bool:
+        """Called whenever a position is being drawn. Return False to prevent drawing of this position."""
         # Make position selectable
         self.__positions_near_visible_layer.append(position)
+        return True
 
     def _draw_connections(self):
         """Draws all connections. A connection indicates that two positions are not the same, but are related."""

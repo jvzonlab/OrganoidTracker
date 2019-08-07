@@ -62,3 +62,4 @@ class CellFateVisualizer(ExitableImageVisualizer):
             color = _cell_fate_to_color(cell_fate)
             self._ax.annotate(_cell_fate_to_text(cell_fate), (position.x, position.y), fontsize=8 - abs(dz / 2),
                               fontweight="bold", color=color, backgroundcolor=(1,1,1,0.8))
+        return True

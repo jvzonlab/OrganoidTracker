@@ -39,8 +39,9 @@ class CellCompartmentVisualizer(ExitableImageVisualizer):
             result[position] = cell_compartment_finder.find_compartment(self._experiment, position)
         self._cell_compartments = result
 
-    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int):
+    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int) -> bool:
         if dt == 0 and abs(dz) <= 3:
             cell_compartment = self._cell_compartments.get(position, CellCompartment.UNKNOWN)
             color = _cell_compartment_to_color(cell_compartment)
             self._draw_selection(position, color)
+        return True

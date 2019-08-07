@@ -107,9 +107,9 @@ class LineageFateVisualizer(ExitableImageVisualizer):
             return None  # No crypt axes recorded
         return crypt_axis_position_total / crypt_axis_position_count
 
-    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int):
+    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int) -> bool:
         if dt != 0 or abs(dz) > 3:
-            return
+            return True
 
         lineage_fate = self._lineage_fates.get(position)
         background_color = (0.2, 0.2, 0.2)
@@ -121,3 +121,4 @@ class LineageFateVisualizer(ExitableImageVisualizer):
         text_color = "black" if sum(background_color) / len(background_color) > 0.6 else "white"
         self._draw_annotation(position, _lineage_fate_to_text(lineage_fate), text_color=text_color,
                               background_color=background_color)
+        return True

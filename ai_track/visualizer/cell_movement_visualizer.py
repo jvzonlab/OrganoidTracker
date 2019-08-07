@@ -12,9 +12,9 @@ class CellMovementVisualizer(ExitableImageVisualizer):
     def _draw_links(self):
         pass  # Don't draw links
 
-    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int):
-        if abs(dz) > self.MAX_Z_DISTANCE or dt != 0:
-            return
+    def _on_position_draw(self, position: Position, color: str, dz: int, dt: int) -> bool:
+        if abs(dz) > self.MAX_Z_DISTANCE + 1 or dt != 0:
+            return False
 
         last_time_point = self._experiment.get_time_point(self._experiment.positions.last_time_point_number())
         future_positions = particle_movement_finder.find_future_positions_at(self._experiment.links, position,
@@ -28,3 +28,4 @@ class CellMovementVisualizer(ExitableImageVisualizer):
             color = colormap(direction / 360)
             self._ax.arrow(position.x, position.y, future_position.x - position.x, future_position.y - position.y,
                            length_includes_head=True, width=3, color=color)
+        return False  # Prevents drawing the usual dots
