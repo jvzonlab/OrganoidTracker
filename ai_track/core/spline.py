@@ -293,7 +293,7 @@ class SplineCollection:
     _spline_is_axis: Dict[int, bool]  # Map of spline_id -> bool
     _min_time_point_number: Optional[int]
     _max_time_point_number: Optional[int]
-    _reference_time_point_number: Optional[int]
+    _reference_time_point: Optional[TimePoint]
 
     def __init__(self):
         self._splines = dict()
@@ -301,7 +301,7 @@ class SplineCollection:
         self._spline_is_axis = dict()
         self._min_time_point_number = None
         self._max_time_point_number = None
-        self._reference_time_point_number = None
+        self._reference_time_point = None
 
     def first_time_point_number(self) -> Optional[int]:
         """Gets the first time point that contains data axes, or None if there are no axes stored."""
@@ -311,20 +311,21 @@ class SplineCollection:
         """Gets the last time point (inclusive) that contains data axes, or None if there are no axes stored."""
         return self._max_time_point_number
 
-    def reference_time_point_number(self, number: Optional[int] = None) -> Optional[int]:
+    def reference_time_point(self, number: Optional[TimePoint] = None) -> Optional[TimePoint]:
         """Gets or sets the reference time point number. The reference time point is used to define the "original"
         axis on which a point resides. Returns None when getting the time point number if there are no data axes
         provided."""
         if number is None:
             # Get the reference time point
-            if self._reference_time_point_number is None:
-                return self.first_time_point_number()
-            return self._reference_time_point_number
+            if self._reference_time_point is None:
+                first_time_point_number = self.first_time_point_number()
+                return TimePoint(first_time_point_number) if first_time_point_number is not None else None
+            return self._reference_time_point
 
         # Set the reference time point
-        self._reference_time_point_number = number
-        if self._reference_time_point_number == self.first_time_point_number():
-            self._reference_time_point_number = None  # The first time point number is the default
+        self._reference_time_point = number
+        if self._reference_time_point.time_point_number() == self.first_time_point_number():
+            self._reference_time_point = None  # The first time point number is the default
 
     def of_time_point(self, time_point: TimePoint) -> Iterable[Tuple[int, Spline]]:
         """Gets the data axes of the time point along with their id, or an empty collection if that time point has no
@@ -353,10 +354,10 @@ class SplineCollection:
     def to_position_on_original_axis(self, links: Links, position: Position) -> Optional[DataAxisPosition]:
         """Gets the position on the axis that was closest in the first time point this position appeared. In this way,
         every position is assigned to a single axis, and will never switch to another axis during its lifetime."""
-        reference_time_point_number = self.reference_time_point_number()
-        if reference_time_point_number is None:
+        reference_time_point = self.reference_time_point()
+        if reference_time_point is None:
             return None
-        first_position = links.get_position_near_time_point_number(position, reference_time_point_number)
+        first_position = links.get_position_near_time_point(position, reference_time_point)
         first_axis_position = self.to_position_on_spline(first_position, only_axis=True)
         if first_axis_position is None:
             return None

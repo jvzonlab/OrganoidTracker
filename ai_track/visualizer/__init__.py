@@ -1,45 +1,23 @@
 """A bunch of visualizers, all based on Matplotlib. (The fact that TkInter is also used is abstracted away.)"""
-from timeit import default_timer
 from typing import Iterable, Optional, Union, Dict, Any, Tuple
 
 import numpy
 from numpy import ndarray
-from matplotlib.backend_bases import KeyEvent, MouseEvent, PickEvent
+from matplotlib.backend_bases import KeyEvent, MouseEvent
 from matplotlib.figure import Figure, Axes
 
 from ai_track import core
 from ai_track.core import TimePoint
-from ai_track.core.image_loader import ImageChannel
 from ai_track.core.position import Position
 from ai_track.core.experiment import Experiment
 from ai_track.core.resolution import ImageResolution
 from ai_track.core.typing import MPLColor
 from ai_track.gui import dialog
 from ai_track.gui.threading import Task
-from ai_track.gui.window import Window
+from ai_track.gui.window import Window, DisplaySettings
 from ai_track.imaging import cropper
 from ai_track.linking.nearby_position_finder import find_closest_position
 from ai_track.linking_analysis import linking_markers
-
-
-class DisplaySettings:
-    show_next_time_point: bool
-    show_images: bool
-    show_reconstruction: bool
-    show_splines: bool
-    image_channel: Optional[ImageChannel]  # Set to None to use the default image channel
-
-    def __init__(self, *, show_next_time_point: bool = False, show_images: bool = True,
-                 show_reconstruction: bool = False, show_data_axes: bool = True):
-        self.show_next_time_point = show_next_time_point
-        self.show_images = show_images
-        self.show_reconstruction = show_reconstruction
-        self.show_splines = show_data_axes
-        self.image_channel = None
-
-    KEY_SHOW_NEXT_IMAGE_ON_TOP = "n"
-    KEY_SHOW_IMAGES = "i"
-    KEY_SHOW_RECONSTRUCTION = "r"
 
 
 class Visualizer:
@@ -49,22 +27,32 @@ class Visualizer:
     _ax: Axes
     _display_settings: DisplaySettings
 
-    def __init__(self, window: Window, *, display_settings: Optional[DisplaySettings] = None):
+    def __init__(self, window: Window):
         if not isinstance(window, Window):
             raise ValueError("window is not a Window")
         self._window = window
         self._fig = window.get_figure()
         self._ax = self._fig.gca()
 
-        if display_settings is None:
-            display_settings = DisplaySettings()
-        self._display_settings = display_settings
-
     @property
     def _experiment(self) -> Experiment:
         """By making this a dynamic property (instead of just using self._experiment = window.get_experiment()), its
         value is always up-to-date, even if window.set_experiment(...) is called."""
         return self._window.get_experiment()
+
+    @property
+    def _time_point(self) -> TimePoint:
+        """Gets the current time point that is visible. Only used in visualizers that display a single time point."""
+        return self._window.display_settings.time_point
+
+    @property
+    def _z(self) -> int:
+        """Gets the current z layer that is visible. Only used in the 2D image visualizers."""
+        return self._window.display_settings.z
+
+    @property
+    def _display_settings(self) -> DisplaySettings:
+        return self._window.display_settings
 
     def _clear_axis(self):
         """Clears the axis, except that zoom settings are preserved"""

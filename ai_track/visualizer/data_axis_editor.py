@@ -9,8 +9,8 @@ from ai_track.core.marker import Marker
 from ai_track.core.spline import Spline
 from ai_track.gui import dialog
 from ai_track.gui.undo_redo import UndoableAction, ReversedAction
-from ai_track.gui.window import Window
-from ai_track.visualizer import activate, DisplaySettings
+from ai_track.gui.window import Window, DisplaySettings
+from ai_track.visualizer import activate
 from ai_track.visualizer.abstract_editor import AbstractEditor
 
 
@@ -96,20 +96,20 @@ class _SetCheckpointAction(UndoableAction):
 
 
 class _SetReferenceTimePointAction(UndoableAction):
-    _old_reference_time_point_number: int
-    _new_reference_time_point_number: int
+    _old_reference_time_point: TimePoint
+    _new_reference_time_point: TimePoint
 
-    def __init__(self, old_reference_time_point_number: int, new_reference_time_point_number: int):
-        self._old_reference_time_point_number = old_reference_time_point_number
-        self._new_reference_time_point_number = new_reference_time_point_number
+    def __init__(self, old_reference_time_point: TimePoint, new_reference_time_point: TimePoint):
+        self._old_reference_time_point = old_reference_time_point
+        self._new_reference_time_point = new_reference_time_point
 
     def do(self, experiment: Experiment) -> str:
-        experiment.splines.reference_time_point_number(self._new_reference_time_point_number)
-        return f"Changed the reference time point number to {self._new_reference_time_point_number}"
+        experiment.splines.reference_time_point(self._new_reference_time_point)
+        return f"Changed the reference time point number to {self._new_reference_time_point.time_point_number()}"
 
     def undo(self, experiment: Experiment) -> str:
-        experiment.splines.reference_time_point_number(self._old_reference_time_point_number)
-        return f"Changed the reference time point number back to {self._old_reference_time_point_number}"
+        experiment.splines.reference_time_point(self._old_reference_time_point)
+        return f"Changed the reference time point number back to {self._old_reference_time_point.time_point_number()}"
 
 
 class DataAxisEditor(AbstractEditor):
@@ -122,10 +122,9 @@ class DataAxisEditor(AbstractEditor):
     _selected_spline_id: Optional[int]
     _draw_axis_positions: bool
 
-    def __init__(self, window: Window, *, time_point: Optional[TimePoint] = None, z: int = 14,
-                 display_settings: DisplaySettings = None):
-        display_settings.show_splines = True
-        super().__init__(window, time_point=time_point, z=z, display_settings=display_settings)
+    def __init__(self, window: Window):
+        window.display_settings.show_splines = True
+        super().__init__(window)
         self._selected_spline_id = None
         self._draw_axis_positions = False
 
@@ -269,8 +268,7 @@ class DataAxisEditor(AbstractEditor):
 
     def _exit_view(self):
         from ai_track.visualizer.link_and_position_editor import LinkAndPositionEditor
-        data_editor = LinkAndPositionEditor(self._window, time_point=self._time_point, z=self._z,
-                                            display_settings=self._display_settings)
+        data_editor = LinkAndPositionEditor(self._window)
         activate(data_editor)
 
     def _set_checkpoint(self, x: float, y: float):
@@ -304,16 +302,16 @@ class DataAxisEditor(AbstractEditor):
         max_time_point_number = self._experiment.last_time_point_number()
         if min_time_point_number is None or max_time_point_number is None:
             raise UserError("Reference time point", "No data is loaded - cannot change reference time point")
-        reference_time_point_number = self._experiment.splines.reference_time_point_number()
-        if reference_time_point_number is None:
-            reference_time_point_number = min_time_point_number
+        reference_time_point = self._experiment.splines.reference_time_point()
+        if reference_time_point is None:
+            reference_time_point = TimePoint(min_time_point_number)
         explanation = "Data axes are used to follow positions over time accross a trajectory. If you have multiple\n" \
                       " of such trajectories, then all positions need to be assigned to one of these data axes.\n\n" \
                       f"Currently, each cell belongs to the data axis that was the closest by in time point" \
-                      f" {reference_time_point_number}. Which\ntime point should it be instead?" \
+                      f" {reference_time_point.time_point_number()}. Which\ntime point should it be instead?" \
                       f" ({min_time_point_number}-{max_time_point_number}, inclusive)"
         answer = dialog.prompt_int("Reference time point", explanation, minimum=min_time_point_number,
                                    maximum=max_time_point_number, default=self._time_point.time_point_number())
         if answer is None:
             return
-        self._perform_action(_SetReferenceTimePointAction(reference_time_point_number, answer))
+        self._perform_action(_SetReferenceTimePointAction(reference_time_point, TimePoint(answer)))

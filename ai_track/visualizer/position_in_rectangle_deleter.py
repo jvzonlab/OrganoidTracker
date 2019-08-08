@@ -47,8 +47,7 @@ class PositionsInRectangleDeleter(AbstractEditor):
 
     def _exit_view(self):
         from ai_track.visualizer.link_and_position_editor import LinkAndPositionEditor
-        data_editor = LinkAndPositionEditor(self._window, time_point=self._time_point, z=self._z,
-                                            display_settings=self._display_settings)
+        data_editor = LinkAndPositionEditor(self._window)
         activate(data_editor)
 
     def _on_key_press(self, event: KeyEvent):

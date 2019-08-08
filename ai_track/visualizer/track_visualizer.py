@@ -10,8 +10,7 @@ from ai_track.core.links import Links, LinkingTrack
 from ai_track.core.position import Position
 from ai_track.core.resolution import ImageResolution
 from ai_track.gui import dialog
-from ai_track.gui.window import Window
-from ai_track.visualizer import DisplaySettings
+from ai_track.gui.window import Window, DisplaySettings
 from ai_track.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
 
@@ -115,8 +114,8 @@ class TrackVisualizer(ExitableImageVisualizer):
 
     _selected_lineages: List[Links]
 
-    def __init__(self, window: Window, time_point: TimePoint, z: int, display_settings: DisplaySettings):
-        super().__init__(window, time_point=time_point, z=z, display_settings=display_settings)
+    def __init__(self, window: Window, display_settings: DisplaySettings):
+        super().__init__(window, display_settings=display_settings)
         self._selected_lineages = list()
 
     def _on_position_draw(self, position: Position, color: str, dz: int, dt: int) -> bool:

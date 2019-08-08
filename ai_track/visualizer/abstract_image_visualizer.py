@@ -15,9 +15,9 @@ from ai_track.core.spline import Spline
 from ai_track.core.typing import MPLColor
 from ai_track.gui import dialog
 from ai_track.gui.dialog import prompt_int, popup_error
-from ai_track.gui.window import Window
+from ai_track.gui.window import Window, DisplaySettings
 from ai_track.linking_analysis import linking_markers
-from ai_track.visualizer import Visualizer, DisplaySettings
+from ai_track.visualizer import Visualizer
 
 
 class AbstractImageVisualizer(Visualizer):
@@ -26,23 +26,19 @@ class AbstractImageVisualizer(Visualizer):
     MAX_Z_DISTANCE: int = 3
     DEFAULT_SIZE = (30, 500, 500)
 
-    _time_point: TimePoint = None
     _time_point_images: Optional[ndarray] = None
-    _z: int
     __positions_near_visible_layer: List[Position]
 
     # The color map should typically not be transferred when switching to another viewer, so it is not part of the
     # display_settings property
     _color_map: Colormap = cm.get_cmap("gray")
 
-    def __init__(self, window: Window, *, time_point: Optional[TimePoint] = None, z: int = 14,
-                 display_settings: DisplaySettings = None):
-        super().__init__(window, display_settings=display_settings)
+    def __init__(self, window: Window):
+        super().__init__(window)
 
-        if time_point is None:
-            time_point = TimePoint(window.get_experiment().first_time_point_number())
-        self._z = int(z)
-        self._load_time_point(time_point)
+        self._clamp_time_point()
+        self._clamp_z()
+        self._load_time_point(self._time_point)
         self.__positions_near_visible_layer = []
 
     def _load_time_point(self, time_point: TimePoint):
@@ -51,7 +47,7 @@ class AbstractImageVisualizer(Visualizer):
                 time_point.time_point_number() < self._experiment.first_time_point_number() or \
                 time_point.time_point_number() > self._experiment.last_time_point_number():
             # Experiment has no data (for this time point)
-            self._time_point = time_point
+            self._display_settings.time_point = time_point
             self._time_point_images = None
             return
 
@@ -64,7 +60,7 @@ class AbstractImageVisualizer(Visualizer):
         else:
             time_point_images = None
 
-        self._time_point = time_point
+        self._display_settings.time_point = time_point
         self._time_point_images = time_point_images
         self._clamp_z()
 
@@ -376,21 +372,31 @@ class AbstractImageVisualizer(Visualizer):
         self.draw_view()
 
     def _move_in_z(self, dz: int):
-        old_z = self._z
-        self._z += dz
+        old_z = self._display_settings.z
+        self._display_settings.z += dz
 
         self._clamp_z()
 
-        if self._z != old_z:
+        if self._display_settings.z != old_z:
             self.draw_view()
+
+    def _clamp_time_point(self):
+        time_point_number = self._time_point.time_point_number()
+        min_time_point_number = self._experiment.first_time_point_number()
+        max_time_point_number = self._experiment.last_time_point_number()
+        if min_time_point_number is not None and time_point_number < min_time_point_number:
+            self._display_settings.time_point = TimePoint(min_time_point_number)
+        elif max_time_point_number is not None and time_point_number > max_time_point_number:
+            self._display_settings.time_point = TimePoint(max_time_point_number)
 
     def _clamp_z(self):
         """Makes sure a valid z pos is selected. Changes the z if not."""
         image_z_offset = int(self._experiment.images.offsets.of_time_point(self._time_point).z)
-        if self._z < image_z_offset:
-            self._z = image_z_offset
-        if self._time_point_images is not None and self._z >= len(self._time_point_images) + image_z_offset:
-            self._z = len(self._time_point_images) + image_z_offset - 1
+        if self._display_settings.z < image_z_offset:
+            self._display_settings.z = image_z_offset
+        if self._time_point_images is not None\
+                and self._display_settings.z >= len(self._time_point_images) + image_z_offset:
+            self._display_settings.z = len(self._time_point_images) + image_z_offset - 1
 
     def _clamp_channel(self):
         """Makes sure a valid channel is selected. Changes the channel if not."""
@@ -432,7 +438,7 @@ class AbstractImageVisualizer(Visualizer):
             self._ax.set_xlim(position.x - 50, position.x + 50)
             self._ax.set_ylim(position.y + 50, position.y - 50)
             self._ax.set_autoscale_on(False)
-            self._z = round(position.z)
+            self._display_settings.z = round(position.z)
             self._clamp_z()
             self.draw_view()
             self.update_status(f"Moved to {position}")

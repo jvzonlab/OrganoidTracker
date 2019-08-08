@@ -16,7 +16,7 @@ class ExitableImageVisualizer(AbstractImageVisualizer):
 
     def _exit_view(self):
         from ai_track.visualizer.standard_image_visualizer import StandardImageVisualizer
-        image_visualizer = StandardImageVisualizer(self._window, self._time_point, self._z, self._display_settings)
+        image_visualizer = StandardImageVisualizer(self._window)
         activate(image_visualizer)
 
     def _on_command(self, command: str) -> bool:

@@ -6,9 +6,9 @@ from ai_track import core
 from ai_track.core import clamp, shape
 from ai_track.core.links import Links
 from ai_track.core.position import Position
-from ai_track.gui.window import Window
+from ai_track.gui.window import Window, DisplaySettings
 from ai_track.linking.nearby_position_finder import find_closest_position
-from ai_track.visualizer import Visualizer, activate, DisplaySettings
+from ai_track.visualizer import Visualizer, activate
 
 
 class PositionListVisualizer(Visualizer):
@@ -21,13 +21,12 @@ class PositionListVisualizer(Visualizer):
 
     __last_position_by_class: Dict[Type, Position] = dict()  # Static variable
 
-    def __init__(self, window: Window, all_positions: List[Position], chosen_position: Optional[Position] = None,
-                 display_settings: Optional[DisplaySettings] = None):
+    def __init__(self, window: Window, all_positions: List[Position], chosen_position: Optional[Position] = None):
         """Creates a viewer for a list of positions. The positions will automatically be sorted by time_point number.
         chosen_position is a position that is used as a starting point for the viewer, but only if it appears in the
         list
         """
-        super().__init__(window, display_settings=display_settings)
+        super().__init__(window)
         self._position_list = all_positions
         self._position_list.sort(key=lambda position: position.time_point_number())
         self._show_closest_or_stored_position(chosen_position)  # Calling a self.method during construction is bad...
@@ -98,10 +97,15 @@ class PositionListVisualizer(Visualizer):
         PositionListVisualizer.__last_position_by_class[type(self)] = current_position
 
     def _zoom_to_cell(self):
-        mother = self._position_list[self._current_position_index]
-        self._ax.set_xlim(mother.x - 50, mother.x + 50)
-        self._ax.set_ylim(mother.y + 50, mother.y - 50)
+        viewed_position = self._position_list[self._current_position_index]
+        self._ax.set_xlim(viewed_position.x - 50, viewed_position.x + 50)
+        self._ax.set_ylim(viewed_position.y + 50, viewed_position.y - 50)
         self._ax.set_autoscale_on(False)
+
+        # Some bookkeeping - if you exit the this visualizer, then in this way you end up in the right spot
+        # (This visualizer doesn't use those settings - it just uses _position_list and _current_position_index)
+        self._display_settings.time_point = viewed_position.time_point()
+        self._display_settings.z = viewed_position.z
 
     def _draw_connections(self, links: Links, main_position: Position, line_style:str = "solid",
                           line_width: int = 1):
@@ -147,14 +151,7 @@ class PositionListVisualizer(Visualizer):
     def _exit_view(self):
         from ai_track.visualizer.standard_image_visualizer import StandardImageVisualizer
 
-        if self._current_position_index < 0 or self._current_position_index >= len(self._position_list):
-            # Don't know where to go
-            image_visualizer = StandardImageVisualizer(self._window, display_settings=self._display_settings)
-        else:
-            mother = self._position_list[self._current_position_index]
-            image_visualizer = StandardImageVisualizer(self._window,
-                                                       time_point=mother.time_point(), z=int(mother.z),
-                                                       display_settings=self._display_settings)
+        image_visualizer = StandardImageVisualizer(self._window)
         activate(image_visualizer)
 
     def _on_key_press(self, event: KeyEvent):

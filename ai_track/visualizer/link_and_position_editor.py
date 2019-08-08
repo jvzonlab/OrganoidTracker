@@ -11,10 +11,10 @@ from ai_track.core.position import Position
 from ai_track.core.marker import Marker
 from ai_track.core.shape import ParticleShape
 from ai_track.gui import dialog
-from ai_track.gui.window import Window
+from ai_track.gui.window import Window, DisplaySettings
 from ai_track.linking_analysis import cell_error_finder, linking_markers, lineage_positions_finder
 from ai_track.linking_analysis.linking_markers import EndMarker
-from ai_track.visualizer import DisplaySettings, activate
+from ai_track.visualizer import activate
 from ai_track.visualizer.abstract_editor import AbstractEditor
 from ai_track.gui.undo_redo import UndoableAction, ReversedAction
 
@@ -217,9 +217,8 @@ class LinkAndPositionEditor(AbstractEditor):
     _selected1: Optional[Position] = None
     _selected2: Optional[Position] = None
 
-    def __init__(self, window: Window, *, time_point: Optional[TimePoint] = None, z: int = 14,
-                 display_settings: Optional[DisplaySettings] = None, selected_position: Optional[Position] = None):
-        super().__init__(window, time_point=time_point, z=z, display_settings=display_settings)
+    def __init__(self, window: Window, *, selected_position: Optional[Position] = None):
+        super().__init__(window)
 
         self._selected1 = selected_position
 
@@ -349,14 +348,12 @@ class LinkAndPositionEditor(AbstractEditor):
 
     def _show_path_editor(self):
         from ai_track.visualizer.data_axis_editor import DataAxisEditor
-        path_editor = DataAxisEditor(self._window, time_point=self._time_point, z=self._z,
-                                     display_settings=self._display_settings)
+        path_editor = DataAxisEditor(self._window)
         activate(path_editor)
 
     def _show_offset_editor(self):
         from ai_track.visualizer.image_offset_editor import ImageOffsetEditor
-        offset_editor = ImageOffsetEditor(self._window, time_point=self._time_point, z=self._z,
-                                          display_settings=self._display_settings)
+        offset_editor = ImageOffsetEditor(self._window)
         activate(offset_editor)
 
     def _show_linking_errors(self, position: Optional[Position] = None):

@@ -1,15 +1,40 @@
-import re
 from typing import Callable, Dict, List, Any, Optional, Union, Iterable, Tuple
 
-from PyQt5.QtGui import QKeySequence
-from PyQt5.QtWidgets import QMainWindow, QLabel, QMenuBar, QAction, QMenu, QShortcut
+from PyQt5.QtWidgets import QMainWindow, QLabel, QMenuBar, QMenu
 from matplotlib.figure import Figure
 
+from ai_track.core import TimePoint
 from ai_track.core.experiment import Experiment
+from ai_track.core.image_loader import ImageChannel
 from ai_track.gui import APP_NAME
 from ai_track.gui.gui_experiment import GuiExperiment
 from ai_track.gui.threading import Scheduler
 from ai_track.gui.undo_redo import UndoRedo, UndoableAction
+
+
+class DisplaySettings:
+    """Used for window-specific display settings."""
+    show_next_time_point: bool
+    show_images: bool
+    show_reconstruction: bool
+    show_splines: bool
+    time_point: TimePoint
+    z: int
+    image_channel: Optional[ImageChannel]  # Set to None to use the default image channel
+
+    def __init__(self, *, show_next_time_point: bool = False, show_images: bool = True,
+                 show_reconstruction: bool = False, show_data_axes: bool = True):
+        self.show_next_time_point = show_next_time_point
+        self.show_images = show_images
+        self.show_reconstruction = show_reconstruction
+        self.show_splines = show_data_axes
+        self.image_channel = None
+        self.time_point = TimePoint(0)
+        self.z = 14
+
+    KEY_SHOW_NEXT_IMAGE_ON_TOP = "n"
+    KEY_SHOW_IMAGES = "i"
+    KEY_SHOW_RECONSTRUCTION = "r"
 
 
 class Window:
@@ -20,6 +45,7 @@ class Window:
     __status_text: QLabel
     __title_text: QLabel
     __gui_experiment: GuiExperiment
+    __display_settings: DisplaySettings
     __event_handler_ids: List[int]
     __menu: QMenuBar
     __scheduler: Optional[Scheduler] = None
@@ -33,6 +59,7 @@ class Window:
         self.__status_text = status_text
         self.__title_text = title_text
         self.__event_handler_ids = list()
+        self.__display_settings = DisplaySettings()
 
     def _event_source(self) -> str:
         """Returns an identifier used to register and unregister events."""
@@ -96,6 +123,11 @@ class Window:
         """Gets the GUI experiment, which stores the experiment along with undo/redo data, and some other non-saveable
         data."""
         return self.__gui_experiment
+
+    @property
+    def display_settings(self) -> DisplaySettings:
+        # Variable cannot be set - only read
+        return self.__display_settings
 
     def perform_data_action(self, action: UndoableAction):
         """Performs an action that will change the experiment data. The action will be executed, then the window will

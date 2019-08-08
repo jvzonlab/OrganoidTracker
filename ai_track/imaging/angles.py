@@ -13,7 +13,10 @@ def direction_2d(position1: Position, position2: Position) -> float:
 
 
 def difference(angle1: float, angle2: float) -> float:
-    """Gets the difference between two angles. The number returned is always between 0 inclusive and 180 exclusive."""
+    """Gets the difference between two angles. The number returned is always between 0 inclusive and 180 exclusive.
+
+    See also `direction_change`, which goes from -180 to 180 degrees, and `direction_change_of_line`, from 0 to 90
+    degrees."""
     difference = abs(angle1 - angle2)
     if difference >= 180:
         difference = 360 - difference

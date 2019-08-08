@@ -4,9 +4,8 @@ from matplotlib.backend_bases import KeyEvent
 
 from ai_track.core.experiment import Experiment
 from ai_track.core.position import Position
-from ai_track.gui.window import Window
+from ai_track.gui.window import Window, DisplaySettings
 from ai_track.linking import cell_division_finder
-from ai_track.visualizer import DisplaySettings
 from ai_track.visualizer.position_list_visualizer import PositionListVisualizer
 
 
@@ -20,8 +19,9 @@ class CellDivisionVisualizer(PositionListVisualizer):
     Press M to exit this view."""
 
     def __init__(self, window: Window):
-        super().__init__(window, all_positions=_get_mothers(window.get_experiment()),
-                         display_settings=DisplaySettings(show_next_time_point=True))
+        window.display_settings.show_next_time_point = True  # Force viewing two time points at once
+
+        super().__init__(window, all_positions=_get_mothers(window.get_experiment()))
 
     def get_message_no_positions(self):
         return "No mothers found. Is the linking data missing?"

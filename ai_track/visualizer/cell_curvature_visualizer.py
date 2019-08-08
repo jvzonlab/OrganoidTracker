@@ -4,9 +4,8 @@ import matplotlib
 
 from ai_track.core import TimePoint
 from ai_track.core.position import Position
-from ai_track.gui.window import Window
+from ai_track.gui.window import Window, DisplaySettings
 from ai_track.position_analysis import cell_curvature_calculator
-from ai_track.visualizer import DisplaySettings
 from ai_track.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
 
@@ -18,9 +17,8 @@ class CellCurvatureVisualizer(ExitableImageVisualizer):
     _max_cell_curvature: float = 50
     _position_to_curvature: Dict[Position, float]
 
-    def __init__(self, window: Window, *, time_point: Optional[TimePoint] = None, z: int = 14,
-                 display_settings: DisplaySettings = None):
-        super().__init__(window, time_point=time_point, z=z, display_settings=display_settings)
+    def __init__(self, window: Window):
+        super().__init__(window)
 
         self._position_to_curvature = dict()
         self._calculate_curvatures()

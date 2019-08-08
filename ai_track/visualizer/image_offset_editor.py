@@ -6,9 +6,9 @@ from ai_track.core import TimePoint
 from ai_track.core.experiment import Experiment
 from ai_track.core.images import ImageOffsets
 from ai_track.gui.undo_redo import UndoableAction
-from ai_track.gui.window import Window
+from ai_track.gui.window import Window, DisplaySettings
 from ai_track.position_detection import position_mover
-from ai_track.visualizer import DisplaySettings, activate
+from ai_track.visualizer import activate
 from ai_track.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
 
@@ -33,13 +33,6 @@ class _ChangeAllPositionsAction(UndoableAction):
         position_mover.update_positions_for_changed_offsets(experiment, self._offsets_after)
         return "Moved all positions, links and images back"
 
-def _showing_next_time_point(display_settings: Optional[DisplaySettings]) -> DisplaySettings:
-    """Creates or modifies the display settings so that two time points are shown at once."""
-    if display_settings is None:
-        display_settings = DisplaySettings()
-    display_settings.show_next_time_point = True
-    return display_settings
-
 
 class ImageOffsetEditor(ExitableImageVisualizer):
     """Editor to add information on image offset, so that the object of interest can be kept at a fixed position.
@@ -47,9 +40,9 @@ class ImageOffsetEditor(ExitableImageVisualizer):
 
     _previous_offsets: ImageOffsets
 
-    def __init__(self, window: Window, *, time_point: Optional[TimePoint] = None, z: int = 14,
-                 display_settings: DisplaySettings = None):
-        super().__init__(window, time_point=time_point, z=z, display_settings=_showing_next_time_point(display_settings))
+    def __init__(self, window: Window):
+        window.display_settings.show_next_time_point = True
+        super().__init__(window)
 
         self._previous_offsets = self._experiment.images.offsets.copy()
 
@@ -104,6 +97,5 @@ class ImageOffsetEditor(ExitableImageVisualizer):
 
         # Actually move
         from ai_track.visualizer.link_and_position_editor import LinkAndPositionEditor
-        data_editor = LinkAndPositionEditor(self._window, time_point=self._time_point, z=self._z,
-                                            display_settings=self._display_settings)
+        data_editor = LinkAndPositionEditor(self._window, display_settings=self._display_settings)
         activate(data_editor)

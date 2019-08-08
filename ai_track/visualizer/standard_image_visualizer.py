@@ -9,10 +9,10 @@ from ai_track.core.experiment import Experiment
 from ai_track.gui import dialog
 from ai_track.gui.launcher import launch_window
 from ai_track.gui.threading import Task
-from ai_track.gui.window import Window
+from ai_track.gui.window import Window, DisplaySettings
 from ai_track.imaging import io
 from ai_track.linking_analysis import particle_flow_calculator
-from ai_track.visualizer import activate, DisplaySettings
+from ai_track.visualizer import activate
 from ai_track.visualizer.abstract_image_visualizer import AbstractImageVisualizer
 
 
@@ -28,10 +28,6 @@ class StandardImageVisualizer(AbstractImageVisualizer):
 
     Moving: left/right moves in time, up/down in the z-direction and type '/t30' + ENTER to jump to time point 30
     Press F to show the detected position flow, press V to view the detected position volume"""
-
-    def __init__(self, window: Window, time_point: Optional[TimePoint] = None, z: int = 14,
-                 display_settings: Optional[DisplaySettings] = None):
-        super().__init__(window, time_point=time_point, z=z, display_settings=display_settings)
 
     def _on_mouse_click(self, event: MouseEvent):
         if event.button == 1:
@@ -125,13 +121,12 @@ class StandardImageVisualizer(AbstractImageVisualizer):
 
     def _show_track_follower(self):
         from ai_track.visualizer.track_visualizer import TrackVisualizer
-        track_visualizer = TrackVisualizer(self._window, self._time_point, self._z, self._display_settings)
+        track_visualizer = TrackVisualizer(self._window, self._display_settings)
         activate(track_visualizer)
 
     def _show_movement_arrows(self):
         from ai_track.visualizer.cell_movement_visualizer import CellMovementVisualizer
-        movement_visualizer = CellMovementVisualizer(self._window, time_point=self._time_point, z=self._z,
-                                                     display_settings=self._display_settings)
+        movement_visualizer = CellMovementVisualizer(self._window)
         activate(movement_visualizer)
 
     def _show_mother_cells(self):
@@ -141,25 +136,22 @@ class StandardImageVisualizer(AbstractImageVisualizer):
 
     def _show_cell_fates(self):
         from ai_track.visualizer.cell_fate_visualizer import CellFateVisualizer
-        fate_visualizer = CellFateVisualizer(self._window, time_point=self._time_point, z=self._z,
-                                             display_settings=self._display_settings)
+        fate_visualizer = CellFateVisualizer(self._window)
         activate(fate_visualizer)
 
     def _show_cell_compartments(self):
         from ai_track.visualizer.cell_compartment_visualizer import CellCompartmentVisualizer
-        compartment_visualizer = CellCompartmentVisualizer(self._window, time_point=self._time_point, z=self._z,
-                                                           display_settings=self._display_settings)
+        compartment_visualizer = CellCompartmentVisualizer(self._window)
         activate(compartment_visualizer)
 
     def _show_lineage_fates(self):
         from ai_track.visualizer.lineage_fate_visualizer import LineageFateVisualizer
-        fate_visualizer = LineageFateVisualizer(self._window, time_point=self._time_point, z=self._z,
-                                                display_settings=self._display_settings)
+        fate_visualizer = LineageFateVisualizer(self._window)
         activate(fate_visualizer)
 
     def _show_data_editor(self):
         from ai_track.visualizer.link_and_position_editor import LinkAndPositionEditor
-        editor = LinkAndPositionEditor(self._window, time_point=self._time_point, z=self._z)
+        editor = LinkAndPositionEditor(self._window)
         activate(editor)
 
     def _on_command(self, command: str) -> bool:
@@ -177,13 +169,11 @@ class StandardImageVisualizer(AbstractImageVisualizer):
 
     def _show_cell_density(self):
         from ai_track.visualizer.cell_density_visualizer import CellDensityVisualizer
-        activate(CellDensityVisualizer(self._window, time_point=self._time_point, z=self._z,
-                                       display_settings=self._display_settings))
+        activate(CellDensityVisualizer(self._window))
 
     def _show_cell_curvature(self):
         from ai_track.visualizer.cell_curvature_visualizer import CellCurvatureVisualizer
-        activate(CellCurvatureVisualizer(self._window, time_point=self._time_point, z=self._z,
-                                       display_settings=self._display_settings))
+        activate(CellCurvatureVisualizer(self._window))
 
     def _ask_merge_experiments(self):
         link_files = dialog.prompt_load_multiple_files("Select data file", [
