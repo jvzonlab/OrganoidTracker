@@ -121,7 +121,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
 
     def _show_track_follower(self):
         from ai_track.visualizer.track_visualizer import TrackVisualizer
-        track_visualizer = TrackVisualizer(self._window, self._display_settings)
+        track_visualizer = TrackVisualizer(self._window)
         activate(track_visualizer)
 
     def _show_movement_arrows(self):

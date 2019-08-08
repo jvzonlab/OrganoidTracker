@@ -114,8 +114,8 @@ class TrackVisualizer(ExitableImageVisualizer):
 
     _selected_lineages: List[Links]
 
-    def __init__(self, window: Window, display_settings: DisplaySettings):
-        super().__init__(window, display_settings=display_settings)
+    def __init__(self, window: Window):
+        super().__init__(window)
         self._selected_lineages = list()
 
     def _on_position_draw(self, position: Position, color: str, dz: int, dt: int) -> bool:
