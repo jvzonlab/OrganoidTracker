@@ -5,7 +5,7 @@ import numpy
 from matplotlib.backend_bases import MouseEvent
 from matplotlib.patches import Circle
 
-from ai_track.core import TimePoint, UserError, COLOR_CELL_CURRENT
+from ai_track.core import TimePoint, UserError, COLOR_CELL_CURRENT, COLOR_CELL_NEXT
 from ai_track.core.position import Position
 from ai_track.gui.window import Window
 from ai_track.imaging import angles
@@ -66,6 +66,12 @@ class _MeasureRotation(ExitableImageVisualizer):
     def _get_window_title(self) -> Optional[str]:
         return "Measuring rotation"
 
+    def _draw_positions(self):
+        pass
+
+    def _draw_links(self):
+        pass
+
     def _on_mouse_click(self, event: MouseEvent):
         if not event.dblclick or event.xdata is None or event.ydata is None:
             return
@@ -86,7 +92,7 @@ class _MeasureRotation(ExitableImageVisualizer):
             self._fig.canvas.draw()
             self.update_status(f"Defined a sphere of radius {self._radius_um:.2f} μm.\nGo to another time point to"
                                f" define the second circle center. The rotation will then be calculated.")
-        else:
+        elif self._center_two is None:
             if self._time_point == self._center_one.time_point():
                 self.update_status("Rotation happens over time. Go to another time point and double-click"
                                    " somewhere to calculate how much the cells have rotated around the center.")
@@ -99,13 +105,23 @@ class _MeasureRotation(ExitableImageVisualizer):
             self.update_status(f"{result.count} cells have rotated on average {result.mean:.01f}° ± {result.st_dev:.01f}°.")
 
             # Visualize the result
-            self._ax.scatter([event.xdata], [event.ydata], marker='X', facecolor=COLOR_CELL_CURRENT, edgecolors="black",
-                             s=17 ** 2, linewidths=2)
+            self._display_settings.z = int(self._center_one.z)
+            self._move_to_time(self._center_one.time_point_number())
             for position, future_positions in result.positions.items():
+                if len(future_positions) > 0:
+                    self._ax.scatter(position.x, position.y, marker='o', facecolor=COLOR_CELL_CURRENT,
+                                     edgecolors="black", s=17 ** 2, linewidths=2)
                 for future_position in future_positions:
                     self._ax.arrow(position.x, position.y,
                                    future_position.x - position.x, future_position.y - position.y,
-                                   length_includes_head=True, width=3, color=COLOR_CELL_CURRENT)
+                                   length_includes_head=True, width=5.5, head_width=9, facecolor=COLOR_CELL_CURRENT,
+                                   edgecolor="black", linewidth=2)
+            self._ax.scatter(self._center_one.x, self._center_one.y, marker='X', facecolor=COLOR_CELL_NEXT,
+                             edgecolors="black", s=17 ** 2, linewidths=2)
+            self._ax.arrow(self._center_one.x, self._center_one.y,
+                           self._center_two.x - self._center_one.x, self._center_two.y - self._center_one.y,
+                           length_includes_head=True, width=5.5, head_width=9, facecolor=COLOR_CELL_NEXT,
+                           edgecolor="black", linewidth=2)
             self._fig.canvas.draw()
 
     def _calculate_rotation_degrees(self) -> _Result:

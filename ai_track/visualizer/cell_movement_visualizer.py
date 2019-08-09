@@ -1,5 +1,6 @@
 from matplotlib import cm
 
+from ai_track.core import COLOR_CELL_CURRENT
 from ai_track.core.position import Position
 from ai_track.imaging import angles
 from ai_track.linking_analysis import particle_movement_finder
@@ -19,13 +20,15 @@ class CellMovementVisualizer(ExitableImageVisualizer):
         last_time_point = self._experiment.get_time_point(self._experiment.positions.last_time_point_number())
         future_positions = particle_movement_finder.find_future_positions_at(self._experiment.links, position,
                                                                              last_time_point)
-        colormap = cm.get_cmap('hsv')
+        if len(future_positions) > 0:
+            self._ax.scatter(position.x, position.y, marker='o', facecolor=COLOR_CELL_CURRENT,
+                             edgecolors="black", s=17 ** 2, linewidths=2)
         for future_position in future_positions:
             if abs(future_position.x - position.x) < 2 and abs(future_position.y - position.y) < 2:
                 # Distance is smaller than 2 px, don't draw
                 continue
-            direction = angles.direction_2d(position, future_position)
-            color = colormap(direction / 360)
-            self._ax.arrow(position.x, position.y, future_position.x - position.x, future_position.y - position.y,
-                           length_includes_head=True, width=3, color=color)
+            self._ax.arrow(position.x, position.y,
+                           future_position.x - position.x, future_position.y - position.y,
+                           length_includes_head=True, width=5.5, head_width=9, facecolor=COLOR_CELL_CURRENT,
+                           edgecolor="black", linewidth=2)
         return False  # Prevents drawing the usual dots
