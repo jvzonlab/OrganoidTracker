@@ -79,7 +79,7 @@ class ImageOffsetEditor(ExitableImageVisualizer):
             new_offset = self._experiment.images.offsets.of_time_point(
                 self._experiment.get_next_time_point(self._time_point))
             self.update_status("Updated the offset for this and all following time points. Offset of this time point"
-                               " towards the next is now " + str((new_offset.x, new_offset.y, new_offset.z)))
+                               " is now " + str((new_offset.x, new_offset.y, new_offset.z)))
         else:
             super()._on_key_press(event)
 
@@ -97,5 +97,5 @@ class ImageOffsetEditor(ExitableImageVisualizer):
 
         # Actually move
         from ai_track.visualizer.link_and_position_editor import LinkAndPositionEditor
-        data_editor = LinkAndPositionEditor(self._window, display_settings=self._display_settings)
+        data_editor = LinkAndPositionEditor(self._window)
         activate(data_editor)

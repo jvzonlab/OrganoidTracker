@@ -8,8 +8,12 @@ def update_positions_for_changed_offsets(experiment: Experiment, previous_offset
         change_in_offset = current_offsets.of_time_point(time_point) - previous_offsets.of_time_point(time_point)
         if change_in_offset.is_zero():
             continue
+
+        # Update the positions
         for position in set(experiment.positions.of_time_point(time_point)):
             #            ^ Make a copy so that collection is not modified while iterating over it
-            experiment.move_position(position, position + change_in_offset)
-        for id, data_axis in experiment.splines.of_time_point(time_point):
-            data_axis.move_points(change_in_offset)
+            experiment.move_position(position, position + change_in_offset, update_splines=False)
+
+        # Update the splines
+        for id, spline in experiment.splines.of_time_point(time_point):
+            spline.move_points(change_in_offset)

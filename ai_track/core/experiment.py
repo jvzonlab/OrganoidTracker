@@ -56,10 +56,14 @@ class Experiment:
         for time_point in affected_time_points:
             self.splines.update_for_changed_positions(time_point, self._positions.of_time_point(time_point))
 
-    def move_position(self, position_old: Position, position_new: Position):
+    def move_position(self, position_old: Position, position_new: Position, update_splines: bool = True):
         """Moves the position of a position, preserving any links. (So it's different from remove-and-readd.) The shape
         of a position is not preserved, though. Throws ValueError when the position is moved to another time point. If
-        the new position has not time point specified, it is set to the time point o the existing position."""
+        the new position has not time point specified, it is set to the time point o the existing position.
+
+        When update_splines is set to False, the zero point of all splines (if any) will not be updated. This makes
+        moving the positions a lot faster. However, you should call splines.update_for_changed_positions yourself after
+        moving all positions."""
         position_new.check_time_point(position_old.time_point())  # Make sure both have the same time point
 
         # Replace in all collections
@@ -67,8 +71,9 @@ class Experiment:
         self._connections.replace_position(position_old, position_new)
         self._positions.move_position(position_old, position_new)
 
-        time_point = position_new.time_point()
-        self.splines.update_for_changed_positions(time_point, self._positions.of_time_point(time_point))
+        if update_splines:
+            time_point = position_new.time_point()
+            self.splines.update_for_changed_positions(time_point, self._positions.of_time_point(time_point))
 
     def _scale_to_resolution(self, new_resolution: ImageResolution):
         """Scales this experiment so that it has a different resolution."""
