@@ -4,17 +4,20 @@
 If you want to train your own neural network, read on. Training your own neural network is a good idea if you're not satisfied with how the cell detection in your images is done. However, training requires a good graphics card. I'm using a NVIDIA GeForce RTX 2080 Ti card, which has enough video RAM for a batch size of 48 with images of 512x512x32 px.
 
 ## Some theoretical background
-The neural network works by finding correlations between the input images (the microscope images) and the output images (images with white dots where the cells are). This works because all the necessary information is in the input images, we "just" need to find some function that transforms the input image into the output image.
+The neural network works by finding correlations between the input images (the microscope images) and the output images (images with white dots where the cells are). This works because all the necessary information is in the input images, we "just" need to find some function that transforms the input image into the output image. In our case, we start with microscopy images and end up with images that clearly show where the cells are. See Figure 1.
+
+![Network output](images/network.png)  
+*Figure 1: The network goes from an input image to an image that shows where the nucleus centers are.*
 
 Machine learning automates this process. Convolutional neural networks, which are (very loosely) designed after how we think our brain works, have proven to be very successful on images. Basically, you give the algorithm a lot of examples of "this is a cell" and "this is not a cell", and then it will find out how it can recognize cells on it's own. For this, it fits the parameters of the neural network such that the network gets better and better in reproducing the images you gave it. You should definitely look up some information on how this algorithm works; there a lot of great videos. It will help you to better understand what can go wrong.
 
 ## Acquiring training data
 First, you're going to need a lot of training data. The more and the more diverse the training data, the better. The training data should be a good sample of the data you eventually want to obtain. I'm using around 10000 data points (detected cells) myself. In the AI_track GUI in the `View` menu there is an options to view how many detected positions you have in your experiment.
 
-Make sure that the data is correct! Even a low percentage of errors (1%) can already significantly weaken the training. You don't need to annotate the entire image, AI_track will crop your image to the area where there are annotations. This cropping uses a simple cuboid (3D rectangle) shape. However, within the area you're annotating you need to annotate each and every cell, otherwise you're teaching the network that those things are not cells. See the figure below.
+Make sure that the data is correct! Even a low percentage of errors (1%) can already significantly weaken the training. You don't need to annotate the entire image, AI_track will crop your image to the area where there are annotations. This cropping uses a simple cuboid (3D rectangle) shape. However, within the area you're annotating you need to annotate each and every cell, otherwise you're teaching the network that those things are not cells. See Figure 2.
 
 ![Annotations](images/annotations.png)  
-*AI_track automatically sees that you have only annotated part of the image, so you don't need to annotate the entire image. However, you do need to annotate each and every cell within that region.*
+*Figure 2: AI_track automatically sees that you have only annotated part of the image, so you don't need to annotate the entire image. However, you do need to annotate each and every cell within that region.*
 
 ## The training process
 Open the data of all the experiments you're going to use in the AI_track GUI, and use `Process` -> `Train the neural network...`. Run the resulting script. It will first convert your images and training data to a format Tensorflow (the software library we're using for the neural networks) can understand. Then, it will start training. The training process saves checkpoints. If you abort the training process, then it will resume from the most recent checkpoint when you start the program again.
