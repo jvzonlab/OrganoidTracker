@@ -40,6 +40,9 @@ First, the script will create some very basic initial links. Then it will calcul
 
 If you're not satisfied with the results, try changing the input parameters in the `ai_track.ini` file. There are comments in there to explain each setting. You can make cell divisions more/less likely, allow more or less cellular movement and make cell deaths more likely. If you don't see (m)any links anymore, then you have made link creation too expensive, and you should make events like cellular movement cheaper.
 
+### Correcting for large collective cell movement
+Note: the linking algorithm cannot cope with a large, collective, sudden movement of the cells. The program would need to create a lot of large-distance links, which it will refuse to do. For example, we often move the microscope view halfway during the experiment (so that the moving cells are nicely back into the view), which causes an apparant movement of all the cells in the images. To correct for this, *before running the linking process*, open the AI_track GUI and load the images and positions (`File` menu). Then edit the data (`Edit -> Manually change data...`) and edit the image offsets (`Edit -> Edit image offsets...`) of the correct time point. Instructions are on the bottom of the window.
+
 Step 4: Manually correct warnings
 ---------------------------------
 
