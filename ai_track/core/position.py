@@ -66,7 +66,7 @@ class Position:
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) \
-               and abs(self.x - other.x) < 0.01 and abs(self.x - other.x) < 0.01 and abs(self.z - other.z) < 0.01 \
+               and abs(self.x - other.x) < 0.01 and abs(self.y - other.y) < 0.01 and abs(self.z - other.z) < 0.01 \
                and self._time_point_number == other._time_point_number
 
     def time_point(self):
