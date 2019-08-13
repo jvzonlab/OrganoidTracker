@@ -10,7 +10,7 @@ STEM = Marker([Position], "STEM", "stem cell", (255, 227, 190))
 # Differentiated
 M_CELL = Marker([Position], "M_CELL", "M cell", (242, 109, 84))
 ENTEROCYTE = Marker([Position], "ENTEROCYTE", "enterocyte cell", (251, 175, 64))
-LUMEN = Marker([Position], "LUMEN", "lumen", (30, 30, 30))
+LUMEN = Marker([Position], "LUMEN", "lumen", (200, 200, 200))
 PANETH = Marker([Position], "PANETH", "Paneth cell", (63, 172, 225))
 GOBLET = Marker([Position], "GOBLET", "Goblet cell", (147, 190, 147))
 ENTEROENDOCRINE = Marker([Position], "ENTEROENDOCRINE", "enteroendocrine cell", (239, 212, 202))
