@@ -64,11 +64,11 @@ class TestAngles(unittest.TestCase):
         a = Vector3(1, 0, 0)
         b = Vector3(3, 0, 0)
         c = Vector3(5, 0, 0)
-        self.assertAlmostEqual(180, angles.right_hand_rule(a, b, c))
+        self.assertAlmostEqual(0, angles.right_hand_rule(a, b, c))
 
     def test_right_hand_rule_difficult(self):
         # This one caused a crash earlier
         a = Vector3(71.68, 81.92, 10.0)
         b = Vector3(77.12, 88.96000000000001, 10.0)
         c = Vector3(81.63334669338678, 94.80080160320641, 10.0)
-        self.assertAlmostEqual(180, angles.right_hand_rule(a, b, c))
+        self.assertAlmostEqual(0, angles.right_hand_rule(a, b, c))
