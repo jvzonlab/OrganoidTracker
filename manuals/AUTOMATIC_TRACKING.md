@@ -29,7 +29,7 @@ The script works by fitting 3D Gaussian functions to a blurred version of the or
 You can view the resulting Gaussians by loading the output file in the AI_track GUI and pressing `R`. This will draw the Gaussian functions.
 
 ![Thresholding](images/thresholding.png)  
-*Figure 1: Thresholding, used to separate foreground and background. Gaussian fits are carried out within clumps.*
+Figure 1: Thresholding, used to separate foreground and background. Gaussian fits are carried out within clumps.
 
 Step 3: Obtaining links
 -----------------------

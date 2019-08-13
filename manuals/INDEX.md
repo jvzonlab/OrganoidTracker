@@ -23,7 +23,7 @@ The program always displays your images in the center. Using the button on the m
 To load the tracking data, use the button on the toolbar, or use `File` -> `Load tracking data...`. If your tracking data contains links between the time points, then `Graph` -> `Interactive lineage tree...` will show a lineage tree of your tracking data.
 
 ![Toolbar](images/toolbar.png)  
-*The toolbar of the program.*
+The toolbar of the program.
 
 Now would be a good moment to verify that you can actually save the tracking data; do so using `File` -> `Save tracking data...` or using the button on the toolbar. 
 

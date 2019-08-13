@@ -38,19 +38,33 @@ class _HelpFile:
         self._html_text = markdown.markdown(file_text,
                           extensions=[GithubFlavoredMarkdownExtension()])
 
-        # Apply a style sheet
-        self._html_text = self._html_text.replace("<code", '<code style="font-size: 10pt"')
-        self._html_text = self._html_text.replace("<p>", '<p style="line-height: 140; margin: 20px 40px">')
-        self._html_text = self._html_text.replace("<pre", '<pre style="margin: 40px"')
-        self._html_text = self._html_text.replace("<h1>", '<h1 style="margin: 40px 40px 20px 40px">')
-        self._html_text = self._html_text.replace("<h2>", '<h2 style="margin: 40px 40px 20px 40px">')
-        self._html_text = self._html_text.replace("<h3>", '<h3 style="margin: 20px 40px">')
-        self._html_text = self._html_text.replace("<li>", '<li style="line-height: 140">')
+        # Apply special corrections for images
+        self._html_text = self._html_text.replace("<p><img ", '<p style="line-height: 100; color: #444;'
+                                                              ' font-family:sans-serif"><img ')
         self._html_text = self._html_text.replace(" src=\"", " src=\"" + _MANUALS_FOLDER + "/")  # Change images path
 
-        # Extra margins at top and bottom:
-        self._html_text = '<div style="font-size:small; color:gray; text-align: center; font-family: sans-serif">' \
-                          'AI_track manual</div> ' + self._html_text + ' <div style="height: 40px"></div>'
+        # Construct document
+        self._html_text = """
+            <html>
+                <head>
+                    <style type="text/css">
+                        code { font-size: 10pt }
+                        h1 { margin: 40px 40px 20px 40px }
+                        h2 { margin: 40px 40px 20px 40px }
+                        h3 { margin: 20px 40px }
+                        li { line-height: 140 }
+                        p { margin: 20px 40px; line-height: 140 }
+                        pre { margin: 40px }
+                    </style>
+                </head>
+                <body>
+                    <div style="font-size:small; color:gray; text-align: center; font-family: sans-serif">AI_track manual</div>
+                    """ + self._html_text + """
+                    <div style="height: 40px"></div>
+                </body>
+            </html>
+"""
+
     def html(self):
         return self._html_text
 

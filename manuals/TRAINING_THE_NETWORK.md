@@ -7,7 +7,7 @@ If you want to train your own neural network, read on. Training your own neural 
 The neural network works by finding correlations between the input images (the microscope images) and the output images (images with white dots where the cells are). This works because all the necessary information is in the input images, we "just" need to find some function that transforms the input image into the output image. In our case, we start with microscopy images and end up with images that clearly show where the cells are. See Figure 1.
 
 ![Network output](images/network.png)  
-*Figure 1: The network goes from an input image to an image that shows where the nucleus centers are.*
+Figure 1: The network goes from an input image to an image that shows where the nucleus centers are.
 
 Machine learning automates this process. Convolutional neural networks, which are (very loosely) designed after how we think our brain works, have proven to be very successful on images. Basically, you give the algorithm a lot of examples of "this is a cell" and "this is not a cell", and then it will find out how it can recognize cells on it's own. For this, it fits the parameters of the neural network such that the network gets better and better in reproducing the images you gave it. You should definitely look up some information on how this algorithm works; there a lot of great videos. It will help you to better understand what can go wrong.
 
@@ -17,7 +17,7 @@ First, you're going to need a lot of training data. The more and the more divers
 Make sure that the data is correct! Even a low percentage of errors (1%) can already significantly weaken the training. You don't need to annotate the entire image, AI_track will crop your image to the area where there are annotations. This cropping uses a simple cuboid (3D rectangle) shape. However, within the area you're annotating you need to annotate each and every cell, otherwise you're teaching the network that those things are not cells. See Figure 2.
 
 ![Annotations](images/annotations.png)  
-*Figure 2: AI_track automatically sees that you have only annotated part of the image, so you don't need to annotate the entire image. However, you do need to annotate each and every cell within that region.*
+Figure 2: AI_track automatically sees that you have only annotated part of the image, so you don't need to annotate the entire image. However, you do need to annotate each and every cell within that region.
 
 ## The training process
 Open the data of all the experiments you're going to use in the AI_track GUI, and use `Process` -> `Train the neural network...`. Run the resulting script. It will first convert your images and training data to a format Tensorflow (the software library we're using for the neural networks) can understand. Then, it will start training. The training process saves checkpoints. If you abort the training process, then it will resume from the most recent checkpoint when you start the program again.
