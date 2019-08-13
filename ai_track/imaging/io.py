@@ -369,7 +369,9 @@ def _encode_data_axes_to_json(data_axes: SplineCollection) -> List[Dict]:
 
 def _encode_data_axes_meta_to_json(splines: SplineCollection) -> Dict[str, Dict[str, str]]:
     json_dict = {}
-    json_dict["reference_time_point_number"] = splines.reference_time_point()
+    reference_time_point = splines.reference_time_point()
+    if reference_time_point is not None:
+        json_dict["reference_time_point_number"] = reference_time_point.time_point_number()
     for spline_id, marker_name in splines.get_marker_names():
         json_dict[str(spline_id)] = {"marker": marker_name, "is_axis": splines.is_axis(spline_id)}
     return json_dict
