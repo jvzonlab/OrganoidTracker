@@ -102,7 +102,6 @@ class _MeasureRotation(ExitableImageVisualizer):
                 return
             self._center_two = clicked_position
             result = self._calculate_rotation_degrees()
-            self.update_status(f"{result.count} cells have rotated on average {result.mean:.01f}° ± {result.st_dev:.01f}°.")
 
             # Visualize the result
             self._display_settings.z = int(self._center_one.z)
@@ -123,6 +122,7 @@ class _MeasureRotation(ExitableImageVisualizer):
                            length_includes_head=True, width=5.5, head_width=9, facecolor=COLOR_CELL_NEXT,
                            edgecolor="black", linewidth=2)
             self._fig.canvas.draw()
+            self.update_status(f"{result.count} cells have rotated on average {result.mean:.01f}° ± {result.st_dev:.01f}°.")
 
     def _calculate_rotation_degrees(self) -> _Result:
         """Returns the average rotation of the cells along with the standard deviation. The variables _center_one,
