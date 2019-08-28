@@ -1,5 +1,6 @@
 """Some helper function for calculations with angles."""
 import math
+from typing import Union
 
 from ai_track.core.position import Position
 from ai_track.core.resolution import ImageResolution
@@ -7,7 +8,8 @@ from ai_track.core.vector import Vector3
 
 _ZERO_POS = Position(0, 0, 0)
 
-def direction_2d(position1: Position, position2: Position) -> float:
+
+def direction_2d(position1: Union[Position, Vector3], position2: Union[Position, Vector3]) -> float:
     """Gets the direction from the given position to the given position, with 0* pointing upwards."""
     return (90 + math.degrees(math.atan2(position2.y - position1.y, position2.x - position1.x))) % 360
 

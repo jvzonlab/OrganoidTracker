@@ -10,6 +10,16 @@ class Position:
     """A detected position. Only the 3D + time position is stored here, see the PositionShape class for the shape.
     The position is immutable."""
 
+    @staticmethod
+    def from_vector_um(vector: Vector3, resolution: ImageResolution, *,
+                       time_point: Optional[TimePoint] = None, time_point_number: Optional[int] = None) -> "Position":
+        """Returns a position from the given vector, which is assumed to be in micrometers. If you want, you can
+        specify a time point."""
+        return Position(vector.x / resolution.pixel_size_x_um,
+                        vector.y / resolution.pixel_size_y_um,
+                        vector.z / resolution.pixel_size_z_um,
+                        time_point=time_point, time_point_number=time_point_number)
+
     __slots__ = ["x", "y", "z", "_time_point_number"]  # Optimization - Google "python slots"
 
     x: float  # Read-only

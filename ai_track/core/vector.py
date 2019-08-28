@@ -28,7 +28,7 @@ class Vector3:
 
     def length(self) -> float:
         """Length of this vector."""
-        return self.distance(Vector3.ZERO)
+        return math.sqrt(self.x ** 2 + self.y ** 2 + self.z ** 2)
 
     def multiply(self, amount: float) -> "Vector3":
         """Scalar multiplication."""
@@ -60,6 +60,11 @@ class Vector3:
     def __eq__(self, other) -> bool:
         return isinstance(other, self.__class__) \
                and abs(self.x - other.x) < 0.01 and abs(self.x - other.x) < 0.01 and abs(self.z - other.z) < 0.01
+
+    def normalized(self) -> "Vector3":
+        """Returns a new vector with the same orientation, but with a length of 1."""
+        length = self.length()
+        return Vector3(self.x / length, self.y / length, self.z / length)
 
 
 Vector3.ZERO = Vector3(0, 0, 0)

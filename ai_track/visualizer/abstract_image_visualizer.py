@@ -5,18 +5,22 @@ from matplotlib import cm
 from matplotlib.backend_bases import MouseEvent
 from matplotlib.collections import LineCollection
 from matplotlib.colors import Colormap, Normalize
+from matplotlib.lines import Line2D
 from numpy.core.multiarray import ndarray
 from tifffile import tifffile
 
 from ai_track import core
-from ai_track.core import TimePoint, UserError
+from ai_track.core import TimePoint, UserError, COLOR_CELL_CURRENT
 from ai_track.core.position import Position
+from ai_track.core.resolution import ImageResolution
 from ai_track.core.spline import Spline
 from ai_track.core.typing import MPLColor
 from ai_track.gui import dialog
 from ai_track.gui.dialog import prompt_int, popup_error
 from ai_track.gui.window import Window, DisplaySettings
+from ai_track.imaging.lines import Line3
 from ai_track.linking_analysis import linking_markers
+from ai_track.util.mpl_helper import line_infinite
 from ai_track.visualizer import Visualizer
 
 
@@ -117,6 +121,28 @@ class AbstractImageVisualizer(Visualizer):
         self._ax.annotate(text, (position.x, position.y), fontsize=font_size,
                           fontweight="bold", color=text_color, backgroundcolor=background_color,
                           horizontalalignment='center', verticalalignment='center')
+
+    def _draw_line(self, start: Position, end: Position, color: MPLColor = COLOR_CELL_CURRENT):
+        direction = end - start
+        if direction.x < 0.2 and direction.y < 0.2:
+            # Difficult to draw lines in the Z direction, so just draw a marker
+            self._ax.scatter(start.x, end.y, marker='o', facecolor=color,
+                             edgecolors="black", s=17 ** 2, linewidths=2)
+            return
+
+        line_width = 2
+        if direction.z == 0:
+            if round(start.z) == self._z:
+                line_width = 5
+        else:
+            # Just add a marker
+            dz = self._z - start.z
+            multiplier = dz / direction.z
+            marker_pos = start + direction * multiplier
+            self._ax.scatter(marker_pos.x, marker_pos.y, marker='o', facecolor=color,
+                             edgecolors="black", s=17 ** 2, linewidths=2)
+
+        line_infinite(self._ax, start.x, start.y, end.x, end.y, linewidth=line_width, color=color)
 
     def _get_figure_title(self) -> str:
         return "Time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"

@@ -1,4 +1,5 @@
 """Oper"""
+import math
 
 from ai_track.core.vector import Vector3
 
@@ -17,6 +18,10 @@ class Line3:
         """Defines a line using two points."""
         return Line3(point1, point2)
 
+    def translate(self, translation: Vector3) -> "Line3":
+        """Gets a translated copy of the line."""
+        return Line3(self.point + translation, self.point + translation + self.direction)
+
     def __repr__(self) -> str:
         return "Line3(point1=" + repr(self.point) + ", point2=" + repr(self.point + self.direction) + ")"
 
@@ -33,3 +38,41 @@ def point_on_line_2_nearest_to_line_1(*, line_1: Line3, line_2: Line3):
     except ZeroDivisionError:
         # Lines are parallel, return random point
         return line_2.point
+
+
+def direction_to_point(line: Line3, point: Vector3) -> float:
+    """Gets the 1D direction of a point towards a line. If the line is pointing upwards (read: parallel with the
+    -axis), then this simply returns the same value as angles.direction_2d(vector, point_on_line). Returns a number
+    from 0 to 360.
+
+    Note that is doesn't matter in which direction the line is defined.
+    """
+    # Code based on http://paulbourke.net/geometry/rotate/ (Rotate a point about an arbitrary axis in 3 dimensions)
+
+    # Translate space so that the rotation axis passes through the origin
+    translated_point = point - line.point
+    line_direction = line.direction.normalized()
+
+    d = math.sqrt(line_direction.y * line_direction.y + line_direction.z * line_direction.z)
+
+    # Rotate space about the x axis so that the rotation axis lies in the xz plane
+    if d != 0:
+        q2 = Vector3(translated_point.x,
+                     translated_point.y * line_direction.z / d - translated_point.z * line_direction.y / d,
+                     translated_point.y * line_direction.y / d + translated_point.z * line_direction.z / d)
+    else:
+        q2 = translated_point
+
+    # Rotate space about the y axis so that the rotation axis lies along the z axis
+    translated_point.x = q2.x * d - q2.z * line_direction.x
+    translated_point.y = q2.y
+    translated_point.z = q2.x * line_direction.x + q2.z * d
+
+    # Measure rotation in 2D, now that we have rotated everything
+    return (90 + math.degrees(math.atan2(translated_point.y, translated_point.x))) % 360
+
+
+def distance_to_point(line: Line3, search_point: Vector3) -> float:
+    """Gets the distnace from the line to the given point. Note that we're calculating the distance to an infinite line,
+    which is different from calculating the distance to a line segment."""
+    return line.direction.cross(line.point - search_point).length() / line.direction.length()
