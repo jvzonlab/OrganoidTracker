@@ -43,6 +43,7 @@ def calculate_rotation_of_track(links: Links, resolution: ImageResolution, start
         # Check if we've gone too far in time
         if next_center_p1.time_point_number() > ending_center_p1.time_point_number():
             # End of center track - stop following cells
+            print(starting_position, "rotated", cumulative_rotation, "degrees")
             return [cumulative_rotation], [current_position]
 
         next_positions = links.find_futures(current_position)
@@ -61,7 +62,7 @@ def calculate_rotation_of_track(links: Links, resolution: ImageResolution, start
             for next_position in next_positions:
                 # Calculate rotation during division
                 next_orientation = lines.direction_to_point(rotation_axis, next_position.to_vector_um(resolution))
-                rotation_during_division = angles.difference(current_orientation, next_orientation)
+                rotation_during_division = angles.direction_change(current_orientation, next_orientation)
 
                 # Calculate rotation of daughter track (including the daughters of the daugthers, etc.)
                 daughter_cumulative_rotations, daughter_final_positions = calculate_rotation_of_track(
@@ -79,7 +80,7 @@ def calculate_rotation_of_track(links: Links, resolution: ImageResolution, start
         # Calculate rotation
         next_position = next_positions.pop()
         next_orientation = lines.direction_to_point(rotation_axis, next_position.to_vector_um(resolution))
-        cumulative_rotation += angles.difference(current_orientation, next_orientation)
+        cumulative_rotation += angles.direction_change(current_orientation, next_orientation)
 
         # Advance to next loop
         current_orientation = next_orientation

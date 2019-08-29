@@ -363,13 +363,12 @@ class LinkAndPositionEditor(AbstractEditor):
 
     def _show_lineage_errors(self):
         from ai_track.visualizer.lineage_errors_visualizer import LineageErrorsVisualizer
-        editor = LineageErrorsVisualizer(self._window, time_point=self._time_point, z=self._z)
+        editor = LineageErrorsVisualizer(self._window)
         activate(editor)
 
     def _show_positions_in_rectangle_deleter(self):
         from ai_track.visualizer.position_in_rectangle_deleter import PositionsInRectangleDeleter
-        editor = PositionsInRectangleDeleter(self._window, time_point=self._time_point, z=self._z,
-                                             display_settings=self._display_settings)
+        editor = PositionsInRectangleDeleter(self._window)
         activate(editor)
 
     def _delete_data_of_time_point(self):

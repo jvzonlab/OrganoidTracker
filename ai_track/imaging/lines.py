@@ -50,26 +50,26 @@ def direction_to_point(line: Line3, point: Vector3) -> float:
     # Code based on http://paulbourke.net/geometry/rotate/ (Rotate a point about an arbitrary axis in 3 dimensions)
 
     # Translate space so that the rotation axis passes through the origin
-    translated_point = point - line.point
-    line_direction = line.direction.normalized()
+    q1 = point - line.point
+    u = line.direction.normalized()
 
-    d = math.sqrt(line_direction.y * line_direction.y + line_direction.z * line_direction.z)
+    d = math.sqrt(u.y * u.y + u.z * u.z)
 
     # Rotate space about the x axis so that the rotation axis lies in the xz plane
     if d != 0:
-        q2 = Vector3(translated_point.x,
-                     translated_point.y * line_direction.z / d - translated_point.z * line_direction.y / d,
-                     translated_point.y * line_direction.y / d + translated_point.z * line_direction.z / d)
+        q2 = Vector3(q1.x,
+                     q1.y * u.z / d - q1.z * u.y / d,
+                     q1.y * u.y / d + q1.z * u.z / d)
     else:
-        q2 = translated_point
+        q2 = q1  # line direction is already aligned to the x axis
 
     # Rotate space about the y axis so that the rotation axis lies along the z axis
-    translated_point.x = q2.x * d - q2.z * line_direction.x
-    translated_point.y = q2.y
-    translated_point.z = q2.x * line_direction.x + q2.z * d
+    q1.x = q2.x * d - q2.z * u.x
+    q1.y = q2.y
+    q1.z = q2.x * u.x + q2.z * d
 
     # Measure rotation in 2D, now that we have rotated everything
-    return (90 + math.degrees(math.atan2(translated_point.y, translated_point.x))) % 360
+    return (90 + math.degrees(math.atan2(q1.y, q1.x))) % 360
 
 
 def distance_to_point(line: Line3, search_point: Vector3) -> float:

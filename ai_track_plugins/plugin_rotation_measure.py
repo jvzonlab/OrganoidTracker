@@ -1,11 +1,10 @@
-import math
-from typing import Dict, Any, Optional, Tuple, List, Iterable
+from typing import Dict, Any, Optional, List, Iterable
 
 import numpy
 from matplotlib.backend_bases import MouseEvent, KeyEvent
 from matplotlib.patches import Circle
 
-from ai_track.core import TimePoint, UserError, COLOR_CELL_CURRENT, COLOR_CELL_NEXT
+from ai_track.core import UserError, COLOR_CELL_CURRENT, COLOR_CELL_NEXT
 from ai_track.core.links import Links
 from ai_track.core.position import Position
 from ai_track.core.resolution import ImageResolution
@@ -13,7 +12,7 @@ from ai_track.gui.window import Window
 from ai_track.imaging import lines
 from ai_track.imaging.lines import Line3
 from ai_track.linking import nearby_position_finder
-from ai_track.linking_analysis import particle_movement_finder, particle_rotation_calculator, linking_markers
+from ai_track.linking_analysis import particle_rotation_calculator, linking_markers
 from ai_track.visualizer import activate
 from ai_track.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
@@ -66,10 +65,11 @@ class _Result:
 class _MeasureRotation(ExitableImageVisualizer):
     """Double-click on a point to define that as the center."""
 
-    _axis_one_p1: Optional[Position] = None
-    _axis_one_p2: Optional[Position] = None
-    _radius_um: Optional[float] = None
-    _axis_two_p1: Optional[Position] = None
+    _axis_one_p1: Optional[Position] = None  # Point one that defines the first rotation axis
+    _axis_one_p2: Optional[Position] = None  # Point two that defines the first rotation axis
+    _radius_um: Optional[float] = None       # Radius around _axis_one_p1 that is used to find nearby positions
+    _axis_two_p1: Optional[Position] = None  # Point one that defines the second rotation axis.
+                                             # Orientation of this axis is derived from the first axis.
 
     def _get_window_title(self) -> Optional[str]:
         return "Measuring rotation"
@@ -136,16 +136,18 @@ class _MeasureRotation(ExitableImageVisualizer):
                 self._axis_one_p2 = clicked_position
                 self.draw_view()
                 self.update_status("Defined the rotation axis. Now click somewhere to define the radius of the"
-                                   " cilinder.")
+                                   " sphere that is used to select cells.")
             else:
                 self.update_status(f"Please go back to time point {self._axis_one_p1.time_point_number()} to"
-                                   f" complete the definition of the cilinder.")
+                                   f" complete the definition of the rotation axis.")
         elif self._radius_um is None:
-            line = Line3(self._axis_one_p1.to_vector_um(resolution), self._axis_one_p2.to_vector_um(resolution))
-            self._radius_um = lines.distance_to_point(line, clicked_position.to_vector_um(resolution))
-            self.draw_view()
+            self._radius_um = clicked_position.distance_um(self._axis_one_p1, resolution)
+            radius_px = self._radius_um / resolution.pixel_size_x_um
+            self._ax.add_artist(Circle((self._axis_one_p1.x, self._axis_one_p1.y), radius_px,
+                                       edgecolor=COLOR_CELL_CURRENT, facecolor=(1, 1, 1, 0.2)))
+            self._fig.canvas.draw()
             self.update_status(f"Defined a sphere of radius {self._radius_um:.2f} μm.\nGo to another time point to"
-                               f" define the second circle center. The rotation will then be calculated.")
+                               f" define the second rotation axis. The rotation will then be calculated.")
         elif self._axis_two_p1 is None:
             if self._time_point == self._axis_one_p1.time_point():
                 self.update_status("Rotation happens over time. Go to another time point and double-click"
@@ -155,7 +157,6 @@ class _MeasureRotation(ExitableImageVisualizer):
                 self.update_status("Please double-click in a time point in the future.")
                 return
             self._axis_two_p1 = clicked_position
-            axis_two_p2 = self._axis_two_p1 + (self._axis_one_p2 - self._axis_one_p1)
             result = self._calculate_rotation_degrees()
 
             # Visualize the result
@@ -191,10 +192,10 @@ class _MeasureRotation(ExitableImageVisualizer):
 
         resolution = self._experiment.images.resolution()
         positions_in_time_point_one = self._experiment.positions.of_time_point(self._axis_one_p1.time_point())
-        
-        rotation_axis = Line3(self._axis_one_p1.to_vector_um(resolution), self._axis_one_p2.to_vector_um(resolution))
-        positions_in_axis_one = [position for position in positions_in_time_point_one
-                                   if lines.distance_to_point(rotation_axis, position.to_vector_um(resolution)) < self._radius_um]
-
-        return _Result(self._experiment.links, resolution, self._axis_one_p1, self._axis_one_p2, self._axis_two_p1, positions_in_axis_one)
+        positions_in_center_one = nearby_position_finder.find_closest_n_positions(positions_in_time_point_one,
+                                                                                  around=self._axis_one_p1,
+                                                                                  max_amount=10000,
+                                                                                  resolution=resolution,
+                                                                                  max_distance_um=self._radius_um)
+        return _Result(self._experiment.links, resolution, self._axis_one_p1, self._axis_one_p2, self._axis_two_p1, positions_in_center_one)
 
