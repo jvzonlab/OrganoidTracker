@@ -4,7 +4,7 @@ from typing import Iterable
 
 import math
 
-from ai_track.comparison.report import Category, ComparisonReport
+from ai_track.comparison.report import Category, ComparisonReport, Statistics
 from ai_track.core.experiment import Experiment
 from ai_track.core.links import Links
 from ai_track.core.position import Position
@@ -13,6 +13,16 @@ from ai_track.linking import nearby_position_finder
 LINKS_FALSE_NEGATIVES = Category("Missed links")
 LINKS_TRUE_POSITIVES = Category("Correctly detected links")
 LINKS_FALSE_POSITIVES = Category("Made up links")
+
+
+class LinksReport(ComparisonReport):
+
+    def __init__(self):
+        super().__init__()
+        self.title = "Links comparison"
+
+    def calculate_correctness_statistics(self) -> Statistics:
+        return self.calculate_statistics(LINKS_TRUE_POSITIVES, LINKS_FALSE_POSITIVES, LINKS_FALSE_NEGATIVES)
 
 
 def _find_close_positions(position: Position, experiment: Experiment, max_distance: float) -> Iterable[Position]:
@@ -30,8 +40,8 @@ def _has_link(links: Links, positions1: Iterable[Position], positions2: Iterable
     return False
 
 
-def compare_links(ground_truth: Experiment, scratch: Experiment, max_distance_um: float = 5) -> ComparisonReport:
-    result = ComparisonReport()
+def compare_links(ground_truth: Experiment, scratch: Experiment, max_distance_um: float = 5) -> LinksReport:
+    result = LinksReport()
 
     # Check if all baseline links exist
     for position1, position2 in ground_truth.links.find_all_links():
@@ -45,6 +55,14 @@ def compare_links(ground_truth: Experiment, scratch: Experiment, max_distance_um
             result.add_data(LINKS_FALSE_NEGATIVES, position1, "has mistakenly no link to", position2)
 
     # Check if all scratch links are real
-    # ... false positives are not yet reported!
+    for position1, position2 in scratch.links.find_all_links():
+        ground_thruth_positions1 = _find_close_positions(position1, ground_truth, max_distance_um)
+        ground_thruth_positions2 = _find_close_positions(position2, ground_truth, max_distance_um)
+        if _has_link(ground_truth.links, ground_thruth_positions1, ground_thruth_positions2):
+            # True positive, already detected in earlier loop
+            pass
+        else:
+            # False positive
+            result.add_data(LINKS_FALSE_POSITIVES, position1, "has mistakenly a link to", position2)
 
     return result
