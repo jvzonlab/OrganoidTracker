@@ -81,11 +81,16 @@ class Gaussian:
         max_y = min(image.shape[1], bounds.max_y)
         max_z = min(image.shape[0], bounds.max_z)
         size_x, size_y, size_z = max_x - offset_x, max_y - offset_y, max_z - offset_z
+        if size_x < 0 or size_y < 0 or size_z < 0:
+            return
 
         pos = _get_positions(size_x, size_y, size_z)
         gauss = _3d_gauss(pos, self.a / 256, self.mu_x - offset_x, self.mu_y - offset_y, self.mu_z - offset_z,
                           self.cov_xx, self.cov_yy, self.cov_zz, self.cov_xy, self.cov_xz, self.cov_yz)
-        cached_gaussian = gauss.reshape(size_z, size_y, size_x)
+        try:
+            cached_gaussian = gauss.reshape(size_z, size_y, size_x)
+        except ValueError as e:
+            raise e
         if color[0] > 0:
             image[offset_z:max_z, offset_y:max_y, offset_x:max_x, 0] += cached_gaussian * color[0]
         if color[1] > 0:

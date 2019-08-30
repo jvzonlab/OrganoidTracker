@@ -193,10 +193,11 @@ class Visualizer:
 
     def reconstruct_image(self, time_point: TimePoint, zyx_size: Tuple[int, int, int]) -> ndarray:
         rgb_images = numpy.zeros((zyx_size[0], zyx_size[1], zyx_size[2], 3), dtype='float')
+        offset = self._experiment.images.offsets.of_time_point(time_point)
         colors = [(1, 1, 1), (1, 1, 0), (1, 0, 1), (0, 1, 1), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
         i = 0
         for position, shape in self._experiment.positions.of_time_point_with_shapes(time_point).items():
-            shape.draw3d_color(position.x, position.y, position.z, 0, rgb_images, colors[i % len(colors)])
+            shape.draw3d_color(position.x - offset.x, position.y - offset.y, position.z - offset.z, 0, rgb_images, colors[i % len(colors)])
             i += 1
         rgb_images.clip(min=0, max=1, out=rgb_images)
         return rgb_images
