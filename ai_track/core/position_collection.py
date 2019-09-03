@@ -1,4 +1,4 @@
-from typing import Dict, AbstractSet, Optional, Iterable
+from typing import Dict, AbstractSet, Optional, Iterable, Tuple
 
 from ai_track.core import TimePoint
 from ai_track.core.position import Position
@@ -8,20 +8,31 @@ from ai_track.core.shape import ParticleShape, UnknownShape, UNKNOWN_SHAPE
 class _PositionsAtTimePoint:
     """Holds the positions of a single point in time."""
 
-    _positions: Dict[Position, ParticleShape]
+    _positions: Dict[int, Dict[Position, ParticleShape]]
 
     def __init__(self):
         self._positions = dict()
 
-    def positions(self) -> AbstractSet[Position]:
-        return self._positions.keys()
+    def contains_position(self, position: Position) -> bool:
+        at_z = self._positions.get(round(position.z))
+        if at_z is None:
+            return False
+        return position in at_z
 
-    def positions_and_shapes(self) -> Dict[Position, ParticleShape]:
-        return self._positions
+    def positions(self) -> Iterable[Position]:
+        for positions_at_z in self._positions.values():
+            yield from positions_at_z.keys()
+
+    def positions_and_shapes(self) -> Iterable[Tuple[Position, ParticleShape]]:
+        for positions_at_z in self._positions.values():
+            yield from positions_at_z.items()
 
     def get_shape(self, position: Position) -> ParticleShape:
         """Gets the shape of a position. Returns UnknownShape if the given position is not part of this time point."""
-        shape = self._positions.get(position)
+        at_z = self._positions.get(round(position.z))
+        if at_z is None:
+            return UNKNOWN_SHAPE
+        shape = at_z.get(position)
         if shape is None:
             return UNKNOWN_SHAPE
         return shape
@@ -30,31 +41,43 @@ class _PositionsAtTimePoint:
         """Adds a position to this time point. If the position was already added, but a shape was provided, its shape is
         replaced."""
         if position_shape is None:
-            if position in self._positions:
-                return  # Don't overwrite known shape with an unknown shape.
-            position_shape = UNKNOWN_SHAPE  # Don't use None as value in the dict
-        self._positions[position] = position_shape
+            # Don't overwrite known shape with an unknown shape, and don't store None
+            position_shape = self.get_shape(position)
+
+        at_z = self._positions.get(round(position.z))
+        if at_z is None:
+            at_z = dict()
+            self._positions[round(position.z)] = at_z
+        at_z[position] = position_shape
 
     def detach_position(self, position: Position) -> bool:
         """Removes a single position. Does nothing if that position was not in this time point. Does not remove a
         position from the linking graph. See also Experiment.remove_position."""
-        if position in self._positions:
-            del self._positions[position]
-            return True
-        return False
+        at_z = self._positions.get(round(position.z))
+        if at_z is None or position not in at_z:
+            return False
+
+        del at_z[position]
+        if len(at_z) == 0:  # No positions at z layer, remove those too
+            del self._positions[round(position.z)]
+        return True
 
     def is_empty(self):
         """Returns True if there are no positions stored."""
         return len(self._positions) == 0
 
-    def __len__(self):
-        return len(self._positions)
+    def __len__(self) -> int:
+        total = 0
+        for positions in self._positions.values():
+            total += len(positions)
+        return total
 
     def copy(self) -> "_PositionsAtTimePoint":
         """Gets a deep copy of this object. Changes to the returned object will not affect this object, and vice versa.
         """
         copy = _PositionsAtTimePoint()
-        copy._positions = self._positions.copy()
+        for z, positions in self._positions.items():
+            copy._positions[z] = positions.copy()
         return copy
 
 
@@ -72,7 +95,7 @@ class PositionCollection:
         positions_at_time_point = self._all_positions.get(time_point.time_point_number())
         if not positions_at_time_point:
             return set()
-        return positions_at_time_point.positions()
+        return set(positions_at_time_point.positions())
 
     def detach_all_for_time_point(self, time_point: TimePoint):
         """Removes all positions for a given time point, if any."""
@@ -139,13 +162,13 @@ class PositionCollection:
                 del self._all_positions[position.time_point_number()]
                 self._recalculate_min_max_time_points()
 
-    def of_time_point_with_shapes(self, time_point: TimePoint) -> Dict[Position, ParticleShape]:
+    def of_time_point_with_shapes(self, time_point: TimePoint) -> Iterable[Tuple[Position, ParticleShape]]:
         """Gets all positions and shapes of a time point. New positions must be added using self.add(...), not using
         this dict."""
         positions_at_time_point = self._all_positions.get(time_point.time_point_number())
         if not positions_at_time_point:
-            return dict()
-        return positions_at_time_point.positions_and_shapes()
+            return []
+        yield from positions_at_time_point.positions_and_shapes()
 
     def get_shape(self, position: Position) -> ParticleShape:
         positions_at_time_point = self._all_positions.get(position.time_point_number())
@@ -166,7 +189,7 @@ class PositionCollection:
         positions_at_time_point = self._all_positions.get(position.time_point_number())
         if positions_at_time_point is None:
             return False
-        return position in positions_at_time_point.positions()
+        return positions_at_time_point.contains_position(position)
 
     def __len__(self):
         """Returns the total number of positions across all time points."""
@@ -188,7 +211,7 @@ class PositionCollection:
         """Runs through the first 1000 positions, and returns True if any of them has a shape defined."""
         i = 0
         for positions in self._all_positions.values():
-            for position, shape in positions.positions_and_shapes().items():
+            for position, shape in positions.positions_and_shapes():
                 if not isinstance(shape, UnknownShape):
                     return True  # Found a shape
                 i += 1
@@ -205,7 +228,7 @@ class PositionCollection:
             if time_point_number in self._all_positions:
                 # Merge positions
                 self_positions = self._all_positions[time_point_number]
-                for position, shape in other_positions.positions_and_shapes().items():
+                for position, shape in other_positions.positions_and_shapes():
                     self_positions.add_position(position, shape)
             else:
                 # Just copy in

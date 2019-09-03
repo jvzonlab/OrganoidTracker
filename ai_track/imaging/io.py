@@ -338,7 +338,7 @@ def _encode_positions_and_shapes(positions_and_shapes: PositionCollection):
     data_structure = {}
     for time_point in positions_and_shapes.time_points():
         encoded_positions = []
-        for position, shape in positions_and_shapes.of_time_point_with_shapes(time_point).items():
+        for position, shape in positions_and_shapes.of_time_point_with_shapes(time_point):
             encoded_positions.append([position.x, position.y, position.z] + shape.to_list())
 
         data_structure[str(time_point.time_point_number())] = encoded_positions
