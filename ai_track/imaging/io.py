@@ -38,6 +38,11 @@ def _load_guizela_data_file(experiment: Experiment, file_name: str, min_time_poi
     guizela_data_importer.add_data_to_experiment(experiment, os.path.dirname(file_name), min_time_point, max_time_point)
 
 
+def _load_cell_tracking_challenge_file(experiment: Experiment, file_name: str, min_time_point: int, max_time_point: int):
+    from ai_track.imaging import ctc_io
+    ctc_io.load_data_file(file_name, min_time_point, max_time_point, experiment=experiment)
+
+
 def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int = 5000, *,
                    experiment: Optional[Experiment] = None) -> Experiment:
     """Loads some kind of data file. This should support all data formats of our research group. Raises ValueError if
@@ -50,6 +55,9 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
         return experiment
     elif file_name.lower().endswith(".p"):
         _load_guizela_data_file(experiment, file_name, min_time_point, max_time_point)
+        return experiment
+    elif file_name.lower().endswith(".txt"):
+        _load_cell_tracking_challenge_file(experiment, file_name, min_time_point, max_time_point)
         return experiment
     else:
         raise ValueError(f"Cannot load data from file \"{file_name}\": it is of an unknown format")
