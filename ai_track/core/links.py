@@ -582,6 +582,11 @@ class Links:
         """Gets all tracks, even tracks that have another track before them."""
         yield from self._tracks
 
+    def find_all_tracks_and_ids(self) -> Iterable[Tuple[int, LinkingTrack]]:
+        """Gets all tracks and their id. Just like get_all_tracks, this method returns tracks that have another track
+        before them in time."""
+        yield from enumerate(self._tracks)
+
     def find_all_data_of_position(self, position: Position) -> Iterable[Tuple[str, DataType]]:
         """Finds all stored data of a given position."""
         for data_name, data_values in self._position_data.items():

@@ -1,11 +1,15 @@
-"""IO functions for the Cell Tracking Challenge data format."""
+"""IO functions for the Cell Tracking Challenge data format, following the specification at
+https://public.celltrackingchallenge.net/documents/Naming%20and%20file%20content%20conventions.pdf """
 import os
 from typing import Optional, Dict, List
+
+import numpy
 from numpy import ndarray
 
 import mahotas
 from tifffile import tifffile
 
+from ai_track.core import UserError
 from ai_track.core.experiment import Experiment
 from ai_track.core.links import Links
 from ai_track.core.position import Position
@@ -110,3 +114,73 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
     experiment.links = all_links
 
     return experiment
+
+
+def save_data_files(experiment: Experiment, file_name: str):
+    """Saves all cell tracks in the data format of the Cell Tracking Challenge. Requires the presence of links and
+     images. Also requires an image size to be known, as well as the file name ending with .txt (case insensitive).
+     Throws ValueError if any of these conditions are violated."""
+    if not file_name.lower().endswith(".txt"):
+        raise ValueError("Must save as a .txt file")
+    os.makedirs(os.path.dirname(file_name), exist_ok=True)
+
+    image_size_zyx = experiment.images.image_loader().get_image_size_zyx()
+    if image_size_zyx is None:
+        raise ValueError("Couldn't find an image size.")
+    if not experiment.links.has_links():
+        raise ValueError("No links found")
+
+    image_prefix = file_name[0:-4]
+    _save_track_images(experiment, image_prefix)
+    _save_overview_file(experiment, file_name)
+
+
+def _save_track_images(experiment: Experiment, image_prefix: str):
+    image_size_zyx = experiment.images.image_loader().get_image_size_zyx()
+    links = experiment.links
+    positions = experiment.positions
+    offsets = experiment.images.offsets
+
+    position_half_width_px = 2  # Positions will have a visible size of 2x + 1
+    for time_point in positions.time_points():
+        image_file_name = f"{image_prefix}{time_point.time_point_number():03}.tif"
+        image_array = numpy.zeros(image_size_zyx, dtype=numpy.uint16)
+        image_offset = offsets.of_time_point(time_point)
+
+        for position in positions.of_time_point(time_point):
+            moved_position = position - image_offset
+            x, y, z = int(moved_position.x), int(moved_position.y), int(moved_position.z)
+
+            # Only export positions in the images
+            if x < position_half_width_px or x >= image_size_zyx[2] - position_half_width_px:
+                continue
+            if y < position_half_width_px or y >= image_size_zyx[1] - position_half_width_px:
+                continue
+            if z < 0 or z >= image_size_zyx[0]:
+                continue
+            track = links.get_track(position)
+            if track is None:
+                continue  # No links, so we cannot save the position
+
+            track_id = links.get_track_id(track)
+            image_array[z,
+            y - position_half_width_px: y + position_half_width_px + 1,
+            x - position_half_width_px: x + position_half_width_px + 1] = track_id
+        tifffile.imsave(image_file_name, image_array, compress=9)
+
+
+def _save_overview_file(experiment: Experiment, file_name: str):
+    """Save overview of all linking tracks and their ids"""
+
+    links = experiment.links
+    with open(file_name, "w") as handle:
+        for track_id, track in experiment.links.find_all_tracks_and_ids():
+            parent_id = 0
+            previous_tracks = track.get_previous_tracks()
+            if len(previous_tracks) == 1:
+                parent_id = links.get_track_id(previous_tracks.pop())
+                if parent_id is None:
+                    parent_id = 0
+
+            handle.write(
+                f"{track_id} {track.min_time_point_number()} {track.max_time_point_number()} {parent_id}\n")

@@ -150,9 +150,8 @@ def export_positions(experiment: Experiment):
 
 
 def export_links_guizela(experiment: Experiment):
-    links = experiment.links
-    if not links.has_links():
-        raise UserError("No links", "Cannot export links; there are no links created.")
+    if not experiment.links.has_links():
+        raise UserError("No links", "Cannot export to this file format; there are no links created.")
 
     links_folder = dialog.prompt_save_file("Save links as...", [("Folder", "*")])
     if not links_folder:
@@ -166,7 +165,23 @@ def export_links_guizela(experiment: Experiment):
             return
 
     from ai_track.manual_tracking import guizela_data_exporter
-    guizela_data_exporter.export_links(links, experiment.images.offsets, links_folder, comparisons_folder)
+    guizela_data_exporter.export_links(experiment.links, experiment.images.offsets, links_folder, comparisons_folder)
+
+
+def export_links_ctc(experiment: Experiment):
+    if experiment.images.image_loader().get_image_size_zyx() is None:
+        raise UserError("No images found", "Couldn't find an image size. Note that this data format saves the tracking"
+                                           " positions in images of the same size as the original microscopy images."
+                                           " Please load those first.")
+    if not experiment.links.has_links():
+        raise UserError("No links found", "This save format can only save tracks. Currently, there are no links"
+                                          " loaded, so we have no tracks, and therefore we cannot save anything.")
+    tracks_folder = dialog.prompt_save_file("Save tracks as...", [("Folder", "*")])
+    if tracks_folder is None:
+        return
+
+    from ai_track.imaging import ctc_io
+    ctc_io.save_data_files(experiment, tracks_folder + "/man_track.txt")
 
 
 def save_tracking_data(gui_experiment: GuiExperiment) -> bool:
