@@ -1,6 +1,8 @@
 # Supported image formats
 [← Back to main page](INDEX.md)
 
+*See also: [Supported tracking formats](TRACKING_FORMATS.md)*
+
 The program was made with movies of grayscale 3D images in mind. Multiple channels (for example captured at different wavelengths) are supported.
 
 * There is some basic support for 2D images. They will be loaded as 3D images with only a single xy plane.
