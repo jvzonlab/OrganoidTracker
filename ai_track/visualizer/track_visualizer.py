@@ -8,6 +8,7 @@ from ai_track.core import UserError, TimePoint
 from ai_track.core.experiment import Experiment
 from ai_track.core.links import Links, LinkingTrack
 from ai_track.core.position import Position
+from ai_track.core.position_collection import PositionCollection
 from ai_track.core.resolution import ImageResolution
 from ai_track.gui import dialog
 from ai_track.gui.window import Window, DisplaySettings
@@ -55,6 +56,23 @@ def _add_future_positions(links: Links, position: Position, single_lineage_links
             return
 
         position = future_positions.pop()
+
+
+def _plot_volume(axes: Axes, positions: PositionCollection, track: LinkingTrack, lineage_id: int):
+    volumes = list()
+    time_point_numbers = list()
+
+    for position in track.positions():
+        # Found a connection, measure distance
+        try:
+            volumes.append(positions.get_shape(position).volume())
+            time_point_numbers.append(position.time_point_number())
+        except NotImplementedError:
+            pass  # No known volume at this time point
+
+    # End of this cell track: either start multiple new ones (division) or stop tracking
+    label = None if track.get_previous_tracks() else "Lineage " + str(lineage_id)
+    axes.plot(time_point_numbers, volumes, color=matplotlib.cm.Set1(lineage_id), label=label)
 
 
 def _plot_displacements(axes: Axes, resolution: ImageResolution, track: LinkingTrack, lineage_id: int):
@@ -150,6 +168,7 @@ class TrackVisualizer(ExitableImageVisualizer):
             **super().get_extra_menu_options(),
             "Graph//Over time-Displacement over time...": self._show_displacement,
             "Graph//Over time-Axes positions over time...": self._show_data_axes_locations,
+            "Graph//Over time-Volume over time...": self._show_volumes,
         }
 
     def _show_displacement(self):
@@ -185,6 +204,24 @@ class TrackVisualizer(ExitableImageVisualizer):
             for i, lineage in enumerate(self._selected_lineages):
                 for track in lineage.find_all_tracks():
                     _plot_data_axes_locations(axes, self._experiment, track, i + 1)
+            if len(self._selected_lineages) > 1:
+                axes.legend()
+
+        dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
+
+    def _show_volumes(self):
+        if len(self._selected_lineages) == 0:
+            raise UserError("No cell track selected", "No cell track selected, so we cannot plot anything. Double-click"
+                                                      " on a cell to select a track.")
+
+        def draw_function(figure: Figure):
+            axes = figure.gca()
+            axes.set_xlabel("Time (time points)")
+            axes.set_ylabel("Volume (px$^3$)")
+            axes.set_title("Volume of the cells")
+            for i, lineage in enumerate(self._selected_lineages):
+                for track in lineage.find_all_tracks():
+                    _plot_volume(axes, self._experiment.positions, track, i + 1)
             if len(self._selected_lineages) > 1:
                 axes.legend()
 
