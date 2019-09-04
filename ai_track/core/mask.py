@@ -1,6 +1,7 @@
 import cv2
 from typing import Optional
 
+import mahotas
 import numpy
 from numpy import ndarray
 from scipy.ndimage import binary_dilation
@@ -128,6 +129,13 @@ class Mask:
                         self._offset_y:self._max_y,
                         self._offset_x:self._max_x]
         array[cropped_image == label] = 1
+
+    def dilate_xyz(self, iterations: int = 1):
+        """Dilates the image in the xyz direction."""
+        mask = self.get_mask_array()
+        for i in range(iterations):
+            mask = mahotas.dilate(mask)
+        self._mask = mask
 
     def dilate_xy(self, iterations: int = 1):
         """Dilates the mask image in the xy direction."""

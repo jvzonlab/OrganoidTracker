@@ -1,5 +1,5 @@
 import random
-from typing import Tuple, List, Iterable
+from typing import Tuple, List, Iterable, Optional
 
 import mahotas
 import matplotlib.cm
@@ -60,13 +60,19 @@ def watershed_maxima(threshold: ndarray, intensities: ndarray, minimal_size: Tup
     return watershed_labels(threshold, surface, spots, n_spots)
 
 
-def create_labels(positions: Iterable[Position], image_offset: Position, output: ndarray):
+def create_labels(positions: List[Optional[Position]], output: ndarray):
     """Creates a label image using the given labels. This image can be used for a watershed transform, for example.
-    positions: list of positions, must have x/y/z in range of the output image after translation by -image_offset
-    output: integer image, which will contain the labels. label 1 == position 0, label 2 == position 1, etc."""
-    i = 1
-    for position in positions:
-        image_position = position - image_offset
+    positions: list of positions, must have x/y/z in range of the output image. The first element in the list must be
+    None, as that index is used for the background of the output image."""
+    if positions[0] is not None:
+        raise ValueError("First position (index 0) must be None, as that will be the background of the image.")
+
+    i = 0
+    for image_position in positions:
+        if image_position is None:
+            i += 1
+            continue
+
         try:
             z = int(image_position.z)
             if z == -1 or z == output.shape[0]:
@@ -75,8 +81,7 @@ def create_labels(positions: Iterable[Position], image_offset: Position, output:
             i += 1
         except IndexError:
             raise ValueError(f"The images do not match the cells: {position} is outside the image of size "
-                             f"{(output.shape[2], output.shape[1], output.shape[0])} and offset "
-                             f"{(image_offset.x, image_offset.y, image_offset.z)}")
+                             f"{(output.shape[2], output.shape[1], output.shape[0])}")
 
 
 def watershed_labels(threshold: ndarray, surface: ndarray, label_image: ndarray, label_count: int) -> Tuple[ndarray, ndarray]:

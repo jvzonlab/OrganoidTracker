@@ -22,6 +22,14 @@ def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, thres
     # Acquire images
     image_offset = experiment.images.offsets.of_time_point(time_point)
     positions = list(experiment.positions.of_time_point(time_point))
+    image_positions = [None] + positions  # Don't use offset 0
+    if not image_offset.is_zero():
+        # Move all positions
+        for i in range(len(image_positions)):
+            if image_positions[i] is None:
+                continue
+            image_positions[i] = image_positions[i] - image_offset
+
     images = experiment.get_image_stack(time_point)
     images = bits.image_to_8bit(images)
 
@@ -32,7 +40,7 @@ def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, thres
     # Labelling, calculate distance to label
     resolution = experiment.images.resolution()
     label_image = numpy.empty_like(images, dtype=numpy.uint16)
-    watershedding.create_labels(positions, image_offset, label_image)
+    watershedding.create_labels(image_positions, label_image)
     distance_transform_to_labels = watershedding.distance_transform_to_labels(label_image, resolution.pixel_size_zyx_um)
 
     # Remove places from distance transform that are outside the threshold
@@ -43,7 +51,8 @@ def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, thres
                                                label_image, len(positions))[0]
 
     # Finally use that for fitting
-    gaussians = gaussian_fit.perform_gaussian_mixture_fit_from_watershed(images, watershed, gaussian_fit_smooth_size,
+    gaussians = gaussian_fit.perform_gaussian_mixture_fit_from_watershed(images, watershed, image_positions,
+                                                                         gaussian_fit_smooth_size,
                                                                          cluster_detection_erosion_rounds)
     for position, gaussian in zip(positions, gaussians):
         shape = FAILED_SHAPE if gaussian is None \

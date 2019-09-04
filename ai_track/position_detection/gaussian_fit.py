@@ -7,13 +7,15 @@ import cv2
 import mahotas
 import numpy
 import scipy.optimize
-from matplotlib import cm
+from matplotlib import cm, pyplot
 from numpy import ndarray
+from tifffile import tifffile
 
 from ai_track.core.bounding_box import bounding_box_from_mahotas, BoundingBox
 from ai_track.core.gaussian import Gaussian
 from ai_track.core.images import Image
 from ai_track.core.mask import create_mask_for
+from ai_track.core.position import Position
 from ai_track.position_detection import smoothing, clusterer
 from ai_track.visualizer.debug_image_visualizer import popup_3d_image
 
@@ -121,25 +123,27 @@ def perform_gaussian_mixture_fit(original_image: ndarray, guesses: List[Gaussian
     return result_gaussians
 
 
-def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image: ndarray, blur_radius: int,
-                                                erode_passes: int) -> List[Gaussian]:
-    """GMM using watershed as seeds. The watershed is used to fit as few Gaussians at the same time as possible."""
+def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image: ndarray, positions: List[Position],
+                                                blur_radius: int, erode_passes: int) -> List[Gaussian]:
+    """GMM using watershed as seeds. The watershed is used to fit as few Gaussians at the same time as possible: if two
+    colors in the watershed have only a small connection (defined by erode_passes) they will be fit separately. The
+    positions are used as starting positions for the Gaussian fit; the index in the list must match the index in the
+    watershed image."""
     start_time = default_timer()
 
     # Find out where the positions are
     bounding_boxes = mahotas.labeled.bbox(watershed_image.astype(numpy.int32))
-    position_centers = mahotas.center_of_mass(image, watershed_image)
 
-    # Using ellipses to check which cell overlap
-    clusters = clusterer.get_clusters_from_labeled_image(watershed_image, position_centers, erode_passes)
+    # Using a watershed to check which cell overlap
+    clusters, cluster_image = clusterer.get_clusters_from_labeled_image(watershed_image, positions, erode_passes)
 
-    all_gaussians: List[Optional[Gaussian]] = [None] * len(position_centers)  # Initialize empty list
+    all_gaussians: List[Optional[Gaussian]] = [None] * len(positions)  # Initialize empty list
 
     for cluster in clusters:
         # To keep the fitting procedure easy, we try to fit as few cells at the same time as possible
-        # Only overlapping nuclei should be fit together. Overlap is detected using ellipses.
+        # Only overlapping nuclei should be fit together. Overlap was detected using a watershed, see clusterer above.
         cell_ids = cluster.get_tags()
-        print(f"Fitting {len(cell_ids)} cells...")
+        print(f"Fitting {len(cell_ids)} cells: " + str([positions[cell_id] for cell_id in cell_ids]))
         bounding_box = _merge_bounding_boxes(bounding_boxes, cell_ids)
         bounding_box.expand(x=blur_radius, y=blur_radius, z=0)
 
@@ -148,17 +152,17 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
         if mask.has_zero_volume():
             continue
 
+        mask.add_from_labeled(cluster_image, cluster.cluster_index)
+
         gaussians = []
         for cell_id in cell_ids:
-            mask.add_from_labeled(watershed_image, cell_id)
-
-            center_zyx = position_centers[cell_id]
-            if numpy.any(numpy.isnan(center_zyx)):
-                print("No center of mass for cell " + str(center_zyx))
+            center = positions[cell_id]
+            if center is None:
+                print("No position for cell " + str(center))
                 continue  # No center of mass for this cell id
-            intensity = image[int(center_zyx[0]), int(center_zyx[1]), int(center_zyx[2])]
-            gaussians.append(Gaussian(intensity, center_zyx[2], center_zyx[1], center_zyx[0], 50, 50, 2, 0, 0, 0))
-        mask.dilate_xy(blur_radius // 2)
+            intensity = image[int(center.z), int(center.y), int(center.x)]
+            gaussians.append(Gaussian(intensity, center.x, center.y, center.z, 50, 50, 2, 0, 0, 0))
+        mask.dilate_xyz(erode_passes)  # Undo applied erosionm by the clusterer
         cropped_image = mask.create_masked_image(Image(image))
         smoothing.smooth(cropped_image, blur_radius)
 
