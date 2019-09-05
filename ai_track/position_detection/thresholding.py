@@ -61,24 +61,30 @@ def _open(threshold: ndarray):
 
 def fill_threshold(threshold: ndarray):
     """Filling of all holes."""
-    temp = numpy.empty_like(threshold[0])
+    temp = numpy.empty((threshold.shape[1] + 2, threshold.shape[2] + 2), dtype=threshold.dtype)
     for z in range(threshold.shape[0]):
         _fill_threshold_2d(threshold[z], temp)
 
 
 def _fill_threshold_2d(threshold: ndarray, temp_for_floodfill: ndarray):
-    """Filling of all holes in a single 2D plane."""
+    """Filling of all holes in a single 2D plane. temp_for_floodfill must be 2px larger in both the x and y direction
+    than the threshold."""
+    # This follows the guide at
     # https://www.learnopencv.com/filling-holes-in-an-image-using-opencv-python-c/
-    temp_for_floodfill[:] = threshold
+    # with the addition that a 1 px border has been added around the image. This is necessary for the floodfill,
+    # otherwise, if the foreground extends to the border, the foreground might get flood-filled instead of the
+    # background
+    temp_for_floodfill.fill(0)
+    temp_for_floodfill[1:-1,1:-1] = threshold  # This leaves a 1 px border, from which we can start floodfilling later
 
     # Mask used to flood filling.
     # Notice the size needs to be 2 pixels than the image.
-    h, w = threshold.shape[:2]
+    h, w = temp_for_floodfill.shape[:2]
     mask = numpy.zeros((h + 2, w + 2), numpy.uint8)
 
-    # Floodfill from point (w-1, h-1) = bottom right
+    # Floodfill from point (w-1, h-1) = bottom right, just outside the original threshold
     cv2.floodFill(temp_for_floodfill, mask, (w - 1, h - 1), 255)
 
     # Invert floodfilled image, combine with threshold
     im_floodfill_inv = cv2.bitwise_not(temp_for_floodfill)
-    threshold |= im_floodfill_inv
+    threshold |= im_floodfill_inv[1:-1,1:-1]
