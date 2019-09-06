@@ -185,6 +185,8 @@ def _merge_bounding_boxes(all_boxes: ndarray, cell_ids: Iterable[int]) -> Boundi
     """Creates a bounding box object that encompasses the bounding boxes of all the given cells."""
     combined_bounding_box = None
     for cell_id in cell_ids:
+        if cell_id >= len(all_boxes):
+            continue  # No bounding box of this cell id
         bounding_box = all_boxes[cell_id]
         if combined_bounding_box is None:
             combined_bounding_box = bounding_box
@@ -195,6 +197,8 @@ def _merge_bounding_boxes(all_boxes: ndarray, cell_ids: Iterable[int]) -> Boundi
         combined_bounding_box[3] = max(combined_bounding_box[3], bounding_box[3])
         combined_bounding_box[4] = min(combined_bounding_box[4], bounding_box[4])
         combined_bounding_box[5] = max(combined_bounding_box[5], bounding_box[5])
+    if combined_bounding_box is None:
+        return BoundingBox(0, 0, 0, 0, 0, 0)
     return bounding_box_from_mahotas(combined_bounding_box)
 
 
