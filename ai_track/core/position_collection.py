@@ -1,6 +1,6 @@
 from typing import Dict, AbstractSet, Optional, Iterable, Tuple
 
-from ai_track.core import TimePoint
+from ai_track.core import TimePoint, min_none, max_none
 from ai_track.core.position import Position
 from ai_track.core.shape import ParticleShape, UnknownShape, UNKNOWN_SHAPE
 
@@ -80,6 +80,22 @@ class _PositionsAtTimePoint:
             copy._positions[z] = positions.copy()
         return copy
 
+    def positions_nearby_z(self, z: int) -> Iterable[Position]:
+        """Yields all positions for which round(position.z) == z"""
+        if z in self._positions:
+            yield from self._positions[z]
+
+    def lowest_z(self) -> Optional[int]:
+        """Gets the lowest z in use, or None if there are no positions stored."""
+        if len(self._positions) == 0:
+            return None
+        return min(self._positions.keys())
+
+    def highest_z(self) -> Optional[int]:
+        """Gets the highest z in use, or None if there are no positions stored."""
+        if len(self._positions) == 0:
+            return None
+        return max(self._positions.keys())
 
 class PositionCollection:
 
@@ -255,3 +271,16 @@ class PositionCollection:
         the_copy._min_time_point_number = self._min_time_point_number
         the_copy._max_time_point_number = self._max_time_point_number
         return the_copy
+
+    def nearby_z(self, z: int) -> Iterable[Position]:
+        """Returns all positions (for any time point) for which round(position.z) == z."""
+        for positions_at_time_point in self._all_positions.values():
+            yield from positions_at_time_point.positions_nearby_z(z)
+
+    def lowest_z(self) -> Optional[int]:
+        """Returns the lowest z in use, or None if there are no positions in this collection."""
+        return min_none(positions_at_time_point.lowest_z() for positions_at_time_point in self._all_positions.values())
+
+    def highest_z(self) -> Optional[int]:
+        """Returns the lowest z in use, or None if there are no positions in this collection."""
+        return max_none(positions_at_time_point.highest_z() for positions_at_time_point in self._all_positions.values())

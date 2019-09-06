@@ -14,9 +14,13 @@ class DetectionReport(ComparisonReport):
         super().__init__()
         self.title = "Detection comparison"
 
-    def calculate_detection_statistics(self) -> Statistics:
-        return self.calculate_statistics(_DETECTIONS_TRUE_POSITIVES, _DETECTIONS_FALSE_POSITIVES,
-                                         _DETECTIONS_FALSE_NEGATIVES)
+    def calculate_time_detection_statistics(self) -> Statistics:
+        return self.calculate_time_statistics(_DETECTIONS_TRUE_POSITIVES, _DETECTIONS_FALSE_POSITIVES,
+                                              _DETECTIONS_FALSE_NEGATIVES)
+
+    def calculate_z_detection_statistics(self) -> Statistics:
+        return self.calculate_z_statistics(_DETECTIONS_TRUE_POSITIVES, _DETECTIONS_FALSE_POSITIVES,
+                                           _DETECTIONS_FALSE_NEGATIVES)
 
 
 def compare_positions(ground_truth: Experiment, scratch: Experiment, max_distance_um: float = 5) -> DetectionReport:
@@ -43,12 +47,6 @@ def compare_positions(ground_truth: Experiment, scratch: Experiment, max_distanc
 
         # Only the scratch positions with no corresponding baseline position are left
         for scratch_position in scratch_positions:
-            nearest_in_baseline = find_close_positions(baseline_positions, around=scratch_position, tolerance=1,
-                                                       resolution=resolution)
-            distance_um = scratch_position.distance_um(nearest_in_baseline[0], resolution)
-            if distance_um > 3.3333 * max_distance_um:
-                # Assume cell is in unannotated region
-                continue
             report.add_data(_DETECTIONS_FALSE_POSITIVES, scratch_position)
 
     return report

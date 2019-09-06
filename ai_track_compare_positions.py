@@ -29,6 +29,7 @@ automatic_data = io.load_data_file(_automatic_file, _min_time_point, _max_time_p
 print("Comparing...")
 result = positions_comparison.compare_positions(ground_truth, automatic_data, max_distance_um=_max_distance_um)
 print(result)
-result.calculate_detection_statistics().debug_plot()
+result.calculate_time_detection_statistics().debug_plot()
+result.calculate_z_detection_statistics().debug_plot()
 
 print("Done!")

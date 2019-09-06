@@ -38,7 +38,8 @@ class Statistics:
     """Used to plot the true positives, false positives, false negatives, recall, precisiion and F1"""
 
     # None of these variables should be changed, but I'm too lazy to make them all read-only
-    time_point_numbers: ndarray  # Int array, used on x axis
+    x_axis_numbers: ndarray  # Int array, used on x axis
+    x_label: str
     true_positives: ndarray
     false_positives: ndarray
     false_negatives: ndarray
@@ -50,8 +51,10 @@ class Statistics:
     recall_overall: float
     f1_score_overall: float
 
-    def __init__(self, first_time_point_number: int, true_positives: ndarray, false_positives: ndarray, false_negatives: ndarray):
-        self.time_point_numbers = numpy.arange(first_time_point_number, first_time_point_number + len(true_positives))
+    def __init__(self, first_x_axis_number: int, x_label: str, true_positives: ndarray, false_positives: ndarray,
+                 false_negatives: ndarray):
+        self.x_axis_numbers = numpy.arange(first_x_axis_number, first_x_axis_number + len(true_positives))
+        self.x_label = x_label
         self.true_positives = true_positives
         self.false_positives = false_positives
         self.false_negatives = false_negatives
@@ -63,7 +66,7 @@ class Statistics:
         true_positives_overall = true_positives.sum()
         false_positives_overall = false_positives.sum()
         false_negatives_overall = false_negatives.sum()
-        self.precision_overall = true_positives_overall / (false_negatives_overall + false_positives_overall)
+        self.precision_overall = true_positives_overall / (true_positives_overall + false_positives_overall)
         self.recall_overall = true_positives_overall / (true_positives_overall + false_negatives_overall)
         self.f1_score_overall = (2 * self.precision_overall * self.recall_overall) / \
                                 (self.precision_overall + self.recall_overall)
@@ -71,12 +74,12 @@ class Statistics:
     def debug_plot(self):
         """Shows a Matplotlib plot. Must only be called from the command line."""
         import matplotlib.pyplot as plt
-        plt.plot(self.time_point_numbers, self.recall, label="Recall")
-        plt.plot(self.time_point_numbers, self.precision, label="Precision")
-        plt.plot(self.time_point_numbers, self.f1_score, label="F1 score")
-        plt.xlabel("Time point")
-        plt.title(f"Recall: {self.recall.mean():.02f}, Precision: {self.precision.mean():.02f},"
-                  f" F1 score: {self.f1_score.mean():.02f}")
+        plt.plot(self.x_axis_numbers, self.recall, label="Recall")
+        plt.plot(self.x_axis_numbers, self.precision, label="Precision")
+        plt.plot(self.x_axis_numbers, self.f1_score, label="F1 score")
+        plt.xlabel(self.x_label)
+        plt.title(f"Recall: {self.recall_overall:.02f}, Precision: {self.precision_overall:.02f},"
+                  f" F1 score: {self.f1_score_overall:.02f}")
         plt.legend()
         plt.show()
 
@@ -85,34 +88,40 @@ class ComparisonReport:
 
     title: str = "Comparison"
     summary: str = ""
-    _details_by_position: Dict[Position, str]
+    _details_by_category_and_position: Dict[Category, Dict[Position, str]]
     _positions_by_category: Dict[Category, PositionCollection]
 
     def __init__(self):
-        self._details_by_position = dict()
+        self._details_by_category_and_position = dict()
         self._positions_by_category = dict()
 
     def add_data(self, category: Category, position: Position, *details: Union[str, Position]):
         """Adds a data point. The """
         if category not in self._positions_by_category:
             self._positions_by_category[category] = PositionCollection()
+        self._positions_by_category[category].add(position)
 
         if details:
-            self._details_by_position[position] = " ".join(str(detail) for detail in details)
-        self._positions_by_category[category].add(position)
+            if category not in self._details_by_category_and_position:
+                self._details_by_category_and_position[category] = dict()
+            self._details_by_category_and_position[category][position] = " ".join(str(detail) for detail in details)
 
     def __str__(self):
         report = self.title + "\n"
         report += ("-" * len(self.title)) + "\n\n"
         report += self.summary + "\n"
         for category, positions in self._positions_by_category.items():
+            details_by_position = self._details_by_category_and_position.get(category)
+            if details_by_position is None:
+                details_by_position = dict()  # Supply an empty map to prevent errors
+
             count = len(positions)
             report += "\n" + category.name + ": ("+str(count)+")\n"
 
             i = 0
             for position in positions:
                 position_str = str(position)
-                details = self._details_by_position.get(position)
+                details = details_by_position.get(position)
                 if details is not None:
                     position_str += " - " + details
                 report += "* " + position_str + "\n"
@@ -122,8 +131,8 @@ class ComparisonReport:
                     break
         return report
 
-    def calculate_statistics(self, true_positives_cat: Category, false_positives_cat: Category,
-                             false_negatives_cat: Category) -> Statistics:
+    def calculate_time_statistics(self, true_positives_cat: Category, false_positives_cat: Category,
+                                  false_negatives_cat: Category) -> Statistics:
         """Calculate statistics using the given categories as false/true positives/negatives."""
         min_time_point_number = min(self._positions_by_category[true_positives_cat].first_time_point_number(),
                                     self._positions_by_category[false_positives_cat].first_time_point_number(),
@@ -141,7 +150,28 @@ class ComparisonReport:
             true_positives[i] = len(self._positions_by_category[true_positives_cat].of_time_point(time_point))
             false_positives[i] = len(self._positions_by_category[false_positives_cat].of_time_point(time_point))
             false_negatives[i] = len(self._positions_by_category[false_negatives_cat].of_time_point(time_point))
-        return Statistics(min_time_point_number, true_positives, false_positives, false_negatives)
+        return Statistics(min_time_point_number, "Time point", true_positives, false_positives, false_negatives)
+
+    def calculate_z_statistics(self, true_positives_cat: Category, false_positives_cat: Category,
+                               false_negatives_cat: Category) -> Statistics:
+        """Calculate statistics using the given categories as false/true positives/negatives."""
+        min_z = min(self._positions_by_category[true_positives_cat].lowest_z(),
+                                    self._positions_by_category[false_positives_cat].lowest_z(),
+                                    self._positions_by_category[false_negatives_cat].lowest_z())
+        max_time_point_number = max(self._positions_by_category[true_positives_cat].highest_z(),
+                                    self._positions_by_category[false_positives_cat].highest_z(),
+                                    self._positions_by_category[false_negatives_cat].highest_z())
+
+        z_count = max_time_point_number - min_z + 1
+        true_positives = numpy.ones(z_count, dtype=numpy.uint16)
+        false_positives = numpy.ones(z_count, dtype=numpy.uint16)
+        false_negatives = numpy.ones(z_count, dtype=numpy.uint16)
+        for i in range(z_count):
+            z = i + min_z
+            true_positives[i] = sum(1 for _ in self._positions_by_category[true_positives_cat].nearby_z(z))
+            false_positives[i] = sum(1 for _ in self._positions_by_category[false_positives_cat].nearby_z(z))
+            false_negatives[i] = sum(1 for _ in self._positions_by_category[false_negatives_cat].nearby_z(z))
+        return Statistics(min_z, "Z layer", true_positives, false_positives, false_negatives)
 
     def count(self, category: Category) -> int:
         """Gets how many positions are stored in the given category."""
