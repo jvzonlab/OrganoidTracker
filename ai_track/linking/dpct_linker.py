@@ -7,7 +7,7 @@ Targets. ECCV 2016 Proceedings.
 
 import dpct
 import math
-from typing import Dict, List, Iterable
+from typing import Dict, List, Iterable, Tuple
 
 from ai_track.core.links import Links
 from ai_track.core.position_collection import PositionCollection
@@ -68,9 +68,13 @@ def run(positions: PositionCollection, starting_links: Links, scores: ScoreColle
     :return:
     """
     position_ids = _PositionToId()
-    weights = {"weights": [link_weight, detection_weight, division_weight, appearance_weight, dissappearance_weight]}
-    input = _create_dpct_graph(position_ids, starting_links, scores, positions, resolution,
-                               positions.first_time_point_number(), positions.last_time_point_number())
+    input, has_possible_divisions = _create_dpct_graph(position_ids, starting_links, scores, positions, resolution,
+                                        positions.first_time_point_number(), positions.last_time_point_number())
+
+    if has_possible_divisions:
+        weights = {"weights": [link_weight, detection_weight, division_weight, appearance_weight, dissappearance_weight]}
+    else:
+        weights = {"weights": [link_weight, detection_weight, appearance_weight, dissappearance_weight]}
     results = dpct.trackFlowBased(input, weights)
     return _to_links(position_ids, results)
 
@@ -84,7 +88,10 @@ def _scores_involving(daughter: Position, scores: Iterable[ScoredFamily]) -> Ite
 
 def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links, scores: ScoreCollection,
                        shapes: PositionCollection, resolution: ImageResolution,
-                       min_time_point: int, max_time_point: int) -> Dict:
+                       min_time_point: int, max_time_point: int) -> Tuple[Dict, bool]:
+    """Creates the linking network. Returns the network and whether there are possible divisions."""
+    created_possible_division = False
+
     segmentation_hypotheses = []
     for position in starting_links.find_all_positions():
         appearance_penalty = 1 if position.time_point_number() > min_time_point else 0
@@ -102,6 +109,7 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links, score
         division_score = _max_score(scores.of_mother(position))
         if not division_score.is_unlikely_mother():
             map["divisionFeatures"] = [[0], [-division_score.total()]]
+            created_possible_division = True
         segmentation_hypotheses.append(map)
 
     linking_hypotheses = []
@@ -132,8 +140,8 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links, score
         },
 
         "segmentationHypotheses": segmentation_hypotheses,
-        "linkingHypotheses": linking_hypotheses
-    }
+        "linkingHypotheses": linking_hypotheses,
+    }, created_possible_division
 
 
 class _ZeroScore(Score):
