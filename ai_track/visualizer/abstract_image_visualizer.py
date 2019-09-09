@@ -369,16 +369,21 @@ class AbstractImageVisualizer(Visualizer):
         file = dialog.prompt_save_file("Save 3D file as...", [("TIF file", "*.tif")])
         if file is None:
             return
-        flat_image = self._time_point_images.ravel()
 
+        images: ndarray = cv2.convertScaleAbs(self._time_point_images, alpha=256 / self._time_point_images.max(), beta=0)
         image_shape = self._time_point_images.shape
+
         if len(image_shape) == 3 and isinstance(self._color_map, Colormap):
             # Convert grayscale image to colored using the stored color map
-            images: ndarray = self._color_map(flat_image, bytes=True)[:, 0:3]
+            flat_image = images.ravel()
+            images = self._color_map(flat_image, bytes=True)[:, 0:3]
             new_shape = (image_shape[0], image_shape[1], image_shape[2], 3)
             images = images.reshape(new_shape)
         else:
-            images = cv2.convertScaleAbs(self._time_point_images, alpha=256 / self._time_point_images.max(), beta=0)
+            # Color images can be kept as is - they were already rescaled by the convertScaleAbs function, and no
+            # other transformations are necessary
+            pass
+
         tifffile.imsave(file, images, compress=9)
 
     def _toggle_showing_next_time_point(self):
