@@ -160,6 +160,7 @@ def _generate_gaussian_fit_configs(window: Window):
     if not image_loader.has_images():
         raise UserError("No images", "No images were loaded, so we have nothing to fit the Gaussian functions to."
                                      " Please load some images first.")
+    resolution = experiment.images.resolution()
     if not experiment.positions.has_positions():
         raise UserError("No positions", "No positions were found. The Gaussian fit requires starting points as seeds."
                                         " You can obtain points manually or using the convolutional neural network. See"
@@ -200,6 +201,9 @@ def _generate_gaussian_fit_configs(window: Window):
     config.get_or_default("adaptive_threshold_block_size", str(51))
     config.get_or_default("cluster_detection_erosion_rounds", str(erode_passes))
     config.get_or_default("gaussian_fit_smooth_size", str(7))
+    config.get_or_default("save_video_ram", "true")
+    config.get_or_default("mid_layers", str(int(resolution.pixel_size_z_um / resolution.pixel_size_x_um - 1)))
+    config.get_or_default("peak_min_distance_px", str(round(2.9 / resolution.pixel_size_x_um)))
     config.save()
     _create_run_script(save_directory, "ai_track_detect_gaussian_shapes")
     _popup_confirmaton(save_directory, "ai_track_detect_gaussian_shapes")
