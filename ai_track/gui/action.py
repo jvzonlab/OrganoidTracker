@@ -48,9 +48,6 @@ def toggle_axis(figure: Figure):
 
 def new(window: Window):
     """Starts a new experiment."""
-    if not ask_save_unsaved_changes(window.get_gui_experiment()):
-        return  # Cancelled
-
     visualizer = EmptyVisualizer(window)
     activate(visualizer)
     window.get_gui_experiment().add_experiment(Experiment())
