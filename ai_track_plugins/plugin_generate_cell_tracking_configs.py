@@ -219,9 +219,10 @@ def _generate_linking_config(window: Window):
         raise UserError("No positions found", "No cell positions loaded. The linking algorithm links existing cell"
                                               " positions together. You can obtain cell positions using a neural"
                                               " network, see the manual.")
+    experiment.images.resolution()  # Check for resolution
     if not experiment.positions.guess_has_shapes():
         if not dialog.prompt_yes_no("No shapes", "No cell shape information found. While not strictly required, it is"
-                                    " highlyrecommended to run a Gaussian fit first. If we know the shape of"
+                                    " highly recommended to run a Gaussian fit first. If we know the shape of"
                                     " cells, it is easier to tell which cell is which over different time"
                                     " points.\nDo you want to continue anyways (not recommended)?"):
             return
