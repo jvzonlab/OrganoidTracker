@@ -1,15 +1,10 @@
 """Attempt at edge detection. Doesn't work so well."""
-from typing import Tuple, Iterable
-
 import cv2
 import numpy
 from numpy import ndarray
 
-from ai_track.core.position import Position
-from ai_track.position_detection import watershedding, iso_intensity_curvature
+from ai_track.position_detection import iso_intensity_curvature
 from ai_track.position_detection.iso_intensity_curvature import ImageDerivatives
-
-
 
 
 def background_removal(orignal_image_8bit: ndarray, threshold: ndarray):

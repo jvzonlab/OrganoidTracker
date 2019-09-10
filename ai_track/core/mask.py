@@ -54,7 +54,7 @@ class Mask:
         self.set_bounds_exact(box.min_x, box.min_y, box.min_z, box.max_x, box.max_y, box.max_z)
 
     def set_bounds_around(self, x: float, y: float, z: float, padding_x: float, padding_y: float, padding_z: float):
-        """Sets the bounding box of the shape that is going to be drawn. In this way, smaller arrays for the mask can be
+        """Shrinks the bounding box of the shape that is going to be drawn. In this way, smaller arrays for the mask can be
         allocated. Setting a bounding box twice or setting it after get_mask_array has been called is not allowed.
 
         If all three paddings are set to 0, an image of exactly 1 pixel will remain."""
@@ -62,7 +62,7 @@ class Mask:
                               x + padding_x + 1, y + padding_y + 1, z + padding_z + 1)
 
     def set_bounds_exact(self, min_x: float, min_y: float, min_z: float, max_x: float, max_y: float, max_z: float):
-        """Sets the bounding box of the shape that is going to be drawn. In this way, smaller arrays for the mask can be
+        """Shrinks the bounding box of the shape that is going to be drawn. In this way, smaller arrays for the mask can be
         allocated. Setting a bounding box twice or setting it after get_mask_array has been called is not allowed."""
         if self._mask is not None:
             raise ValueError("Mask already created, cannot resize anymore")

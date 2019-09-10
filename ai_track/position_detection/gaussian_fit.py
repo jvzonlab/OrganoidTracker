@@ -17,6 +17,7 @@ from ai_track.core.images import Image
 from ai_track.core.mask import create_mask_for
 from ai_track.core.position import Position
 from ai_track.position_detection import smoothing, clusterer
+from ai_track.util.mpl_helper import QUALITATIVE_COLORMAP
 from ai_track.visualizer.debug_image_visualizer import popup_3d_image
 
 
@@ -123,6 +124,9 @@ def perform_gaussian_mixture_fit(original_image: ndarray, guesses: List[Gaussian
     return result_gaussians
 
 
+_FIT_MARGIN = 5
+
+
 def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image: ndarray, positions: List[Position],
                                                 blur_radius: int, erode_passes: int) -> List[Gaussian]:
     """GMM using watershed as seeds. The watershed is used to fit as few Gaussians at the same time as possible: if two
@@ -152,8 +156,6 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
         if mask.has_zero_volume():
             continue
 
-        mask.add_from_labeled(cluster_image, cluster.cluster_index)
-
         gaussians = []
         for cell_id in cell_ids:
             center = positions[cell_id]
@@ -161,12 +163,16 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
                 print("No position for cell " + str(center))
                 continue  # No center of mass for this cell id
             intensity = image[int(center.z), int(center.y), int(center.x)]
+
+            mask.add_from_labeled(watershed_image, cell_id)
+
             gaussians.append(Gaussian(intensity, center.x, center.y, center.z, 50, 50, 2, 0, 0, 0))
-        mask.dilate_xyz(erode_passes)  # Undo applied erosionm by the clusterer
+        mask.dilate_xy(blur_radius // 2)
         cropped_image = mask.create_masked_image(Image(image))
+        cropped_image = _add_border(cropped_image, _FIT_MARGIN)
         smoothing.smooth(cropped_image, blur_radius)
 
-        offset_x, offset_y, offset_z = bounding_box.min_x, bounding_box.min_y, bounding_box.min_z
+        offset_x, offset_y, offset_z = bounding_box.min_x - _FIT_MARGIN, bounding_box.min_y - _FIT_MARGIN, bounding_box.min_z - _FIT_MARGIN
         gaussians = [gaussian.translated(-offset_x, -offset_y, -offset_z) for gaussian in gaussians]
         try:
             gaussians = perform_gaussian_mixture_fit(cropped_image, gaussians)
@@ -179,6 +185,13 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
     print("Whole fitting process took " + str(end_time - start_time) + " seconds.")
     all_gaussians = all_gaussians[1:]  # Remove first element, that's the background of the image
     return all_gaussians
+
+
+def _add_border(array: ndarray, pixels: int) -> ndarray:
+    new_array = numpy.zeros((array.shape[0] + 2 * pixels, array.shape[1] + 2 * pixels, array.shape[2] + 2 * pixels),
+                            dtype=array.dtype)
+    new_array[pixels:array.shape[0] + pixels, pixels:array.shape[1] + pixels, pixels:array.shape[2] + pixels] = array
+    return new_array
 
 
 def _merge_bounding_boxes(all_boxes: ndarray, cell_ids: Iterable[int]) -> BoundingBox:

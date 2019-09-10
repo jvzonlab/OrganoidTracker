@@ -1,9 +1,5 @@
-from typing import Optional
-
 from matplotlib import cm
 from matplotlib.colors import Colormap
-from tifffile import tifffile
-import matplotlib.pyplot as plt
 from numpy import ndarray
 
 from ai_track.core.experiment import Experiment
