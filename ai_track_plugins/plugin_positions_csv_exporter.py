@@ -1,3 +1,4 @@
+import cProfile
 import os
 from typing import Tuple, Dict, Any, Iterable, List
 
@@ -12,7 +13,6 @@ from ai_track.core.resolution import ImageResolution
 from ai_track.gui import dialog
 from ai_track.gui.threading import Task
 from ai_track.gui.window import Window
-from ai_track.linking_analysis import linking_markers
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -118,21 +118,28 @@ class _AsyncExporter(Task):
 def _write_positions_and_metadata_to_csv(positions: PositionCollection, links: Links, resolution: ImageResolution, folder: str, save_name: str):
     from ai_track.linking_analysis import lineage_id_creator
     from ai_track.position_analysis import cell_density_calculator
+    from ai_track.linking_analysis import linking_markers, cell_division_counter, cell_nearby_death_counter
+
+    deaths_nearby_tracks = cell_nearby_death_counter.NearbyDeaths(links, resolution)
+    first_time_point_number = positions.first_time_point_number()
 
     file_prefix = save_name + ".csv."
     for time_point in positions.time_points():
         file_name = os.path.join(folder, file_prefix + str(time_point.time_point_number()))
         with open(file_name, "w") as file_handle:
-            file_handle.write("x,y,z,density_mm1,cell_type_id,lineage_id,original_track_id\n")
+            file_handle.write("x,y,z,density_mm1,times_divided,times_neighbor_died,cell_type_id,"
+                              "lineage_id,original_track_id\n")
             positions_of_time_point = positions.of_time_point(time_point)
             for position in positions_of_time_point:
                 lineage_id = lineage_id_creator.get_lineage_id(links, position)
                 original_track_id = lineage_id_creator.get_original_track_id(links, position)
                 cell_type_id = hash(linking_markers.get_position_type(links, position))
                 density = cell_density_calculator.get_density_mm1(positions_of_time_point, position, resolution)
+                times_divided = cell_division_counter.find_times_divided(links, position, first_time_point_number)
+                times_neighbor_died = deaths_nearby_tracks.count_nearby_deaths_in_past(links, position)
 
                 vector = position.to_vector_um(resolution)
-                file_handle.write(f"{vector.x},{vector.y},{vector.z},{density},{cell_type_id},"
-                                  f"{lineage_id},{original_track_id}\n")
+                file_handle.write(f"{vector.x},{vector.y},{vector.z},{density},{times_divided},{times_neighbor_died},"
+                                  f"{cell_type_id},{lineage_id},{original_track_id}\n")
 
 

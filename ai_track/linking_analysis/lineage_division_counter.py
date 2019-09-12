@@ -1,3 +1,5 @@
+"""For counting how many times a cell (and its offspring) will divide."""
+
 from typing import Optional
 
 from ai_track.core.links import LinkingTrack, Links

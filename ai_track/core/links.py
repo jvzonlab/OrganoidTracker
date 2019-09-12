@@ -651,3 +651,22 @@ class Links:
             return self._tracks.index(track)
         except ValueError:
             return None
+
+    def iterate_to_past(self, position: Position) -> Iterable[Position]:
+        """Iterates towards the past, yielding this position, the previous position, the position before that, ect.
+         Stops at cell merges or at the first detection."""
+        track = self.get_track(position)
+        if track is None:
+            return
+
+        time_point_number = position.time_point_number()
+        while True:
+            if time_point_number < track.min_time_point_number():
+                previous_tracks = track.get_previous_tracks()
+                if len(previous_tracks)  == 1:
+                    track = previous_tracks.pop()
+                else:
+                    return  # No more or multiple previous positions, stop
+
+            yield track.find_position_at_time_point_number(time_point_number)
+            time_point_number -= 1

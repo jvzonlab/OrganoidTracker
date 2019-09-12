@@ -4,13 +4,11 @@ import numpy
 from matplotlib.figure import Figure
 from numpy import ndarray
 
-from ai_track.core import UserError, Name
+from ai_track.core import UserError
 from ai_track.core.links import Links
 from ai_track.gui import dialog
-from ai_track.gui.gui_experiment import GuiExperiment
-from ai_track.gui.threading import Task
 from ai_track.gui.window import Window
-from ai_track.linking_analysis.lineage_division_count import get_division_count_in_lineage
+from ai_track.linking_analysis.lineage_division_counter import get_division_count_in_lineage
 
 _LINEAGE_FOLLOW_TIME_H = 40
 

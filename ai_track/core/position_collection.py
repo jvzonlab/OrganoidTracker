@@ -97,14 +97,19 @@ class _PositionsAtTimePoint:
             return None
         return max(self._positions.keys())
 
+
 class PositionCollection:
 
     _all_positions: Dict[int, _PositionsAtTimePoint]
     _min_time_point_number: Optional[int] = None
     _max_time_point_number: Optional[int] = None
 
-    def __init__(self):
+    def __init__(self, positions: Iterable[Position] = ()):
+        """Creates a new positions collection with the given positions already present."""
         self._all_positions = dict()
+        for position in positions:
+            self.add(position)
+
 
     def of_time_point(self, time_point: TimePoint) -> AbstractSet[Position]:
         """Returns all positions for a given time point. Returns an empty set if that time point doesn't exist."""
