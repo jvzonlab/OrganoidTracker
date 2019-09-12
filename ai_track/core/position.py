@@ -69,15 +69,27 @@ class Position:
             string += " at time point " + str(self._time_point_number)
         return string
 
-    def __hash__(self):
-        if self._time_point_number is None:
-            return hash(int(self.x)) ^ hash(int(self.y)) ^ hash(int(self.z))
-        return hash(int(self.x)) ^ hash(int(self.y)) ^ hash(int(self.z)) ^ hash(int(self._time_point_number))
+    def __hash__(self) -> int:
+        return int(self.x) ^ hash(self._time_point_number)
 
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) \
-               and abs(self.x - other.x) < 0.01 and abs(self.y - other.y) < 0.01 and abs(self.z - other.z) < 0.01 \
-               and self._time_point_number == other._time_point_number
+    def __eq__(self, other) -> bool:
+        if other is None:
+            return False
+        try:
+            if other._time_point_number != self._time_point_number:
+                return False
+            if self.x != other.x:
+                if abs(self.x - other.x) > 0.01:
+                    return False
+            if self.y != other.y:
+                if abs(self.y - other.y) > 0.01:
+                    return False
+            if self.z != other.z:
+                if abs(self.z - other.z) > 0.01:
+                    return False
+            return True
+        except AttributeError:
+            return False
 
     def time_point(self):
         """Gets the time point of this position. Note: getting the time point number is slightly more efficient, as
