@@ -29,7 +29,8 @@ class LineageErrorsVisualizer(ExitableImageVisualizer):
         # Rendering this view is quite slow, so it is better to exit this view instead of rerendering it for another
         # time point
         try:
-            self._time_point = self._experiment.get_time_point(self._time_point.time_point_number() + dt)
+            self._display_settings.time_point = self._experiment.get_time_point(
+                self._display_settings.time_point.time_point_number() + dt)
             self._exit_view()
         except ValueError:
             pass  # Time point doesn't exit
