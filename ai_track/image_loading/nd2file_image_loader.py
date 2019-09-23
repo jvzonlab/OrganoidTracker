@@ -1,5 +1,5 @@
 import os
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Any
 
 import numpy
 from nd2reader.parser import Parser
@@ -50,6 +50,14 @@ class _NamedImageChannel(ImageChannel):
     def __repr__(self) -> str:
         return f"_NamedImageChannel({self.name})"
 
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, _NamedImageChannel):
+            return False
+        return other.name == self.name
+
+    def __hash__(self) -> int:
+        return hash(self.name)
+
 
 
 class _Nd2ImageLoader(ImageLoader):
@@ -75,7 +83,6 @@ class _Nd2ImageLoader(ImageLoader):
         self._location = location
 
     def get_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
-        print(f"Getting image for {time_point} {image_channel}")
         if not isinstance(image_channel, _NamedImageChannel) or image_channel not in self._channels:
             return None
         if time_point.time_point_number() < self._min_time_point\
