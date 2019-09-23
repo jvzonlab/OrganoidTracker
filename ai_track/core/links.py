@@ -582,6 +582,10 @@ class Links:
         """Gets all tracks, even tracks that have another track before them."""
         yield from self._tracks
 
+    def get_highest_track_id(self) -> int:
+        """Gets the highest track id currently in use. Returns -1 if there are no tracks."""
+        return len(self._tracks) - 1
+
     def find_all_tracks_and_ids(self) -> Iterable[Tuple[int, LinkingTrack]]:
         """Gets all tracks and their id. Just like get_all_tracks, this method returns tracks that have another track
         before them in time."""

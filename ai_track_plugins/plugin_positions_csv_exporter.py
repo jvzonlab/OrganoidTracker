@@ -1,10 +1,11 @@
-import cProfile
+import json
 import os
-from typing import Tuple, Dict, Any, Iterable, List
+from typing import Dict, Any, List
+
+import matplotlib.colors
 
 from ai_track.core import UserError
 from ai_track.core.experiment import Experiment
-
 from ai_track.core.links import Links
 from ai_track.core.marker import Marker
 from ai_track.core.position import Position
@@ -13,6 +14,7 @@ from ai_track.core.resolution import ImageResolution
 from ai_track.gui import dialog
 from ai_track.gui.threading import Task
 from ai_track.gui.window import Window
+from ai_track.linking_analysis import lineage_id_creator
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -41,8 +43,8 @@ def _export_positions_as_csv(window: Window, *, metadata: bool):
                              " visualize the points in Paraview.")
 
 
-def _export_help_file(folder: str):
-    text = """
+def _export_help_file(folder: str, links: Links):
+    text = f"""
 Instructions for importing in Paraview
 ======================================
 
@@ -56,6 +58,18 @@ Instructions for importing in Paraview
 8. Set a Point Size of say 40 and set the checkmark next to "Render Points As Spheres"
 
 You will now end up with a nice 3D view of the detected points. To save a movie, use File > Export animation.
+
+How to color the lineages correctly
+===================================
+This assumes you want to color the lineage trees in the same way as AI_track does.
+1. Select the TableToPoints filter and color by lineage id.
+2. On the right of the screen you see a color panel. Make sure "Interpret Values as Categories" is off.
+3. Click "Choose Preset" (small square button with an icon, on the right of the "Mapping Data" color graph).
+4. Press the gear icon near the top right of the screen of the popup. 
+5. Import the lineage_colormap.json file from this folder, press Apply and close the popup. The colors of the spheres
+   should change.
+6. Click "Rescale to custom range" (similar button to "Choose Preset") and set the scale from -1 to {links.get_highest_track_id()}.
+7. Make sure "Color Discretization" (near the bottom of color panel) is off.
 """
     file_name = os.path.join(folder, "How to import to Paraview.txt")
     with open(file_name, "w") as file_handle:
@@ -106,8 +120,9 @@ class _AsyncExporter(Task):
 
     def compute(self) -> Any:
         _write_positions_and_metadata_to_csv(self._positions, self._links, self._resolution, self._folder, self._save_name)
-        _export_help_file(self._folder)
+        _export_help_file(self._folder, self._links)
         _export_cell_types_file(self._folder, self._cell_types)
+        _export_colormap_file(self._folder, self._links)
         return "done"  # We're not using the result
 
     def on_finished(self, result: Any):
@@ -143,3 +158,31 @@ def _write_positions_and_metadata_to_csv(positions: PositionCollection, links: L
                                   f"{cell_type_id},{lineage_id},{original_track_id}\n")
 
 
+def _export_colormap_file(folder: str, links: Links):
+    """Writes the given Matplotlib colormap as a Paraview JSON colormap."""
+    # Create colormap
+    rgb_points = []
+    max_track_id = links.get_highest_track_id()
+    for i in range(-1, max_track_id + 1):
+        # x_value goes from -1 to 1
+        color = lineage_id_creator.get_color_for_lineage_id(i)
+        print(i, matplotlib.colors.to_hex(color, keep_alpha=False))
+
+        rgb_points.append(i)
+        rgb_points.append(color[0])
+        rgb_points.append(color[1])
+        rgb_points.append(color[2])
+
+    # Create data
+    data = [
+        {
+            "Colorspace": "RGB",
+            "Name": f"Lineage colors (-1 to {max_track_id})",
+            "RGBPoints": rgb_points
+        }
+    ]
+
+    # Write data
+    file_name = os.path.join(folder, "lineage_colormap.json")
+    with open(file_name, "w") as file_handle:
+        json.dump(data, file_handle)

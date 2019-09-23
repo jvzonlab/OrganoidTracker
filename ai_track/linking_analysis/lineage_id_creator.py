@@ -1,16 +1,15 @@
 """Assigns an id to an lineage tree. The ids are scrambled, so that cells next to each other don't have a similar id.
 This makes it easier to color the cells using a color map."""
 import random
-from typing import Dict
+from typing import Tuple
 
-import numpy
+import matplotlib.cm, matplotlib.colors
 
 from ai_track.core.links import Links, LinkingTrack
 from ai_track.core.position import Position
 
-# Used for randomization of last three digits
-_RANDOM_LIST = list(range(2000))
-random.Random(12).shuffle(_RANDOM_LIST)
+# Used for pseudo-randomization of the colors
+_RANDOM = random.Random()
 
 
 def get_original_track_id(links: Links, position: Position) -> int:
@@ -28,11 +27,21 @@ def get_original_track_id(links: Links, position: Position) -> int:
 
     track_id = links.get_track_id(track)
 
-    # Randomize last three digits
-    track_id_randomized = (track_id // len(_RANDOM_LIST)) * len(_RANDOM_LIST) \
-                          + _RANDOM_LIST[track_id % len(_RANDOM_LIST)]
+    return track_id
 
-    return track_id_randomized
+
+def get_color_for_lineage_id(track_id: int) -> Tuple[float, float, float]:
+    """Gets the RGB color (from 0 to 1) that the given lineage tree should be drawn in. The id must be a track id or a
+    lineage id."""
+    if track_id == -1:
+        return 1, 1, 1  # Returns white for tracks without a lineage
+
+    _RANDOM.seed(track_id ** 3)
+
+    hue = _RANDOM.random()
+    saturation = 0.3 + _RANDOM.random() * 0.7
+    value = 0.3 + _RANDOM.random() * 0.7
+    return tuple(matplotlib.colors.hsv_to_rgb((hue, saturation, value)))
 
 
 def get_lineage_id(links: Links, position: Position) -> int:
@@ -50,6 +59,7 @@ def get_lineage_id(links: Links, position: Position) -> int:
         in_a_tree = True  # Found a previous track, so definitely a lineage tree
         track = previous_tracks.pop()
         previous_tracks = track.get_previous_tracks()
+    # track is now the root of the lineage id
 
     if not in_a_tree:
         return -1
@@ -57,7 +67,4 @@ def get_lineage_id(links: Links, position: Position) -> int:
     track_id = links.get_track_id(track)
 
     # Randomize last three digits
-    track_id_randomized = (track_id // len(_RANDOM_LIST)) * len(_RANDOM_LIST) \
-                          + _RANDOM_LIST[track_id % len(_RANDOM_LIST)]
-
-    return track_id_randomized
+    return track_id

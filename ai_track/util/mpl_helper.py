@@ -15,7 +15,7 @@ BAR_COLOR_1 = "#0984e3"
 BAR_COLOR_2 = "#d63031"
 
 
-def _create_qualitative_colormap():
+def _create_qualitative_colormap() -> ListedColormap:
     color_list = cm.get_cmap('jet', 256)(numpy.linspace(0, 1, 256))
     numpy.random.shuffle(color_list)
     color_list[0] = numpy.array([0, 0, 0, 1])  # First color is black

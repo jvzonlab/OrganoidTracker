@@ -9,7 +9,7 @@ from ai_track.core.resolution import ImageResolution
 from ai_track.gui import dialog
 from ai_track.gui.location_map import LocationMap
 from ai_track.gui.window import Window
-from ai_track.linking_analysis import linking_markers
+from ai_track.linking_analysis import linking_markers, lineage_id_creator
 from ai_track.linking_analysis.lineage_drawing import LineageDrawing
 from ai_track.linking_analysis.linking_markers import EndMarker
 from ai_track.visualizer import Visualizer
@@ -36,9 +36,34 @@ def _get_track_x(linking_track: LinkingTrack):
 class LineageTreeVisualizer(Visualizer):
 
     _location_map: Optional[LocationMap] = None
+    _track_to_color: Dict[LinkingTrack, Tuple[float, float, float]]
+
+    def __init__(self, window: Window):
+        super().__init__(window)
+        self._track_to_color = dict()
+
+    def _calculate_track_colors(self):
+        self._track_to_color.clear()
+
+        links = self._experiment.links
+        for track in links.find_starting_tracks():
+            next_tracks = track.get_next_tracks()
+            if len(next_tracks) == 0:
+                continue  # No colors for tracks without divisions
+            else:
+                lineage_id = links.get_track_id(track)
+                color = lineage_id_creator.get_color_for_lineage_id(lineage_id)
+                self._give_lineage_color(track, color)
+
+    def _give_lineage_color(self, linking_track: LinkingTrack, color: Tuple[float, float, float]):
+        """Gives a while lineage (including all children) a color."""
+        self._track_to_color[linking_track] = color
+        for next_track in linking_track.get_next_tracks():
+            self._give_lineage_color(next_track, color)
 
     def draw_view(self):
         self._clear_axis()
+        self._calculate_track_colors()
 
         experiment = self._experiment
         links = experiment.links
@@ -49,10 +74,16 @@ class LineageTreeVisualizer(Visualizer):
         def color_getter(time_point_number: int, track: LinkingTrack) -> Tuple[float, float, float]:
             if track in tracks_with_errors:
                 return 0.7, 0.7, 0.7
-            if track.max_time_point_number() - time_point_number < 10 and\
-                    linking_markers.get_track_end_marker(links, track.find_last_position()) == EndMarker.DEAD:
-                return 1, 0, 0
-            return 0, 0, 0
+            if track.max_time_point_number() - time_point_number < 10:
+                end_marker = linking_markers.get_track_end_marker(links, track.find_last_position())
+                if end_marker == EndMarker.DEAD:
+                    return 1, 0, 0
+                elif end_marker == EndMarker.SHED:
+                    return 0, 0, 1
+            color = self._track_to_color.get(track)
+            if color is not None:
+                return color
+            return 0, 0, 0  # Default is black
 
         resolution = ImageResolution(1, 1, 1, 60)
         self._location_map = LocationMap()
