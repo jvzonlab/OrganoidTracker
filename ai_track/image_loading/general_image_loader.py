@@ -20,6 +20,8 @@ def load_images(experiment: Experiment, container: str, pattern: str,
         from ai_track.image_loading import nd2file_image_loader
         nd2file_image_loader.load_image_series_from_config(experiment.images, container, pattern, min_time_point, max_time_point)
         return
+    if not os.path.exists(container):
+        raise ValueError("File or directory does not exist: " + container)
     if os.path.isdir(container):  # Try as TIF folder
         from ai_track.image_loading import folder_image_loader
         folder_image_loader.load_images_from_folder(experiment, container, pattern, min_time_point, max_time_point)
