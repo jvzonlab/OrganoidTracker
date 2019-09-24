@@ -198,6 +198,7 @@ def predict(images: Images, checkpoint_dir: str, out_dir: Optional[str] = None, 
         print("Working on time point", time_point.time_point_number(), "...")
         image_offset = images.offsets.of_time_point(time_point)
 
+        prediction = prediction[output_offset_z : output_offset_z + image_size_z]
         if out_dir is not None:
             image_name = "image_" + str(time_point.time_point_number())
             tifffile.imsave(os.path.join(out_dir, '{}.tif'.format(image_name)), prediction, compress=9)
@@ -209,7 +210,7 @@ def predict(images: Images, checkpoint_dir: str, out_dir: Optional[str] = None, 
         # Comparison between image_max and im to find the coordinates of local maxima
         coordinates = peak_local_max(im, min_distance=min_peak_distance_px, threshold_abs=0.1)
         for coordinate in coordinates:
-            pos = Position(coordinate[2], coordinate[1], coordinate[0] / z_divisor - output_offset_z,
+            pos = Position(coordinate[2], coordinate[1], coordinate[0] / z_divisor,
                            time_point=time_point) + image_offset
             all_positions.add(pos)
     return all_positions
