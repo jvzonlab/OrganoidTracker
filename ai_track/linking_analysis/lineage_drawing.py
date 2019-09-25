@@ -11,7 +11,6 @@ from ai_track.core.typing import MPLColor
 # Type definition: a color getter is a function that takes an int (time point) and the linking track, and returns a
 # Matplotlib color
 from ai_track.gui.location_map import LocationMap
-from ai_track.linking_analysis import lineage_division_counter
 
 _ColorGetter = Callable[[int, LinkingTrack], MPLColor]
 
@@ -83,9 +82,8 @@ class LineageDrawing:
         length, etc. Returns the width of the lineage tree in Matplotlib pixels."""
         x_offset = 0
         for lineage in self.links.find_starting_tracks():
-            if lineage_division_counter.get_division_count_in_lineage(lineage, self.links, 9999, require_accurate=False) >= 2:
-                width = self._draw_single_lineage_colored(axes, lineage, x_offset, color_getter, image_resolution, location_map)
-                x_offset += width
+            width = self._draw_single_lineage_colored(axes, lineage, x_offset, color_getter, image_resolution, location_map)
+            x_offset += width
         return x_offset
 
     def _draw_single_lineage_colored(self, ax: Axes, lineage: LinkingTrack, x_offset: int, color_getter: _ColorGetter,
@@ -111,15 +109,21 @@ class LineageDrawing:
                 time_point_min = time_points_of_line[0]
                 time_point_max = time_points_of_line[1]
 
+                color_val = color_getter(time_point_min + 1, linking_track)
+                t0 = time_point_min * image_resolution.time_point_interval_h
                 for time_point_of_line in range(time_point_min, time_point_max):
                     # get time points for current sub time interval i
-                    t0 = time_point_of_line * image_resolution.time_point_interval_h
+
                     t1 = (time_point_of_line + 1) * image_resolution.time_point_interval_h
                     # get color corresponding to current z value
-                    color_val = color_getter(time_point_of_line + 1, linking_track)
-                    # save line data
-                    lines_XY.append([(x_offset + X, t0), (x_offset + X, t1)])
-                    lines_col.append(color_val)
+                    color_val_next = color_getter(time_point_of_line + 2, linking_track) if time_point_of_line + 2 <= time_point_max else None
+                    if color_val_next != color_val:
+                        # save line data
+                        lines_XY.append([(x_offset + X, t0), (x_offset + X, t1)])
+                        lines_col.append(color_val)
+
+                        color_val = color_val_next
+                        t0 = t1
                     location_map.set(int(x_offset + X), int(t1),
                                      linking_track.find_position_at_time_point_number(time_point_of_line + 1))
             if len(time_points_of_line) == 1:
@@ -134,11 +138,11 @@ class LineageDrawing:
                 time = time_point_of_line * image_resolution.time_point_interval_h
 
                 # get color corresponding to current z value
-                color_val = color_getter(time_point_of_line, linking_track)
+                color_val_next = color_getter(time_point_of_line, linking_track)
                 # save line data
                 lines_XY.append(
                     [(x_offset + X[0], time), (x_offset + X[1], time)])
-                lines_col.append(color_val)
+                lines_col.append(color_val_next)
                 location_map.set_area(int(x_offset + X[0]), int(time), int(x_offset + X[1]), int(time),
                                       linking_track.find_position_at_time_point_number(time_point_of_line))
 
