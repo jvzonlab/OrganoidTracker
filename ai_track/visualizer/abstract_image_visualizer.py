@@ -155,6 +155,8 @@ class AbstractImageVisualizer(Visualizer):
 
     def _draw_positions(self):
         """Draws positions and links. Returns the amount of non-equal links in the image"""
+        if not self._display_settings.show_positions:
+            return
 
         # Next time point
         can_show_other_time_points = self._must_show_other_time_points() and self._experiment.links.has_links()
@@ -239,6 +241,9 @@ class AbstractImageVisualizer(Visualizer):
 
     def _draw_links(self):
         """Draws all links. A link indicates that one position is the same a another position in another time point."""
+        if not self._display_settings.show_positions:
+            return
+
         lines = []
         colors = []
         for position1, position2 in self._experiment.links.of_time_point(self._time_point):
@@ -313,6 +318,7 @@ class AbstractImageVisualizer(Visualizer):
             "View//Toggle-Toggle showing reconstruction [" + DisplaySettings.KEY_SHOW_RECONSTRUCTION.upper() + "]":
                 self._toggle_showing_reconstruction,
             "View//Toggle-Toggle showing splines": self._toggle_showing_splines,
+            "View//Toggle-Toggle showing position markers": self._toggle_showing_position_markers,
             "Navigate//Layer-Above layer [Up]": lambda: self._move_in_z(1),
             "Navigate//Layer-Below layer [Down]": lambda: self._move_in_z(-1),
             "Navigate//Channel-Next channel [.]": lambda: self._move_in_channel(1),
@@ -359,7 +365,13 @@ class AbstractImageVisualizer(Visualizer):
                                "\n/goto <x> <y> <z> <t>: Directly jump to that point")
             return True
         if command == "exit":
-            self.update_status("You're already in the home screen.")
+            self._display_settings.show_images = True
+            self._display_settings.show_positions = True
+            self._display_settings.show_splines = True
+            self._display_settings.show_reconstruction = False
+            self._display_settings.show_next_time_point = False
+            self.refresh_all()
+            self.update_status("You're already in the home screen. Reset most display settings.")
             return True
         return False
 
@@ -400,6 +412,10 @@ class AbstractImageVisualizer(Visualizer):
 
     def _toggle_showing_splines(self):
         self._display_settings.show_splines = not self._display_settings.show_splines
+        self.draw_view()
+
+    def _toggle_showing_position_markers(self):
+        self._display_settings.show_positions = not self._display_settings.show_positions
         self.draw_view()
 
     def _move_in_z(self, dz: int):

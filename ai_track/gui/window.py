@@ -18,16 +18,18 @@ class DisplaySettings:
     show_images: bool
     show_reconstruction: bool
     show_splines: bool
+    show_positions: bool
     time_point: TimePoint
     z: int
     image_channel: Optional[ImageChannel]  # Set to None to use the default image channel
 
     def __init__(self, *, show_next_time_point: bool = False, show_images: bool = True,
-                 show_reconstruction: bool = False, show_data_axes: bool = True):
+                 show_reconstruction: bool = False, show_data_axes: bool = True, show_positions: bool = True):
         self.show_next_time_point = show_next_time_point
         self.show_images = show_images
         self.show_reconstruction = show_reconstruction
         self.show_splines = show_data_axes
+        self.show_positions = show_positions
         self.image_channel = None
         self.time_point = TimePoint(0)
         self.z = 14
