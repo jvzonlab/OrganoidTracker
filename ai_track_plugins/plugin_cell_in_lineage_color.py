@@ -23,6 +23,10 @@ def _view_cells_colored_by_lineage(window: Window):
 class _CellsColoredByLineageVisualizer(ExitableImageVisualizer):
     """Colors each cell by its lineage: cells with the same color share a common ancestor."""
 
+    def __init__(self, window: Window):
+        window.get_experiment().links.sort_tracks_by_x()
+        super().__init__(window)
+
     def _on_mouse_click(self, event: MouseEvent):
         if event.dblclick and event.xdata is not None and event.ydata is not None:
             position = self._get_position_at(event.xdata, event.ydata)

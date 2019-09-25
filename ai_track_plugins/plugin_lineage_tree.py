@@ -29,10 +29,6 @@ def _show_lineage_tree(window: Window):
     dialog.popup_visualizer(window.get_gui_experiment(), LineageTreeVisualizer)
 
 
-def _get_track_x(linking_track: LinkingTrack):
-    return linking_track.find_first_position().x
-
-
 class LineageTreeVisualizer(Visualizer):
 
     _location_map: Optional[LocationMap] = None
@@ -63,11 +59,12 @@ class LineageTreeVisualizer(Visualizer):
 
     def draw_view(self):
         self._clear_axis()
-        self._calculate_track_colors()
 
         experiment = self._experiment
         links = experiment.links
-        links.sort_tracks(_get_track_x)
+        links.sort_tracks_by_x()
+
+        self._calculate_track_colors()
 
         tracks_with_errors = self._find_tracks_with_errors()
 

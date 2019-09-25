@@ -564,10 +564,10 @@ class Links:
         """Gets the track the given position belong in."""
         return self._position_to_track.get(position)
 
-    def sort_tracks(self, key: Callable[[LinkingTrack], Any]):
+    def sort_tracks_by_x(self):
         """Sorts the tracks, which affects the order in which most find_ functions return data (like
         find_starting_tracks)."""
-        self._tracks.sort(key=key)
+        self._tracks.sort(key=lambda track: track.find_first_position().x)
 
     def find_all_tracks_in_time_point(self, time_point_number: int) -> Iterable[LinkingTrack]:
         """This method finds all tracks that run trough the given time point."""

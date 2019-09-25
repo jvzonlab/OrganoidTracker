@@ -1,5 +1,8 @@
 """Assigns an id to an lineage tree. The ids are scrambled, so that cells next to each other don't have a similar id.
-This makes it easier to color the cells using a color map."""
+This makes it easier to color the cells using a color map.
+
+Note: the color depends on the id. The id depends on the sort order of the lineages. Call the sorting method on the
+links object beforehand to make the id better-defined."""
 import random
 from typing import Tuple
 

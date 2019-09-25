@@ -119,6 +119,8 @@ class _AsyncExporter(Task):
         self._cell_types = cell_types
 
     def compute(self) -> Any:
+        self._links.sort_tracks_by_x()
+
         _write_positions_and_metadata_to_csv(self._positions, self._links, self._resolution, self._folder, self._save_name)
         _export_help_file(self._folder, self._links)
         _export_cell_types_file(self._folder, self._cell_types)

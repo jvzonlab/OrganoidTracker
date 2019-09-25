@@ -11,6 +11,7 @@ from ai_track.core.typing import MPLColor
 # Type definition: a color getter is a function that takes an int (time point) and the linking track, and returns a
 # Matplotlib color
 from ai_track.gui.location_map import LocationMap
+from ai_track.linking_analysis import lineage_division_counter
 
 _ColorGetter = Callable[[int, LinkingTrack], MPLColor]
 
@@ -82,8 +83,9 @@ class LineageDrawing:
         length, etc. Returns the width of the lineage tree in Matplotlib pixels."""
         x_offset = 0
         for lineage in self.links.find_starting_tracks():
-            width = self._draw_single_lineage_colored(axes, lineage, x_offset, color_getter, image_resolution, location_map)
-            x_offset += width
+            if lineage_division_counter.get_division_count_in_lineage(lineage, self.links, 9999, require_accurate=False) >= 2:
+                width = self._draw_single_lineage_colored(axes, lineage, x_offset, color_getter, image_resolution, location_map)
+                x_offset += width
         return x_offset
 
     def _draw_single_lineage_colored(self, ax: Axes, lineage: LinkingTrack, x_offset: int, color_getter: _ColorGetter,
