@@ -39,7 +39,7 @@ class _InsertLinkAction(UndoableAction):
                 experiment.links.add_link(position, previous_position)
             previous_position = position
 
-        cell_error_finder.find_errors_in_positions_and_all_dividing_cells(experiment, *self.all_positions)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, *self.all_positions)
         return f"Inserted link between {self.all_positions[0]} and {self.all_positions[-1]}"
 
     def undo(self, experiment: Experiment):
@@ -51,7 +51,7 @@ class _InsertLinkAction(UndoableAction):
             for position in self.all_positions[1:-1]:
                 experiment.remove_position(position)
 
-        cell_error_finder.find_errors_in_positions_and_all_dividing_cells(experiment, self.all_positions[0], self.all_positions[-1])
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.all_positions[0], self.all_positions[-1])
         return f"Removed link between {self.all_positions[0]} and {self.all_positions[-1]}"
 
 
@@ -65,7 +65,7 @@ class _InsertPositionAction(UndoableAction):
 
     def do(self, experiment: Experiment) -> str:
         self.particle.restore(experiment)
-        cell_error_finder.find_errors_in_positions_and_all_dividing_cells(experiment, self.particle.position, *self.particle.links)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.particle.position, *self.particle.links)
 
         return_value = f"Added {self.particle.position}"
         if len(self.particle.links) > 1:
@@ -77,7 +77,7 @@ class _InsertPositionAction(UndoableAction):
 
     def undo(self, experiment: Experiment) -> str:
         experiment.remove_position(self.particle.position)
-        cell_error_finder.find_errors_in_positions_and_all_dividing_cells(experiment, *self.particle.links)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, *self.particle.links)
         return f"Removed {self.particle.position}"
 
 
@@ -91,13 +91,15 @@ class _DeletePositionsAction(UndoableAction):
     def do(self, experiment: Experiment):
         experiment.remove_positions((particle.position for particle in self._particles))
         for particle in self._particles:  # Check linked particles for errors
-            cell_error_finder.find_errors_in_positions_and_all_dividing_cells(experiment, *particle.links)
+            cell_error_finder.find_errors_in_just_these_positions(experiment, *particle.links)
+        cell_error_finder.find_errors_in_all_dividing_cells(experiment)
         return f"Removed {len(self._particles)} positions"
 
     def undo(self, experiment: Experiment):
         for particle in self._particles:
             particle.restore(experiment)
-            cell_error_finder.find_errors_in_positions_and_all_dividing_cells(experiment, particle.position, *particle.links)
+            cell_error_finder.find_errors_in_just_these_positions(experiment, particle.position, *particle.links)
+        cell_error_finder.find_errors_in_all_dividing_cells(experiment)
         return f"Re-added {len(self._particles)} positions"
 
 
@@ -117,13 +119,13 @@ class _MovePositionAction(UndoableAction):
 
     def do(self, experiment: Experiment):
         experiment.move_position(self.old_position, self.new_position)
-        cell_error_finder.find_errors_in_positions_and_all_dividing_cells(experiment, self.new_position)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.new_position)
         return f"Moved {self.old_position} to {self.new_position}"
 
     def undo(self, experiment: Experiment):
         experiment.move_position(self.new_position, self.old_position)
         experiment.positions.add(self.old_position, self.old_shape)
-        cell_error_finder.find_errors_in_positions_and_all_dividing_cells(experiment, self.old_position)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.old_position)
         return f"Moved {self.new_position} back to {self.old_position}"
 
 
@@ -141,14 +143,14 @@ class _MarkLineageEndAction(UndoableAction):
 
     def do(self, experiment: Experiment) -> str:
         linking_markers.set_track_end_marker(experiment.links, self.position, self.marker)
-        cell_error_finder.find_errors_in_positions_and_all_dividing_cells(experiment, self.position)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.position)
         if self.marker is None:
             return f"Removed the lineage end marker of {self.position}"
         return f"Added the {self.marker.get_display_name()}-marker to {self.position}"
 
     def undo(self, experiment: Experiment):
         linking_markers.set_track_end_marker(experiment.links, self.position, self.old_marker)
-        cell_error_finder.find_errors_in_positions_and_all_dividing_cells(experiment, self.position)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.position)
         if self.old_marker is None:
             return f"Removed the lineage end marker again of {self.position}"
         return f"Re-added the {self.old_marker.get_display_name()}-marker to {self.position}"

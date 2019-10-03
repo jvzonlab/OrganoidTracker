@@ -116,7 +116,7 @@ def _get_highest_mother_score(scores: ScoreCollection, position: Position) -> Op
     return highest_score
 
 
-def find_errors_in_positions_and_all_dividing_cells(experiment: Experiment, *iterable: Position):
+def find_errors_in_positions_links_and_all_dividing_cells(experiment: Experiment, *iterable: Position):
     """Checks all of the given positions and all dividing cells in the experiment for logical errors, like cell merges,
     cell dividing into three daughters, cells moving too fast, ect. The reason dividing cells are also checked is that
     otherwise it's not possible to detect when a young mother cell is no longer a young mother cell because far away in
@@ -133,13 +133,31 @@ def find_errors_in_positions_and_all_dividing_cells(experiment: Experiment, *ite
         positions.add(family.mother)
         positions |= family.daughters
 
-    _find_errors_in_iterable(experiment, positions)
+    _find_errors_in_just_the_iterable(experiment, positions)
 
 
-def _find_errors_in_iterable(experiment: Experiment, iterable: Iterable[Position]):
+def find_errors_in_all_dividing_cells(experiment: Experiment):
+    """Rechecks all mother and daughter cells for logical errors. Rechecking this is useful, because the errors in those
+    positions can be influenced by changes far away."""
+    positions = set()
+    for family in cell_division_finder.find_families(experiment.links):
+        positions.add(family.mother)
+        positions |= family.daughters
+
+    _find_errors_in_just_the_iterable(experiment, positions)
+
+
+def _find_errors_in_just_the_iterable(experiment: Experiment, iterable: Iterable[Position]):
     """Checks all positions in the given iterable for logical errors, like cell merges, cell dividing into three
     daughters, cells moving too fast, ect."""
     links = experiment.links
     for position in iterable:
         error = get_error(links, position, experiment.scores, experiment.positions, experiment.images.resolution())
         linking_markers.set_error_marker(links, position, error)
+
+
+def find_errors_in_just_these_positions(experiment: Experiment, *iterable: Position):
+    """Checks all positions in the given iterable for logical errors, like cell merges, cell dividing into three
+    daughters, cells moving too fast, ect."""
+    _find_errors_in_just_the_iterable(experiment, iterable)
+
