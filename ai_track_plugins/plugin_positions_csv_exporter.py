@@ -15,6 +15,7 @@ from ai_track.gui import dialog
 from ai_track.gui.threading import Task
 from ai_track.gui.window import Window
 from ai_track.linking_analysis import lineage_id_creator
+from ai_track.linking_analysis.cell_fate_finder import CellFateType
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -109,6 +110,7 @@ class _AsyncExporter(Task):
     _folder: str
     _save_name: str
     _cell_types: List[Marker]
+    _division_lookahead_time_points: int
 
     def __init__(self, experiment: Experiment, cell_types: List[Marker], folder: str):
         self._positions = experiment.positions.copy()
@@ -117,11 +119,13 @@ class _AsyncExporter(Task):
         self._folder = folder
         self._save_name = experiment.name.get_save_name()
         self._cell_types = cell_types
+        self._division_lookahead_time_points = experiment.division_lookahead_time_points
 
     def compute(self) -> Any:
         self._links.sort_tracks_by_x()
 
-        _write_positions_and_metadata_to_csv(self._positions, self._links, self._resolution, self._folder, self._save_name)
+        _write_positions_and_metadata_to_csv(self._positions, self._links, self._resolution,
+                                             self._division_lookahead_time_points, self._folder, self._save_name)
         _export_help_file(self._folder, self._links)
         _export_cell_types_file(self._folder, self._cell_types)
         _export_colormap_file(self._folder, self._links)
@@ -132,10 +136,12 @@ class _AsyncExporter(Task):
                                           " visualize the points in Paraview.")
 
 
-def _write_positions_and_metadata_to_csv(positions: PositionCollection, links: Links, resolution: ImageResolution, folder: str, save_name: str):
+def _write_positions_and_metadata_to_csv(positions: PositionCollection, links: Links, resolution: ImageResolution,
+                                         division_lookahead_time_points: int, folder: str, save_name: str):
     from ai_track.linking_analysis import lineage_id_creator
     from ai_track.position_analysis import cell_density_calculator
-    from ai_track.linking_analysis import linking_markers, cell_division_counter, cell_nearby_death_counter
+    from ai_track.linking_analysis import linking_markers, cell_division_counter, cell_nearby_death_counter,\
+        cell_fate_finder
 
     deaths_nearby_tracks = cell_nearby_death_counter.NearbyDeaths(links, resolution)
     first_time_point_number = positions.first_time_point_number()
@@ -145,7 +151,7 @@ def _write_positions_and_metadata_to_csv(positions: PositionCollection, links: L
         file_name = os.path.join(folder, file_prefix + str(time_point.time_point_number()))
         with open(file_name, "w") as file_handle:
             file_handle.write("x,y,z,density_mm1,times_divided,times_neighbor_died,cell_type_id,"
-                              "lineage_id,original_track_id\n")
+                              "hours_until_division,hours_until_dead,lineage_id,original_track_id\n")
             positions_of_time_point = positions.of_time_point(time_point)
             for position in positions_of_time_point:
                 lineage_id = lineage_id_creator.get_lineage_id(links, position)
@@ -154,10 +160,15 @@ def _write_positions_and_metadata_to_csv(positions: PositionCollection, links: L
                 density = cell_density_calculator.get_density_mm1(positions_of_time_point, position, resolution)
                 times_divided = cell_division_counter.find_times_divided(links, position, first_time_point_number)
                 times_neighbor_died = deaths_nearby_tracks.count_nearby_deaths_in_past(links, position)
+                cell_fate = cell_fate_finder.get_fate_ext(links, division_lookahead_time_points, position)
+                hours_until_division = cell_fate.time_points_remaining * resolution.time_point_interval_h \
+                        if cell_fate.type == CellFateType.WILL_DIVIDE else -1
+                hours_until_dead = cell_fate.time_points_remaining * resolution.time_point_interval_h \
+                        if cell_fate.type in cell_fate_finder.WILL_DIE_OR_SHED else -1
 
                 vector = position.to_vector_um(resolution)
                 file_handle.write(f"{vector.x},{vector.y},{vector.z},{density},{times_divided},{times_neighbor_died},"
-                                  f"{cell_type_id},{lineage_id},{original_track_id}\n")
+                                  f"{cell_type_id},{hours_until_division},{hours_until_dead},{lineage_id},{original_track_id}\n")
 
 
 def _export_colormap_file(folder: str, links: Links):

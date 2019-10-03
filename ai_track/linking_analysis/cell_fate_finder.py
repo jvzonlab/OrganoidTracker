@@ -17,6 +17,10 @@ class CellFateType(Enum):
     WILL_SHED = 4
 
 
+# Set of all ways cells can die
+WILL_DIE_OR_SHED = {CellFateType.WILL_DIE, CellFateType.WILL_SHED}
+
+
 class CellFate:
     type: CellFateType  # What happened to the cell
     time_points_remaining: Optional[int]  # In how many time points the cell will die/divide. Only set if WILL_DIVIDE or WILL_DIE.
@@ -32,8 +36,13 @@ class CellFate:
 def get_fate(experiment: Experiment, position: Position) -> CellFate:
     """Checks if a cell will undergo a division later in the experiment. Returns None if not sure, because we are near
     the end of the experiment. max_time_point_number is the number of the last time point in the experiment."""
-    max_time_point_number = position.time_point_number() + experiment.division_lookahead_time_points
-    links = experiment.links
+    return get_fate_ext(experiment.links, experiment.division_lookahead_time_points, position)
+
+
+def get_fate_ext(links: Links, division_lookahead_time_points: int, position: Position) -> CellFate:
+    """Checks if a cell will undergo a division later in the experiment. Returns None if not sure, because we are near
+    the end of the experiment. max_time_point_number is the number of the last time point in the experiment."""
+    max_time_point_number = position.time_point_number() + division_lookahead_time_points
     track = links.get_track(position)
     if track is None:
         # No links found for this position
