@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 import matplotlib.colors
 
@@ -165,10 +165,13 @@ def _write_positions_and_metadata_to_csv(positions: PositionCollection, links: L
                         if cell_fate.type == CellFateType.WILL_DIVIDE else -1
                 hours_until_dead = cell_fate.time_points_remaining * resolution.time_point_interval_h \
                         if cell_fate.type in cell_fate_finder.WILL_DIE_OR_SHED else -1
+                if cell_fate.type == CellFateType.UNKNOWN:  # If unknown, set to None
+                    hours_until_dead = None
+                    hours_until_division = None
 
                 vector = position.to_vector_um(resolution)
-                file_handle.write(f"{vector.x},{vector.y},{vector.z},{density},{times_divided},{times_neighbor_died},"
-                                  f"{cell_type_id},{hours_until_division},{hours_until_dead},{lineage_id},{original_track_id}\n")
+                file_handle.write(f"{vector.x},{vector.y},{vector.z},{density},{_str(times_divided)},{times_neighbor_died},"
+                                  f"{cell_type_id},{_str(hours_until_division)},{_str(hours_until_dead)},{lineage_id},{original_track_id}\n")
 
 
 def _export_colormap_file(folder: str, links: Links):
@@ -199,3 +202,10 @@ def _export_colormap_file(folder: str, links: Links):
     file_name = os.path.join(folder, "lineage_colormap.json")
     with open(file_name, "w") as file_handle:
         json.dump(data, file_handle)
+
+
+def _str(value: Optional[float]) -> str:
+    """Converts None to "NaN"."""
+    if value is None:
+        return "NaN"
+    return str(value)
