@@ -131,9 +131,12 @@ class _Lattice:
     def _get_color(self, position_fate: CellFate, cell_age: Optional[int]) -> MPLColor:
         """Determines the color of a cell."""
         color = (0.5, 0.5, 0.5)
-        if position_fate.type in {CellFateType.WILL_DIE, CellFateType.WILL_SHED}:
-            blue_green_value = min(0.6, position_fate.time_points_remaining * 0.02)
-            color = (1, blue_green_value, blue_green_value)
+        if position_fate.type == CellFateType.WILL_DIE:
+            red_green_value = min(0.6, position_fate.time_points_remaining * 0.02)
+            color = (1, red_green_value, red_green_value)
+        elif position_fate.type == CellFateType.WILL_SHED:
+            red_green_value = min(0.6, position_fate.time_points_remaining * 0.02)
+            color = (red_green_value, red_green_value, 1)
         elif position_fate.type == CellFateType.WILL_DIVIDE:
             red_blue_value = min(0.8, position_fate.time_points_remaining * 0.02)
             color = (red_blue_value, 1, red_blue_value)
@@ -156,7 +159,7 @@ class _LatticePlot(Visualizer):
     green = cell will divide, white = cell is just moving, fuchsia = newborn cell, gray = unknown what happened."""
 
     _lattice: _Lattice
-    _time_point: TimePoint
+    _popup_time_point: TimePoint
     _axis_id: int
 
     def __init__(self, window: Window):
@@ -164,9 +167,9 @@ class _LatticePlot(Visualizer):
 
         experiment = self._experiment
         self._lattice = _Lattice()
-        self._time_point = TimePoint(experiment.first_time_point_number())
+        self._popup_time_point = TimePoint(experiment.first_time_point_number())
         self._axis_id = -1
-        for axis_id, data_axis in experiment.splines.of_time_point(self._time_point):
+        for axis_id, data_axis in experiment.splines.of_time_point(self._popup_time_point):
             self._axis_id = axis_id
             break
 
@@ -174,21 +177,21 @@ class _LatticePlot(Visualizer):
         # Move in time
         if event.key == "left":
             try:
-                self._time_point = self._experiment.get_previous_time_point(self._time_point)
+                self._popup_time_point = self._experiment.get_previous_time_point(self._popup_time_point)
                 self.draw_view()
-                self.update_status(f"Moved to time point {self._time_point.time_point_number()}")
+                self.update_status(f"Moved to time point {self._popup_time_point.time_point_number()}")
             except ValueError:
                 self.update_status("There is no previous time point.")
         elif event.key == "right":
             try:
-                self._time_point = self._experiment.get_next_time_point(self._time_point)
+                self._popup_time_point = self._experiment.get_next_time_point(self._popup_time_point)
                 self.draw_view()
-                self.update_status(f"Moved to time point {self._time_point.time_point_number()}")
+                self.update_status(f"Moved to time point {self._popup_time_point.time_point_number()}")
             except ValueError:
                 self.update_status("There is no next time point.")
         elif event.key == "up" or event.key == "down":
             axis_ids = []
-            for axis_id, data_axis in self._experiment.splines.of_time_point(self._time_point):
+            for axis_id, data_axis in self._experiment.splines.of_time_point(self._popup_time_point):
                 axis_ids.append(axis_id)
             if len(axis_ids) == 0:
                 self.update_status("No crypt axes found in time point")
@@ -215,8 +218,8 @@ class _LatticePlot(Visualizer):
         self._ax.set_aspect('equal')
         self._ax.get_xaxis().set_visible(False)
         self._ax.get_yaxis().set_visible(False)
-        self._ax.set_title(f"Unwrapping of crypt {self._axis_id} in time point {self._time_point.time_point_number()}")
-        self._lattice.generate(self._experiment, self._time_point, self._axis_id)
+        self._ax.set_title(f"Unwrapping of crypt {self._axis_id} in time point {self._popup_time_point.time_point_number()}")
+        self._lattice.generate(self._experiment, self._popup_time_point, self._axis_id)
         self._lattice.plot_lattice(self._ax, self.get_window().get_gui_experiment())
         self._ax.set_ylabel("Villus-to-crypt axis")
         self._fig.canvas.draw()
@@ -234,24 +237,24 @@ class _LatticePlot(Visualizer):
             self.update_status("No cell found there.")
 
     def _take_movie(self):
-        original_time_point = self._time_point
+        original_time_point = self._popup_time_point
         directory = dialog.prompt_directory("Choose a directory to save the images to")
         if directory is None:
             return
 
         # Resize figure for latest (and presumable largest) time point
-        self._time_point = TimePoint(self._experiment.positions.last_time_point_number())
-        self._lattice.generate(self._experiment, self._time_point, self._axis_id)
+        self._popup_time_point = TimePoint(self._experiment.positions.last_time_point_number())
+        self._lattice.generate(self._experiment, self._popup_time_point, self._axis_id)
         self._lattice.plot_lattice(self._ax, self.get_window().get_gui_experiment(), force_resize=True)
 
         # Create movie time point by time point
         for time_point in self._experiment.time_points():
             file_name = path.join(directory, f"image-t{time_point.time_point_number()}.png")
-            self._time_point = time_point
+            self._popup_time_point = time_point
             self.draw_view()
             self._fig.savefig(file_name)
 
-        self._time_point = original_time_point
+        self._popup_time_point = original_time_point
         self.draw_view()
         self.update_status("Creation of movie complete")
 
