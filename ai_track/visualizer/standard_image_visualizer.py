@@ -6,6 +6,7 @@ from tifffile import tifffile
 
 from ai_track.core import TimePoint, UserError
 from ai_track.core.experiment import Experiment
+from ai_track.core.resolution import ImageResolution
 from ai_track.gui import dialog
 from ai_track.gui.launcher import launch_window
 from ai_track.gui.threading import Task
@@ -75,11 +76,12 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             position = self._get_position_at(event.xdata, event.ydata)
             positions_of_time_point = self._experiment.positions.of_time_point(self._time_point)
             links = self._experiment.links
+            px = ImageResolution(1, 1, 1, 1)  # This "resolution" makes sure that the output is in px
             if position is not None and links.has_links():
                 self.update_status("Flow toward previous frame: " +
-                                   str(particle_flow_calculator.get_flow_to_previous(links, positions_of_time_point, position)) +
+                                   str(particle_flow_calculator.get_flow_to_previous(links, positions_of_time_point, position, px)) +
                                    "\nFlow towards next frame: " +
-                                   str(particle_flow_calculator.get_flow_to_next(links, positions_of_time_point, position)))
+                                   str(particle_flow_calculator.get_flow_to_next(links, positions_of_time_point, position, px)))
         else:
             super()._on_key_press(event)
 

@@ -9,12 +9,13 @@ from ai_track.core.links import Links, LinkingTrack
 from ai_track.core.spline import SplineCollection
 from ai_track.gui import dialog
 from ai_track.gui.window import Window
+from ai_track.linking_analysis import lineage_markers
 from ai_track.linking_analysis.lineage_finder import LineageTree
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-         "Gtaph//Histogram": lambda: _make_movement_image(window),
+         "Graph//Cell race on crypt-villus axis...": lambda: _make_movement_image(window),
     }
 
 def _make_movement_image(window: Window):
@@ -48,7 +49,7 @@ def _draw_movement_image(links: Links, splines: SplineCollection, *, output_file
 
         y_offset = 0
         for lineage in lineages:
-            color = lineage.get_color(links)
+            color = lineage_markers.get_color(links, lineage.starting_track)
             tracks = lineage.get_tracks_at_time_point_number(time_point_number)
             lineage_width = lineage.plotting_size
 
@@ -63,9 +64,9 @@ def _draw_movement_image(links: Links, splines: SplineCollection, *, output_file
                 plotting_x = int(axis_position.pos)
                 plotting_y = y_offset + index
 
-                canvas[plotting_y - 2: plotting_y + 3, plotting_x - 2 : plotting_x + 3, 0] = int(color[0] * 255)
-                canvas[plotting_y - 2: plotting_y + 3, plotting_x - 2 : plotting_x + 3, 1] = int(color[1] * 255)
-                canvas[plotting_y - 2: plotting_y + 3, plotting_x - 2 : plotting_x + 3, 2] = int(color[2] * 255)
+                canvas[plotting_y - 2: plotting_y + 3, plotting_x - 2 : plotting_x + 3, 0] = color.red
+                canvas[plotting_y - 2: plotting_y + 3, plotting_x - 2 : plotting_x + 3, 1] = color.green
+                canvas[plotting_y - 2: plotting_y + 3, plotting_x - 2 : plotting_x + 3, 2] = color.blue
                 gray_canvas[plotting_y, plotting_x, 0] = 200
                 gray_canvas[plotting_y, plotting_x, 1] = 200
                 gray_canvas[plotting_y, plotting_x, 2] = 200

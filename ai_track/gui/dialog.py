@@ -6,14 +6,14 @@ from enum import Enum
 from typing import Tuple, List, Optional, Callable, ClassVar
 
 from PyQt5 import QtCore
-from PyQt5.QtGui import QCloseEvent
+from PyQt5.QtGui import QCloseEvent, QColor
 from PyQt5.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow, QVBoxLayout, \
-    QLabel, QSizePolicy, QDialog, QPushButton
+    QLabel, QSizePolicy, QDialog, QPushButton, QColorDialog
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
-from ai_track.core import UserError, Name, CM_TO_INCH
+from ai_track.core import UserError, Name, CM_TO_INCH, Color
 from ai_track.gui.gui_experiment import GuiExperiment
 from ai_track.gui.window import Window
 
@@ -148,6 +148,14 @@ def prompt_directory(title: str) -> Optional[str]:
         return None
     return directory
 
+
+def prompt_color(title: str, default_color: Color = Color(255, 255, 255)) -> Optional[Color]:
+    """Prompts the user to choose a color."""
+    q_color = QColor(default_color.red, default_color.green, default_color.blue)
+    q_color = QColorDialog.getColor(q_color, _window(), title)
+    if q_color.isValid():
+        return Color(q_color.red(), q_color.green(), q_color.blue())
+    return None
 
 def popup_message_cancellable(title: str, message: str) -> bool:
     """Shows a dialog with Ok and Cancel buttons, but with an "i" sign instead of a "?"."""

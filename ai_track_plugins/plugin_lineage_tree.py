@@ -2,14 +2,14 @@ from typing import Dict, Any, Tuple, Set, Optional
 
 from matplotlib.backend_bases import PickEvent, MouseEvent
 
-from ai_track.core import UserError
+from ai_track.core import UserError, Color
 from ai_track.core.links import LinkingTrack, Links
 from ai_track.core.position import Position
 from ai_track.core.resolution import ImageResolution
 from ai_track.gui import dialog
 from ai_track.gui.location_map import LocationMap
 from ai_track.gui.window import Window
-from ai_track.linking_analysis import linking_markers, lineage_id_creator
+from ai_track.linking_analysis import linking_markers, lineage_id_creator, lineage_markers
 from ai_track.linking_analysis.lineage_drawing import LineageDrawing
 from ai_track.linking_analysis.linking_markers import EndMarker
 from ai_track.visualizer import Visualizer
@@ -32,7 +32,7 @@ def _show_lineage_tree(window: Window):
 class LineageTreeVisualizer(Visualizer):
 
     _location_map: Optional[LocationMap] = None
-    _track_to_color: Dict[LinkingTrack, Tuple[float, float, float]]
+    _track_to_color: Dict[LinkingTrack, Color]
 
     def __init__(self, window: Window):
         super().__init__(window)
@@ -47,11 +47,10 @@ class LineageTreeVisualizer(Visualizer):
             if len(next_tracks) == 0:
                 continue  # No colors for tracks without divisions
             else:
-                lineage_id = links.get_track_id(track)
-                color = lineage_id_creator.get_color_for_lineage_id(lineage_id)
+                color = lineage_markers.get_color(links, track)
                 self._give_lineage_color(track, color)
 
-    def _give_lineage_color(self, linking_track: LinkingTrack, color: Tuple[float, float, float]):
+    def _give_lineage_color(self, linking_track: LinkingTrack, color: Color):
         """Gives a while lineage (including all children) a color."""
         self._track_to_color[linking_track] = color
         for next_track in linking_track.get_next_tracks():
@@ -79,7 +78,7 @@ class LineageTreeVisualizer(Visualizer):
                     return 0, 0, 1
             color = self._track_to_color.get(track)
             if color is not None:
-                return color
+                return color.to_rgb_floats()
             return 0, 0, 0  # Default is black
 
         resolution = ImageResolution(1, 1, 1, 60)

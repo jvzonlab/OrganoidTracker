@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from ai_track.core import TimePoint
+from ai_track.core import TimePoint, Color
 from ai_track.core.links import LinkingTrack, Links
 from ai_track.linking_analysis import lineage_id_creator
 
@@ -24,11 +24,6 @@ class LineageTree:
     def plotting_size(self) -> int:
         """Gets the total width the lineage tree will end up with."""
         return self._plotting_size
-
-    def get_color(self, links: Links) -> Tuple[float, float, float]:
-        """Gets the standard color of this lineage. All plots should use this color."""
-        track_id = links.get_track_id(self.starting_track)
-        return lineage_id_creator.get_color_for_lineage_id(track_id)
 
     def _count_size(self, track: LinkingTrack) -> int:
         count = 1

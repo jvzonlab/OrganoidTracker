@@ -33,7 +33,7 @@ def get_original_track_id(links: Links, position: Position) -> int:
     return track_id
 
 
-def get_color_for_lineage_id(track_id: int) -> Tuple[float, float, float]:
+def generate_color_for_lineage_id(track_id: int) -> Tuple[float, float, float]:
     """Gets the RGB color (from 0 to 1) that the given lineage tree should be drawn in. The id must be a track id or a
     lineage id."""
     if track_id == -1:

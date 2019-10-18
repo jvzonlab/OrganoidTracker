@@ -3,16 +3,17 @@ from typing import Optional, List, Set, Dict, Iterable
 from matplotlib.backend_bases import KeyEvent, MouseEvent, LocationEvent
 
 from ai_track import core
-from ai_track.core import TimePoint
+from ai_track.core import TimePoint, Color
 from ai_track.core.connections import Connections
 from ai_track.core.experiment import Experiment
+from ai_track.core.links import LinkingTrack
 from ai_track.core.particle import Particle
 from ai_track.core.position import Position
 from ai_track.core.marker import Marker
 from ai_track.core.shape import ParticleShape
 from ai_track.gui import dialog
 from ai_track.gui.window import Window, DisplaySettings
-from ai_track.linking_analysis import cell_error_finder, linking_markers, lineage_positions_finder
+from ai_track.linking_analysis import cell_error_finder, linking_markers, lineage_positions_finder, lineage_markers
 from ai_track.linking_analysis.linking_markers import EndMarker
 from ai_track.visualizer import activate
 from ai_track.visualizer.abstract_editor import AbstractEditor
@@ -212,6 +213,28 @@ class _SetAllAsType(UndoableAction):
         return f"Reset all positions to their previous type"
 
 
+class _SetLineageColor(UndoableAction):
+    _track: LinkingTrack
+    _old_color: Color
+    _new_color: Color
+
+    def __init__(self, track: LinkingTrack, old_color: Color, new_color: Color):
+        self._track = track
+        self._old_color = old_color
+        self._new_color = new_color
+
+    def do(self, experiment: Experiment) -> str:
+        lineage_markers.set_color(experiment.links, self._track, self._new_color)
+        if self._new_color.is_black():
+            return "Removed the color of the lineage"
+        return f"Set the color of the lineage to {self._new_color}"
+
+    def undo(self, experiment: Experiment) -> str:
+        lineage_markers.set_color(experiment.links, self._track, self._old_color)
+        if self._old_color.is_black():
+            return "Removed the color of the lineage again"
+        return f"Changed the color of the linage back to {self._old_color}"
+
 class LinkAndPositionEditor(AbstractEditor):
     """Editor for cell links and positions. Use the Insert key to insert new cells or links, and Delete to delete
      them."""
@@ -277,6 +300,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//LineageEnd-Mark as cell shedding [S]": lambda: self._try_set_end_marker(EndMarker.SHED),
             "Edit//LineageEnd-Mark as moving out of view [V]": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
             "Edit//LineageEnd-Remove end marker": lambda: self._try_set_end_marker(None),
+            "Edit//Track-Set color of lineage...": self._set_color_of_lineage,
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
             "View//Linking-Lineage errors and warnings [L]": self._show_lineage_errors,
         }
@@ -286,7 +310,7 @@ class LinkAndPositionEditor(AbstractEditor):
             # Create copy of position_type variable to avoid it changing in loop iteration
             action = lambda bound_position_type = position_type: self._set_all_positions_to_type(bound_position_type)
 
-            options["Edit//Type-Set type of track//" + position_type.display_name] = action
+            options["Edit//Track-Set type of track//" + position_type.display_name] = action
         return options
 
     def _on_key_press(self, event: KeyEvent):
@@ -486,3 +510,22 @@ class LinkAndPositionEditor(AbstractEditor):
         positions = lineage_positions_finder.find_all_positions_in_lineage_of(self._experiment.links, self._selected1)
         old_position_types = linking_markers.get_position_types(self._experiment.links, set(positions))
         self._perform_action(_SetAllAsType(old_position_types, position_type))
+
+    def _set_color_of_lineage(self):
+        if self._selected1 is None:
+            self.update_status("You need to select a position first.")
+            return
+        if self._selected2 is not None:
+            self.update_status("You have multiple positions selected - please unselect one.")
+            return
+
+        links = self._experiment.links
+        track = links.get_track(self._selected1)
+        if track is None:
+            self.update_status("Selected position has no links, so it has no lineage and therefore we cannot color it.")
+            return
+
+        old_color = lineage_markers.get_color(self._experiment.links, track)
+        color = dialog.prompt_color("Choose a color for the lineage", old_color)
+        if color is not None:
+            self._perform_action(_SetLineageColor(track, old_color, color))

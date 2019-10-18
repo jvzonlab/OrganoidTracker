@@ -4,10 +4,12 @@ import numpy
 
 from ai_track.core.links import Links
 from ai_track.core.position import Position
+from ai_track.core.resolution import ImageResolution
 
 
 def get_flow_to_previous(links: Links, positions: Iterable[Position], center: Position,
-                         max_dx_and_dy: int = 50, max_dz = 2) -> Tuple[float, float, float]:
+                         image_resolution: ImageResolution, max_dx_and_dy: int = 50, max_dz = 2
+                         ) -> Tuple[float, float, float]:
     """Gets the average flow of the positions within the specified radius towards the previous time point. Returns
     (0,0,0) if there are no positions. The given center position must be in the givne time point.
     """
@@ -31,8 +33,8 @@ def get_flow_to_previous(links: Links, positions: Iterable[Position], center: Po
     return total_movement[0] / count, total_movement[1] / count, total_movement[2] / count
 
 
-def get_flow_to_next(links: Links, positions: Iterable[Position], center: Position,
-                     max_dx_and_dy: int = 50, max_dz = 2) -> Tuple[float, float, float]:
+def get_flow_to_next(links: Links, positions: Iterable[Position], center: Position, resolution: ImageResolution,
+                     max_distance_um: float = 16) -> Tuple[float, float, float]:
     """Gets the average flow of the positions within the specified radius towards the next time point. Returns
     (0,0,0) if there are no positions. The given center position must be in the given time point. Ignores cell
     divisions and dead cells.
@@ -41,7 +43,7 @@ def get_flow_to_next(links: Links, positions: Iterable[Position], center: Positi
     count = 0
     total_movement = numpy.zeros(3)
     for position in positions:
-        if _is_far_way_or_same(center, position, max_dx_and_dy, max_dz):
+        if _is_far_way_or_same(center, position, max_distance_um):
             continue
 
         next_positions = links.find_futures(position)

@@ -2,9 +2,7 @@
 which are placed in an Experiment. A TimePoint also stores scores of possible mother-daughter cell combinations.
 An Experiment also stores an ImageLoader and up to two cell links networks (stored as Graph objects)."""
 import re
-from typing import Optional, Iterable, Union
-
-from matplotlib import colors
+from typing import Optional, Iterable, Union, Tuple
 
 COLOR_CELL_NEXT = "#d63031"
 COLOR_CELL_PREVIOUS = "#74b9ff"
@@ -77,6 +75,73 @@ class Name:
         """Returns the name if there is any name stored, otherwise it returns "Unnamed"."""
         name = self._name
         return name if name is not None else "Unnamed"
+
+
+class Color:
+    """Represents an RGB color."""
+
+    @staticmethod
+    def from_rgb(rgb: int) -> "Color":
+        """Restores the color from the hexadecimal value."""
+        return Color(rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff)
+
+    @staticmethod
+    def white():
+        """Returns a fully white color."""
+        return Color(255, 255, 255)
+
+    @staticmethod
+    def black():
+        """Returns a fully black color."""
+        return Color(0, 0, 0)
+
+    _rgb: int
+
+    def __init__(self, red: int, green: int, blue: int):
+        if red < 0 or red > 255 or int(red) != red\
+                or green < 0 or green > 255 or int(green) != green\
+                or blue < 0 or blue > 255 or int(blue) != blue:
+            raise ValueError(f"Invalid color: {(red, green, blue)}")
+        self._rgb = red << 16 | green << 8 | blue
+
+    @property
+    def red(self) -> int:
+        """Gets the red component from 0 to 255."""
+        return self._rgb >> 16
+
+    @property
+    def green(self) -> int:
+        """Gets the green component from 0 to 255."""
+        return (self._rgb >> 8) & 0xff
+
+    @property
+    def blue(self) -> int:
+        """Gets the blue component from 0 to 255."""
+        return self._rgb & 0xff
+
+    def to_rgb(self) -> int:
+        """Gets the color as a RGB number. See also Color.from_rgb()"""
+        return self._rgb
+    
+    def to_rgb_floats(self) -> Tuple[float, float, float]:
+        """Gets the color as a RGBA tuple, for use with matplotlib."""
+        return self.red / 255, self.green / 255, self.blue / 255
+
+    def __str__(self) -> str:
+        """Returns the color as a hexadecimal value."""
+        return "#" + format(self._rgb, '06x')
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, Color):
+            return other._rgb == self._rgb
+        return False
+
+    def __hash__(self) -> int:
+        return self._rgb
+
+    def is_black(self) -> bool:
+        """Returns True if this color is completely black."""
+        return self._rgb == 0
 
 
 def min_none(numbers: Union[Optional[float], Iterable[Optional[float]]], *args: Optional[float]):

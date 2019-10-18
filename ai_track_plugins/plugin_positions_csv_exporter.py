@@ -2,8 +2,6 @@ import json
 import os
 from typing import Dict, Any, List, Optional
 
-import matplotlib.colors
-
 from ai_track.core import UserError
 from ai_track.core.experiment import Experiment
 from ai_track.core.links import Links
@@ -14,14 +12,16 @@ from ai_track.core.resolution import ImageResolution
 from ai_track.gui import dialog
 from ai_track.gui.threading import Task
 from ai_track.gui.window import Window
-from ai_track.linking_analysis import lineage_id_creator
+from ai_track.linking_analysis import lineage_markers
 from ai_track.linking_analysis.cell_fate_finder import CellFateType
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "File//Export-Export positions//CSV, as μm coordinates...": lambda: _export_positions_as_csv(window, metadata=False),
-        "File//Export-Export positions//CSV, as μm coordinates with metadata...": lambda: _export_positions_as_csv(window, metadata=True),
+        "File//Export-Export positions//CSV, as μm coordinates...":
+            lambda: _export_positions_as_csv(window, metadata=False),
+        "File//Export-Export positions//CSV, as μm coordinates with metadata...":
+            lambda: _export_positions_as_csv(window, metadata=True),
     }
 
 
@@ -177,17 +177,18 @@ def _write_positions_and_metadata_to_csv(positions: PositionCollection, links: L
 def _export_colormap_file(folder: str, links: Links):
     """Writes the given Matplotlib colormap as a Paraview JSON colormap."""
     # Create colormap
-    rgb_points = []
+    rgb_points = [-1, 1, 1, 1]  # Define track -1 as white
     max_track_id = links.get_highest_track_id()
-    for i in range(-1, max_track_id + 1):
-        # x_value goes from -1 to 1
-        color = lineage_id_creator.get_color_for_lineage_id(i)
-        print(i, matplotlib.colors.to_hex(color, keep_alpha=False))
+    for i, track in links.find_all_tracks_and_ids():
+        lineage_color = lineage_markers.get_color(links, track)
+
+        # If color is fully black, change it to white
+        color_tuple = lineage_color.to_rgb_floats() if not lineage_color.is_black() else (1, 1, 1)
 
         rgb_points.append(i)
-        rgb_points.append(color[0])
-        rgb_points.append(color[1])
-        rgb_points.append(color[2])
+        rgb_points.append(color_tuple[0])
+        rgb_points.append(color_tuple[1])
+        rgb_points.append(color_tuple[2])
 
     # Create data
     data = [

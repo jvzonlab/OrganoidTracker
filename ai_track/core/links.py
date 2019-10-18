@@ -1,7 +1,7 @@
 from pprint import pprint
 from typing import Optional, Dict, Iterable, List, Set, Union, Tuple, Any, ItemsView, Callable
 
-from ai_track.core import TimePoint
+from ai_track.core import TimePoint, Color
 from ai_track.core.position import Position
 from ai_track.core.typing import DataType
 
@@ -16,11 +16,14 @@ class LinkingTrack:
     _next_tracks: List["LinkingTrack"]
     _previous_tracks: List["LinkingTrack"]
 
+    _lineage_data: Dict[str, DataType]  # Only has contents if there are no previous tracks
+
     def __init__(self, positions_by_time_point: List[Position]):
         self._min_time_point_number = positions_by_time_point[0].time_point_number()
         self._positions_by_time_point = positions_by_time_point
         self._next_tracks = list()
         self._previous_tracks = list()
+        self._lineage_data = dict()
 
     def find_position_at_time_point_number(self, time_point_number: int) -> Position:
         if time_point_number < self._min_time_point_number \
@@ -322,6 +325,16 @@ class Links:
             return None
         return data_of_positions.get(position)
 
+    def get_lineage_data(self, track: LinkingTrack, data_name: str) -> Optional[DataType]:
+        """Gets the attribute of the lineage tree. Returns None if not found."""
+        # Find earliest track
+        previous_tracks = track._previous_tracks
+        while len(previous_tracks) > 0:
+            track = track.get_previous_tracks().pop()
+            previous_tracks = track._previous_tracks
+
+        return track._lineage_data.get(data_name)
+
     def set_position_data(self, position: Position, data_name: str, value: Optional[DataType]):
         """Adds or overwrites the given attribute for the given position. Set value to None to delete the attribute.
 
@@ -346,6 +359,28 @@ class Links:
         else:
             # Store
             data_of_positions[position] = value
+
+    def set_lineage_data(self, track: LinkingTrack, data_name: str, value: Optional[DataType]):
+        """Adds or overwrites the given attribute for the given lineage (not the individual track!). Set the value to
+        None to delete the attribute.
+        """
+        if data_name == "id":
+            raise ValueError("The data_name 'id' is reserved for internal use.")
+
+        # Find earliest track
+        previous_tracks = track._previous_tracks
+        while len(previous_tracks) > 0:
+            track = track.get_previous_tracks().pop()
+            previous_tracks = track._previous_tracks
+
+        # Store or remove meta data
+        if value is None:
+            # Remove value
+            if data_name in track._lineage_data:
+                del track._lineage_data[data_name]
+        else:
+            # Store value
+            track._lineage_data[data_name] = value
 
     def find_links_of(self, position: Position) -> Set[Position]:
         """Gets all links of a position, both to the past and the future."""
@@ -444,6 +479,7 @@ class Links:
         # Copy over tracks
         for track in self._tracks:
             copied_track = LinkingTrack(track._positions_by_time_point.copy())
+            copied_track._lineage_data = track._lineage_data.copy()
             copy._tracks.append(copied_track)
             for position in track.positions():
                 copy._position_to_track[position] = copied_track
@@ -507,6 +543,7 @@ class Links:
         first_track._positions_by_time_point += second_track._positions_by_time_point
 
         # Update registries
+        first_track._lineage_data.update(second_track._lineage_data)
         self._tracks.remove(second_track)
         for moved_position in second_track.positions():
             self._position_to_track[moved_position] = first_track
@@ -531,6 +568,8 @@ class Links:
                 raise ValueError(f"{track} has no first position")
             if track.find_last_position() is None:
                 raise ValueError(f"{track} has no last position")
+            if len(track._previous_tracks) > 0 and len(track._lineage_data) > 0:
+                raise ValueError(f"{track} has lineage meta data, even though it is not the start of a lineage")
             for position in track.positions():
                 if position not in self._position_to_track:
                     raise ValueError(f"{position} of {track} is not indexed")
