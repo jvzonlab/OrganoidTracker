@@ -343,6 +343,8 @@ class Links:
         """
         if data_name == "id":
             raise ValueError("The data_name 'id' is used to store the position itself.")
+        if data_name.startswith("__"):
+            raise ValueError(f"The data name {data_name} is not allowed: data names must not start with '__'.")
         data_of_positions = self._position_data.get(data_name)
         if data_of_positions is None:
             if value is None:
@@ -366,6 +368,8 @@ class Links:
         """
         if data_name == "id":
             raise ValueError("The data_name 'id' is reserved for internal use.")
+        if data_name.startswith("__"):
+            raise ValueError(f"The data name {data_name} is not allowed: data names must not start with '__'.")
 
         # Find earliest track
         previous_tracks = track._previous_tracks
@@ -381,6 +385,16 @@ class Links:
         else:
             # Store value
             track._lineage_data[data_name] = value
+
+    def find_all_data_of_lineage(self, track: LinkingTrack) -> Iterable[Tuple[str, DataType]]:
+        """Finds all lineage data of the given track."""
+        # Find earliest track
+        previous_tracks = track._previous_tracks
+        while len(previous_tracks) > 0:
+            track = track.get_previous_tracks().pop()
+            previous_tracks = track._previous_tracks
+
+        yield from track._lineage_data.items()
 
     def find_links_of(self, position: Position) -> Set[Position]:
         """Gets all links of a position, both to the past and the future."""
@@ -446,7 +460,7 @@ class Links:
         return position in self._position_to_track
 
     def find_all_links(self) -> Iterable[Tuple[Position, Position]]:
-        """Gets all available links."""
+        """Gets all available links. The first position is always the earliest in time."""
         for track in self._tracks:
             # Return inter-track links
             previous_position = None

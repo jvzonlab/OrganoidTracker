@@ -215,9 +215,10 @@ def _add_d3_data(links: Links, data: Dict, min_time_point: int = -100000, max_ti
         for data_key, data_value in node.items():
             if data_key == "id":
                 continue
+
             links.set_position_data(position, data_key, data_value)
 
-    # Add links
+    # Add links (and lineage data)
     for link in data["links"]:
         source: Position = link["source"]
         target: Position = link["target"]
@@ -225,6 +226,11 @@ def _add_d3_data(links: Links, data: Dict, min_time_point: int = -100000, max_ti
             or source.time_point_number() > max_time_point or target.time_point_number() > max_time_point:
             continue  # Ignore time points out of range
         links.add_link(source, target)
+
+        # Now that we have a link, we can add lineage data
+        for data_key, data_value in link.items():
+            if data_key.startswith("__lineage_"):
+                links.set_lineage_data(links.get_track(source), data_key[len("__lineage_"):], data_value)
 
 
 class _MyEncoder(JSONEncoder):
@@ -283,12 +289,17 @@ def _links_to_d3_data(links: Links, positions: Iterable[Position]) -> Dict:
         nodes.append(node)
 
     # Save edges
+    lineage_starting_positions = {track.find_first_position() for track in links.find_starting_tracks()}
     edges = list()
     for source, target in links.find_all_links():
         edge = {
             "source": source,
             "target": target
         }
+        if source in lineage_starting_positions:
+            # Start of a lineage, so add lineage data
+            for data_name, data_value in links.find_all_data_of_lineage(links.get_track(source)):
+                edge["__lineage_" + data_name] = data_value
         edges.append(edge)
 
     return {
