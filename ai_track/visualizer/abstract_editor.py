@@ -28,8 +28,6 @@ class AbstractEditor(ExitableImageVisualizer):
         return "Manual data editing"
 
     def _perform_action(self, action: UndoableAction):
-        self._experiment.images.resolution()  # Will trigger an exception early if no resolution was set
-
         self.get_window().perform_data_action(action)
 
     def _undo(self):
