@@ -296,7 +296,7 @@ def open_file(filepath: str):
     if _sys.platform.startswith('darwin'):
         _subprocess.call(('open', filepath))
     elif _os.name == 'nt':
-        _os.startfile(filepath)
+        _os.startfile(filepath.replace("/", "\\"))  # Windows requires backslashes for network paths like \\server\bla
     elif _os.name == 'posix':
         _subprocess.call(('xdg-open', filepath))
 
