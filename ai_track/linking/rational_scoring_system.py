@@ -1,6 +1,4 @@
 """Designed scoring system for scoring putative mother cells."""
-import traceback
-
 import numpy
 from numpy import ndarray
 
@@ -8,7 +6,6 @@ from ai_track.core.images import Images, Image
 from ai_track.core.mask import create_mask_for, Mask, OutsideImageError
 from ai_track.core.position import Position
 from ai_track.core.position_collection import PositionCollection
-from ai_track.core.resolution import ImageResolution
 from ai_track.core.score import Score, Family
 from ai_track.linking.scoring_system import MotherScoringSystem
 
@@ -39,24 +36,11 @@ class RationalScoringSystem(MotherScoringSystem):
             score_mother_intensities(score, mother, mother_intensities, mother_intensities_next)
             score_daughter_intensities(score, daughter1_intensities, daughter2_intensities,
                                        daughter1_intensities_prev, daughter2_intensities_prev)
-            score_daughter_distances(score, mother, daughter1, daughter2, images.resolution())
             score_using_volumes(score, position_shapes, mother, daughter1, daughter2)
             return score
         except OutsideImageError:
             print("No score for " + str(mother) + ": outside image")
             return Score()
-
-
-def score_daughter_distances(score: Score, mother: Position, daughter1: Position, daughter2: Position,
-                             resolution: ImageResolution):
-    m_d1_distance = mother.distance_squared(daughter1, resolution)
-    m_d2_distance = mother.distance_squared(daughter2, resolution)
-    shorter_distance = m_d1_distance if m_d1_distance < m_d2_distance else m_d2_distance
-    longer_distance = m_d1_distance if m_d1_distance > m_d2_distance else m_d2_distance
-    if shorter_distance * (6 ** 2) < longer_distance:
-        score.daughters_distance = -2
-    else:
-        score.daughters_distance = 0
 
 
 def score_daughter_intensities(score: Score, daughter1_intensities: ndarray, daughter2_intensities: ndarray,
@@ -85,12 +69,9 @@ def score_mother_intensities(score: Score, mother: Position, mother_intensities:
 
     # Intensity and contrast
     mean_value = numpy.nanmean(mother_intensities)
-    variance_value = numpy.nanvar(mother_intensities)
-    if numpy.isnan(mean_value) or numpy.isnan(variance_value):
-        score.mother_contrast = 0
+    if numpy.isnan(mean_value):
         score.mother_intensity_delta = 0
         return
-    score.mother_contrast = variance_value * 10
 
     # Change of intensity (we use the max, as mothers often have both bright spots and darker spots near their center)
     mean_value_next = numpy.nanmean(mother_intensities_next)
@@ -103,8 +84,6 @@ def score_mother_intensities(score: Score, mother: Position, mother_intensities:
 
 
 def score_using_volumes(score: Score, positions: PositionCollection, mother: Position, daughter1: Position, daughter2: Position):
-    score.daughters_volume = 0
-
     mother_shape = positions.get_shape(mother)
 
     score.mother_volume = -10
@@ -119,9 +98,6 @@ def score_using_volumes(score: Score, positions: PositionCollection, mother: Pos
 
     volume1 = daughter1_shape.volume()
     volume2 = daughter2_shape.volume()
-    score.daughters_volume = min(volume1, volume2) / max(volume1, volume2)
-    if score.daughters_volume < 0.75:
-        score.daughters_volume = 0  # Almost surely not two daughter cells
     if mother_shape.volume() / (volume1 + volume2 + 0.0001) > 0.95:
         score.mother_volume = 0  # We have a mother cell, or maybe just a big cell
 
