@@ -37,13 +37,21 @@ class Experiment:
         self._images = Images()
         self._connections = Connections()
 
-    def remove_position(self, position: Position):
-        """Removes a position and its links and other data from the experiment."""
-        self.remove_positions([position])
+    def remove_position(self, position: Position, *, update_splines: bool = True):
+        """Removes a position and its links and other data from the experiment.
 
-    def remove_positions(self, positions: Iterable[Position]):
+        When update_splines is set to False, the zero point of all splines (if any) will not be updated. This makes
+        moving the positions a lot faster. However, you should call splines.update_for_changed_positions yourself after
+        moving all positions."""
+        self.remove_positions([position], update_splines=update_splines)
+
+    def remove_positions(self, positions: Iterable[Position], *, update_splines: bool = True):
         """Removes multiple positions and their links and other data from the experiment. If you have multiple positions
-        to delete, it is more efficient to call this method than to call remove_position many times."""
+        to delete, it is more efficient to call this method than to call remove_position many times.
+
+        When update_splines is set to False, the zero point of all splines (if any) will not be updated. This makes
+        moving the positions a lot faster. However, you should call splines.update_for_changed_positions yourself after
+        moving all positions."""
         affected_time_points = set()
         for position in positions:
             self._positions.detach_position(position)
@@ -53,8 +61,9 @@ class Experiment:
             affected_time_points.add(position.time_point())
 
         # Update the data axes origins for all affected time points
-        for time_point in affected_time_points:
-            self.splines.update_for_changed_positions(time_point, self._positions.of_time_point(time_point))
+        if update_splines:
+            for time_point in affected_time_points:
+                self.splines.update_for_changed_positions(time_point, self._positions.of_time_point(time_point))
 
     def move_position(self, position_old: Position, position_new: Position, update_splines: bool = True):
         """Moves the position of a position, preserving any links. (So it's different from remove-and-readd.) The shape
