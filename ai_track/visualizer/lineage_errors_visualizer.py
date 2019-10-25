@@ -58,6 +58,8 @@ class LineageErrorsVisualizer(ExitableImageVisualizer):
         lineages_with_errors = lineage_error_finder.get_problematic_lineages(links, positions)
         verified_lineages = set()
         for position in positions:
+            if not links.contains_position(position):
+                continue
             if lineage_error_finder.find_lineage_index_with_crumb(lineages_with_errors, position) is None:
                 verified_lineages.add(position)
         self._verified_lineages = verified_lineages
