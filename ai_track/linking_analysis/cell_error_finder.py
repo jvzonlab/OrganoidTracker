@@ -19,6 +19,9 @@ def find_errors_in_experiment(experiment: Experiment) -> int:
     """Adds errors for all logical inconsistencies in the graph, like cells that spawn out of nowhere, cells that
     merge together and cells that have three or more daughters. Returns the amount of errors."""
     links = experiment.links
+    if not links.has_links():
+        return 0  # Don't run the error finder if there are no links
+
     scores = experiment.scores
     positions = experiment.positions
     resolution = experiment.images.resolution()
@@ -151,6 +154,8 @@ def _find_errors_in_just_the_iterable(experiment: Experiment, iterable: Iterable
     """Checks all positions in the given iterable for logical errors, like cell merges, cell dividing into three
     daughters, cells moving too fast, ect."""
     links = experiment.links
+    if not links.has_links():
+        return  # Don't run the error finder if there are no links
     for position in iterable:
         error = get_error(links, position, experiment.scores, experiment.positions, experiment.images.resolution())
         linking_markers.set_error_marker(links, position, error)
