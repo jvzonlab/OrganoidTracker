@@ -20,7 +20,7 @@ def _remove_positions_close_to_edge(experiment: Experiment, margin_xy: int):
             if not image_loader.is_inside_image(position, margin_xy=margin_xy):
                 # Remove cell, but inform neighbors first
                 _add_out_of_view_markers(links, position)
-                experiment.remove_position(position)
+                experiment.remove_position(position, update_splines=False)
 
 
 def _mark_positions_going_out_of_image(experiment: Experiment):
@@ -76,7 +76,7 @@ def _check_for_and_remove_spur(experiment: Experiment, links: Links, position: P
             if track_length < 3:
                 # Remove this track, it is too short
                 for position_in_track in positions_in_track:
-                    experiment.remove_position(position_in_track)
+                    experiment.remove_position(position_in_track, update_splines=False)
             return
         if len(next_positions) > 1:
             # Cell division
