@@ -1,16 +1,15 @@
-from typing import Optional, Any
+from typing import Any
 
 from matplotlib import pyplot
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 from tifffile import tifffile
 
-from ai_track.core import TimePoint, UserError
+from ai_track.core import UserError
 from ai_track.core.experiment import Experiment
 from ai_track.core.resolution import ImageResolution
 from ai_track.gui import dialog
 from ai_track.gui.launcher import launch_window
 from ai_track.gui.threading import Task
-from ai_track.gui.window import Window, DisplaySettings
 from ai_track.imaging import io
 from ai_track.linking_analysis import particle_flow_calculator
 from ai_track.visualizer import activate
@@ -36,7 +35,14 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             if position is not None:
                 data = dict(self._experiment.links.find_all_data_of_position(position))
                 shape = self._experiment.positions.get_shape(position)
-                self.update_status(f"Clicked on {position}.\n  Data: {data}\n  Shape: {shape}")
+
+                scores = list(self._experiment.scores.of_mother(position))
+                scores.sort(key=lambda scored_family: scored_family.score.total(), reverse=True)
+                score_str = ""
+                for score in scores:
+                    score_str += f"\nDivision score: {score}"
+
+                self.update_status(f"Clicked on {position}.\n  Data: {data}\n  Shape: {shape} {score_str}")
         else:
             super()._on_mouse_click(event)
 
