@@ -134,9 +134,11 @@ class Window:
     def perform_data_action(self, action: UndoableAction):
         """Performs an action that will change the experiment data. The action will be executed, then the window will
         be redrawn with an updated status bar."""
-        status = self.get_undo_redo().do(action, self.get_experiment())
-        self.redraw_data()
-        self.set_status(status)
+        try:
+            status = self.get_undo_redo().do(action, self.get_experiment())
+            self.set_status(status)
+        finally:
+            self.redraw_data()
 
     def redraw_data(self):
         """Redraws the main figure using the latest values from the experiment."""
