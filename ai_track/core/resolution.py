@@ -4,6 +4,11 @@ from typing import Tuple
 class ImageResolution:
     """Represents the resolution of a 3D image. X and y resolution must be equal. The fields in this class should be
     treated as immutable: don't modify their values after creation."""
+
+    # If you want to define 1 um = 1 px, use this resolution. Useful if you want ot measure distances in pixels instead
+    # of micrometers.
+    PIXELS: "ImageResolution" = ...  # Initialized after definition of class.
+
     pixel_size_zyx_um: Tuple[float, float, float]
     time_point_interval_m: float  # Time between time points in minutes
 
@@ -31,3 +36,6 @@ class ImageResolution:
     @property
     def pixel_size_z_um(self) -> float:
         return self.pixel_size_zyx_um[0]
+
+# See typehint at beginning of ImageResolution class
+ImageResolution.PIXELS = ImageResolution(1, 1, 1, 1)

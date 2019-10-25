@@ -10,6 +10,7 @@ from ai_track.core.links import LinkingTrack
 from ai_track.core.particle import Particle
 from ai_track.core.position import Position
 from ai_track.core.marker import Marker
+from ai_track.core.resolution import ImageResolution
 from ai_track.core.shape import ParticleShape
 from ai_track.gui import dialog
 from ai_track.gui.window import Window, DisplaySettings
@@ -479,8 +480,13 @@ class LinkAndPositionEditor(AbstractEditor):
                 else:
                     self._perform_action(_InsertLinkAction(mouse_position, connection))
             else:
-                self.update_status("Cannot insert link. You have one position selected, which is not in the previous or"
-                                   " next time point.")
+                inserting_position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
+                if inserting_position.distance_um(self._selected1, ImageResolution.PIXELS) < 10:
+                    # Mouse is close to an existing position
+                    self.update_status("Cannot insert a position here - too close to already selected position.")
+                    return
+                self._selected1 = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
+                self._perform_action(_InsertPositionAction(Particle.just_position(self._selected1)))
         elif self._selected1.time_point_number() == self._selected2.time_point_number():
             # Insert connection between two positions
             if self._experiment.connections.contains_connection(self._selected1, self._selected2):
