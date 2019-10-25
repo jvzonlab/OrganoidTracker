@@ -163,15 +163,15 @@ class Links:
         if len(track._positions_by_time_point) == 1:
             # This was the only position in the track, remove track
             for previous_track in track._previous_tracks:
-                previous_track._next_tracks.remove(track)
+                self._decouple_next_track(previous_track, next_track=track)
             for next_track in track._next_tracks:
-                next_track._previous_tracks.remove(track)
+                self._decouple_previous_track(next_track, previous_track=track)
             self._tracks.remove(track)
         elif age == 0:
             # Position is first position of the track
             # Remove links with previous tracks
             for previous_track in track._previous_tracks:
-                previous_track._next_tracks.remove(track)
+                self._decouple_next_track(previous_track, next_track=track)
             track._previous_tracks = []
 
             # Remove actual position
@@ -187,11 +187,14 @@ class Links:
 
             # Decouple from next tracks
             for next_track in track._next_tracks:
-                next_track._previous_tracks.remove(track)
+                self._decouple_previous_track(next_track, previous_track=track)
             track._next_tracks = []
 
             # Delete last position in the track
             del track._positions_by_time_point[-1]
+
+            # Check if track needs to remain alive
+            self._try_remove_if_one_length_track(track)
 
         # Remove from indexes
         del self._position_to_track[position]
@@ -430,7 +433,9 @@ class Links:
             # Split directly after position1
             new_track = self._split_track(track1, position1.time_point_number() + 1 - track1._min_time_point_number)
             track1._next_tracks = []
+            self._try_remove_if_one_length_track(track1)
             new_track._previous_tracks = []
+            self._try_remove_if_one_length_track(new_track)
         else:
             # Check if the tracks connect
             if not track1.max_time_point_number() == position1.time_point_number():
@@ -442,8 +447,50 @@ class Links:
 
             # The tracks may be connected. Remove the connection, if any
             if track2 in track1._next_tracks:
-                track1._next_tracks.remove(track2)
-                track2._previous_tracks.remove(track1)
+                self._decouple_next_track(track1, next_track=track2)
+                self._decouple_previous_track(track2, previous_track=track1)
+
+
+    def _decouple_next_track(self, track: LinkingTrack, *, next_track: LinkingTrack):
+        """Removes a next track from the current track. If only one next track remains, a merge with the remaining next
+        track is performed. If the track ends up with only a single time point and no links to other tracks, it will be
+        removed. Raises ValueError if next_track is not in track.get_next_tracks().
+
+        Note: this is a low-level function. If you plan on keeping the next_track object alive (so it's still in the
+        linking network), then you'll also need to remove `track` as a previous track from `next_track`. Call
+        self.debug_sanity_check() if you're unsure that the links are still consistent with each other."""
+        track._next_tracks.remove(next_track)
+        if len(track._next_tracks) == 1:  # Used to have two next tracks, now only one - try a merge
+            self._try_merge(track, next(iter(track._next_tracks)))
+        else:
+            self._try_remove_if_one_length_track(track)
+
+    def _decouple_previous_track(self, track: LinkingTrack, *, previous_track: LinkingTrack):
+        """Removes a previous track from the current track. If only one previous track remains, a merge with the
+        remaining previous track is performed.  If the track ends up with only a single time point and no links to other
+        tracks, it will be removed. Raises ValueError if previous_track is not in track.get_previous_tracks().
+
+        Note: this is a low-level function. If you plan on keeping the previous_track object alive (so it's still in the
+        linking network), then you'll also need to remove `track` as a next track from `previous_track`. Call
+        self.debug_sanity_check() if you're unsure that the links are still consistent with each other."""
+        track._previous_tracks.remove(previous_track)
+        if len(track._previous_tracks) == 1:  # Used to have two next tracks, now only one - try a merge
+            self._try_merge(track, next(iter(track._previous_tracks)))
+        else:
+            self._try_remove_if_one_length_track(track)
+
+    def _try_remove_if_one_length_track(self, track: LinkingTrack):
+        """Removes the track if it is just a single time point and has no links or lineage data."""
+        if len(track) != 1:
+            return  # Don't remove tracks of multiple time points
+        if len(track._previous_tracks) != 0 or len(track._next_tracks) != 0:
+            return  # Not safe to remove this track
+        if len(track._lineage_data) != 0:
+            return  # Has metadata, don't delete
+
+        # Safe to delete
+        del self._position_to_track[track.find_first_position()]
+        self._tracks.remove(track)
 
     def contains_link(self, position1: Position, position2: Position) -> bool:
         """Returns True if the two given positions are linked to each other."""
@@ -578,6 +625,9 @@ class Links:
         for track in self._tracks:
             if len(track._positions_by_time_point) == 0:
                 raise ValueError(f"Empty track at t={track._min_time_point_number}")
+            if len(track._positions_by_time_point) == 1 and len(track._previous_tracks) == 0\
+                    and len(track._next_tracks) == 0 and len(track._lineage_data) == 0:
+                raise ValueError(f"Length=1 track at t={track._min_time_point_number}")
             if track.find_first_position() is None:
                 raise ValueError(f"{track} has no first position")
             if track.find_last_position() is None:
