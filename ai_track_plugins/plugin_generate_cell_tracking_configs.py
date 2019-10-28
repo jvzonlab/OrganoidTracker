@@ -16,10 +16,10 @@ _TRAINING_PATCH_SHAPE_ZYX: Tuple[int, int, int] = (32, 64, 64)
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Process//Standard-Train the neural network...": lambda: _generate_training_config(window),
-        "Process//Standard-Detect cells in images...": lambda: _generate_detection_config(window),
-        "Process//Standard-Detect shapes using Gaussian fit...": lambda: _generate_gaussian_fit_configs(window),
-        "Process//Standard-Create links between time points...": lambda: _generate_linking_config(window)
+        "Tools//Process-Train the neural network...": lambda: _generate_training_config(window),
+        "Tools//Process-Detect cells in images...": lambda: _generate_detection_config(window),
+        "Tools//Process-Detect shapes using Gaussian fit...": lambda: _generate_gaussian_fit_configs(window),
+        "Tools//Process-Create links between time points...": lambda: _generate_linking_config(window)
     }
 
 

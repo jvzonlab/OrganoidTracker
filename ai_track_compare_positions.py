@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 """Compares two sets of positions. Used to calculate the recall and precision."""
-from ai_track.comparison import positions_comparison
-from ai_track.config import ConfigFile
+from ai_track.comparison import positions_comparison, report_io
+from ai_track.config import ConfigFile, config_type_json_file
 from ai_track.core.resolution import ImageResolution
 from ai_track.imaging import io
 
@@ -18,6 +18,7 @@ _time_point_duration_m = float(config.get_or_default("time_point_duration_m", st
 _ground_truth_file = config.get_or_prompt("positions_ground_truth_file", "In what file are the positions of the ground truth stored?")
 _automatic_file = config.get_or_prompt("positions_automatic_file", "In what file are the positions of the experiment stored?")
 _max_distance_um = float(config.get_or_default("max_distance_um", str(5)))
+_output_file = config.get_or_default("output_file", "", type=config_type_json_file)
 config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
@@ -28,6 +29,8 @@ automatic_data = io.load_data_file(_automatic_file, _min_time_point, _max_time_p
 
 print("Comparing...")
 result = positions_comparison.compare_positions(ground_truth, automatic_data, max_distance_um=_max_distance_um)
+if _output_file:
+    report_io.save_report(result, _output_file)
 print(result)
 result.calculate_time_detection_statistics().debug_plot()
 result.calculate_z_detection_statistics().debug_plot()

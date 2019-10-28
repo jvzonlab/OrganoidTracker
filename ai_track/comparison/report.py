@@ -1,4 +1,4 @@
-from typing import Union, Dict, List, Optional
+from typing import Union, Dict, List, Optional, Tuple, Iterable
 
 import numpy
 from numpy import ndarray
@@ -61,7 +61,7 @@ class Statistics:
 
         self.precision = true_positives / (true_positives + false_positives)
         self.recall = true_positives / (true_positives + false_negatives)
-        self.f1_score =(2 * self.precision * self.recall) / (self.precision + self.recall)
+        self.f1_score = (2 * self.precision * self.recall) / (self.precision + self.recall)
 
         true_positives_overall = true_positives.sum()
         false_positives_overall = false_positives.sum()
@@ -84,11 +84,30 @@ class Statistics:
         plt.show()
 
 
-class ComparisonReport:
+class Details:
+    """Represents the details of a certain entry in the report."""
+    _details: Tuple[Union[str, Position], ...]
 
+    def __init__(self, *detail: Union[str, Position]):
+        """Creates a new detail entry. Positions will be auto-linked if viewed in the visualizer."""
+        self._details = tuple(detail)
+
+    @property
+    def details(self) -> Tuple[Union[str, Position]]:
+        """The details, cannot be modified."""
+        return self._details
+
+    def __str__(self) -> str:
+        return " ".join(str(detail) for detail in self._details)
+
+    def __repr__(self) -> str:
+        return "Details(" + " ".join(repr(detail) for detail in self._details) + ")"
+
+
+class ComparisonReport:
     title: str = "Comparison"
     summary: str = ""
-    _details_by_category_and_position: Dict[Category, Dict[Position, str]]
+    _details_by_category_and_position: Dict[Category, Dict[Position, Details]]
     _positions_by_category: Dict[Category, PositionCollection]
 
     def __init__(self):
@@ -104,11 +123,34 @@ class ComparisonReport:
         if details:
             if category not in self._details_by_category_and_position:
                 self._details_by_category_and_position[category] = dict()
-            self._details_by_category_and_position[category][position] = " ".join(str(detail) for detail in details)
+            self._details_by_category_and_position[category][position] = Details(*details)
+
+    def delete_data(self, category: Category, position: Position):
+        """Deletes all data of the given position."""
+        positions_in_category = self._positions_by_category.get(category)
+        if positions_in_category is None:
+            return
+        positions_in_category.detach_position(position)
+
+        # Also delete the details
+        details_in_category = self._details_by_category_and_position.get(category)
+        if position in details_in_category:
+            del details_in_category[position]
+
+    def get_categories(self) -> Iterable[Category]:
+        """Gets all categories that are used in this report."""
+        return tuple(self._positions_by_category.keys())
+
+    def get_category_by_name(self, name: str) -> Optional[Category]:
+        """Gets the category with the given name."""
+        for category in self._positions_by_category.keys():
+            if category.name == name:
+                return category
+        return None
 
     def __str__(self):
         report = self.title + "\n"
-        report += ("-" * len(self.title)) + "\n\n"
+        report += ("=" * len(self.title)) + "\n\n"
         report += self.summary + "\n"
         for category, positions in self._positions_by_category.items():
             details_by_position = self._details_by_category_and_position.get(category)
@@ -116,14 +158,15 @@ class ComparisonReport:
                 details_by_position = dict()  # Supply an empty map to prevent errors
 
             count = len(positions)
-            report += "\n" + category.name + ": ("+str(count)+")\n"
+            header = category.name + ": (" + str(count) + ")"
+            report += "\n" + header + "\n" + ("-" * len(header)) + "\n"
 
             i = 0
             for position in positions:
                 position_str = str(position)
                 details = details_by_position.get(position)
                 if details is not None:
-                    position_str += " - " + details
+                    position_str += " - " + str(details)
                 report += "* " + position_str + "\n"
                 i += 1
                 if i > _MAX_SHOWN:
@@ -156,8 +199,8 @@ class ComparisonReport:
                                false_negatives_cat: Category) -> Statistics:
         """Calculate statistics using the given categories as false/true positives/negatives."""
         min_z = min(self._positions_by_category[true_positives_cat].lowest_z(),
-                                    self._positions_by_category[false_positives_cat].lowest_z(),
-                                    self._positions_by_category[false_negatives_cat].lowest_z())
+                    self._positions_by_category[false_positives_cat].lowest_z(),
+                    self._positions_by_category[false_negatives_cat].lowest_z())
         max_time_point_number = max(self._positions_by_category[true_positives_cat].highest_z(),
                                     self._positions_by_category[false_positives_cat].highest_z(),
                                     self._positions_by_category[false_negatives_cat].highest_z())
@@ -179,3 +222,26 @@ class ComparisonReport:
         if positions is None:
             return 0
         return len(positions)
+
+    def get_entries(self, category: Category) -> Iterable[Tuple[Position, Details]]:
+        """Gets all entries for the given category."""
+        if category not in self._positions_by_category:
+            return
+        empty_details = Details()  # Reused to save memory
+
+        details_by_position = self._details_by_category_and_position.get(category)
+        if details_by_position is None:
+            details_by_position = dict()  # Supply an empty map to prevent errors
+
+        for position in self._positions_by_category[category]:
+            details = details_by_position.get(position)
+            if details is None:
+                details = empty_details
+            yield (position, details)
+
+    def get_entries_count(self, category: Category) -> int:
+        """Gets how many entries there are in the given category. Returns 0 if the given category is not used."""
+        entries = self._positions_by_category.get(category)
+        if entries is None:
+            return 0
+        return len(entries)
