@@ -1,5 +1,6 @@
 from typing import Callable, List, Dict, Any, Iterable, Optional, Type
 
+from ai_track.core import UserError
 from ai_track.core.experiment import Experiment
 from ai_track.core.position import Position
 from ai_track.core.marker import Marker

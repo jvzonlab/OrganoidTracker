@@ -10,6 +10,13 @@ def config_type_str(input: str) -> str:
     return input
 
 
+def config_type_json_file(input: str) -> str:
+    """A string that will automatically have ".json" appended to it if it hasn't already."""
+    if not input.lower().endswith(".json"):
+        return input + ".json"
+    return input
+
+
 def config_type_int(input: str) -> int:
     """Parses values as integers."""
     return int(input)

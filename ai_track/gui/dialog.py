@@ -8,21 +8,22 @@ from typing import Tuple, List, Optional, Callable, ClassVar
 from PyQt5 import QtCore
 from PyQt5.QtGui import QCloseEvent, QColor
 from PyQt5.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow, QVBoxLayout, \
-    QLabel, QSizePolicy, QDialog, QPushButton, QColorDialog
+    QLabel, QSizePolicy, QPushButton, QColorDialog
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
 from ai_track.core import UserError, Name, CM_TO_INCH, Color
 from ai_track.gui.gui_experiment import GuiExperiment
+from ai_track.gui.website import Website
 from ai_track.gui.window import Window
 
 
 def _window() -> QWidget:
-    active_window = QApplication.activeWindow()
-    if active_window is None:
-        return QApplication.topLevelWidgets()[0]
-    return active_window
+    for widget in QApplication.topLevelWidgets():
+        if isinstance(widget, QMainWindow):
+            return widget
+    return QApplication.topLevelWidgets()[0]
 
 
 def prompt_int(title: str, question: str, *, minimum: int = -2147483647, maximum: int = 2147483647,
@@ -156,6 +157,7 @@ def prompt_color(title: str, default_color: Color = Color(255, 255, 255)) -> Opt
     if q_color.isValid():
         return Color(q_color.red(), q_color.green(), q_color.blue())
     return None
+
 
 def popup_message_cancellable(title: str, message: str) -> bool:
     """Shows a dialog with Ok and Cancel buttons, but with an "i" sign instead of a "?"."""
@@ -303,5 +305,11 @@ def open_file(filepath: str):
 
 def popup_manual():
     """Shows the manual of the program."""
-    from ai_track.gui import help_dialog
-    help_dialog.show_help(_window())
+    from ai_track.gui import _website_dialog
+    _website_dialog.show_help(_window())
+
+
+def popup_website(website: Website):
+    from ai_track.gui import _website_dialog
+    _website_dialog.show_website(_window(), website)
+
