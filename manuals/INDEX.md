@@ -16,6 +16,7 @@ For reference
 * [Supported image formats](IMAGE_FORMATS.md) / [Supported tracking formats](TRACKING_FORMATS.md)
 * [Scripts reference](SCRIPTS.md)
 * [Programming API](API.md)
+* [Batch editing](BATCH_EDITING.md)
 
 Getting started
 ---------------

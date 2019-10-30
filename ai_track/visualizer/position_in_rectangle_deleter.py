@@ -15,7 +15,6 @@ from ai_track.visualizer.abstract_editor import AbstractEditor
 
 
 class _DeletePositionsAction(UndoableAction):
-
     _particles: List[Particle]
 
     def __init__(self, particles: Iterable[Particle]):
@@ -30,13 +29,14 @@ class _DeletePositionsAction(UndoableAction):
     def undo(self, experiment: Experiment):
         for particle in self._particles:
             particle.restore(experiment)
-            cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, particle.position, *particle.links)
+            cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, particle.position,
+                                                                                    *particle.links)
         return f"Re-added {len(self._particles)} positions"
 
 
 class PositionsInRectangleDeleter(AbstractEditor):
-    """Double click to define the first point, double-click again to define the second point. Then press Delete to
-    delete all positions within that rectangle."""
+    """Double click to define the first point, double-click again to define the second point. Then press I or O to
+    delete all positions inside or outside the rectangle, respectively."""
 
     _min_position: Optional[Position] = None
     _max_position: Optional[Position] = None
@@ -50,11 +50,12 @@ class PositionsInRectangleDeleter(AbstractEditor):
         data_editor = LinkAndPositionEditor(self._window)
         activate(data_editor)
 
-    def _on_key_press(self, event: KeyEvent):
-        if event.key == "delete":
-            self._try_delete()
-            return
-        super()._on_key_press(event)
+    def get_extra_menu_options(self):
+        return {
+            **super().get_extra_menu_options(),
+            "Edit//Delete-Delete all positions inside the rectangle [Delete]": lambda: self._try_delete(inside=True),
+            "Edit//Delete-Delete all positions outside the rectangle [Alt+Delete]": lambda: self._try_delete(inside=False)
+        }
 
     def _on_mouse_click(self, event: MouseEvent):
         if not event.dblclick:
@@ -74,7 +75,8 @@ class PositionsInRectangleDeleter(AbstractEditor):
             height = self._max_position.y - self._min_position.y + 1
             depth = self._max_position.z - self._min_position.z + 1
             time = self._max_position.time_point_number() - self._min_position.time_point_number() + 1
-            self.update_status(f"Selected a volume of {width}x{height}x{depth} px, spanning {time} time points")
+            self.update_status(f"Selected a volume of {width}x{height}x{depth} px, spanning {time} time points."
+                               f"\nPress I or O to delete all positions inside or outside the volume, respectively.")
             return
         # Both positions are defined
         self._min_position = None
@@ -96,19 +98,22 @@ class PositionsInRectangleDeleter(AbstractEditor):
             return False
         return True
 
-    def _get_positions_in_rectangle(self) -> Iterable[Position]:
-        """Gets all positions that are within the selected rectangle. Throws an exception if the two positions defining
-        the rectangle haven't been defined yet."""
-        for time_point_number in range(self._min_position.time_point_number(), self._max_position.time_point_number() + 1):
+    def _get_selected_positions(self, inside: bool = True) -> Iterable[Position]:
+        """Gets all positions that are inside or outside the selected rectangle. Throws an exception if the two
+        positions defining the rectangle haven't been defined yet."""
+        for time_point_number in range(self._min_position.time_point_number(),
+                                       self._max_position.time_point_number() + 1):
             time_point = TimePoint(time_point_number)
             for position in self._experiment.positions.of_time_point(time_point):
-                if position.x < self._min_position.x or position.y < self._min_position.y\
+                position_is_inside = True
+                if position.x < self._min_position.x or position.y < self._min_position.y \
                         or position.z < self._min_position.z:
-                    continue
-                if position.x > self._max_position.x or position.y > self._max_position.y\
+                    position_is_inside = False
+                elif position.x > self._max_position.x or position.y > self._max_position.y \
                         or position.z > self._max_position.z:
-                    continue
-                yield position
+                    position_is_inside = False
+                if position_is_inside == inside:
+                    yield position
 
     def _draw_extra(self):
         if self._max_position is not None and self._min_position is not None:
@@ -140,17 +145,16 @@ class PositionsInRectangleDeleter(AbstractEditor):
         self._max_position = Position(max(pos1.x, pos2.x), max(pos1.y, pos2.y), max(pos1.z, pos2.z),
                                       time_point_number=max(pos1.time_point_number(), pos2.time_point_number()))
 
-    def _try_delete(self):
+    def _try_delete(self, inside: bool = True):
         if self._min_position is None or self._max_position is None:
             self.update_status("Please select a rectangle first. Double-click somewhere to define the corners.")
             return
 
         experiment = self._experiment
         positions = [Particle.from_position(experiment, position)
-                                                     for position in self._get_positions_in_rectangle()]
+                     for position in self._get_selected_positions(inside)]
         if len(positions) == 0:
-            self.update_status("There are no positions within the selected rectangle")
+            self.update_status(
+                "There are no positions " + ("within" if inside else "outside") + " the selected rectangle")
             return
-        self._min_position = None
-        self._max_position = None
         self._perform_action(_DeletePositionsAction(positions))
