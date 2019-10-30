@@ -134,7 +134,7 @@ class ComparisonReport:
 
         # Also delete the details
         details_in_category = self._details_by_category_and_position.get(category)
-        if position in details_in_category:
+        if details_in_category is not None and position in details_in_category:
             del details_in_category[position]
 
     def get_categories(self) -> Iterable[Category]:
