@@ -1,11 +1,11 @@
 from ai_track.comparison.report import ComparisonReport, Category, Statistics
 from ai_track.core.experiment import Experiment
-from ai_track.linking.nearby_position_finder import find_close_positions
-
+from ai_track.linking.nearby_position_finder import find_close_positions, find_closest_position
 
 _DETECTIONS_FALSE_NEGATIVES = Category("Missed detections")
 _DETECTIONS_TRUE_POSITIVES = Category("Found detections")
 _DETECTIONS_FALSE_POSITIVES = Category("Made up detections")
+_DETECTIONS_REJECTED = Category("Rejected detections")
 
 
 class DetectionReport(ComparisonReport):
@@ -46,7 +46,16 @@ def compare_positions(ground_truth: Experiment, scratch: Experiment, max_distanc
             report.add_data(_DETECTIONS_TRUE_POSITIVES, baseline_position)
 
         # Only the scratch positions with no corresponding baseline position are left
+        baseline_positions = set(ground_truth.positions.of_time_point(time_point))
         for scratch_position in scratch_positions:
-            report.add_data(_DETECTIONS_FALSE_POSITIVES, scratch_position)
+            nearest_in_baseline = find_closest_position(baseline_positions, around=scratch_position,
+                                                        resolution=resolution)
+            distance_um = scratch_position.distance_um(nearest_in_baseline, resolution)
+            if distance_um > max_distance_um:
+                report.add_data(_DETECTIONS_REJECTED, scratch_position,
+                                f"Nearest ground-truth cell was {distance_um:0.1f} um away")
+                continue
+            report.add_data(_DETECTIONS_FALSE_POSITIVES, scratch_position,
+                            f"Nearest ground-truth cell was {distance_um:0.1f} um away")
 
     return report
