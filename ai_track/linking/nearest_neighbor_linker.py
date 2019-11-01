@@ -7,25 +7,34 @@ from ai_track.core.position_collection import PositionCollection
 from ai_track.linking.nearby_position_finder import find_close_positions
 
 
-def nearest_neighbor(experiment: Experiment, tolerance: float = 1.0) -> Links:
+def nearest_neighbor(experiment: Experiment, *, tolerance: float = 1.0, back: bool = True, forward: bool = True
+                     ) -> Links:
     """Simple nearest neighbour linking, keeping a list of potential candidates based on a given tolerance.
 
-    A tolerance of 1.05 also links positions 5% from the closest position. Note that if a tolerance higher than 1 is
-    given, some pruning is needed on the final result.
+    A tolerance of 1.05 also links positions 5% from the closest position, so you end up with more links than you have
+    positions.
 
     If the experiment has images loaded, then no links outside the images will be created.
 
-    max_time_point is the last time point that will still be included.
+    Nearest neighbor-linking can happen both forwards (every position is linked to the nearest in the next time point)
+    and backwards (every position is linked to the nearest in the previous time point). If you do both, note that the
+    tolerance is calculated independently for both directions: with a tolerance of for example 2, you'll get all forward
+    links that are at most twice as long as the shortest forward link, and you'll get all backward links that are at
+    most twice as long as the shortest backward link.
     """
+    if not back and not forward:
+        raise ValueError("Cannot create links if back and forward are both False.")
     links = Links()
 
     time_point_previous = None
     for time_point_current in experiment.time_points():
         if time_point_previous is not None:
-            _add_nearest_edges(links, experiment.positions, experiment.images,
-                               time_point_previous, time_point_current, tolerance)
-            _add_nearest_edges_extra(links, experiment.positions, experiment.images,
-                                     time_point_previous, time_point_current, tolerance)
+            if back:
+                _add_nearest_edges(links, experiment.positions, experiment.images,
+                                   time_point_previous, time_point_current, tolerance)
+            if forward:
+                _add_nearest_edges_extra(links, experiment.positions, experiment.images,
+                                         time_point_previous, time_point_current, tolerance)
 
         time_point_previous = time_point_current
 
