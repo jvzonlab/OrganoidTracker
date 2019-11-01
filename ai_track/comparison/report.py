@@ -80,6 +80,7 @@ class Statistics:
         plt.xlabel(self.x_label)
         plt.title(f"Recall: {self.recall_overall:.02f}, Precision: {self.precision_overall:.02f},"
                   f" F1 score: {self.f1_score_overall:.02f}")
+        plt.tick_params(axis="both", direction="in")
         plt.legend()
         plt.show()
 
