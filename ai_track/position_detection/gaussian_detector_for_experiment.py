@@ -1,28 +1,33 @@
 """Starting point for the Gaussian detector: from simple cell positions to full cell shapes."""
+from typing import Callable
 
 import numpy
 
 from ai_track.core import TimePoint
 from ai_track.core.experiment import Experiment
+from ai_track.core.images import Images
+from ai_track.core.position_collection import PositionCollection
 from ai_track.core.shape import GaussianShape, FAILED_SHAPE
 from ai_track.util import bits
 from ai_track.position_detection import thresholding, watershedding, gaussian_fit
 
 
-def perform_for_experiment(experiment: Experiment, threshold_block_size: int,
-                            gaussian_fit_smooth_size: int, cluster_detection_erosion_rounds: int):
+def perform_for_experiment(experiment: Experiment, *, threshold_block_size: int,
+                           gaussian_fit_smooth_size: int, cluster_detection_erosion_rounds: int,
+                           call_after_time_point: Callable[[TimePoint], type(None)] = lambda time_point: ...):
     for time_point in experiment.time_points():
-        _perform_for_time_point(experiment, time_point, threshold_block_size,
+        _perform_for_time_point(experiment.images, experiment.positions, time_point, threshold_block_size,
                                 gaussian_fit_smooth_size, cluster_detection_erosion_rounds)
+        call_after_time_point(time_point)
 
 
-def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, threshold_block_size: int,
+def _perform_for_time_point(images: Images, positions: PositionCollection, time_point: TimePoint, threshold_block_size: int,
                             gaussian_fit_smooth_size: int, cluster_detection_erosion_rounds: int):
     print("Working on time point " + str(time_point.time_point_number()) + "...")
     # Acquire images
-    image_offset = experiment.images.offsets.of_time_point(time_point)
-    positions = list(experiment.positions.of_time_point(time_point))
-    image_positions = [None] + positions  # Don't use offset 0
+    image_offset = images.offsets.of_time_point(time_point)
+    positions_of_time_point = list(positions.of_time_point(time_point))
+    image_positions = [None] + positions_of_time_point  # Don't use offset 0
     if not image_offset.is_zero():
         # Move all positions
         for i in range(len(image_positions)):
@@ -30,16 +35,16 @@ def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, thres
                 continue
             image_positions[i] = image_positions[i] - image_offset
 
-    images = experiment.get_image_stack(time_point)
-    images = bits.image_to_8bit(images)
+    image_stack = images.get_image_stack(time_point)
+    image_stack = bits.image_to_8bit(image_stack)
 
     # Create a threshold
-    threshold = numpy.empty_like(images, dtype=numpy.uint8)
-    thresholding.advanced_threshold(images, threshold, threshold_block_size)
+    threshold = numpy.empty_like(image_stack, dtype=numpy.uint8)
+    thresholding.advanced_threshold(image_stack, threshold, threshold_block_size)
 
     # Labelling, calculate distance to label
-    resolution = experiment.images.resolution()
-    label_image = numpy.empty_like(images, dtype=numpy.uint16)
+    resolution = images.resolution()
+    label_image = numpy.empty_like(image_stack, dtype=numpy.uint16)
     watershedding.create_labels(image_positions, label_image)
     distance_transform_to_labels = watershedding.distance_transform_to_labels(label_image, resolution.pixel_size_zyx_um)
 
@@ -48,17 +53,17 @@ def _perform_for_time_point(experiment: Experiment, time_point: TimePoint, thres
 
     # Perform the watershed on the threshold
     watershed = watershedding.watershed_labels(threshold, distance_transform_to_labels,
-                                               label_image, len(positions))[0]
+                                               label_image, len(positions_of_time_point))[0]
 
     # Finally use that for fitting
-    gaussians = gaussian_fit.perform_gaussian_mixture_fit_from_watershed(images, watershed, image_positions,
+    gaussians = gaussian_fit.perform_gaussian_mixture_fit_from_watershed(image_stack, watershed, image_positions,
                                                                          gaussian_fit_smooth_size,
                                                                          cluster_detection_erosion_rounds)
-    for position, gaussian in zip(positions, gaussians):
+    for position, gaussian in zip(positions_of_time_point, gaussians):
         shape = FAILED_SHAPE if gaussian is None \
             else GaussianShape(gaussian
                                .translated(image_offset.x, image_offset.y, image_offset.z)
                                .translated(-position.x, -position.y, -position.z))
-        experiment.positions.add(position, shape)  # This sets the shape
+        positions.add(position, shape)  # This sets the shape
         if gaussian is None:
             print("Could not fit gaussian for " + str(position))

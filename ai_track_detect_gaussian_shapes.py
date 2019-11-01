@@ -12,6 +12,7 @@ Parameters: (all sizes are in pixels)
   already looks like Gaussians, the smaller this size can be
 - min_segmentation_distance: used for recognizing cell boundaries in a watershed transform
 """
+from ai_track.core import TimePoint
 from ai_track.imaging import io
 from ai_track.image_loading import general_image_loader
 from ai_track.config import ConfigFile, config_type_int
@@ -51,9 +52,18 @@ print("Discovering images...")
 general_image_loader.load_images(experiment, _images_folder, _images_format,
                                  min_time_point=_min_time_point, max_time_point=_max_time_point)
 print("Running detection...")
+def _autosave(time_point: TimePoint):
+    """To protect against crashes, we save the result every five time points."""
+    if time_point.time_point_number() % 5 == 0:
+        print("Saving...")
+        io.save_data_to_json(experiment, _positions_output_file)
+
+
 gaussian_detector_for_experiment.perform_for_experiment(experiment, threshold_block_size=_threshold_block_size,
                                                         gaussian_fit_smooth_size=_gaussian_fit_smooth_size,
-                                                        cluster_detection_erosion_rounds=_cluster_detection_erosion_rounds)
+                                                        cluster_detection_erosion_rounds=_cluster_detection_erosion_rounds,
+                                                        call_after_time_point=_autosave)
+
 print("Saving...")
 io.save_data_to_json(experiment, _positions_output_file)
 print("Done!")
