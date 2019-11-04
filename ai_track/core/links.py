@@ -59,7 +59,12 @@ class LinkingTrack:
         return self._positions_by_time_point[-1]
 
     def find_all_descending_tracks(self, include_self: bool = False) -> Iterable["LinkingTrack"]:
-        """Iterates over all tracks that will follow this one, and the one after thet, etc."""
+        """Iterates over all tracks that will follow this one, and the one after thet, etc. Stops if there's a cell
+        merge occuring."""
+        if len(self._previous_tracks) > 1:
+            # Cell merge, concept of descending tracks falls apart
+            # - every track could be connected to every track if merges are allowed
+            return
         if include_self:
             yield self
         for next_track in self._next_tracks:

@@ -13,6 +13,7 @@ from ai_track.linking import nearby_position_finder
 LINKS_FALSE_NEGATIVES = Category("Missed links")
 LINKS_TRUE_POSITIVES = Category("Correctly detected links")
 LINKS_FALSE_POSITIVES = Category("Made up links")
+REJECTED = Category("Rejected links")
 
 
 class LinksReport(ComparisonReport):
@@ -28,7 +29,7 @@ class LinksReport(ComparisonReport):
         return self.calculate_z_statistics(LINKS_TRUE_POSITIVES, LINKS_FALSE_POSITIVES, LINKS_FALSE_NEGATIVES)
 
 
-def _find_close_positions(position: Position, experiment: Experiment, max_distance: float) -> Iterable[Position]:
+def _find_close_positions(position: Position, experiment: Experiment, max_distance: float) -> Set[Position]:
     all_positions = experiment.positions.of_time_point(position.time_point())
     resolution = experiment.images.resolution()
     return nearby_position_finder.find_closest_n_positions(all_positions, around=position, resolution=resolution,
@@ -91,7 +92,16 @@ def compare_links(ground_truth: Experiment, scratch: Experiment, max_distance_um
             used_ground_truth_links.add(found_ground_truth_link)
             pass
         else:
-            # False positive
-            result.add_data(LINKS_FALSE_POSITIVES, position1, "has mistakenly a link to", position2)
+            # False positive or rejection
+            if len(ground_truth_positions1) == 0 and len(ground_truth_positions2) == 0:
+                result.add_data(REJECTED, position1, "has no link to ", position2, "because of missing positions")
+            elif len(ground_truth_positions1) == 0:
+                result.add_data(LINKS_FALSE_POSITIVES, position1, "was linked to", position2, " even though the former"
+                                " position does not exist in the ground truth")
+            elif len(ground_truth_positions2) == 0:
+                result.add_data(LINKS_FALSE_POSITIVES, position1, "was linked to", position2, " even though the latter"
+                                " position does not exist in the ground truth")
+            else:
+                result.add_data(LINKS_FALSE_POSITIVES, position1, "has mistakenly a link to", position2)
 
     return result
