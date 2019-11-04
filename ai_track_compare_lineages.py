@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-"""Compares two linking results on the level of lineages. The baseline links are assumed to be 100% correct, any
-deviations from that are counted as errors."""
-from ai_track.comparison import lineage_comparison
-from ai_track.config import ConfigFile
+"""Compares two linking results on the level of lineages, so that missing cell deaths and divisions will be reported.
+The baseline links are assumed to be 100% correct, any deviations from that are counted as errors."""
+from ai_track.comparison import lineage_comparison, report_io
+from ai_track.config import ConfigFile, config_type_json_file
 from ai_track.imaging import io
 
 # PARAMETERS
@@ -15,6 +15,7 @@ _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_i
 _automatic_links_file = config.get_or_prompt("automatic_links_file", "In what file are the new links stored?")
 _baseline_links_file = config.get_or_prompt("baseline_links_file", "In what file are the original links stored?")
 _max_distance_um = float(config.get_or_default("max_distance_um", str(5)))
+_output_file = config.get_or_default("output_file", "", type=config_type_json_file)
 config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
@@ -24,6 +25,8 @@ baseline_experiment = io.load_data_file(_baseline_links_file, _min_time_point, _
 
 print("Comparing...")
 report = lineage_comparison.compare_links(baseline_experiment, scratch_experiment, _max_distance_um)
+if _output_file:
+    report_io.save_report(report, _output_file)
 print(report)
 
 print("Done!")
