@@ -23,14 +23,20 @@ class DetectionReport(ComparisonReport):
                                            _DETECTIONS_FALSE_NEGATIVES)
 
 
-def compare_positions(ground_truth: Experiment, scratch: Experiment, max_distance_um: float = 5) -> DetectionReport:
+def compare_positions(ground_truth: Experiment, scratch: Experiment, max_distance_um: float = 5,
+                      rejection_distance_um: float = 5) -> DetectionReport:
     """Checks how much the positions in the ground truth match with the given data."""
     resolution = ground_truth.images.resolution()
 
     report = DetectionReport()
+    report.summary = f"Comparison of two sets of positions. The ground truth was named \"{ground_truth.name}\", the" \
+                     f" comparision object was named \"{scratch.name}\"."
 
     for time_point in ground_truth.time_points():
         baseline_positions = set(ground_truth.positions.of_time_point(time_point))
+        if len(baseline_positions) == 0:
+            continue  # Nothing to compare for this time point
+
         scratch_positions = set(scratch.positions.of_time_point(time_point))
         for baseline_position in baseline_positions:
             nearest_in_scratch = find_close_positions(scratch_positions, around=baseline_position, tolerance=1,
@@ -51,7 +57,7 @@ def compare_positions(ground_truth: Experiment, scratch: Experiment, max_distanc
             nearest_in_baseline = find_closest_position(baseline_positions, around=scratch_position,
                                                         resolution=resolution)
             distance_um = scratch_position.distance_um(nearest_in_baseline, resolution)
-            if distance_um > max_distance_um:
+            if distance_um > rejection_distance_um:
                 report.add_data(_DETECTIONS_REJECTED, scratch_position,
                                 f"Nearest ground-truth cell was {distance_um:0.1f} um away")
                 continue

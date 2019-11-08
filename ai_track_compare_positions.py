@@ -18,6 +18,7 @@ _time_point_duration_m = float(config.get_or_default("time_point_duration_m", st
 _ground_truth_file = config.get_or_prompt("positions_ground_truth_file", "In what file are the positions of the ground truth stored?")
 _automatic_file = config.get_or_prompt("positions_automatic_file", "In what file are the positions of the experiment stored?")
 _max_distance_um = float(config.get_or_default("max_distance_um", str(5)))
+_rejection_distance_um = float(config.get_or_default("rejection_distance_um", str(1_000_000)))
 _output_file = config.get_or_default("output_file", "", type=config_type_json_file)
 config.save_and_exit_if_changed()
 # END OF PARAMETERS
@@ -28,7 +29,8 @@ ground_truth.images.set_resolution(ImageResolution(_pixel_size_x_um, _pixel_size
 automatic_data = io.load_data_file(_automatic_file, _min_time_point, _max_time_point)
 
 print("Comparing...")
-result = positions_comparison.compare_positions(ground_truth, automatic_data, max_distance_um=_max_distance_um)
+result = positions_comparison.compare_positions(ground_truth, automatic_data, max_distance_um=_max_distance_um,
+                                                rejection_distance_um=_rejection_distance_um)
 if _output_file:
     report_io.save_report(result, _output_file)
 print(result)
