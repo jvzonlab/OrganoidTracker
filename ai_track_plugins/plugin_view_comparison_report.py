@@ -85,7 +85,16 @@ class _ComparisonSite(Website):
     def _main_page(self) -> str:
         categories = self._report.get_categories()
 
-        text = f"# {self._report.title}\n{self._report.summary}"
+        text = f"# {self._report.title}\n"
+        if len(self._report.summary) > 0:
+            text += f"{self._report.summary}\n"
+        recorded_parameters = dict(self._report.recorded_parameters())
+        if len(recorded_parameters) > 0:
+            text += "\n"
+            for parameter_name, parameter_value in self._report.recorded_parameters():
+                text += f"    {parameter_name} = {parameter_value}\n"
+            text += "\n"
+
         for category in categories:
             text += f"* {category.name} ({self._report.get_entries_count(category)} entries) [View](category/{category.name}) \n"
         text += "\n[Save the report](save)"

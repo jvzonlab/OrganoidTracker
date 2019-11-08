@@ -10,6 +10,7 @@ def save_report(report: ComparisonReport, file: str):
     output = {
         "title": report.title,
         "summary": report.summary,
+        "parameters": dict(report.recorded_parameters()),
         "categories": [_category_to_json(report, category) for category in report.get_categories()]
     }
     with open(file, "w", encoding="utf8") as file_handle:
@@ -37,9 +38,12 @@ def _entry_to_json(position: Position, details: Details) -> List[Union[str, List
 
 def load_report(file: str) -> ComparisonReport:
     """Reconstructs a report from a JSON file."""
-    report = ComparisonReport()
     with open(file, "r", encoding="utf8") as file_handle:
         input = json.load(file_handle)
+
+    parameters = input["parameters"] if "parameters" in input else dict()
+    report = ComparisonReport(**parameters)
+
     report.title = input["title"]
     report.summary = input["summary"]
     for category_input in input["categories"]:

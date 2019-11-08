@@ -10,8 +10,8 @@ _DETECTIONS_REJECTED = Category("Rejected detections")
 
 class DetectionReport(ComparisonReport):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.title = "Detection comparison"
 
     def calculate_time_detection_statistics(self) -> Statistics:
@@ -28,7 +28,7 @@ def compare_positions(ground_truth: Experiment, scratch: Experiment, max_distanc
     """Checks how much the positions in the ground truth match with the given data."""
     resolution = ground_truth.images.resolution()
 
-    report = DetectionReport()
+    report = DetectionReport(max_distance_um=max_distance_um, rejection_distance_um=rejection_distance_um)
     report.summary = f"Comparison of two sets of positions. The ground truth was named \"{ground_truth.name}\", the" \
                      f" comparision object was named \"{scratch.name}\"."
 

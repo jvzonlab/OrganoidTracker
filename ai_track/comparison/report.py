@@ -6,6 +6,7 @@ from numpy import ndarray
 from ai_track.core import TimePoint
 from ai_track.core.position_collection import PositionCollection
 from ai_track.core.position import Position
+from ai_track.core.typing import DataType
 
 _MAX_SHOWN = 15
 
@@ -74,9 +75,11 @@ class Statistics:
     def debug_plot(self):
         """Shows a Matplotlib plot. Must only be called from the command line."""
         import matplotlib.pyplot as plt
-        plt.plot(self.x_axis_numbers, self.recall, label="Recall")
-        plt.plot(self.x_axis_numbers, self.precision, label="Precision")
-        plt.plot(self.x_axis_numbers, self.f1_score, label="F1 score")
+        value_count = self.recall.size - numpy.isnan(self.recall).sum()
+        symbol = "o" if value_count < 25 else "-"
+        plt.plot(self.x_axis_numbers, self.recall, symbol, label="Recall")
+        plt.plot(self.x_axis_numbers, self.precision, symbol, label="Precision")
+        plt.plot(self.x_axis_numbers, self.f1_score, symbol, label="F1 score")
         plt.xlabel(self.x_label)
         plt.title(f"Recall: {self.recall_overall:.02f}, Precision: {self.precision_overall:.02f},"
                   f" F1 score: {self.f1_score_overall:.02f}")
@@ -108,10 +111,12 @@ class Details:
 class ComparisonReport:
     title: str = "Comparison"
     summary: str = ""
+    _recorded_parameters: Dict[str, DataType]
     _details_by_category_and_position: Dict[Category, Dict[Position, Details]]
     _positions_by_category: Dict[Category, PositionCollection]
 
-    def __init__(self):
+    def __init__(self, **parameters: DataType):
+        self._recorded_parameters = parameters
         self._details_by_category_and_position = dict()
         self._positions_by_category = dict()
 
@@ -152,7 +157,13 @@ class ComparisonReport:
     def __str__(self):
         report = self.title + "\n"
         report += ("=" * len(self.title)) + "\n\n"
-        report += self.summary + "\n"
+        if len(self.summary) > 0:
+            report += self.summary + "\n"
+        if not len(self._recorded_parameters) == 0:
+            report += "\n"
+            for parameter_name, parameter_value in self._recorded_parameters.items():
+                report += f"    {parameter_name} = {parameter_value}\n"
+
         for category, positions in self._positions_by_category.items():
             details_by_position = self._details_by_category_and_position.get(category)
             if details_by_position is None:
@@ -246,3 +257,7 @@ class ComparisonReport:
         if entries is None:
             return 0
         return len(entries)
+
+    def recorded_parameters(self) -> Iterable[Tuple[str, DataType]]:
+        """Gets all parameters set for this comparison. Useful for reproducing this comparison."""
+        yield from self._recorded_parameters.items()
