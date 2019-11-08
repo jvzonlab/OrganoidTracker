@@ -9,8 +9,7 @@ from ai_track.gui import dialog
 from ai_track.gui.window import Window
 from ai_track.linking import cell_division_finder
 from ai_track.linking_analysis import linking_markers
-from ai_track.position_analysis import cell_density_calculator
-from ai_track.util.moving_average import MovingAverage
+from ai_track.util import mpl_helper
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -59,8 +58,8 @@ def _draw_cell_events(figure: Figure, mother_crypt_positions: Dict[int, List[flo
 
     axes = figure.subplots(len(axis_ids), sharex=True) if len(axis_ids) > 1 else [figure.gca()]
 
-    death_color = (1, 0, 0, 0.7)
-    division_color = (0, 0, 1, 0.5)
+    death_color = mpl_helper.HISTOGRAM_BLUE
+    division_color = mpl_helper.HISTOGRAM_RED
     for i in range(len(axis_ids)):
         axis = axes[i]
         axis_id = axis_ids[i]
