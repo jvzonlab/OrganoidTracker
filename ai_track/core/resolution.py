@@ -37,5 +37,9 @@ class ImageResolution:
     def pixel_size_z_um(self) -> float:
         return self.pixel_size_zyx_um[0]
 
+    def __repr__(self) -> str:
+        return f"ImageResolution({self.pixel_size_x_um}, {self.pixel_size_y_um}, {self.pixel_size_y_um}," \
+               f" {self.time_point_interval_m})"
+
 # See typehint at beginning of ImageResolution class
 ImageResolution.PIXELS = ImageResolution(1, 1, 1, 1)
