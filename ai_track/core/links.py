@@ -215,13 +215,12 @@ class Links:
 
         # Update in track
         track = self._position_to_track.get(old_position)
-        if track is None:
-            return
-        track._positions_by_time_point[position_new.time_point_number() - track._min_time_point_number] = position_new
+        if track is not None:
+            track._positions_by_time_point[position_new.time_point_number() - track._min_time_point_number] = position_new
 
-        # Update reference to track
-        del self._position_to_track[old_position]
-        self._position_to_track[position_new] = track
+            # Update reference to track
+            del self._position_to_track[old_position]
+            self._position_to_track[position_new] = track
 
         # Update position data
         for data_name, data_dict in self._position_data.items():
