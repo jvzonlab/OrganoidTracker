@@ -24,8 +24,19 @@ def _get_lineage_drawing_start_time(lineage: LinkingTrack) -> int:
     return lineage.min_time_point_number()
 
 
+def _no_filter(track: LinkingTrack) -> bool:
+    """Used as a default value in the lineage tree draw function. Makes all lineages show up."""
+    return True
+
+
+def _black(time_point_number: int, track: LinkingTrack) -> MPLColor:
+    """Used as a default value in the lineage tree draw function. Makes all lineages black."""
+    return 0, 0, 0
+
+
 class LineageDrawing:
     links: Links
+    track_filter: Callable[[LinkingTrack], bool] = _no_filter
 
     def __init__(self, links: Links):
         self.links = links
@@ -77,12 +88,17 @@ class LineageDrawing:
         (x_curr, x_end, line_list) = self._get_sublineage_draw_data(lineage, 0, 0, [])
         return x_end, line_list
 
-    def draw_lineages_colored(self, axes: Axes, color_getter: _ColorGetter, image_resolution: ImageResolution, location_map: LocationMap):
+    def draw_lineages_colored(self, axes: Axes, *, color_getter: _ColorGetter = _black,
+                              resolution: ImageResolution = ImageResolution(1, 1, 1, 1),
+                              location_map: LocationMap = LocationMap(),
+                              lineage_filter: Callable[[LinkingTrack], bool] = _no_filter):
         """Draws lineage trees that are color coded. You can for example color cells by z position, by track
         length, etc. Returns the width of the lineage tree in Matplotlib pixels."""
         x_offset = 0
         for lineage in self.links.find_starting_tracks():
-            width = self._draw_single_lineage_colored(axes, lineage, x_offset, color_getter, image_resolution, location_map)
+            if not lineage_filter(lineage):
+                continue
+            width = self._draw_single_lineage_colored(axes, lineage, x_offset, color_getter, resolution, location_map)
             x_offset += width
         return x_offset
 

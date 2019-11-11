@@ -39,6 +39,7 @@ class LineageTreeVisualizer(Visualizer):
         self._track_to_color = dict()
 
     def _calculate_track_colors(self):
+        """Places the manually assigned lineage colors in a track-to-color map."""
         self._track_to_color.clear()
 
         links = self._experiment.links
@@ -81,9 +82,15 @@ class LineageTreeVisualizer(Visualizer):
                 return color.to_rgb_floats()
             return 0, 0, 0  # Default is black
 
+        def lineage_filter(linking_track: LinkingTrack) -> bool:
+            return len(linking_track.get_next_tracks()) > 0  # Guarantees at least one division
+
         resolution = ImageResolution(1, 1, 1, 60)
         self._location_map = LocationMap()
-        width = LineageDrawing(links).draw_lineages_colored(self._ax, color_getter, resolution, self._location_map)
+        width = LineageDrawing(links).draw_lineages_colored(self._ax, color_getter=color_getter,
+                                                            resolution=resolution,
+                                                            location_map=self._location_map,
+                                                            lineage_filter=lineage_filter)
 
         self._ax.set_ylabel("Time (time points)")
         if self._ax.get_xlim() == (0, 1):

@@ -99,7 +99,7 @@ def perform_gaussian_fit(original_image: ndarray, guess: Gaussian) -> Gaussian:
 
 def perform_gaussian_mixture_fit(original_image: ndarray, guesses: List[Gaussian]) -> List[Gaussian]:
     """Fits multiple Gaussians to the image (a Gaussian Mixture Model). Initial seeds must be given."""
-    if len(guesses) > 30:
+    if len(guesses) > 5:
         raise ValueError(f"Minimization failed: too many parameters (tried to fit {len(guesses)} Gaussian functions)")
 
     model_and_image_difference = _ModelAndImageDifference(original_image)
