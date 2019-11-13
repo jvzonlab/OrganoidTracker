@@ -27,6 +27,7 @@ baseline_experiment = io.load_data_file(_baseline_links_file, _min_time_point, _
 
 print("Comparing...")
 report = links_comparison.compare_links(baseline_experiment, scratch_experiment, _max_distance_um)
+print("Writing report...")
 if _output_file:
     report_io.save_report(report, _output_file)
 print(report)
