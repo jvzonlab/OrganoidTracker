@@ -76,11 +76,8 @@ class _CellsColoredByLineageVisualizer(ExitableImageVisualizer):
 
         color = lineage_markers.get_color(links, track)
         if event.dblclick:
-            default_color = color if color is not None else Color.black()
-            new_color = dialog.prompt_color("Choose a new color for the lineage", default_color)
+            new_color = dialog.prompt_color("Choose a new color for the lineage", color)
             if new_color is not None:
-                if new_color.to_rgb() == 0:
-                    new_color = None  # Change fully black to None
                 self.get_window().perform_data_action(_SetLineageColor(track, color, new_color))
         else:
             color_str = str(color) if not color.is_black() else "not specified"
