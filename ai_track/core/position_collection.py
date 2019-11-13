@@ -40,7 +40,7 @@ class _PositionsAtTimePoint:
     def add_position(self, position: Position, position_shape: Optional[ParticleShape]):
         """Adds a position to this time point. If the position was already added, but a shape was provided, its shape is
         replaced."""
-        if position_shape is None:
+        if position_shape is None or position_shape.is_unknown():
             # Don't overwrite known shape with an unknown shape, and don't store None
             position_shape = self.get_shape(position)
 
