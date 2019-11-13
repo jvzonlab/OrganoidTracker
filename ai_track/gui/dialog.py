@@ -3,7 +3,7 @@ import subprocess as _subprocess
 import sys as _sys
 import traceback as _traceback
 from enum import Enum
-from typing import Tuple, List, Optional, Callable, ClassVar
+from typing import Tuple, List, Optional, Callable, ClassVar, Any
 
 from PyQt5 import QtCore
 from PyQt5.QtGui import QCloseEvent, QColor
@@ -235,7 +235,7 @@ class PopupWindow(Window):
     pass
 
 
-def popup_visualizer(experiment: GuiExperiment, visualizer_class: ClassVar):
+def popup_visualizer(experiment: GuiExperiment, visualizer_callable: Callable[[Window], Any]):
     """Pops up a window, which is then returned. You can then for example attach a Visualizer to this window to show
     something."""
     figure = Figure(figsize=(5.5, 5), dpi=95)
@@ -246,7 +246,7 @@ def popup_visualizer(experiment: GuiExperiment, visualizer_class: ClassVar):
     window = PopupWindow(q_window, figure, experiment, q_window._title_text, q_window._status_text)
 
     from ai_track.visualizer import Visualizer
-    visualizer: Visualizer = visualizer_class(window)
+    visualizer: Visualizer = visualizer_callable(window)
     visualizer.attach()
     visualizer.draw_view()
     visualizer.update_status(visualizer.get_default_status())
