@@ -8,6 +8,7 @@ from ai_track.comparison.report import Category, ComparisonReport, Statistics
 from ai_track.core.experiment import Experiment
 from ai_track.core.links import Links
 from ai_track.core.position import Position
+from ai_track.core.typing import DataType
 from ai_track.linking import nearby_position_finder
 
 LINKS_FALSE_NEGATIVES = Category("Missed links")
@@ -18,8 +19,8 @@ REJECTED = Category("Rejected links")
 
 class LinksReport(ComparisonReport):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs: DataType):
+        super().__init__(**kwargs)
         self.title = "Links comparison"
 
     def calculate_time_correctness_statistics(self) -> Statistics:
@@ -64,7 +65,7 @@ def _get_link(links: Links, positions1: Iterable[Position], positions2: Iterable
 
 
 def compare_links(ground_truth: Experiment, scratch: Experiment, max_distance_um: float = 5) -> LinksReport:
-    result = LinksReport()
+    result = LinksReport(max_distance_um=max_distance_um)
 
     # Check if all baseline links exist
     used_scratch_links = set()
