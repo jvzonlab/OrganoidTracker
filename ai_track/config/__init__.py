@@ -11,7 +11,9 @@ def config_type_str(input: str) -> str:
 
 
 def config_type_json_file(input: str) -> str:
-    """A string that will automatically have ".json" appended to it if it hasn't already."""
+    """A string that will automatically have ".json" appended to it if it hasn't already (except for empty strings)."""
+    if len(input) == 0:
+        return input
     if not input.lower().endswith(".json"):
         return input + ".json"
     return input
