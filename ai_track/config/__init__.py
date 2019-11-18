@@ -24,6 +24,11 @@ def config_type_int(input: str) -> int:
     return int(input)
 
 
+def config_type_float(input: str) -> float:
+    """Parses values as floats."""
+    return float(input)
+
+
 def config_type_image_shape(input: str) -> Tuple[int, int, int]:
     """Parses a string like "512, 512, 32" as the tuple (32, 512, 512). Note the inversion of order."""
     split = input.split(",")
