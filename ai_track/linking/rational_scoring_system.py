@@ -56,11 +56,11 @@ def score_daughter_intensities(score: Score, daughter1_intensities: ndarray, dau
     score.daughters_intensity_delta = 1
     if daughter1_average / (daughter1_average_prev + 0.0001) > 2:
         score.daughters_intensity_delta += 1
-    elif daughter1_average / (daughter1_average_prev + 0.0001) < 1:
+    elif daughter1_average / (daughter1_average_prev + 0.0001) <= 1:
         score.daughters_intensity_delta -= 1
     if daughter2_average / (daughter2_average_prev + 0.0001) > 2:
         score.daughters_intensity_delta += 1
-    elif daughter2_average / (daughter2_average_prev + 0.0001) < 1:
+    elif daughter2_average / (daughter2_average_prev + 0.0001) <= 1:
         score.daughters_intensity_delta -= 1
 
 
@@ -98,7 +98,7 @@ def score_using_volumes(score: Score, positions: PositionCollection, mother: Pos
 
     volume1 = daughter1_shape.volume()
     volume2 = daughter2_shape.volume()
-    if mother_shape.volume() / (volume1 + volume2 + 0.0001) > 0.95:
+    if mother_shape.volume() / (volume1 + volume2) > 0.95:
         score.mother_volume = 0  # We have a mother cell, or maybe just a big cell
 
 
