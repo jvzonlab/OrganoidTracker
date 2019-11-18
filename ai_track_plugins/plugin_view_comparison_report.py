@@ -22,8 +22,8 @@ def _open_comparison_report(window: Window):
     if file is None:
         return
 
-    from ai_track.comparison import report_io
-    report = report_io.load_report(file)
+    from ai_track.comparison import report_json_io
+    report = report_json_io.load_report(file)
     _popup_comparison_report(window, report)
 
 
@@ -44,7 +44,7 @@ class _ComparisonSite(Website):
             return self._main_page()
         if url.startswith("category/"):
             category = Category(url[len("category/"):])
-            if self._report.get_entries_count(category) == 0:
+            if self._report.count_positions(category) == 0:
                 raise UserError("No entries found", f"The report contains no entries for \"{category.name}\".")
             return self._category_page(category)
         if url.startswith("position/"):
@@ -74,11 +74,17 @@ class _ComparisonSite(Website):
                 # Only delete if the user didn't press Undo
                 self._report.delete_data(old_category, position)
             return self._category_page(old_category)
-        if url == "save":
+        if url == "save_json":
             save_file = dialog.prompt_save_file("Save the comparison result", [("JSON files", "*.json")])
             if save_file is not None:
-                from ai_track.comparison import report_io
-                report_io.save_report(self._report, save_file)
+                from ai_track.comparison import report_json_io
+                report_json_io.save_report(self._report, save_file)
+            return None
+        if url == "save_time_csv":
+            save_file = dialog.prompt_save_file("Save the comparison result", [("CSV files", "*.csv")])
+            if save_file is not None:
+                from ai_track.comparison import report_csv_io
+                report_csv_io.save_report_time_statistics(self._report, save_file)
             return None
         return None
 
@@ -96,8 +102,8 @@ class _ComparisonSite(Website):
             text += "\n"
 
         for category in categories:
-            text += f"* {category.name} ({self._report.get_entries_count(category)} entries) [View](category/{category.name}) \n"
-        text += "\n[Save the report](save)"
+            text += f"* {category.name} ({self._report.count_positions(category)} entries) [View](category/{category.name}) \n"
+        text += "\n[Save the report](save_json) - [Export as CSV](save_time_csv)"
         return text
 
     def _category_page(self, category: Category) -> str:
@@ -108,7 +114,7 @@ class _ComparisonSite(Website):
         for position, details in self._report.get_entries(category):
             count += 1
             if count > _MAX_COUNT:
-                text += "\n*  ...and " + str(self._report.get_entries_count(category) - _MAX_COUNT) + " more."
+                text += "\n*  ...and " + str(self._report.count_positions(category) - _MAX_COUNT) + " more."
                 return text
             text += "\n* "
             text += _markdown(position)

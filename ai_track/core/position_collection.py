@@ -97,6 +97,12 @@ class _PositionsAtTimePoint:
             return None
         return max(self._positions.keys())
 
+    def count_nearby_z(self, z: int) -> int:
+        """Returns all postions for which round(position.z) == z."""
+        if z in self._positions:
+            return len(self._positions[z])
+        return 0
+
 
 class PositionCollection:
 
@@ -289,3 +295,29 @@ class PositionCollection:
     def highest_z(self) -> Optional[int]:
         """Returns the lowest z in use, or None if there are no positions in this collection."""
         return max_none(positions_at_time_point.highest_z() for positions_at_time_point in self._all_positions.values())
+
+    def count_positions(self, *, time_point: Optional[TimePoint], z: Optional[int]):
+        """Counts the number of positions at the given time point and the given z. If no z or time point is given,
+        positions at all time points and/or all z will be counted."""
+        if time_point is not None:
+            # Specific time point
+            at_time_point = self._all_positions.get(time_point.time_point_number())
+            if at_time_point is None:
+                return 0  # No positions at this time point
+
+            if z is not None:
+                # Specific time point, specific z
+                return at_time_point.count_nearby_z(z)
+            else:
+                # Count at any z
+                return len(at_time_point)
+        else:
+            if z is not None:
+                # All time points, specific z
+                count = 0
+                for positions_at_time_point in self._all_positions.values():
+                    count += positions_at_time_point.count_nearby_z(z)
+                return count
+            else:
+                # All time points, all z
+                return len(self)

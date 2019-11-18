@@ -64,12 +64,21 @@ def _get_link(links: Links, positions1: Iterable[Position], positions2: Iterable
     return None
 
 
-def compare_links(ground_truth: Experiment, scratch: Experiment, max_distance_um: float = 5) -> LinksReport:
-    result = LinksReport(max_distance_um=max_distance_um)
+def compare_links(ground_truth: Experiment, scratch: Experiment, max_distance_um: float = 5, margin_xy_px: int = 0) -> LinksReport:
+    images = ground_truth.images
+    result = LinksReport(max_distance_um=max_distance_um, margin_xy_px=margin_xy_px)
 
     # Check if all baseline links exist
     used_scratch_links = set()
     for position1, position2 in ground_truth.links.find_all_links():
+        if margin_xy_px >= 0:
+            inside1 = images.is_inside_image(position1, margin_xy=margin_xy_px)
+            inside2 = images.is_inside_image(position2, margin_xy=margin_xy_px)
+            if inside1 is None or inside2 is None:
+                raise ValueError("Could not check whether positions are in images.")
+            if not inside1 or not inside2:
+                continue  # Too close to edge, ignore
+
         scratch_positions1 = _find_close_positions(position1, scratch, max_distance_um)
         scratch_positions2 = _find_close_positions(position2, scratch, max_distance_um)
         found_scratch_link = _get_link(scratch.links, scratch_positions1, scratch_positions2, used_scratch_links)
@@ -84,6 +93,10 @@ def compare_links(ground_truth: Experiment, scratch: Experiment, max_distance_um
     # Check if all scratch links are real
     used_ground_truth_links = set()
     for position1, position2 in scratch.links.find_all_links():
+        if not images.is_inside_image(position1, margin_xy=margin_xy_px) \
+                or not images.is_inside_image(position2, margin_xy=margin_xy_px):
+            continue  # Too close to edge, ignore
+
         ground_truth_positions1 = _find_close_positions(position1, ground_truth, max_distance_um)
         ground_truth_positions2 = _find_close_positions(position2, ground_truth, max_distance_um)
         found_ground_truth_link = _get_link(ground_truth.links, ground_truth_positions1, ground_truth_positions2,

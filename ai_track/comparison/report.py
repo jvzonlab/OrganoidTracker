@@ -3,7 +3,7 @@ from typing import Union, Dict, List, Optional, Tuple, Iterable
 import numpy
 from numpy import ndarray
 
-from ai_track.core import TimePoint
+from ai_track.core import TimePoint, min_none, max_none
 from ai_track.core.position_collection import PositionCollection
 from ai_track.core.position import Position
 from ai_track.core.typing import DataType
@@ -228,12 +228,31 @@ class ComparisonReport:
             false_negatives[i] = sum(1 for _ in self._positions_by_category[false_negatives_cat].nearby_z(z))
         return Statistics(min_z, "Z layer", true_positives, false_positives, false_negatives)
 
-    def count(self, category: Category) -> int:
-        """Gets how many positions are stored in the given category."""
-        positions = self._positions_by_category.get(category)
-        if positions is None:
-            return 0
-        return len(positions)
+    def first_time_point_number(self) -> Optional[int]:
+        """Gets the first time point number at which data exits for at least one category. Returns None if therea is no
+        data at all in this object."""
+        first_time_point_number = None
+        for category, items in self._positions_by_category.items():
+            first_time_point_number = min_none(first_time_point_number, items.first_time_point_number())
+        return first_time_point_number
+
+    def last_time_point_number(self) -> Optional[int]:
+        """Gets the first time point number at which data exits for at least one category. Returns None if therea is no
+        data at all in this object."""
+        last_time_point_number = None
+        for category, items in self._positions_by_category.items():
+            last_time_point_number = max_none(last_time_point_number, items.last_time_point_number())
+        return last_time_point_number
+
+    def time_points(self) -> Iterable[TimePoint]:
+        """Returns all time points from the first to the last, inclusive. Time points in between might not have data
+        attached to them."""
+        min_time_point_number = self.first_time_point_number()
+        max_time_point_number = self.last_time_point_number()
+        if min_time_point_number is None or max_time_point_number is None:
+            return
+        for time_point_number in range(min_time_point_number, max_time_point_number + 1):
+            yield TimePoint(time_point_number)
 
     def get_entries(self, category: Category) -> Iterable[Tuple[Position, Details]]:
         """Gets all entries for the given category."""
@@ -251,12 +270,14 @@ class ComparisonReport:
                 details = empty_details
             yield (position, details)
 
-    def get_entries_count(self, category: Category) -> int:
-        """Gets how many entries there are in the given category. Returns 0 if the given category is not used."""
+    def count_positions(self, category: Category, *, time_point: Optional[TimePoint] = None, z: Optional[int] = None
+                        ) -> int:
+        """Gets how many entries there are in the given category, optionally at the given time point. Returns 0 if the
+        given category is not used."""
         entries = self._positions_by_category.get(category)
         if entries is None:
             return 0
-        return len(entries)
+        return entries.count_positions(time_point=time_point, z=z)
 
     def recorded_parameters(self) -> Iterable[Tuple[str, DataType]]:
         """Gets all parameters set for this comparison. Useful for reproducing this comparison."""

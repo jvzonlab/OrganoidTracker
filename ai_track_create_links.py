@@ -22,7 +22,7 @@ _images_format = config.get_or_prompt("images_pattern", "What are the image file
 _min_time_point = int(config.get_or_default("min_time_point", str(1), store_in_defaults=True))
 _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_in_defaults=True))
 _positions_file = config.get_or_default("positions_file", "Gaussian fitted positions.aut")
-_margin_xy = int(config.get_or_default("margin_xy", str(50)))
+_margin_xy = int(config.get_or_default("margin_xy", str(25)))
 _link_weight = config.get_or_default("weight_links", str(20), comment="Penalty for link distance. Make this value"
                                       " higher if you're getting too many long-distance links. Lower this value if"
                                       " you're not ge tting enough links.", type=config_type_int)
