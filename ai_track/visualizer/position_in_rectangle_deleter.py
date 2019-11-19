@@ -9,6 +9,7 @@ from ai_track.core.experiment import Experiment
 from ai_track.core.particle import Particle
 from ai_track.core.position import Position
 from ai_track.gui.undo_redo import UndoableAction
+from ai_track.gui.window import Window
 from ai_track.linking_analysis import cell_error_finder
 from ai_track.visualizer import activate
 from ai_track.visualizer.abstract_editor import AbstractEditor
@@ -35,11 +36,15 @@ class _DeletePositionsAction(UndoableAction):
 
 
 class PositionsInRectangleDeleter(AbstractEditor):
-    """Double click to define the first point, double-click again to define the second point. Then press I or O to
-    delete all positions inside or outside the rectangle, respectively."""
+    """Click to define the first point, then click somewhere else to define the second point. Then press Delete or
+    Alt+Delete to delete all positions inside or outside the rectangle, respectively."""
 
     _min_position: Optional[Position] = None
     _max_position: Optional[Position] = None
+
+    def __init__(self, window: Window):
+        super().__init__(window)
+        self.MAX_Z_DISTANCE = 0
 
     def _get_figure_title(self) -> str:
         return "Deleting positions, viewing time point " \
@@ -58,17 +63,19 @@ class PositionsInRectangleDeleter(AbstractEditor):
         }
 
     def _on_mouse_click(self, event: MouseEvent):
-        if not event.dblclick:
+        if event.dblclick:
             return
 
         clicked_position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
-        if self._min_position is None:
-            # No positions defined yet
+        if (self._min_position is None and self._max_position is None) \
+                or (self._min_position is not None and self._max_position is not None):
+            # No positions defined yet, or both positions already defined
             self._min_position = clicked_position
+            self._max_position = None
             self.get_window().redraw_data()
             return
-        if self._max_position is None:
-            # One positions is defined
+        if self._min_position is not None and self._max_position is None:
+            # One positions is defined, second is not
             self._set_min_max_position(self._min_position, clicked_position)
             self.get_window().redraw_data()
             width = self._max_position.x - self._min_position.x + 1
@@ -78,7 +85,7 @@ class PositionsInRectangleDeleter(AbstractEditor):
             self.update_status(f"Selected a volume of {width}x{height}x{depth} px, spanning {time} time points."
                                f"\nPress I or O to delete all positions inside or outside the volume, respectively.")
             return
-        # Both positions are defined
+        # Some strange other case
         self._min_position = None
         self._max_position = None
         self.get_window().redraw_data()
