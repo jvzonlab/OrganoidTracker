@@ -88,7 +88,15 @@ def compare_links(ground_truth: Experiment, scratch: Experiment, max_distance_um
             result.add_data(LINKS_TRUE_POSITIVES, position1, "is linked to", position2)
         else:
             # False negative
-            result.add_data(LINKS_FALSE_NEGATIVES, position1, "has mistakenly no link to", position2)
+            if len(scratch_positions1) == 0:
+                if len(scratch_positions2) == 0:
+                    result.add_data(LINKS_FALSE_NEGATIVES, position1, "has mistakenly no link to", position2, ": the automatic data doesn't contain these positions")
+                else:
+                    result.add_data(LINKS_FALSE_NEGATIVES, position1, "has mistakenly no link to", position2, ": the automatic data doesn't contain the first position")
+            elif len(scratch_positions2) == 0:
+                result.add_data(LINKS_FALSE_NEGATIVES, position1, "has mistakenly no link to", position2, ": the automatic data doesn't contain the second position")
+            else:
+                result.add_data(LINKS_FALSE_NEGATIVES, position1, "has mistakenly no link to", position2, " even though both positions exist in the automatic data")
 
     # Check if all scratch links are real
     used_ground_truth_links = set()
