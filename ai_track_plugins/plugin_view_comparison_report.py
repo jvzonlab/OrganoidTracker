@@ -1,12 +1,14 @@
 from typing import Dict, Any, Optional, Union
 
 from ai_track.comparison.report import ComparisonReport, Category
-from ai_track.core import UserError
+from ai_track.core import UserError, COLOR_CELL_CURRENT
 from ai_track.core.position import Position
 from ai_track.gui import dialog
 from ai_track.gui.dialog import DefaultOption
 from ai_track.gui.website import Website
 from ai_track.gui.window import Window
+from ai_track.visualizer import activate
+from ai_track.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
 _MAX_COUNT = 50
 
@@ -27,7 +29,28 @@ def _open_comparison_report(window: Window):
     _popup_comparison_report(window, report)
 
 
+class _ComparisonVisualizer(ExitableImageVisualizer):
+
+    _report: ComparisonReport
+    _category: Category
+
+    def __init__(self, window: Window, report: ComparisonReport, category: Category):
+        super().__init__(window)
+        self._report = report
+        self._category = category
+
+    def _get_figure_title(self) -> str:
+        return self._report.title + ": " + self._category.name + "\n" + super()._get_figure_title()
+
+    def _draw_extra(self):
+        for position in self._report.get_positions(self._category, time_point=self._time_point):
+            if abs(position.z - self._z) > self.MAX_Z_DISTANCE:
+                continue
+            self._draw_selection(position, COLOR_CELL_CURRENT)
+
+
 class _ComparisonSite(Website):
+    """Text-based overview of the report."""
 
     _window: Window  # The main window
     _report: ComparisonReport
@@ -47,6 +70,12 @@ class _ComparisonSite(Website):
             if self._report.count_positions(category) == 0:
                 raise UserError("No entries found", f"The report contains no entries for \"{category.name}\".")
             return self._category_page(category)
+        if url.startswith("visualize_category/"):
+            category = Category(url[len("visualize_category/"):])
+            if self._report.count_positions(category) == 0:
+                raise UserError("No entries found", f"The report contains no entries for \"{category.name}\".")
+            activate(_ComparisonVisualizer(self._window, self._report, category))
+            return None
         if url.startswith("position/"):
             _, position_str = url.split("/")
             self._window.get_gui_experiment().goto_position(_parse_position(position_str))
@@ -108,7 +137,8 @@ class _ComparisonSite(Website):
 
     def _category_page(self, category: Category) -> str:
         """Renders the category page, which shows a list of all positions."""
-        text = "# "+ category.name + "\n\n[← Back to main page](" + Website.INDEX + ")\n"
+        text = "# "+ category.name + "\n\n[← Back to main page](" + Website.INDEX + ")\n\n"
+        text += f"[Highlight positions](visualize_category/{category.name})\n"
 
         count = 0
         for position, details in self._report.get_entries(category):

@@ -279,6 +279,15 @@ class ComparisonReport:
             return 0
         return entries.count_positions(time_point=time_point, z=z)
 
+    def get_positions(self, category: Category, *, time_point: Optional[TimePoint]) -> Iterable[Position]:
+        """Gets all positions in the given category, optionally filtered to the given time point."""
+        entries = self._positions_by_category.get(category)
+        if entries is None:
+            return []
+        if time_point is not None:
+            return entries.of_time_point(time_point)
+        return entries
+
     def recorded_parameters(self) -> Iterable[Tuple[str, DataType]]:
         """Gets all parameters set for this comparison. Useful for reproducing this comparison."""
         yield from self._recorded_parameters.items()
