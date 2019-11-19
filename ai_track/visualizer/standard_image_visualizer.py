@@ -40,7 +40,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
                 scores.sort(key=lambda scored_family: scored_family.score.total(), reverse=True)
                 score_str = ""
                 for score in scores:
-                    score_str += f"\nDivision score: {score}"
+                    score_str += f"\nDivision score: {score.score.total()}"
 
                 self.update_status(f"Clicked on {position}.\n  Data: {data}\n  Shape: {shape} {score_str}")
         else:
