@@ -83,7 +83,8 @@ class PositionsInRectangleDeleter(AbstractEditor):
             depth = self._max_position.z - self._min_position.z + 1
             time = self._max_position.time_point_number() - self._min_position.time_point_number() + 1
             self.update_status(f"Selected a volume of {width}x{height}x{depth} px, spanning {time} time points."
-                               f"\nPress I or O to delete all positions inside or outside the volume, respectively.")
+                               f"\nPress Delete or Alt+Delete to delete all positions inside or outside the volume,"
+                               f" respectively.")
             return
         # Some strange other case
         self._min_position = None
