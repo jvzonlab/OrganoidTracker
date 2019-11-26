@@ -150,9 +150,15 @@ class Position:
         """Returns a copy of this position with the time point set to the given position."""
         return Position(self.x, self.y, self.z, time_point=time_point)
 
-    def with_time_point_number(self, time_point_number: int):
+    def with_time_point_number(self, time_point_number: int) -> "Position":
         """Returns a copy of this position with the time point set to the given position."""
         return Position(self.x, self.y, self.z, time_point_number=time_point_number)
+
+    def with_offset(self, dx: float, dy: float, dz: float) -> "Position":
+        """Returns a copy of this position with the x, y and z moved.
+
+        Note that you can also just add two positions together, `a + b == a.with_offset(b.x, b.y, b.z)`"""
+        return Position(self.x + dx, self.y + dy, self.z + dz, time_point_number=self._time_point_number)
 
     def interpolate(self, to_pos: "Position") -> List["Position"]:
         """Gets a time-interpolated list of positions. If you have positions A and B, with one time point in between,
