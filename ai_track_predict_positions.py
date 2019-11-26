@@ -1,6 +1,6 @@
 """Predictions particle positions using an already-trained convolutional neural network."""
 
-from ai_track.config import ConfigFile, config_type_bool
+from ai_track.config import ConfigFile, config_type_bool, config_type_int, config_type_float
 from ai_track.core import UserError
 from ai_track.core.experiment import Experiment
 from ai_track.core.resolution import ImageResolution
@@ -27,10 +27,11 @@ general_image_loader.load_images(experiment, _images_folder, _images_format,
 
 _checkpoint_folder = config.get_or_prompt("checkpoint_folder", "Please paste the path here to the \"checkpoints\" folder containing the trained model.")
 _output_file = config.get_or_default("positions_output_file", "Automatic positions.aut", comment="Output file for the positions, can be viewed using the visualizer program.")
-_mid_layers = int(config.get_or_default("mid_layers", str(5), comment="Number of layers to interpolate in between"
-                                        " z-planes. Used to improve peak finding."))
-_peak_min_distance_px = int(config.get_or_default("peak_min_distance_px", str(9), comment="Minimum distance in pixels"
-                                                  " between detected positions."))
+_smooth_stdev = config.get_or_default("smooth_stdev", str(1), comment="Standard deviation of Gaussian smooth algorithm."
+                                      " Used to improve peak finding.", type=config_type_int)
+_predictions_threshold = config.get_or_default("predictions_threshold", str(0.1), comment="Prediction peaks with"
+                                               " values less than this (on a scale of 0 to 1) are ignored.",
+                                               type=config_type_float)
 _split = config.get_or_default("save_video_ram", "true", comment="Whether video RAM should be saved by splitting"
                                                                  " the images into smaller parts, and processing"
                                                                  " each part independently.", type=config_type_bool)
@@ -47,7 +48,7 @@ if not experiment.images.image_loader().has_images():
 
 print("Using neural networks to predict positions...")
 positions = predicter.predict(experiment.images, _checkpoint_folder, split=_split, out_dir=_debug_folder,
-                              mid_layers_nb=_mid_layers, min_peak_distance_px=_peak_min_distance_px)
+                              smooth_stdev=_smooth_stdev, predictions_threshold=_predictions_threshold)
 experiment.positions.add_positions_and_shapes(positions)
 
 print("Saving file...")
