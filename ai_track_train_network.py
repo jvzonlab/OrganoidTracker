@@ -2,6 +2,7 @@
 
 """Script used to train the convolutional neural network, so that it can recognize nuclei in 3D images."""
 from os import path
+import os
 
 from ai_track.config import ConfigFile, config_type_image_shape, config_type_int
 from ai_track.core.experiment import Experiment
@@ -24,6 +25,11 @@ class _PerExperimentParameters:
                                          min_time_point=self.min_time_point, max_time_point=self.max_time_point)
         return experiment
 
+
+if " " in os.getcwd():
+    print(f"Unfortunately, we cannot train the neural network in a folder that contains spaces in its path."
+          f" So '{os.getcwd()}' is not a valid location.")
+    exit()
 
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("train_network")
