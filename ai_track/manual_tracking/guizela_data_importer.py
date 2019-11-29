@@ -29,7 +29,8 @@ def _load_links(tracks_dir: str, min_time_point: int = 0, max_time_point: int = 
     tracks = _read_track_files(tracks_dir, links, min_time_point=min_time_point, max_time_point=max_time_point)
     _read_lineage_file(tracks_dir, links, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
     _read_deaths_file(tracks_dir, links, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
-    _read_paneths_file(tracks_dir, links, tracks)
+    for cell_type in ["paneth", "goblet", "enteroendocrine", "enterocyte"]:
+        _read_cell_type_file(tracks_dir, links, tracks, cell_type)
 
     return links
 
@@ -144,21 +145,21 @@ def _read_deaths_file(tracks_dir: str, links: Links, tracks_by_id: List[Track], 
             linking_markers.set_track_end_marker(links, last_position, EndMarker.DEAD)
 
 
-def _read_paneths_file(tracks_dir: str, links: Links, tracks_by_id: List[Track]):
+def _read_cell_type_file(tracks_dir: str, links: Links, tracks_by_id: List[Track], cell_type: str):
     """Adds all marked cell deaths to the linking network."""
     _fix_python_path_for_pickle()
-    file = os.path.join(tracks_dir, "paneth.p")
+    file = os.path.join(tracks_dir, cell_type.lower() + ".p")
     if not os.path.exists(file):
         return  # No crypt axis stored
 
-    print("Reading Paneth cell file")
+    print(f"Reading {cell_type} cell file")
     with open(file, 'rb') as file_handle:
         paneth_cell_numbers = pickle.load(file_handle, encoding="latin1")
         for paneth_cell_number in paneth_cell_numbers:
             track = tracks_by_id[paneth_cell_number]
             for i in range(len(track.x)):
                 position = Position(*track.x[i], time_point_number=track.t[i])
-                linking_markers.set_position_type(links, position, "PANETH")
+                linking_markers.set_position_type(links, position, cell_type.upper())
 
 
 def _get_cell_in_time_point(track: Track, time_point_number: int) -> Position:
