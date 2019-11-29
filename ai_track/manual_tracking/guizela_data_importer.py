@@ -4,7 +4,7 @@ import math
 import os
 import pickle
 import sys
-from typing import List
+from typing import List, Optional
 
 import numpy
 
@@ -31,6 +31,7 @@ def _load_links(tracks_dir: str, min_time_point: int = 0, max_time_point: int = 
     _read_deaths_file(tracks_dir, links, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
     for cell_type in ["paneth", "goblet", "enteroendocrine", "enterocyte"]:
         _read_cell_type_file(tracks_dir, links, tracks, cell_type)
+    _read_cell_type_file(tracks_dir, links, tracks, "stem", file_name="stemcell.p")
 
     return links
 
@@ -145,10 +146,15 @@ def _read_deaths_file(tracks_dir: str, links: Links, tracks_by_id: List[Track], 
             linking_markers.set_track_end_marker(links, last_position, EndMarker.DEAD)
 
 
-def _read_cell_type_file(tracks_dir: str, links: Links, tracks_by_id: List[Track], cell_type: str):
-    """Adds all marked cell deaths to the linking network."""
+def _read_cell_type_file(tracks_dir: str, links: Links, tracks_by_id: List[Track], cell_type: str, *,
+                         file_name: Optional[str] = None):
+    """Adds all marked cell deaths to the linking network. If the file name is not specified, it is assumed to be
+    cell_type.p ."""
     _fix_python_path_for_pickle()
-    file = os.path.join(tracks_dir, cell_type.lower() + ".p")
+    if file_name is None:
+        file_name = cell_type.lower() + ".p"
+
+    file = os.path.join(tracks_dir, file_name)
     if not os.path.exists(file):
         return  # No crypt axis stored
 

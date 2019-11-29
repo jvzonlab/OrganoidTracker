@@ -39,10 +39,7 @@ class _TrackExporter:
 
     _mother_daughter_pairs: List[List[int]]
     _dead_track_ids: List[int]
-    _paneth_track_ids: List[int]
-    _enterocyte_track_ids: List[int]
-    _enteroendocrine_track_ids: List[int]
-    _goblet_track_ids: List[int]
+    _typed_track_ids: Dict[str, List[int]]
     _tracks_by_id: Dict[int, Any]
 
     def __init__(self, links: Links, offsets: ImageOffsets):
@@ -50,10 +47,7 @@ class _TrackExporter:
         self._offsets = offsets
         self._mother_daughter_pairs = []
         self._dead_track_ids = []
-        self._paneth_track_ids = []
-        self._enterocyte_track_ids = []
-        self._enteroendocrine_track_ids = []
-        self._goblet_track_ids = []
+        self._typed_track_ids = dict()
         self._tracks_by_id = {}
 
         # Convert graph to list of tracks
@@ -69,14 +63,13 @@ class _TrackExporter:
         track = track_lib_v4.Track(x=numpy.array([moved_position.x, moved_position.y, moved_position.z]),
                                    t=position.time_point_number())
         position_type = linking_markers.get_position_type(self._links, position)
-        if position_type == "PANETH":
-            self._paneth_track_ids.append(track_id)
-        elif position_type == "GOBLET":
-            self._goblet_track_ids.append(track_id)
-        elif position_type == "ENTEROCYTE":
-            self._enterocyte_track_ids.append(track_id)
-        elif position_type == "ENTEROENDOCRINE":
-            self._enteroendocrine_track_ids.append(track_id)
+        track_ids_of_cell_type = self._typed_track_ids.get(position_type)
+        if track_ids_of_cell_type is None:
+            # Start new list
+            self._typed_track_ids[position_type] = [track_id]
+        else:
+            # Append to existing list
+            track_ids_of_cell_type.append(track_id)
 
         while True:
             future_positions = self._links.find_futures(position)
@@ -146,14 +139,13 @@ class _TrackExporter:
             pickle.dump(self._mother_daughter_pairs, handle)
         with open(os.path.join(output_folder, "dead_cells.p"), "wb") as handle:
             pickle.dump(self._dead_track_ids, handle)
-        with open(os.path.join(output_folder, "paneth.p"), "wb") as handle:
-            pickle.dump(self._paneth_track_ids, handle)
-        with open(os.path.join(output_folder, "goblet.p"), "wb") as handle:
-            pickle.dump(self._goblet_track_ids, handle)
-        with open(os.path.join(output_folder, "enterocyte.p"), "wb") as handle:
-            pickle.dump(self._enterocyte_track_ids, handle)
-        with open(os.path.join(output_folder, "enteroendocrine.p"), "wb") as handle:
-            pickle.dump(self._enteroendocrine_track_ids, handle)
+        for cell_type, track_id_list in self._typed_track_ids.items():
+            file_name = cell_type.lower() + ".p"
+            if cell_type == "STEM":
+                # Exception to naming system
+                file_name = "stemcell.p"
+            with open(os.path.join(output_folder, file_name), "wb") as handle:
+                pickle.dump(track_id_list, handle)
 
     def _swap_ids(self, id1: int, id2: int):
         """All tracks with id1 will have id2, and vice versa."""
@@ -171,12 +163,10 @@ class _TrackExporter:
         self._tracks_by_id[id1] = new_track_1
         self._tracks_by_id[id2] = new_track_2
 
-        # Swap ids in cell deaths and Paneth cell lists
+        # Swap ids in cell deaths and typed cell lists
         self._swap_in_list(self._dead_track_ids, id1, id2)
-        self._swap_in_list(self._paneth_track_ids, id1, id2)
-        self._swap_in_list(self._enteroendocrine_track_ids, id1, id2)
-        self._swap_in_list(self._enterocyte_track_ids, id1, id2)
-        self._swap_in_list(self._goblet_track_ids, id1, id2)
+        for track_id_list in self._typed_track_ids.values():
+            self._swap_in_list(track_id_list, id1, id2)
 
     def _swap_in_list(self, list: List[int], id1: int, id2: int):
         id1_affected = id1 in list
