@@ -121,8 +121,11 @@ def _read_lineage_file(tracks_dir: str, links: Links, tracks: List[Track], min_t
             child_1_first_snapshot = _get_cell_in_time_point(child_track_1, first_time_point_after_division)
             child_2_first_snapshot = _get_cell_in_time_point(child_track_2, first_time_point_after_division)
 
-            links.add_link(mother_last_snapshot, child_1_first_snapshot)
-            links.add_link(mother_last_snapshot, child_2_first_snapshot)
+            if mother_last_snapshot is not None\
+                    and child_1_first_snapshot is not None\
+                    and child_2_first_snapshot is not None:
+                links.add_link(mother_last_snapshot, child_1_first_snapshot)
+                links.add_link(mother_last_snapshot, child_2_first_snapshot)
 
 
 def _read_deaths_file(tracks_dir: str, links: Links, tracks_by_id: List[Track], min_time_point: int,
@@ -168,10 +171,11 @@ def _read_cell_type_file(tracks_dir: str, links: Links, tracks_by_id: List[Track
                 linking_markers.set_position_type(links, position, cell_type.upper())
 
 
-def _get_cell_in_time_point(track: Track, time_point_number: int) -> Position:
-    position = track.get_pos(time_point_number)
-    position = Position(position[0], position[1], position[2], time_point_number=time_point_number)
-    return position
+def _get_cell_in_time_point(track: Track, time_point_number: int) -> Optional[Position]:
+    position_array = track.get_pos(time_point_number)
+    if len(position_array) == 0:
+        return None
+    return Position(position_array[0], position_array[1], position_array[2], time_point_number=time_point_number)
 
 
 def _extract_links_from_track(track_file: str, links: Links, min_time_point: int = 0,
