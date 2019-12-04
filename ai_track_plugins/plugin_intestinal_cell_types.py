@@ -5,15 +5,15 @@ from ai_track.core.marker import Marker
 from ai_track.gui.window import Window
 
 
-STEM = Marker([Position], "STEM", "stem cell", (255, 227, 190))
+STEM = Marker([Position], "STEM", "stem cell", (139, 79, 68))
 
 # Differentiated
 M_CELL = Marker([Position], "M_CELL", "M cell", (242, 109, 84))
-ENTEROCYTE = Marker([Position], "ENTEROCYTE", "enterocyte cell", (251, 175, 64))
+ENTEROCYTE = Marker([Position], "ENTEROCYTE", "enterocyte cell", (207, 228, 243))
 LUMEN = Marker([Position], "LUMEN", "lumen", (200, 200, 200))
-PANETH = Marker([Position], "PANETH", "Paneth cell", (63, 172, 225))
-GOBLET = Marker([Position], "GOBLET", "Goblet cell", (147, 190, 147))
-ENTEROENDOCRINE = Marker([Position], "ENTEROENDOCRINE", "enteroendocrine cell", (239, 212, 202))
+PANETH = Marker([Position], "PANETH", "Paneth cell", (115, 220, 113))
+GOBLET = Marker([Position], "GOBLET", "Goblet cell", (210, 162, 47))
+ENTEROENDOCRINE = Marker([Position], "ENTEROENDOCRINE", "enteroendocrine cell", (108, 92, 231))
 TUFT = Marker([Position], "TUFT", "Tuft cell", (101, 46, 143))
 
 CRYPT = Marker([Spline], "CRYPT", "crypt axis", (255, 0, 0), is_axis=True)
