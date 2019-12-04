@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Optional
 
 from ai_track.core.experiment import Experiment
-from ai_track.core.links import Links
+from ai_track.core.links import Links, LinkingTrack
 from ai_track.core.position import Position
 from ai_track.linking_analysis import linking_markers
 from ai_track.linking_analysis.linking_markers import EndMarker
@@ -45,8 +45,8 @@ def get_fate_ext(links: Links, division_lookahead_time_points: int, position: Po
     max_time_point_number = position.time_point_number() + division_lookahead_time_points
     track = links.get_track(position)
     if track is None:
-        # No links found for this position
-        return CellFate(CellFateType.UNKNOWN, None)
+        # No track found for this position - create a track that spans a single time point
+        track = LinkingTrack([position])
 
     next_tracks = track.get_next_tracks()
     if len(next_tracks) == 0:
