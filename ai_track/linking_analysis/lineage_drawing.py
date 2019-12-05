@@ -114,14 +114,14 @@ class LineageDrawing:
         for line in line_list:
             # for current line, get timepoints T
             time_points_of_line = line[1]
-            if len(time_points_of_line) == 2:
+            if len(time_points_of_line) == 2 and time_points_of_line[1] - time_points_of_line[0] >= 2:
                 ### multiple timepoints T, so a vertical line
                 # get x position of line
                 X = line[0][0]
                 # and cell id
                 linking_track: LinkingTrack = line[2]
 
-                # get indeces of timepoints that bound the time interbal T[0],T[1]
+                # get indices of timepoints that bound the time interval T[0],T[1]
                 time_point_min = time_points_of_line[0]
                 time_point_max = time_points_of_line[1]
 
