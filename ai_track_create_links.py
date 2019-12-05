@@ -53,9 +53,12 @@ print("Calculating scores of possible mothers...")
 if experiment.scores.has_scores():
     print("    found existing scores, using those instead")
     scores = experiment.scores
-else:
+elif experiment.positions.guess_has_shapes():
     score_system = RationalScoringSystem()
     scores = cell_division_finder.calculates_scores(experiment.images, experiment.positions, possible_links, score_system)
+else:
+    print("    no shape information found, skipping scoring! This means that cell divisions are NOT detected.")
+    scores = experiment.scores
 print("Deciding on what links to use...")
 link_result = dpct_linker.run(experiment.positions, possible_links, scores, experiment.images.resolution(),
                               link_weight=_link_weight, detection_weight=_detection_weight,

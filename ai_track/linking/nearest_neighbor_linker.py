@@ -28,6 +28,7 @@ def nearest_neighbor(experiment: Experiment, *, tolerance: float = 1.0, back: bo
 
     time_point_previous = None
     for time_point_current in experiment.time_points():
+
         if time_point_previous is not None:
             if back:
                 _add_nearest_edges(links, experiment.positions, experiment.images,
@@ -36,6 +37,8 @@ def nearest_neighbor(experiment: Experiment, *, tolerance: float = 1.0, back: bo
                 _add_nearest_edges_extra(links, experiment.positions, experiment.images,
                                          time_point_previous, time_point_current, tolerance)
 
+        if time_point_current.time_point_number() % 50 == 0:
+            print("    completed up to time point", time_point_current.time_point_number())
         time_point_previous = time_point_current
 
     print("Done creating nearest-neighbor links!")
