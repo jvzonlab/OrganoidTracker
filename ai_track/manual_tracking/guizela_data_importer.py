@@ -3,6 +3,7 @@
 import math
 import os
 import pickle
+import re
 import sys
 from typing import List, Optional
 
@@ -80,10 +81,15 @@ def _read_track_files(tracks_dir: str, links: Links, min_time_point: int = 0, ma
     track_files = os.listdir(tracks_dir)
     print("Found " + str(len(track_files)) + " files to analyse")
 
-    track_index = 0
     tracks = []
-    while True:
-        track_file = os.path.join(tracks_dir, "track_%05d.p" % track_index)
+    track_file_pattern = re.compile(r"^track_([0-9]{5})\.p$")
+
+    for track_file in track_files:
+        match = track_file_pattern.match(track_file)
+        if match is None:
+            continue
+        track_index = int(match.group(1))
+        track_file = os.path.join(tracks_dir, track_file)
         if not os.path.exists(track_file):
             break
 
