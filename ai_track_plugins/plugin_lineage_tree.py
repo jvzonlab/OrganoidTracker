@@ -1,6 +1,7 @@
 from typing import Dict, Any, Tuple, Set, Optional
 
 from matplotlib.backend_bases import MouseEvent
+import matplotlib.colors
 
 from ai_track.core import UserError, Color
 from ai_track.core.links import LinkingTrack
@@ -18,9 +19,7 @@ from ai_track.visualizer import Visualizer
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Graph//Lineages-Interactive lineage tree//All trees...": lambda: _show_lineage_tree(window),
-        "Graph//Lineages-Interactive lineage tree//With at least N divisions...":
-            lambda: _show_filtered_lineage_tree(window)
+        "Graph//Lineages-Interactive lineage tree...": lambda: _show_lineage_tree(window)
     }
 
 
@@ -32,32 +31,70 @@ def _show_lineage_tree(window: Window):
     dialog.popup_visualizer(window.get_gui_experiment(), LineageTreeVisualizer)
 
 
-def _show_filtered_lineage_tree(window: Window):
-    experiment = window.get_experiment()
-    if not experiment.links.has_links():
-        raise UserError("No links specified", "No links were loaded. Cannot plot anything.")
-    min_division_count = dialog.prompt_int("Minimum division count", "How many divisions need to happen in a lineage"
-                                           " tree before it shows up?", minimum=0, default=4)
-    if min_division_count is None:
-        return
-    dialog.popup_visualizer(window.get_gui_experiment(),
-                            lambda window: LineageTreeVisualizer(window, min_division_count=min_division_count))
-
-
 class LineageTreeVisualizer(Visualizer):
+    """Shows lineage trees. Double-click somewhere to go to that location in the microscopy data."""
 
     _location_map: Optional[LocationMap] = None
-    _track_to_color: Dict[LinkingTrack, Color]
-    _min_division_count: int
+    _track_to_manual_color: Dict[LinkingTrack, Color]
 
-    def __init__(self, window: Window, *, min_division_count: int = 0):
+    _min_division_count: int = 0
+    _display_deaths: bool = True
+    _display_manual_colors: bool = False
+    _display_cell_type_colors: bool = True
+
+    def __init__(self, window: Window):
         super().__init__(window)
-        self._track_to_color = dict()
+        self._track_to_manual_color = dict()
+
+    def get_extra_menu_options(self) -> Dict[str, Any]:
+        return {
+            "View//Lineages-Toggle showing deaths": self._toggle_deaths,
+            "View//Lineages-Toggle showing cell types": self._toggle_cell_types,
+            "View//Lineages-Toggle showing manual colors": self._toggle_manual_colors,
+            "View//Lineages-Require X amount of divisions...": self._set_minimum_divisions
+        }
+
+    def _toggle_deaths(self):
+        self._display_deaths = not self._display_deaths
+        self.draw_view()
+
+    def _toggle_cell_types(self):
+        self._display_cell_type_colors = not self._display_cell_type_colors
+
+        if self._display_cell_type_colors:
+            if self._display_manual_colors:
+                self._display_manual_colors = False
+                self.update_status("Now coloring by cell type; turned off showing manual colors.")
+            else:
+                self.update_status("Now coloring by cell type")
+        else:
+            self.update_status("No longer coloring by cell type")
+        self.draw_view()
+
+    def _toggle_manual_colors(self):
+        self._display_manual_colors = not self._display_manual_colors
+        if self._display_manual_colors:
+            if self._display_cell_type_colors:
+                self._display_cell_type_colors = False
+                self.update_status("Now coloring by manually assigned colors; turned off showing colors based on cell type")
+            else:
+                self.update_status("Now coloring by manually assigned colors")
+        else:
+            self.update_status("No longer coloring by manually assigned colors")
+        self.draw_view()
+
+    def _set_minimum_divisions(self):
+        min_division_count = dialog.prompt_int("Minimum division count",
+                                               "How many divisions need to happen in a lineage"
+                                               " tree before it shows up?", minimum=0, default=self._min_division_count)
+        if min_division_count is None:
+            return
         self._min_division_count = min_division_count
+        self.draw_view()
 
     def _calculate_track_colors(self):
         """Places the manually assigned lineage colors in a track-to-color map."""
-        self._track_to_color.clear()
+        self._track_to_manual_color.clear()
 
         links = self._experiment.links
         for track in links.find_starting_tracks():
@@ -70,7 +107,7 @@ class LineageTreeVisualizer(Visualizer):
 
     def _give_lineage_color(self, linking_track: LinkingTrack, color: Color):
         """Gives a while lineage (including all children) a color."""
-        self._track_to_color[linking_track] = color
+        self._track_to_manual_color[linking_track] = color
         for next_track in linking_track.get_next_tracks():
             self._give_lineage_color(next_track, color)
 
@@ -88,15 +125,20 @@ class LineageTreeVisualizer(Visualizer):
         def color_getter(time_point_number: int, track: LinkingTrack) -> Tuple[float, float, float]:
             if track in tracks_with_errors:
                 return 0.7, 0.7, 0.7
-            if track.max_time_point_number() - time_point_number < 10:
+            if self._display_deaths and track.max_time_point_number() - time_point_number < 10:
                 end_marker = linking_markers.get_track_end_marker(links, track.find_last_position())
                 if end_marker == EndMarker.DEAD:
                     return 1, 0, 0
                 elif end_marker == EndMarker.SHED:
                     return 0, 0, 1
-            color = self._track_to_color.get(track)
-            if color is not None:
-                return color.to_rgb_floats()
+            if self._display_manual_colors:
+                color = self._track_to_manual_color.get(track)
+                if color is not None:
+                    return color.to_rgb_floats()
+            if self._display_cell_type_colors:
+                color = self._get_type_color(track.find_position_at_time_point_number(time_point_number))
+                if color is not None:
+                    return matplotlib.colors.to_rgb(color)
             return 0, 0, 0  # Default is black
 
         def lineage_filter(linking_track: LinkingTrack) -> bool:
@@ -117,7 +159,6 @@ class LineageTreeVisualizer(Visualizer):
             self._ax.set_ylim([experiment.last_time_point_number(), experiment.first_time_point_number() - 1])
             self._ax.set_xlim([-0.1, width + 0.1])
 
-        self.update_status("Double-click somewhere in the lineage tree to jump to that cell. Note: this lineage tree updates live.")
         self._fig.canvas.draw()
 
     def _on_mouse_click(self, event: MouseEvent):
