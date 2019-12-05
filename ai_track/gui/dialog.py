@@ -3,12 +3,12 @@ import subprocess as _subprocess
 import sys as _sys
 import traceback as _traceback
 from enum import Enum
-from typing import Tuple, List, Optional, Callable, ClassVar, Any
+from typing import Tuple, List, Optional, Callable, ClassVar, Any, Dict
 
 from PyQt5 import QtCore
 from PyQt5.QtGui import QCloseEvent, QColor
 from PyQt5.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow, QVBoxLayout, \
-    QLabel, QSizePolicy, QPushButton, QColorDialog
+    QLabel, QSizePolicy, QPushButton, QColorDialog, QMenuBar
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
@@ -186,6 +186,7 @@ class _PopupQWindow(QMainWindow):
     _figure: Figure
     _status_text: QLabel
     _title_text: QLabel
+    _menu: QMenuBar
     _on_close: Callable
 
     def __init__(self, parent: QWidget, figure: Figure, on_close: Callable):
@@ -232,8 +233,19 @@ class _PopupQWindow(QMainWindow):
 
 class PopupWindow(Window):
 
-    pass
+    def _get_default_menu(self) -> Dict[str, Any]:
+        return {
+            "File//Save-Save figure...": self._save_figure
+        }
 
+    def _save_figure(self):
+        figure = self.get_figure()
+        file_types = list()
+        for abbreviation, information in figure.canvas.get_supported_filetypes().items():
+            file_types.append((information, "*." + abbreviation))
+        file_name = prompt_save_file("Save figure as", file_types)
+        if file_name is not None:
+            self.get_figure().savefig(file_name)
 
 def popup_visualizer(experiment: GuiExperiment, visualizer_callable: Callable[[Window], Any]):
     """Pops up a window, which is then returned. You can then for example attach a Visualizer to this window to show
@@ -247,6 +259,9 @@ def popup_visualizer(experiment: GuiExperiment, visualizer_callable: Callable[[W
 
     from ai_track.visualizer import Visualizer
     visualizer: Visualizer = visualizer_callable(window)
+    menu = visualizer.get_extra_menu_options()
+    if len(menu) > 0:
+        window.setup_menu(menu, show_plugins=False)
     visualizer.attach()
     visualizer.draw_view()
     visualizer.update_status(visualizer.get_default_status())
