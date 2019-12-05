@@ -202,13 +202,13 @@ class Visualizer:
         rgb_images.clip(min=0, max=1, out=rgb_images)
         return rgb_images
 
-    def _get_type_color(self, position: Position) -> MPLColor:
+    def _get_type_color(self, position: Position) -> Optional[MPLColor]:
         """Gets the color that the given position should be annotated with, based on the type of the position. Usually
         this color is used to decorate the edge of the position marker."""
         position_type = self.get_window().get_gui_experiment().get_marker_by_save_name(
             linking_markers.get_position_type(self._experiment.links, position))
         if position_type is None:
-            return "black"
+            return None
         return position_type.mpl_color
 
     @staticmethod
