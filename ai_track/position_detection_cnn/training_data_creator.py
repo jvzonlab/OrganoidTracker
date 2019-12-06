@@ -162,11 +162,12 @@ def create_training_data(experiments: Iterable[Experiment], *, out_dir: str, spl
         for time_point in experiment.positions.time_points():
             # read a single time point
             positions = experiment.positions.of_time_point(time_point)
+            offset = experiment.images.offsets.of_time_point(time_point)
 
             # read positions to numpy array
             positions_xyz = list()
             for position in positions:
-                positions_xyz.append([position.x, position.y, position.z])
+                positions_xyz.append([position.x - offset.x, position.y - offset.y, position.z - offset.z])
             positions_xyz = numpy.array(positions_xyz, dtype=numpy.int32)
 
             image_with_positions_list.append(
