@@ -44,7 +44,7 @@ def _export_positions_as_csv(window: Window, *, metadata: bool):
                              " visualize the points in Paraview.")
 
 
-def _export_help_file(folder: str, links: Links):
+def _export_help_file(folder: str, links: Optional[Links] = None):
     text = f"""
 Instructions for importing in Paraview
 ======================================
@@ -59,34 +59,36 @@ Instructions for importing in Paraview
 8. Set a Point Size of say 40 and set the checkmark next to "Render Points As Spheres"
 
 You will now end up with a nice 3D view of the detected points. To save a movie, use File > Export animation.
+"""
+    if links is not None:
+        text += f"""
 
 How to color the lineages correctly
 ===================================
 This assumes you want to color the lineage trees in the same way as AI_track does.
 1. Select the TableToPoints filter and color by lineage id.
-2. On the right of the screen you see a color panel. Make sure "Interpret Values as Categories" is off.
+2. On the right of the screen you see a color panel. Make sure "Interpret Values as Categories" is OFF.
 3. Click "Choose Preset" (small square button with an icon, on the right of the "Mapping Data" color graph).
-4. Press the gear icon near the top right of the screen of the popup. 
+4. Press the gear icon near the top right of the screen of the popup to show the advanced options. 
 5. Import the lineage_colormap.json file from this folder, press Apply and close the popup. The colors of the spheres
    should change.
 6. Click "Rescale to custom range" (similar button to "Choose Preset") and set the scale from -1 to {links.get_highest_track_id()}.
 7. Make sure "Color Discretization" (near the bottom of color panel) is off.
+
+How to color the cell types correctly
+=====================================
+This assumes you want to color the cell types in the same way as AI_track does.
+1. Select the TableToPoints filter and color by the cell type id.
+2. On the right of the screen you see a color panel. Make sure "Interpret Values as Categories" is ON.
+3. Click "Choose Preset" (small square button with an icon, on the right of the "Mapping Data" color graph).
+4. Press the gear icon near the top right of the screen of the popup to show the advanced options.
+5. Make sure that on the top right of the screen, the checkmark next to "Annotations" (below "Options to load") is checked.
+5. Import the cell_type_colormap.json file from this folder, press Apply and close the popup. The colors of the spheres
+   should change.
 """
     file_name = os.path.join(folder, "How to import to Paraview.txt")
     with open(file_name, "w") as file_handle:
         file_handle.write(text)
-
-
-def _export_cell_types_file(folder: str, cell_types: List[Marker]):
-    """Writes all known cell types and their ids to a file."""
-    if len(cell_types) == 0:
-        return
-    file_name = os.path.join(folder, "Known cell types.txt")
-    with open(file_name, "w") as file_handle:
-        file_handle.write("Known cell types:\n")
-        file_handle.write("=================\n")
-        for cell_type in cell_types:
-            file_handle.write("* " + cell_type.display_name + " = " + str(hash(cell_type.save_name)))
 
 
 def _write_positions_to_csv(experiment: Experiment, folder: str):
@@ -103,31 +105,94 @@ def _write_positions_to_csv(experiment: Experiment, folder: str):
                 file_handle.write(f"{vector.x},{vector.y},{vector.z}\n")
 
 
+class _CellTypesToId:
+    """Gives a sequential id to every cell type"""
+    _save_name_to_id: Dict[str, int]
+
+    def __init__(self):
+        self._save_name_to_id = dict()
+
+    def get_or_add_id(self, save_name: Optional[str]) -> Optional[int]:
+        """Gets the id of the given cell type. Creates a new id if this type doesn't have an id yet. Returns None if
+        (and only if) the input value is None."""
+        if save_name is None:
+            return None
+        id = self._save_name_to_id.get(save_name)
+        if id is None:
+            # Create new id
+            id = len(self._save_name_to_id)
+            self._save_name_to_id[save_name] = id
+        return id
+
+    def get_id(self, save_name: str) -> Optional[int]:
+        """Gets the id of the cell type, if registered."""
+        return self._save_name_to_id.get(save_name)
+
+
+def _export_cell_types_file(folder: str, cell_types: List[Marker], cell_type_ids: _CellTypesToId):
+    """Writes all known cell types and their ids to a file."""
+    if len(cell_types) == 0:
+        return
+
+    annotations_list = list()
+    indexed_colors_list = list()
+    for cell_type in cell_types:
+        id = cell_type_ids.get_id(cell_type.save_name)
+        if id is not None:
+            annotations_list.append(str(id))
+            annotations_list.append(str(cell_type.display_name))
+            indexed_colors_list.append(cell_type.mpl_color[0])
+            indexed_colors_list.append(cell_type.mpl_color[1])
+            indexed_colors_list.append(cell_type.mpl_color[2])
+
+    # Add NaN for unknown cell types
+    annotations_list.append("nan")
+    annotations_list.append("Unknown type")
+    indexed_colors_list.append(1)
+    indexed_colors_list.append(1)
+    indexed_colors_list.append(1)
+
+    data = [
+        {
+            "Annotations": annotations_list,
+            "IndexedColors": indexed_colors_list,
+            "Name": "Cell types (uses annotations)"
+        }
+    ]
+
+    # Write data
+    file_name = os.path.join(folder, "cell_type_colormap.json")
+    with open(file_name, "w") as file_handle:
+        json.dump(data, file_handle)
+
+
 class _AsyncExporter(Task):
     _positions: PositionCollection
     _links: Links
     _resolution: ImageResolution
     _folder: str
     _save_name: str
-    _cell_types: List[Marker]
+    _registered_cell_types: List[Marker]
+    _cell_types_to_id: _CellTypesToId
     _division_lookahead_time_points: int
 
-    def __init__(self, experiment: Experiment, cell_types: List[Marker], folder: str):
+    def __init__(self, experiment: Experiment, registered_cell_types: List[Marker], folder: str):
         self._positions = experiment.positions.copy()
         self._links = experiment.links.copy()
         self._resolution = experiment.images.resolution()
         self._folder = folder
         self._save_name = experiment.name.get_save_name()
-        self._cell_types = cell_types
+        self._registered_cell_types = registered_cell_types
+        self._cell_types_to_id = _CellTypesToId()
         self._division_lookahead_time_points = experiment.division_lookahead_time_points
 
     def compute(self) -> Any:
         self._links.sort_tracks_by_x()
 
-        _write_positions_and_metadata_to_csv(self._positions, self._links, self._resolution,
+        _write_positions_and_metadata_to_csv(self._positions, self._links, self._resolution, self._cell_types_to_id,
                                              self._division_lookahead_time_points, self._folder, self._save_name)
         _export_help_file(self._folder, self._links)
-        _export_cell_types_file(self._folder, self._cell_types)
+        _export_cell_types_file(self._folder, self._registered_cell_types, self._cell_types_to_id)
         _export_colormap_file(self._folder, self._links)
         return "done"  # We're not using the result
 
@@ -137,7 +202,8 @@ class _AsyncExporter(Task):
 
 
 def _write_positions_and_metadata_to_csv(positions: PositionCollection, links: Links, resolution: ImageResolution,
-                                         division_lookahead_time_points: int, folder: str, save_name: str):
+                                         cell_types_to_id: _CellTypesToId, division_lookahead_time_points: int,
+                                         folder: str, save_name: str):
     from ai_track.linking_analysis import lineage_id_creator
     from ai_track.position_analysis import cell_density_calculator
     from ai_track.linking_analysis import linking_markers, cell_division_counter, cell_nearby_death_counter,\
@@ -156,7 +222,7 @@ def _write_positions_and_metadata_to_csv(positions: PositionCollection, links: L
             for position in positions_of_time_point:
                 lineage_id = lineage_id_creator.get_lineage_id(links, position)
                 original_track_id = lineage_id_creator.get_original_track_id(links, position)
-                cell_type_id = hash(linking_markers.get_position_type(links, position))
+                cell_type_id = cell_types_to_id.get_or_add_id(linking_markers.get_position_type(links, position))
                 density = cell_density_calculator.get_density_mm1(positions_of_time_point, position, resolution)
                 times_divided = cell_division_counter.find_times_divided(links, position, first_time_point_number)
                 times_neighbor_died = deaths_nearby_tracks.count_nearby_deaths_in_past(links, position)
@@ -170,8 +236,9 @@ def _write_positions_and_metadata_to_csv(positions: PositionCollection, links: L
                     hours_until_division = None
 
                 vector = position.to_vector_um(resolution)
-                file_handle.write(f"{vector.x},{vector.y},{vector.z},{density},{_str(times_divided)},{times_neighbor_died},"
-                                  f"{cell_type_id},{_str(hours_until_division)},{_str(hours_until_dead)},{lineage_id},{original_track_id}\n")
+                file_handle.write(f"{vector.x},{vector.y},{vector.z},{density},{_str(times_divided)},"
+                                  f"{times_neighbor_died},{_str(cell_type_id)},{_str(hours_until_division)},"
+                                  f"{_str(hours_until_dead)},{lineage_id},{original_track_id}\n")
 
 
 def _export_colormap_file(folder: str, links: Links):
