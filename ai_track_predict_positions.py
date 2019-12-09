@@ -1,10 +1,7 @@
 """Predictions particle positions using an already-trained convolutional neural network."""
 
 from ai_track.config import ConfigFile, config_type_bool, config_type_int, config_type_float
-from ai_track.core import UserError
 from ai_track.core.experiment import Experiment
-from ai_track.core.resolution import ImageResolution
-from ai_track.image_loading.noise_suppressing_filter import NoiseSuppressingFilter
 from ai_track.imaging import io
 from ai_track.image_loading import general_image_loader
 from ai_track.position_detection_cnn import predicter

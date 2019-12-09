@@ -127,7 +127,6 @@ def _generate_detection_config(window: Window):
     if not image_loader.has_images():
         raise UserError("No images", "No images were loaded, so no cells can be detected. Please load some images"
                                      " first.")
-    resolution = experiment.images.resolution()  # Checks if resolution has been set
 
     checkpoint_directory = _get_checkpoints_folder()
     if checkpoint_directory is None:
@@ -145,9 +144,6 @@ def _generate_detection_config(window: Window):
     config.get_or_default("images_pattern", image_loader.serialize_to_config()[1], store_in_defaults=True)
     config.get_or_default("min_time_point", str(image_loader.first_time_point_number()), store_in_defaults=True)
     config.get_or_default("max_time_point", str(image_loader.last_time_point_number()), store_in_defaults=True)
-    config.get_or_default("pixel_size_x_um", str(resolution.pixel_size_x_um))
-    config.get_or_default("pixel_size_z_um", str(resolution.pixel_size_z_um))
-    config.get_or_default("time_point_duration_m", str(resolution.time_point_interval_m))
     config.get_or_default("checkpoint_folder", checkpoint_directory)
     config.get_or_default("predictions_output_folder", "out")
     config.get_or_default("save_video_ram", "true")
