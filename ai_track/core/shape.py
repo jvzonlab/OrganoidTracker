@@ -15,6 +15,7 @@ from ai_track.core.typing import MPLColor
 
 class ParticleShape:
     """Represents the shape of a position. No absolute position data is stored here."""
+    _DEFAULT_GAUSSIAN = Gaussian(300, 0, 0, 0, 15, 15, 2, 0, 0, 0)
 
     def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: MPLColor, edge_color: MPLColor):
         """Draws a shape in 2d, at the given x and y. dz is how many z layers we are removed from the actual position,
@@ -34,11 +35,7 @@ class ParticleShape:
     @staticmethod
     def default_draw3d_color(x: float, y: float, z: float, dt: int, image: ndarray,
                              color: Tuple[float, float, float], radius_xy=5, radius_z=0):
-        min_x, min_y, min_z = int(x - radius_xy), int(y - radius_xy), int(z - radius_z)
-        max_x, max_y, max_z = int(x + radius_xy + 1), int(y + radius_xy + 1), int(z + radius_z + 1)
-        image[min_z:max_z, min_y:max_y, min_x:max_x, 0] = color[0]
-        image[min_z:max_z, min_y:max_y, min_x:max_x, 1] = color[1]
-        image[min_z:max_z, min_y:max_y, min_x:max_x, 2] = color[2]
+        ParticleShape._DEFAULT_GAUSSIAN.translated(x, y, z).draw_colored(image, color)
 
     def is_unknown(self) -> bool:
         """Returns True if there is no shape information available at all."""

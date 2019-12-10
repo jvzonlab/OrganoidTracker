@@ -191,16 +191,16 @@ class Visualizer:
             time_point_images = rgb_images / rgb_images.max()
         return time_point_images
 
-    def reconstruct_image(self, time_point: TimePoint, zyx_size: Tuple[int, int, int]) -> ndarray:
-        rgb_images = numpy.zeros((zyx_size[0], zyx_size[1], zyx_size[2], 3), dtype='float')
+    def reconstruct_image(self, time_point: TimePoint, rgb_canvas: ndarray):
+        """Draws all positions and shapes to the given canvas. The canvas must be a float array,
+        and will be clipped from 0 to 1."""
         offset = self._experiment.images.offsets.of_time_point(time_point)
-        colors = [(1, 1, 1), (1, 1, 0), (1, 0, 1), (0, 1, 1), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
+        colors = [(1, 1, 0), (1, 0, 1), (0, 1, 1), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
         i = 0
         for position, shape in self._experiment.positions.of_time_point_with_shapes(time_point):
-            shape.draw3d_color(position.x - offset.x, position.y - offset.y, position.z - offset.z, 0, rgb_images, colors[i % len(colors)])
+            shape.draw3d_color(position.x - offset.x, position.y - offset.y, position.z - offset.z, 0, rgb_canvas, colors[i % len(colors)])
             i += 1
-        rgb_images.clip(min=0, max=1, out=rgb_images)
-        return rgb_images
+        rgb_canvas.clip(min=0, max=1, out=rgb_canvas)
 
     def _get_type_color(self, position: Position) -> Optional[MPLColor]:
         """Gets the color that the given position should be annotated with, based on the type of the position. Usually

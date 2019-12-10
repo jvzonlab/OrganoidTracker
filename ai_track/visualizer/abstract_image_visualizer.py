@@ -1,24 +1,22 @@
-from typing import List, Union, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
 
 import cv2
+import numpy
 from matplotlib import cm
 from matplotlib.backend_bases import MouseEvent
 from matplotlib.collections import LineCollection
-from matplotlib.colors import Colormap, Normalize
-from matplotlib.lines import Line2D
-from numpy.core.multiarray import ndarray
+from matplotlib.colors import Colormap
+from numpy import ndarray
 from tifffile import tifffile
 
 from ai_track import core
 from ai_track.core import TimePoint, UserError, COLOR_CELL_CURRENT
 from ai_track.core.position import Position
-from ai_track.core.resolution import ImageResolution
 from ai_track.core.spline import Spline
 from ai_track.core.typing import MPLColor
 from ai_track.gui import dialog
-from ai_track.gui.dialog import prompt_int, popup_error
+from ai_track.gui.dialog import prompt_int
 from ai_track.gui.window import Window, DisplaySettings
-from ai_track.imaging.lines import Line3
 from ai_track.linking_analysis import linking_markers
 from ai_track.util.mpl_helper import line_infinite
 from ai_track.visualizer import Visualizer
@@ -54,23 +52,42 @@ class AbstractImageVisualizer(Visualizer):
             return
 
         self._clamp_channel()
+        time_point_images = None
         if self._display_settings.show_images:
-            if self._display_settings.show_reconstruction:
-                time_point_images = self.reconstruct_image(time_point, self._guess_image_size(time_point))
+            time_point_images = self.load_image(time_point, self._display_settings.show_next_time_point)
+        if self._display_settings.show_reconstruction:
+            if time_point_images is not None:
+                # Create background based on time point images
+                image_shape = time_point_images.shape[0:3] + (3,)
+                rgb_image = numpy.zeros(image_shape, dtype=numpy.float32)
+
+                # Convert to colored float
+                if len(time_point_images.shape) == 4:
+                    rgb_image[...] = time_point_images
+                else:
+                    rgb_image[:, :, :, 0] = time_point_images
+                    rgb_image[:, :, :, 1] = time_point_images
+                    rgb_image[:, :, :, 2] = time_point_images
+                rgb_image /= (rgb_image.max() * 2)
+                rgb_image.clip(0, 0.25, out=rgb_image)
             else:
-                time_point_images = self.load_image(time_point, self._display_settings.show_next_time_point)
-        else:
-            time_point_images = None
+                # Create empty background
+                image_shape = self._guess_image_size(time_point) + (3,)
+                rgb_image = numpy.zeros(image_shape, dtype=numpy.float32)
+
+            # Create reconstruction
+            self.reconstruct_image(time_point, rgb_image)
+            time_point_images = rgb_image
 
         self._display_settings.time_point = time_point
         self._time_point_images = time_point_images
         self._clamp_z()
 
-    def _guess_image_size(self, time_point):
+    def _guess_image_size(self, time_point) -> Tuple[int, int, int]:
         images_for_size = self._time_point_images
         if images_for_size is None:
             images_for_size = self.load_image(time_point, show_next_time_point=False)
-        size = images_for_size.shape if images_for_size is not None else self.DEFAULT_SIZE
+        size = images_for_size.shape[0:3] if images_for_size is not None else self.DEFAULT_SIZE
         return size
 
     def refresh_data(self):
