@@ -31,7 +31,6 @@ class AbstractImageVisualizer(Visualizer):
     DEFAULT_SIZE = (30, 500, 500)
 
     _time_point_images: Optional[ndarray] = None
-    __positions_near_visible_layer: List[Position]
 
     # The color map should typically not be transferred when switching to another viewer, so it is not part of the
     # display_settings property
@@ -43,7 +42,6 @@ class AbstractImageVisualizer(Visualizer):
         self._clamp_time_point()
         self._clamp_z()
         self._load_time_point(self._time_point)
-        self.__positions_near_visible_layer = []
 
     def _load_time_point(self, time_point: TimePoint):
         """Loads the images and other data of the time point."""
@@ -87,7 +85,6 @@ class AbstractImageVisualizer(Visualizer):
     def draw_view(self):
         self._clear_axis()
         self._ax.set_facecolor((0.2, 0.2, 0.2))
-        self.__positions_near_visible_layer.clear()
         self._draw_image()
         self._draw_positions()
         self._draw_links()
@@ -192,10 +189,9 @@ class AbstractImageVisualizer(Visualizer):
             list(), list(), list(), list(), list()
         crosses_x_list, crosses_y_list = list(), list()
 
-        for position in self._experiment.positions.of_time_point(time_point):
+        min_z, max_z = self._z - self.MAX_Z_DISTANCE, self._z + self.MAX_Z_DISTANCE
+        for position in self._experiment.positions.of_time_point_and_z(time_point, min_z, max_z):
             dz = self._z - round(position.z)
-            if abs(dz) > self.MAX_Z_DISTANCE:
-                continue
 
             # Draw the position, making it selectable
             if not self._on_position_draw(position, color, dz, dt):
@@ -227,8 +223,6 @@ class AbstractImageVisualizer(Visualizer):
 
     def _on_position_draw(self, position: Position, color: str, dz: int, dt: int) -> bool:
         """Called whenever a position is being drawn. Return False to prevent drawing of this position."""
-        # Make position selectable
-        self.__positions_near_visible_layer.append(position)
         return True
 
     def _draw_connections(self):
@@ -300,8 +294,10 @@ class AbstractImageVisualizer(Visualizer):
 
     def _get_position_at(self, x: Optional[int], y: Optional[int]) -> Optional[Position]:
         """Wrapper of get_closest_position that makes use of the fact that we can lookup all positions ourselves."""
-        return self.get_closest_position(self.__positions_near_visible_layer, x, y, None, self._time_point,
-                                         max_distance=5)
+        min_z = self._z - self.MAX_Z_DISTANCE
+        max_z = self._z + self.MAX_Z_DISTANCE
+        positions_near_visible_layer = self._experiment.positions.of_time_point_and_z(self._time_point, min_z, max_z)
+        return self.get_closest_position(positions_near_visible_layer, x, y, None, self._time_point, max_distance=5)
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
         def time_point_prompt():

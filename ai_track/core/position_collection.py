@@ -288,6 +288,14 @@ class PositionCollection:
         for positions_at_time_point in self._all_positions.values():
             yield from positions_at_time_point.positions_nearby_z(z)
 
+    def of_time_point_and_z(self, time_point: TimePoint, z_min: int, z_max: int) -> Iterable[Position]:
+        """Gets all positions that are nearby the given min to max z, inclusive."""
+        of_time_point = self._all_positions.get(time_point.time_point_number())
+        if of_time_point is None:
+            return
+        for z in range(z_min, z_max + 1):
+            yield from of_time_point.positions_nearby_z(z)
+
     def lowest_z(self) -> Optional[int]:
         """Returns the lowest z in use, or None if there are no positions in this collection."""
         return min_none(positions_at_time_point.lowest_z() for positions_at_time_point in self._all_positions.values())
