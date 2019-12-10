@@ -322,7 +322,7 @@ class AbstractImageVisualizer(Visualizer):
             "View//Toggle-Toggle showing reconstruction [" + DisplaySettings.KEY_SHOW_RECONSTRUCTION.upper() + "]":
                 self._toggle_showing_reconstruction,
             "View//Toggle-Toggle showing splines": self._toggle_showing_splines,
-            "View//Toggle-Toggle showing position markers": self._toggle_showing_position_markers,
+            "View//Toggle-Toggle showing position markers [P]": self._toggle_showing_position_markers,
             "Navigate//Layer-Above layer [Up]": lambda: self._move_in_z(1),
             "Navigate//Layer-Below layer [Down]": lambda: self._move_in_z(-1),
             "Navigate//Channel-Next channel [.]": lambda: self._move_in_channel(1),
