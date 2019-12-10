@@ -75,6 +75,11 @@ class AbstractImageVisualizer(Visualizer):
         size = images_for_size.shape if images_for_size is not None else self.DEFAULT_SIZE
         return size
 
+    def refresh_data(self):
+        if self._display_settings.show_reconstruction:
+            self._load_time_point(self._time_point)  # Reload image, as image is a reconstruction of the data
+        super().refresh_data()
+
     def refresh_all(self):
         self._load_time_point(self._time_point)  # Reload image
         super().refresh_all()
