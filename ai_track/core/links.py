@@ -230,8 +230,12 @@ class Links:
                 data_dict[position_new] = old_value
 
     def has_links(self) -> bool:
-        """Returns True if the graph is not None."""
+        """Returns True if at least one link is present."""
         return len(self._position_to_track) > 0
+
+    def has_links_or_linking_data(self) -> bool:
+        """Returns True if at least one link or one piece of linking data is present."""
+        return len(self._position_to_track) > 0 or len(self._position_data) > 0
 
     def find_futures(self, position: Position) -> Set[Position]:
         """Returns all connections to the future."""
@@ -365,9 +369,16 @@ class Links:
             # Delete
             if position in data_of_positions:
                 del data_of_positions[position]
+                if len(data_of_positions) == 0:
+                    # Remove dict for this data type
+                    del self._position_data[data_name]
         else:
             # Store
             data_of_positions[position] = value
+
+    def has_position_data(self, data_name: str) -> bool:
+        """Returns whether there is position data stored for the given type."""
+        return data_name in self._position_data
 
     def set_lineage_data(self, track: LinkingTrack, data_name: str, value: Optional[DataType]):
         """Adds or overwrites the given attribute for the given lineage (not the individual track!). Set the value to

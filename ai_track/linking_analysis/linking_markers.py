@@ -3,6 +3,7 @@
 from enum import Enum
 from typing import Optional, Iterable, Dict, Set
 
+from ai_track.core import links
 from ai_track.core.links import Links
 from ai_track.core.position import Position
 from ai_track.linking_analysis.errors import Error
@@ -153,3 +154,22 @@ def get_position_types(links: Links, positions: Set[Position]) -> Dict[Position,
     for position in positions:
         types[position] = get_position_type(links, position)
     return types
+
+
+def set_mother_score(links: Links, position: Position, value: float):
+    """Sets the mother score to the given value."""
+    if value == 0:
+        links.set_position_data(position, "mother_score", None)
+    else:
+        links.set_position_data(position, "mother_score", value)
+
+
+def get_mother_score(links: Links, position: Position) -> float:
+    """Gets the mother score of the given position, or 0 if absent."""
+    value = links.get_position_data(position, "mother_score")
+    if value is not None:
+        return float(value)
+    return 0
+
+def has_mother_scores(links: Links) -> bool:
+    return links.has_position_data("mother_score")

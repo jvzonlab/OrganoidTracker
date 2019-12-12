@@ -419,7 +419,7 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
         save_data["name"] = str(experiment.name)
 
     # Save links
-    if experiment.links.has_links():
+    if experiment.links.has_links_or_linking_data():
         save_data["links"] = _links_to_d3_data(experiment.links, experiment.positions)
 
     # Save scores of families

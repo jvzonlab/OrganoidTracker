@@ -21,31 +21,20 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import itertools
 import logging
 import math
-import os
 from functools import partial
-from typing import Optional, Tuple, Iterable, List, TypeVar
-
-import mahotas
-from numpy import ndarray
+from typing import Tuple, Iterable
 
 import numpy
 import tensorflow as tf
-from skimage.feature import peak_local_max
-from tifffile import tifffile
+from numpy import ndarray
 
 from ai_track.core import TimePoint
 from ai_track.core.images import Images
-from ai_track.core.position import Position
-from ai_track.core.position_collection import PositionCollection
-from ai_track.core.resolution import ImageResolution
 from ai_track.imaging import image_slicer
 from ai_track.imaging.image_slicer import Slicer3d
-from ai_track.position_detection import thresholding
 from ai_track.position_detection_cnn.convolutional_neural_network import build_fcn_model
-from ai_track.util import bits
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -62,14 +51,6 @@ _IMAGE_PART_SIZE_PLUS_MARGIN = (_IMAGE_PART_SIZE[0] + 2 * _IMAGE_PART_MARGIN[0],
 
 def _get_slices(volume: Tuple[int, int, int]) -> Iterable[Slicer3d]:
     return image_slicer.get_slices(volume, _IMAGE_PART_SIZE, _IMAGE_PART_MARGIN)
-
-
-T = TypeVar('T')
-def _cycle(list: List[T]) -> Iterable[T]:
-    """Generator that returns the elements in the list ad infinitum."""
-    while True:
-        for elem in list:
-            yield elem
 
 
 def _reconstruct_volume(multi_im: ndarray, mid_layers_nb: int) -> Tuple[ndarray, int]:
@@ -143,8 +124,9 @@ def _input_fn(images: Images, split: bool):
     return next_features
 
 
-def predict(images: Images, checkpoint_dir: str, out_dir: Optional[str] = None, split: bool = False,
-            smooth_stdev: int = 0, predictions_threshold: float = 0.1) -> PositionCollection:
+def predict_images(images: Images, checkpoint_dir: str, split: bool = False) -> Iterable[Tuple[TimePoint, ndarray]]:
+    """Applies the neural network to the given image set. Yields each output image and the time point from the neural
+    network."""
     min_time_point_number = images.image_loader().first_time_point_number()
     if min_time_point_number is None:
         raise ValueError("No images were loaded")
@@ -167,12 +149,6 @@ def predict(images: Images, checkpoint_dir: str, out_dir: Optional[str] = None, 
 
     estimator = tf.estimator.Estimator(model_fn=partial(build_fcn_model, use_cpu=False), model_dir=checkpoint_dir)
     predictions = estimator.predict(input_fn=lambda: _input_fn(images, split))
-
-    if out_dir is not None:
-        if not os.path.exists(out_dir):
-            os.mkdir(out_dir)
-
-    all_positions = PositionCollection()
 
     slices = list(_get_slices((output_size_z, output_size_y, output_size_x))) if split else []
     complete_prediction = numpy.empty((output_size_z, output_size_y, output_size_x), dtype=numpy.float32)\
@@ -199,38 +175,6 @@ def predict(images: Images, checkpoint_dir: str, out_dir: Optional[str] = None, 
             image_index = index
 
         time_point = TimePoint(min_time_point_number + image_index)
-        print("Working on time point", time_point.time_point_number(), "...")
-        image_offset = images.offsets.of_time_point(time_point)
-
         prediction = prediction[output_offset_z : output_offset_z + image_size_z]
 
-        # Apply smoothing
-        if smooth_stdev > 0:
-            prediction = mahotas.gaussian_filter(prediction, smooth_stdev)
-        prediction = bits.image_to_8bit(prediction)  # Scipy peak finder doesn't accept the data format from mahotas
-
-        # Save image if requested
-        if out_dir is not None:
-            image_name = "image_" + str(time_point.time_point_number())
-            tifffile.imsave(os.path.join(out_dir, '{}.tif'.format(image_name)), prediction, compress=9)
-
-        # Find local maxima
-        coordinates = numpy.array(peak_local_max(prediction, min_distance=2, threshold_abs=predictions_threshold * 255,
-                                                 exclude_border=False))
-        for i in range(1, len(coordinates)):
-            coordinate = coordinates[i]
-            position = Position(coordinate[2], coordinate[1], coordinate[0], time_point=time_point) + image_offset
-            if not _has_neighbor(position, all_positions):
-                # If the peak is flat, then ALL pixels with the max value get returned as peaks. We only want one.
-                all_positions.add(position)
-    return all_positions
-
-
-def _has_neighbor(position: Position, all_positions: PositionCollection) -> bool:
-    """Checks if there's another position exactly 1 integer coord further."""
-    for dx in [0, 1]:
-        for dy in [0, 1]:
-            for dz in [0, 1]:
-                if all_positions.contains_position(position.with_offset(dx, dy, dz)):
-                    return True
-    return False
+        yield time_point, prediction

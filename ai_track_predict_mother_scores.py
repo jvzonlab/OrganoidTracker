@@ -4,11 +4,11 @@ from ai_track.config import ConfigFile, config_type_bool, config_type_int, confi
 from ai_track.core.experiment import Experiment
 from ai_track.imaging import io
 from ai_track.image_loading import general_image_loader
-from ai_track.position_detection_cnn import position_predicter
+from ai_track.position_detection_cnn import predicter, mother_score_predicter
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
-config = ConfigFile("predict_positions")
+config = ConfigFile("predict_mother_scores")
 _images_folder = config.get_or_prompt("images_container", "If you have a folder of image files, please paste the folder"
                                       " path here. Else, if you have a LIF file, please paste the path to that file"
                                       " here.", store_in_defaults=True)
@@ -17,8 +17,12 @@ _images_format = config.get_or_prompt("images_pattern", "What are the image file
                                       store_in_defaults=True)
 _min_time_point = int(config.get_or_default("min_time_point", str(1), store_in_defaults=True))
 _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_in_defaults=True))
+
 _checkpoint_folder = config.get_or_prompt("checkpoint_folder", "Please paste the path here to the \"checkpoints\" folder containing the trained model.")
-_output_file = config.get_or_default("positions_output_file", "Automatic positions.aut", comment="Output file for the positions, can be viewed using the visualizer program.")
+_input_file = config.get_or_default("positions_input_file", "Automatic positions.aut",
+                                    comment="Input file for the positions.")
+_output_file = config.get_or_default("positions_output_file", "Scored positions.aut",
+                                     comment="Output file for the positions, will have mother scores attached.")
 _smooth_stdev = config.get_or_default("smooth_stdev", str(1), comment="Standard deviation of Gaussian smooth algorithm."
                                       " Used to improve peak finding.", type=config_type_int)
 _predictions_threshold = config.get_or_default("predictions_threshold", str(0.1), comment="Prediction peaks with"
@@ -33,8 +37,11 @@ if len(_debug_folder) == 0:
 config.save()
 # END OF PARAMETERS
 
+
+print("Loading cell positions and shapes...", _input_file)
+experiment = io.load_data_file(_input_file, min_time_point=_min_time_point, max_time_point=_max_time_point)
+
 # Image loading
-experiment = Experiment()
 general_image_loader.load_images(experiment, _images_folder, _images_format,
                                  min_time_point=_min_time_point, max_time_point=_max_time_point)
 if not experiment.images.image_loader().has_images():
@@ -43,9 +50,7 @@ if not experiment.images.image_loader().has_images():
     exit(1)
 
 print("Using neural networks to predict positions...")
-positions = position_predicter.predict(experiment.images, _checkpoint_folder, split=_split, out_dir=_debug_folder,
-                              smooth_stdev=_smooth_stdev, predictions_threshold=_predictions_threshold)
-experiment.positions.add_positions_and_shapes(positions)
+mother_score_predicter.predict(experiment, _checkpoint_folder, split=_split, out_dir=_debug_folder)
 
 print("Saving file...")
 io.save_data_to_json(experiment, _output_file)

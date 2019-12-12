@@ -45,7 +45,7 @@ def get_error(links: Links, position: Position, scores: ScoreCollection, positio
             and linking_markers.get_track_end_marker(links, position) is None:
         return Error.NO_FUTURE_POSITION
     elif len(future_positions) == 2:
-        if scores.has_scores():
+        if scores.has_family_scores():
             score = scores.of_family(Family(position, *future_positions))
             if score is None or score.is_unlikely_mother():
                 return Error.LOW_MOTHER_SCORE

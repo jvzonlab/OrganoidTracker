@@ -4,11 +4,12 @@
 a Gaussian fit) is necessary for this."""
 
 from ai_track.config import ConfigFile, config_type_int
+from ai_track.core.score import ScoreCollection
 from ai_track.imaging import io
 from ai_track.image_loading import general_image_loader
 from ai_track.linking import nearest_neighbor_linker, dpct_linker, cell_division_finder
 from ai_track.linking.rational_scoring_system import RationalScoringSystem
-from ai_track.linking_analysis import cell_error_finder, links_postprocessor
+from ai_track.linking_analysis import cell_error_finder, links_postprocessor, linking_markers
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
@@ -42,7 +43,7 @@ config.save()
 # END OF PARAMETERS
 
 
-print("Loading cell positions and shapes...", _positions_file)
+print("Loading cell positions...", _positions_file)
 experiment = io.load_data_file(_positions_file, min_time_point=_min_time_point, max_time_point=_max_time_point)
 print("Discovering images...")
 general_image_loader.load_images(experiment, _images_folder, _images_format,
@@ -50,8 +51,8 @@ general_image_loader.load_images(experiment, _images_folder, _images_format,
 print("Performing nearest-neighbor linking...")
 possible_links = nearest_neighbor_linker.nearest_neighbor(experiment, tolerance=2)
 print("Calculating scores of possible mothers...")
-if experiment.scores.has_scores():
-    print("    found existing scores, using those instead")
+if experiment.scores.has_family_scores():
+    print("    found existing family scores, using those instead")
     scores = experiment.scores
 elif experiment.positions.guess_has_shapes():
     score_system = RationalScoringSystem()

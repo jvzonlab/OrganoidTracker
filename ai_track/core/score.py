@@ -139,7 +139,7 @@ class ScoreCollection:
     def __init__(self):
         self._all_scores = dict()
 
-    def has_scores(self) -> bool:
+    def has_family_scores(self) -> bool:
         """Returns True if there are any scores registered."""
         return len(self._all_scores) > 0
 
