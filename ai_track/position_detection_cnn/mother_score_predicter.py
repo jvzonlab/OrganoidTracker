@@ -20,7 +20,6 @@ def predict(experiment: Experiment, checkpoint_dir: str, out_dir: Optional[str] 
     links = experiment.links
     check_size_x_px, check_size_y_px, check_size_z_px = check_size_xyz_px
 
-
     if out_dir is not None:
         if not os.path.exists(out_dir):
             os.mkdir(out_dir)
@@ -29,6 +28,12 @@ def predict(experiment: Experiment, checkpoint_dir: str, out_dir: Optional[str] 
 
     for time_point, prediction in predicter.predict_images(images, checkpoint_dir, split):
         print("Working on time point", time_point.time_point_number(), "...")
+
+        # Save image if requested
+        if out_dir is not None:
+            image_name = "image_" + str(time_point.time_point_number())
+            tifffile.imsave(os.path.join(out_dir, '{}.tif'.format(image_name)), prediction, compress=9)
+
         image_offset = images.offsets.of_time_point(time_point)
         existing_positions = positions.of_time_point(time_point)
         for existing_position in existing_positions:
