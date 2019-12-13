@@ -3,6 +3,7 @@ from typing import Optional, Dict, Iterable, List, Set, Union, Tuple, Any, Items
 
 from ai_track.core import TimePoint, Color
 from ai_track.core.position import Position
+from ai_track.core.position_data import PositionData
 from ai_track.core.typing import DataType
 
 
@@ -125,30 +126,28 @@ class Links:
 
     _tracks: List[LinkingTrack]
     _position_to_track: Dict[Position, LinkingTrack]
-    _position_data: Dict[str, Dict[Position, DataType]]
+
+    # Will be removed from Links object in the future, and become its own thing in the Experiment class
+    position_data: PositionData
 
     def __init__(self):
         self._tracks = []
         self._position_to_track = dict()
-        self._position_data = dict()
+        self.position_data = PositionData()
 
     def add_links(self, links: "Links"):
         """Adds all links from the graph. Existing link are not removed. Changes may write through in the original
         links."""
-        if self.has_links():
+        if self.has_links_or_linking_data():
             # Merge data
-            for data_name, values in links._position_data.items():
-                if data_name not in self._position_data:
-                    self._position_data[data_name] = values
-                else:
-                    self._position_data[data_name].update(values)
+            self.position_data.merge_data(links.position_data)
             # Merge links
             for position1, position2 in links.find_all_links():
                 self.add_link(position1, position2)
         else:
             self._tracks = links._tracks
             self._position_to_track = links._position_to_track
-            self._position_data = links._position_data
+            self.position_data = links.position_data
 
     def remove_all_links(self):
         """Removes all links in the experiment."""
@@ -203,9 +202,7 @@ class Links:
 
         # Remove from indexes
         del self._position_to_track[position]
-        for data_set in self._position_data.values():
-            if position in data_set:
-                del data_set[position]
+        self.position_data.remove_position(position)
 
     def replace_position(self, old_position: Position, position_new: Position):
         """Replaces one position with another. The old position is removed from the graph, the new one is added. All
@@ -223,11 +220,7 @@ class Links:
             self._position_to_track[position_new] = track
 
         # Update position data
-        for data_name, data_dict in self._position_data.items():
-            if old_position in data_dict:
-                old_value = data_dict[old_position]
-                del data_dict[old_position]
-                data_dict[position_new] = old_value
+        self.position_data.replace_position(old_position, position_new)
 
     def has_links(self) -> bool:
         """Returns True if at least one link is present."""
@@ -235,7 +228,7 @@ class Links:
 
     def has_links_or_linking_data(self) -> bool:
         """Returns True if at least one link or one piece of linking data is present."""
-        return len(self._position_to_track) > 0 or len(self._position_data) > 0
+        return len(self._position_to_track) > 0 or self.position_data.has_position_data()
 
     def find_futures(self, position: Position) -> Set[Position]:
         """Returns all connections to the future."""
@@ -331,10 +324,7 @@ class Links:
 
     def get_position_data(self, position: Position, data_name: str) -> Optional[DataType]:
         """Gets the attribute of the position with the given name. Returns None if not found."""
-        data_of_positions = self._position_data.get(data_name)
-        if data_of_positions is None:
-            return None
-        return data_of_positions.get(position)
+        return self.position_data.get_position_data(position, data_name)
 
     def get_lineage_data(self, track: LinkingTrack, data_name: str) -> Optional[DataType]:
         """Gets the attribute of the lineage tree. Returns None if not found."""
@@ -352,33 +342,11 @@ class Links:
         Note: this is a low-level API. See the linking_markers module for more high-level methods, for example for how
         to read end markers, error markers, etc.
         """
-        if data_name == "id":
-            raise ValueError("The data_name 'id' is used to store the position itself.")
-        if data_name.startswith("__"):
-            raise ValueError(f"The data name {data_name} is not allowed: data names must not start with '__'.")
-        data_of_positions = self._position_data.get(data_name)
-        if data_of_positions is None:
-            if value is None:
-                return  # No value was stored already, so no need to change anything
+        self.position_data.set_position_data(position, data_name, value)
 
-            # Intialize dict for this data type
-            data_of_positions = dict()
-            self._position_data[data_name] = data_of_positions
-
-        if value is None:
-            # Delete
-            if position in data_of_positions:
-                del data_of_positions[position]
-                if len(data_of_positions) == 0:
-                    # Remove dict for this data type
-                    del self._position_data[data_name]
-        else:
-            # Store
-            data_of_positions[position] = value
-
-    def has_position_data(self, data_name: str) -> bool:
+    def has_position_data_with_name(self, data_name: str) -> bool:
         """Returns whether there is position data stored for the given type."""
-        return data_name in self._position_data
+        return self.position_data.has_position_data_with_name(data_name)
 
     def set_lineage_data(self, track: LinkingTrack, data_name: str, value: Optional[DataType]):
         """Adds or overwrites the given attribute for the given lineage (not the individual track!). Set the value to
@@ -569,8 +537,7 @@ class Links:
                 next_track_copy._previous_tracks.append(track_copy)
 
         # Don't forget to copy over data
-        for data_name, data_value in self._position_data.items():
-            copy._position_data[data_name] = data_value.copy()
+        copy.position_data = self.position_data.copy()
 
         return copy
 
@@ -673,10 +640,7 @@ class Links:
 
     def find_all_positions_with_data(self, data_name: str) -> ItemsView[Position, Any]:
         """Gets a dictionary of all positions with the given data marker. Do not modify the returned dictionary."""
-        data_set = self._position_data.get(data_name)
-        if data_set is None:
-            return dict().items()
-        return data_set.items()
+        return self.position_data.find_all_positions_with_data(data_name)
 
     def get_track(self, position: Position) -> Optional[LinkingTrack]:
         """Gets the track the given position belong in."""
@@ -711,10 +675,7 @@ class Links:
 
     def find_all_data_of_position(self, position: Position) -> Iterable[Tuple[str, DataType]]:
         """Finds all stored data of a given position."""
-        for data_name, data_values in self._position_data.items():
-            data_value = data_values.get(position)
-            if data_value is not None:
-                yield data_name, data_value
+        return self.position_data.find_all_data_of_position(position)
 
     def get_position_near_time_point(self, position: Position, time_point: TimePoint) -> Position:
         """Follows the position backwards or forwards in time through the linking network, until a position as close as

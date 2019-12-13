@@ -48,26 +48,20 @@ experiment = io.load_data_file(_positions_file, min_time_point=_min_time_point, 
 print("Discovering images...")
 general_image_loader.load_images(experiment, _images_folder, _images_format,
                                  min_time_point=_min_time_point, max_time_point=_max_time_point)
+print("Checking scores of possible mothers...")
+if linking_markers.has_mother_scores(experiment.position_data):
+    print("    found existing mother scores, using those instead")
+else:
+    print("    no mother score information found! This means that cell divisions are NOT detected.")
 print("Performing nearest-neighbor linking...")
 possible_links = nearest_neighbor_linker.nearest_neighbor(experiment, tolerance=2)
-print("Calculating scores of possible mothers...")
-if experiment.scores.has_family_scores():
-    print("    found existing family scores, using those instead")
-    scores = experiment.scores
-elif experiment.positions.guess_has_shapes():
-    score_system = RationalScoringSystem()
-    scores = cell_division_finder.calculates_scores(experiment.images, experiment.positions, possible_links, score_system)
-else:
-    print("    no shape information found, skipping scoring! This means that cell divisions are NOT detected.")
-    scores = experiment.scores
 print("Deciding on what links to use...")
-link_result = dpct_linker.run(experiment.positions, possible_links, scores, experiment.images.resolution(),
-                              link_weight=_link_weight, detection_weight=_detection_weight,
-                              division_weight=_division_weight, appearance_weight=_appearance_weight,
-                              dissappearance_weight=_dissappearance_weight)
+link_result = dpct_linker.run(experiment.positions, possible_links, experiment.position_data,
+                              experiment.images.resolution(), link_weight=_link_weight,
+                              detection_weight=_detection_weight, division_weight=_division_weight,
+                              appearance_weight=_appearance_weight, dissappearance_weight=_dissappearance_weight)
 print("Applying final touches...")
 experiment.links = link_result
-experiment.scores = scores
 links_postprocessor.postprocess(experiment, margin_xy=_margin_xy)
 print("Checking results for common errors...")
 warning_count = cell_error_finder.find_errors_in_experiment(experiment)

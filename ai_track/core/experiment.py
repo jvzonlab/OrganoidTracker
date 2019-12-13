@@ -9,6 +9,7 @@ from ai_track.core.images import Images
 from ai_track.core.links import Links
 from ai_track.core.position_collection import PositionCollection
 from ai_track.core.position import Position
+from ai_track.core.position_data import PositionData
 from ai_track.core.spline import SplineCollection
 from ai_track.core.resolution import ImageResolution
 from ai_track.core.score import ScoreCollection
@@ -167,6 +168,20 @@ class Experiment:
         if not isinstance(positions, PositionCollection):
             raise TypeError(f"positions must be a {PositionCollection.__name__} object, was " + repr(positions))
         self._positions = positions
+
+    @property
+    def position_data(self) -> PositionData:
+        """Gets the data associated with positions.
+
+        There used to be two sets of metadata for positions: their shapes (stored in PositionCollection) and linking
+        data, for use with the linking algorithm. These two are going to be merged."""
+        return self._links.position_data
+
+    @position_data.setter
+    def position_data(self, position_data: PositionData):
+        if not isinstance(position_data, PositionData):
+            raise TypeError(f"position_data must be a {PositionData.__name__} object, was " + repr(position_data))
+        self._links.position_data = position_data
 
     @property
     def name(self) -> Name:

@@ -17,7 +17,7 @@ def predict(experiment: Experiment, checkpoint_dir: str, out_dir: Optional[str] 
             check_size_xyz_px: Tuple[int, int, int] = (16, 16, 3)):
     images = experiment.images
     positions = experiment.positions
-    links = experiment.links
+    position_data = experiment.position_data
     check_size_x_px, check_size_y_px, check_size_z_px = check_size_xyz_px
 
     if out_dir is not None:
@@ -44,6 +44,6 @@ def predict(experiment: Experiment, checkpoint_dir: str, out_dir: Optional[str] 
             cropper.crop_3d(prediction, x_start, y_start, z_start, output_array)
             value = float(output_array.mean())
             if value >= 0.01:
-                linking_markers.set_mother_score(links, existing_position, value)
+                linking_markers.set_mother_score(position_data, existing_position, value)
 
 
