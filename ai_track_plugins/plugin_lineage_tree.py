@@ -4,7 +4,7 @@ from matplotlib.backend_bases import MouseEvent
 import matplotlib.colors
 
 from ai_track.core import UserError, Color
-from ai_track.core.links import LinkingTrack
+from ai_track.core.links import LinkingTrack, Links
 from ai_track.core.position import Position
 from ai_track.core.resolution import ImageResolution
 from ai_track.gui import dialog
@@ -39,6 +39,7 @@ class LineageTreeVisualizer(Visualizer):
 
     _min_division_count: int = 0
     _display_deaths: bool = True
+    _display_warnings: bool = True
     _display_manual_colors: bool = False
     _display_cell_type_colors: bool = True
 
@@ -48,14 +49,19 @@ class LineageTreeVisualizer(Visualizer):
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
-            "View//Lineages-Toggle showing deaths": self._toggle_deaths,
-            "View//Lineages-Toggle showing cell types": self._toggle_cell_types,
-            "View//Lineages-Toggle showing manual colors": self._toggle_manual_colors,
-            "View//Lineages-Require X amount of divisions...": self._set_minimum_divisions
+            "View//Toggles-Toggle showing warnings": self._toggle_errors,
+            "View//Toggles-Toggle showing deaths": self._toggle_deaths,
+            "View//Toggles-Toggle showing cell types": self._toggle_cell_types,
+            "View//Toggles-Toggle showing manual colors": self._toggle_manual_colors,
+            "View//Divisions-Require X amount of divisions...": self._set_minimum_divisions
         }
 
     def _toggle_deaths(self):
         self._display_deaths = not self._display_deaths
+        self.draw_view()
+
+    def _toggle_errors(self):
+        self._display_warnings = not self._display_warnings
         self.draw_view()
 
     def _toggle_cell_types(self):
@@ -120,11 +126,11 @@ class LineageTreeVisualizer(Visualizer):
 
         self._calculate_track_colors()
 
-        tracks_with_errors = self._find_tracks_with_errors()
-
         def color_getter(time_point_number: int, track: LinkingTrack) -> Tuple[float, float, float]:
-            if track in tracks_with_errors:
-                return 0.7, 0.7, 0.7
+            if self._display_warnings:
+                if _has_error_close_in_time(links, time_point_number, track):
+                    return 0.7, 0.7, 0.7
+
             if self._display_deaths and track.max_time_point_number() - time_point_number < 10:
                 end_marker = linking_markers.get_track_end_marker(links, track.find_last_position())
                 if end_marker == EndMarker.DEAD:
@@ -172,13 +178,11 @@ class LineageTreeVisualizer(Visualizer):
         self.get_window().get_gui_experiment().goto_position(position)
         self.update_status("Focused main window on " + str(position))
 
-    def _find_tracks_with_errors(self) -> Set[LinkingTrack]:
-        links = self._experiment.links
-        tracks_with_errors = set()
-        for position in linking_markers.find_errored_positions(links):
-            track = links.get_track(position)
-            if track is not None:
-                tracks_with_errors.add(track)
-                for next_track in track.get_next_tracks():
-                    tracks_with_errors.add(next_track)
-        return tracks_with_errors
+
+def _has_error_close_in_time(links: Links, time_point_number: int, track: LinkingTrack, time_window: int = 5):
+    min_t = max(track.min_time_point_number(), time_point_number - time_window)
+    max_t = min(track.max_time_point_number(), time_point_number + time_window)
+    for t in range(min_t, max_t + 1):
+        if linking_markers.get_error_marker(links, track.find_position_at_time_point_number(t)):
+            return True
+    return False
