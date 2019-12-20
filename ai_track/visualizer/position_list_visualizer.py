@@ -107,7 +107,7 @@ class PositionListVisualizer(Visualizer):
         # Some bookkeeping - if you exit the this visualizer, then in this way you end up in the right spot
         # (This visualizer doesn't use those settings - it just uses _position_list and _current_position_index)
         self._display_settings.time_point = viewed_position.time_point()
-        self._display_settings.z = viewed_position.z
+        self._display_settings.z = round(viewed_position.z)
 
     def _draw_connections(self, links: Links, main_position: Position, line_style:str = "solid",
                           line_width: int = 1):
