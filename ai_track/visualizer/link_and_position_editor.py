@@ -236,12 +236,38 @@ class _SetLineageColor(UndoableAction):
             return "Removed the color of the lineage again"
         return f"Changed the color of the linage back to {self._old_color}"
 
+
+class _OverwritePositionAction(UndoableAction):
+
+    _new_particle: Particle
+    _old_particle: Particle
+
+    def __init__(self, new_particle: Particle, old_particle: Particle):
+        self._new_particle = new_particle
+        self._old_particle = old_particle
+
+    def do(self, experiment: Experiment) -> str:
+        experiment.remove_position(self._old_particle.position)
+        self._new_particle.restore(experiment)
+        cell_error_finder.find_errors_in_just_these_positions(experiment, *self._old_particle.links)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self._new_particle.position)
+        return f"Overwritten {self._old_particle.position} with {self._new_particle.position}"
+
+    def undo(self, experiment: Experiment) -> str:
+        experiment.remove_position(self._new_particle.position)
+        self._old_particle.restore(experiment)
+        cell_error_finder.find_errors_in_just_these_positions(experiment, *self._new_particle.links)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self._old_particle.position)
+        return f"Restored {self._old_particle.position}"
+
+
 class LinkAndPositionEditor(AbstractEditor):
     """Editor for cell links and positions. Use the Insert key to insert new cells or links, and Delete to delete
      them."""
 
     _selected1: Optional[Position] = None
     _selected2: Optional[Position] = None
+    _overwrite: bool = False
 
     def __init__(self, window: Window, *, selected_position: Optional[Position] = None):
         super().__init__(window)
@@ -290,7 +316,8 @@ class LinkAndPositionEditor(AbstractEditor):
         options = {
             **super().get_extra_menu_options(),
             "Edit//Experiment-Edit data axes... [A]": self._show_path_editor,
-            "Edit//Experiment-Edit image offsets... [O]": self._show_offset_editor,
+            "Edit//Experiment-Edit image offsets... [F]": self._show_offset_editor,
+            "Edit//Experiment-Toggle overwrite mode [O]": self._toggle_overwrite_mode,
             "Edit//Batch-Delete data of time point...": self._delete_data_of_time_point,
             "Edit//Batch-Delete all tracks with errors...": self._delete_tracks_with_errors,
             "Edit//Batch-Delete all tracks not in the first time point...": self._delete_tracks_not_in_first_time_point,
@@ -313,6 +340,15 @@ class LinkAndPositionEditor(AbstractEditor):
 
             options["Edit//Track-Set type of track//" + position_type.display_name] = action
         return options
+
+    def _toggle_overwrite_mode(self):
+        self._overwrite = not self._overwrite
+        if self._overwrite:
+            self.update_status("Turned on overwrite mode - if you insert a new position close to an old one,"
+                               " the old one will be removed.")
+        else:
+            self.update_status("Turned off overwrite mode - if you insert a new position close to and old one,"
+                               " they will be merged.")
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "c":
@@ -453,7 +489,12 @@ class LinkAndPositionEditor(AbstractEditor):
         if self._selected1 is None:
             # Add new position without links
             self._selected1 = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
-            self._perform_action(_InsertPositionAction(Particle.just_position(self._selected1)))
+            mouse_position = self._get_position_at(event.xdata, event.ydata)
+            if self._overwrite and mouse_position is not None:
+                self._perform_action(_OverwritePositionAction(Particle.just_position(self._selected1),
+                                                              Particle.from_position(self._experiment, mouse_position)))
+            else:
+                self._perform_action(_InsertPositionAction(Particle.just_position(self._selected1)))
         elif self._selected2 is None:
             # Insert new position with link to self._selected1
             # Find at which position the mouse is pointing
@@ -471,14 +512,27 @@ class LinkAndPositionEditor(AbstractEditor):
 
             if abs(mouse_position.time_point_number() - self._selected1.time_point_number()) == 1:
                 connection = self._selected1
-                self._selected1 = mouse_position
 
                 # Insert link from selected point to new point
                 if is_new_position:
+                    self._selected1 = mouse_position
                     new_particle = Particle.position_with_links(mouse_position, links=[connection])
                     self._perform_action(_InsertPositionAction(new_particle))
                 else:
-                    self._perform_action(_InsertLinkAction(mouse_position, connection))
+                    # New point already exists, either connect or overwrite the old one
+                    if self._overwrite:
+                        # Remove one existing and replace it
+                        old_particle = Particle.from_position(self._experiment, mouse_position)
+                        mouse_position = Position(event.xdata, event.ydata, self._z, time_point=mouse_position.time_point())
+                        self._selected1 = mouse_position
+                        new_particle = Particle.position_with_links(mouse_position, links=[connection,
+                                                 *(link for link in old_particle.links
+                                                   if link.time_point() != connection.time_point())])
+                        self._perform_action(_OverwritePositionAction(new_particle, old_particle))
+                    else:
+                        # Connect two existing positions
+                        self._selected1 = mouse_position
+                        self._perform_action(_InsertLinkAction(mouse_position, connection))
             else:
                 inserting_position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
                 if inserting_position.distance_um(self._selected1, ImageResolution.PIXELS) < 10:
