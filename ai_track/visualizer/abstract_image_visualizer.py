@@ -201,6 +201,7 @@ class AbstractImageVisualizer(Visualizer):
     def _draw_positions_of_time_point(self, time_point: TimePoint, color: str = core.COLOR_CELL_CURRENT):
         links = self._experiment.links
         dt = time_point.time_point_number() - self._time_point.time_point_number()
+        show_errors = self._display_settings.show_errors
 
         positions_x_list, positions_y_list, positions_edge_colors, positions_edge_widths, positions_marker_sizes =\
             list(), list(), list(), list(), list()
@@ -215,7 +216,7 @@ class AbstractImageVisualizer(Visualizer):
                 continue
 
             # Add error marker
-            if linking_markers.get_error_marker(links, position) is not None:
+            if show_errors and linking_markers.get_error_marker(links, position) is not None:
                 crosses_x_list.append(position.x)
                 crosses_y_list.append(position.y)
 
@@ -340,6 +341,7 @@ class AbstractImageVisualizer(Visualizer):
                 self._toggle_showing_reconstruction,
             "View//Toggle-Toggle showing splines": self._toggle_showing_splines,
             "View//Toggle-Toggle showing position markers [P]": self._toggle_showing_position_markers,
+            "View//Toggle-Toggle showing error markers": self._toggle_showing_error_markers,
             "Navigate//Layer-Above layer [Up]": lambda: self._move_in_z(1),
             "Navigate//Layer-Below layer [Down]": lambda: self._move_in_z(-1),
             "Navigate//Channel-Next channel [.]": lambda: self._move_in_channel(1),
@@ -438,6 +440,10 @@ class AbstractImageVisualizer(Visualizer):
 
     def _toggle_showing_position_markers(self):
         self._display_settings.show_positions = not self._display_settings.show_positions
+        self.draw_view()
+
+    def _toggle_showing_error_markers(self):
+        self._display_settings.show_errors = not self._display_settings.show_errors
         self.draw_view()
 
     def _move_in_z(self, dz: int):
