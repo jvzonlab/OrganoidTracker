@@ -49,6 +49,10 @@ def get_error(links: Links, position: Position, scores: ScoreCollection, positio
             score = scores.of_family(Family(position, *future_positions))
             if score is None or score.is_unlikely_mother():
                 return Error.LOW_MOTHER_SCORE
+        else:
+            score = linking_markers.get_mother_score(links, position)
+            if score is None:
+                return Error.LOW_MOTHER_SCORE
         age = particle_age_finder.get_age(links, position)
         if age is not None and age * resolution.time_point_interval_h <= 10:
             return Error.YOUNG_MOTHER
