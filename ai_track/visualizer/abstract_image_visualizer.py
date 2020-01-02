@@ -402,6 +402,17 @@ class AbstractImageVisualizer(Visualizer):
             except ValueError:
                 self.update_status("Cannot read number: " + time_point_str)
             return True
+        if len(command) > 0 and command[0] == "z":
+            z_str = command[1:]
+            try:
+                new_z = int(z_str.strip())
+                self._display_settings.z = new_z
+                self._clamp_z()
+                self.draw_view()
+                self.update_status(f"Moved to z {self._display_settings.z}!")
+            except ValueError:
+                self.update_status("Cannot read number: " + z_str)
+            return True
         if command.startswith("goto "):
             split = command.split(" ")
             if len(split) != 5:
