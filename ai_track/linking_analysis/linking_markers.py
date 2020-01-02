@@ -1,7 +1,7 @@
 """Extra markers used to describe the linking data. For example, you can mark the end of a lineage as a cell death."""
 
 from enum import Enum
-from typing import Optional, Iterable, Dict, Set
+from typing import Optional, Iterable, Dict, Set, Union
 
 from ai_track.core import links
 from ai_track.core.links import Links
@@ -165,7 +165,7 @@ def set_mother_score(position_data: PositionData, position: Position, value: flo
         position_data.set_position_data(position, "mother_score", value)
 
 
-def get_mother_score(position_data: PositionData, position: Position) -> float:
+def get_mother_score(position_data: Union[Links, PositionData], position: Position) -> float:
     """Gets the mother score of the given position, or 0 if absent."""
     value = position_data.get_position_data(position, "mother_score")
     if value is not None:

@@ -6,7 +6,6 @@ Targets. ECCV 2016 Proceedings.
 """
 
 import dpct
-import math
 from typing import Dict, List, Iterable, Tuple
 
 from ai_track.core.links import Links
@@ -14,8 +13,10 @@ from ai_track.core.position_collection import PositionCollection
 from ai_track.core.position import Position
 from ai_track.core.position_data import PositionData
 from ai_track.core.resolution import ImageResolution
-from ai_track.core.score import ScoreCollection, Score, ScoredFamily
+from ai_track.core.score import Score, ScoredFamily
 from ai_track.linking_analysis import linking_markers
+
+_MIN_DIVISION_SCORE = 0.05
 
 
 class _PositionToId:
@@ -40,8 +41,9 @@ class _PositionToId:
         return self.__id_to_position[id]
 
 
-def _to_links(position_ids: _PositionToId, results: Dict) -> Links:
+def _to_links(position_ids: _PositionToId, position_data: PositionData, results: Dict) -> Links:
     links = Links()
+    links.position_data = position_data
 
     for entry in results["linkingResults"]:
         if not entry["value"]:
@@ -54,8 +56,8 @@ def _to_links(position_ids: _PositionToId, results: Dict) -> Links:
 
 
 def run(positions: PositionCollection, starting_links: Links, position_data: PositionData, resolution: ImageResolution,
-        *, link_weight: int, detection_weight: int, division_weight: int, appearance_weight: int,
-        dissappearance_weight: int) -> Links:
+        *, link_weight: float, detection_weight: float, division_weight: float, appearance_weight: float,
+        dissappearance_weight: float) -> Links:
     """
     Calculates the optimal links, based on the given starting points and weights.
     :param positions: The positions.
@@ -78,7 +80,7 @@ def run(positions: PositionCollection, starting_links: Links, position_data: Pos
     else:
         weights = {"weights": [link_weight, detection_weight, appearance_weight, dissappearance_weight]}
     results = dpct.trackFlowBased(input, weights)
-    return _to_links(position_ids, results)
+    return _to_links(position_ids, position_data, results)
 
 
 def _scores_involving(daughter: Position, scores: Iterable[ScoredFamily]) -> Iterable[ScoredFamily]:
@@ -108,7 +110,7 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links, posit
 
         # Add division score
         division_score = linking_markers.get_mother_score(position_data, position)
-        if division_score > 0.05:
+        if division_score > _MIN_DIVISION_SCORE:
             map["divisionFeatures"] = [[0], [-1]]
             created_possible_division = True
         segmentation_hypotheses.append(map)
@@ -120,6 +122,8 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links, posit
             position1, position2 = position2, position1
 
         link_penalty = position1.distance_um(position2, resolution)
+        if linking_markers.get_mother_score(position_data, position1) > _MIN_DIVISION_SCORE:
+            link_penalty /= 2
 
         linking_hypotheses.append({
             "src": position_ids.id(position1),
