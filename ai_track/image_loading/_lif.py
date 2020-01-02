@@ -1,3 +1,42 @@
+# -*- coding: utf-8 -*-
+#  The code was origionally done by Mathieu Leocmach
+#  It was part of the Colloids library (https://github.com/MathieuLeocmach/colloids)
+#  It is modified by Yushi Yang (yushi.yang@bristol.ac.uk) to be more compatable
+#  with different python version and confocal machines
+#  Since its' original version use GPL License, it's restricted GPL as well
+
+
+#    Modification June 2019 by M. Leocmach /C. Ybert:
+#
+#        0- Note about good practices: semi-private attributes should only be accessed from a method getXXX(). Semi-privacy is chosen here to emphasize
+#           that values are not supposed to be changed (they correspond to the *fixed* experimental conditions)
+#
+#        1- Limit read_lif to its main purpose (remove analysis functions getNeighbourhood() and getRadius, and associated library import)
+#        2- Add a getFilterSetting method to SerieHeader Class
+#        3- Modify Header.parse method (remove initial storage of all timestamps)
+#        5- Expand (a bit) the function description
+#        6- Move all double underscore attributes to simple underscore (semi-private ones) and corrected uneffective hasattr() tests
+#        7- Remove get2DImage() methods
+#        8- Add a getFrame2D() method to extract a 2D image. As for getFrame() it lacks proper conditional testing to accomodate (or report error)
+#           depending on the type of data (XYT, XYZT, ...). It is based on the inner loop in getFrame so that it might be possible to
+#           rewrite getFrame() using getFrame2D().
+#
+#
+#        BUGS: - getMetadata() doesn't support XY frames (no z)
+#              - getFrame() doesn't support XY frames (no z)
+#              - get2DStrings() doesn't support XY frames (no z)
+#              - enumByFrame() and enumBySlice() lacks some conditional testing against the data frame type
+#
+#
+#        ToDo: - Correct Bugs
+#              - Convert TimeStamps into seconds
+#              - getZXratio it would be more consistent to use getDimensions() to obtain the information
+#              - Automatic type conversion of SeriesHeader data (in ScannerSetting and FilterSetting) using the VariantType data from VisualBasic
+#                {0: Empty, 1: Null, 2: Short, 3: integer, 4: single, 5: double, 6: currency, 7: date, 8: string, 9: object, 10: error
+#                 11: boolean, 12: variant, 13: dataObject, 14: decimal, 17: byte, 18: char, 20: long, 36: UserDefined, 8192: array}
+
+
+# ============== origional information ====================
 #
 #    Copyright 2009 Mathieu Leocmach
 #
@@ -16,14 +55,13 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Colloids.  If not, see <http://www.gnu.org/licenses/>.
 #
-# for python 2.5, useless in 2.6
-import struct, io, re, os.path, subprocess, shlex, sys
-from typing import List
-from xml.dom.minidom import parse, Element, Document
 
-import numpy
+import struct, io, re, sys
+import xml
+from typing import List, Sequence, Any
+from xml.dom.minidom import parse, Element, NodeList
 import numpy as np
-from numpy.fft import rfft2, irfft2
+import warnings
 
 dimName = {1: "X",
            2: "Y",
@@ -32,20 +70,20 @@ dimName = {1: "X",
            5: "Lambda",
            6: "Rotation",
            7: "XT Slices",
-           8: "TSlices", }
+           8: "TSlices",
+           10: "unknown"}
+
 channelTag = ["Gray", "Red", "Green", "Blue"]
 
 
-def _count_children(el: Element) -> int:
-    """Counts how many tags there are inside the Children tag inside the given tag."""
-    count = 0
-    for children_tag in el.getElementsByTagName("Children"):
-        count += len(children_tag.childNodes)
-    return count
-
-
 class Header:
-    """The XML header of a Leica LIF files"""
+    """
+    The XML header of a Leica LIF files
+
+    Attributes:: are all semi-private (should only be accessed from a method getXXX())
+                 as values are not supposed to be changed (they correspond to the *fixed* experimental conditions)
+                 _version, _name, _seriesHeaders,
+    """
 
     def __init__(self, xmlHeaderFileName, quick=True):
         if sys.version_info > (3, 0):
@@ -57,9 +95,13 @@ class Header:
 
     def parse(self, xmlHeaderFile, quick=True):
         """
-Parse the usefull part of the xml header,
-stripping time stamps and non ascii characters
-"""
+        Method: Parse the usefull part of the xml header. Non ascii characters are stripped
+        Args:
+
+            quick (Boolean). If True Time Stamps are also stripped from the xmlHeader
+
+        .. warnings:: `quick == True` forbids future access to TimeStamps unless re-opening of original .lif file
+        """
 
         # to strip the non ascii characters
         t = "".join(map(chr, list(range(256))))
@@ -73,18 +115,6 @@ stripping time stamps and non ascii characters
             lightXML = StringIO.StringIO()
 
         if not quick:
-            # store all time stamps in a big array
-            timestamps = np.fromregex(
-                xmlHeaderFile,
-                r'<TimeStamp HighInteger="(\d+)" LowInteger="(\d+)"/>',
-                float
-            )
-            xmlHeaderFile.seek(0)
-            relTimestamps = np.fromregex(
-                xmlHeaderFile,
-                r'<RelTimeStamp Time="(\f+)" Frame="(\d+)"/>|<RelTimeStamp Frame="[0-9]*" Time="[0-9.]*"/>',
-                float
-            )
             xmlHeaderFile.seek(0)
             if sys.version_info > (3, 0):
                 for line in xmlHeaderFile:
@@ -116,28 +146,55 @@ stripping time stamps and non ascii characters
         self.xmlHeader = parse(lightXML)
 
     def getVersion(self):
-        if not hasattr(self, '__version'):
-            self.__version = self.xmlHeader.documentElement.getAttribute("Version")
-        return int(self.__version)
+        """
+        Method: Get the version of the Data Container Header
+        Semi-private attribute `_version`
+        """
+        if not hasattr(self, '_version'):
+            self._version = self.xmlHeader.documentElement.getAttribute("Version")
+        return int(self._version)
 
     def getName(self):
-        if not hasattr(self, '__name'):
-            self.__name = self.xmlHeader.documentElement. \
+        """
+        Method: Get the name of current lif file (without extension .lif)
+        Semi-private attribute `_name`
+        """
+        if not hasattr(self, '_name'):
+            self._name = self.xmlHeader.documentElement. \
                 getElementsByTagName('Element')[0].getAttribute("Name")
-        return self.__name
+        return self._name
 
     def getSeriesHeaders(self):
-        if not hasattr(self, '__seriesHeaders'):
-            self.__seriesHeaders = [
-                SerieHeader(el)
-                for el in self.xmlHeader.documentElement.getElementsByTagName('Element')[1:]
-                # Ignore parent Elements and Elements with a special name
-                if el.getAttribute('Name') not in ['BleachPointROISet', 'DCROISet', 'IOManagerConfiguation']
-                   and _count_children(el) == 0
-            ]
-        return self.__seriesHeaders
+        """
+        Method: Get the Series Headers of all series contained in the .lif file
+        Semi-private attribute `_seriesHeaders`
+        """
+
+        if not hasattr(self, '_seriesHeaders'):
+            root = self.xmlHeader.documentElement
+            headers = []
+            counter = 0
+            for element in root.getElementsByTagName('Element'):
+                element_nodes = [node for node in element.childNodes if node.ELEMENT_NODE == 1]
+                memory_nodes = [node for node in element_nodes if (node.localName == 'Memory')]
+                if len(memory_nodes) > 0:
+                    counter += 1
+                    memory_nodes = memory_nodes[0]
+                    size = memory_nodes.getAttribute('Size')
+                    if size:
+                        if int(size) > 0:
+                            headers.append(SerieHeader(element))
+            self._seriesHeaders = headers
+        return self._seriesHeaders
 
     def chooseSerieIndex(self):
+        """
+        Method: Interactive selection of the desired serie.
+
+        Print a list of all Series specifying: index, Name, Channel number and Tag, and stack dimensions X, Y, Z, T,...
+        Promt for selecting a Serie number.
+
+        """
         st = "Experiment: %s\n" % self.getName()
         for i, s in enumerate(self.getSeriesHeaders()):
             # s = Serie(serie)
@@ -158,7 +215,7 @@ stripping time stamps and non ascii characters
         else:
             while (True):
                 try:
-                    r = int(input("Choose an item --> "))
+                    r = int(input("Choose a serie --> "))
                     if r < 0 or r > len(self.getSeriesHeaders()):
                         raise ValueError()
                     break
@@ -167,6 +224,14 @@ stripping time stamps and non ascii characters
         return r
 
     def chooseSerieHeader(self):
+        """
+        Method: Interactive selection of the desired serie header.
+
+        Print a list of all Series specifying: index, Name, Channel number and Tag, and stack dimensions X, Y, Z, T,...
+        Promt for selecting a Serie number.
+
+        """
+
         return self.getSeriesHeaders()[self.chooseSerieIndex()]
 
     def __iter__(self):
@@ -174,159 +239,317 @@ stripping time stamps and non ascii characters
 
 
 class SerieHeader:
-    """The part of the XML header of a Leica LIF files concerning a given serie"""
+    """
+    The part of the XML header of a Leica LIF files concerning a given serie
 
-    root: Element
+    Attributes:: are all semi-private (should only be accessed from a method getXXX())
+                 as values are not supposed to be changed (they correspond to the *fixed* experimental conditions)
+                 _name, _isPreview, _channels, _dimensions, _memorySize, _resolution, _numberOfElements, _duration,
+                 _timeStamps, _relTimeStamps, _nbFrames, _boxShape, _nbPixelsPerFrame, _nbPixelsPerSlice, etc.
 
-    def __init__(self, serieElement: Element):
+    """
+
+    def __init__(self, serieElement):
         self.root = serieElement
 
-    def getName(self) -> str:
-        if not hasattr(self, '__name'):
-            node = self.root
-            names = []
-            while not isinstance(node, Document) and node.tagName == "Element":
-                names.insert(0, node.getAttribute("Name"))
-                node = node.parentNode.parentNode
-            if len(names) > 0:
-                del names[0]  # Delete highest entry, which is something useless like "Project"
-            self.__name = " >> ".join(names)
-        return self.__name
-
-    def getDisplayName(self) -> str:
-        return self.getName().replace(" >> ", " » ")
+    def getName(self):
+        """
+        Method: Get the Name of the Serie
+        Semi-private attribute `_name`
+        """
+        if not hasattr(self, '_name'):
+            self._name = self.root.getAttribute("Name")
+        return self._name
 
     def isPreview(self):
-        if not hasattr(self, '__isPreview'):
-            self.__isPreview = 0
+        if not hasattr(self, '_isPreview'):
+            self._isPreview = 0
             for c in self.root.getElementsByTagName("Attachment"):
                 if c.getAttribute("Name") == "PreviewMarker":
-                    self.__isPreview = bool(c.getAttribute("isPreviewImage"))
+                    self._isPreview = bool(c.getAttribute("isPreviewImage"))
                     break
-
-        return self.__isPreview
+        return self._isPreview
 
     def getChannels(self):
-        if not hasattr(self, '__channels'):
-            self.__channels = self.root.getElementsByTagName("ChannelDescription")
-        return self.__channels
+        """
+        Method: Extract the DOM elements describing the used channels.
+        Semi-private attribute `_channels`
 
-    def getDimensions(self) -> List[Element]:
-        if not hasattr(self, '__dimensions'):
-            self.__dimensions = self.root.getElementsByTagName(
+        Return: List of DOM elements
+
+        Use: To recover information contained in `chosen_serie.getChannels()`, iterate over the elements and apply `.getAttribute('Keyword')` method
+
+        Keywords: Refer to xml file for a list of relevant Keywords. Examples: DataType, ChannelTag, Resolution, NameOfMeasuredQuantity, Min, Max, Unit,
+                  LUTName, IsLUTInverted, BytesInc, BitInc
+        """
+        if not hasattr(self, '_channels'):
+            self._channels = self.root.getElementsByTagName("ChannelDescription")
+        return self._channels
+
+    def getDimensions(self) -> NodeList:
+        """
+        Method: Extract the DOM elements describing the used channels.
+        Semi-private attribute `_dimensions`
+
+        Return: List of DOM elements
+
+        Use: To recover information contained in `chosen_serie.getDimensionss()`, iterate over the elements and apply `.getAttribute('Keyword') method
+
+        Keywords: Refer to xml file for a list of relevant Keywords. Examples: DimID, NumberOfElements, Origin, Length, Unit, BitInc, BytesInc
+        """
+        if not hasattr(self, '_dimensions'):
+            self._dimensions = self.root.getElementsByTagName(
                 "DimensionDescription")
-        return self.__dimensions
+        return self._dimensions
+
+    def getNumpyDataType(self) -> Any:
+        """Gets the data type of the pixels: numpy.uint8, 16 or 32."""
+        bytes_inc = self.getBytesInc("X")
+        if bytes_inc == 2:
+            return np.uint16
+        elif bytes_inc == 4:
+            return np.uint32
+        return np.uint8
 
     def hasZ(self):
+        """
+        Method: Check if current serie includes Z stacking
+
+        Return: Boolean value
+        """
         for d in self.getDimensions():
             if dimName[int(d.getAttribute("DimID"))] == "Z":
                 return True
         return False
 
     def getMemorySize(self):
-        if not hasattr(self, '__memorySize'):
-            sizes = [
-                int(m.getAttribute("Size"))
-                for m in self.root.getElementsByTagName("Memory")
-            ]
-            if len(sizes) > 0:
-                self.__memorySize = max(sizes)
-            else:
-                self.__memorySize = 0
-        return self.__memorySize
+        """
+        Method: Get the Memory size of the current Serie
+        Semi-private attribute `_memorySize`
+
+        Return: Memory size as int
+        """
+        if not hasattr(self, '_memorySize'):
+            for m in self.root.getElementsByTagName("Memory"):
+                # to ensure the Memory node is the child of root
+                if m.parentNode is self.root:
+                    self._memorySize = int(m.getAttribute("Size"))
+        return self._memorySize
 
     def getResolution(self, channel):
-        if not hasattr(self, '__resolusion'):
-            self.__resolusion = int(
+        """
+        Method: Get the BitDepth Resolution of a given Channel using .getChannels() method
+        Semi-private attribute `_resolution`
+
+        arg:: channel number (int)
+
+        Return: Bit Depth resolution as int
+        """
+        if not hasattr(self, '_resolution'):
+            self._resolution = int(
                 self.getChannels()[channel].getAttribute("Resolution")
             )
-        return self.__resolusion
+        return self._resolution
 
     def getScannerSetting(self, identifier):
-        if not hasattr(self, '__' + identifier):
+        """
+        Method: Access to the value of one of the Experimental Condition elements under ScannerSettingRecord TagName
+        Semi-private attribute `_"identifier"`
+
+        arg:: identifier (string) as the name of the Attribute looked for.
+
+              Refer to xml file for a list of relevant identifier: dblPinhole, dblSizeX, dblSizeY, dblVoxelX, dblVoxelY, dblZoom,
+              nAccumulation, nAverageFrame, nAverageLine, nChannels, nDelayTime_ms, nLineAccumulation, nRepeatActions, ...
+
+        return: The value ('Variant') of the required Attribute ('identifier') as a *string*
+        """
+        if not hasattr(self, '_' + identifier):
             for c in self.root.getElementsByTagName("ScannerSettingRecord"):
                 if c.getAttribute("Identifier") == identifier:
-                    setattr(self, '__' + identifier, c.getAttribute("Variant"))
+                    setattr(self, '_' + identifier, c.getAttribute("Variant"))
                     break
-        return getattr(self, '__' + identifier)
+        return getattr(self, '_' + identifier)
+
+    def getFilterSetting(self, objectName):
+        """
+        Method: Access to the value of one of the Experimental Condition elements under `FilterSettingRecord TagName`
+        Semi-private attribute `_"objectName"`
+
+        arg:: objectName (string) as the name of the Object looked for.
+
+              Refer to xml file for a list of relevant objectName: e.g. 'Scan Head' yields information about scanner
+
+        return: Unlike identifier in getScannerSetting, a single objectname has multiple occurences,
+                hence getFilterSetting returns a dictionnary of all {Attributes: Variant}, with values 'Variant' being strings
+        """
+        if not hasattr(self, '_' + objectName):
+            obj = dict()
+            for c in self.root.getElementsByTagName("FilterSettingRecord"):
+                if c.getAttribute("ObjectName") == objectName:
+                    obj[c.getAttribute("Attribute")] = c.getAttribute("Variant")
+            setattr(self, '_' + objectName, obj)
+        return getattr(self, '_' + objectName)
 
     def getNumberOfElements(self):
-        if not hasattr(self, '__numberOfElements'):
-            self.__numberOfElements = [
+        """
+        Method: Use .getDimensions() method to extact the data dimensions along all axis in order X, Y, Z, T, ...
+        Semi-private attribute `_numberOfElements`
+
+        Result: List of integers
+        """
+        if not hasattr(self, '_numberOfElements'):
+            self._numberOfElements = [
                 int(d.getAttribute("NumberOfElements")) \
                 for d in self.getDimensions()
             ]
-        return self.__numberOfElements
+        return self._numberOfElements
 
     def getVoxelSize(self, dimension):
+        """
+        Method: Use getScannerSetting() to return the resolution
+
+        arg:: dimension is an integer according to the dimName dictionnary {1: X, 2: Y, 3: Z}
+
+        Return: Voxel size of specified axis (float)
+
+        """
         return float(self.getScannerSetting("dblVoxel%s" % dimName[dimension]))
 
     def getZXratio(self):
+        """
+        Method: Calculate for the current Serie the ratio between Vertical (Z) and Horizontal (X) image resolutions. Looks for the information either in
+                    - 'ScannerSettingRecord' (resolution)
+                    - or in 'DimensionDescription' (total size / pixel number)
+
+        Return: Z/X resolution ratio (float). Return 1.0 if the current Serie has no Z-stack.
+
+        """
+        setting_records = self.root.getElementsByTagName('ScannerSettingRecord')
+        dimension_descriptions = self.root.getElementsByTagName('DimensionDescription')
         if self.hasZ():
-            return float(self.getScannerSetting("dblVoxelZ")) / float(self.getScannerSetting("dblVoxelX"))
+            if setting_records:
+                return float(self.getScannerSetting("dblVoxelZ")) / float(self.getScannerSetting("dblVoxelX"))
+            elif dimension_descriptions:
+                length_x = float(
+                    [d.getAttribute('Length') for d in dimension_descriptions if d.getAttribute('DimID') == '1'][0])
+                length_z = float(
+                    [d.getAttribute('Length') for d in dimension_descriptions if d.getAttribute('DimID') == '3'][0])
+                number_x = float(
+                    [d.getAttribute('NumberOfElements') for d in dimension_descriptions if
+                     d.getAttribute('DimID') == '1'][
+                        0])
+                number_z = float(
+                    [d.getAttribute('NumberOfElements') for d in dimension_descriptions if
+                     d.getAttribute('DimID') == '3'][
+                        0])
+                psx = length_x / number_x
+                psz = length_z / number_z
+                return psz / psx
         else:
             return 1.0
 
     def getTotalDuration(self):
-        """Get total duration of the experiment"""
-        if not hasattr(self, '__duration'):
-            self.__duration = 0.0
+        """
+        Method: Get total duration of the experiment using the .getDimensions() method
+        Semi-private attribute `_duration`
+
+        Return: duration (float) in seconds
+        """
+        if not hasattr(self, '_duration'):
+            self._duration = 0.0
             for d in self.getDimensions():
                 if dimName[int(d.getAttribute("DimID"))] == "T":
-                    self.__duration = float(d.getAttribute("Length"))
-        return self.__duration
+                    self._duration = float(d.getAttribute("Length"))
+        return self._duration
 
     def getTimeLapse(self):
-        """Get an estimate of the average time lapse between two frames in seconds"""
+        """
+        Method: Get an estimate of the average time lapse between two frames in seconds
+
+        Return: estimated Lag time in seconds (float)
+
+        warning:: Note that this value is accessible directly via getScannerSetting('nDelayTime_ms')
+
+        """
         if self.getNbFrames() == 1:
             return 0
         else:
             return self.getTotalDuration() / (self.getNbFrames() - 1)
 
     def getTimeStamps(self):
-        """if the timestamps are not empty, convert them into a more lightweight numpy array"""
-        if not hasattr(self, '__timeStamps'):
+        """
+        Method: Get a numpy array of all image timeStamps in the Serie.
+        Semi-private attribute `_timeStamps`
+
+        Return: Numpy array of integers with timeStamps of all successives images in the Serie
+
+        warning:: on first call getTimeStamps() suppresses the data from the XML SerieHeader
+        """
+        if not hasattr(self, '_timeStamps'):
             tslist = self.root.getElementsByTagName("TimeStampList")[0]
             if tslist.hasAttribute("NumberOfTimeStamps") and int(tslist.getAttribute("NumberOfTimeStamps")) > 0:
                 # SP8 way of storing time stamps in the text of the node as 16bits hexadecimal separated by spaces
-                self.__timeStamps = np.array([
+                self._timeStamps = np.array([
                     int(h, 16)
                     for h in tslist.firstChild.nodeValue.split()
                 ])
             else:
                 # SP5 way of storing time stamps as very verbose XML
-                self.__timeStamps = np.asarray([
+                self._timeStamps = np.asarray([
                     (int(c.getAttribute("HighInteger")) << 32) + int(c.getAttribute("LowInteger"))
-                    for c in self.root.getElementsByTagName("TimeStamp")])
+                    for c in tslist.getElementsByTagName("TimeStamp")])
                 # remove the data from XML
-                for c in self.root.getElementsByTagName("TimeStamp"):
+                for c in tslist.getElementsByTagName("TimeStamp"):
                     c.parentNode.removeChild(c).unlink()
-        return self.__timeStamps
+        return self._timeStamps
 
     def getRelativeTimeStamps(self):
-        """if the timestamps are not empty, convert them into a more lightweight numpy array"""
-        if not hasattr(self, '__relTimeStamps'):
-            self.__relTimeStamps = np.asarray([
+        """
+        Method: Get a numpy array of all image relativetimeStamps in the Serie.
+        Semi-private attribute `_relTimeStamps`
+
+        Return: Numpy array of integers with relativetimeStamps of all successives images in the Serie
+
+        warning:: on first call getRelativeTimeStamps() suppresses the data from the XML SerieHeader
+        """
+        if not hasattr(self, '_relTimeStamps'):
+            self._relTimeStamps = np.asarray([
                 float(c.getAttribute("Time"))
                 for c in self.root.getElementsByTagName("RelTimeStamp")])
             # remove the data from XML
             for c in self.root.getElementsByTagName("RelTimeStamp"):
                 c.parentNode.removeChild(c).unlink()
-        return self.__relTimeStamps
+        return self._relTimeStamps
 
     def getBytesInc(self, dimension):
+        """
+        Method: Get the ByteIncrement of a given dimension in the Serie.
+        Semi-private attribute `_"dim"`, with "dim" a string = X, Y, Z, T
+
+        arg:: dimension either as a string or as its key (integer) in dimName = {1: "X", 2: "Y", 3: "Z", 4: "T", ...}
+
+        Return: BytesIncr as integer
+        """
+        # todo: consider channels
         if isinstance(dimension, int):
             dim = dimName[dimension]
         else:
             dim = dimension
-        if not hasattr(self, '__' + dim):
-            setattr(self, '__' + dim, 0)
+        if not hasattr(self, '_' + dim):
+            setattr(self, '_' + dim, 0)
             for d in self.getDimensions():
                 if dimName[int(d.getAttribute("DimID"))] == dim:
-                    setattr(self, '__' + dim, int(d.getAttribute("BytesInc")))
-        return getattr(self, '__' + dim)
+                    setattr(self, '_' + dim, int(d.getAttribute("BytesInc")))
+        return getattr(self, '_' + dim)
 
-    def chooseChannel(self) -> int:
+    def chooseChannel(self):
+        """
+        Method: Interactive selection of the channel for the current serie.
+
+        Print the Serie name `chosen_serie.getName() and a list of all channels specifying: index, Color
+        Promt for selecting a channel index.
+
+        """
         st = "Serie: %s\n" % self.getName()
         for i, c in enumerate(self.getChannels()):
             st += "(%i) %s\n" % (i, channelTag[int(c.getAttribute("ChannelTag"))])
@@ -344,46 +567,103 @@ class SerieHeader:
         return r
 
     def getNbFrames(self):
-        if not hasattr(self, '__nbFrames'):
-            self.__nbFrames = 1
+        """
+        Method: Get the number of frames in the Serie (acquisition at successive times)
+        Semi-private attribute `_nbFrames`
+
+        Return: number of frames (integer)
+        """
+        if not hasattr(self, '_nbFrames'):
+            self._nbFrames = 1
             for d in self.getDimensions():
                 if d.getAttribute("DimID") == "4":
-                    self.__nbFrames = int(d.getAttribute("NumberOfElements"))
-        return self.__nbFrames
+                    self._nbFrames = int(d.getAttribute("NumberOfElements"))
+        return self._nbFrames
 
     def getBoxShape(self):
-        """Shape of the field of view in the X,Y,Z order."""
-        if not hasattr(self, '__boxShape'):
+        """
+        Method: Get the Shape (spatial) of a frame
+        Semi-private attribute: _boxShape
+
+        Return: a list integers [length axis 1, length axis 2, ... ] ordered according to axis number (X, Y, Z)
+
+        """
+        if not hasattr(self, '_boxShape'):
             dims = {
                 int(d.getAttribute('DimID')): int(d.getAttribute("NumberOfElements"))
                 for d in self.getDimensions()
             }
-            # ensure dimensions are sorted, keep only spatial dimensions
-            self.__boxShape = [s for d, s in sorted(dims.items()) if d < 4]
-        return self.__boxShape
+            # ensure dimensions are sorted (unlike dictionnaries...), keep only spatial dimensions
+            self._boxShape = [s for d, s in sorted(dims.items()) if d < 4]
+        return self._boxShape
 
     def getFrameShape(self):
-        """Shape of the frame (nD image) in C order, that is C,Z,Y,X"""
-        box_shape = self.getBoxShape()
-        return [box_shape[2], len(self.getChannels()), box_shape[1], box_shape[0]]
+        """
+        Method: Get the Shape of the frame (nD image) in C order, that is Z,Y,X
+
+        Return: list of integers of axis length in Z, Y, X order (reverse as in .getBoxShape())
+        """
+        return self.getBoxShape()[::-1]
 
     def get2DShape(self):
-        """size of the two first spatial dimensions, in C order, e.g. Y,X"""
+        """
+        Method: Get the Shape of an image using the two first spatial dimensions, in C order, e.g. Y,X
+
+        Return: list of integers of axis length
+        """
         return self.getBoxShape()[:2][::-1]
 
     def getNbPixelsPerFrame(self):
-        if not hasattr(self, '__nbPixelsPerFrame'):
-            self.__nbPixelsPerFrame = np.prod(self.getFrameShape())
-        return self.__nbPixelsPerFrame
+        """
+        Method: Get the total number of pixels in a frame of shape .getBoxShape()
+        Semi-private attribute: _nbPixelsPerFrame
+
+        Return: total number of pixels (integer)
+        """
+        if not hasattr(self, '_nbPixelsPerFrame'):
+            self._nbPixelsPerFrame = np.prod(self.getBoxShape())
+        return self._nbPixelsPerFrame
 
     def getNbPixelsPerSlice(self):
-        if not hasattr(self, '__nbPixelsPerSlice'):
-            self.__nbPixelsPerSlice = np.prod(self.get2DShape())
-        return self.__nbPixelsPerSlice
+        """
+        Method: Get the total number of pixels in a Slice of shape .get2DShape()
+        Semi-private attribute: _nbPixelsPerSlice
+
+        Return: total number of pixels (integer)
+        """
+        if not hasattr(self, '_nbPixelsPerSlice'):
+            self._nbPixelsPerSlice = np.prod(self.get2DShape())
+        return self._nbPixelsPerSlice
+
+
+def get_xml(lif_name):
+    """
+    Function: Extract the XML header from LIF file and save it. Generated .xml file can be opened in a Web Browser
+
+    Use to examine the global architecture and the keywords associated with usefull information, to use with getXXX() methods
+    """
+    with open(lif_name, "rb") as f:
+        memBlock, trash, testBlock = struct.unpack("iic", f.read(9))
+        if memBlock != 112:
+            raise Exception("This is not a valid LIF file")
+        if testBlock != b'*':
+            raise Exception("Invalid block at %l" % f.tell())
+        memorysize, = struct.unpack("I", f.read(4))
+        # read and parse the header
+        xml = f.read(2 * memorysize).decode("utf-16")
+        return xml
 
 
 class Reader(Header):
-    """Reads Leica LIF files"""
+    """
+    Reads Leica LIF files
+
+    Methods: getSeries(), chooseSeries(), __init__(), __iter__(), __readMemoryBlockHeader()
+
+    Semi-Private Attribute:: _series
+
+
+    """
 
     def __init__(self, lifFile, quick=True):
         # open file and find it's size
@@ -441,19 +721,25 @@ class Reader(Header):
             memorysize, = struct.unpack("Q", self.f.read(8))
         return memorysize
 
-    def getSeries(self) -> List["Serie"]:
-        if not hasattr(self, '__series'):
-            try:
-                self.__series = [
-                    Serie(s.root, self.f, self.offsets[i]) \
-                    for i, s in enumerate(self.getSeriesHeaders())
-                ]
-            except IndexError:
-                raise IndexError(
-                    'More SeriesHeaders than offsets. Try to run chooseSeriesHeaders(), note the name of the strange items on the list, and edit Reader.getSeriesHeaders to discard Elements named that way from the list of SeriesHeaders. (Or contact the maintainter with the output of chooseSeriesHeaders)')
-        return self.__series
+    def getSeries(self):
+        """
+        Method: Get the experimental Series from the raw .lif file
+        Semi-Private Attribute: _series
+
+        Return: a List of class Serie objects
+        """
+        if not hasattr(self, '_series'):
+            self._series = [
+                Serie(s.root, self.f, self.offsets[i]) for i, s in enumerate(self.getSeriesHeaders())
+            ]
+        return self._series
 
     def chooseSerie(self):
+        """
+        Method: use .chooseSerieIndex() inherited Header method to interactively choose a Serie using .getSeries()
+
+        Return: the selected class Serie object
+        """
         return self.getSeries()[self.chooseSerieIndex()]
 
     def __iter__(self):
@@ -461,7 +747,11 @@ class Reader(Header):
 
 
 class Serie(SerieHeader):
-    """One on the datasets in a lif file"""
+    """
+    One of the datasets (Serie) in a .lif file
+
+    Methods:
+    """
 
     def __init__(self, serieElement, f, offset):
         self.f = f
@@ -469,6 +759,11 @@ class Serie(SerieHeader):
         self.root = serieElement
 
     def getOffset(self, **dimensionsIncrements):
+        """
+        Method: Get the Frame Offset
+
+        kwargs:: Time, Channel or data type. Default to `channel=0, T=0, dtype=np.uint8`
+        """
         of = 0
         for d, b in dimensionsIncrements.items():
             of += self.getBytesInc(d) * b
@@ -476,8 +771,25 @@ class Serie(SerieHeader):
             raise IndexError("offset out of bound")
         return self.__offset + of
 
+    def getChannelOffset(self, channel):
+        """
+        Method: Get the Channel Offset
+
+        arg:: channel (int)
+        """
+        channels = self.getChannels()
+        channel_node = channels[channel]
+        of = int(channel_node.getAttribute('BytesInc'))
+        return of
+
     def get2DSlice(self, **dimensionsIncrements):
-        """Use the two first dimensions as image dimension. Axis are in C order (last index is X)."""
+        """
+        Method: Use the two first dimensions as image dimension (XY, XZ, YZ). Axis are in C order (last index is X).
+
+        Return: Image as numpy array with the axis in ZY, ZX, or YX order
+
+        warning:: See dtype argument; might not support 16bits encoding
+        """
         for d in self.getDimensions()[:2]:
             if dimName[int(d.getAttribute("DimID"))] in dimensionsIncrements:
                 raise Exception('You can\'t set %s in serie %s' % (
@@ -494,7 +806,9 @@ class Serie(SerieHeader):
         ).reshape(shape)
 
     def get2DString(self, **dimensionsIncrements):
-        """Use the two first dimensions as image dimension"""
+        """
+        Use the two first dimensions as image dimension
+        """
         for d in self.getDimensions()[:2]:
             if dimName[int(d.getAttribute("DimID"))] in dimensionsIncrements:
                 raise Exception('You can\'t set %s in serie %s' % (
@@ -504,91 +818,137 @@ class Serie(SerieHeader):
         self.f.seek(self.getOffset(**dimensionsIncrements))
         return self.f.read(self.getNbPixelsPerSlice())
 
-    def get2DImage(self, **dimensionsIncrements):
-        """Use the two first dimensions as image dimension"""
-        try:
-            import Image
-        except:
-            try:
-                import PIL as Image
-            except:
-                print("Impossible to find image library")
-                return None
-        size = self.getNumberOfElements()[:2]
-        return Image.fromstring(
-            "L",
-            tuple(size)
-            , self.get2DString(**dimensionsIncrements)
-        )
+    def getFrame(self, channel=0, T=0):
+        """
+        Return a numpy array (C order, thus last index is X):
+         2D if XYT or XZT serie,
+         3D if XYZ, XYZT or XZYT
+         (ok if no T dependence)
+        Leica use uint8 by default, but after deconvolution the datatype is np.uint16
+        """
+        zcyx = []
+        dtype = self.getNumpyDataType()
+        channels = self.getChannels()
+        for z in range(self.getBoxShape()[-1]):
+            cyx = []
+            for i in range(len(channels)):
+                self.f.seek(self.getOffset(**dict({'T': T, 'Z': z})) + self.getChannelOffset(i))
+                yx = np.fromfile(self.f, dtype=dtype, count=int(self.getNbPixelsPerSlice()))
+                yx = yx.reshape(self.get2DShape())
+                cyx.append(yx)
+            zcyx.append(cyx)
+        zcyx = np.array(zcyx)
+        xzcy = np.moveaxis(zcyx, -1, 0)
+        xyzc = np.moveaxis(xzcy, -1, 1)
+        return xyzc[:, :, :, channel]
 
-    def getFrame(self, T=0):
+    def getFrame2D(self, channel=0, T=0, dtype=np.uint8):
         """
-        Return a numpy array (C order, thus last index is X). Shape is (Z, C, Y, X).
+        Method: Get a 2D image from the serie XY (for XY, XYT) or XZ (for XZ, XZT)
+
+        kwarg:: channel number (int, default = 0), Time index (int, default = 0)
+
+        Return: a 2D numpy array (in C order: last index is X). (ok if no T dependence)
+                Leica use uint8 by default, but after deconvolution the datatype is np.uint16
         """
-        self.f.seek(self.getOffset(**dict({'T': T})))
-        return np.fromfile(
-            self.f,
-            dtype=np.ubyte,
-            count=self.getNbPixelsPerFrame()
-        ).reshape(self.getFrameShape())
+        channels = self.getChannels()
+        cyx = []
+        for i in range(len(channels)):
+            self.f.seek(self.getOffset(**dict({'T': T})) + self.getChannelOffset(i))
+            yx = np.fromfile(self.f, dtype=dtype, count=int(self.getNbPixelsPerSlice()))
+            yx = yx.reshape(self.get2DShape())
+            cyx.append(yx)
+        cyx = np.array(cyx)
+        return cyx[channel]
+
+    def getMetadata(self):
+        """
+        voxel size unit: µm
+        """
+        nbx, nby, nbz = self.getBoxShape()
+        setting_records = self.root.getElementsByTagName('ScannerSettingRecord')
+        dimension_descriptions = self.root.getElementsByTagName('DimensionDescription')
+        if setting_records:
+            # ScannerSettingRecord only available for some lif files!
+            psx = self.getVoxelSize(1)  # m ---> µm
+            psy = self.getVoxelSize(2)  # m ---> µm
+            psz = self.getVoxelSize(3)  # m ---> µm
+            unit_x = [s.getAttribute('Unit') for s in setting_records if s.getAttribute('Identifier') == 'dblVoxelX'][0]
+            unit_y = [s.getAttribute('Unit') for s in setting_records if s.getAttribute('Identifier') == 'dblVoxelY'][0]
+            unit_z = [s.getAttribute('Unit') for s in setting_records if s.getAttribute('Identifier') == 'dblVoxelZ'][0]
+            units = [unit_x, unit_y, unit_z]
+        elif dimension_descriptions:
+            # Use DimensionDescription to get voxel information
+            length_x = float(
+                [d.getAttribute('Length') for d in dimension_descriptions if d.getAttribute('DimID') == '1'][0])
+            length_y = float(
+                [d.getAttribute('Length') for d in dimension_descriptions if d.getAttribute('DimID') == '2'][0])
+            length_z = float(
+                [d.getAttribute('Length') for d in dimension_descriptions if d.getAttribute('DimID') == '3'][0])
+            number_x = float(
+                [d.getAttribute('NumberOfElements') for d in dimension_descriptions if d.getAttribute('DimID') == '1'][
+                    0])
+            number_y = float(
+                [d.getAttribute('NumberOfElements') for d in dimension_descriptions if d.getAttribute('DimID') == '2'][
+                    0])
+            number_z = float(
+                [d.getAttribute('NumberOfElements') for d in dimension_descriptions if d.getAttribute('DimID') == '3'][
+                    0])
+            psx = length_x / number_x
+            psy = length_y / number_y
+            psz = length_z / number_z
+            units = [s.getAttribute('Unit') for s in dimension_descriptions]
+        else:
+            raise RuntimeError("Can't find voxel information in the lif file!")
+
+        if len(set(units)) == 1 and 'm' in units:
+            factor = 1e6
+            unit = 'um'
+        else:
+            warnings.warn('unit is not meter, check the unit of voxel size')
+            factor = 1
+            unit = ", ".join(units)
+
+        psx = psx * factor  # m ---> µm
+        psy = psy * factor  # m ---> µm
+        psz = psz * factor  # m ---> µm
+
+        return {
+            'voxel_size_x': psx,
+            'voxel_size_y': psy,
+            'voxel_size_z': psz,
+            'voxel_size_unit': unit,
+            'voxel_number_x': nbx,
+            'voxel_number_y': nby,
+            'voxel_number_z': nbz,
+            'channel_number': len(self.getChannels()),
+            'frame_number': self.getNbFrames(),
+        }
+
+    def saveXML(self, name=None):
+        if not name:
+            name = '{}.xml'.format(self.getName())
+        with open(name, 'w') as f:
+            f.write(self.root.toprettyxml())
 
     def getVTK(self, fname, T=0):
-        """Export the frame at time T to a vtk file"""
+        """
+        Export the frame at time T to a vtk file
+        One can render the vtk file using software like Paraview
+        """
+        if '.vtk' not in fname:
+            fname += '.vtk'
         with open(fname, 'wb') as f:
-            f.write(
-                ('# vtk DataFile Version 3.0\n%s\n' % self.getName) +
-                'BINARY\nDATASET STRUCTURED_POINTS\n' +
-                ('DIMENSIONS %d %d %d\n' % tuple(self.getBoxShape())) +
-                'ORIGIN 0 0 0\n' +
-                ('SPACING 1 1 %g\n' % self.getZXratio()) +
-                ('POINT_DATA %d\n' % self.getNbPixelsPerFrame()) +
-                'SCALARS Intensity unsigned_char\nLOOKUP_TABLE default\n'
-            )
+            header = '# vtk DataFile Version 3.0\n%s\n' % self.getName + \
+                     'BINARY\nDATASET STRUCTURED_POINTS\n' + \
+                     ('DIMENSIONS %d %d %d\n' % tuple(self.getBoxShape())) + \
+                     'ORIGIN 0 0 0\n' + \
+                     ('SPACING 1 1 %g\n' % self.getZXratio()) + \
+                     ('POINT_DATA %d\n' % self.getNbPixelsPerFrame()) + \
+                     'SCALARS Intensity unsigned_char\nLOOKUP_TABLE default\n'
+            f.write(str.encode(header))
             self.f.seek(self.getOffset(**dict({'T': T})))
             f.write(self.f.read(self.getNbPixelsPerFrame()))
-
-    def getDispl2DImage(self, t0=0, t1=1, Z=0):
-        ham = np.hamming(self.get2DShape()[0]) * np.atleast_2d(np.hamming(self.get2DShape()[1])).T
-        a = rfft2(self.get2DSlice(T=t0, Z=Z) * ham)
-        b = rfft2(self.get2DSlice(T=t1, Z=Z) * ham)
-        R = a * numpy.complex(numpy.real(b),
-                              -numpy.imag(b) / numpy.abs(a * numpy.complex(numpy.real(b), -numpy.imag(b))))
-        return irfft2(R)
-
-    def getDispl2D(self, t0=0, t1=1, Z=0):
-        r = self.getDispl2DImage(t0, t1, Z)
-        return np.unravel_index(r.argmax(), r.shape)
-
-    def getDisplacements2D(self, Z=None, window=False):
-        """
-        Use phase correlation to find the relative displacement between
-        each time step
-        """
-        if Z is None:
-            Z = self.getNbPixelsPerFrame() / self.getNbPixelsPerSlice() / 2
-        shape = np.asarray(self.get2DShape())
-        if window:
-            ham = np.hamming(shape[0]) * np.atleast_2d(np.hamming(shape[1])).T
-        else:
-            ham = 1.0
-        displs = np.zeros((self.getNbFrames(), 2))
-        a = rfft2(self.get2DSlice(T=0, Z=Z) * ham)
-        for t in range(1, self.getNbFrames()):
-            b = rfft2(self.get2DSlice(T=t, Z=Z) * ham)
-            # calculate the normalized cross-power spectrum
-            # R = numexpr.evaluate(
-            #    'a*complex(real(b), -imag(b)/abs(a*complex(real(b), -imag(b))))'
-            #    )
-            R = a * b.conj()
-            Ra = np.abs(a * b.conj())
-            R[Ra > 0] /= Ra[Ra > 0]
-            r = irfft2(R)
-            # Get the periodic position of the peak
-            l = r.argmax()
-            displs[t] = np.unravel_index(l, r.shape)
-            # prepare next step
-            a = b
-        return np.where(displs < shape[::-1] / 2, displs, displs - shape[::-1])
 
     def enumByFrame(self):
         """yield time steps one after the other as a couple (time,numpy array). It is not safe to combine this syntax with getFrame or get2DSlice."""
@@ -610,34 +970,3 @@ class Serie(SerieHeader):
                     dtype=np.ubyte,
                     count=self.getNbPixelsPerSlice()
                 ).reshape(self.get2DShape())
-
-
-def getNeighbourhood(point, image, radius=10):
-    box = np.floor([np.maximum(0, point - radius), np.minimum(image.shape, point + radius + 1)])
-    ngb = image[box[0, 0]:box[1, 0], box[0, 1]:box[1, 1], box[0, 2]:box[1, 2]]
-    center = point - box[0]
-    return ngb, center
-
-
-def getRadius(ngb, center, zratio=1, rmin=3, rmax=10, precision=0.1):
-    sqdist = [(np.arange(ngb.shape[d]) - center[d]) ** 2 for d in range(ngb.ndim)]
-    sqdist[-1] *= zratio ** 2
-    dist = np.empty_like(ngb)
-    for i, x in enumerate(sqdist[0]):
-        for j, y in enumerate(sqdist[1]):
-            for k, z in enumerate(sqdist[2]):
-                dist[i, j, k] = x + y + z
-    val = np.zeros(rmax / precision)
-    nbs = np.zeros(rmax / precision)
-    for l, (px, d) in enumerate(zip(ngb.ravel(), dist.ravel())):
-        if d < rmax ** 2:
-            i = int(np.sqrt(d) / precision)
-            nbs[i] += 1
-            val[i] += px
-    intensity = np.cumsum(val) / np.cumsum(nbs)
-    fi = np.fft.rfft(intensity)
-    return rmin + precision * np.argmin(
-        np.ediff1d(np.fft.irfft(
-            fi * np.exp(-np.arange(len(fi)) / 13.5))
-        )[rmin / precision:]
-    )

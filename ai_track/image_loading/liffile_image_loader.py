@@ -2,6 +2,7 @@
 from typing import Optional, Tuple, List
 from xml.dom.minidom import Element
 
+import numpy
 from numpy import ndarray
 
 from ai_track.core import TimePoint
@@ -136,17 +137,15 @@ class _LifImageLoader(ImageLoader):
         if not isinstance(image_channel, _IndexedChannel):
             return None
 
-        array = self._serie.getFrame(time_point.time_point_number())
+        array = self._serie.getFrame(channel=image_channel.index, T=time_point.time_point_number())
+        array = numpy.moveaxis(array, 2, 0)
         if self._inverted_z:
-            return array[::-1, image_channel.index]
+            return array[::-1]
         else:
-            return array[:, image_channel.index]
+            return array
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
-        dimensions: List[Element] = self._serie.getDimensions()
-        x_size = dimensions[0].getAttribute("NumberOfElements")
-        y_size = dimensions[1].getAttribute("NumberOfElements")
-        z_size = dimensions[2].getAttribute("NumberOfElements")
+        x_size, y_size, z_size = self._serie.getBoxShape()
         return int(z_size), int(y_size), int(x_size)
 
     def copy(self) -> "_LifImageLoader":
