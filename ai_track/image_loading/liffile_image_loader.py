@@ -10,6 +10,7 @@ from ai_track.core.image_loader import ImageLoader, ImageChannel
 from ai_track.core.images import Images
 from ai_track.core.resolution import ImageResolution
 from ai_track.image_loading import _lif
+from ai_track.util import bits
 
 
 def load_from_lif_file(images: Images, file: str, series_name: str, min_time_point: int = 0,
@@ -139,6 +140,8 @@ class _LifImageLoader(ImageLoader):
 
         array = self._serie.getFrame(channel=image_channel.index, T=time_point.time_point_number())
         array = numpy.moveaxis(array, 2, 0)
+        if array.dtype != numpy.uint8:  # Saves memory
+            array = bits.image_to_8bit(array)
         if self._inverted_z:
             return array[::-1]
         else:
