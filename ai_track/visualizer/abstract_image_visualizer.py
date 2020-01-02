@@ -166,11 +166,23 @@ class AbstractImageVisualizer(Visualizer):
     def _get_figure_title(self) -> str:
         return "Time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
 
+    def _draw_extra(self):
+        pass  # Subclasses can override this
+
     def _must_show_other_time_points(self) -> bool:
         return True
 
-    def _draw_extra(self):
-        pass  # Subclasses can override this
+    def _must_draw_positions_of_previous_time_point(self) -> bool:
+        """Returns whether the positions of the previous time point are drawn based on the current display settings."""
+        # Only draw positions of previous time point if there is linking data, or if we're forced to.
+        can_show_other_time_points = self._must_show_other_time_points() and self._experiment.links.has_links()
+        return not self._display_settings.show_next_time_point and can_show_other_time_points
+
+    def _must_draw_positions_of_next_time_point(self) -> bool:
+        """Returns whether the positions of the next time point are drawn based on the current display settings."""
+        # Only draw positions of next time point if there is linking data, or if we're forced to.
+        can_show_other_time_points = self._must_show_other_time_points() and self._experiment.links.has_links()
+        return self._display_settings.show_next_time_point or can_show_other_time_points
 
     def _draw_positions(self):
         """Draws positions and links. Returns the amount of non-equal links in the image"""
@@ -178,9 +190,8 @@ class AbstractImageVisualizer(Visualizer):
             return
 
         # Next time point
-        can_show_other_time_points = self._must_show_other_time_points() and self._experiment.links.has_links()
-        if self._display_settings.show_next_time_point or can_show_other_time_points:
-            # Only draw positions of next/previous time point if there is linking data, or if we're forced to
+        if self._must_draw_positions_of_next_time_point():
+
             try:
                 self._draw_positions_of_time_point(self._experiment.get_next_time_point(self._time_point),
                                                    color=core.COLOR_CELL_NEXT)
@@ -188,7 +199,7 @@ class AbstractImageVisualizer(Visualizer):
                 pass  # There is no next time point, ignore
 
         # Previous time point
-        if not self._display_settings.show_next_time_point and can_show_other_time_points:
+        if self._must_draw_positions_of_previous_time_point():
             try:
                 self._draw_positions_of_time_point(
                     self._experiment.get_previous_time_point(self._time_point), color=core.COLOR_CELL_PREVIOUS)
@@ -314,8 +325,28 @@ class AbstractImageVisualizer(Visualizer):
         """Wrapper of get_closest_position that makes use of the fact that we can lookup all positions ourselves."""
         min_z = self._z - self.MAX_Z_DISTANCE
         max_z = self._z + self.MAX_Z_DISTANCE
-        positions_near_visible_layer = self._experiment.positions.of_time_point_and_z(self._time_point, min_z, max_z)
-        return self.get_closest_position(positions_near_visible_layer, x, y, None, self._time_point, max_distance=5)
+
+        # Find all drawn positions
+        selectable_positions = set(self._experiment.positions.of_time_point_and_z(self._time_point, min_z, max_z))
+        if self._must_draw_positions_of_previous_time_point():
+            try:
+                previous_time_point = self._experiment.get_previous_time_point(self._time_point)
+            except ValueError:
+                pass
+            else:
+                for position in self._experiment.positions.of_time_point_and_z(previous_time_point, min_z, max_z):
+                    selectable_positions.add(position)
+        if self._must_draw_positions_of_next_time_point():
+            try:
+                next_time_point = self._experiment.get_next_time_point(self._time_point)
+            except ValueError:
+                pass
+            else:
+                for position in self._experiment.positions.of_time_point_and_z(next_time_point, min_z, max_z):
+                    selectable_positions.add(position)
+
+        # Find nearest position
+        return self.get_closest_position(selectable_positions, x, y, None, self._time_point, max_distance=5)
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
         def time_point_prompt():
