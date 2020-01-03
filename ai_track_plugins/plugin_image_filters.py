@@ -3,28 +3,42 @@ from typing import Dict, Any
 import numpy
 from numpy.core.multiarray import ndarray
 
+from ai_track.core import UserError
 from ai_track.core.image_loader import ImageFilter
 from ai_track.gui import dialog
 from ai_track.gui.window import Window
-from ai_track.image_loading.noise_suppressing_filter import NoiseSuppressingFilter
+from ai_track.image_loading.noise_suppressing_filters import ThresholdFilter, GaussianBlurFilter
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
         "View//Image filters-Image filters//Increase brightness...": lambda: _enhance_brightness(window),
-        "View//Image filters-Image filters//Threshold (suppress noise)...": lambda: _suppress_noise(window),
+        "View//Image filters-Image filters//Threshold...": lambda: _threshold(window),
+        "View//Image filters-Image filters//Gaussian blur...": lambda: _gaussian_blur(window),
         "View//Image filters-Image filters//Remove all filters": lambda: _remove_filters(window)
     }
 
 
-def _suppress_noise(window: Window):
+def _threshold(window: Window):
     min_value = dialog.prompt_float("Threshold", "What is the threshold for suppressing noise? (0% - 100%)"
                                     "\n\nA value of 25 removes all pixels with a value less than 25% of the maximum"
                                     " brightness in the image.", minimum=0, maximum=100, default=8)
     if min_value is None:
         return
 
-    window.get_experiment().images.filters.append(NoiseSuppressingFilter(min_value / 100))
+    window.get_experiment().images.filters.append(ThresholdFilter(min_value / 100))
+    window.get_gui_experiment().redraw_image_and_data()
+
+
+def _gaussian_blur(window: Window):
+    value = dialog.prompt_int("Blur radius", "What is the blur radius in pixels? Only odd numbers are allowed.",
+                              minimum=1, maximum=31, default=5)
+    if value is None:
+        return
+    if value % 2 == 0:
+        raise UserError("Even number", f"Cannot use the even number {value} - the blur radius must be an odd number.")
+
+    window.get_experiment().images.filters.append(GaussianBlurFilter(value))
     window.get_gui_experiment().redraw_image_and_data()
 
 
