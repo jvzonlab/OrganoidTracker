@@ -188,7 +188,8 @@ class Visualizer:
                 rgb_images[:,:,:,0] = next_time_point_images # Red channel is next image
             except ValueError:
                 pass  # There is no next time point, ignore
-            time_point_images = rgb_images / rgb_images.max()
+            rgb_images /= rgb_images.max()
+            time_point_images = rgb_images
         return time_point_images
 
     def reconstruct_image(self, time_point: TimePoint, rgb_canvas: ndarray):
