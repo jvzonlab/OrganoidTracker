@@ -1,12 +1,21 @@
-from typing import Dict, Any
+from typing import Dict, Any, Type
 
 from matplotlib.backend_bases import KeyEvent
 
-from ai_track.visualizer import activate
+from ai_track.gui.window import Window
+from ai_track.visualizer import activate, Visualizer
 from ai_track.visualizer.abstract_image_visualizer import AbstractImageVisualizer
+from ai_track.visualizer.standard_image_visualizer import StandardImageVisualizer
 
 
 class ExitableImageVisualizer(AbstractImageVisualizer):
+
+    _parent_viewer: Type[Visualizer]  # When exiting this viewer, the viewer specified here is opened.
+
+    def __init__(self, window: Window, parent_viewer: Type[Visualizer] = StandardImageVisualizer):
+        """Creates this viewer. parent_viewer is opened when you exit this viewer."""
+        super().__init__(window)
+        self._parent_viewer = parent_viewer
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
@@ -16,7 +25,7 @@ class ExitableImageVisualizer(AbstractImageVisualizer):
 
     def _exit_view(self):
         from ai_track.visualizer.standard_image_visualizer import StandardImageVisualizer
-        image_visualizer = StandardImageVisualizer(self._window)
+        image_visualizer = self._parent_viewer(self._window)
         activate(image_visualizer)
 
     def _on_command(self, command: str) -> bool:

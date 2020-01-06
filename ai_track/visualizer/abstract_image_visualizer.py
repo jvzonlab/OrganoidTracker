@@ -491,7 +491,7 @@ class AbstractImageVisualizer(Visualizer):
 
     def _show_slices(self):
         from ai_track.visualizer.image_slice_visualizer import ImageSliceViewer
-        activate(ImageSliceViewer(self._window))
+        activate(ImageSliceViewer(self._window, self.__class__))
 
     def _move_in_z(self, dz: int) -> bool:
         return self._move_to_z(self._display_settings.z + dz)

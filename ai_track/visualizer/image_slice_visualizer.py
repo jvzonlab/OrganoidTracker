@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, Type
 
 import numpy
 from matplotlib.axes import Axes
@@ -8,6 +8,7 @@ from ai_track.core import UserError
 from ai_track.gui.window import Window
 from ai_track.util import mpl_helper
 from ai_track.util.mpl_helper import SANDER_APPROVED_COLORS
+from ai_track.visualizer import Visualizer
 from ai_track.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
 
@@ -20,8 +21,8 @@ class ImageSliceViewer(ExitableImageVisualizer):
     _bottom_axes: Axes
     _first_draw: bool = True
 
-    def __init__(self, window: Window):
-        super().__init__(window)
+    def __init__(self, window: Window, parent_viewer: Type[Visualizer]):
+        super().__init__(window, parent_viewer)
         self._right_axes = self._axes[1]
         self._bottom_axes = self._axes[2]
         self._axes[3].set_visible(False)
