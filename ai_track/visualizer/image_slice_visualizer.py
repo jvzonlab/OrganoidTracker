@@ -10,6 +10,7 @@ from ai_track.util import mpl_helper
 from ai_track.util.mpl_helper import SANDER_APPROVED_COLORS
 from ai_track.visualizer import Visualizer
 from ai_track.visualizer.exitable_image_visualizer import ExitableImageVisualizer
+from ai_track.visualizer.standard_image_visualizer import StandardImageVisualizer
 
 
 class ImageSliceViewer(ExitableImageVisualizer):
@@ -21,7 +22,7 @@ class ImageSliceViewer(ExitableImageVisualizer):
     _bottom_axes: Axes
     _first_draw: bool = True
 
-    def __init__(self, window: Window, parent_viewer: Type[Visualizer]):
+    def __init__(self, window: Window, parent_viewer: Type[Visualizer] = StandardImageVisualizer):
         super().__init__(window, parent_viewer)
         self._right_axes = self._axes[1]
         self._bottom_axes = self._axes[2]
