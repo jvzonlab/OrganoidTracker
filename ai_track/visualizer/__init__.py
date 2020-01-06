@@ -1,7 +1,9 @@
 """A bunch of visualizers, all based on Matplotlib. (The fact that TkInter is also used is abstracted away.)"""
-from typing import Iterable, Optional, Union, Dict, Any, Tuple
+from typing import Iterable, Optional, Union, Dict, Any, Tuple, List
 
 import numpy
+from matplotlib import pyplot
+from matplotlib.axis import Axis
 from numpy import ndarray
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 from matplotlib.figure import Figure, Axes
@@ -18,6 +20,7 @@ from ai_track.gui.window import Window, DisplaySettings
 from ai_track.imaging import cropper
 from ai_track.linking.nearby_position_finder import find_closest_position
 from ai_track.linking_analysis import linking_markers
+from ai_track.util import mpl_helper
 
 
 class Visualizer:
@@ -25,14 +28,28 @@ class Visualizer:
     _window: Window
     _fig: Figure
     _ax: Axes
+    _axes: List[Axes]
     _display_settings: DisplaySettings
 
     def __init__(self, window: Window):
-        if not isinstance(window, Window):
-            raise ValueError("window is not a Window")
         self._window = window
         self._fig = window.get_figure()
-        self._ax = self._fig.gca()
+
+        # Replace axes in figure while keeping old zoom
+        old_axes_limits = mpl_helper.store_axes_limits(self._fig.axes[0]) if len(self._fig.axes) > 0 else None
+        subplots_config = self._get_subplots_config()
+        self._fig.clear(keep_observers=True)
+        self._fig.subplots(**subplots_config)
+        self._axes = self._fig.axes
+        self._ax = self._axes[0]
+        mpl_helper.restore_axes_limits(self._ax, old_axes_limits)
+
+    def _get_subplots_config(self) -> Dict[str, Any]:
+        """Gets the configuration, passed to figure.subplots. Make sure to at least specify nrows and ncols."""
+        return {
+            "nrows": 1,
+            "ncols": 1
+        }
 
     @property
     def _experiment(self) -> Experiment:
@@ -56,21 +73,22 @@ class Visualizer:
 
     def _clear_axis(self):
         """Clears the axis, except that zoom settings are preserved"""
-        for image in self._ax.images:
-            colorbar = image.colorbar
-            if colorbar is not None:
-                colorbar.remove_connection()
-        for text in self._fig.texts:
-            text.remove_connection()
+        for ax in self._axes:
+            for image in ax.images:
+                colorbar = image.colorbar
+                if colorbar is not None:
+                    colorbar.remove_connection()
+            for text in self._fig.texts:
+                text.remove_connection()
 
-        xlim, ylim = self._ax.get_xlim(), self._ax.get_ylim()
-        self._ax.clear()
-        if xlim[1] - xlim[0] > 2:
-            # Only preserve scale if some sensible value was recorded
-            ylim = [max(ylim), min(ylim)]  # Make sure y-axis is inverted
-            self._ax.set_xlim(*xlim)
-            self._ax.set_ylim(*ylim)
-            self._ax.set_autoscale_on(False)
+            xlim, ylim = ax.get_xlim(), ax.get_ylim()
+            ax.clear()
+            if xlim[1] - xlim[0] > 2:
+                # Only preserve scale if some sensible value was recorded
+                ylim = [max(ylim), min(ylim)]  # Make sure y-axis is inverted
+                ax.set_xlim(*xlim)
+                ax.set_ylim(*ylim)
+                ax.set_autoscale_on(False)
 
     def run_async(self, runnable, result_handler):
         """Creates a callable that runs the given runnable on a worker thread."""

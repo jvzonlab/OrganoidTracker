@@ -19,7 +19,7 @@ from ai_track.gui.dialog import prompt_int
 from ai_track.gui.window import Window, DisplaySettings
 from ai_track.linking_analysis import linking_markers
 from ai_track.util.mpl_helper import line_infinite
-from ai_track.visualizer import Visualizer
+from ai_track.visualizer import Visualizer, activate
 
 
 class AbstractImageVisualizer(Visualizer):
@@ -373,6 +373,7 @@ class AbstractImageVisualizer(Visualizer):
             "View//Toggle-Toggle showing splines": self._toggle_showing_splines,
             "View//Toggle-Toggle showing position markers [P]": self._toggle_showing_position_markers,
             "View//Toggle-Toggle showing error markers": self._toggle_showing_error_markers,
+            "View//Image-View image slices [\]": self._show_slices,
             "Navigate//Layer-Above layer [Up]": lambda: self._move_in_z(1),
             "Navigate//Layer-Below layer [Down]": lambda: self._move_in_z(-1),
             "Navigate//Channel-Next channel [.]": lambda: self._move_in_channel(1),
@@ -406,10 +407,10 @@ class AbstractImageVisualizer(Visualizer):
             z_str = command[1:]
             try:
                 new_z = int(z_str.strip())
-                self._display_settings.z = new_z
-                self._clamp_z()
-                self.draw_view()
-                self.update_status(f"Moved to z {self._display_settings.z}!")
+                if self._move_to_z(new_z):
+                    self.update_status(f"Moved to z {self._display_settings.z}!")
+                else:
+                    self.update_status(f"Z layer {new_z} does not exist.")
             except ValueError:
                 self.update_status("Cannot read number: " + z_str)
             return True
@@ -488,14 +489,26 @@ class AbstractImageVisualizer(Visualizer):
         self._display_settings.show_errors = not self._display_settings.show_errors
         self.draw_view()
 
-    def _move_in_z(self, dz: int):
-        old_z = self._display_settings.z
-        self._display_settings.z += dz
+    def _show_slices(self):
+        from ai_track.visualizer.image_slice_visualizer import ImageSliceViewer
+        activate(ImageSliceViewer(self._window))
 
+    def _move_in_z(self, dz: int) -> bool:
+        return self._move_to_z(self._display_settings.z + dz)
+
+    def _move_to_z(self, new_z: int) -> bool:
+        """Moves to another z and redraws. Returns false and does nothing else if the given z does not exist."""
+        old_z = self._display_settings.z
+        self._display_settings.z = new_z
         self._clamp_z()
+        if self._display_settings.z != new_z:
+            # Failed, out of range
+            self._display_settings.z = old_z
+            return False
 
         if self._display_settings.z != old_z:
             self.draw_view()
+        return True
 
     def _clamp_time_point(self):
         time_point_number = self._time_point.time_point_number()

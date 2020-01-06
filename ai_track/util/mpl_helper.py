@@ -1,3 +1,5 @@
+from typing import Tuple, Optional
+
 import numpy
 from matplotlib import colors, cm
 from matplotlib.axes import Axes
@@ -53,3 +55,22 @@ def line_infinite(ax: Axes, x1: float, y1: float, x2: float, y2: float, color: M
     ax.plot([x1, x1 - scale * (x2 - x1)], [y1, y1 - scale * (y2 - y1)], color=color, linewidth=linewidth)
     ax.set_xlim([axes[0], axes[1]])
     ax.set_ylim([axes[2], axes[3]])
+
+
+AxesLimits = Tuple[Tuple[float, float], Tuple[float, float]]  # Type definition
+def store_axes_limits(axes: Axes) -> Optional[AxesLimits]:
+    """Returns the current limits of the axes. Returns None if they have their default value."""
+    xlim = axes.get_xlim()
+    ylim = axes.get_ylim()
+    if abs(xlim[1] - xlim[0]) <= 1:
+        return None
+    return xlim, ylim
+
+
+def restore_axes_limits(axes: Axes, limits: Optional[AxesLimits]):
+    """Restores the current limits of the axis. Does nothing if limits is None."""
+    if limits is None:
+        return
+    x_lim, y_lim = limits
+    axes.set_xlim(*x_lim)
+    axes.set_ylim(*y_lim)
