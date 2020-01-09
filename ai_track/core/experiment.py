@@ -90,11 +90,12 @@ class Experiment:
         try:
             old_resolution = self._images.resolution()
         except UserError:
-            pass  # No resolution was set, do nothing
+            return  # No resolution was set, do nothing
         else:
             x_factor = new_resolution.pixel_size_x_um / old_resolution.pixel_size_x_um
             z_factor = new_resolution.pixel_size_z_um / old_resolution.pixel_size_z_um
-            t_factor = new_resolution.time_point_interval_m / old_resolution.time_point_interval_m
+            t_factor = 1 if (new_resolution.time_point_interval_m == 0 or old_resolution.time_point_interval_m == 0) \
+                               else new_resolution.time_point_interval_m / old_resolution.time_point_interval_m
             if t_factor < 0.9 or t_factor > 1.1:
                 # We cannot scale in time, unfortunately. Links must go from one time point to the next time point.
                 # So we throw an error if the scale changes too much

@@ -19,7 +19,7 @@ from ai_track.visualizer.exitable_image_visualizer import ExitableImageVisualize
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Graph//Rotation-Rotation around an axis...": lambda: _measure_rotations(window)
+        "Graph//Misc-Rotation around an axis...": lambda: _measure_rotations(window)
     }
 
 def _measure_rotations(window: Window):
