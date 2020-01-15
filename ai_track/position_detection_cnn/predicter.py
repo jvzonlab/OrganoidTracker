@@ -21,17 +21,24 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import itertools
 import logging
 import math
+import os
 from functools import partial
-from typing import Tuple, Iterable
+from typing import Optional, Tuple, Iterable, List, TypeVar
+from numpy import ndarray
 
 import numpy
 import tensorflow as tf
-from numpy import ndarray
+from skimage.feature import peak_local_max
+from tifffile import tifffile
 
 from ai_track.core import TimePoint
 from ai_track.core.images import Images
+from ai_track.core.position import Position
+from ai_track.core.position_collection import PositionCollection
+from ai_track.core.resolution import ImageResolution
 from ai_track.imaging import image_slicer
 from ai_track.imaging.image_slicer import Slicer3d
 from ai_track.position_detection_cnn.convolutional_neural_network import build_fcn_model
@@ -51,6 +58,14 @@ _IMAGE_PART_SIZE_PLUS_MARGIN = (_IMAGE_PART_SIZE[0] + 2 * _IMAGE_PART_MARGIN[0],
 
 def _get_slices(volume: Tuple[int, int, int]) -> Iterable[Slicer3d]:
     return image_slicer.get_slices(volume, _IMAGE_PART_SIZE, _IMAGE_PART_MARGIN)
+
+
+T = TypeVar('T')
+def _cycle(list: List[T]) -> Iterable[T]:
+    """Generator that returns the elements in the list ad infinitum."""
+    while True:
+        for elem in list:
+            yield elem
 
 
 def _reconstruct_volume(multi_im: ndarray, mid_layers_nb: int) -> Tuple[ndarray, int]:
@@ -124,9 +139,8 @@ def _input_fn(images: Images, split: bool):
     return next_features
 
 
-def predict_images(images: Images, checkpoint_dir: str, split: bool = False) -> Iterable[Tuple[TimePoint, ndarray]]:
-    """Applies the neural network to the given image set. Yields each output image and the time point from the neural
-    network."""
+def predict(images: Images, checkpoint_dir: str, out_dir: Optional[str] = None, split: bool = False,
+            mid_layers_nb: int = 5, min_peak_distance_px: int = 9) -> PositionCollection:
     min_time_point_number = images.image_loader().first_time_point_number()
     if min_time_point_number is None:
         raise ValueError("No images were loaded")
@@ -149,6 +163,12 @@ def predict_images(images: Images, checkpoint_dir: str, split: bool = False) -> 
 
     estimator = tf.estimator.Estimator(model_fn=partial(build_fcn_model, use_cpu=False), model_dir=checkpoint_dir)
     predictions = estimator.predict(input_fn=lambda: _input_fn(images, split))
+
+    if out_dir is not None:
+        if not os.path.exists(out_dir):
+            os.mkdir(out_dir)
+
+    all_positions = PositionCollection()
 
     slices = list(_get_slices((output_size_z, output_size_y, output_size_x))) if split else []
     complete_prediction = numpy.empty((output_size_z, output_size_y, output_size_x), dtype=numpy.float32)\
@@ -175,6 +195,22 @@ def predict_images(images: Images, checkpoint_dir: str, split: bool = False) -> 
             image_index = index
 
         time_point = TimePoint(min_time_point_number + image_index)
-        prediction = prediction[output_offset_z : output_offset_z + image_size_z]
+        print("Working on time point", time_point.time_point_number(), "...")
+        image_offset = images.offsets.of_time_point(time_point)
 
-        yield time_point, prediction
+        prediction = prediction[output_offset_z : output_offset_z + image_size_z]
+        if out_dir is not None:
+            image_name = "image_" + str(time_point.time_point_number())
+            tifffile.imsave(os.path.join(out_dir, '{}.tif'.format(image_name)), prediction, compress=9)
+        im, z_divisor = _reconstruct_volume(prediction, mid_layers_nb) # interpolate between layers for peak detection
+
+        #can do the same thing with data to visualize
+        # imsource, _ = _reconstruct_volume(numpy.squeeze(p['data']))
+
+        # Comparison between image_max and im to find the coordinates of local maxima
+        coordinates = peak_local_max(im, min_distance=min_peak_distance_px, threshold_abs=0.1, exclude_border=False)
+        for coordinate in coordinates:
+            pos = Position(coordinate[2], coordinate[1], coordinate[0] / z_divisor,
+                           time_point=time_point) + image_offset
+            all_positions.add(pos)
+    return all_positions
