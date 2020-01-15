@@ -45,13 +45,13 @@ def get_error(links: Links, position: Position, scores: ScoreCollection, positio
             and linking_markers.get_track_end_marker(links, position) is None:
         return Error.NO_FUTURE_POSITION
     elif len(future_positions) == 2:
-        if scores.has_family_scores():
+        if scores.has_family_scores():  # Use family scores
             score = scores.of_family(Family(position, *future_positions))
             if score is None or score.is_unlikely_mother():
                 return Error.LOW_MOTHER_SCORE
-        else:
+        else:  # Use mother scores
             score = linking_markers.get_mother_score(links, position)
-            if score is None:
+            if score <= 0:
                 return Error.LOW_MOTHER_SCORE
         age = particle_age_finder.get_age(links, position)
         if age is not None and age * resolution.time_point_interval_h <= 10:
