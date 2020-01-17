@@ -20,7 +20,8 @@ class Error(Enum):
     LOW_MOTHER_SCORE = 9
     SHRUNK_A_LOT = 10
     MOVED_TOO_FAST = 11
-    NO_SHAPE = 12
+    FAILED_SHAPE = 12
+    UNCERTAIN_POSITION = 13
 
     def get_severity(self) -> Severity:
         """Gets the severity."""
@@ -44,8 +45,9 @@ __info = {
     Error.SHRUNK_A_LOT: (Severity.WARNING, "This cell just shrank a lot in size. It may be a mother or daughter cell."),
     Error.MOVED_TOO_FAST: (Severity.WARNING, "This cell just moved very quickly. The link coming from the past may be"
                                              " wrong."),
-    Error.NO_SHAPE: (Severity.WARNING, "This cell has an irregular shape. Maybe it was a misdetection, or it should be"
-                                       " a mother cell.")
+    Error.FAILED_SHAPE: (Severity.WARNING, "This cell has an irregular shape. Maybe it was a misdetection, or it should be"
+                                       " a mother cell."),
+    Error.UNCERTAIN_POSITION: (Severity.WARNING, "Uncertain if there actually is a cell here.")
 }
 
 

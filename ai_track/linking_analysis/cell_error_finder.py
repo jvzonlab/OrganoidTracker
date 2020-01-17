@@ -7,6 +7,7 @@ from ai_track.core.experiment import Experiment
 from ai_track.core.links import Links
 from ai_track.core.position_collection import PositionCollection
 from ai_track.core.position import Position
+from ai_track.core.position_data import PositionData
 from ai_track.core.resolution import ImageResolution
 from ai_track.core.score import Score, ScoreCollection, Family
 from ai_track.linking import cell_division_finder
@@ -25,10 +26,11 @@ def find_errors_in_experiment(experiment: Experiment) -> int:
     scores = experiment.scores
     positions = experiment.positions
     resolution = experiment.images.resolution()
+    position_data = experiment.position_data
 
     count = 0
     for position in links.find_all_positions():
-        error = get_error(links, position, scores, positions, resolution)
+        error = get_error(links, position, scores, positions, position_data, resolution)
         linking_markers.set_error_marker(links, position, error)
         if error is not None:
             count += 1
@@ -36,7 +38,9 @@ def find_errors_in_experiment(experiment: Experiment) -> int:
 
 
 def get_error(links: Links, position: Position, scores: ScoreCollection, positions: PositionCollection,
-              resolution: ImageResolution) -> Optional[Error]:
+              position_data: PositionData, resolution: ImageResolution) -> Optional[Error]:
+    if linking_markers.is_uncertain(position_data, position):
+        return Error.UNCERTAIN_POSITION
     future_positions = links.find_futures(position)
     if len(future_positions) > 2:
         return Error.TOO_MANY_DAUGHTER_CELLS
@@ -71,7 +75,7 @@ def get_error(links: Links, position: Position, scores: ScoreCollection, positio
         shape = positions.get_shape(position)
         past_shape = positions.get_shape(past_position)
         if shape.is_failed() and len(future_positions) != 2:
-            return Error.NO_SHAPE  # Gaussian fit failed, can happen for dividing cells, but should not happen otherwise
+            return Error.FAILED_SHAPE  # Gaussian fit failed, can happen for dividing cells, but should not happen otherwise
         elif not shape.is_unknown() and len(future_positions_of_past_position) == 1:
             if not past_shape.is_unknown() and past_shape.volume() / (shape.volume() + 0.0001) > 2:
                 # Found a sudden decrease in volume. Check averages to see if it is an outlier, or something real
@@ -161,7 +165,8 @@ def _find_errors_in_just_the_iterable(experiment: Experiment, iterable: Iterable
     if not links.has_links():
         return  # Don't run the error finder if there are no links
     for position in iterable:
-        error = get_error(links, position, experiment.scores, experiment.positions, experiment.images.resolution())
+        error = get_error(links, position, experiment.scores, experiment.positions, experiment.position_data,
+                          experiment.images.resolution())
         linking_markers.set_error_marker(links, position, error)
 
 

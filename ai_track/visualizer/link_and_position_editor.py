@@ -261,6 +261,24 @@ class _OverwritePositionAction(UndoableAction):
         return f"Restored {self._old_particle.position}"
 
 
+class _MarkPositionAsUncertainAction(UndoableAction):
+
+    _position: Position
+
+    def __init__(self, position: Position):
+        self._position = position
+
+    def do(self, experiment: Experiment) -> str:
+        linking_markers.set_uncertain(experiment.position_data, self._position, True)
+        cell_error_finder.find_errors_in_just_these_positions(experiment, self._position)
+        return f"Marked {self._position} as uncertain"
+
+    def undo(self, experiment: Experiment) -> str:
+        linking_markers.set_uncertain(experiment.position_data, self._position, False)
+        cell_error_finder.find_errors_in_just_these_positions(experiment, self._position)
+        return f"Marked that {self._position} is no longer uncertain"
+
+
 class LinkAndPositionEditor(AbstractEditor):
     """Editor for cell links and positions. Use the Insert key to insert new cells or links, and Delete to delete
      them."""
@@ -328,6 +346,8 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//LineageEnd-Mark as cell shedding [S]": lambda: self._try_set_end_marker(EndMarker.SHED),
             "Edit//LineageEnd-Mark as moving out of view [V]": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
             "Edit//LineageEnd-Remove end marker": lambda: self._try_set_end_marker(None),
+            "Edit//Uncertain-Mark position as uncertain": lambda: self._try_mark_uncertainty(True),
+            "Edit//Uncertain-Remove uncertainty marker": lambda: self._try_mark_uncertainty(False),
             "Edit//Track-Set color of lineage...": self._set_color_of_lineage,
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
             "View//Linking-Lineage errors and warnings [L]": self._show_lineage_errors,
@@ -393,7 +413,7 @@ class LinkAndPositionEditor(AbstractEditor):
 
     def _try_set_end_marker(self, marker: Optional[EndMarker]):
         if self._selected1 is None or self._selected2 is not None:
-            self.update_status("You need to have exactly one cell selected in order to move a cell.")
+            self.update_status("You need to have exactly one cell selected in order to set an end marker.")
             return
 
         links = self._experiment.links
@@ -408,6 +428,22 @@ class LinkAndPositionEditor(AbstractEditor):
                 self.update_status(f"This lineage end already has the {marker.get_display_name()} marker.")
             return
         self._perform_action(_MarkLineageEndAction(self._selected1, marker, current_marker))
+
+    def _try_mark_uncertainty(self, uncertain: bool):
+        if self._selected1 is None or self._selected2 is not None:
+            self.update_status("You need to have exactly one cell selected.")
+            return
+        position_data = self._experiment.position_data
+        if linking_markers.is_uncertain(position_data, self._selected1) == uncertain:
+            if uncertain:
+                self.update_status("Selected position is already marked as uncertain.")
+            else:
+                self.update_status("Selected position is not marked as uncertain, cannot remove marker.")
+            return
+        if uncertain:
+            self._perform_action(_MarkPositionAsUncertainAction(self._selected1))
+        else:
+            self._perform_action(ReversedAction(_MarkPositionAsUncertainAction(self._selected1)))
 
     def _show_path_editor(self):
         from ai_track.visualizer.data_axis_editor import DataAxisEditor

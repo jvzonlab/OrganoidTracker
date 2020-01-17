@@ -176,3 +176,20 @@ def get_mother_score(position_data: Union[Links, PositionData], position: Positi
 def has_mother_scores(position_data: PositionData) -> bool:
     """Gets if there is at least a single mother score recorded."""
     return position_data.has_position_data_with_name("mother_score")
+
+
+def is_uncertain(position_data: PositionData, position: Position) -> bool:
+    """Returns True if the given position is marked as uncertain. A person can mark a position as uncertain if it is not
+    clear whether there is actually a position marker there. The error checker will warm for such cases."""
+    uncertain = position_data.get_position_data(position, "uncertain")
+    if uncertain is None:
+        return False
+    return uncertain
+
+
+def set_uncertain(position_data: PositionData, position: Position, uncertain: bool):
+    """Marks the given position as certain/uncertain. See is_uncertain for more info."""
+    if uncertain:
+        position_data.set_position_data(position, "uncertain", True)
+    else:
+        position_data.set_position_data(position, "uncertain", None)  # This removes the marker
