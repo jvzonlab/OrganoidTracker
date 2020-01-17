@@ -33,7 +33,7 @@ def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: 
 def _load_guizela_data_file(experiment: Experiment, file_name: str, min_time_point: int, max_time_point: int):
     """Starting from a random *.p file in a directory, this loads all data according to Guizela's format from that
     directory."""
-    from ai_track.manual_tracking import guizela_data_importer
+    from ai_track.guizela_tracker_compatibility import guizela_data_importer
     print("File name", file_name)
     guizela_data_importer.add_data_to_experiment(experiment, os.path.dirname(file_name), min_time_point, max_time_point)
 

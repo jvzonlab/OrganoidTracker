@@ -161,7 +161,7 @@ def export_links_guizela(experiment: Experiment):
         if not comparisons_folder:
             return
 
-    from ai_track.manual_tracking import guizela_data_exporter
+    from ai_track.guizela_tracker_compatibility import guizela_data_exporter
     guizela_data_exporter.export_links(experiment.links, experiment.images.offsets, links_folder, comparisons_folder)
 
 

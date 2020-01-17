@@ -18,7 +18,7 @@ from ai_track.core.position import Position
 from ai_track.core.resolution import ImageResolution
 from ai_track.linking_analysis import linking_markers
 from ai_track.linking_analysis.linking_markers import EndMarker
-from ai_track.manual_tracking.track_lib import Track
+from ai_track.guizela_tracker_compatibility.track_lib import Track
 
 
 def _load_links(tracks_dir: str, min_time_point: int = 0, max_time_point: int = 5000) -> Links:
