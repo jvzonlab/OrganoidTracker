@@ -70,5 +70,6 @@ def get_fate_ext(links: Links, division_lookahead_time_points: int, position: Po
         time_points_remaining = track.max_time_point_number() - position.time_point_number()
         return CellFate(CellFateType.WILL_DIVIDE, time_points_remaining)
     else:
-        raise ValueError("len(next_tracks) == 1, this should be impossible")
+        print("len(next_tracks) == 1, this should be impossible")
+        return get_fate_ext(links, division_lookahead_time_points, next_tracks.pop().find_first_position())
 
