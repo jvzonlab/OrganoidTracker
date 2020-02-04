@@ -2,9 +2,11 @@
 
 from typing import List, Optional, Set, AbstractSet, Dict, Iterable
 
+from ai_track.core import TimePoint
 from ai_track.core.experiment import Experiment
 from ai_track.core.links import Links, LinkingTrack
 from ai_track.core.position import Position
+from ai_track.gui.window import DisplaySettings
 from ai_track.linking_analysis import linking_markers
 
 
@@ -40,7 +42,7 @@ def _group_by_track(links: Links, positions: Iterable[Position]) -> Dict[Linking
     return track_to_positions
 
 
-def delete_problematic_lineages(experiment: Experiment):
+def delete_problematic_lineages(experiment: Experiment, display_settings: DisplaySettings):
     """This deletes all positions in a lineage with errors. What remains should be a clean experiment with just the
     corrected data."""
 
@@ -59,10 +61,12 @@ def delete_problematic_lineages(experiment: Experiment):
         experiment.remove_position(position)
 
 
-def get_problematic_lineages(links: Links, crumbs: AbstractSet[Position]) -> List[LineageWithErrors]:
+def get_problematic_lineages(links: Links, crumbs: AbstractSet[Position], *, min_time_point: Optional[TimePoint] = None,
+                             max_time_point: Optional[TimePoint] = None) -> List[LineageWithErrors]:
     """Gets a list of all lineages with warnings in the experiment. The provided "crumbs" are placed in the right
     lineages, so that you can see to what lineages those cells belong."""
-    positions_with_errors = linking_markers.find_errored_positions(links)
+    positions_with_errors = linking_markers.find_errored_positions(links, min_time_point=min_time_point,
+                                                                   max_time_point=max_time_point)
     track_to_errors = _group_by_track(links, positions_with_errors)
     track_to_crumbs = _group_by_track(links, crumbs)
 

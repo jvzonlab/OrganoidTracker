@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import Optional, Iterable, Dict, Set, Union
 
-from ai_track.core import links
+from ai_track.core import links, TimePoint
 from ai_track.core.links import Links
 from ai_track.core.position import Position
 from ai_track.core.position_data import PositionData
@@ -92,15 +92,19 @@ def set_track_start_marker(links: Links, position: Position, start_marker: Optio
         links.set_position_data(position, "starting", start_marker.name.lower())
 
 
-def find_errored_positions(links: Links) -> Iterable[Position]:
-    """Gets all positions that have a (non suppressed) error."""
+def find_errored_positions(links: Links, *, min_time_point: Optional[TimePoint] = None,
+                           max_time_point: Optional[TimePoint] = None) -> Iterable[Position]:
+    """Gets all positions that have a (non suppressed) error in the given time point range."""
+    min_time_point_number = min_time_point.time_point_number() if min_time_point is not None else float("-inf")
+    max_time_point_number = max_time_point.time_point_number() if max_time_point is not None else float("inf")
 
     with_error_marker = links.find_all_positions_with_data("error")
     for position, error_number in with_error_marker:
         if links.get_position_data(position, "suppressed_error") == error_number:
-            continue # Error was suppressed
+            continue  # Error was suppressed
 
-        yield position
+        if min_time_point_number <= position.time_point_number() <= max_time_point_number:
+            yield position
 
 
 def get_error_marker(links: Links, position: Position) -> Optional[Error]:

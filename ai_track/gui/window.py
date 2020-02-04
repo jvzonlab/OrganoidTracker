@@ -23,6 +23,8 @@ class DisplaySettings:
     time_point: TimePoint
     z: int
     image_channel: Optional[ImageChannel]  # Set to None to use the default image channel
+    error_correction_min_time_point: Optional[TimePoint] = None
+    error_correction_max_time_point: Optional[TimePoint] = None
 
     def __init__(self, *, show_next_time_point: bool = False, show_images: bool = True,
                  show_reconstruction: bool = False, show_data_axes: bool = True, show_positions: bool = True):
