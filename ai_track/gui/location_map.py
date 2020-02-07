@@ -41,9 +41,13 @@ class LocationMap:
 
         self._array[min_y:max_y + 1, min_x:max_x + 1] = value
 
-    def get_nearby(self, around_x: int, around_y: int) -> Optional[object]:
+    def get_nearby(self, around_x: float, around_y: float) -> Optional[object]:
         """Gets the value at the given x and y position, searching for at most 2 indices next to it until a value that
         isn't None is returned."""
+        # We need to work with integers in array access
+        around_x = int(round(around_x))
+        around_y = int(round(around_y))
+
         for dy in [0, -1, 1, -2, 2]:
             for dx in [0, -1, 1, -2, 2]:
                 x = around_x + dx

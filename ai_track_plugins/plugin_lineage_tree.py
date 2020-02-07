@@ -172,7 +172,7 @@ class LineageTreeVisualizer(Visualizer):
             return
         if self._location_map is None:
             return
-        position: Optional[Position] = self._location_map.get_nearby(int(event.xdata), int(event.ydata))
+        position: Optional[Position] = self._location_map.get_nearby(event.xdata, event.ydata)
         if position is None:
             return
         self.get_window().get_gui_experiment().goto_position(position)
