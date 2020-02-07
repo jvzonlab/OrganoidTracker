@@ -204,9 +204,9 @@ class _AsyncExporter(Task):
 def _write_positions_and_metadata_to_csv(positions: PositionCollection, links: Links, resolution: ImageResolution,
                                          cell_types_to_id: _CellTypesToId, division_lookahead_time_points: int,
                                          folder: str, save_name: str):
-    from ai_track.linking_analysis import lineage_id_creator
+    from ai_track.linking import cell_division_finder
     from ai_track.position_analysis import cell_density_calculator
-    from ai_track.linking_analysis import linking_markers, cell_division_counter, cell_nearby_death_counter,\
+    from ai_track.linking_analysis import lineage_id_creator, linking_markers, cell_division_counter, cell_nearby_death_counter,\
         cell_fate_finder
 
     deaths_nearby_tracks = cell_nearby_death_counter.NearbyDeaths(links, resolution)
@@ -217,7 +217,7 @@ def _write_positions_and_metadata_to_csv(positions: PositionCollection, links: L
         file_name = os.path.join(folder, file_prefix + str(time_point.time_point_number()))
         with open(file_name, "w") as file_handle:
             file_handle.write("x,y,z,density_mm1,times_divided,times_neighbor_died,cell_type_id,"
-                              "hours_until_division,hours_until_dead,lineage_id,original_track_id\n")
+                              "hours_until_division,hours_until_dead,hours_since_division,lineage_id,original_track_id\n")
             positions_of_time_point = positions.of_time_point(time_point)
             for position in positions_of_time_point:
                 lineage_id = lineage_id_creator.get_lineage_id(links, position)
@@ -231,6 +231,9 @@ def _write_positions_and_metadata_to_csv(positions: PositionCollection, links: L
                         if cell_fate.type == CellFateType.WILL_DIVIDE else -1
                 hours_until_dead = cell_fate.time_points_remaining * resolution.time_point_interval_h \
                         if cell_fate.type in cell_fate_finder.WILL_DIE_OR_SHED else -1
+                previous_division = cell_division_finder.get_previous_division(links, position)
+                hours_since_division = (time_point.time_point_number() - previous_division.mother.time_point_number())\
+                                       * resolution.time_point_interval_h if previous_division is not None else None
                 if cell_fate.type == CellFateType.UNKNOWN:  # If unknown, set to None
                     hours_until_dead = None
                     hours_until_division = None
@@ -238,7 +241,8 @@ def _write_positions_and_metadata_to_csv(positions: PositionCollection, links: L
                 vector = position.to_vector_um(resolution)
                 file_handle.write(f"{vector.x},{vector.y},{vector.z},{density},{_str(times_divided)},"
                                   f"{times_neighbor_died},{_str(cell_type_id)},{_str(hours_until_division)},"
-                                  f"{_str(hours_until_dead)},{lineage_id},{original_track_id}\n")
+                                  f"{_str(hours_until_dead)},{_str(hours_since_division)},{lineage_id},"
+                                  f"{original_track_id}\n")
 
 
 def _export_colormap_file(folder: str, links: Links):
