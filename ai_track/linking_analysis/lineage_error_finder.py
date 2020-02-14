@@ -42,7 +42,7 @@ def _group_by_track(links: Links, positions: Iterable[Position]) -> Dict[Linking
     return track_to_positions
 
 
-def delete_problematic_lineages(experiment: Experiment, display_settings: DisplaySettings):
+def delete_problematic_lineages(experiment: Experiment):
     """This deletes all positions in a lineage with errors. What remains should be a clean experiment with just the
     corrected data."""
 
