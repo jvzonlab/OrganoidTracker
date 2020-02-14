@@ -28,7 +28,10 @@ class ErrorsVisualizer(PositionListVisualizer):
             crumb_positions.add(start_position)
         if self._get_last_position() is not None:
             crumb_positions.add(self._get_last_position())
-        self._problematic_lineages = lineage_error_finder.get_problematic_lineages(links, crumb_positions)
+        display_settings = window.display_settings
+        self._problematic_lineages = lineage_error_finder.get_problematic_lineages(links, crumb_positions,
+                                             min_time_point=display_settings.error_correction_min_time_point,
+                                             max_time_point=display_settings.error_correction_max_time_point)
         self._total_number_of_warnings = sum((len(lineage.errored_positions) for lineage in self._problematic_lineages))
 
         super().__init__(window, chosen_position=start_position, all_positions=[])

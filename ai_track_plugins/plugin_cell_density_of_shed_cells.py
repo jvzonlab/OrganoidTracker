@@ -12,7 +12,7 @@ from ai_track.gui.window import Window
 from ai_track.linking_analysis import linking_markers, cell_compartment_finder
 from ai_track.position_analysis import cell_density_calculator
 from ai_track.linking_analysis.cell_compartment_finder import CellCompartment
-from ai_track.util.mpl_helper import BAR_COLOR_1, BAR_COLOR_2
+from ai_track.util.mpl_helper import SANDER_BLUE, SANDER_RED
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -39,15 +39,15 @@ def _plot_cell_densities(figure: Figure, all_densities: List[float], shed_densit
     axes = figure.gca()
 
     axes.hist(shed_densities, bins=range(0, max_density, 10), label="Just the shed cells", alpha=0.7,
-              color=BAR_COLOR_1)
-    axes.tick_params('y', colors=BAR_COLOR_1)
+              color=SANDER_BLUE)
+    axes.tick_params('y', colors=SANDER_BLUE)
     axes.set_ylabel("Amount of shed cells")
 
     axes_twin: Axes = axes.twinx()
     axes_twin.hist(all_densities, bins=range(0, max_density, 2), label="All densities in the villus", alpha=0.7,
-                   color=BAR_COLOR_2)
+                   color=SANDER_RED)
     axes_twin.set_ylabel("Total amount of cell detections in the villus")
-    axes_twin.tick_params('y', colors=BAR_COLOR_2)
+    axes_twin.tick_params('y', colors=SANDER_RED)
     axes.set_xlabel("Cell density (mm$^{-1}$)")
 
 

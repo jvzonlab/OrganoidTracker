@@ -13,13 +13,13 @@ SANDER_APPROVED_COLORS = colors.to_rgba_array({"#55efc4", "#fdcb6e", "#636e72", 
                                                "#ff7675", "#fd79a8", "#fab1a0", "#e84393"})
 
 # A bit darker colors
-BAR_COLOR_1 = "#0984e3"
-BAR_COLOR_2 = "#d63031"
+SANDER_BLUE = "#0984e3"
+SANDER_RED = "#d63031"
+SANDER_GREEN = "#00b894"
 
 # Overlapping colors for histogram
 HISTOGRAM_RED = (1, 0, 0, 0.7)
 HISTOGRAM_BLUE = (0, 0, 1, 0.5)
-
 
 def _create_qualitative_colormap() -> ListedColormap:
     color_list = cm.get_cmap('jet', 256)(numpy.linspace(0, 1, 256))

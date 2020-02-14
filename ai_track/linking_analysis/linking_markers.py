@@ -75,6 +75,17 @@ def find_shed_positions(links: Links) -> Iterable[Position]:
             yield position
 
 
+def find_death_positions(links: Links) -> Iterable[Position]:
+    """Gets all positions that were marked as a cell death event."""
+    dead_marker = EndMarker.DEAD.name.lower()
+    for position, ending_marker in links.find_all_positions_with_data("ending"):
+        if len(links.find_futures(position)) > 0:
+            continue  # Not actually ending, ending marker is useless
+
+        if ending_marker == dead_marker:
+            yield position
+
+
 def get_track_start_marker(links: Links, position: Position) -> Optional[StartMarker]:
     """Gets the appearance marker. This is used to explain why a cell appeared out of thin air."""
     starting_str = links.get_position_data(position, "starting")
