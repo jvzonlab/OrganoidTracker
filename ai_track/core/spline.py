@@ -19,7 +19,7 @@ _REFERENCE = Vector3(0, 0, -1)
 class DataAxisPosition:
     spline: "Spline"  # The data axis at a particular time point.
     axis_id: int  # Used to identify the data axis over multiple time points.
-    pos: float  # The position on the data axis.
+    pos: float  # The position on the data axis in pixels.
     distance: float  # The distance from the point to the nearest point on the data axis.
 
     def __init__(self, axis: "Spline", pos: float, distance: float):
