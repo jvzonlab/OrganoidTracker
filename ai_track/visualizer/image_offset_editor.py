@@ -1,10 +1,11 @@
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from matplotlib.backend_bases import KeyEvent
 
 from ai_track.core import TimePoint
 from ai_track.core.experiment import Experiment
 from ai_track.core.images import ImageOffsets
+from ai_track.gui import dialog
 from ai_track.gui.undo_redo import UndoableAction
 from ai_track.gui.window import Window, DisplaySettings
 from ai_track.position_detection import position_mover
@@ -45,6 +46,17 @@ class ImageOffsetEditor(ExitableImageVisualizer):
         super().__init__(window)
 
         self._previous_offsets = self._experiment.images.offsets.copy()
+
+    def get_extra_menu_options(self) -> Dict[str, Any]:
+        return {
+            "Edit//Offsets-Reset all image offsets": self._reset_all_offsets
+        }
+
+    def _reset_all_offsets(self):
+        self._experiment.images.offsets = ImageOffsets()
+        self._exit_view()
+        dialog.popup_message("Image offsets reset", "The image offsets of all time points have been reset to (0, 0, 0)."
+                                                    " Press Ctrl+Z to undo.")
 
     def _draw_positions(self):
         return  # Don't draw the positions - they are only noise, and we don't update them when moving the images
