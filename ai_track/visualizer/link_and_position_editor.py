@@ -3,7 +3,7 @@ from typing import Optional, List, Set, Dict, Iterable
 from matplotlib.backend_bases import KeyEvent, MouseEvent, LocationEvent
 
 from ai_track import core
-from ai_track.core import Color
+from ai_track.core import Color, UserError
 from ai_track.core.connections import Connections
 from ai_track.core.experiment import Experiment
 from ai_track.core.links import LinkingTrack
@@ -334,12 +334,12 @@ class LinkAndPositionEditor(AbstractEditor):
             **super().get_extra_menu_options(),
             "Edit//Experiment-Edit data axes... [A]": self._show_path_editor,
             "Edit//Experiment-Edit image offsets... [O]": self._show_offset_editor,
-            "Edit//Batch-Delete data of time point...": self._delete_data_of_time_point,
-            "Edit//Batch-Delete all tracks with errors...": self._delete_tracks_with_errors,
-            "Edit//Batch-Delete all tracks not in the first time point...": self._delete_tracks_not_in_first_time_point,
-            "Edit//Batch-Delete all positions in a rectangle...": self._show_positions_in_rectangle_deleter,
-            "Edit//Batch-Delete all positions without links...": self._delete_positions_without_links,
-            "Edit//Batch-Connect positions by distance...": self._connect_positions_by_distance,
+            "Edit//Batch-Batch deletion//Delete data of time point...": self._delete_data_of_time_point,
+            "Edit//Batch-Batch deletion//Delete all tracks with errors...": self._delete_tracks_with_errors,
+            "Edit//Batch-Batch deletion//Delete all tracks not in the first time point...": self._delete_tracks_not_in_first_time_point,
+            "Edit//Batch-Batch deletion//Delete all positions in a rectangle...": self._show_positions_in_rectangle_deleter,
+            "Edit//Batch-Batch deletion//Delete all positions without links...": self._delete_positions_without_links,
+            "Edit//Batch-Batch connection//Connect positions by distance...": self._connect_positions_by_distance,
             "Edit//LineageEnd-Mark as cell death [D]": lambda: self._try_set_end_marker(EndMarker.DEAD),
             "Edit//LineageEnd-Mark as cell shedding [S]": lambda: self._try_set_end_marker(EndMarker.SHED),
             "Edit//LineageEnd-Mark as moving out of view [V]": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
@@ -347,6 +347,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Uncertain-Mark position as uncertain": lambda: self._try_mark_uncertainty(True),
             "Edit//Uncertain-Remove uncertainty marker": lambda: self._try_mark_uncertainty(False),
             "Edit//Track-Set color of lineage...": self._set_color_of_lineage,
+            "Edit//Track-Delete entire lineage": self._delete_selected_lineage,
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
             "View//Linking-Lineage errors and warnings [L]": self._show_lineage_errors,
         }
@@ -485,6 +486,34 @@ class LinkAndPositionEditor(AbstractEditor):
         lineage_error_finder.delete_problematic_lineages(self._experiment)
 
         self.get_window().redraw_data()
+
+    def _delete_selected_lineage(self):
+        if self._selected1 is None:
+            raise UserError("No cell selected", "You need to select a cell first to delete all cells in that"
+                                                    " lineage.")
+        if self._selected2 is not None:
+            raise UserError("Too many cell selected", "You have selected multiple cells - please select only one.")
+
+        experiment = self._experiment
+        particles_in_track = []
+
+        # Find all positions in the track (and descending tracks)
+        track = experiment.links.get_track(self._selected1)
+        if track is None:
+            particles_in_track.append(Particle.from_position(experiment, self._selected1))
+        else:
+            # Find starter of lineage tree
+            previous_tracks = track.get_previous_tracks()
+            while len(previous_tracks) == 1:
+                track = previous_tracks.pop()
+                previous_tracks = track.get_previous_tracks()
+
+            # Find all positions in lineage tree
+            for some_track in track.find_all_descending_tracks(include_self=True):
+                for position in some_track.positions():
+                    particles_in_track.append(Particle.from_position(experiment, position))
+
+        self._perform_action(_DeletePositionsAction(particles_in_track))
 
     def _delete_tracks_not_in_first_time_point(self):
         """Deletes all lineages where at least a single error was present."""
