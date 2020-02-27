@@ -229,9 +229,13 @@ class Images:
     def image_loader(self, image_loader: Optional[ImageLoader] = None) -> ImageLoader:
         """Gets/sets the image loader."""
         if image_loader is not None:
-            self._image_loader = _CachedImageLoader(image_loader.uncached())
+            self._image_loader = _CachedImageLoader(image_loader)
             return image_loader
-        return self._image_loader
+        return self._image_loader.uncached()
+
+    def use_image_loader_from(self, images: "Images"):
+        """Transfers the image loader from another Images instance, sharing the image cache."""
+        self._image_loader = images._image_loader
 
     def get_image_stack(self, time_point: TimePoint, image_channel: Optional[ImageChannel] = None) -> Optional[ndarray]:
         """Loads an image using the current image loader. Returns None if there is no image for this time point."""

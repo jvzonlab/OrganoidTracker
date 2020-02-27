@@ -128,7 +128,7 @@ def load_tracking_data(window: Window):
 
     # Replace the existing experiment with one with the same images, but the new data
     new_experiment = io.load_data_file(file_name)
-    new_experiment.images.image_loader(window.get_experiment().images.image_loader().copy())
+    new_experiment.images.use_image_loader_from(window.get_experiment().images)
     window.get_gui_experiment().replace_selected_experiment(new_experiment)
 
 
