@@ -8,5 +8,5 @@ __pycache__/
 
 # Ignore configuration and data files
 /*.json
-ai_track.ini
+organoid_tracker.ini
 /out/

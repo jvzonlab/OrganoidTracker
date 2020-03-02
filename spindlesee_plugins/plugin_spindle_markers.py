@@ -1,12 +1,12 @@
 from typing import List, Optional, Iterable
 
-from ai_track.core.connections import Connections
-from ai_track.core.links import Links, LinkingTrack
-from ai_track.core.position import Position
-from ai_track.core.marker import Marker
-from ai_track.gui.window import Window
-from ai_track.imaging import angles
-from ai_track.linking_analysis import linking_markers
+from organoid_tracker.core.connections import Connections
+from organoid_tracker.core.links import Links, LinkingTrack
+from organoid_tracker.core.position import Position
+from organoid_tracker.core.marker import Marker
+from organoid_tracker.gui.window import Window
+from organoid_tracker.imaging import angles
+from organoid_tracker.linking_analysis import linking_markers
 
 SPINDLE = Marker([Position], "SPINDLE", "mitotic spindle", (200, 200, 0))
 LUMEN = Marker([Position], "LUMEN", "lumen", (30, 30, 30))

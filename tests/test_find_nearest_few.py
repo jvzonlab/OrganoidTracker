@@ -1,9 +1,9 @@
 import unittest
 
-from ai_track.core import TimePoint
-from ai_track.core.position import Position
-from ai_track.core.resolution import ImageResolution
-from ai_track.linking.nearby_position_finder import find_close_positions
+from organoid_tracker.core import TimePoint
+from organoid_tracker.core.position import Position
+from organoid_tracker.core.resolution import ImageResolution
+from organoid_tracker.linking.nearby_position_finder import find_close_positions
 
 
 _PX_RESOLUTION = ImageResolution(1, 1, 1, 1)

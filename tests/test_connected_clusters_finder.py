@@ -1,10 +1,10 @@
 import unittest
 
-from ai_track.connecting import cluster_finder
-from ai_track.core import TimePoint
-from ai_track.core.connections import Connections
-from ai_track.core.position import Position
-from ai_track.core.position_collection import PositionCollection
+from organoid_tracker.connecting import cluster_finder
+from organoid_tracker.core import TimePoint
+from organoid_tracker.core.connections import Connections
+from organoid_tracker.core.position import Position
+from organoid_tracker.core.position_collection import PositionCollection
 
 
 class TestAngles(unittest.TestCase):

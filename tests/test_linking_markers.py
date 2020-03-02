@@ -1,9 +1,9 @@
 import unittest
 
-from ai_track.core.links import Links
-from ai_track.core.position import Position
-from ai_track.linking_analysis import linking_markers
-from ai_track.linking_analysis.errors import Error
+from organoid_tracker.core.links import Links
+from organoid_tracker.core.position import Position
+from organoid_tracker.linking_analysis import linking_markers
+from organoid_tracker.linking_analysis.errors import Error
 
 
 class TestLinkingMarkers(unittest.TestCase):

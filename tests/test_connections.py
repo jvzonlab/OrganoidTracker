@@ -1,7 +1,7 @@
 import unittest
 
-from ai_track.core.connections import Connections
-from ai_track.core.position import Position
+from organoid_tracker.core.connections import Connections
+from organoid_tracker.core.position import Position
 
 
 class TestConnections(unittest.TestCase):

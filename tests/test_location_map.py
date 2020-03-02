@@ -1,6 +1,6 @@
 import unittest
 
-from ai_track.gui.location_map import LocationMap
+from organoid_tracker.gui.location_map import LocationMap
 
 
 class TestLocationMap(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 
-from ai_track.core.score import Score
+from organoid_tracker.core.score import Score
 
 
 class TestScoreClass(unittest.TestCase):

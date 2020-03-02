@@ -6,13 +6,13 @@ from matplotlib.axes import Axes
 from matplotlib.collections import LineCollection
 from matplotlib.figure import Figure
 
-from ai_track.core import UserError
-from ai_track.core.experiment import Experiment
-from ai_track.gui import dialog
-from ai_track.gui.window import Window
-from ai_track.imaging import angles
-from ai_track.imaging.grapher import colorline
-from ai_track.util.mpl_helper import SANDER_APPROVED_COLORS
+from organoid_tracker.core import UserError
+from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.gui import dialog
+from organoid_tracker.gui.window import Window
+from organoid_tracker.imaging import angles
+from organoid_tracker.imaging.grapher import colorline
+from organoid_tracker.util.mpl_helper import SANDER_APPROVED_COLORS
 from . import plugin_spindle_markers
 from .plugin_spindle_markers import Spindle
 

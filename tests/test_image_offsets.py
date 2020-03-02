@@ -1,8 +1,8 @@
 import unittest
 
-from ai_track.core import TimePoint
-from ai_track.core.images import ImageOffsets
-from ai_track.core.position import Position
+from organoid_tracker.core import TimePoint
+from organoid_tracker.core.images import ImageOffsets
+from organoid_tracker.core.position import Position
 
 
 class TestImageOffsets(unittest.TestCase):

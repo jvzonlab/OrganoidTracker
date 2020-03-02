@@ -1,9 +1,9 @@
 import unittest
 
-from ai_track.comparison import lineage_comparison
-from ai_track.core.experiment import Experiment
-from ai_track.core.position import Position
-from ai_track.core.resolution import ImageResolution
+from organoid_tracker.comparison import lineage_comparison
+from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.core.position import Position
+from organoid_tracker.core.resolution import ImageResolution
 
 
 def _experiment(*positions: Position) -> Experiment:

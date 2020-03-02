@@ -1,6 +1,6 @@
 import unittest
 
-from ai_track.core.ellipse import Ellipse
+from organoid_tracker.core.ellipse import Ellipse
 
 
 class TestFindNearestFew(unittest.TestCase):

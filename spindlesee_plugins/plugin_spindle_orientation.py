@@ -9,14 +9,14 @@ from typing import Dict, Any, List, Tuple, Optional
 from matplotlib.collections import LineCollection
 from matplotlib.figure import Figure
 
-from ai_track.core.connections import Connections
-from ai_track.core.experiment import Experiment
-from ai_track.core.links import Links
-from ai_track.core.position import Position
-from ai_track.gui import dialog
-from ai_track.gui.window import Window
-from ai_track.imaging import angles
-from ai_track.util.mpl_helper import SANDER_APPROVED_COLORS
+from organoid_tracker.core.connections import Connections
+from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.core.links import Links
+from organoid_tracker.core.position import Position
+from organoid_tracker.gui import dialog
+from organoid_tracker.gui.window import Window
+from organoid_tracker.imaging import angles
+from organoid_tracker.util.mpl_helper import SANDER_APPROVED_COLORS
 
 from . import plugin_spindle_markers
 

@@ -1,6 +1,6 @@
 import unittest
 
-from ai_track.core import Name
+from organoid_tracker.core import Name
 
 
 class TestNameClass(unittest.TestCase):

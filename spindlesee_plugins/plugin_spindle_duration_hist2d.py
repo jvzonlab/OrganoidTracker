@@ -2,8 +2,8 @@ from typing import Dict, Any
 
 from matplotlib.figure import Figure
 
-from ai_track.gui import dialog
-from ai_track.gui.window import Window
+from organoid_tracker.gui import dialog
+from organoid_tracker.gui.window import Window
 from . import plugin_spindle_markers
 
 

@@ -1,7 +1,7 @@
 import numpy
 import unittest
 
-from ai_track.core.gaussian import Gaussian
+from organoid_tracker.core.gaussian import Gaussian
 
 
 class TestGaussians(unittest.TestCase):

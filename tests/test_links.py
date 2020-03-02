@@ -1,7 +1,7 @@
 import unittest
 
-from ai_track.core.links import Links
-from ai_track.core.position import Position
+from organoid_tracker.core.links import Links
+from organoid_tracker.core.position import Position
 
 
 class TestLinks(unittest.TestCase):

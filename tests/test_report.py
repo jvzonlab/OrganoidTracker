@@ -1,7 +1,7 @@
 import unittest
 
-from ai_track.comparison.report import ComparisonReport, Category
-from ai_track.core.position import Position
+from organoid_tracker.comparison.report import ComparisonReport, Category
+from organoid_tracker.core.position import Position
 
 
 class TestFindNearestFew(unittest.TestCase):

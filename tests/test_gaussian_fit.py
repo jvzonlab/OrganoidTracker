@@ -2,8 +2,8 @@ import unittest
 from timeit import default_timer
 
 import numpy
-from ai_track.position_detection import gaussian_fit
-from ai_track.position_detection.gaussian_fit import Gaussian
+from organoid_tracker.position_detection import gaussian_fit
+from organoid_tracker.position_detection.gaussian_fit import Gaussian
 
 
 class TestGaussianFit(unittest.TestCase):

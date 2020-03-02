@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from ai_track.imaging.image_slicer import get_slices, Slicer3d
+from organoid_tracker.imaging.image_slicer import get_slices, Slicer3d
 
 
 class TestImageSlicer(TestCase):

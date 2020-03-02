@@ -1,12 +1,12 @@
-# AI_track manual
+# OrganoidTracker manual
 
-Welcome to the AI_track manual! This document will tell you how to use the "visualizer", the program that displays all the images and the annotations.
+Welcome to the OrganoidTracker manual! This document will tell you how to use the "visualizer", the program that displays all the images and the annotations.
 
 Tutorials
 ---------
 * [Tutorial for manual tracking and error correction](MANUAL_TRACKING.md)
 * [Tutorial for semi-automated tracking](AUTOMATIC_TRACKING.md)
-* [Tutorial for writing a plugin for AI_track](PLUGIN_TUTORIAL.md)
+* [Tutorial for writing a plugin for OrganoidTracker](PLUGIN_TUTORIAL.md)
 * [Tutorial for training a neural network](TRAINING_THE_NETWORK.md)
 
 
@@ -34,7 +34,7 @@ Highlights
 
 It's best to start with [manual tracking](MANUAL_TRACKING.md), to make sure that you understand the program. After tracking a few cells, you can start with [automated tracking](AUTOMATIC_TRACKING.md).
 
-For data analysis, you can write your own Python scripts that make use of the [AI_track API](API.md). This is useful, as then you don't need to write your own functions to find dividing cells, dead cells, etc. You can even extend the graphical user interface by [writing plugins](PLUGIN_TUTORIAL.md). For that, you just need to place a Python file in the correct directory. You can use plugins to add additional cell types and menu options.
+For data analysis, you can write your own Python scripts that make use of the [OrganoidTracker API](API.md). This is useful, as then you don't need to write your own functions to find dividing cells, dead cells, etc. You can even extend the graphical user interface by [writing plugins](PLUGIN_TUTORIAL.md). For that, you just need to place a Python file in the correct directory. You can use plugins to add additional cell types and menu options.
 
 Want to measure the migration of a cell? Yuo can of course track the x, y and z position of a cell, but you can also [draw a (curved) axis yourself](DATA_AXES.md) and measure the position of a cell along that axis.
 

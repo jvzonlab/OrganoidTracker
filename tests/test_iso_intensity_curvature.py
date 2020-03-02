@@ -5,7 +5,7 @@ import math
 import numpy
 from numpy import ndarray
 
-from ai_track.position_detection.iso_intensity_curvature import get_negative_gaussian_curvatures, ImageDerivatives
+from organoid_tracker.position_detection.iso_intensity_curvature import get_negative_gaussian_curvatures, ImageDerivatives
 
 SQRT_OF_2PI = math.sqrt(2 * math.pi)
 

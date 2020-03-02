@@ -2,10 +2,10 @@ import unittest
 
 import numpy
 
-from ai_track.core.gaussian import Gaussian
-from ai_track.core.images import Image
-from ai_track.core.mask import create_mask_for
-from ai_track.core.shape import EllipseShape, GaussianShape, UnknownShape, UNKNOWN_SHAPE
+from organoid_tracker.core.gaussian import Gaussian
+from organoid_tracker.core.images import Image
+from organoid_tracker.core.mask import create_mask_for
+from organoid_tracker.core.shape import EllipseShape, GaussianShape, UnknownShape, UNKNOWN_SHAPE
 
 
 class TestMasks(unittest.TestCase):

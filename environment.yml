@@ -1,4 +1,4 @@
-name: ai_track
+name: organoid_tracker
 channels:
   - aaronzs
   - chaubold
@@ -92,5 +92,5 @@ dependencies:
   - wheel=0.31.1=py36_0
   - wincertstore=0.2=py36h7fe50ca_0
   - zlib=1.2.11=h8395fce_2
-prefix: F:\miniconda3\envs\ai_track
+prefix: F:\miniconda3\envs\organoid_tracker
 

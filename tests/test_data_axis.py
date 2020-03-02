@@ -2,8 +2,8 @@ import unittest
 
 import numpy
 
-from ai_track.core.position import Position
-from ai_track.core.spline import Spline
+from organoid_tracker.core.position import Position
+from organoid_tracker.core.spline import Spline
 
 
 class TestDataAxis(unittest.TestCase):

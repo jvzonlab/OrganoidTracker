@@ -1,8 +1,8 @@
 from unittest import TestCase
 
-from ai_track.core.vector import Vector3
-from ai_track.imaging import lines, angles
-from ai_track.imaging.lines import Line3
+from organoid_tracker.core.vector import Vector3
+from organoid_tracker.imaging import lines, angles
+from organoid_tracker.imaging.lines import Line3
 
 
 class TestLines(TestCase):

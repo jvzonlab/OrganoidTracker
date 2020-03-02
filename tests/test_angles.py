@@ -1,7 +1,7 @@
 import unittest
 
-from ai_track.core.vector import Vector3
-from ai_track.imaging import angles
+from organoid_tracker.core.vector import Vector3
+from organoid_tracker.imaging import angles
 
 
 class TestAngles(unittest.TestCase):
