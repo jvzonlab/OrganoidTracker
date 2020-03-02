@@ -225,7 +225,7 @@ class Visualizer:
         """Gets the color that the given position should be annotated with, based on the type of the position. Usually
         this color is used to decorate the edge of the position marker."""
         position_type = self.get_window().get_gui_experiment().get_marker_by_save_name(
-            linking_markers.get_position_type(self._experiment.links, position))
+            linking_markers.get_position_type(self._experiment.position_data, position))
         if position_type is None:
             return None
         return position_type.mpl_color

@@ -7,6 +7,7 @@ from matplotlib.patches import Circle
 from organoid_tracker.core import UserError, COLOR_CELL_CURRENT, COLOR_CELL_NEXT
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.gui.window import Window
 from organoid_tracker.imaging import lines
@@ -37,13 +38,14 @@ class _Result:
     count: int
     positions: Dict[Position, List[Position]]
 
-    def __init__(self, links: Links, resolution: ImageResolution, starting_axis_p1: Position, starting_axis_p2: Position, ending_axis_p1: Position,
+    def __init__(self, links: Links, position_data: PositionData, resolution: ImageResolution,
+                 starting_axis_p1: Position, starting_axis_p2: Position, ending_axis_p1: Position,
                  starting_positions: Iterable[Position]):
         rotations = []
         positions = dict()
 
         for starting_position in starting_positions:
-            if linking_markers.get_position_type(links, starting_position) == "LUMEN":
+            if linking_markers.get_position_type(position_data, starting_position) == "LUMEN":
                 continue  # Ignore lumens, these are not cells
 
             new_rotations, new_final_positions = particle_rotation_calculator.calculate_rotation_of_track(
@@ -197,5 +199,6 @@ class _MeasureRotation(ExitableImageVisualizer):
                                                                                   max_amount=10000,
                                                                                   resolution=resolution,
                                                                                   max_distance_um=self._radius_um)
-        return _Result(self._experiment.links, resolution, self._axis_one_p1, self._axis_one_p2, self._axis_two_p1, positions_in_center_one)
+        return _Result(self._experiment.links, self._experiment.position_data, resolution, self._axis_one_p1,
+                       self._axis_one_p2, self._axis_two_p1, positions_in_center_one)
 

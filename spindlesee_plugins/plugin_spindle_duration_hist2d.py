@@ -19,7 +19,7 @@ def _show_histogram(window: Window):
 
     x_values = list()
     y_values = list()
-    for spindle in plugin_spindle_markers.find_all_spindles(experiment.links, experiment.connections):
+    for spindle in plugin_spindle_markers.find_all_spindles(experiment):
         x_values.append((len(spindle.positions1) - 1) * time_resolution)
         y_values.append(spindle.get_orientation_change())
 

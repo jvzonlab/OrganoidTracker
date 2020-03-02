@@ -6,6 +6,7 @@ import matplotlib.colors
 from organoid_tracker.core import UserError, Color
 from organoid_tracker.core.links import LinkingTrack, Links
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.location_map import LocationMap
@@ -121,6 +122,7 @@ class LineageTreeVisualizer(Visualizer):
         self._clear_axis()
 
         experiment = self._experiment
+        position_data = experiment.position_data
         links = experiment.links
         links.sort_tracks_by_x()
 
@@ -128,11 +130,11 @@ class LineageTreeVisualizer(Visualizer):
 
         def color_getter(time_point_number: int, track: LinkingTrack) -> Tuple[float, float, float]:
             if self._display_warnings:
-                if _has_error_close_in_time(links, time_point_number, track):
+                if _has_error_close_in_time(position_data, time_point_number, track):
                     return 0.7, 0.7, 0.7
 
             if self._display_deaths and track.max_time_point_number() - time_point_number < 10:
-                end_marker = linking_markers.get_track_end_marker(links, track.find_last_position())
+                end_marker = linking_markers.get_track_end_marker(position_data, track.find_last_position())
                 if end_marker == EndMarker.DEAD:
                     return 1, 0, 0
                 elif end_marker == EndMarker.SHED:
@@ -179,10 +181,10 @@ class LineageTreeVisualizer(Visualizer):
         self.update_status("Focused main window on " + str(position))
 
 
-def _has_error_close_in_time(links: Links, time_point_number: int, track: LinkingTrack, time_window: int = 5):
+def _has_error_close_in_time(position_data: PositionData, time_point_number: int, track: LinkingTrack, time_window: int = 5):
     min_t = max(track.min_time_point_number(), time_point_number - time_window)
     max_t = min(track.max_time_point_number(), time_point_number + time_window)
     for t in range(min_t, max_t + 1):
-        if linking_markers.get_error_marker(links, track.find_position_at_time_point_number(t)):
+        if linking_markers.get_error_marker(position_data, track.find_position_at_time_point_number(t)):
             return True
     return False

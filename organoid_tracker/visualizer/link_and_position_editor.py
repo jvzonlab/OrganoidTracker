@@ -144,14 +144,14 @@ class _MarkLineageEndAction(UndoableAction):
         self.old_marker = old_marker
 
     def do(self, experiment: Experiment) -> str:
-        linking_markers.set_track_end_marker(experiment.links, self.position, self.marker)
+        linking_markers.set_track_end_marker(experiment.position_data, self.position, self.marker)
         cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.position)
         if self.marker is None:
             return f"Removed the lineage end marker of {self.position}"
         return f"Added the {self.marker.get_display_name()}-marker to {self.position}"
 
     def undo(self, experiment: Experiment):
-        linking_markers.set_track_end_marker(experiment.links, self.position, self.old_marker)
+        linking_markers.set_track_end_marker(experiment.position_data, self.position, self.old_marker)
         cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.position)
         if self.old_marker is None:
             return f"Removed the lineage end marker again of {self.position}"
@@ -202,15 +202,15 @@ class _SetAllAsType(UndoableAction):
         self._type = new_type
 
     def do(self, experiment: Experiment) -> str:
-        links = experiment.links
+        position_data = experiment.position_data
         for position in self._previous_position_types.keys():
-            linking_markers.set_position_type(links, position, self._type.save_name)
+            linking_markers.set_position_type(position_data, position, self._type.save_name)
         return f"All positions in the lineage tree are now of the type \"{self._type.display_name}\""
 
     def undo(self, experiment: Experiment) -> str:
-        links = experiment.links
-        for position in links.find_all_positions():
-            linking_markers.set_position_type(links, position, self._previous_position_types.get(position))
+        position_data = experiment.position_data
+        for position in self._previous_position_types.keys():
+            linking_markers.set_position_type(position_data, position, self._previous_position_types.get(position))
         return f"Reset all positions to their previous type"
 
 
@@ -410,7 +410,7 @@ class LinkAndPositionEditor(AbstractEditor):
         if len(links.find_futures(self._selected1)) > 0:
             self.update_status(f"The {self._selected1} is not a lineage end.")
             return
-        current_marker = linking_markers.get_track_end_marker(links, self._selected1)
+        current_marker = linking_markers.get_track_end_marker(self._experiment.position_data, self._selected1)
         if current_marker == marker:
             if marker is None:
                 self.update_status("There is no lineage ending marker here, cannot delete anything.")
@@ -612,7 +612,7 @@ class LinkAndPositionEditor(AbstractEditor):
             return
 
         positions = lineage_positions_finder.find_all_positions_in_lineage_of(self._experiment.links, self._selected1)
-        old_position_types = linking_markers.get_position_types(self._experiment.links, set(positions))
+        old_position_types = linking_markers.get_position_types(self._experiment.position_data, set(positions))
         self._perform_action(_SetAllAsType(old_position_types, position_type))
 
     def _set_color_of_lineage(self):

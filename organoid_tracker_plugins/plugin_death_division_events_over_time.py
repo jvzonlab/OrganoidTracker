@@ -32,7 +32,8 @@ def _view_noncumulative_births_and_deaths(window: Window):
         births.append(cell_division.time_point_number() * resolution.time_point_interval_h)
 
     deaths = list()
-    for cell_death in linking_markers.find_death_and_shed_positions(experiment.links):  # Iterate over all cell deaths
+    for cell_death in linking_markers.find_death_and_shed_positions(experiment.links, experiment.position_data):
+        # Iterate over all cell deaths
         deaths.append(cell_death.time_point_number() * resolution.time_point_interval_h)
 
     experiment_hours = experiment.positions.last_time_point_number() * resolution.time_point_interval_h
@@ -64,7 +65,8 @@ def _view_cumulative_births_and_deaths(window: Window):
         cumulative_births[cell_division.time_point_number():] += 1  # Add 1 to all time points after the cell division
 
     cumulative_deaths = numpy.zeros(experiment.last_time_point_number(), dtype=numpy.int32)  # Initialize array
-    for cell_death in linking_markers.find_death_and_shed_positions(experiment.links):  # Iterate over all cell deaths
+    for cell_death in linking_markers.find_death_and_shed_positions(experiment.links, experiment.position_data):
+        # Iterate over all cell deaths
         cumulative_deaths[cell_death.time_point_number():] += 1  # Add 1 to all time points after the cell death
 
     dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_cumulative_figure(

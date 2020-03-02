@@ -210,7 +210,7 @@ class AbstractImageVisualizer(Visualizer):
         self._draw_positions_of_time_point(self._time_point)
 
     def _draw_positions_of_time_point(self, time_point: TimePoint, color: str = core.COLOR_CELL_CURRENT):
-        links = self._experiment.links
+        position_data = self._experiment.position_data
         dt = time_point.time_point_number() - self._time_point.time_point_number()
         show_errors = self._display_settings.show_errors
 
@@ -227,13 +227,13 @@ class AbstractImageVisualizer(Visualizer):
                 continue
 
             # Add error marker
-            if show_errors and linking_markers.get_error_marker(links, position) is not None:
+            if show_errors and linking_markers.get_error_marker(position_data, position) is not None:
                 crosses_x_list.append(position.x)
                 crosses_y_list.append(position.y)
 
             # Add marker
             position_type = self.get_window().get_gui_experiment().get_marker_by_save_name(
-                linking_markers.get_position_type(links, position))
+                linking_markers.get_position_type(position_data, position))
             edge_color = (0, 0, 0) if position_type is None else position_type.mpl_color
             edge_width = 1 if position_type is None else 3
 

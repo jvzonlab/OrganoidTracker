@@ -31,13 +31,14 @@ def _nearby_cell_movement(window: Window):
 def _draw_figure(experiment: Experiment, figure: Figure):
     links = experiment.links
     positions = experiment.positions
+    position_data = experiment.position_data
     resolution = experiment.images.resolution()
     axes = figure.gca()
     axes.set_xlim(_STEPS_BACK * resolution.time_point_interval_m, resolution.time_point_interval_m)
     axes.set_xlabel("Minutes before death")
     axes.set_ylabel("Average distance to two nearest cells (μm)")
 
-    dead_cells = list(linking_markers.find_death_and_shed_positions(links))
+    dead_cells = list(linking_markers.find_death_and_shed_positions(links, position_data))
     previous_times = numpy.array(range(_STEPS_BACK + 1)) * resolution.time_point_interval_m
     all_distances = numpy.full((len(dead_cells), len(previous_times)), fill_value=numpy.nan, dtype=numpy.float32)
 

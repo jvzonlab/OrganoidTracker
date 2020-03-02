@@ -29,7 +29,7 @@ def _get_shed_durations_after_division_hours(experiment: Experiment) -> List[flo
     shed_ages_hours = []
     time_point_interval_h = experiment.images.resolution().time_point_interval_h
 
-    for shed_position in linking_markers.find_shed_positions(experiment.links):
+    for shed_position in linking_markers.find_shed_positions(experiment.links, experiment.position_data):
         age = particle_age_finder.get_age(experiment.links, shed_position)
         if age is None:
             continue
@@ -42,7 +42,7 @@ def _get_death_durations_after_division_hours(experiment: Experiment) -> List[fl
     death_ages_hours = []
     time_point_interval_h = experiment.images.resolution().time_point_interval_h
 
-    for death_position in linking_markers.find_death_positions(experiment.links):
+    for death_position in linking_markers.find_death_positions(experiment.links, experiment.position_data):
         age = particle_age_finder.get_age(experiment.links, death_position)
         if age is None:
             continue

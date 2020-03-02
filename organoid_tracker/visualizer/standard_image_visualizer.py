@@ -33,7 +33,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
         if event.button == 1:
             position = self._get_position_at(event.xdata, event.ydata)
             if position is not None:
-                data = dict(self._experiment.links.find_all_data_of_position(position))
+                data = dict(self._experiment.position_data.find_all_data_of_position(position))
                 shape = self._experiment.positions.get_shape(position)
 
                 scores = list(self._experiment.scores.of_mother(position))

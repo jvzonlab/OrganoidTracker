@@ -13,6 +13,7 @@ from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.window import Window
 from organoid_tracker.imaging import angles
@@ -53,16 +54,17 @@ def _view_spindle_angle(window: Window):
 def _get_spindle_angles_list(experiment: Experiment) -> List[_Line]:
     links = experiment.links
     connections = experiment.connections
+    position_data = experiment.position_data
     minutes_per_time_point = experiment.images.resolution().time_point_interval_m
     angle_lists = []
     for track in experiment.links.find_all_tracks():
         first_position = track.find_first_position()
-        if not plugin_spindle_markers.is_part_of_spindle(links, first_position):
+        if not plugin_spindle_markers.is_part_of_spindle(position_data, first_position):
             continue
         for connected_position in connections.find_connections_starting_at(first_position):
-            if not plugin_spindle_markers.is_part_of_spindle(links, connected_position):
+            if not plugin_spindle_markers.is_part_of_spindle(position_data, connected_position):
                 continue
-            angle_list = _create_angles_list(links, connections,
+            angle_list = _create_angles_list(links, position_data, connections,
                                              first_position, connected_position, minutes_per_time_point)
             if angle_list is not None:
                 angle_lists.append(angle_list)
@@ -73,8 +75,8 @@ def _mean(value1: float, value2: float) -> float:
     return (value1 + value2) / 2
 
 
-def _create_angles_list(links: Links, connections: Connections, position1: Position, position2: Position,
-                        minutes_per_time_point: float) -> Optional[_Line]:
+def _create_angles_list(links: Links, position_data: PositionData, connections: Connections, position1: Position,
+                        position2: Position, minutes_per_time_point: float) -> Optional[_Line]:
     """Gets a list of (minute, angle) points for the mitotic spindle."""
     position_list = []
     angle_list = []
@@ -100,7 +102,7 @@ def _create_angles_list(links: Links, connections: Connections, position1: Posit
     # Find lumen
     lumen = None
     for connection in connections.find_connections(position1):
-        if plugin_spindle_markers.is_lumen(links, connection):
+        if plugin_spindle_markers.is_lumen(position_data, connection):
             lumen = connection
     if lumen is not None and not connections.contains_connection(position2, lumen):
         print("For spindle at", position1, "only one of the positions has a connection drawn to the lumen")

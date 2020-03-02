@@ -36,10 +36,11 @@ def _show_number_of_neighbor_deaths_vs_time_since_division(window: Window):
 
 def _get_hours_since_division_vs_neighbor_deaths(experiment: Experiment, time_point: TimePoint) -> Tuple[List[float], List[float]]:
     links = experiment.links
+    position_data = experiment.position_data
     resolution = experiment.images.resolution()
     time_point_number = time_point.time_point_number()
 
-    deaths_nearby_tracks = cell_nearby_death_counter.NearbyDeaths(links, resolution)
+    deaths_nearby_tracks = cell_nearby_death_counter.NearbyDeaths(links, position_data, resolution)
 
     hours_since_last_division_list = []
     number_of_neighbor_deaths_list = []

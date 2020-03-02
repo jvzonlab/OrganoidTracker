@@ -2,6 +2,7 @@ from organoid_tracker.core.experiment import Experiment
 
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.linking_analysis.linking_markers import EndMarker, StartMarker
 
@@ -15,11 +16,12 @@ def postprocess(experiment: Experiment, margin_xy: int):
 def _remove_positions_close_to_edge(experiment: Experiment, margin_xy: int):
     image_loader = experiment.images
     links = experiment.links
+    position_data = experiment.position_data
     for time_point in experiment.time_points():
         for position in list(experiment.positions.of_time_point(time_point)):
             if not image_loader.is_inside_image(position, margin_xy=margin_xy):
                 # Remove cell, but inform neighbors first
-                _add_out_of_view_markers(links, position)
+                _add_out_of_view_markers(links, position_data, position)
                 experiment.remove_position(position, update_splines=False)
 
 
@@ -40,22 +42,22 @@ def _mark_positions_going_out_of_image(experiment: Experiment):
         for position in experiment.positions.of_time_point(time_point_previous):
             # Check for positions in the previous image that fall outside the current image
             if not experiment.images.is_inside_image(position.with_time_point(time_point)):
-                linking_markers.set_track_end_marker(experiment.links, position, EndMarker.OUT_OF_VIEW)
+                linking_markers.set_track_end_marker(experiment.position_data, position, EndMarker.OUT_OF_VIEW)
 
         for position in experiment.positions.of_time_point(time_point):
             # Check for positions in the current image that fall outside the previous image
             if not experiment.images.is_inside_image(position.with_time_point(time_point_previous)):
-                linking_markers.set_track_start_marker(experiment.links, position, StartMarker.GOES_INTO_VIEW)
+                linking_markers.set_track_start_marker(experiment.position_data, position, StartMarker.GOES_INTO_VIEW)
 
 
-def _add_out_of_view_markers(links: Links, position: Position):
+def _add_out_of_view_markers(links: Links, position_data: PositionData, position: Position):
     """Adds markers to the remaining links so that it is clear why they appeared/disappeared."""
     linked_positions = links.find_links_of(position)
     for linked_position in linked_positions:
         if linked_position.time_point_number() < position.time_point_number():
-            linking_markers.set_track_end_marker(links, linked_position, EndMarker.OUT_OF_VIEW)
+            linking_markers.set_track_end_marker(position_data, linked_position, EndMarker.OUT_OF_VIEW)
         else:
-            linking_markers.set_track_start_marker(links, linked_position, StartMarker.GOES_INTO_VIEW)
+            linking_markers.set_track_start_marker(position_data, linked_position, StartMarker.GOES_INTO_VIEW)
 
 
 def _remove_spurs(experiment: Experiment):

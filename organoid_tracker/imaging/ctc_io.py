@@ -14,6 +14,7 @@ from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
+from organoid_tracker.core.position_data import PositionData
 
 
 class _Link:
@@ -65,6 +66,7 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
 
     all_positions = PositionCollection()
     all_links = Links()
+    all_position_data = PositionData()
     links_to_mother_by_time_point = _read_lineage_file(file_name)
 
     file_prefix = file_name[:-4]
@@ -91,7 +93,7 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
 
             # Add position
             all_positions.add(position)
-            all_links.set_position_data(position, "ctc_id", i)
+            all_position_data.set_position_data(position, "ctc_id", i)
 
             # Try to add link
             if i < len(positions_of_previous_time_point):
@@ -112,6 +114,7 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
 
     experiment.positions = all_positions
     experiment.links = all_links
+    experiment.position_data = all_position_data
 
     return experiment
 

@@ -6,6 +6,7 @@ from organoid_tracker.core import TimePoint
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import Links, LinkingTrack
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.gui.window import DisplaySettings
 from organoid_tracker.linking_analysis import linking_markers
 
@@ -50,7 +51,7 @@ def delete_problematic_lineages(experiment: Experiment):
     positions_to_remove = list()
 
     # Find all positions to remove
-    lineages_with_errors = get_problematic_lineages(experiment.links, set())
+    lineages_with_errors = get_problematic_lineages(experiment.links, experiment.position_data, set())
     for lineage in lineages_with_errors:
         for track in lineage.start.find_all_descending_tracks(include_self=True):
             for position in track.positions():
@@ -61,11 +62,12 @@ def delete_problematic_lineages(experiment: Experiment):
         experiment.remove_position(position)
 
 
-def get_problematic_lineages(links: Links, crumbs: AbstractSet[Position], *, min_time_point: Optional[TimePoint] = None,
+def get_problematic_lineages(links: Links, position_data: PositionData, crumbs: AbstractSet[Position],
+                             *, min_time_point: Optional[TimePoint] = None,
                              max_time_point: Optional[TimePoint] = None) -> List[LineageWithErrors]:
     """Gets a list of all lineages with warnings in the experiment. The provided "crumbs" are placed in the right
     lineages, so that you can see to what lineages those cells belong."""
-    positions_with_errors = linking_markers.find_errored_positions(links, min_time_point=min_time_point,
+    positions_with_errors = linking_markers.find_errored_positions(position_data, min_time_point=min_time_point,
                                                                    max_time_point=max_time_point)
     track_to_errors = _group_by_track(links, positions_with_errors)
     track_to_crumbs = _group_by_track(links, crumbs)
@@ -86,12 +88,12 @@ def get_problematic_lineages(links: Links, crumbs: AbstractSet[Position], *, min
     return lineages_with_errors
 
 
-def _find_errors_in_lineage(links: Links, lineage: LineageWithErrors, position: Position, crumbs: AbstractSet[Position]):
+def _find_errors_in_lineage(links: Links, position_data: PositionData, lineage: LineageWithErrors, position: Position, crumbs: AbstractSet[Position]):
     while True:
         if position in crumbs:
             lineage.crumbs.add(position)
 
-        error = linking_markers.get_error_marker(links, position)
+        error = linking_markers.get_error_marker(position_data, position)
         if error is not None:
             lineage.errored_positions.append(position)
         future_positions = links.find_futures(position)
@@ -99,7 +101,7 @@ def _find_errors_in_lineage(links: Links, lineage: LineageWithErrors, position: 
         if len(future_positions) > 1:
             # Branch out
             for future_position in future_positions:
-                _find_errors_in_lineage(links, lineage, future_position, crumbs)
+                _find_errors_in_lineage(links, position_data, lineage, future_position, crumbs)
             return
         if len(future_positions) < 1:
             # Stop

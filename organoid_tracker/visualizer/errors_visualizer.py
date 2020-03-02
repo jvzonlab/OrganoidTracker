@@ -22,14 +22,17 @@ class ErrorsVisualizer(PositionListVisualizer):
     _total_number_of_warnings: int
 
     def __init__(self, window: Window, start_position: Optional[Position]):
-        links = window.get_experiment().links
+        experiment = window.get_experiment()
+        links = experiment.links
+        position_data = experiment.position_data
+
         crumb_positions = set()
         if start_position is not None:
             crumb_positions.add(start_position)
         if self._get_last_position() is not None:
             crumb_positions.add(self._get_last_position())
         display_settings = window.display_settings
-        self._problematic_lineages = lineage_error_finder.get_problematic_lineages(links, crumb_positions,
+        self._problematic_lineages = lineage_error_finder.get_problematic_lineages(links, position_data, crumb_positions,
                                              min_time_point=display_settings.error_correction_min_time_point,
                                              max_time_point=display_settings.error_correction_max_time_point)
         self._total_number_of_warnings = sum((len(lineage.errored_positions) for lineage in self._problematic_lineages))
@@ -77,7 +80,7 @@ class ErrorsVisualizer(PositionListVisualizer):
 
     def get_title(self, position_list: List[Position], current_position_index: int):
         position = position_list[current_position_index]
-        error = linking_markers.get_error_marker(self._experiment.links, position)
+        error = linking_markers.get_error_marker(self._experiment.position_data, position)
         type = error.get_severity().name if error is not None else "Position"
         message = error.get_message() if error is not None else "Error was suppressed"
 
@@ -149,12 +152,12 @@ class ErrorsVisualizer(PositionListVisualizer):
         if self._current_position_index < 0 or self._current_position_index >= len(self._position_list):
             return
         position = self._position_list[self._current_position_index]
-        links = self._experiment.links
-        error = linking_markers.get_error_marker(links, position)
+        position_data = self._experiment.position_data
+        error = linking_markers.get_error_marker(position_data, position)
         if error is None:
             self.update_status(f"Warning for {position} was already suppressed")
             return
-        linking_markers.suppress_error_marker(links, position, error)
+        linking_markers.suppress_error_marker(position_data, position, error)
         self._total_number_of_warnings -= 1
         self.draw_view()
         self.update_status(f"Suppressed warning for {position}")

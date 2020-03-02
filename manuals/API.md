@@ -163,7 +163,7 @@ experiment = Experiment()
 position = ...
 
 track = experiment.links.get_track(position)
-end_marker = linking_markers.get_track_end_marker(experiment.links, track.find_last_position())
+end_marker = linking_markers.get_track_end_marker(experiment.position_data, track.find_last_position())
 if end_marker == EndMarker.DEAD:
     # Cell died
     ...

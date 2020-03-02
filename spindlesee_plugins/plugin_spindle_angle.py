@@ -156,11 +156,9 @@ def _view_spindle_oscillations_histogram(window: Window):
 
 
 def _get_spindle_angles_list(experiment: Experiment, limit_duration: bool = False) -> List[_Line]:
-    links = experiment.links
-    connections = experiment.connections
     minutes_per_time_point = experiment.images.resolution().time_point_interval_m
     angle_lists = []
-    for spindle in plugin_spindle_markers.find_all_spindles(links, connections):
+    for spindle in plugin_spindle_markers.find_all_spindles(experiment):
         angle_list = _create_angles_list(spindle, minutes_per_time_point)
         angle_lists.append(angle_list)
 

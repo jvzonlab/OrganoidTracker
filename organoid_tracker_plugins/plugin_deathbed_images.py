@@ -61,6 +61,7 @@ def _generate_deathbed_images(window: Window):
     experiment = window.get_experiment()
     data_axes = experiment.splines
     links = experiment.links
+    position_data = experiment.position_data
     if not links.has_links():
         raise UserError("Deathbed images", "No links found. Therefore, we cannot find cell deaths.")
 
@@ -71,7 +72,7 @@ def _generate_deathbed_images(window: Window):
         return
 
     deathbeds = list()
-    for position in linking_markers.find_death_and_shed_positions(links):
+    for position in linking_markers.find_death_and_shed_positions(links, position_data):
         before_death_list = position_connection_finder.find_previous_positions(position, links, steps_back)
 
         if before_death_list is None:

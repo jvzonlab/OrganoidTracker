@@ -24,6 +24,7 @@ class Experiment:
     _positions: PositionCollection
     scores: ScoreCollection
     _links: Links
+    _position_data: PositionData
     _images: Images
     _connections: Connections
     _name: Name
@@ -32,6 +33,7 @@ class Experiment:
     def __init__(self):
         self._name = Name()
         self._positions = PositionCollection()
+        self._position_data = PositionData()
         self.scores = ScoreCollection()
         self.splines = SplineCollection()
         self._links = Links()
@@ -58,6 +60,7 @@ class Experiment:
             self._positions.detach_position(position)
             self._links.remove_links_of_position(position)
             self._connections.remove_connections_of_position(position)
+            self._position_data.remove_position(position)
 
             affected_time_points.add(position.time_point())
 
@@ -80,6 +83,7 @@ class Experiment:
         self._links.replace_position(position_old, position_new)
         self._connections.replace_position(position_old, position_new)
         self._positions.move_position(position_old, position_new)
+        self._position_data.replace_position(position_old, position_new)
 
         if update_splines:
             time_point = position_new.time_point()
@@ -176,13 +180,13 @@ class Experiment:
 
         There used to be two sets of metadata for positions: their shapes (stored in PositionCollection) and linking
         data, for use with the linking algorithm. These two are going to be merged."""
-        return self._links.position_data
+        return self._position_data
 
     @position_data.setter
     def position_data(self, position_data: PositionData):
         if not isinstance(position_data, PositionData):
             raise TypeError(f"position_data must be a {PositionData.__name__} object, was " + repr(position_data))
-        self._links.position_data = position_data
+        self._position_data = position_data
 
     @property
     def name(self) -> Name:
@@ -247,4 +251,5 @@ class Experiment:
 
         self.positions.add_positions_and_shapes(other.positions)
         self.links.add_links(other.links)
+        self.position_data.merge_data(other.position_data)
         self.connections.add_connections(other.connections)

@@ -15,7 +15,7 @@ class Particle:
         """Gets a snapshot of all information of a position."""
         links = list(experiment.links.find_futures(position)) + list(experiment.links.find_pasts(position))
         shape = experiment.positions.get_shape(position)
-        data = dict(experiment.links.find_all_data_of_position(position))
+        data = dict(experiment.position_data.find_all_data_of_position(position))
         return Particle(position, shape, links, data)
 
     @staticmethod
@@ -46,7 +46,7 @@ class Particle:
         for link in self.links:
             experiment.links.add_link(self.position, link)
         for data_name, data_value in self.data.items():
-            experiment.links.set_position_data(self.position, data_name, data_value)
+            experiment.position_data.set_position_data(self.position, data_name, data_value)
 
     def __repr__(self) -> str:
         return "Particle(" + repr(self.position) + ", " + repr(self.shape) + ", " + repr(self.links) + ", " \

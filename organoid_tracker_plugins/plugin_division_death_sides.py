@@ -70,7 +70,7 @@ def _analyze_deaths(experiment: Experiment, out: Dict[int, _CryptResult]):
     """Counts how many cell shedding events are happening in the right and left sides of the crypt."""
     splines = experiment.splines
     resolution = experiment.images.resolution()
-    for dead_cell in linking_markers.find_death_and_shed_positions(experiment.links):
+    for dead_cell in linking_markers.find_death_and_shed_positions(experiment.links, experiment.position_data):
         axis_position = splines.to_position_on_original_axis(experiment.links, dead_cell)
         if axis_position is None:
             continue

@@ -8,6 +8,7 @@ from organoid_tracker.core.links import Links
 from organoid_tracker.core.marker import Marker
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
+from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.threading import Task
@@ -169,6 +170,7 @@ def _export_cell_types_file(folder: str, cell_types: List[Marker], cell_type_ids
 class _AsyncExporter(Task):
     _positions: PositionCollection
     _links: Links
+    _position_data: PositionData
     _resolution: ImageResolution
     _folder: str
     _save_name: str
@@ -179,6 +181,7 @@ class _AsyncExporter(Task):
     def __init__(self, experiment: Experiment, registered_cell_types: List[Marker], folder: str):
         self._positions = experiment.positions.copy()
         self._links = experiment.links.copy()
+        self._position_data = experiment.position_data.copy()
         self._resolution = experiment.images.resolution()
         self._folder = folder
         self._save_name = experiment.name.get_save_name()
@@ -189,8 +192,9 @@ class _AsyncExporter(Task):
     def compute(self) -> Any:
         self._links.sort_tracks_by_x()
 
-        _write_positions_and_metadata_to_csv(self._positions, self._links, self._resolution, self._cell_types_to_id,
-                                             self._division_lookahead_time_points, self._folder, self._save_name)
+        _write_positions_and_metadata_to_csv(self._positions, self._position_data, self._links, self._resolution,
+                                             self._cell_types_to_id, self._division_lookahead_time_points,
+                                             self._folder, self._save_name)
         _export_help_file(self._folder, self._links)
         _export_cell_types_file(self._folder, self._registered_cell_types, self._cell_types_to_id)
         _export_colormap_file(self._folder, self._links)
@@ -201,15 +205,15 @@ class _AsyncExporter(Task):
                                           " visualize the points in Paraview.")
 
 
-def _write_positions_and_metadata_to_csv(positions: PositionCollection, links: Links, resolution: ImageResolution,
-                                         cell_types_to_id: _CellTypesToId, division_lookahead_time_points: int,
-                                         folder: str, save_name: str):
+def _write_positions_and_metadata_to_csv(positions: PositionCollection, position_data: PositionData, links: Links,
+                                         resolution: ImageResolution, cell_types_to_id: _CellTypesToId,
+                                         division_lookahead_time_points: int, folder: str, save_name: str):
     from organoid_tracker.linking import cell_division_finder
     from organoid_tracker.position_analysis import cell_density_calculator
     from organoid_tracker.linking_analysis import lineage_id_creator, linking_markers, cell_division_counter, cell_nearby_death_counter,\
         cell_fate_finder
 
-    deaths_nearby_tracks = cell_nearby_death_counter.NearbyDeaths(links, resolution)
+    deaths_nearby_tracks = cell_nearby_death_counter.NearbyDeaths(links, position_data, resolution)
     first_time_point_number = positions.first_time_point_number()
 
     file_prefix = save_name + ".csv."
@@ -222,11 +226,11 @@ def _write_positions_and_metadata_to_csv(positions: PositionCollection, links: L
             for position in positions_of_time_point:
                 lineage_id = lineage_id_creator.get_lineage_id(links, position)
                 original_track_id = lineage_id_creator.get_original_track_id(links, position)
-                cell_type_id = cell_types_to_id.get_or_add_id(linking_markers.get_position_type(links, position))
+                cell_type_id = cell_types_to_id.get_or_add_id(linking_markers.get_position_type(position_data, position))
                 density = cell_density_calculator.get_density_mm1(positions_of_time_point, position, resolution)
                 times_divided = cell_division_counter.find_times_divided(links, position, first_time_point_number)
                 times_neighbor_died = deaths_nearby_tracks.count_nearby_deaths_in_past(links, position)
-                cell_fate = cell_fate_finder.get_fate_ext(links, division_lookahead_time_points, position)
+                cell_fate = cell_fate_finder.get_fate_ext(links, position_data, division_lookahead_time_points, position)
                 hours_until_division = cell_fate.time_points_remaining * resolution.time_point_interval_h \
                         if cell_fate.type == CellFateType.WILL_DIVIDE else -1
                 hours_until_dead = cell_fate.time_points_remaining * resolution.time_point_interval_h \

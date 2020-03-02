@@ -71,8 +71,9 @@ def _get_cell_densities_of_shed_cells_in_nondividing_compartment_mm1(experiment:
     densities = list()
 
     links = experiment.links
+    position_data = experiment.position_data
     resolution = experiment.images.resolution()
-    for shed_position in linking_markers.find_shed_positions(links):
+    for shed_position in linking_markers.find_shed_positions(links, position_data):
         # Get position two time points back (so before shedding)
         past_positions = links.find_pasts(shed_position)
         if len(past_positions) != 1:

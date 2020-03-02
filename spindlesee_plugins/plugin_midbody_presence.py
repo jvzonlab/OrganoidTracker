@@ -20,7 +20,7 @@ def _show_midbody_spindle_lenghts(window: Window):
     lengths_midbody = []
     t_res = experiment.images.resolution().time_point_interval_m
     print("---")
-    for spindle in plugin_spindle_markers.find_all_spindles(experiment.links, experiment.connections):
+    for spindle in plugin_spindle_markers.find_all_spindles(experiment):
         if len(spindle.midbody) > 0:
             lengths_midbody.append((len(spindle.positions1) - 1) * t_res)
             midbody_first = spindle.midbody[0]
@@ -35,14 +35,14 @@ def _show_midbody_spindle_lenghts(window: Window):
 
 def _print_spindles(window: Window):
     experiment = window.get_experiment()
-    for spindle in plugin_spindle_markers.find_all_spindles(experiment.links, experiment.connections):
+    for spindle in plugin_spindle_markers.find_all_spindles(experiment):
         pos = spindle.positions1[0]
         print(f"/goto {pos.x:.2f} {pos.y:.2f} {pos.z:.2f} {pos.time_point_number()}")
 
 
 def _show_distance_graph(window: Window):
     experiment = window.get_experiment()
-    spindles = list(plugin_spindle_markers.find_all_spindles(experiment.links, experiment.connections))
+    spindles = list(plugin_spindle_markers.find_all_spindles(experiment))
     resolution = experiment.images.resolution()
 
     def draw_function(figure: Figure):

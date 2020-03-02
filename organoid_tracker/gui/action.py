@@ -162,7 +162,7 @@ def export_links_guizela(experiment: Experiment):
             return
 
     from organoid_tracker.guizela_tracker_compatibility import guizela_data_exporter
-    guizela_data_exporter.export_links(experiment.links, experiment.images.offsets, links_folder, comparisons_folder)
+    guizela_data_exporter.export_links(experiment, links_folder, comparisons_folder)
 
 
 def export_links_ctc(experiment: Experiment):
@@ -257,7 +257,7 @@ def view_statistics(window: Window):
     time_point_count = experiment.last_time_point_number() - experiment.first_time_point_number() + 1
     position_count = len(experiment.positions)
     links_count = len(experiment.links)
-    errors_count = sum(1 for error in linking_markers.find_errored_positions(experiment.links))
+    errors_count = sum(1 for error in linking_markers.find_errored_positions(experiment.position_data))
     errors_percentage = errors_count/position_count*100 if position_count > 0 else 0
     dialog.popup_message("Statistics", f"There are {time_point_count} time points loaded. {position_count} positions "
                                        f" are annotated and {links_count} links have been created."

@@ -1,9 +1,11 @@
 from typing import List, Optional, Iterable
 
 from organoid_tracker.core.connections import Connections
+from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import Links, LinkingTrack
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.marker import Marker
+from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.gui.window import Window
 from organoid_tracker.imaging import angles
 from organoid_tracker.linking_analysis import linking_markers
@@ -22,24 +24,24 @@ def init(window: Window):
     gui_experiment.register_marker(EDGE)
 
 
-def is_part_of_spindle(links: Links, position: Position) -> bool:
+def is_part_of_spindle(position_data: PositionData, position: Position) -> bool:
     """Return True if the given position is part of a spindle."""
-    name = linking_markers.get_position_type(links, position)
+    name = linking_markers.get_position_type(position_data, position)
     return name == "SPINDLE" or name == "SPINDLE_LUMEN"
 
 
-def is_lumen(links: Links, position: Position) -> bool:
+def is_lumen(position_data: PositionData, position: Position) -> bool:
     """Return True if the given position is part of a lumen."""
-    return linking_markers.get_position_type(links, position) == "LUMEN"
+    return linking_markers.get_position_type(position_data, position) == "LUMEN"
 
 
-def is_part_of_midbody(links: Links, position: Position) -> bool:
+def is_part_of_midbody(position_data: PositionData, position: Position) -> bool:
     """Returns True if the given position is part of the mitotic midbody."""
-    return linking_markers.get_position_type(links, position) == "MIDBODY"
+    return linking_markers.get_position_type(position_data, position) == "MIDBODY"
 
-def is_part_of_organoid_edge(links: Links, position: Position) -> bool:
+def is_part_of_organoid_edge(position_data: PositionData, position: Position) -> bool:
     """Returns True if the given position is part of the edge of the organoid."""
-    return linking_markers.get_position_type(links, position) == "EDGE"
+    return linking_markers.get_position_type(position_data, position) == "EDGE"
 
 
 class Spindle:
@@ -67,12 +69,13 @@ class Spindle:
         return angles.direction_change_of_line(first_orientation, last_orientation)
 
 
-def _find_spindle(links: Links, connections: Connections, track: LinkingTrack) -> Optional[Spindle]:
+def _find_spindle(links: Links, position_data: PositionData, connections: Connections, track: LinkingTrack
+                  ) -> Optional[Spindle]:
     first_position = track.find_first_position()
-    if not is_part_of_spindle(links, first_position):
+    if not is_part_of_spindle(position_data, first_position):
         return None
     for connection in connections.find_connections_starting_at(first_position):
-        if not is_part_of_spindle(links, connection):
+        if not is_part_of_spindle(position_data, connection):
             continue
         spindle = Spindle()
 
@@ -80,29 +83,29 @@ def _find_spindle(links: Links, connections: Connections, track: LinkingTrack) -
         position1, position2 = first_position, connection
         while position1 is not None and position2 is not None \
                 and connections.contains_connection(position1, position2) \
-                and is_part_of_spindle(links, position1) \
-                and is_part_of_spindle(links, position2):
+                and is_part_of_spindle(position_data, position1) \
+                and is_part_of_spindle(position_data, position2):
             spindle.positions1.append(position1)
             spindle.positions2.append(position2)
 
             for connection in connections.find_connections(position1):  # Search for lumen
-                if is_lumen(links, connection):
+                if is_lumen(position_data, connection):
                     spindle.lumen = connection
 
             position1 = links.find_single_future(position1)
             position2 = links.find_single_future(position2)
 
         # Continue following midbody after division
-        if is_part_of_midbody(links, position2):
+        if is_part_of_midbody(position_data, position2):
             position1, position2 = position2, position1  # Swap
 
-        while is_part_of_midbody(links, position1):
+        while is_part_of_midbody(position_data, position1):
             spindle.midbody.append(position1)
 
             # Find edge of organoid (using annotation)
             edge_position = None
             for connection in connections.find_connections(position1):
-                if is_part_of_organoid_edge(links, connection):
+                if is_part_of_organoid_edge(position_data, connection):
                     edge_position = connection
             spindle.midbody_edge.append(edge_position)
 
@@ -111,9 +114,9 @@ def _find_spindle(links: Links, connections: Connections, track: LinkingTrack) -
         return spindle
 
 
-def find_all_spindles(links: Links, connections: Connections) -> Iterable[Spindle]:
+def find_all_spindles(experiment: Experiment) -> Iterable[Spindle]:
     """Finds all spindles + metadata in the experiment."""
-    for track in links.find_all_tracks():
-        spindle = _find_spindle(links, connections, track)
+    for track in experiment.links.find_all_tracks():
+        spindle = _find_spindle(experiment.links, experiment.position_data, experiment.connections, track)
         if spindle is not None:
             yield spindle

@@ -28,8 +28,9 @@ def _show_sisters_of_shed_cells(window: Window):
     with_unknown_fate_h = []
 
     links = experiment.links
+    position_data = experiment.position_data
     splines = experiment.splines
-    for dead_cell in linking_markers.find_death_and_shed_positions(links):
+    for dead_cell in linking_markers.find_death_and_shed_positions(links, position_data):
         shedding_track = links.get_track(dead_cell)
         division = cell_division_finder.get_previous_division(links, dead_cell)
         if division is None:

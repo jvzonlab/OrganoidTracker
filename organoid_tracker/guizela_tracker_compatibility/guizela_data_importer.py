@@ -10,6 +10,7 @@ from typing import List, Optional
 import numpy
 
 from organoid_tracker.core import TimePoint
+from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.spline import SplineCollection, Spline
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import Links
@@ -21,20 +22,26 @@ from organoid_tracker.linking_analysis.linking_markers import EndMarker
 from organoid_tracker.guizela_tracker_compatibility.track_lib import Track
 
 
-def _load_links(tracks_dir: str, min_time_point: int = 0, max_time_point: int = 5000) -> Links:
+def _load_links(experiment: Experiment, tracks_dir: str, min_time_point: int = 0, max_time_point: int = 5000):
     """Extracts all positions and links from the track files in tracks_dir, returns them as a Graph."""
 
     _fix_python_path_for_pickle()
-    links = Links()
+    links = experiment.links
+    position_data = experiment.position_data
 
+    # Read tracks and divisions for links
     tracks = _read_track_files(tracks_dir, links, min_time_point=min_time_point, max_time_point=max_time_point)
     _read_lineage_file(tracks_dir, links, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
-    _read_deaths_file(tracks_dir, links, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
-    for cell_type in ["paneth", "goblet", "enteroendocrine", "enterocyte"]:
-        _read_cell_type_file(tracks_dir, links, tracks, cell_type)
-    _read_cell_type_file(tracks_dir, links, tracks, "stem", file_name="stemcell.p")
 
-    return links
+    # Also add as positions
+    positions = experiment.positions
+    for position in experiment.links.find_all_positions():
+        positions.add(position)
+
+    _read_deaths_file(tracks_dir, position_data, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
+    for cell_type in ["paneth", "goblet", "enteroendocrine", "enterocyte"]:
+        _read_cell_type_file(tracks_dir, position_data, tracks, cell_type)
+    _read_cell_type_file(tracks_dir, position_data, tracks, "stem", file_name="stemcell.p")
 
 
 def _load_crypt_axis(tracks_dir: str, positions: PositionCollection, paths: SplineCollection, min_time_point: int,
@@ -66,11 +73,7 @@ def _load_crypt_axis(tracks_dir: str, positions: PositionCollection, paths: Spli
 
 def add_data_to_experiment(experiment: Experiment, tracks_dir: str, min_time_point: int = 0, max_time_point: int = 500):
     """Adds all positions and links from the given folder to the experiment."""
-    links = _load_links(tracks_dir, min_time_point, max_time_point)
-    positions = experiment.positions
-    for position in links.find_all_positions():
-        positions.add(position)
-    experiment.links.add_links(links)
+    _load_links(experiment, tracks_dir, min_time_point, max_time_point)
     _load_crypt_axis(tracks_dir, experiment.positions, experiment.splines, min_time_point, max_time_point)
 
 
@@ -133,7 +136,7 @@ def _read_lineage_file(tracks_dir: str, links: Links, tracks: List[Track], min_t
                 links.add_link(mother_last_snapshot, child_2_first_snapshot)
 
 
-def _read_deaths_file(tracks_dir: str, links: Links, tracks_by_id: List[Track], min_time_point: int,
+def _read_deaths_file(tracks_dir: str, position_data: PositionData, tracks_by_id: List[Track], min_time_point: int,
                       max_time_point: int):
     """Adds all marked cell deaths to the linking network."""
     _fix_python_path_for_pickle()
@@ -151,10 +154,10 @@ def _read_deaths_file(tracks_dir: str, links: Links, tracks_by_id: List[Track], 
                 continue
             last_position_position = track.x[-1]
             last_position = Position(*last_position_position, time_point_number=last_position_time)
-            linking_markers.set_track_end_marker(links, last_position, EndMarker.DEAD)
+            linking_markers.set_track_end_marker(position_data, last_position, EndMarker.DEAD)
 
 
-def _read_cell_type_file(tracks_dir: str, links: Links, tracks_by_id: List[Track], cell_type: str, *,
+def _read_cell_type_file(tracks_dir: str, position_data: PositionData, tracks_by_id: List[Track], cell_type: str, *,
                          file_name: Optional[str] = None):
     """Adds all marked cell deaths to the linking network. If the file name is not specified, it is assumed to be
     cell_type.p ."""
@@ -173,7 +176,7 @@ def _read_cell_type_file(tracks_dir: str, links: Links, tracks_by_id: List[Track
             track = tracks_by_id[paneth_cell_number]
             for i in range(len(track.x)):
                 position = Position(*track.x[i], time_point_number=track.t[i])
-                linking_markers.set_position_type(links, position, cell_type.upper())
+                linking_markers.set_position_type(position_data, position, cell_type.upper())
 
 
 def _get_cell_in_time_point(track: Track, time_point_number: int) -> Optional[Position]:

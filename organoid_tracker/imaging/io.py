@@ -14,6 +14,7 @@ from organoid_tracker.core.images import ImageOffsets
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.spline import SplineCollection, Spline
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.core.score import ScoredFamily, Score, Family
@@ -119,14 +120,6 @@ def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point:
             experiment.images.offsets = ImageOffsets(data["image_offsets"])
 
 
-def load_linking_result(experiment: Experiment, json_file_name: str):
-    """Loads a JSON file that is a linking result. Raises ValueError if the file contains no links."""
-    new_experiment = load_data_file(json_file_name)
-    if not new_experiment.links.has_links():
-        raise ValueError("No links found in file", f"The file \"{json_file_name}\" contains no linking data.")
-    experiment.links.add_links(new_experiment.links)
-
-
 def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List], min_time_point: int, max_time_point: int):
     for time_point_number, raw_positions in json_structure.items():
         time_point_number = int(time_point_number)  # str -> int
@@ -141,12 +134,12 @@ def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List],
 
 def _parse_links_format(experiment: Experiment, link_data: Dict[str, Any], min_time_point: int, max_time_point: int):
     """Parses a node_link_graph and adds all links and positions to the experiment."""
-    links = Links()
-    _add_d3_data(links, link_data, min_time_point, max_time_point)
+    links = experiment.links
+    position_data = experiment.position_data
+    _add_d3_data(links, position_data, link_data, min_time_point, max_time_point)
     positions = experiment.positions
     for position in links.find_all_positions():
         positions.add(position)
-    experiment.links.add_links(links)
 
 
 def _parse_data_axes_format(experiment: Experiment, axes_data: List[Dict], min_time_point: int, max_time_point: int):
@@ -203,7 +196,7 @@ def _parse_connections_format(experiment: Experiment, connections_data: Dict[str
                                        position2.with_time_point_number(time_point_number))
 
 
-def _add_d3_data(links: Links, data: Dict, min_time_point: int = -100000, max_time_point: int = 100000):
+def _add_d3_data(links: Links, position_data: PositionData, data: Dict, min_time_point: int = -100000, max_time_point: int = 100000):
     """Adds data in the D3.js node-link format. Used for deserialization."""
 
     # Add position data
@@ -216,7 +209,7 @@ def _add_d3_data(links: Links, data: Dict, min_time_point: int = -100000, max_ti
             if data_key == "id":
                 continue
 
-            links.set_position_data(position, data_key, data_value)
+            position_data.set_position_data(position, data_key, data_value)
 
     # Add links (and lineage data)
     for link in data["links"]:
@@ -274,7 +267,7 @@ def _my_decoder(json_object):
     return json_object
 
 
-def _links_to_d3_data(links: Links, positions: Iterable[Position]) -> Dict:
+def _links_to_d3_data(links: Links, positions: Iterable[Position], position_data: PositionData) -> Dict:
     """Return data in D3.js node-link format that is suitable for JSON serialization
     and use in Javascript documents."""
     nodes = list()
@@ -284,7 +277,7 @@ def _links_to_d3_data(links: Links, positions: Iterable[Position]) -> Dict:
         node = {
             "id": position
         }
-        for data_name, data_value in links.find_all_data_of_position(position):
+        for data_name, data_value in position_data.find_all_data_of_position(position):
             node[data_name] = data_value
         nodes.append(node)
 
@@ -331,14 +324,14 @@ def save_positions_to_json(experiment: Experiment, json_file_name: str):
 def _encode_image_positions(experiment: Experiment):
     positions = experiment.positions
     offsets = experiment.images.offsets
-    links = experiment.links
+    position_data = experiment.position_data
 
     data_structure = {}
     for time_point in positions.time_points():
         offset = offsets.of_time_point(time_point)
         encoded_positions = []
         for position in positions.of_time_point(time_point):
-            if linking_markers.is_live(links, position):
+            if linking_markers.is_live(position_data, position):
                 encoded_positions.append([position.x - offset.x, position.y - offset.y, position.z - offset.z])
 
         data_structure[str(time_point.time_point_number())] = encoded_positions
@@ -419,8 +412,8 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
         save_data["name"] = str(experiment.name)
 
     # Save links
-    if experiment.links.has_links_or_linking_data():
-        save_data["links"] = _links_to_d3_data(experiment.links, experiment.positions)
+    if experiment.links.has_links() or experiment.position_data.has_position_data():
+        save_data["links"] = _links_to_d3_data(experiment.links, experiment.positions, experiment.position_data)
 
     # Save scores of families
     scored_families = list(experiment.scores.all_scored_families())
@@ -457,26 +450,6 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
         json.dump(save_data, handle, cls=_MyEncoder)
     if os.path.exists(json_file_name_old):
         os.remove(json_file_name_old)
-
-
-def load_links_from_json(json_file_name: str, min_time_point: int = 0, max_time_point: int = 5000) -> Links:
-    """Loads all links from a file. Links that extend outside the allowed time points are removed."""
-    with open(json_file_name) as handle:
-        data = json.load(handle, object_hook=_my_decoder)
-        if data is None:
-            raise ValueError
-        if "directed" not in data:
-            data = data["links"]
-
-        data["nodes"] = [entry for entry in data["nodes"]
-                         if min_time_point <= entry["id"].time_point_number() <= max_time_point]
-        data["links"] = [entry for entry in data["links"]
-                         if min_time_point <= entry["source"].time_point_number() <= max_time_point
-                         and min_time_point <= entry["target"].time_point_number() <= max_time_point]
-
-        links = Links()
-        _add_d3_data(links, data)
-        return links
 
 
 def _create_parent_directories(file_name: str):

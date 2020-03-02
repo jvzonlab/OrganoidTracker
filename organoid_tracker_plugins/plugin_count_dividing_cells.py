@@ -44,7 +44,7 @@ def _show_number_of_dividing_cells(window: Window):
             elif fate.type == CellFateType.UNKNOWN:
                 dividing_count_max += 1  # Could be dividing, but we're not sure
 
-            cell_type = linking_markers.get_position_type(experiment.links, position)
+            cell_type = linking_markers.get_position_type(experiment.position_data, position)
             if cell_type == "PANETH":
                 paneth_count += 1
 

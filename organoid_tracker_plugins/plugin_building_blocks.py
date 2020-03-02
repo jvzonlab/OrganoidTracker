@@ -61,7 +61,7 @@ class _Lattice:
             axis_position = experiment.splines.to_position_on_original_axis(experiment.links, position)
             if axis_position is None or axis_position.axis_id != required_axis_id:
                 continue
-            cell_type = linking_markers.get_position_type(experiment.links, position)
+            cell_type = linking_markers.get_position_type(experiment.position_data, position)
             cell_fate = cell_fate_finder.get_fate(experiment, position)
             cell_age = particle_age_finder.get_age(experiment.links, position)
             resolution = experiment.images.resolution()

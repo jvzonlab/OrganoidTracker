@@ -7,14 +7,16 @@ from typing import List, Any, Optional, Dict
 import numpy
 
 from organoid_tracker.core import UserError
+from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.images import ImageOffsets
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.linking_analysis.linking_markers import EndMarker
 
 
-def export_links(links: Links, offsets: ImageOffsets, output_folder: str, comparison_folder: Optional[str] = None):
+def export_links(experiment: Experiment, output_folder: str, comparison_folder: Optional[str] = None):
     """Exports the links of the experiment in Guizela's file format."""
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
@@ -24,7 +26,7 @@ def export_links(links: Links, offsets: ImageOffsets, output_folder: str, compar
     if comparison_folder is not None and not os.path.isdir(comparison_folder):
         raise UserError("Output folder is not actually a folder",
                         "Cannot fix track ids - comparison folder does not exist.")
-    exporter = _TrackExporter(links, offsets)
+    exporter = _TrackExporter(experiment)
     if comparison_folder is not None:
         exporter.synchronize_ids_with_folder(comparison_folder)
     exporter.export_tracks(output_folder)
@@ -35,6 +37,7 @@ class _TrackExporter:
 
     _next_track_id: int = 0
     _links: Links
+    _position_data: PositionData
     _offsets: ImageOffsets
 
     _mother_daughter_pairs: List[List[int]]
@@ -42,9 +45,10 @@ class _TrackExporter:
     _typed_track_ids: Dict[str, List[int]]
     _tracks_by_id: Dict[int, Any]
 
-    def __init__(self, links: Links, offsets: ImageOffsets):
-        self._links = links
-        self._offsets = offsets
+    def __init__(self, experiment: Experiment):
+        self._links = experiment.links
+        self._position_data = experiment.position_data
+        self._offsets = experiment.offsets
         self._mother_daughter_pairs = []
         self._dead_track_ids = []
         self._typed_track_ids = dict()
@@ -62,7 +66,7 @@ class _TrackExporter:
         moved_position = position - self._offsets.of_time_point(position.time_point())
         track = track_lib_v4.Track(x=numpy.array([moved_position.x, moved_position.y, moved_position.z]),
                                    t=position.time_point_number())
-        position_type = linking_markers.get_position_type(self._links, position)
+        position_type = linking_markers.get_position_type(self._position_data, position)
         track_ids_of_cell_type = self._typed_track_ids.get(position_type)
         if track_ids_of_cell_type is None:
             # Start new list
@@ -84,7 +88,7 @@ class _TrackExporter:
                 self._add_track_including_child_tracks(daughter_2, track_id_2)
                 break
             if len(future_positions) == 0:
-                end_marker = linking_markers.get_track_end_marker(self._links, position)
+                end_marker = linking_markers.get_track_end_marker(self._position_data, position)
                 if end_marker == EndMarker.DEAD or end_marker == EndMarker.SHED:
                     # Actual cell dead, mark as such
                     self._dead_track_ids.append(track_id)

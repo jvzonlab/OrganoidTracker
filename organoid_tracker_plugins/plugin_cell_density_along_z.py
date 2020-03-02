@@ -28,7 +28,7 @@ def _show_cell_density(window: Window):
 
 def _get_z_positions_of_deaths(experiment: Experiment) -> Dict[int, int]:
     death_counts_by_z = dict()
-    for position in linking_markers.find_death_and_shed_positions(experiment.links):
+    for position in linking_markers.find_death_and_shed_positions(experiment.links, experiment.position_data):
         z = round(position.z)
         if z in death_counts_by_z:
             death_counts_by_z[z] += 1

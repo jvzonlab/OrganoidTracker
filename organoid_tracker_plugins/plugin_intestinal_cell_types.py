@@ -2,6 +2,7 @@
 from typing import Optional, Any, Dict
 
 from organoid_tracker.core.links import Links, LinkingTrack
+from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.spline import Spline
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.marker import Marker
@@ -56,12 +57,14 @@ def _assign_types(window: Window):
         return
 
     # Loop through all ending tracks to add precursor types
-    links = window.get_experiment().links
+    experiment = window.get_experiment()
+    links = experiment.links
+    position_data = experiment.position_data
     for track in links.find_all_tracks():
         if len(track.get_next_tracks()) > 0:
             continue  # Not an ending track
 
-        _assign_precursor_type_recursive(links, track)
+        _assign_precursor_type_recursive(position_data, track)
 
     # Loop through all divisions to add progeny types
     for starting_track in links.find_starting_tracks():
@@ -72,18 +75,18 @@ def _assign_types(window: Window):
             if len(next_tracks) != 2:
                 continue
             next_track_1, next_track_2 = next_tracks
-            next_type_1 = linking_markers.get_position_type(links, next_track_1.find_first_position())
-            next_type_2 = linking_markers.get_position_type(links, next_track_2.find_first_position())
-            mother_type = linking_markers.get_position_type(links, track.find_last_position())
+            next_type_1 = linking_markers.get_position_type(position_data, next_track_1.find_first_position())
+            next_type_2 = linking_markers.get_position_type(position_data, next_track_2.find_first_position())
+            mother_type = linking_markers.get_position_type(position_data, track.find_last_position())
             if next_type_1 is None:
-                _assign_position_type_if_not_none(links, next_track_1, _get_progeny_type(mother_type, next_type_2))
+                _assign_position_type_if_not_none(position_data, next_track_1, _get_progeny_type(mother_type, next_type_2))
             if next_type_2 is None:
-                _assign_position_type_if_not_none(links, next_track_2, _get_progeny_type(mother_type, next_type_1))
+                _assign_position_type_if_not_none(position_data, next_track_2, _get_progeny_type(mother_type, next_type_1))
 
     window.get_gui_experiment().redraw_data()
 
 
-def _assign_precursor_type_recursive(links: Links, track: LinkingTrack):
+def _assign_precursor_type_recursive(position_data: PositionData, track: LinkingTrack):
     """Assigns a precursor type to all parents of this track, all the way back to the first time point. If the given
     track is not a daughter track, this method does nothing."""
     previous_tracks = track.get_previous_tracks()
@@ -91,7 +94,7 @@ def _assign_precursor_type_recursive(links: Links, track: LinkingTrack):
         return  # Need to have one parent cell
 
     parent_track = previous_tracks.pop()
-    if _is_known_type(linking_markers.get_position_type(links, parent_track.find_last_position())):
+    if _is_known_type(linking_markers.get_position_type(position_data, parent_track.find_last_position())):
         return  # Don't overwrite known types - we only want to overwrite guessed precursor types and
 
     sibling_tracks = parent_track.get_next_tracks()
@@ -99,23 +102,23 @@ def _assign_precursor_type_recursive(links: Links, track: LinkingTrack):
         return  # Need to have two daughter cells
 
     # Get precursor type
-    daughter1_type = linking_markers.get_position_type(links, sibling_tracks.pop().find_first_position())
-    daughter2_type = linking_markers.get_position_type(links, sibling_tracks.pop().find_first_position())
+    daughter1_type = linking_markers.get_position_type(position_data, sibling_tracks.pop().find_first_position())
+    daughter2_type = linking_markers.get_position_type(position_data, sibling_tracks.pop().find_first_position())
     precursor_type = _get_precursor_type(daughter1_type, daughter2_type)
 
     # Apply precursor type
-    _assign_position_type_if_not_none(links, parent_track, precursor_type)
+    _assign_position_type_if_not_none(position_data, parent_track, precursor_type)
 
     # Go back in time
-    _assign_precursor_type_recursive(links, parent_track)
+    _assign_precursor_type_recursive(position_data, parent_track)
 
 
-def _assign_position_type_if_not_none(links: Links, track: LinkingTrack, position_type: str):
+def _assign_position_type_if_not_none(position_data: PositionData, track: LinkingTrack, position_type: str):
     if position_type is None:
         return
 
     for position in track.positions():
-        linking_markers.set_position_type(links, position, position_type)
+        linking_markers.set_position_type(position_data, position, position_type)
 
 
 def _is_known_type(type_name: Optional[str]) -> bool:
