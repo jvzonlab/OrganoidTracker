@@ -91,10 +91,10 @@ def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point:
             _parse_shape_format(experiment, data["positions"], min_time_point, max_time_point)
 
         if "data_axes" in data:
-            _parse_data_axes_format(experiment, data["data_axes"], min_time_point, max_time_point)
+            _parse_splines_format(experiment, data["data_axes"], min_time_point, max_time_point)
 
         if "data_axes_meta" in data:
-            _parse_data_axes_meta_format(experiment, data["data_axes_meta"])
+            _parse_splines_meta_format(experiment, data["data_axes_meta"])
 
         if "connections" in data:
             _parse_connections_format(experiment, data["connections"], min_time_point, max_time_point)
@@ -147,25 +147,23 @@ def _parse_links_format(experiment: Experiment, link_data: Dict[str, Any], min_t
         positions.add(position)
 
 
-def _parse_data_axes_format(experiment: Experiment, axes_data: List[Dict], min_time_point: int, max_time_point: int):
-    for path_json in axes_data:
-        time_point_number = path_json["_time_point_number"]
+def _parse_splines_format(experiment: Experiment, splines_data: List[Dict], min_time_point: int, max_time_point: int):
+    for spline_json in splines_data:
+        time_point_number = spline_json["_time_point_number"]
         if time_point_number < min_time_point or time_point_number > max_time_point:
             continue
-        path = Spline()
-        points_x = path_json["x_list"]
-        points_y = path_json["y_list"]
-        z = path_json["z"]
+        spline = Spline()
+        points_x = spline_json["x_list"]
+        points_y = spline_json["y_list"]
+        z = spline_json["z"]
         for i in range(len(points_x)):
-            path.add_point(points_x[i], points_y[i], z)
-        path.set_offset(path_json["offset"])
-        if "checkpoint" in path_json:
-            path.set_checkpoint(path_json["checkpoint"])
-        spline_id = int(path_json["id"]) if "id" in path_json else None
-        experiment.splines.add_spline(TimePoint(time_point_number), path, spline_id)
+            spline.add_point(points_x[i], points_y[i], z)
+        spline.set_offset(spline_json["offset"])
+        spline_id = int(spline_json["id"]) if "id" in spline_json else None
+        experiment.splines.add_spline(TimePoint(time_point_number), spline, spline_id)
 
 
-def _parse_data_axes_meta_format(experiment: Experiment, axes_meta: Dict[str, object]):
+def _parse_splines_meta_format(experiment: Experiment, axes_meta: Dict[str, object]):
     """Currently parses the type of each axis that was drawn."""
     for key, value in axes_meta.items():
         if key == "reference_time_point_number" and isinstance(value, int):
@@ -380,7 +378,6 @@ def _encode_data_axes_to_json(data_axes: SplineCollection) -> List[Dict]:
             "y_list": points_y,
             "z": spline.get_z(),
             "offset": spline.get_offset(),
-            "checkpoint": spline.get_checkpoint(),
             "id": spline_id
         }
         json_list.append(json_object)

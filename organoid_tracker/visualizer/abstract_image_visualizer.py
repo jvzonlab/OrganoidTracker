@@ -295,9 +295,9 @@ class AbstractImageVisualizer(Visualizer):
     def _draw_data_axes(self):
         """Draws the data axis, which is usually the crypt axis."""
         for axis_id, data_axis in self._experiment.splines.of_time_point(self._time_point):
-            self._draw_data_axis(data_axis, axis_id, color=core.COLOR_CELL_CURRENT, marker_size_max=10)
+            self._draw_spline(data_axis, axis_id, color=core.COLOR_CELL_CURRENT, marker_size_max=10)
 
-    def _draw_data_axis(self, data_axis: Spline, id: int, color: str, marker_size_max: int):
+    def _draw_spline(self, data_axis: Spline, id: int, color: str, marker_size_max: int):
         """Draws a single data axis. Usually, we use this as the crypt axis."""
         if not self._display_settings.show_splines:
             return
@@ -310,12 +310,6 @@ class AbstractImageVisualizer(Visualizer):
         if origin_pos is not None:
             self._ax.plot(origin_pos[0], origin_pos[1], marker="*", markerfacecolor=core.COLOR_CELL_CURRENT,
                           markeredgecolor="black", markersize=max(11, 18 - dz))
-        checkpoint = data_axis.get_checkpoint()
-        if checkpoint is not None:
-            checkpoint_pos = data_axis.from_position_on_axis(checkpoint)
-            if checkpoint_pos is not None:
-                self._ax.plot(checkpoint_pos[0], checkpoint_pos[1], marker="*", markerfacecolor=core.COLOR_CELL_CURRENT,
-                              markeredgecolor="black", markersize=max(11, 18 - dz))
 
         self._ax.plot(*data_axis.get_interpolation_2d(), color=color, linewidth=linewidth)
         self._ax.plot(*data_axis.get_points_2d(), linewidth=0, marker=marker, markerfacecolor=color,

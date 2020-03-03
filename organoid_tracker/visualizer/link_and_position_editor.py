@@ -329,7 +329,7 @@ class LinkAndPositionEditor(AbstractEditor):
     def get_extra_menu_options(self):
         options = {
             **super().get_extra_menu_options(),
-            "Edit//Experiment-Edit data axes... [A]": self._show_path_editor,
+            "Edit//Experiment-Edit splines... [A]": self._show_spline_editor,
             "Edit//Experiment-Edit image offsets... [O]": self._show_offset_editor,
             "Edit//Batch-Batch deletion//Delete data of time point...": self._delete_data_of_time_point,
             "Edit//Batch-Batch deletion//Delete all tracks with errors...": self._delete_tracks_with_errors,
@@ -431,7 +431,7 @@ class LinkAndPositionEditor(AbstractEditor):
         else:
             self._perform_action(ReversedAction(_MarkPositionAsUncertainAction(self._selected1)))
 
-    def _show_path_editor(self):
+    def _show_spline_editor(self):
         from organoid_tracker.visualizer.data_axis_editor import DataAxisEditor
         path_editor = DataAxisEditor(self._window)
         activate(path_editor)

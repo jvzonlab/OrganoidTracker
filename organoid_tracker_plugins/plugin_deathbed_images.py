@@ -8,7 +8,7 @@ from typing import Any, List, Optional, Dict
 import numpy
 
 from organoid_tracker.core import UserError, clamp
-from organoid_tracker.core.spline import DataAxisPosition
+from organoid_tracker.core.spline import SplinePosition
 from organoid_tracker.core.images import Images
 from organoid_tracker.core.position import Position
 from organoid_tracker.gui import dialog
@@ -31,9 +31,9 @@ class _Deathbed:
     """Represents the final positions of a position before it died."""
 
     positions: List[Position]  # List of positions. Death at index 0, one time point before at index 1, etc.
-    axis_positions: List[Optional[DataAxisPosition]]  # Same list, but now on the data axis
+    axis_positions: List[Optional[SplinePosition]]  # Same list, but now on the data axis
 
-    def __init__(self, positions: List[Position], axis_positions: List[Optional[DataAxisPosition]]):
+    def __init__(self, positions: List[Position], axis_positions: List[Optional[SplinePosition]]):
         self.positions = positions
         self.axis_positions = axis_positions
 

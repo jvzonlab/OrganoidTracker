@@ -74,27 +74,6 @@ class _SetMarkerAction(UndoableAction):
         return f"Marked axis {self._axis_id} again as {self._old_marker.display_name}"
 
 
-class _SetCheckpointAction(UndoableAction):
-    _data_axis: Spline
-    _new_checkpoint: float
-    _old_checkpoint: Optional[float]
-
-    def __init__(self, data_axis: Spline, new_checkpoint: float):
-        self._data_axis = data_axis
-        self._new_checkpoint = new_checkpoint
-        self._old_checkpoint = data_axis.get_checkpoint()
-
-    def do(self, experiment: Experiment) -> str:
-        self._data_axis.set_checkpoint(self._new_checkpoint)
-        return "Inserted checkpoint"
-
-    def undo(self, experiment: Experiment) -> str:
-        self._data_axis.set_checkpoint(self._old_checkpoint)
-        if self._old_checkpoint is None:
-            return "Deleted checkpoint"
-        return "Restored original checkpoint"
-
-
 class _SetReferenceTimePointAction(UndoableAction):
     _old_reference_time_point: TimePoint
     _new_reference_time_point: TimePoint
@@ -113,39 +92,38 @@ class _SetReferenceTimePointAction(UndoableAction):
 
 
 class DataAxisEditor(AbstractEditor):
-    """Editor for data axes. Double-click to (de)select a path.
-    Draw the data axis by adding points using the Insert key. Use Delete to delete a data axis.
-    Add a checkpoint to a path using the X key.
-    Press C to copy a selected path from another time point to this time point.
-    Press P to view the position of each cell on the nearest data axis. Positions after the checkpoint are marked with a star."""
+    """Editor for splines. Double-click to (de)select a spline.
+    Draw the spline by adding points using the Insert key. Use Delete to delete a spline.
+    Press C to copy a selected spline from another time point to this time point.
+    Press P to view the position of each cell on the nearest spline."""
 
     _selected_spline_id: Optional[int]
-    _draw_axis_positions: bool
+    _draw_spline_positions: bool
 
     def __init__(self, window: Window):
         window.display_settings.show_splines = True
         super().__init__(window)
         self._selected_spline_id = None
-        self._draw_axis_positions = False
+        self._draw_spline_positions = False
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
         options = {
             **super().get_extra_menu_options(),
-            "View//Toggle-Toggle showing data axis positions [P]": self._toggle_viewing_axis_positions,
+            "View//Toggle-Toggle showing spline positions [P]": self._toggle_viewing_axis_positions,
             "Edit//Axes-Change reference time point...": self._set_reference_time_point,
-            "Edit//Axes-Copy axis to this time point [C]": self._copy_axis_to_current_time_point,
+            "Edit//Axes-Copy axis to this time point [C]": self._copy_spline_to_current_time_point,
         }
 
         # Add options for changing axis types
         for position_type in self.get_window().get_gui_experiment().get_registered_markers(Spline):
             # Create copy of position_type variable to avoid it changing in loop iteration
-            action = lambda bound_position_type=position_type: self._mark_axis(bound_position_type)
+            action = lambda bound_position_type=position_type: self._mark_spline_as_type(bound_position_type)
 
             options["Edit//Type-Set type of axis//" + position_type.display_name] = action
         return options
 
     def _toggle_viewing_axis_positions(self):
-        self._draw_axis_positions = not self._draw_axis_positions
+        self._draw_spline_positions = not self._draw_spline_positions
         self.draw_view()
 
     def _on_mouse_click(self, event: MouseEvent):
@@ -161,12 +139,12 @@ class DataAxisEditor(AbstractEditor):
             self.draw_view()
 
     def _get_figure_title(self) -> str:
-        return "Editing axes in time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
+        return "Editing splines in time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
 
     def _get_window_title(self) -> str:
         return "Manual data editing"
 
-    def _get_selected_path_of_current_time_point(self) -> Optional[Spline]:
+    def _get_selected_spline_of_current_time_point(self) -> Optional[Spline]:
         if self._selected_spline_id is None:
             return None
         selected_spline = self._experiment.splines.get_spline(self._time_point, self._selected_spline_id)
@@ -175,25 +153,22 @@ class DataAxisEditor(AbstractEditor):
         return selected_spline
 
     def _on_position_draw(self, position: Position, color: str, dz: int, dt: int) -> bool:
-        if not self._draw_axis_positions or dt != 0 or abs(dz) > 3:
-            super()._on_position_draw(position, color, dz, dt)
-            return
+        if not self._draw_spline_positions or dt != 0 or abs(dz) > 3:
+            return super()._on_position_draw(position, color, dz, dt)
 
-        axis_position = self._experiment.splines.to_position_on_original_axis(self._experiment.links, position)
-        if axis_position is None:
-            super()._on_position_draw(position, color, dz, dt)
-            return
+        spline_position = self._experiment.splines.to_position_on_original_axis(self._experiment.links, position)
+        if spline_position is None:
+            return super()._on_position_draw(position, color, dz, dt)
 
-        background_color = (1, 1, 1, 0.8) if axis_position.axis_id == self._selected_spline_id else (0, 1, 0, 0.8)
-        star = "*" if axis_position.is_after_checkpoint() else ""
-        self._draw_annotation(position, f"{star}{axis_position.pos:.1f}", background_color=background_color)
+        background_color = (1, 1, 1, 0.8) if spline_position.axis_id == self._selected_spline_id else (0, 1, 0, 0.8)
+        self._draw_annotation(position, f"{spline_position.pos:.1f}", background_color=background_color)
 
-    def _draw_data_axis(self, data_axis: Spline, id: int, color: str, marker_size_max: int):
-        if data_axis == self._get_selected_path_of_current_time_point():
+    def _draw_spline(self, data_axis: Spline, id: int, color: str, marker_size_max: int):
+        if data_axis == self._get_selected_spline_of_current_time_point():
             color = "white"  # Highlight the selected path
             marker_size_max = int(marker_size_max * 1.5)
 
-        super()._draw_data_axis(data_axis, id, color, marker_size_max)
+        super()._draw_spline(data_axis, id, color, marker_size_max)
 
         pos_x, pos_y = data_axis.get_points_2d()
         self._ax.annotate(self._get_axis_label(id), (pos_x[0], pos_y[0] + 10), fontsize=12, fontweight="bold", color=color)
@@ -207,7 +182,7 @@ class DataAxisEditor(AbstractEditor):
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "insert":
-            selected_path = self._get_selected_path_of_current_time_point()
+            selected_path = self._get_selected_spline_of_current_time_point()
             if selected_path is None:
                 # Time for a new path
                 path = Spline()
@@ -220,21 +195,17 @@ class DataAxisEditor(AbstractEditor):
                 point = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
                 self._perform_action(_AddPointAction(selected_path, point))
         elif event.key == "delete":
-            selected_path = self._get_selected_path_of_current_time_point()
+            selected_path = self._get_selected_spline_of_current_time_point()
             if selected_path is None:
                 self.update_status("No path selected - cannot delete anything.")
                 return
             else:
                 self._selected_spline_id = None
                 self._perform_action(ReversedAction(_AddPathAction(selected_path, self._time_point)))
-        elif event.key == "x":
-            if event.xdata is None or event.ydata is None:
-                return
-            self._set_checkpoint(event.xdata, event.ydata)
         else:
             super()._on_key_press(event)
 
-    def _copy_axis_to_current_time_point(self):
+    def _copy_spline_to_current_time_point(self):
         """Copies the axis of the previous time point to the current time point."""
         if self._selected_spline_id is None:
             self.update_status("No spline selected, cannot copy anything")
@@ -271,22 +242,8 @@ class DataAxisEditor(AbstractEditor):
         data_editor = LinkAndPositionEditor(self._window)
         activate(data_editor)
 
-    def _set_checkpoint(self, x: float, y: float):
-        selected_spline = self._get_selected_path_of_current_time_point()
-        if selected_spline is None:
-            self.update_status(f"No spline selected in the current time point. Double-click a spline to select it.")
-            return
-        on_axis = selected_spline.to_position_on_axis(Position(x, y, self._z))
-        if on_axis is None:
-            self.update_status("Cannot set a checkpoint here on this spline - add more points to the spline first")
-            return
-        if on_axis.distance > 20:
-            self.update_status("Cannot set a checkpoint here - mouse is not near selected spline")
-            return
-        self._perform_action(_SetCheckpointAction(selected_spline, on_axis.pos))
-
-    def _mark_axis(self, axis_marker: Marker):
-        selected_spline = self._get_selected_path_of_current_time_point()
+    def _mark_spline_as_type(self, axis_marker: Marker):
+        selected_spline = self._get_selected_spline_of_current_time_point()
 
         if selected_spline is None:
             self.update_status("No spline selected - cannot set type")
@@ -305,9 +262,9 @@ class DataAxisEditor(AbstractEditor):
         reference_time_point = self._experiment.splines.reference_time_point()
         if reference_time_point is None:
             reference_time_point = TimePoint(min_time_point_number)
-        explanation = "Data axes are used to follow positions over time accross a trajectory. If you have multiple\n" \
-                      " of such trajectories, then all positions need to be assigned to one of these data axes.\n\n" \
-                      f"Currently, each cell belongs to the data axis that was the closest by in time point" \
+        explanation = "Splines are used to follow positions over time accross a trajectory. If you have multiple\n" \
+                      " of such trajectories, then all positions need to be assigned to one of these splines.\n\n" \
+                      f"Currently, each cell belongs to the spline that was the closest by in time point" \
                       f" {reference_time_point.time_point_number()}. Which\ntime point should it be instead?" \
                       f" ({min_time_point_number}-{max_time_point_number}, inclusive)"
         answer = dialog.prompt_int("Reference time point", explanation, minimum=min_time_point_number,

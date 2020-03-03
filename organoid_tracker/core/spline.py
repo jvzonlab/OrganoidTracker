@@ -16,10 +16,13 @@ from organoid_tracker.imaging import angles
 _REFERENCE = Vector3(0, 0, -1)
 
 
-class DataAxisPosition:
-    spline: "Spline"  # The data axis at a particular time point.
+class SplinePosition:
+    """Records a position projected on a spline: both the spline, its id, the position on the spline and the distance
+    to the spline are recorded."""
+
+    spline: "Spline"  # The spline at a particular time point.
     axis_id: int  # Used to identify the data axis over multiple time points.
-    pos: float  # The position on the data axis in pixels.
+    pos: float  # The position on the spline in pixels.
     distance: float  # The distance from the point to the nearest point on the data axis.
 
     def __init__(self, axis: "Spline", pos: float, distance: float):
@@ -27,13 +30,6 @@ class DataAxisPosition:
         self.axis_id = 0
         self.pos = pos
         self.distance = distance
-
-    def is_after_checkpoint(self) -> bool:
-        """Returns True if the data axis has a checkpoint specified and this position is behind that checkpoint."""
-        checkpoint = self.spline.get_checkpoint()
-        if checkpoint is None:
-            return False
-        return self.pos > checkpoint
 
     def calculate_angle(self, position: Position, resolution: ImageResolution) -> float:
         """Calculates the angle from this point on the data axis to the given position."""
@@ -72,7 +68,6 @@ class Spline:
 
     _interpolation: Optional[Tuple[List[float], List[float]]]
     _offset: float
-    _checkpoint_without_offset: Optional[float]
 
     def __init__(self):
         self._x_list = []
@@ -80,7 +75,6 @@ class Spline:
         self._z = None
         self._interpolation = None
         self._offset = 0
-        self._checkpoint_without_offset = None
 
     def add_point(self, x: float, y: float, z: float):
         """Adds a new point to the path."""
@@ -120,9 +114,9 @@ class Spline:
         y_values = points[1]
         return x_values, y_values
 
-    def to_position_on_axis(self, position: Position) -> Optional[DataAxisPosition]:
-        """Gets the closest position on the axes and the distance to the axes, both in pixels. Returns None if the path
-        has fewer than 2 points."""
+    def to_position_on_axis(self, position: Position) -> Optional[SplinePosition]:
+        """Interprets this spline as an axis. Gets the closest position on this axis and the distance to the axis,
+         both in pixels. Returns None if this spline has fewer than 2 points."""
         x_values, y_values = self.get_interpolation_2d()
         if len(x_values) < 2:
             return None
@@ -154,7 +148,7 @@ class Spline:
 
         raw_path_position = combined_length_of_previous_lines + distance_on_line
 
-        return DataAxisPosition(self, raw_path_position - self._offset, math.sqrt(min_distance_to_line_squared))
+        return SplinePosition(self, raw_path_position - self._offset, math.sqrt(min_distance_to_line_squared))
 
     def from_position_on_axis(self, path_position: float) -> Optional[Tuple[float, float]]:
         """Given a path position, this returns the corresponding x and y coordinates. Returns None for positions outside
@@ -206,7 +200,6 @@ class Spline:
         for i in range(len(self._x_list)):
             copy.add_point(self._x_list[i], self._y_list[i], self._z)
         copy._offset = self._offset
-        copy._checkpoint_without_offset = self._checkpoint_without_offset
         return copy
 
     def remove_point(self, x: float, y: float):
@@ -219,7 +212,7 @@ class Spline:
                 return
 
     def update_offset_for_positions(self, positions: Iterable[Position]):
-        """Updates the offset of this crypt axis such that the lowest path position that is ever returned by
+        """Updates the offset of this spline such that the lowest path position that is ever returned by
         get_path_position_2d is exactly 0.
         """
         if len(self._x_list) < 2:
@@ -242,20 +235,6 @@ class Spline:
         """Gets the offset used in calls to get_path_position_2d and path_position_to_xy. Note that these methods apply
         the offset automatically, so except for saving/loading purposes there should be no need to call this method."""
         return self._offset
-
-    def set_checkpoint(self, checkpoint: Optional[float]):
-        """Updates the checkpoint. See the class docs for what a checkpoint is. If you update the offset later on,
-        the checkpoint will change relative to the offset, so that its absolute position (xyz) will stay the same."""
-        if checkpoint is None:
-            self._checkpoint_without_offset = None
-            return
-        self._checkpoint_without_offset = checkpoint - self._offset
-
-    def get_checkpoint(self) -> Optional[float]:
-        """Gets the checkpoint. See the class docs for what a checkpoint is."""
-        if self._checkpoint_without_offset is None:
-            return None
-        return self._checkpoint_without_offset + self._offset
 
     def move_points(self, delta: Position):
         """Translates all points in this path with the specified amount."""
@@ -344,7 +323,7 @@ class SplineCollection:
         for spline_id, spline in splines.items():
             yield spline_id, spline
 
-    def to_position_on_spline(self, position: Position, only_axis=False) -> Optional[DataAxisPosition]:
+    def to_position_on_spline(self, position: Position, only_axis=False) -> Optional[SplinePosition]:
         # Find the closest axis, return position on that axis
         lowest_distance_position = None
         for axis_id, data_axis in self.of_time_point(position.time_point()):
@@ -359,7 +338,7 @@ class SplineCollection:
                 lowest_distance_position = axis_position
         return lowest_distance_position
 
-    def to_position_on_original_axis(self, links: Links, position: Position) -> Optional[DataAxisPosition]:
+    def to_position_on_original_axis(self, links: Links, position: Position) -> Optional[SplinePosition]:
         """Gets the position on the axis that was closest in the first time point this position appeared. In this way,
         every position is assigned to a single axis, and will never switch to another axis during its lifetime."""
         reference_time_point = self.reference_time_point()
