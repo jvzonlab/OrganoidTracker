@@ -4,18 +4,31 @@ from typing import List, Dict, Optional, Iterable
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.resolution import ImageResolution
+from organoid_tracker.core.vector import Vector3
 
 
 class ClosestBeacon:
     """Used to represent the distance towards, the identity and the position of the closest beacon."""
     distance_um: float
     beacon_position: Position
+    search_position: Position
     beacon_index: int
+    resolution: ImageResolution
 
-    def __init__(self, beacon_position: Position, beacon_index: int, distance_um: float):
+    def __init__(self, search_position: Position, beacon_position: Position, beacon_index: int, distance_um: float,
+                 resolution: ImageResolution):
+        self.search_position = search_position
         self.beacon_position = beacon_position
         self.beacon_index = beacon_index
         self.distance_um = distance_um
+        self.resolution = resolution
+
+    def difference_um(self) -> Vector3:
+        """Gets the difference between the search position and the beacon position in micrometers."""
+        dx = (self.search_position.x - self.beacon_position.x) * self.resolution.pixel_size_x_um
+        dy = (self.search_position.y - self.beacon_position.y) * self.resolution.pixel_size_y_um
+        dz = (self.search_position.z - self.beacon_position.z) * self.resolution.pixel_size_z_um
+        return Vector3(dx, dy, dz)
 
 
 class BeaconCollection:
@@ -127,7 +140,8 @@ class BeaconCollection:
                 shortest_distance_squared = distance_squared
                 closest_beacon = beacon
                 closest_beacon_index = i + 1
-        return ClosestBeacon(closest_beacon, closest_beacon_index, math.sqrt(shortest_distance_squared))
+        return ClosestBeacon(position, closest_beacon, closest_beacon_index, math.sqrt(shortest_distance_squared),
+                             resolution)
 
     def time_points(self) -> Iterable[TimePoint]:
         """Gets all used time points."""

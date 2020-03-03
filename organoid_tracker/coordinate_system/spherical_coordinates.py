@@ -1,5 +1,5 @@
 import math
-from typing import Any
+from typing import Any, Optional
 
 from organoid_tracker.core.vector import Vector3
 
@@ -35,14 +35,17 @@ class SphericalCoordinate:
         self.theta_degrees = theta_degrees
         self.phi_degrees = phi_degrees
 
-    def to_cartesian(self) -> Vector3:
-        """Gets the equivalent cartesian coordinate."""
+    def to_cartesian(self, *, radius: Optional[float] = None) -> Vector3:
+        """Gets the equivalent cartesian coordinate. You can override the radius with another value."""
+        if radius is None:
+            radius = self.radius_um
+
         phi = math.radians(self.phi_degrees)
         theta = math.radians(self.theta_degrees)
 
-        x = self.radius_um * math.cos(phi) * math.sin(theta)
-        y = self.radius_um * math.sin(phi) * math.sin(theta)
-        z = self.radius_um * math.cos(theta)
+        x = radius * math.cos(phi) * math.sin(theta)
+        y = radius * math.sin(phi) * math.sin(theta)
+        z = radius * math.cos(theta)
         return Vector3(x, y, z)
 
     def __eq__(self, other: Any) -> bool:

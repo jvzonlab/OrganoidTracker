@@ -189,7 +189,7 @@ class _PopupQWindow(QMainWindow):
     _menu: QMenuBar
     _on_close: Callable
 
-    def __init__(self, parent: QWidget, figure: Figure, on_close: Callable):
+    def __init__(self, parent: QWidget, figure: Figure, draw_function: Callable, on_close: Callable):
         super().__init__(parent)
 
         self._figure = figure
@@ -211,6 +211,8 @@ class _PopupQWindow(QMainWindow):
         mpl_canvas.setFocusPolicy(QtCore.Qt.ClickFocus)
         mpl_canvas.setFocus()
         vertical_boxes.addWidget(mpl_canvas)
+        figure.set_canvas(mpl_canvas)
+        draw_function(figure)
         mpl_canvas.draw()
 
         # Add Matplotlib toolbar
@@ -247,6 +249,7 @@ class PopupWindow(Window):
         if file_name is not None:
             self.get_figure().savefig(file_name)
 
+
 def popup_visualizer(experiment: GuiExperiment, visualizer_callable: Callable[[Window], Any]):
     """Pops up a window, which is then returned. You can then for example attach a Visualizer to this window to show
     something."""
@@ -254,7 +257,9 @@ def popup_visualizer(experiment: GuiExperiment, visualizer_callable: Callable[[W
 
     def close_listener():
         visualizer.detach()
-    q_window = _PopupQWindow(_window(), figure, close_listener)
+    def no_draw():
+        pass
+    q_window = _PopupQWindow(_window(), figure, no_draw, close_listener)
     window = PopupWindow(q_window, figure, experiment, q_window._title_text, q_window._status_text)
 
     from organoid_tracker.visualizer import Visualizer
@@ -274,8 +279,7 @@ def popup_figure(experiment: GuiExperiment, draw_function: Callable[[Figure], No
         pass  # Used to indicate that no action needs to be taken once the window closes
 
     figure = Figure(figsize=(size_cm[0] * CM_TO_INCH, size_cm[1] * CM_TO_INCH), dpi=95)
-    draw_function(figure)
-    q_window = _PopupQWindow(_window(), figure, do_nothing_on_close)
+    q_window = _PopupQWindow(_window(), figure, draw_function, do_nothing_on_close)
     PopupWindow(q_window, figure, experiment, q_window._title_text, q_window._status_text)
 
 
