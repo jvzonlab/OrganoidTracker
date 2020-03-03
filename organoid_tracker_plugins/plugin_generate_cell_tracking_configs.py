@@ -10,6 +10,7 @@ from organoid_tracker.gui import dialog
 from organoid_tracker.gui.dialog import DefaultOption
 from organoid_tracker.gui.window import Window
 from organoid_tracker.imaging import io
+from organoid_tracker.linking_analysis import linking_markers
 
 _TRAINING_PATCH_SHAPE_ZYX: Tuple[int, int, int] = (32, 64, 64)
 
@@ -217,7 +218,7 @@ def _generate_linking_config(window: Window):
                                               " positions together. You can obtain cell positions using a neural"
                                               " network, see the manual.")
     experiment.images.resolution()  # Check for resolution
-    if not experiment.positions.guess_has_shapes():
+    if not linking_markers.has_shapes(experiment.position_data):
         if not dialog.prompt_yes_no("No shapes", "No cell shape information found. While not strictly required, it is"
                                     " highly recommended to run a Gaussian fit first. If we know the shape of"
                                     " cells, it is easier to tell which cell is which over different time"

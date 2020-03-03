@@ -121,6 +121,9 @@ def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point:
 
 
 def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List], min_time_point: int, max_time_point: int):
+    positions = experiment.positions
+    position_data = experiment.position_data
+
     for time_point_number, raw_positions in json_structure.items():
         time_point_number = int(time_point_number)  # str -> int
         if time_point_number < min_time_point or time_point_number > max_time_point:
@@ -129,7 +132,9 @@ def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List],
         for raw_position in raw_positions:
             position = Position(*raw_position[0:3], time_point_number=time_point_number)
             position_shape = shape.from_list(raw_position[3:])
-            experiment.positions.add(position, position_shape)
+            positions.add(position)
+            if not position_shape.is_unknown():
+                linking_markers.set_shape(position_data, position, position_shape)
 
 
 def _parse_links_format(experiment: Experiment, link_data: Dict[str, Any], min_time_point: int, max_time_point: int):
@@ -278,6 +283,8 @@ def _links_to_d3_data(links: Links, positions: Iterable[Position], position_data
             "id": position
         }
         for data_name, data_value in position_data.find_all_data_of_position(position):
+            if data_name == "shape":
+                continue  # For historical reasons, shape information is stored in the "positions" array
             node[data_name] = data_value
         nodes.append(node)
 
@@ -338,11 +345,12 @@ def _encode_image_positions(experiment: Experiment):
     return data_structure
 
 
-def _encode_positions_and_shapes(positions_and_shapes: PositionCollection):
+def _encode_positions_and_shapes(positions: PositionCollection, shapes: PositionData):
     data_structure = {}
-    for time_point in positions_and_shapes.time_points():
+    for time_point in positions.time_points():
         encoded_positions = []
-        for position, shape in positions_and_shapes.of_time_point_with_shapes(time_point):
+        for position in positions.of_time_point(time_point):
+            shape = linking_markers.get_shape(shapes, position)
             encoded_positions.append([position.x, position.y, position.z] + shape.to_list())
 
         data_structure[str(time_point.time_point_number())] = encoded_positions
@@ -405,7 +413,7 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
     save_data = {"version": "v1"}
 
     if experiment.positions.has_positions():
-        save_data["positions"] = _encode_positions_and_shapes(experiment.positions)
+        save_data["positions"] = _encode_positions_and_shapes(experiment.positions, experiment.position_data)
 
     # Save name
     if experiment.name.has_name():

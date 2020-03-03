@@ -73,8 +73,8 @@ def get_error(links: Links, position: Position, scores: ScoreCollection, positio
         # Check cell size
         past_position = past_positions.pop()
         future_positions_of_past_position = links.find_futures(past_position)
-        shape = positions.get_shape(position)
-        past_shape = positions.get_shape(past_position)
+        shape = linking_markers.get_shape(position_data, position)
+        past_shape = linking_markers.get_shape(position_data, past_position)
         if shape.is_failed() and len(future_positions) != 2:
             return Error.FAILED_SHAPE  # Gaussian fit failed, can happen for dividing cells, but should not happen otherwise
         elif not shape.is_unknown() and len(future_positions_of_past_position) == 1:
@@ -82,8 +82,8 @@ def get_error(links: Links, position: Position, scores: ScoreCollection, positio
                 # Found a sudden decrease in volume. Check averages to see if it is an outlier, or something real
 
                 # Compare volumes of last 5 and next 5 positions
-                volume_last_five = _get_volumes(past_position, positions, links.find_single_past, 5)
-                volume_next_five = _get_volumes(position, positions, links.find_single_future, 5)
+                volume_last_five = _get_volumes(past_position, position_data, links.find_single_past, 5)
+                volume_next_five = _get_volumes(position, position_data, links.find_single_future, 5)
                 if volume_last_five is not None and volume_next_five is not None \
                         and volume_last_five / (volume_next_five + 0.0001) > 2:
                     return Error.SHRUNK_A_LOT
@@ -96,14 +96,14 @@ def get_error(links: Links, position: Position, scores: ScoreCollection, positio
     return None
 
 
-def _get_volumes(position: Position, volume_lookup: PositionCollection,
+def _get_volumes(position: Position, volume_lookup: PositionData,
                  next_position_getter: Callable[[Position], Optional[Position]], max_amount: int) -> Optional[float]:
     """Gets the mean volume over time, based on the given number of recorded volumes. If there aren't that many
     recorded volumes, then the it uses less. However, if there are less than 2 volumes recorded, None is returned, as in
     that case we don't have enough data to say anything useful."""
     volumes = list()
     while len(volumes) < max_amount:
-        shape = volume_lookup.get_shape(position)
+        shape = linking_markers.get_shape(volume_lookup, position)
         if shape.is_unknown():
             break
         volumes.append(shape.volume())

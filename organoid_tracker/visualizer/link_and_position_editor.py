@@ -109,14 +109,12 @@ class _MovePositionAction(UndoableAction):
     """Used to move a position"""
 
     old_position: Position
-    old_shape: ParticleShape
     new_position: Position
 
-    def __init__(self, old_position: Position, old_shape: ParticleShape, new_position: Position):
+    def __init__(self, old_position: Position, new_position: Position):
         if old_position.time_point_number() != new_position.time_point_number():
             raise ValueError(f"{old_position} and {new_position} are in different time points")
         self.old_position = old_position
-        self.old_shape = old_shape
         self.new_position = new_position
 
     def do(self, experiment: Experiment):
@@ -126,7 +124,6 @@ class _MovePositionAction(UndoableAction):
 
     def undo(self, experiment: Experiment):
         experiment.move_position(self.new_position, self.old_position)
-        experiment.positions.add(self.old_position, self.old_shape)
         cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.old_position)
         return f"Moved {self.new_position} back to {self.old_position}"
 
@@ -376,11 +373,10 @@ class LinkAndPositionEditor(AbstractEditor):
             elif self._selected1.time_point() != self._time_point:
                 self.update_status(f"Cannot move {self._selected1} to this time point.")
             else:
-                old_shape = self._experiment.positions.get_shape(self._selected1)
                 new_position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
                 old_position = self._selected1
                 self._selected1 = None
-                self._perform_action(_MovePositionAction(old_position, old_shape, new_position))
+                self._perform_action(_MovePositionAction(old_position, new_position))
         else:
             super()._on_key_press(event)
 

@@ -4,6 +4,7 @@ from typing import Set, Iterable
 
 from organoid_tracker.core.images import Images
 from organoid_tracker.core.position_collection import PositionCollection
+from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.score import Family, Score
 from organoid_tracker.linking.scoring_system import MotherScoringSystem
 
@@ -21,7 +22,7 @@ class CheatingScoringSystem(MotherScoringSystem):
         """Initializer. families is the ground-thruth of all families."""
         self._families = set(families)
 
-    def calculate(self, images: Images, position_shapes: PositionCollection, family: Family) -> Score:
+    def calculate(self, images: Images, position_data: PositionData, family: Family) -> Score:
         if family in self._families:
             return CheatingScoringSystem.YES_SCORE
         else:

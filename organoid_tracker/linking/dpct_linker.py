@@ -12,8 +12,10 @@ from typing import Dict, List, Iterable, Tuple
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.core.score import ScoreCollection, Score, ScoredFamily
+from organoid_tracker.linking_analysis import linking_markers
 
 
 class _PositionToId:
@@ -51,12 +53,13 @@ def _to_links(position_ids: _PositionToId, results: Dict) -> Links:
     return links
 
 
-def run(positions: PositionCollection, starting_links: Links, scores: ScoreCollection, resolution: ImageResolution,
-        *, link_weight: int, detection_weight: int, division_weight: int, appearance_weight: int,
+def run(positions: PositionCollection, position_data: PositionData, starting_links: Links, scores: ScoreCollection,
+        resolution: ImageResolution, *, link_weight: int, detection_weight: int, division_weight: int, appearance_weight: int,
         dissappearance_weight: int) -> Links:
     """
     Calculates the optimal links, based on the given starting points and weights.
     :param positions: The positions.
+    :param position_data: Metadata for the positions.
     :param starting_links: Basic linking network that includes all possible links.
     :param scores: Scores, for deciding whether something is a cell division.
     :param resolution: Resolution.
@@ -68,7 +71,7 @@ def run(positions: PositionCollection, starting_links: Links, scores: ScoreColle
     :return:
     """
     position_ids = _PositionToId()
-    input, has_possible_divisions = _create_dpct_graph(position_ids, starting_links, scores, positions, resolution,
+    input, has_possible_divisions = _create_dpct_graph(position_ids, starting_links, scores, position_data, resolution,
                                         positions.first_time_point_number(), positions.last_time_point_number())
 
     if has_possible_divisions:
@@ -87,7 +90,7 @@ def _scores_involving(daughter: Position, scores: Iterable[ScoredFamily]) -> Ite
 
 
 def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links, scores: ScoreCollection,
-                       shapes: PositionCollection, resolution: ImageResolution,
+                       position_data: PositionData, resolution: ImageResolution,
                        min_time_point: int, max_time_point: int) -> Tuple[Dict, bool]:
     """Creates the linking network. Returns the network and whether there are possible divisions."""
     created_possible_division = False
@@ -118,7 +121,8 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links, score
         if position1.time_point_number() > position2.time_point_number():
             position1, position2 = position2, position1
 
-        volume1, volume2 = shapes.get_shape(position1).volume(), shapes.get_shape(position2).volume()
+        volume1, volume2 = linking_markers.get_shape(position_data, position1).volume(),\
+                           linking_markers.get_shape(position_data, position2).volume()
         link_penalty = position1.distance_um(position2, resolution)
         link_penalty += (abs(volume1 - volume2) ** (1 / 3)) * resolution.pixel_size_x_um
 

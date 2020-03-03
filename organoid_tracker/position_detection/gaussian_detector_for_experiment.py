@@ -7,7 +7,9 @@ from organoid_tracker.core import TimePoint
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.images import Images
 from organoid_tracker.core.position_collection import PositionCollection
+from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.shape import GaussianShape, FAILED_SHAPE
+from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.util import bits
 from organoid_tracker.position_detection import thresholding, watershedding, gaussian_fit
 
@@ -16,12 +18,13 @@ def perform_for_experiment(experiment: Experiment, *, threshold_block_size: int,
                            gaussian_fit_smooth_size: int, cluster_detection_erosion_rounds: int,
                            call_after_time_point: Callable[[TimePoint], type(None)] = lambda time_point: ...):
     for time_point in experiment.time_points():
-        _perform_for_time_point(experiment.images, experiment.positions, time_point, threshold_block_size,
-                                gaussian_fit_smooth_size, cluster_detection_erosion_rounds)
+        _perform_for_time_point(experiment.images, experiment.positions, experiment.position_data, time_point,
+                                threshold_block_size, gaussian_fit_smooth_size, cluster_detection_erosion_rounds)
         call_after_time_point(time_point)
 
 
-def _perform_for_time_point(images: Images, positions: PositionCollection, time_point: TimePoint, threshold_block_size: int,
+def _perform_for_time_point(images: Images, positions: PositionCollection, position_data: PositionData,
+                            time_point: TimePoint, threshold_block_size: int,
                             gaussian_fit_smooth_size: int, cluster_detection_erosion_rounds: int):
     print("Working on time point " + str(time_point.time_point_number()) + "...")
     # Acquire images
@@ -64,6 +67,6 @@ def _perform_for_time_point(images: Images, positions: PositionCollection, time_
             else GaussianShape(gaussian
                                .translated(image_offset.x, image_offset.y, image_offset.z)
                                .translated(-position.x, -position.y, -position.z))
-        positions.add(position, shape)  # This sets the shape
+        linking_markers.set_shape(position_data, position, shape)
         if gaussian is None:
             print("Could not fit gaussian for " + str(position))

@@ -7,6 +7,7 @@ from organoid_tracker.core.images import Images
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
+from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.score import Family, ScoreCollection
 from organoid_tracker.linking.scoring_system import MotherScoringSystem
 
@@ -92,7 +93,7 @@ def find_families(links: Links, warn_on_many_daughters = True) -> List[Family]:
     return families
 
 
-def calculates_scores(images: Images, positions: PositionCollection, links: Links,
+def calculates_scores(images: Images, position_data: PositionData, links: Links,
                       scoring_system: MotherScoringSystem) -> ScoreCollection:
     """Finds all families in the given links and calculates their scores."""
     scores = ScoreCollection()
@@ -103,7 +104,7 @@ def calculates_scores(images: Images, positions: PositionCollection, links: Link
 
     i = 0
     for family in families:
-        scores.set_family_score(family, scoring_system.calculate(images, positions, family))
+        scores.set_family_score(family, scoring_system.calculate(images, position_data, family))
         i += 1
         if i % 100 == 0:
             print("   working on " + str(i) + "/" + str(len(families)) + "...")

@@ -8,6 +8,7 @@ from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
 from organoid_tracker.gui.window import Window, DisplaySettings
 from organoid_tracker.linking.nearby_position_finder import find_closest_position
+from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.visualizer import Visualizer, activate
 
 
@@ -86,7 +87,7 @@ class PositionListVisualizer(Visualizer):
         self._show_image()
 
         current_position = self._position_list[self._current_position_index]
-        shape = self._experiment.positions.get_shape(current_position)
+        shape = linking_markers.get_shape(self._experiment.position_data, current_position)
         edge_color = self._get_type_color(current_position)
         if edge_color is None:
             edge_color = "black"

@@ -130,8 +130,8 @@ class AbstractImageVisualizer(Visualizer):
         time_point_number = position.time_point_number()
         dt = 0 if time_point_number is None else self._time_point.time_point_number() - time_point_number
         self._ax.plot(position.x, position.y, 'o', markersize=25, color=(0, 0, 0, 0), markeredgecolor=color, markeredgewidth=5)
-        self._experiment.positions.get_shape(position).draw2d(
-            position.x, position.y, dz, dt, self._ax, color, "black")
+        shape = linking_markers.get_shape(self._experiment.position_data, position)
+        shape.draw2d(position.x, position.y, dz, dt, self._ax, color, "black")
 
     def _draw_annotation(self, position: Position, text: str, *, text_color: MPLColor = "black",
                          background_color: MPLColor = (1, 1, 1, 0.8)):

@@ -9,9 +9,11 @@ from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import Links, LinkingTrack
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
+from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.window import Window, DisplaySettings
+from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
 
@@ -58,14 +60,14 @@ def _add_future_positions(links: Links, position: Position, single_lineage_links
         position = future_positions.pop()
 
 
-def _plot_volume(axes: Axes, positions: PositionCollection, track: LinkingTrack, lineage_id: int):
+def _plot_volume(axes: Axes, position_data: PositionData, track: LinkingTrack, lineage_id: int):
     volumes = list()
     time_point_numbers = list()
 
     for position in track.positions():
         # Found a connection, measure distance
         try:
-            volumes.append(positions.get_shape(position).volume())
+            volumes.append(linking_markers.get_shape(position_data, position).volume())
             time_point_numbers.append(position.time_point_number())
         except NotImplementedError:
             pass  # No known volume at this time point

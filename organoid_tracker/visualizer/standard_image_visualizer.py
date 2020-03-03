@@ -26,15 +26,14 @@ def show(experiment: Experiment):
 class StandardImageVisualizer(AbstractImageVisualizer):
     """Cell and image viewer
 
-    Moving: left/right moves in time, up/down in the z-direction and type '/t30' + ENTER to jump to time point 30
-    Press F to show the detected position flow, press V to view the detected position volume"""
+    Moving: left/right moves in time, up/down or scroll in the z-direction, type '/t30' + ENTER to jump to time
+    point 30 and type '/z10' + ENTER to jump to z-layer 10."""
 
     def _on_mouse_click(self, event: MouseEvent):
         if event.button == 1:
             position = self._get_position_at(event.xdata, event.ydata)
             if position is not None:
                 data = dict(self._experiment.position_data.find_all_data_of_position(position))
-                shape = self._experiment.positions.get_shape(position)
 
                 scores = list(self._experiment.scores.of_mother(position))
                 scores.sort(key=lambda scored_family: scored_family.score.total(), reverse=True)
@@ -42,7 +41,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
                 for score in scores:
                     score_str += f"\nDivision score: {score.score.total()}"
 
-                self.update_status(f"Clicked on {position}.\n  Data: {data}\n  Shape: {shape} {score_str}")
+                self.update_status(f"Clicked on {position}.\n  Data: {data} {score_str}")
         else:
             super()._on_mouse_click(event)
 
@@ -66,30 +65,6 @@ class StandardImageVisualizer(AbstractImageVisualizer):
 
     def _get_must_show_plugin_menus(self) -> bool:
         return True
-
-    def _on_key_press(self, event: KeyEvent):
-        if event.key == "v":  # show volume info
-            position = self._get_position_at(event.xdata, event.ydata)
-            if position is None:
-                self.update_status("No position at mouse position")
-                return
-            shape = self._experiment.positions.get_shape(position)
-            try:
-                self.update_status(f"Volume of {position} is {shape.volume():.2f} px3")
-            except NotImplementedError:
-                self.update_status(f"The {position} has no volume information stored")
-        elif event.key == "f":  # show flow info
-            position = self._get_position_at(event.xdata, event.ydata)
-            positions_of_time_point = self._experiment.positions.of_time_point(self._time_point)
-            links = self._experiment.links
-            px = ImageResolution(1, 1, 1, 1)  # This "resolution" makes sure that the output is in px
-            if position is not None and links.has_links():
-                self.update_status("Flow toward previous frame: " +
-                                   str(particle_flow_calculator.get_flow_to_previous(links, positions_of_time_point, position, px)) +
-                                   "\nFlow towards next frame: " +
-                                   str(particle_flow_calculator.get_flow_to_next(links, positions_of_time_point, position, px)))
-        else:
-            super()._on_key_press(event)
 
     def _export_depth_colored_image(self):
         image_3d = self._experiment.images.get_image_stack(self._time_point, self._display_settings.image_channel)

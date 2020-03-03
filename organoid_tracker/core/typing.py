@@ -7,7 +7,7 @@ MPLColor = Union[
     float
 ]
 
-# Types that are used as metadata for positions. They can safely be stored.
+# Primitive types that can be stored directly in JSON files.
 DataType = Union[
     float,
     int,

@@ -7,6 +7,7 @@ from organoid_tracker.core import links, TimePoint
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
+from organoid_tracker.core.shape import ParticleShape, UNKNOWN_SHAPE
 from organoid_tracker.linking_analysis.errors import Error
 
 
@@ -170,6 +171,27 @@ def get_position_types(position_data: PositionData, positions: Set[Position]) ->
     for position in positions:
         types[position] = get_position_type(position_data, position)
     return types
+
+
+def get_shape(position_data: PositionData, position: Position) -> ParticleShape:
+    """Gets the shape of the given position, or UNKNOWN_SHAPE if not known."""
+    value = position_data.get_position_data(position, "shape")
+    if value is None:
+        return UNKNOWN_SHAPE
+    return value
+
+
+def has_shapes(position_data: PositionData) -> bool:
+    """Gets whether there is shape information stored for at least one position in the experiment."""
+    return position_data.has_position_data_with_name("shape")
+
+
+def set_shape(position_data: PositionData, position: Position, shape: ParticleShape):
+    """Sets the shape information of the position. Set to UNKNOWN_SHAPE to delete the shape."""
+    if shape == UNKNOWN_SHAPE:
+        position_data.set_position_data(position, "shape", None)
+    else:
+        position_data.set_position_data(position, "shape", shape)
 
 
 def set_mother_score(position_data: PositionData, position: Position, value: float):

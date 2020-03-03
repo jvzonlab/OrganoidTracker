@@ -249,7 +249,7 @@ class Experiment:
         else:
             other._scale_to_resolution(resolution)
 
-        self.positions.add_positions_and_shapes(other.positions)
+        self.positions.add_positions(other.positions)
         self.links.add_links(other.links)
         self.position_data.merge_data(other.position_data)
         self.connections.add_connections(other.connections)

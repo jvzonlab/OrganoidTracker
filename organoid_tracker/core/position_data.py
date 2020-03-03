@@ -1,11 +1,16 @@
-from typing import Dict, Optional, ItemsView, Iterable, Tuple
+from typing import Dict, Optional, ItemsView, Iterable, Tuple, Union
 
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.shape import ParticleShape
 from organoid_tracker.core.typing import DataType
 
 
+# All types of data that can be stored in this class
+PositionDataType = Union[DataType, ParticleShape]
+
+
 class PositionData:
-    _position_data: Dict[str, Dict[Position, DataType]]
+    _position_data: Dict[str, Dict[Position, PositionDataType]]
 
     def __init__(self):
         self._position_data = dict()
@@ -41,14 +46,14 @@ class PositionData:
         """Returns whether there is position data stored for the given type."""
         return data_name in self._position_data
 
-    def get_position_data(self, position: Position, data_name: str) -> Optional[DataType]:
+    def get_position_data(self, position: Position, data_name: str) -> Optional[PositionDataType]:
         """Gets the attribute of the position with the given name. Returns None if not found."""
         data_of_positions = self._position_data.get(data_name)
         if data_of_positions is None:
             return None
         return data_of_positions.get(position)
 
-    def set_position_data(self, position: Position, data_name: str, value: Optional[DataType]):
+    def set_position_data(self, position: Position, data_name: str, value: Optional[PositionDataType]):
         """Adds or overwrites the given attribute for the given position. Set value to None to delete the attribute.
 
         Note: this is a low-level API. See the linking_markers module for more high-level methods, for example for how
@@ -84,14 +89,14 @@ class PositionData:
             copy._position_data[data_name] = data_value.copy()
         return copy
 
-    def find_all_positions_with_data(self, data_name: str) -> ItemsView[Position, DataType]:
+    def find_all_positions_with_data(self, data_name: str) -> ItemsView[Position, PositionDataType]:
         """Gets a dictionary of all positions with the given data marker. Do not modify the returned dictionary."""
         data_set = self._position_data.get(data_name)
         if data_set is None:
             return dict().items()
         return data_set.items()
 
-    def find_all_data_of_position(self, position: Position) -> Iterable[Tuple[str, DataType]]:
+    def find_all_data_of_position(self, position: Position) -> Iterable[Tuple[str, PositionDataType]]:
         """Finds all stored data of a given position."""
         for data_name, data_values in self._position_data.items():
             data_value = data_values.get(position)

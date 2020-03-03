@@ -55,12 +55,12 @@ if experiment.scores.has_family_scores():
     scores = experiment.scores
 else:
     score_system = RationalScoringSystem()
-    scores = cell_division_finder.calculates_scores(experiment.images, experiment.positions, possible_links, score_system)
+    scores = cell_division_finder.calculates_scores(experiment.images, experiment.position_data, possible_links, score_system)
 print("Deciding on what links to use...")
-link_result = dpct_linker.run(experiment.positions, possible_links, scores, experiment.images.resolution(),
-                              link_weight=_link_weight, detection_weight=_detection_weight,
-                              division_weight=_division_weight, appearance_weight=_appearance_weight,
-                              dissappearance_weight=_dissappearance_weight)
+link_result = dpct_linker.run(experiment.positions, experiment.position_data, possible_links, scores,
+                              experiment.images.resolution(), link_weight=_link_weight,
+                              detection_weight=_detection_weight, division_weight=_division_weight,
+                              appearance_weight=_appearance_weight, dissappearance_weight=_dissappearance_weight)
 print("Applying final touches...")
 experiment.links = link_result
 experiment.scores = scores

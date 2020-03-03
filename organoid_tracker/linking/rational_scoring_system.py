@@ -6,14 +6,16 @@ from organoid_tracker.core.images import Images, Image
 from organoid_tracker.core.mask import create_mask_for, Mask, OutsideImageError
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
+from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.score import Score, Family
 from organoid_tracker.linking.scoring_system import MotherScoringSystem
+from organoid_tracker.linking_analysis import linking_markers
 
 
 class RationalScoringSystem(MotherScoringSystem):
     """Rationally-designed score system."""
 
-    def calculate(self, images: Images, position_shapes: PositionCollection, family: Family) -> Score:
+    def calculate(self, images: Images, position_data: PositionData, family: Family) -> Score:
         mother = family.mother
         daughter1, daughter2 = family.daughters
 
@@ -21,9 +23,9 @@ class RationalScoringSystem(MotherScoringSystem):
         daughter_image_stack = images.get_image(daughter1.time_point())
 
         try:
-            mother_mask = _get_mask(mother_image_stack, mother, position_shapes)
-            daughter1_mask = _get_mask(daughter_image_stack, daughter1, position_shapes)
-            daughter2_mask = _get_mask(daughter_image_stack, daughter2, position_shapes)
+            mother_mask = _get_mask(mother_image_stack, mother, position_data)
+            daughter1_mask = _get_mask(daughter_image_stack, daughter1, position_data)
+            daughter2_mask = _get_mask(daughter_image_stack, daughter2, position_data)
 
             mother_intensities = _get_nucleus_image(mother_image_stack, mother_mask)
             mother_intensities_next = _get_nucleus_image(daughter_image_stack, mother_mask)
@@ -36,7 +38,7 @@ class RationalScoringSystem(MotherScoringSystem):
             score_mother_intensities(score, mother, mother_intensities, mother_intensities_next)
             score_daughter_intensities(score, daughter1_intensities, daughter2_intensities,
                                        daughter1_intensities_prev, daughter2_intensities_prev)
-            score_using_volumes(score, position_shapes, mother, daughter1, daughter2)
+            score_using_volumes(score, position_data, mother, daughter1, daughter2)
             return score
         except OutsideImageError:
             print("No score for " + str(mother) + ": outside image")
@@ -83,15 +85,15 @@ def score_mother_intensities(score: Score, mother: Position, mother_intensities:
         score.mother_intensity_delta = -1
 
 
-def score_using_volumes(score: Score, positions: PositionCollection, mother: Position, daughter1: Position, daughter2: Position):
-    mother_shape = positions.get_shape(mother)
+def score_using_volumes(score: Score, position_data: PositionData, mother: Position, daughter1: Position, daughter2: Position):
+    mother_shape = linking_markers.get_shape(position_data, mother)
 
     score.mother_volume = -10
     if mother_shape.is_unknown():
         return
 
-    daughter1_shape = positions.get_shape(daughter1)
-    daughter2_shape = positions.get_shape(daughter2)
+    daughter1_shape = linking_markers.get_shape(position_data, daughter1)
+    daughter2_shape = linking_markers.get_shape(position_data, daughter2)
 
     if daughter1_shape.is_unknown() or daughter2_shape.is_unknown():
         return  # Too close to edge
@@ -108,8 +110,8 @@ def _get_nucleus_image(image_stack: Image, mask: Mask) -> ndarray:
     return mask.create_masked_and_normalized_image(image_stack)
 
 
-def _get_mask(image_stack: Image, position: Position, shapes: PositionCollection) -> Mask:
-    shape = shapes.get_shape(position)
+def _get_mask(image_stack: Image, position: Position, position_data: PositionData) -> Mask:
+    shape = linking_markers.get_shape(position_data, position)
     mask = create_mask_for(image_stack)
     shape.draw_mask(mask, position.x, position.y, position.z )
     return mask

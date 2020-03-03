@@ -45,7 +45,7 @@ if not experiment.images.image_loader().has_images():
 print("Using neural networks to predict positions...")
 positions = position_predicter.predict(experiment.images, _checkpoint_folder, split=_split, out_dir=_debug_folder,
                               smooth_stdev=_smooth_stdev, predictions_threshold=_predictions_threshold)
-experiment.positions.add_positions_and_shapes(positions)
+experiment.positions.add_positions(positions)
 
 print("Saving file...")
 io.save_data_to_json(experiment, _output_file)
