@@ -11,7 +11,6 @@ from organoid_tracker.core.particle import Particle
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.marker import Marker
 from organoid_tracker.core.resolution import ImageResolution
-from organoid_tracker.core.shape import ParticleShape
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.window import Window
 from organoid_tracker.linking_analysis import cell_error_finder, linking_markers, lineage_positions_finder, lineage_markers
@@ -330,6 +329,7 @@ class LinkAndPositionEditor(AbstractEditor):
         options = {
             **super().get_extra_menu_options(),
             "Edit//Experiment-Edit splines... [A]": self._show_spline_editor,
+            "Edit//Experiment-Edit beacons... [B]": self._show_beacon_editor,
             "Edit//Experiment-Edit image offsets... [O]": self._show_offset_editor,
             "Edit//Batch-Batch deletion//Delete data of time point...": self._delete_data_of_time_point,
             "Edit//Batch-Batch deletion//Delete all tracks with errors...": self._delete_tracks_with_errors,
@@ -432,9 +432,14 @@ class LinkAndPositionEditor(AbstractEditor):
             self._perform_action(ReversedAction(_MarkPositionAsUncertainAction(self._selected1)))
 
     def _show_spline_editor(self):
-        from organoid_tracker.visualizer.data_axis_editor import DataAxisEditor
-        path_editor = DataAxisEditor(self._window)
-        activate(path_editor)
+        from organoid_tracker.visualizer.spline_editor import SplineEditor
+        spline_editor = SplineEditor(self._window)
+        activate(spline_editor)
+
+    def _show_beacon_editor(self):
+        from organoid_tracker.visualizer.beacon_editor import BeaconEditor
+        beacon_editor = BeaconEditor(self._window)
+        activate(beacon_editor)
 
     def _show_offset_editor(self):
         from organoid_tracker.visualizer.image_offset_editor import ImageOffsetEditor

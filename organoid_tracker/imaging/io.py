@@ -8,6 +8,7 @@ from typing import List, Dict, Any, Tuple, Iterable, Optional
 import numpy
 
 from organoid_tracker.core import shape, TimePoint, UserError
+from organoid_tracker.core.beacon_collection import BeaconCollection
 from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.images import ImageOffsets
@@ -96,6 +97,9 @@ def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point:
         if "data_axes_meta" in data:
             _parse_splines_meta_format(experiment, data["data_axes_meta"])
 
+        if "beacons" in data:
+            _parse_beacons_format(experiment, data["beacons"], min_time_point, max_time_point)
+
         if "connections" in data:
             _parse_connections_format(experiment, data["connections"], min_time_point, max_time_point)
 
@@ -180,6 +184,17 @@ def _parse_splines_meta_format(experiment: Experiment, axes_meta: Dict[str, obje
                 marker = str(value["marker"])
                 is_axis = bool(value["is_axis"])
                 experiment.splines.set_marker_name(spline_id, marker, is_axis)
+
+
+def _parse_beacons_format(experiment: Experiment, beacons_data: Dict[str, List], min_time_point: int, max_time_point: int):
+    """Expects a dict: `{"1": [...], "2": [...]}`. Keys are time points, values are lists with [x,y,z] positions:
+    `[[2,4,7], [4,5.3,3], ...]`."""
+    for time_point_str, beacons_list in beacons_data.items():
+        time_point_number = int(time_point_str)
+        if time_point_number < min_time_point or time_point_number > max_time_point:
+            continue
+        for beacon_values in beacons_list:
+            experiment.beacons.add(Position(*beacon_values, time_point_number=time_point_number))
 
 
 def _parse_connections_format(experiment: Experiment, connections_data: Dict[str, List[List[Position]]],
@@ -343,6 +358,17 @@ def _encode_image_positions(experiment: Experiment):
     return data_structure
 
 
+def _encode_beacons(beacons: BeaconCollection):
+    data_structure = {}
+    for time_point in beacons.time_points():
+        encoded_positions = []
+        for position in beacons.of_time_point(time_point):
+            encoded_positions.append([position.x, position.y, position.z])
+
+        data_structure[str(time_point.time_point_number())] = encoded_positions
+    return data_structure
+
+
 def _encode_positions_and_shapes(positions: PositionCollection, shapes: PositionData):
     data_structure = {}
     for time_point in positions.time_points():
@@ -429,6 +455,10 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
     if experiment.splines.has_splines():
         save_data["data_axes"] = _encode_data_axes_to_json(experiment.splines)
         save_data["data_axes_meta"] = _encode_data_axes_meta_to_json(experiment.splines)
+
+    # Save beacons
+    if experiment.beacons.has_beacons():
+        save_data["beacons"] = _encode_beacons(experiment.beacons)
 
     # Save connections
     if experiment.connections.has_connections():

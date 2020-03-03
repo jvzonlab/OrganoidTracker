@@ -3,6 +3,7 @@ from typing import Optional, List, Tuple, Iterable
 from numpy import ndarray
 
 from organoid_tracker.core import TimePoint, Name, UserError, min_none, max_none
+from organoid_tracker.core.beacon_collection import BeaconCollection
 from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.image_loader import ImageLoader
 from organoid_tracker.core.images import Images
@@ -21,18 +22,20 @@ class Experiment:
     details of the experiment."""
 
     # Note: none of the fields may be None after __init__ is called
-    _positions: PositionCollection
-    scores: ScoreCollection
-    _links: Links
-    _position_data: PositionData
-    _images: Images
-    _connections: Connections
-    _name: Name
-    splines: SplineCollection
+    _positions: PositionCollection  # Used to mark cell positions
+    _beacons: BeaconCollection  # Used to mark some abstract position that the cells move to or move around.
+    scores: ScoreCollection  # Used to assign scores to putative mother cells
+    _links: Links  # Used to link cells together accross multiple time points
+    _position_data: PositionData  # Used for metadata of cells
+    _images: Images  # Used for microscopy images
+    _connections: Connections  # Used to create connections in a single time point, for example for related cells
+    _name: Name  # Name of the experiment
+    splines: SplineCollection  # Splines, can be used to track progress of a cell across a trajectory.
 
     def __init__(self):
         self._name = Name()
         self._positions = PositionCollection()
+        self._beacons = BeaconCollection()
         self._position_data = PositionData()
         self.scores = ScoreCollection()
         self.splines = SplineCollection()
@@ -165,25 +168,38 @@ class Experiment:
 
     @property
     def positions(self) -> PositionCollection:
-        """Gets all positions of all time points."""
+        """Gets all cell positions of all time points."""
         return self._positions
 
     @positions.setter
     def positions(self, positions: PositionCollection):
+        """Sets the cell positions."""
         if not isinstance(positions, PositionCollection):
             raise TypeError(f"positions must be a {PositionCollection.__name__} object, was " + repr(positions))
         self._positions = positions
 
     @property
-    def position_data(self) -> PositionData:
-        """Gets the data associated with positions.
+    def beacons(self) -> BeaconCollection:
+        """Gets all beacon positions. You can use beaconds to measure the movement of cells towards or around these
+        beacon positions."""
+        return self._beacons
 
-        There used to be two sets of metadata for positions: their shapes (stored in PositionCollection) and linking
-        data, for use with the linking algorithm. These two are going to be merged."""
+    @beacons.setter
+    def beacons(self, beacons: BeaconCollection):
+        """Sets the beacon positions. You can use beaconds to measure the movement of cells towards or around these
+        beacon positions."""
+        if not isinstance(beacons, BeaconCollection):
+            raise TypeError(f"beacons must be a {BeaconCollection.__name__} object, was " + repr(beacons))
+        self._beacons = beacons
+
+    @property
+    def position_data(self) -> PositionData:
+        """Gets the metadata associated with cell positions."""
         return self._position_data
 
     @position_data.setter
     def position_data(self, position_data: PositionData):
+        """Replaces the metadata associated with cell positions."""
         if not isinstance(position_data, PositionData):
             raise TypeError(f"position_data must be a {PositionData.__name__} object, was " + repr(position_data))
         self._position_data = position_data
@@ -250,6 +266,7 @@ class Experiment:
             other._scale_to_resolution(resolution)
 
         self.positions.add_positions(other.positions)
+        self.beacons.add_positions(other.beacons)
         self.links.add_links(other.links)
         self.position_data.merge_data(other.position_data)
         self.connections.add_connections(other.connections)

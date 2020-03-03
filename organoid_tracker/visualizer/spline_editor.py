@@ -91,7 +91,7 @@ class _SetReferenceTimePointAction(UndoableAction):
         return f"Changed the reference time point number back to {self._old_reference_time_point.time_point_number()}"
 
 
-class DataAxisEditor(AbstractEditor):
+class SplineEditor(AbstractEditor):
     """Editor for splines. Double-click to (de)select a spline.
     Draw the spline by adding points using the Insert key. Use Delete to delete a spline.
     Press C to copy a selected spline from another time point to this time point.
@@ -153,7 +153,7 @@ class DataAxisEditor(AbstractEditor):
         return selected_spline
 
     def _on_position_draw(self, position: Position, color: str, dz: int, dt: int) -> bool:
-        if not self._draw_spline_positions or dt != 0 or abs(dz) > 3:
+        if not self._draw_spline_positions or dt != 0 or abs(dz) > self.MAX_Z_DISTANCE:
             return super()._on_position_draw(position, color, dz, dt)
 
         spline_position = self._experiment.splines.to_position_on_original_axis(self._experiment.links, position)

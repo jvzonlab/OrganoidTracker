@@ -64,7 +64,7 @@ class Position:
         return string
 
     def __str__(self):
-        string = "cell at (" + ("%.2f" % self.x) + ", " + ("%.2f" % self.y) + ", " + ("%.2f" % self.z) + ")"
+        string = "(" + ("%.2f" % self.x) + ", " + ("%.2f" % self.y) + ", " + ("%.2f" % self.z) + ")"
         if self._time_point_number is not None:
             string += " at time point " + str(self._time_point_number)
         return string

@@ -107,6 +107,7 @@ class AbstractImageVisualizer(Visualizer):
         self._draw_links()
         self._draw_connections()
         self._draw_data_axes()
+        self._draw_beacons()
         self._draw_extra()
         self._window.set_figure_title(self._get_figure_title())
 
@@ -132,6 +133,14 @@ class AbstractImageVisualizer(Visualizer):
         self._ax.plot(position.x, position.y, 'o', markersize=25, color=(0, 0, 0, 0), markeredgecolor=color, markeredgewidth=5)
         shape = linking_markers.get_shape(self._experiment.position_data, position)
         shape.draw2d(position.x, position.y, dz, dt, self._ax, color, "black")
+
+    def _draw_beacons(self):
+        for beacon in self._experiment.beacons.of_time_point(self._time_point):
+            dz = self._z - round(beacon.z)
+            if abs(dz) > self.MAX_Z_DISTANCE * 2:
+                continue
+            self._ax.scatter(beacon.x, beacon.y, marker='*', facecolor=core.COLOR_CELL_CURRENT,
+                             edgecolors="black", s=(20 - abs(dz)) ** 2, linewidths=2)
 
     def _draw_annotation(self, position: Position, text: str, *, text_color: MPLColor = "black",
                          background_color: MPLColor = (1, 1, 1, 0.8)):

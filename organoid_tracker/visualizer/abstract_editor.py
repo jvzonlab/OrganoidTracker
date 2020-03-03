@@ -1,3 +1,5 @@
+from typing import Dict, Any
+
 from matplotlib.backend_bases import KeyEvent
 
 from organoid_tracker.gui.undo_redo import UndoableAction
@@ -6,7 +8,7 @@ from organoid_tracker.visualizer.exitable_image_visualizer import ExitableImageV
 
 class AbstractEditor(ExitableImageVisualizer):
 
-    def get_extra_menu_options(self):
+    def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
             **super().get_extra_menu_options(),
             "Edit//Editor-Undo (Ctrl+z)": self._undo,
