@@ -104,6 +104,12 @@ def load_images(window: Window):
     file_name_pattern = find_time_and_channel_pattern(file_name)
     if file_name_pattern is None:
         file_name_pattern = file_name  # Don't use a pattern if not available
+        if file_name.endswith(".tif") or file_name.endswith(".tiff"):
+            # Try as TIF container
+            from organoid_tracker.image_loading import merged_tiff_image_loader
+            merged_tiff_image_loader.load_from_tif_file(window.get_experiment().images, full_path)
+            window.redraw_all()
+            return
         dialog.popup_message("Could not read file pattern", "Could not find 't01' (or similar) in the file name \"" +
                              file_name + "\", so only one image is loaded. If you want to load a time lapse, see the"
                              " manual for supported image formats.")
