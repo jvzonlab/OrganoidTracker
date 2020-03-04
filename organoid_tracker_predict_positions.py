@@ -1,9 +1,7 @@
 """Predictions particle positions using an already-trained convolutional neural network."""
 
 from organoid_tracker.config import ConfigFile, config_type_bool
-from organoid_tracker.core import UserError
 from organoid_tracker.core.experiment import Experiment
-from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.imaging import io
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.position_detection_cnn import predicter
