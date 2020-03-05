@@ -23,7 +23,7 @@ def read_image_3d(file_name: str) -> Optional[ndarray]:
 def _load_tiff(file_name: str) -> Optional[ndarray]:
     """For TIFF files."""
     import tifffile
-    with tifffile.TiffFile(file_name, movie=True) as f:
+    with tifffile.TiffFile(file_name) as f:
         # noinspection PyTypeChecker
         array = numpy.squeeze(f.asarray(maxworkers=None))
         # ^ maxworkers=None makes image loader work on half of all cores
