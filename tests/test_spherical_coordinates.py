@@ -16,6 +16,10 @@ class TestSphericalCoordinates(unittest.TestCase):
         spherical = SphericalCoordinate(math.sqrt(32), 135, 270)
         self.assertEqual(Vector3(0, -4, -4), spherical.to_cartesian())
 
+    def test_roundtrip(self):
+        vector = Vector3(11.801400599195677, 2.174153604808981, 24.012673613516096)
+        self.assertEqual(vector, SphericalCoordinate.from_cartesian(vector).to_cartesian())
+
     def test_zero_cartesian(self):
         """Makes sure there are no divisions by zero."""
         vector = Vector3(0, 0, 0)

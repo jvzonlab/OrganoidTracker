@@ -1,6 +1,8 @@
 import math
 from typing import Any, Optional
 
+import numpy
+
 from organoid_tracker.core.vector import Vector3
 
 
@@ -10,10 +12,11 @@ class SphericalCoordinate:
     @staticmethod
     def from_cartesian(vector_um: Vector3) -> "SphericalCoordinate":
         """Gets the equivalent spherical coordinate."""
-        x_squared_plus_y_squared = vector_um.x ** 2 + vector_um.y ** 2
-        radius = math.sqrt(x_squared_plus_y_squared + vector_um.z ** 2)
-        theta = math.atan2(vector_um.z, math.sqrt(x_squared_plus_y_squared))
-        phi = math.atan2(vector_um.y, vector_um.x)
+        radius = numpy.sqrt(vector_um.x ** 2 + vector_um.y ** 2 + vector_um.z ** 2)
+        if radius == 0:
+            return SphericalCoordinate(0, 0, 0)  # Coordinate not properly defined for r=0
+        theta = numpy.arccos(vector_um.z / radius)
+        phi = numpy.arctan2(vector_um.y, vector_um.x)
 
         # Switch to ISO convention
         if theta < 0:
@@ -43,9 +46,9 @@ class SphericalCoordinate:
         phi = math.radians(self.phi_degrees)
         theta = math.radians(self.theta_degrees)
 
-        x = radius * math.cos(phi) * math.sin(theta)
-        y = radius * math.sin(phi) * math.sin(theta)
-        z = radius * math.cos(theta)
+        x = radius * numpy.cos(phi) * numpy.sin(theta)
+        y = radius * numpy.sin(phi) * numpy.sin(theta)
+        z = radius * numpy.cos(theta)
         return Vector3(x, y, z)
 
     def __eq__(self, other: Any) -> bool:
