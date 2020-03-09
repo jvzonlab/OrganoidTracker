@@ -257,7 +257,7 @@ def popup_visualizer(experiment: GuiExperiment, visualizer_callable: Callable[[W
 
     def close_listener():
         visualizer.detach()
-    def no_draw():
+    def no_draw(_: Figure):
         pass
     q_window = _PopupQWindow(_window(), figure, no_draw, close_listener)
     window = PopupWindow(q_window, figure, experiment, q_window._title_text, q_window._status_text)
