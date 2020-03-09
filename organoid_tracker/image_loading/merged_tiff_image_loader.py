@@ -28,6 +28,12 @@ class _IndexedImageChannel(ImageChannel):
     def __repr__(self) -> str:
         return f"_IndexedImageChannel({self.index})"
 
+    def __hash__(self) -> int:
+        return self.index
+
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, _IndexedImageChannel) and self.index == other.index
+
 
 class _MergedTiffImageLoader(ImageLoader):
     """Reader for huge TIF files, where an entire time series has been stored in a single file."""
