@@ -40,7 +40,7 @@ class BeaconCollection:
         self._beacons = dict()
 
     def add(self, position: Position):
-        """Adds a new beacon."""
+        """Adds a new beacon. Duplicate beacons are allowed."""
         time_point = position.time_point()
         if time_point is None:
             raise ValueError(f"No time point specified for {position}.")
@@ -150,3 +150,12 @@ class BeaconCollection:
     def has_beacons(self) -> bool:
         """Checks whether there are any beacons stored."""
         return len(self._beacons) > 0
+
+    def add_beacons(self, beacons: "BeaconCollection"):
+        """Adds all beacons from the given collection to this collection. Like for add(..), duplicate beacons are
+         allowed."""
+        for time_point, beacons_of_time_point in beacons._beacons.items():
+            if time_point in self._beacons:
+                self._beacons[time_point] += beacons_of_time_point
+            else:
+                self._beacons[time_point] = beacons_of_time_point

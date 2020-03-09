@@ -266,7 +266,7 @@ class Experiment:
             other._scale_to_resolution(resolution)
 
         self.positions.add_positions(other.positions)
-        self.beacons.add_positions(other.beacons)
+        self.beacons.add_beacons(other.beacons)
         self.links.add_links(other.links)
         self.position_data.merge_data(other.position_data)
         self.connections.add_connections(other.connections)
