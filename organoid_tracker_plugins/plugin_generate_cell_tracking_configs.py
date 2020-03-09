@@ -148,8 +148,6 @@ def _generate_detection_config(window: Window):
     config.get_or_default("checkpoint_folder", checkpoint_directory)
     config.get_or_default("predictions_output_folder", "out")
     config.get_or_default("save_video_ram", "true")
-    config.get_or_default("smooth_stdev", "1")
-    config.get_or_default("predictions_threshold", "0.1")
     config.save()
     _create_run_script(save_directory, "organoid_tracker_predict_positions")
     _popup_confirmaton(save_directory, "organoid_tracker_predict_positions")
