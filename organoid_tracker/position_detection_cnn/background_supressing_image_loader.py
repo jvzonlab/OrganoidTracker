@@ -19,8 +19,8 @@ class BackgroundSupressingImageLoader(ImageLoader):
     def copy(self) -> "ImageLoader":
         return BackgroundSupressingImageLoader(self._internal.copy())
 
-    def get_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
-        array = self._internal.get_image_array(time_point, image_channel)
+    def get_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
+        array = self._internal.get_3d_image_array(time_point, image_channel)
         T_otsu = mahotas.otsu(array)
         thresholded_1 = array > T_otsu
         thresholded_2 = mahotas.morph.open(thresholded_1)

@@ -123,7 +123,7 @@ class _MergedTiffImageLoader(ImageLoader):
         page_count = len(self._series.pages)
         return page_count == 1 and expected_page_count > 1
 
-    def get_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
+    def get_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
         if time_point.time_point_number() < self.first_time_point_number() \
                 or time_point.time_point_number() > self.last_time_point_number():
             return None
@@ -133,6 +133,17 @@ class _MergedTiffImageLoader(ImageLoader):
         out = tifffile.create_output(None, self._image_size_zyx, self._series.dtype)
         for z in range(self._image_size_zyx[0]):
             self._get_2d_image_array(time_point.time_point_number(), image_channel.index, z, out[z])
+        return out
+
+    def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
+        if time_point.time_point_number() < self.first_time_point_number() \
+                or time_point.time_point_number() > self.last_time_point_number():
+            return None
+        if not isinstance(image_channel, _IndexedImageChannel) or image_channel not in self._channels:
+            return None
+
+        out = tifffile.create_output(None, self._image_size_zyx[1:], self._series.dtype)
+        self._get_2d_image_array(time_point.time_point_number(), image_channel.index, image_z, out)
         return out
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:

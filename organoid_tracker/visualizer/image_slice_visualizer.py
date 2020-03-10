@@ -1,12 +1,12 @@
-from typing import Dict, Any, Type
+from typing import Dict, Any, Type, Optional
 
 import numpy
+from numpy import ndarray
 from matplotlib.axes import Axes
 from matplotlib.backend_bases import MouseEvent
 
-from organoid_tracker.core import UserError
+from organoid_tracker.core import TimePoint
 from organoid_tracker.gui.window import Window
-from organoid_tracker.util import mpl_helper
 from organoid_tracker.util.mpl_helper import SANDER_APPROVED_COLORS
 from organoid_tracker.visualizer import Visualizer
 from organoid_tracker.visualizer.exitable_image_visualizer import ExitableImageVisualizer
@@ -22,6 +22,8 @@ class ImageSliceViewer(ExitableImageVisualizer):
     _bottom_axes: Axes
     _first_draw: bool = True
 
+    _time_point_images: Optional[ndarray] = None # Full 3d-image of time point
+
     def __init__(self, window: Window, parent_viewer: Type[Visualizer] = StandardImageVisualizer):
         super().__init__(window, parent_viewer)
         self._right_axes = self._axes[1]
@@ -36,6 +38,16 @@ class ImageSliceViewer(ExitableImageVisualizer):
             "sharey": "row",
             "gridspec_kw":  {"width_ratios": [3, 1], "height_ratios": [3, 1]}
         }
+
+    def _load_2d_image(self):
+        # Disabled, as we need to work with 3d images here
+        self._image_slice_2d = None
+
+    def _load_time_point(self, time_point: TimePoint):
+        # We need to load the full 3D image
+        self._time_point_images = self._experiment.images.get_image_stack(time_point,
+                                                                          self._display_settings.image_channel)
+        super()._load_time_point(time_point)
 
     def _draw_image(self):
         if self._time_point_images is None:

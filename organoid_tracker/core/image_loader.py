@@ -18,11 +18,15 @@ class ImageLoader(ABC):
     """Responsible for loading all images in an experiment."""
 
     @abstractmethod
-    def get_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
-        """Loads an image, usually from disk. Returns None if there is no image for this time point or channel.
-
-        Using image_channel you can ask for a specific channel. Use None to just use the default channel."""
+    def get_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
+        """Loads an image, usually from disk. Returns None if there is no image for this time point or channel."""
         pass
+
+    @abstractmethod
+    def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
+        """Loads one single 2d slice of an image. Returns None if there is no image for this z, time point or channel.
+        Note: the image z always goes from 0 to image_size_z - 1.
+        """
 
     @abstractmethod
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
@@ -74,7 +78,10 @@ class NullImageLoader(ImageLoader):
     def copy(self) -> "ImageLoader":
         return self  # No need to copy, object holds no data
 
-    def get_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
+    def get_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
+        return None
+
+    def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
         return None
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
@@ -98,8 +105,8 @@ class ImageFilter:
 
     @abstractmethod
     def filter(self, image_8bit: ndarray):
-        """Filters the given input array, which is a grayscale array with values from 0 to 255. The input array will be
-        modified."""
+        """Filters the given input array, which is a grayscale array with values from 0 to 255 of 2 or 3 dimensions.
+        The input array will be modified."""
         raise NotImplementedError()
 
     @abstractmethod

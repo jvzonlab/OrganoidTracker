@@ -32,12 +32,18 @@ class GaussianBlurFilter(ImageFilter):
 
     def filter(self, image_8bit: ndarray):
         import cv2
-
-        out = numpy.empty_like(image_8bit[0])
-        for z in range(image_8bit.shape[0]):
-            slice = image_8bit[z]
-            cv2.GaussianBlur(slice, (self._blur_radius, self._blur_radius), 0, out)
-            image_8bit[z] = out
+        if len(image_8bit.shape) == 3:
+            out = numpy.empty_like(image_8bit[0])
+            for z in range(image_8bit.shape[0]):
+                slice = image_8bit[z]
+                cv2.GaussianBlur(slice, (self._blur_radius, self._blur_radius), 0, out)
+                image_8bit[z] = out
+        elif len(image_8bit.shape) == 2: # len(...) == 2
+            out = numpy.empty_like(image_8bit)
+            cv2.GaussianBlur(image_8bit, (self._blur_radius, self._blur_radius), 0, out)
+            image_8bit[...] = out
+        else:
+            raise ValueError("Can only handle 2D or 3D images. Got shape " + str(image_8bit.shape))
 
     def copy(self) -> ImageFilter:
         return GaussianBlurFilter(self._blur_radius)

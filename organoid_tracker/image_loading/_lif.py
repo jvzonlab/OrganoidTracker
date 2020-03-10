@@ -782,7 +782,7 @@ class Serie(SerieHeader):
         of = int(channel_node.getAttribute('BytesInc'))
         return of
 
-    def get2DSlice(self, **dimensionsIncrements):
+    def get2DSlice(self, channel=0, **dimensionsIncrements):
         """
         Method: Use the two first dimensions as image dimension (XY, XZ, YZ). Axis are in C order (last index is X).
 
@@ -797,11 +797,11 @@ class Serie(SerieHeader):
                     self.getName())
                                 )
 
-        self.f.seek(self.getOffset(**dimensionsIncrements))
+        self.f.seek(self.getOffset(**dimensionsIncrements) + self.getChannelOffset(channel))
         shape = self.get2DShape()
         return np.fromfile(
             self.f,
-            dtype=np.ubyte,
+            dtype=self.getNumpyDataType(),
             count=self.getNbPixelsPerSlice()
         ).reshape(shape)
 
@@ -838,9 +838,8 @@ class Serie(SerieHeader):
                 cyx.append(yx)
             zcyx.append(cyx)
         zcyx = np.array(zcyx)
-        xzcy = np.moveaxis(zcyx, -1, 0)
-        xyzc = np.moveaxis(xzcy, -1, 1)
-        return xyzc[:, :, :, channel]
+        czyx = np.moveaxis(zcyx, 1, 0)
+        return czyx[channel, :, :, :]
 
     def getFrame2D(self, channel=0, T=0, dtype=np.uint8):
         """

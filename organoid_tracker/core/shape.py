@@ -24,6 +24,11 @@ class ParticleShape:
         """
         raise NotImplementedError()
 
+    def draw2d_image(self, x: float, y: float, dz: int, dt: int, image: ndarray, color: Tuple[float, float, float]):
+        """Draws the shape to a 2d array. The shape of the array is (y_size, x_size, 3), with the last channel being
+         the color."""
+        raise NotImplementedError()
+
     def draw_marker_2d(self, x, y, dz, dt, area, color, edge_color):
         """Draws a simple marker."""
         draw_marker_2d(x, y, dz, dt, area, color, edge_color)
@@ -34,8 +39,14 @@ class ParticleShape:
 
     @staticmethod
     def default_draw3d_color(x: float, y: float, z: float, dt: int, image: ndarray,
-                             color: Tuple[float, float, float], radius_xy=5, radius_z=0):
+                             color: Tuple[float, float, float]):
         ParticleShape._DEFAULT_GAUSSIAN.translated(x, y, z).draw_colored(image, color)
+
+    @staticmethod
+    def default_draw2d_image(x: float, y: float, dz: float, dt: int, image: ndarray,
+                             color: Tuple[float, float, float]):
+        image_3d = image[numpy.newaxis, ...]
+        ParticleShape._DEFAULT_GAUSSIAN.translated(x, y, dz).draw_colored(image_3d, color)
 
     def is_unknown(self) -> bool:
         """Returns True if there is no shape information available at all."""
@@ -105,12 +116,21 @@ class EllipseShape(ParticleShape):
                                     fill=fill, facecolor=color, edgecolor=edgecolor, linestyle="dashed", linewidth=1,
                                     alpha=alpha))
 
+    def draw2d_image(self, x: float, y: float, dz: int, dt: int, image: ndarray, color: Tuple[float, float, float]):
+        if dt != 0:
+            return
+        if dz > 4:
+            return
+        thickness = -1  # -1: fill the ellipse
+        z_color = (color[0] / dz, color[1] / dz, color[2] / dz)
+        self._draw_to_image(image, x, y, z_color, thickness)
+
     def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
         if dt != 0:
             return
         min_z = max(0, int(z) - 4)
         max_z = min(image.shape[0], int(z) + 4 + 1)
-        thickness = -1 if dt == 0 else 1  # thickness == -1 causes ellipse to be filled
+        thickness = -1  # -1: fill the ellipse
         for z_layer in range(min_z, max_z):
             dz = abs(int(z) - z_layer) + 1
             z_color = (color[0] / dz, color[1] / dz, color[2] / dz)
@@ -152,6 +172,9 @@ class UnknownShape(ParticleShape):
     def draw2d(self, x: float, y: float, dz: int, dt: int, area: Axes, color: MPLColor, edge_color: MPLColor):
         area.plot(x, y, 'o', markersize=25, color=(0, 0, 0, 0), markeredgecolor=color, markeredgewidth=5)
 
+    def draw2d_image(self, x: float, y: float, dz: int, dt: int, image: ndarray, color: Tuple[float, float, float]):
+        self.default_draw2d_image(x, y, dz, dt, image, color)
+
     def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
         self.default_draw3d_color(x, y, z, dt, image, color)
 
@@ -192,6 +215,9 @@ class GaussianShape(ParticleShape):
                                     fill=fill, edgecolor=color, linestyle="dashed", linewidth=2,
                                     alpha=alpha))
 
+    def draw2d_image(self, x: float, y: float, dz: int, dt: int, image: ndarray, color: Tuple[float, float, float]):
+        image_3d = image[numpy.newaxis, ...]
+        self._gaussian.translated(x, y, dz).draw_colored(image_3d, color)
 
     def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
         self._gaussian.translated(x, y, z).draw_colored(image, color)
@@ -243,6 +269,12 @@ class EllipseStackShape(ParticleShape):
         area.add_artist(mpl_Ellipse(xy=(x + ellipse.x, y + ellipse.y),
                                     width=ellipse.width, height=ellipse.height, angle=ellipse.angle, alpha=0.5,
                                     fill=fill, facecolor=color, edgecolor=edgecolor, linestyle="dashed", linewidth=1))
+
+    def draw2d_image(self, x: float, y: float, dz: int, dt: int, image: ndarray, color: Tuple[float, float, float]):
+        fill = dt == 0
+        ellipse = self._ellipse_stack.get_ellipse(self._center_ellipse + dz)
+        if ellipse is not None:
+            ellipse.draw_to_image(image, color, dx=x, dy=y, filled=True)
 
     def draw3d_color(self, x: float, y: float, z: float, dt: int, image: ndarray, color: Tuple[float, float, float]):
         lowest_ellipse_z = int(z) - self._center_ellipse

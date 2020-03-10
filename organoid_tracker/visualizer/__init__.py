@@ -178,50 +178,52 @@ class Visualizer:
         update_status to set a special status."""
         return str(self.__doc__)
 
-    def load_image(self, time_point: TimePoint, show_next_time_point: bool) -> Optional[ndarray]:
+    def load_image(self, time_point: TimePoint, z: int, show_next_time_point: bool) -> Optional[ndarray]:
         """Creates an image suitable for display purposes. IF show_next_time_point is set to True, then then a color
         image will be created with the next image in red, and the current image in green."""
-        time_point_images = self._experiment.images.get_image_stack(time_point, self._display_settings.image_channel)
-        if time_point_images is None:
+        channel = self._display_settings.image_channel
+        time_point_image = self._experiment.images.get_image_slice_2d(time_point, channel, z)
+        if time_point_image is None:
             return None
         if show_next_time_point:
-            image_shape = time_point_images.shape
+            image_shape = time_point_image.shape
 
-            rgb_images = numpy.zeros((image_shape[0], image_shape[1], image_shape[2], 3), dtype='float')
-            rgb_images[:,:,:,1] = time_point_images  # Green channel is current image
+            rgb_images = numpy.zeros((image_shape[0], image_shape[1], 3), dtype='float')
+            rgb_images[:,:,1] = time_point_image  # Green channel is current image
             try:
                 next_time_point = self._experiment.get_next_time_point(time_point)
-                next_time_point_images = self._experiment.images.get_image_stack(next_time_point,
-                                                                                 self._display_settings.image_channel)
+                next_time_point_image = self._experiment.images.get_image_slice_2d(next_time_point, channel, z)
 
                 # Check if we need to translate the next image
                 offsets = self._experiment.images.offsets
                 relative_offset = offsets.of_time_point(time_point) - offsets.of_time_point(next_time_point)
                 if relative_offset.x != 0 or relative_offset.y != 0 or relative_offset.z != 0:
-                    original_images = next_time_point_images
-                    next_time_point_images = numpy.zeros_like(original_images)
-                    cropper.crop_3d(original_images, int(relative_offset.x), int(relative_offset.y),
-                                    int(relative_offset.z), output=next_time_point_images)
-
-                rgb_images[:,:,:,0] = next_time_point_images # Red channel is next image
+                    # TODO FIXME
+                    # original_images = next_time_point_image
+                    # next_time_point_image = numpy.zeros_like(original_images)
+                    # cropper.crop_2d(original_images, int(relative_offset.x), int(relative_offset.y),
+                    #                 output=next_time_point_image)
+                rgb_images[:,:,0] = next_time_point_image # Red channel is next image
             except ValueError:
                 pass  # There is no next time point, ignore
             rgb_images /= rgb_images.max()
-            time_point_images = rgb_images
-        return time_point_images
+            time_point_image = rgb_images
+        return time_point_image
 
-    def reconstruct_image(self, time_point: TimePoint, rgb_canvas: ndarray):
+    def reconstruct_image(self, time_point: TimePoint, z: int, rgb_canvas_2d: ndarray):
         """Draws all positions and shapes to the given canvas. The canvas must be a float array,
         and will be clipped from 0 to 1."""
         offset = self._experiment.images.offsets.of_time_point(time_point)
         position_data = self._experiment.position_data
         colors = [(1, 1, 0), (1, 0, 1), (0, 1, 1), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
         i = 0
+
         for position in self._experiment.positions.of_time_point(time_point):
             shape = linking_markers.get_shape(position_data, position)
-            shape.draw3d_color(position.x - offset.x, position.y - offset.y, position.z - offset.z, 0, rgb_canvas, colors[i % len(colors)])
+            shape.draw2d_image(position.x - offset.x, position.y - offset.y, z - int(position.z - offset.z),
+                               0, rgb_canvas_2d, colors[i % len(colors)])
             i += 1
-        rgb_canvas.clip(min=0, max=1, out=rgb_canvas)
+        rgb_canvas_2d.clip(min=0, max=1, out=rgb_canvas_2d)
 
     def _get_type_color(self, position: Position) -> Optional[MPLColor]:
         """Gets the color that the given position should be annotated with, based on the type of the position. Usually

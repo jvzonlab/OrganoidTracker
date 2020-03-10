@@ -27,9 +27,15 @@ class SingleImageLoader(ImageLoader):
         self._image = array
         self._file_name = file_name
 
-    def get_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
+    def get_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
         if time_point.time_point_number() == 1 and image_channel is _ONLY_CHANNEL:
             return self._image
+        return None
+
+    def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
+        if time_point.time_point_number() == 1 and image_channel is _ONLY_CHANNEL:
+            if image_z >= 0 and image_z < self._image.shape[0]:
+                return self._image[image_z]
         return None
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:

@@ -1,5 +1,6 @@
 from typing import Dict, Optional, List, Tuple, Iterable
 
+import numpy
 from numpy import ndarray
 
 from organoid_tracker.core import TimePoint, UserError
@@ -15,27 +16,60 @@ class _CachedImageLoader(ImageLoader):
     """Wrapper that caches the last few loaded images."""
 
     _internal: ImageLoader
-    _image_cache: List[Tuple[int, ImageChannel, ndarray]]
+    _image_cache: List[Tuple[int, int, ImageChannel, ndarray]]
+    _CACHE_SIZE: int = 5 * 30
 
     def __init__(self, wrapped: ImageLoader):
         self._image_cache = []
         self._internal = wrapped
 
-    def _add_to_cache(self, time_point_number: int, image_channel: ImageChannel, image: ndarray):
-        if len(self._image_cache) > 5:
+    def _add_to_cache(self, time_point_number: int, image_z: int, image_channel: ImageChannel, image: ndarray):
+        if len(self._image_cache) > self._CACHE_SIZE:
             self._image_cache.pop(0)
-        self._image_cache.append((time_point_number, image_channel, image))
+        self._image_cache.append((time_point_number, image_z, image_channel, image))
 
-    def get_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
+    def get_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
         time_point_number = time_point.time_point_number()
+
+        z_size = self._internal.get_image_size_zyx()[0]
+        image_layers_by_z: List[Optional[ndarray]] = [None] * z_size
         for entry in self._image_cache:
-            if entry[0] == time_point_number and entry[1] == image_channel:
-                return entry[2]
+            if entry[0] == time_point_number and entry[2] == image_channel:
+                cached_z: int = entry[1]
+                try:
+                    # Found cache entry for this z
+                    image_layers_by_z[cached_z] = entry[3]
+                except KeyError:
+                    pass  # Ignore, image contains extra z levels
+        if self._is_complete(image_layers_by_z):
+            # Collected all necessary cache entries
+            return numpy.array(image_layers_by_z, dtype=image_layers_by_z[0].dtype)
 
         # Cache miss
-        image = self._internal.get_image_array(time_point, image_channel)
-        self._add_to_cache(time_point_number, image_channel, image)
-        return image
+        array = self._internal.get_3d_image_array(time_point, image_channel)
+        if array.shape[0] * 2 < self._CACHE_SIZE:
+            # The 3D image is small enough for cache, so add it
+            for image_z in array.shape[0]:
+                self._add_to_cache(time_point.time_point_number(), image_z, image_channel, array[image_z])
+        return array
+
+    def _is_complete(self, arrays: List[Optional[ndarray]]):
+        for array in arrays:
+            if array is None:
+                return False
+        return True
+
+    def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
+        time_point_number = time_point.time_point_number()
+        for entry in self._image_cache:
+            if entry[0] == time_point_number and entry[1] == image_z and entry[2] == image_channel:
+                # Cache hit
+                return entry[3]
+
+        # Cache miss
+        array = self._internal.get_2d_image_array(time_point, image_channel, image_z)
+        self._add_to_cache(time_point.time_point_number(), image_z, image_channel, array)
+        return array
 
     def get_channels(self) -> List[ImageChannel]:
         return self._internal.get_channels()
@@ -246,7 +280,20 @@ class Images:
                 return None
             image_channel = channels[0]
 
-        array = self._image_loader.get_image_array(time_point, image_channel)
+        array = self._image_loader.get_3d_image_array(time_point, image_channel)
+        if len(self._filters) > 0:
+            # Apply all filters
+            image_8bit = bits.image_to_8bit(array)
+            for image_filter in self._filters:
+                image_filter.filter(image_8bit)
+            array = image_8bit
+        return array
+
+    def get_image_slice_2d(self, time_point: TimePoint, image_channel: ImageChannel, z: int) -> Optional[ndarray]:
+        """Gets a 2D grayscale image for the given time point, image channel and z."""
+        offset_z = self._offsets.of_time_point(time_point).z
+        image_z = int(z - offset_z)
+        array = self._image_loader.get_2d_image_array(time_point, image_channel, image_z)
         if len(self._filters) > 0:
             # Apply all filters
             image_8bit = bits.image_to_8bit(array)

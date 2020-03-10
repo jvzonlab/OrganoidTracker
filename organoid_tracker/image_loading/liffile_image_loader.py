@@ -130,7 +130,7 @@ class _LifImageLoader(ImageLoader):
     def get_channels(self) -> List[ImageChannel]:
         return self._channels
 
-    def get_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
+    def get_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
         """Loads an image, usually from disk. Returns None if there is no image for this time point."""
         if time_point.time_point_number() < self._min_time_point_number\
                 or time_point.time_point_number() > self._max_time_point_number:
@@ -139,13 +139,26 @@ class _LifImageLoader(ImageLoader):
             return None
 
         array = self._serie.getFrame(channel=image_channel.index, T=time_point.time_point_number())
-        array = numpy.moveaxis(array, 2, 0)
         if array.dtype != numpy.uint8:  # Saves memory
             array = bits.image_to_8bit(array)
         if self._inverted_z:
             return array[::-1]
         else:
             return array
+
+    def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
+        if time_point.time_point_number() < self._min_time_point_number\
+                or time_point.time_point_number() > self._max_time_point_number:
+            return None
+        if not isinstance(image_channel, _IndexedChannel):
+            return None
+        if self._inverted_z:
+            z_size = self.get_image_size_zyx()[0]
+            image_z = z_size - image_z
+        array = self._serie.get2DSlice(channel=image_channel.index, T=time_point.time_point_number(), Z=image_z)
+        if array.dtype != numpy.uint8:  # Saves memory
+            array = bits.image_to_8bit(array)
+        return array
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
         x_size, y_size, z_size = self._serie.getBoxShape()

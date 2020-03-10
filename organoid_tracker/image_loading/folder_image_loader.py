@@ -6,7 +6,7 @@ from numpy import ndarray
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.image_loader import ImageLoader, ImageChannel
 from organoid_tracker.core.experiment import Experiment
-from organoid_tracker.image_loading._simple_image_file_reader import read_image_3d
+from organoid_tracker.image_loading._simple_image_file_reader import read_image_3d, read_image_2d
 
 
 class _IndexedChannel(ImageChannel):
@@ -108,12 +108,12 @@ class FolderImageLoader(ImageLoader):
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
         """Just get the size of the image at the first time point, and cache it."""
         if self._image_size_zyx is None:
-            first_image_stack = self.get_image_array(TimePoint(self._min_time_point), self._channels[0])
+            first_image_stack = self.get_3d_image_array(TimePoint(self._min_time_point), self._channels[0])
             if first_image_stack is not None:
                 self._image_size_zyx = first_image_stack.shape
         return self._image_size_zyx
 
-    def get_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
+    def get_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
         if time_point.time_point_number() < self._min_time_point or\
                 time_point.time_point_number() > self._max_time_point:
             return None
@@ -125,6 +125,18 @@ class FolderImageLoader(ImageLoader):
                 channel=image_channel.index))
 
         return read_image_3d(file_name)
+
+    def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
+        if time_point.time_point_number() < self._min_time_point or\
+                time_point.time_point_number() > self._max_time_point:
+            return None
+        if not isinstance(image_channel, _IndexedChannel):
+            return None  # Asking for an image channel that doesn't exist
+
+        file_name = path.join(self._folder, self._file_name_format.format(
+            time=time_point.time_point_number(),
+            channel=image_channel.index))
+        return read_image_2d(file_name, image_z)
 
     def get_channels(self) -> List[ImageChannel]:
         return self._channels

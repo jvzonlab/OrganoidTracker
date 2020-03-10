@@ -175,5 +175,7 @@ class GuiExperiment:
         """Sets the experiment with the given index (from get_experiments()) as the visible experiment."""
         if index < 0 or index >= len(self._experiments):
             raise ValueError(f"Out of range: {index}")
+        if self._selected_experiment == index:
+            return  # Nothing changed
         self._selected_experiment = index
         self._any_updated_event.call_all()
