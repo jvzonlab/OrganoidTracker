@@ -123,7 +123,7 @@ class _ImageGeneratingTask(Task):
                 image.array = bits.image_to_8bit(image.array)
                 z = clamp(image.min_z, int(position.z), image.limit_z - 1)
 
-                cropper.crop_2d(image, min_x, min_y, z, out_array[image_index, :, :, 0])
+                cropper.crop_3d_to_2d(image, min_x, min_y, z, out_array[image_index, :, :, 0])
                 out_array[image_index, :, :, 1] = out_array[image_index, :, :, 0]  # Update green channel too
                 out_array[image_index, :, :, 2] = out_array[image_index, :, :, 0]  # Update blue channel too
 

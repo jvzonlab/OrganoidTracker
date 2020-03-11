@@ -47,6 +47,8 @@ class _CachedImageLoader(ImageLoader):
 
         # Cache miss
         array = self._internal.get_3d_image_array(time_point, image_channel)
+        if array is None:
+            return None
         if array.shape[0] * 2 < self._CACHE_SIZE:
             # The 3D image is small enough for cache, so add it
             for image_z in array.shape[0]:

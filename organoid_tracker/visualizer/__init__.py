@@ -198,11 +198,10 @@ class Visualizer:
                 offsets = self._experiment.images.offsets
                 relative_offset = offsets.of_time_point(time_point) - offsets.of_time_point(next_time_point)
                 if relative_offset.x != 0 or relative_offset.y != 0 or relative_offset.z != 0:
-                    # TODO FIXME
-                    # original_images = next_time_point_image
-                    # next_time_point_image = numpy.zeros_like(original_images)
-                    # cropper.crop_2d(original_images, int(relative_offset.x), int(relative_offset.y),
-                    #                 output=next_time_point_image)
+                    original_images = next_time_point_image
+                    next_time_point_image = numpy.zeros_like(original_images)
+                    cropper.crop_2d(original_images, int(relative_offset.x), int(relative_offset.y),
+                                    output=next_time_point_image)
                 rgb_images[:,:,0] = next_time_point_image # Red channel is next image
             except ValueError:
                 pass  # There is no next time point, ignore

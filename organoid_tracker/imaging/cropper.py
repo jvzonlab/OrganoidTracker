@@ -3,7 +3,45 @@ from numpy import ndarray
 from organoid_tracker.core.images import Image
 
 
-def crop_2d(image: Image, x_start: int, y_start: int, z: int, output: ndarray):
+def crop_2d(image: ndarray, x_start: int, y_start: int, output: ndarray):
+    """Takes a 2D crop out of the given image, and places it in the output array. The output array is the size of the
+    cropped area. x_start and y_start define the upper left corner in the original image, and may be negative.
+
+    If the area to crop falls partly outside the original image, then those pixels are ignored and the original pixels
+    in output will remain. Therefore, the output array must be an array of only zeros."""
+    if x_start >= image.shape[1]:
+        return  # We're completely outside the image, nothing to do
+    if y_start >= image.shape[0]:
+        return  # We're completely outside the image, nothing to do
+
+    # Calculate input image bounds
+    x_size = output.shape[1]
+    y_size = output.shape[0]
+
+    if x_start + x_size <= 0 or y_start + y_size <= 0:
+        return  # We're completely outside the image, nothing to do
+    if x_start + x_size > image.shape[1]:
+        x_size = image.shape[1] - x_start  # Partly outside image, reduce size
+    if y_start + y_size > image.shape[0]:
+        y_size = image.shape[0] - y_start  # Partly outside image, reduce size
+
+    # Correct this if we're requesting pixels outside the input image
+    output_x_offset = 0
+    output_y_offset = 0
+    if x_start < 0:
+        output_x_offset = 0 - x_start
+        x_start = 0
+        x_size -= output_x_offset
+    if y_start < 0:
+        output_y_offset = 0 - y_start
+        y_start = 0
+        y_size -= output_y_offset
+
+    output[output_y_offset:output_y_offset + y_size, output_x_offset:output_x_offset + x_size] \
+        = image[y_start:y_start + y_size, x_start:x_start + x_size]
+
+
+def crop_3d_to_2d(image: Image, x_start: int, y_start: int, z: int, output: ndarray):
     """Gets a cropped 2d image from the original 3d image. The start of the cropped image is defined by (x_start,
     y_start) and the size by the size of the output image. If the area to crop falls partly outside the original image,
     then those pixels are ignored and the original pixels in output will remain. Therefore, the output array must be an
