@@ -133,13 +133,11 @@ class PositionListVisualizer(Visualizer):
     def _show_image(self):
         current_position = self._position_list[self._current_position_index]
         time_point = current_position.time_point()
-        image_stack = self.load_image(time_point, self._display_settings.show_next_time_point)
-        if image_stack is not None:
+        image_2d = self.load_image(time_point, int(current_position.z), self._display_settings.show_next_time_point)
+        if image_2d is not None:
             offset = self._experiment.images.offsets.of_time_point(time_point)
-            image_z = int(current_position.z - offset.z)
-            image = image_stack[clamp(0, image_z, len(image_stack) - 1)]
-            extent = (offset.x, offset.x + image.shape[1], offset.y + image.shape[0], offset.y)
-            self._ax.imshow(image, cmap="gray", extent=extent)
+            extent = (offset.x, offset.x + image_2d.shape[1], offset.y + image_2d.shape[0], offset.y)
+            self._ax.imshow(image_2d, cmap="gray", extent=extent)
 
     def _goto_next(self):
         self._current_position_index += 1
