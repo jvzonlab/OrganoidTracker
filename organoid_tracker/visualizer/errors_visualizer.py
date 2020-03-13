@@ -3,6 +3,7 @@ from typing import List, Optional, Dict, Any
 from matplotlib.backend_bases import KeyEvent
 
 from organoid_tracker.core.position import Position
+from organoid_tracker.gui import dialog
 from organoid_tracker.gui.window import Window
 from organoid_tracker.linking_analysis import linking_markers, lineage_error_finder, cell_error_finder
 from organoid_tracker.linking_analysis.lineage_error_finder import LineageWithErrors
@@ -62,11 +63,37 @@ class ErrorsVisualizer(PositionListVisualizer):
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
             **super().get_extra_menu_options(),
-            "Edit//Errors-Suppress this error (Del)": self._suppress_error,
-            "Edit//Errors-Recheck all errors (/recheck)": self._recheck_errors,
-            "Navigate//Lineage-Next lineage (Up)": self.__goto_next_lineage,
-            "Navigate//Lineage-Previous lineage (Down)": self.__goto_previous_lineage
+            "Edit//Errors-Suppress this error [Delete]": self._suppress_error,
+            "Edit//Errors-Recheck all errors": self._recheck_errors,
+            "Edit//Error settings-Change minimum allowed time in between divisions...": self._change_min_division_time,
+            "Edit//Error settings-Change maximum allowed movement per minute...": self._change_max_distance,
+            "Navigate//Lineage-Next lineage [Up]": self.__goto_next_lineage,
+            "Navigate//Lineage-Previous lineage [Down]": self.__goto_previous_lineage
         }
+
+    def _change_min_division_time(self):
+        old_time = self._experiment.warning_limits.min_time_between_divisions_h
+        new_time = dialog.prompt_float("Minimum allowed time in between divisions",
+                                       "What is the minimum amount of time that should pass before a cell divides"
+                                       " again?\nCells this violate this will be flagged. Please specify the amount in"
+                                       " hours.", minimum=0, default=old_time)
+        if new_time is None:
+            return
+        if new_time != old_time:
+            self._experiment.warning_limits.min_time_between_divisions_h = new_time
+            self._recheck_errors()
+
+    def _change_max_distance(self):
+        old_distance = self._experiment.warning_limits.max_distance_moved_um_per_min
+        new_distance = dialog.prompt_float("Maximum allowed distance per time point",
+                                       "What is the maximum distance in micrometers that cells can travel per minute?\n"
+                                       "Cells that go faster will be flagged.",
+                                       minimum=0, default=old_distance)
+        if new_distance is None:
+            return
+        if new_distance != old_distance:
+            self._experiment.warning_limits.max_distance_moved_um_per_min = new_distance
+            self._recheck_errors()
 
     def get_message_no_positions(self):
         if len(self._problematic_lineages) > 0:
@@ -106,14 +133,8 @@ class ErrorsVisualizer(PositionListVisualizer):
                            "Please note that suppressed warnings remain suppressed.")
 
     def _on_key_press(self, event: KeyEvent):
-        if event.key == "up":
-            self.__goto_next_lineage()
-        elif event.key == "down":
-            self.__goto_previous_lineage()
-        elif event.key == "e":
+        if event.key == "e":
             self._exit_view()
-        elif event.key == "delete":
-            self._suppress_error()
         else:
             super()._on_key_press(event)
 

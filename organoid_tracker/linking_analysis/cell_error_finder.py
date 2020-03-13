@@ -27,15 +27,20 @@ def find_errors_in_experiment(experiment: Experiment) -> int:
 
     count = 0
     for position in experiment.positions:
-        error = get_error(links, position, scores, positions, position_data, resolution)
+        error = get_error(experiment, position)
         linking_markers.set_error_marker(position_data, position, error)
         if error is not None:
             count += 1
     return count
 
 
-def get_error(links: Links, position: Position, scores: ScoreCollection, positions: PositionCollection,
-              position_data: PositionData, resolution: ImageResolution) -> Optional[Error]:
+def get_error(experiment: Experiment, position: Position) -> Optional[Error]:
+    links = experiment.links
+    position_data = experiment.position_data
+    positions = experiment.positions
+    resolution = experiment.images.resolution()
+    warning_limits = experiment.warning_limits
+
     if linking_markers.is_uncertain(position_data, position):
         return Error.UNCERTAIN_POSITION
 
@@ -50,6 +55,8 @@ def get_error(links: Links, position: Position, scores: ScoreCollection, positio
             and linking_markers.get_track_end_marker(position_data, position) is None:
         return Error.NO_FUTURE_POSITION
     elif len(future_positions) == 2:
+        # Found a putative mother
+        scores = experiment.scores
         if scores.has_family_scores():  # Use family scores
             score = scores.of_family(Family(position, *future_positions))
             if score is None or score.is_unlikely_mother():
@@ -59,7 +66,7 @@ def get_error(links: Links, position: Position, scores: ScoreCollection, positio
             if score <= 0:
                 return Error.LOW_MOTHER_SCORE
         age = particle_age_finder.get_age(links, position)
-        if age is not None and age * resolution.time_point_interval_h <= 10:
+        if age is not None and age * resolution.time_point_interval_h < warning_limits.min_time_between_divisions_h:
             return Error.YOUNG_MOTHER
 
     past_positions = links.find_pasts(position)
@@ -89,7 +96,8 @@ def get_error(links: Links, position: Position, scores: ScoreCollection, positio
                     return Error.SHRUNK_A_LOT
 
         # Check movement distance (fast movement is only allowed when a cell is launched into its death)
-        if past_position.distance_um(position, resolution) > 10:
+        distance_moved_um_per_m = past_position.distance_um(position, resolution) / resolution.time_point_interval_m
+        if distance_moved_um_per_m > warning_limits.max_distance_moved_um_per_min:
             end_marker = linking_markers.get_track_end_marker(position_data, position)
             if end_marker != EndMarker.DEAD and end_marker != EndMarker.SHED:
                 return Error.MOVED_TOO_FAST
@@ -165,8 +173,7 @@ def _find_errors_in_just_the_iterable(experiment: Experiment, iterable: Iterable
     links = experiment.links
     position_data = experiment.position_data
     for position in iterable:
-        error = get_error(links, position, experiment.scores, experiment.positions, position_data,
-                          experiment.images.resolution())
+        error = get_error(experiment, position)
         linking_markers.set_error_marker(position_data, position, error)
 
 

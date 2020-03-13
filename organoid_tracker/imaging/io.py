@@ -3,7 +3,7 @@ import json
 import os
 from json import JSONEncoder
 from pathlib import Path
-from typing import List, Dict, Any, Tuple, Iterable, Optional
+from typing import List, Dict, Any, Iterable, Optional
 
 import numpy
 
@@ -19,6 +19,7 @@ from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.spline import SplineCollection, Spline
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.core.score import ScoredFamily, Score, Family
+from organoid_tracker.core.warning_limits import WarningLimits
 from organoid_tracker.linking_analysis import linking_markers
 
 FILE_EXTENSION = "aut"
@@ -36,7 +37,6 @@ def _load_guizela_data_file(experiment: Experiment, file_name: str, min_time_poi
     """Starting from a random *.p file in a directory, this loads all data according to Guizela's format from that
     directory."""
     from organoid_tracker.guizela_tracker_compatibility import guizela_data_importer
-    print("File name", file_name)
     guizela_data_importer.add_data_to_experiment(experiment, os.path.dirname(file_name), min_time_point, max_time_point)
 
 
@@ -105,6 +105,9 @@ def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point:
 
         if "family_scores" in data:
             experiment.scores.add_scored_families(data["family_scores"])
+
+        if "warning_limits" in data:
+            experiment.warning_limits = WarningLimits(**data["warning_limits"])
 
         if "links" in data:
             _parse_links_format(experiment, data["links"], min_time_point, max_time_point)
@@ -459,6 +462,10 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
     # Save beacons
     if experiment.beacons.has_beacons():
         save_data["beacons"] = _encode_beacons(experiment.beacons)
+
+    # Save warning limits
+    if experiment.links.has_links():
+        save_data["warning_limits"] = experiment.warning_limits.to_dict()
 
     # Save connections
     if experiment.connections.has_connections():

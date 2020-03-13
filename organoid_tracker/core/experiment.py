@@ -1,11 +1,10 @@
-from typing import Optional, List, Tuple, Iterable
+from typing import Optional, Iterable
 
 from numpy import ndarray
 
 from organoid_tracker.core import TimePoint, Name, UserError, min_none, max_none
 from organoid_tracker.core.beacon_collection import BeaconCollection
 from organoid_tracker.core.connections import Connections
-from organoid_tracker.core.image_loader import ImageLoader
 from organoid_tracker.core.images import Images
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position_collection import PositionCollection
@@ -14,7 +13,7 @@ from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.spline import SplineCollection
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.core.score import ScoreCollection
-
+from organoid_tracker.core.warning_limits import WarningLimits
 
 
 class Experiment:
@@ -31,6 +30,7 @@ class Experiment:
     _connections: Connections  # Used to create connections in a single time point, for example for related cells
     _name: Name  # Name of the experiment
     splines: SplineCollection  # Splines, can be used to track progress of a cell across a trajectory.
+    _warning_limits: WarningLimits
 
     def __init__(self):
         self._name = Name()
@@ -42,6 +42,7 @@ class Experiment:
         self._links = Links()
         self._images = Images()
         self._connections = Connections()
+        self._warning_limits = WarningLimits()
 
     def remove_position(self, position: Position, *, update_splines: bool = True):
         """Removes a position and its links and other data from the experiment.
@@ -208,6 +209,18 @@ class Experiment:
     def name(self) -> Name:
         # Don't allow to replace the Name object
         return self._name
+
+    @property
+    def warning_limits(self) -> WarningLimits:
+        """Gets the limits used by the error checker."""
+        return self._warning_limits
+
+    @warning_limits.setter
+    def warning_limits(self, warning_limits: WarningLimits):
+        """Sets the limits used by the error checker."""
+        if not isinstance(warning_limits, WarningLimits):
+            raise TypeError(f"warnings_limits must be a {WarningLimits.__name__} object, was " + repr(warning_limits))
+        self._warning_limits = warning_limits
 
     @property
     def links(self) -> Links:

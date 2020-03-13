@@ -53,3 +53,5 @@ To do this, hover you mouse over a nucleus and press E. You will be shown all er
 Data editing is done mainly using the Insert and Delete keys, which are used to insert and delete links. Detected positions can also be inserted and deleted if necessary. Because correcting data works exactly the same as manual tracking, please see the [manual tracking](MANUAL_TRACKING.md) tutorial for more information.
 
 If you don't want to correct everything, in the `Edit` menu there's an option to delete all lineage trees that still have errors. Make sure you have backed-up your data before you do this. You can also delete all tracking data in certain parts of the images at certain times, see [batch editing](BATCH_OPERATIONS.md) for details.
+
+You can change a few settings of the error checker, to make it stricter or less strick. In the error checking screen (the screen you opened with `E`) there are three options available in the `Edit` menu: the minimum time in between two cell divisions of the same cell, and the maximum distance a cell may move per minute.
