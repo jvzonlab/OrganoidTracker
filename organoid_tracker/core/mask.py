@@ -1,5 +1,4 @@
-import cv2
-from typing import Optional
+from typing import Optional, Callable
 
 import mahotas
 import numpy
@@ -8,6 +7,7 @@ from scipy.ndimage import binary_dilation
 
 from organoid_tracker.core.bounding_box import BoundingBox
 from organoid_tracker.core.images import Image
+from organoid_tracker.core.position import Position
 
 
 class OutsideImageError(Exception):
@@ -16,24 +16,29 @@ class OutsideImageError(Exception):
 
 
 class Mask:
-    """Class used for drawing and applying masks."""
+    """Class used for drawing and applying masks.
 
-    _offset_x: int
-    _offset_y: int
-    _offset_z: int
-    _max_x: int
-    _max_y: int
-    _max_z: int
+    - First, you set the bounds using one of the set_bounds methods.
+    - Second, you create the mask using add_from_labeled, dilate, etc. (or draw your mask directly on get_mask_array)
+    - Third, you apply the mask to an image using
+    """
 
-    _mask: Optional[ndarray] = None
+    _offset_x: int  # Inclusive
+    _offset_y: int  # Inclusive
+    _offset_z: int  # Inclusive
+    _max_x: int  # Exclusive
+    _max_y: int  # Exclusive
+    _max_z: int  # Exclusive
 
-    def __init__(self, image: Image):
-        self._offset_x = int(image.offset.x)
-        self._offset_y = int(image.offset.y)
-        self._offset_z = int(image.offset.z)
-        self._max_x = self._offset_x + image.array.shape[2]
-        self._max_y = self._offset_y + image.array.shape[1]
-        self._max_z = self._offset_z + image.array.shape[0]
+    _mask: Optional[ndarray] = None  # Should only contain 1 and 0
+
+    def __init__(self, box: BoundingBox):
+        self._offset_x = box.min_x
+        self._offset_y = box.min_y
+        self._offset_z = box.min_z
+        self._max_x = box.max_x
+        self._max_y = box.max_y
+        self._max_z = box.max_z
 
     @property
     def offset_x(self):
@@ -49,7 +54,7 @@ class Mask:
 
     def set_bounds(self, box: BoundingBox):
         """Shrinks the bounding box to the given box. In this way, smaller arrays for the mask can be
-        allocated.  Setting a bounding box twice or setting it after get_mask_array
+        allocated. Setting a bounding box twice or setting it after get_mask_array
         has been called is not allowed."""
         self.set_bounds_exact(box.min_x, box.min_y, box.min_z, box.max_x, box.max_y, box.max_z)
 
@@ -73,10 +78,28 @@ class Mask:
         self._max_y = min(self._max_y, int(max_y))
         self._max_z = min(self._max_z, int(max_z))
 
+    def center_around(self, position: Position):
+        """Centers this mask around the given position. So offset_x will become smaller than position.x and max_x will
+        become larger, and position.x will be halfway. Same for the y and z axis."""
+        size_x = self._max_x - self._offset_x
+        size_y = self._max_y - self._offset_y
+        size_z = self._max_z - self._offset_z
+
+        self._offset_x = int(position.x - size_x / 2)
+        self._offset_y = int(position.y - size_y / 2)
+        self._offset_z = int(position.z - size_z / 2)
+        self._max_x = self._offset_x + size_x
+        self._max_y = self._offset_y + size_y
+        self._max_z = self._offset_z + size_z
+
     def get_mask_array(self) -> ndarray:
         """Gets a 3D array to draw the mask on. Make sure to set appropriate bounds for this array first. Note that to
-        safe memory the coords of this array are shifted by (offset_x, offset_y, offset_z) compared to the original
-        image: in this way the array can be smaller."""
+        save memory the coords of this array are offset by (offset_z, offset_y, offset_x), so pixel (0, 0, 0) in this
+        array is actually pixel (offset_x, offset_y, offset_z) when applied to an image.
+
+        This array only contains the numbers 0 and 1. You are allowed to modify this array in order to draw a mask, but
+        make sure to only use the values 0 and 1. You can also draw a mask using the add_from_ functions.
+        """
         if self._mask is None:
             size_x = self._max_x - self._offset_x
             size_y = self._max_y - self._offset_y
@@ -105,7 +128,7 @@ class Mask:
         image_for_masking[mask == 0] = numpy.NAN
         return image_for_masking
 
-    def create_masked_image(self, image: Image):
+    def create_masked_image(self, image: Image) -> ndarray:
         """Create subimage where all pixels outside the mask are set to 0. Raises OutsideImageError if the mask is fully
         outside the given image."""
         image_for_masking: ndarray = image.array[self._offset_z - int(image.offset.z):self._max_z - int(image.offset.z),
@@ -129,6 +152,26 @@ class Mask:
                         self._offset_y:self._max_y,
                         self._offset_x:self._max_x]
         array[cropped_image == label] = 1
+
+    def add_from_function(self, func: Callable[[ndarray, ndarray, ndarray], ndarray]):
+        """Calls the function (x, y, z) -> bool for all coordinates in the mask, and expands the mask to the coords for
+        which the function returns True.
+
+        Note: the function is called with numpy arrays instead of single values, so that the function does not need to
+        be called over and over, but just once.
+
+        Example for drawing a sphere of radius r around (0, 0, 0):
+
+            self.add_from_function(lambda x, y, z: x ** 2 + y ** 2 + z ** 2 <= r ** 2)
+        """
+        array = self.get_mask_array()
+
+        xaxis = numpy.linspace(self._offset_y, self._max_x - 1, array.shape[2])
+        yaxis = numpy.linspace(self._offset_y, self._max_y - 1, array.shape[1])
+        zaxis = numpy.linspace(self._offset_z, self._max_z - 1, array.shape[0])
+        result_xyz = func(xaxis[:, None, None], yaxis[None, :, None], zaxis[None, None, :])
+        result_zyx = numpy.moveaxis(result_xyz, [2, 0], [0, 2])
+        array[result_zyx == True] = 1
 
     def dilate_xyz(self, iterations: int = 1):
         """Dilates the image in the xyz direction."""
@@ -156,7 +199,14 @@ class Mask:
         """If this mask has no volume, get_mask_array and related methods will fail."""
         return self._offset_x >= self._max_x or self._offset_y >= self._max_y or self._offset_z >= self._max_z
 
+    def count_pixels(self) -> int:
+        """Returns the amount of pixels in the mask. Note: if the mask contains illegal values (values that are not 1
+        or 0), this will return an incorrect value. If the """
+        if self._mask is None:
+            raise ValueError("No mask has been created yet")
+        return int(self._mask.sum())
+
 
 def create_mask_for(image: Image) -> Mask:
     """Creates a mask that will never expand beyond the size of the given image."""
-    return Mask(image)
+    return Mask(image.bounding_box())

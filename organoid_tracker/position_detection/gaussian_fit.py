@@ -149,7 +149,7 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
         cell_ids = cluster.get_tags()
         print(f"Fitting {len(cell_ids)} cells: " + str([positions[cell_id] for cell_id in cell_ids]))
         bounding_box = _merge_bounding_boxes(bounding_boxes, cell_ids)
-        bounding_box.expand(x=blur_radius, y=blur_radius, z=0)
+        bounding_box = bounding_box.expanded(x=blur_radius, y=blur_radius, z=0)
 
         mask = create_mask_for(Image(image))
         mask.set_bounds(bounding_box)

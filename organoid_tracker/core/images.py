@@ -4,6 +4,7 @@ import numpy
 from numpy import ndarray
 
 from organoid_tracker.core import TimePoint, UserError
+from organoid_tracker.core.bounding_box import BoundingBox
 from organoid_tracker.core.image_loader import ImageLoader, ImageChannel, NullImageLoader, ImageFilter
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.resolution import ImageResolution
@@ -201,6 +202,10 @@ class Image:
         """
         return int(self._offset.z) + self._array.shape[0]
 
+    def bounding_box(self) -> BoundingBox:
+        """Gets a bounding box that encompasses the entire image."""
+        return BoundingBox(self.min_x, self.min_y, self.min_z, self.limit_x, self.limit_y, self.limit_z)
+
 
 class Images:
     """Records the images (3D + time), their resolution and their offset."""
@@ -255,9 +260,9 @@ class Images:
             return False
         return True
 
-    def get_image(self, time_point: TimePoint) -> Optional[Image]:
+    def get_image(self, time_point: TimePoint, image_channel: Optional[ImageChannel] = None) -> Optional[Image]:
         """Gets an image along with offset information, or None if there is no image available for that time point."""
-        array = self.get_image_stack(time_point)
+        array = self.get_image_stack(time_point, image_channel)
         if array is None:
             return None
         return Image(array, self._offsets.of_time_point(time_point))
@@ -330,3 +335,7 @@ class Images:
     def filters(self) -> List[ImageFilter]:
         """Gets a mutable list of all filters applied to the images."""
         return self._filters
+
+    def get_channels(self) -> List[ImageChannel]:
+        """Gets all available image channels. These are determined by the image_loader."""
+        return self._image_loader.get_channels()
