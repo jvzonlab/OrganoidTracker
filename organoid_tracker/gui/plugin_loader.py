@@ -28,24 +28,28 @@ class _ModulePlugin(Plugin):
 
 
 def _load_file(file: str) -> Any:
+    """Loads the Python file as a normal module. A file stored in example_folder/test.py will end up as the module
+    `example_folder.test`. In this way, relative imports still work fine."""
     file = os.path.abspath(file)
     if not file.endswith(".py") and not os.path.exists(os.path.join(file, "__init__.py")):
         raise ValueError("Not a Python file or module: " + file)
     parent_folder = os.path.dirname(file)
+    grandparent_folder = os.path.dirname(parent_folder)
 
     # Add to path
-    if parent_folder not in sys.path:
-        sys.path.insert(0, parent_folder)
+    if grandparent_folder not in sys.path:
+        sys.path.insert(0, grandparent_folder)
 
     # Load module
     file_name = os.path.basename(file)
-    module_name = file_name[:-len(".py")] if file_name.endswith(".py") else file_name
+    module_name = os.path.basename(parent_folder) + "." + \
+                  (file_name[:-len(".py")] if file_name.endswith(".py") else file_name)
     return importlib.import_module(module_name)
 
 
 def load_plugins(folder: str) -> List[Plugin]:
     """Loads the plugins in the given folder. The folder must follow the format "example/folder/structure". A plugin in
-    "example/folder/structure/plugin_example.py" will be loaded as the module "plugin_example".
+    "example/folder/structure/plugin_example.py" will be loaded as the module "structure.plugin_example".
     """
     if not os.path.exists(folder):
         print("No plugins folder found at " + os.path.abspath(folder))
