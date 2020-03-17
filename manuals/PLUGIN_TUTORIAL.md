@@ -85,5 +85,7 @@ to actually display that figure. The function `popup_figure` first sets up a win
 
 After saving the file and reloading the plugins, you should now end up with a graph.
 
-## Further steps
-OrganoidTracker contains a large number of functions that help you writing a plugin. See the [API](API.md) page for a short introduction. The main code of OrganoidTracker is also contains a lot of comments, which should help you understanding what the code is doing. A "smart" code editor that automatically displays documentation (such as Pycharm or Visual Studio Code) also helps a lot. Try and see if you can understand how the plugin `plugin_count_dividng_cells.py` works.
+Congratulations, you now know the basics of plugin writing!OrganoidTracker contains a large number of functions that help you writing a plugin. See the [API](API.md) page for a short introduction. The main code of OrganoidTracker is also contains a lot of comments, which should help you understanding what the code is doing. A "smart" code editor that automatically displays documentation (such as Pycharm or Visual Studio Code) also helps a lot. Try and see if you can understand how the plugin `plugin_count_dividng_cells.py` works.
+
+## Plugins in a folder instead of a file
+For larger plugins, placing all code in a single file becomes unwieldy. Instead, you can also put your code in multiple files placed in a single directory. The directory must have a name that starts with `plugin_`, for example `plugin_this_is_an_example`. In that folder, you must place an `__init__.py` file. This file should contain the hooks described above, such as the `get_menu_items` function. You can import other files using relative imports: use for example `from . import another_file`. This will import the file `another_file.py` that is placed next to the `__init__.py` file.
