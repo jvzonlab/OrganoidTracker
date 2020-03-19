@@ -26,7 +26,6 @@ class CellDensityVisualizer(ExitableImageVisualizer):
         self._calculate_densities()
 
     def _calculate_densities(self):
-        print("Hi, calculating!")
         positions = self._experiment.positions.of_time_point(self._time_point)
         resolution = self._experiment.images.resolution()
         min_density = None
