@@ -39,8 +39,8 @@ class CellFateVisualizer(ExitableImageVisualizer):
 
     _cell_fates: Dict[Position, CellFate] = dict()
 
-    def _load_time_point(self, time_point: TimePoint):
-        super()._load_time_point(time_point)
+    def _calculate_time_point_metadata(self):
+        super()._calculate_time_point_metadata()
 
         # Check what lineages contain errors
         links = self._experiment.links

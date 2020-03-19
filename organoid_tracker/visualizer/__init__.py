@@ -1,17 +1,15 @@
 """A bunch of visualizers, all based on Matplotlib. (The fact that TkInter is also used is abstracted away.)"""
-from typing import Iterable, Optional, Union, Dict, Any, Tuple, List
+from typing import Iterable, Optional, Union, Dict, Any, List
 
 import numpy
-from matplotlib import pyplot
-from matplotlib.axis import Axis
-from numpy import ndarray
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 from matplotlib.figure import Figure, Axes
+from numpy import ndarray
 
 from organoid_tracker import core
 from organoid_tracker.core import TimePoint
-from organoid_tracker.core.position import Position
 from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.core.position import Position
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.core.typing import MPLColor
 from organoid_tracker.gui import dialog
@@ -150,8 +148,7 @@ class Visualizer:
         pass
 
     def attach(self):
-        self._window.setup_menu(self.get_extra_menu_options(), show_plugins=self._get_must_show_plugin_menus())
-        self._window.set_window_title(self._get_window_title())
+        """Attaches all event handlers."""
         self._window.register_event_handler("key_press_event", self._on_key_press_raw)
         self._window.register_event_handler("button_press_event", self._on_mouse_click)
         self._window.register_event_handler("data_updated_event", self.refresh_data)
@@ -160,6 +157,7 @@ class Visualizer:
         self._window.register_event_handler("scroll_event", self._on_scroll)
 
     def detach(self):
+        """Detaches the event handlers."""
         self._window.unregister_event_handlers()
 
     def _get_window_title(self) -> Optional[str]:
@@ -268,6 +266,6 @@ def activate(visualizer: Visualizer) -> None:
 
     __active_visualizer = visualizer
     __active_visualizer.attach()
-    __active_visualizer.draw_view()
+    __active_visualizer.refresh_all()
     __active_visualizer.update_status(__active_visualizer.get_default_status())
 

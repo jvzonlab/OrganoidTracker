@@ -39,13 +39,11 @@ class AbstractImageVisualizer(Visualizer):
 
         self._clamp_time_point()
         self._clamp_z()
-        self._load_time_point(self._time_point)
-        self._load_2d_image()
 
-    def _load_time_point(self, time_point: TimePoint):
+    def _calculate_time_point_metadata(self):
         """Initializes additional data for this time point. For example, a viewer that shows what lineages contain
         warnings, will override this method to check when that is the case."""
-        self._display_settings.time_point = time_point
+        pass
 
     def _load_2d_image(self):
         """Loads the images and other data of the time point."""
@@ -88,13 +86,13 @@ class AbstractImageVisualizer(Visualizer):
         self._clamp_z()
 
     def refresh_data(self):
-        self._load_time_point(self._display_settings.time_point)
+        self._calculate_time_point_metadata()
         if self._display_settings.show_reconstruction:
             self._load_2d_image()  # Reload image, as image is a reconstruction of the data
         super().refresh_data()
 
     def refresh_all(self):
-        self._load_time_point(self._display_settings.time_point)
+        self._calculate_time_point_metadata()
         self._load_2d_image()  # Reload image
         super().refresh_all()
 
@@ -560,9 +558,10 @@ class AbstractImageVisualizer(Visualizer):
         except ValueError:
             return False
         else:
-            self._load_time_point(time_point)
+            self._display_settings.time_point = time_point
             self._clamp_z()
             self._load_2d_image()
+            self._calculate_time_point_metadata()
             self.draw_view()
             self.update_status("Moved to time point " + str(new_time_point_number) + "!")
             return True
@@ -601,9 +600,10 @@ class AbstractImageVisualizer(Visualizer):
         except ValueError:
             pass
         else:
-            self._load_time_point(time_point)
+            self._display_settings.time_point = time_point
             self._clamp_z()
             self._load_2d_image()
+            self._calculate_time_point_metadata()
             self.draw_view()
             self.update_status(self.get_default_status())
 

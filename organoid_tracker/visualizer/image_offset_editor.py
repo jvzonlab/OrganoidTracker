@@ -97,7 +97,7 @@ class ImageOffsetEditor(ExitableImageVisualizer):
 
     def _regenerate_image(self):
         self._display_settings.show_next_time_point = True
-        self._load_time_point(self._time_point)
+        self._load_2d_image()
         self.draw_view()
 
     def _exit_view(self):

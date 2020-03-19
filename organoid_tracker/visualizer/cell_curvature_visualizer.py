@@ -23,16 +23,8 @@ class CellCurvatureVisualizer(ExitableImageVisualizer):
         self._position_to_curvature = dict()
         self._calculate_curvatures()
 
-    def refresh_data(self):
-        self._calculate_curvatures()
-        super().refresh_data()
-
-    def refresh_all(self):
-        self._calculate_curvatures()
-        super().refresh_all()
-
-    def _load_time_point(self, time_point: TimePoint):
-        super()._load_time_point(time_point)
+    def _calculate_time_point_metadata(self):
+        super()._calculate_time_point_metadata()
         self._calculate_curvatures()
 
     def _calculate_curvatures(self):

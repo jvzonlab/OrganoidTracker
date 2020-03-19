@@ -43,11 +43,11 @@ class ImageSliceViewer(ExitableImageVisualizer):
         # Disabled, as we need to work with 3d images here
         self._image_slice_2d = None
 
-    def _load_time_point(self, time_point: TimePoint):
+    def _calculate_time_point_metadata(self):
         # We need to load the full 3D image
-        self._time_point_images = self._experiment.images.get_image_stack(time_point,
+        self._time_point_images = self._experiment.images.get_image_stack(self._time_point,
                                                                           self._display_settings.image_channel)
-        super()._load_time_point(time_point)
+        super()._calculate_time_point_metadata()
 
     def _draw_image(self):
         if self._time_point_images is None:

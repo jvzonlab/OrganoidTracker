@@ -20,21 +20,13 @@ class CellDensityVisualizer(ExitableImageVisualizer):
         super().__init__(window)
 
         self._position_to_density = dict()
-        self._calculate_densities()
 
-    def refresh_data(self):
-        self._calculate_densities()
-        super().refresh_data()
-
-    def refresh_all(self):
-        self._calculate_densities()
-        super().refresh_all()
-
-    def _load_time_point(self, time_point: TimePoint):
-        super()._load_time_point(time_point)
+    def _calculate_time_point_metadata(self):
+        super()._calculate_time_point_metadata()
         self._calculate_densities()
 
     def _calculate_densities(self):
+        print("Hi, calculating!")
         positions = self._experiment.positions.of_time_point(self._time_point)
         resolution = self._experiment.images.resolution()
         min_density = None

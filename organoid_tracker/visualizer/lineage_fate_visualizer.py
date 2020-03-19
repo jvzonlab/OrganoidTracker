@@ -47,8 +47,8 @@ class LineageFateVisualizer(ExitableImageVisualizer):
     _position_to_axis: Dict[Position, float] = dict()
     _highest_axis_position: float = 1
 
-    def _load_time_point(self, time_point: TimePoint):
-        super()._load_time_point(time_point)
+    def _calculate_time_point_metadata(self):
+        super()._calculate_time_point_metadata()
 
         self._update_deaths_and_divisions(time_point)
         self._update_axis_positions(time_point)

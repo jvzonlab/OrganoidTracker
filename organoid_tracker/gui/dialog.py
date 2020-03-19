@@ -268,7 +268,7 @@ def popup_visualizer(experiment: GuiExperiment, visualizer_callable: Callable[[W
     if len(menu) > 0:
         window.setup_menu(menu, show_plugins=False)
     visualizer.attach()
-    visualizer.draw_view()
+    visualizer.refresh_all()
     visualizer.update_status(visualizer.get_default_status())
 
 

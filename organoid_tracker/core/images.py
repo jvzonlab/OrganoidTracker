@@ -52,7 +52,7 @@ class _CachedImageLoader(ImageLoader):
             return None
         if array.shape[0] * 2 < self._CACHE_SIZE:
             # The 3D image is small enough for cache, so add it
-            for image_z in array.shape[0]:
+            for image_z in range(array.shape[0]):
                 self._add_to_cache(time_point.time_point_number(), image_z, image_channel, array[image_z])
         return array
 
