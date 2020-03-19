@@ -1,5 +1,5 @@
 """A bunch of visualizers, all based on Matplotlib. (The fact that TkInter is also used is abstracted away.)"""
-from typing import Iterable, Optional, Union, Dict, Any, List
+from typing import Iterable, Optional, Union, Dict, Any, List, Callable
 
 import numpy
 from matplotlib.backend_bases import KeyEvent, MouseEvent
@@ -88,7 +88,7 @@ class Visualizer:
                 ax.set_ylim(*ylim)
                 ax.set_autoscale_on(False)
 
-    def run_async(self, runnable, result_handler):
+    def run_async(self, runnable: Callable[[], Any], result_handler: Callable[[Any], None]):
         """Creates a callable that runs the given runnable on a worker thread."""
         class MyTask(Task):
             def compute(self):
