@@ -8,6 +8,7 @@ from scipy.ndimage import binary_dilation
 from organoid_tracker.core.bounding_box import BoundingBox
 from organoid_tracker.core.images import Image
 from organoid_tracker.core.position import Position
+from organoid_tracker.imaging import cropper
 
 
 class OutsideImageError(Exception):
@@ -112,10 +113,12 @@ class Mask:
     def create_masked_and_normalized_image(self, image: Image):
         """Create normalized subimage (floating point numbers from 0 to 1). Throws OutsideImageError when the mask is
         fully outside the image. Pixels outside the mask are set to NaN."""
-        image_for_masking = image.array[int(self._offset_z - image.offset.z):int(self._max_z - image.offset.z),
-                            int(self._offset_y - image.offset.y):int(self._max_y - image.offset.y),
-                            int(self._offset_x - image.offset.x):int(self._max_x - image.offset.x)].astype(
-            dtype=numpy.float32)
+        image_for_masking = numpy.zeros_like(self._mask, dtype=image.array.dtype)
+
+        cropper.crop_3d(image.array, int(self.offset_x - image.offset.x), int(self.offset_y - image.offset.y),
+                        int(self.offset_z - image.offset.z),
+                        output=image_for_masking)
+        image_for_masking = image_for_masking.astype(numpy.float32)
         try:
             image_for_masking /= image_for_masking.max()
         except ValueError:
@@ -129,20 +132,15 @@ class Mask:
         return image_for_masking
 
     def create_masked_image(self, image: Image) -> ndarray:
-        """Create subimage where all pixels outside the mask are set to 0. Raises OutsideImageError if the mask is fully
-        outside the given image."""
-        image_for_masking: ndarray = image.array[self._offset_z - int(image.offset.z):self._max_z - int(image.offset.z),
-                                     self._offset_y - int(image.offset.y):self._max_y - int(image.offset.y),
-                                     self._offset_x - int(image.offset.x):self._max_x - int(image.offset.x)]
-        if image_for_masking.size == 0:
-            raise OutsideImageError()
-        image_for_masking = image_for_masking.copy()
+        """Create subimage where all pixels outside the mask are set to 0."""
+        image_for_masking = numpy.zeros_like(self._mask, dtype=image.array.dtype)
 
-        # Crop mask to same size as subimage
-        mask = self._mask[0:image_for_masking.shape[0], 0:image_for_masking.shape[1], 0:image_for_masking.shape[2]]
+        cropper.crop_3d(image.array, int(self.offset_x - image.offset.x), int(self.offset_y - image.offset.y),
+                        int(self.offset_z - image.offset.z),
+                        output=image_for_masking)
 
         # Apply mask
-        image_for_masking[mask == 0] = 0
+        image_for_masking[self._mask == 0] = 0
         return image_for_masking
 
     def add_from_labeled(self, labeled_image: ndarray, label: int):
