@@ -33,7 +33,7 @@ class CellCompartmentVisualizer(ExitableImageVisualizer):
             self._cell_compartments = dict()
             return
 
-        positions = self._experiment.positions.of_time_point(time_point)
+        positions = self._experiment.positions.of_time_point(self._time_point)
         result = dict()
         for position in positions:
             result[position] = cell_compartment_finder.find_compartment(self._experiment, position)

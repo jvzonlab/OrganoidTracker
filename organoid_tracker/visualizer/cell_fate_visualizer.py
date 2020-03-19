@@ -48,7 +48,7 @@ class CellFateVisualizer(ExitableImageVisualizer):
             self._cell_fates = dict()
             return
 
-        positions = self._experiment.positions.of_time_point(time_point)
+        positions = self._experiment.positions.of_time_point(self._time_point)
         result = dict()
         for position in positions:
             result[position] = cell_fate_finder.get_fate(self._experiment, position)
