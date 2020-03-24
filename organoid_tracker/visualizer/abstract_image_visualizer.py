@@ -582,9 +582,11 @@ class AbstractImageVisualizer(Visualizer):
         except ValueError:
             return False
         else:
+            self._display_settings.time_point = time_point
             self._display_settings.z = round(position.z)
             self._clamp_z()
             self._load_2d_image()
+            self._calculate_time_point_metadata()
             self._ax.set_xlim(position.x - 50, position.x + 50)
             self._ax.set_ylim(position.y + 50, position.y - 50)
             self._ax.set_autoscale_on(False)
