@@ -1,6 +1,8 @@
 OrganoidTracker
 ===============
 
+[Pre-print on bioRxiv]
+
 Code for tracking cell nuclei in (intestinal) organoids over time. Uses a convolutional neural network for nucleus detection, a min-cost flow solver ([Haubold, 2016]) for linking nuclei over time and tools for manual error correction.
 
 
@@ -33,4 +35,5 @@ Install the program as normal, and then point your Python editor (I recommend Py
 [API]: manuals/API.md
 [installation]: manuals/INSTALLATION.md
 [manual]: manuals/INDEX.md
+[Pre-print on bioRxiv]: https://doi.org/10.1101/2020.03.18.996421
 [Haubold, 2016]: https://doi.org/10.1007/978-3-319-46478-7_35
