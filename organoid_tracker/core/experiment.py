@@ -103,7 +103,7 @@ class Experiment:
             x_factor = new_resolution.pixel_size_x_um / old_resolution.pixel_size_x_um
             z_factor = new_resolution.pixel_size_z_um / old_resolution.pixel_size_z_um
             t_factor = 1 if (new_resolution.time_point_interval_m == 0 or old_resolution.time_point_interval_m == 0) \
-                               else new_resolution.time_point_interval_m / old_resolution.time_point_interval_m
+                else new_resolution.time_point_interval_m / old_resolution.time_point_interval_m
             if t_factor < 0.9 or t_factor > 1.1:
                 # We cannot scale in time, unfortunately. Links must go from one time point to the next time point.
                 # So we throw an error if the scale changes too much
@@ -283,3 +283,18 @@ class Experiment:
         self.links.add_links(other.links)
         self.position_data.merge_data(other.position_data)
         self.connections.add_connections(other.connections)
+
+    def copy_selected(self, images: bool = False, positions: bool = False, position_data: bool = False,
+                      links: bool = False) -> "Experiment":
+        """Copies the selected attributes over to a new experiment. Note that position_data and links can only be copied
+        if the positions are copied."""
+        copy = Experiment()
+        if images:
+            copy.images = self._images.copy()
+        if positions:
+            copy.positions = self._positions.copy()
+            if position_data:
+                copy.position_data = self._position_data.copy()
+            if links:
+                copy.links = self._links.copy()
+        return copy
