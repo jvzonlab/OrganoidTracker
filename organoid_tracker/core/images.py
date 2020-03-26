@@ -322,6 +322,14 @@ class Images:
         copy._filters = [filter.copy() for filter in self._filters]
         return copy
 
+    def first_time_point_number(self) -> Optional[int]:
+        """Gets the first time point with an image, if any."""
+        return self._image_loader.first_time_point_number()
+
+    def last_time_point_number(self) -> Optional[int]:
+        """Gets the last time point with an image, if any."""
+        return self._image_loader.last_time_point_number()
+
     def time_points(self) -> Iterable[TimePoint]:
         """Gets all time points for which images are available."""
         min_time_point_number = self._image_loader.first_time_point_number()
