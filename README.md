@@ -1,5 +1,5 @@
-OrganoidTracker
-===============
+![Logo](manuals/images/logo.png) OrganoidTracker
+================================================
 
 [Pre-print on bioRxiv]
 
