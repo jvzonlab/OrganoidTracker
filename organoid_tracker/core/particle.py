@@ -28,9 +28,7 @@ class Particle:
         positions."""
         return Particle(position, links, dict())
 
-
     position: Position
-    shape: ParticleShape
     links: List[Position]
     data: Dict[str, PositionDataType]
 

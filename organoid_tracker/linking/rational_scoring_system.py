@@ -5,7 +5,6 @@ from numpy import ndarray
 from organoid_tracker.core.images import Images, Image
 from organoid_tracker.core.mask import create_mask_for, Mask, OutsideImageError
 from organoid_tracker.core.position import Position
-from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.score import Score, Family
 from organoid_tracker.linking.scoring_system import MotherScoringSystem

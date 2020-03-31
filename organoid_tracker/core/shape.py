@@ -1,6 +1,6 @@
 import cv2
 import math
-from typing import Optional, List, Tuple, Any
+from typing import List, Tuple, Any
 
 import numpy
 from matplotlib.axes import Axes

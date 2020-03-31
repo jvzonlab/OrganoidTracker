@@ -7,9 +7,7 @@ import cv2
 import mahotas
 import numpy
 import scipy.optimize
-from matplotlib import cm, pyplot
 from numpy import ndarray
-from tifffile import tifffile
 
 from organoid_tracker.core.bounding_box import bounding_box_from_mahotas, BoundingBox
 from organoid_tracker.core.gaussian import Gaussian
@@ -17,8 +15,6 @@ from organoid_tracker.core.images import Image
 from organoid_tracker.core.mask import create_mask_for
 from organoid_tracker.core.position import Position
 from organoid_tracker.position_detection import smoothing, clusterer
-from organoid_tracker.util.mpl_helper import QUALITATIVE_COLORMAP
-from organoid_tracker.visualizer.debug_image_visualizer import popup_3d_image
 
 
 class _ModelAndImageDifference:
