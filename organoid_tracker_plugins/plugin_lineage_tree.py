@@ -43,6 +43,7 @@ class LineageTreeVisualizer(Visualizer):
     _display_warnings: bool = True
     _display_manual_colors: bool = False
     _display_cell_type_colors: bool = True
+    _display_track_id: bool = True
 
     def __init__(self, window: Window):
         super().__init__(window)
@@ -54,6 +55,7 @@ class LineageTreeVisualizer(Visualizer):
             "View//Toggles-Toggle showing deaths": self._toggle_deaths,
             "View//Toggles-Toggle showing cell types": self._toggle_cell_types,
             "View//Toggles-Toggle showing manual colors": self._toggle_manual_colors,
+            "View//Toggles-Toggle showing lineage ids": self._toggle_track_id,
             "View//Divisions-Require X amount of divisions...": self._set_minimum_divisions
         }
 
@@ -88,6 +90,14 @@ class LineageTreeVisualizer(Visualizer):
                 self.update_status("Now coloring by manually assigned colors")
         else:
             self.update_status("No longer coloring by manually assigned colors")
+        self.draw_view()
+
+    def _toggle_track_id(self):
+        self._display_track_id = not self._display_track_id
+        if self._display_track_id:
+            self.update_status("Now displaying lineage ids")
+        else:
+            self.update_status("No longer displaying lineage ids")
         self.draw_view()
 
     def _set_minimum_divisions(self):
@@ -159,7 +169,8 @@ class LineageTreeVisualizer(Visualizer):
         width = LineageDrawing(links).draw_lineages_colored(self._ax, color_getter=color_getter,
                                                             resolution=resolution,
                                                             location_map=self._location_map,
-                                                            lineage_filter=lineage_filter)
+                                                            lineage_filter=lineage_filter,
+                                                            draw_track_id=self._display_track_id)
 
         self._ax.set_ylabel("Time (time points)")
         if self._ax.get_xlim() == (0, 1):

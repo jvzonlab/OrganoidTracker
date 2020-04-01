@@ -36,7 +36,6 @@ def _black(time_point_number: int, track: LinkingTrack) -> MPLColor:
 
 class LineageDrawing:
     links: Links
-    track_filter: Callable[[LinkingTrack], bool] = _no_filter
 
     def __init__(self, links: Links):
         self.links = links
@@ -90,7 +89,7 @@ class LineageDrawing:
 
     def draw_lineages_colored(self, axes: Axes, *, color_getter: _ColorGetter = _black,
                               resolution: ImageResolution = ImageResolution(1, 1, 1, 1),
-                              location_map: LocationMap = LocationMap(),
+                              location_map: LocationMap = LocationMap(), draw_track_id: bool = True,
                               lineage_filter: Callable[[LinkingTrack], bool] = _no_filter):
         """Draws lineage trees that are color coded. You can for example color cells by z position, by track
         length, etc. Returns the width of the lineage tree in Matplotlib pixels."""
@@ -98,12 +97,14 @@ class LineageDrawing:
         for lineage in self.links.find_starting_tracks():
             if not lineage_filter(lineage):
                 continue
-            width = self._draw_single_lineage_colored(axes, lineage, x_offset, color_getter, resolution, location_map)
+            width = self._draw_single_lineage_colored(axes, lineage, x_offset, color_getter, resolution, location_map,
+                                                      draw_track_id)
             x_offset += width
         return x_offset
 
     def _draw_single_lineage_colored(self, ax: Axes, lineage: LinkingTrack, x_offset: int, color_getter: _ColorGetter,
-                                     image_resolution: ImageResolution, location_map: LocationMap) -> int:
+                                     image_resolution: ImageResolution, location_map: LocationMap, draw_track_id: bool
+                                     ) -> int:
         """Draw lineage with given function used for color. You can for example color cells by z position, by track
         length, etc. Returns the width of the lineage tree in Matplotlib pixels."""
         (diagram_width, line_list) = self._get_lineage_draw_data(lineage)
@@ -127,6 +128,9 @@ class LineageDrawing:
 
                 color_val = color_getter(time_point_min + 1, linking_track)
                 t0 = time_point_min * image_resolution.time_point_interval_h
+                if draw_track_id:
+                    ax.text(x_offset + X + 0.05, t0 + 0.4, str(self.links.get_track_id(linking_track)),
+                            verticalalignment='top', clip_on=True)
                 for time_point_of_line in range(time_point_min, time_point_max):
                     # get time points for current sub time interval i
 
