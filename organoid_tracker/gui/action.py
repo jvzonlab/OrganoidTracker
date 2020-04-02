@@ -62,15 +62,9 @@ def close_experiment(window: Window):
 
 def load_images(window: Window):
     # Show an OK/cancel box, but with an INFO icon instead of a question mark
-    if not popup_message_cancellable("Image loading",
-                                     "Images are expected to be 3D grayscale files. Both TIF series and LIF files are "
-                                     "supported.\n\n"
-                                     "For TIF files, the program expects a series of files, each file representing a "
-                                     "single time point. Select the file of the first time point, which must have "
-                                     "\"t1\", \"t01\", \"_1.\" or similar in the file name."):
-        return  # Cancelled
     full_path = dialog.prompt_load_file("Select first image file", [
-        ("Image per time point", "*.tif;*.tiff;*.png;*.jpg;*.gif"),
+        ("Single TIF or TIF series", "*.tif;*.tiff"),
+        ("Image per time point", "*.png;*.jpg;*.gif"),
         ("LIF file", "*.lif"),
         ("ND2 file", "*.nd2")])
     if not full_path:
@@ -104,7 +98,8 @@ def load_images(window: Window):
     file_name_pattern = find_time_and_channel_pattern(file_name)
     if file_name_pattern is None:
         file_name_pattern = file_name  # Don't use a pattern if not available
-        if file_name.endswith(".tif") or file_name.endswith(".tiff"):
+        file_name_lower = file_name.lower()
+        if file_name_lower.endswith(".tif") or file_name_lower.endswith(".tiff"):
             # Try as TIF container
             from organoid_tracker.image_loading import merged_tiff_image_loader
             merged_tiff_image_loader.load_from_tif_file(window.get_experiment().images, full_path)
