@@ -191,6 +191,8 @@ class Visualizer:
             try:
                 next_time_point = self._experiment.get_next_time_point(time_point)
                 next_time_point_image = self._experiment.images.get_image_slice_2d(next_time_point, channel, z)
+                if next_time_point_image is None:
+                    next_time_point_image = numpy.zeros_like(time_point_image)
 
                 # Check if we need to translate the next image
                 offsets = self._experiment.images.offsets
@@ -200,7 +202,7 @@ class Visualizer:
                     next_time_point_image = numpy.zeros_like(original_images)
                     cropper.crop_2d(original_images, int(relative_offset.x), int(relative_offset.y),
                                     output=next_time_point_image)
-                rgb_images[:,:,0] = next_time_point_image # Red channel is next image
+                rgb_images[:,:,0] = next_time_point_image  # Red channel is next image
             except ValueError:
                 pass  # There is no next time point, ignore
             rgb_images /= rgb_images.max()
