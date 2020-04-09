@@ -16,7 +16,9 @@ def load_from_tif_file(images: Images, file: str, min_time_point: Optional[int] 
     """Creates an image loader for the individual images in the TIF file."""
     image_loader = _MergedTiffImageLoader(file, min_time_point, max_time_point)
     images.image_loader(image_loader)
-    images.set_resolution(image_loader._guess_resolution())
+    resolution = image_loader._guess_resolution()
+    if resolution is not None:
+        images.set_resolution(resolution)
 
 
 class _IndexedImageChannel(ImageChannel):
