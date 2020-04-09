@@ -703,7 +703,7 @@ class Links:
         while True:
             if time_point_number < track.min_time_point_number():
                 previous_tracks = track.get_previous_tracks()
-                if len(previous_tracks)  == 1:
+                if len(previous_tracks) == 1:
                     track = previous_tracks.pop()
                 else:
                     return  # No more or multiple previous positions, stop

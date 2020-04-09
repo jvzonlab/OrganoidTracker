@@ -89,6 +89,14 @@ class Spline:
         """Gets all explicitly added points (no interpolation) without the z coord."""
         return self._x_list, self._y_list
 
+    def length(self) -> float:
+        """Gets the length of the spline."""
+        x_values, y_values = self.get_interpolation_2d()
+        combined_length = 0
+        for i in range(1, len(x_values)):
+            combined_length += _distance(x_values[i], y_values[i], x_values[i - 1], y_values[i - 1])
+        return combined_length
+
     def get_z(self) -> int:
         """Gets the Z coord of this path. Raises ValueError if the path has no points."""
         if self._z is None:
