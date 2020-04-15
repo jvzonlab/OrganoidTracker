@@ -4,10 +4,10 @@ from os import path
 from typing import Callable, List, Iterable, Optional
 from typing import Dict, Any
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon, QKeyEvent, QPalette, QCloseEvent
-from PyQt5.QtWidgets import QMainWindow, QSizePolicy
-from PyQt5.QtWidgets import QWidget, QApplication, QVBoxLayout, QLabel, QLineEdit
+from PySide2.QtCore import Qt
+from PySide2.QtGui import QIcon, QKeyEvent, QPalette, QCloseEvent
+from PySide2.QtWidgets import QMainWindow, QSizePolicy
+from PySide2.QtWidgets import QWidget, QApplication, QVBoxLayout, QLabel, QLineEdit
 from matplotlib import pyplot
 from matplotlib.backend_bases import KeyEvent
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT

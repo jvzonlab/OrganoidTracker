@@ -1,7 +1,7 @@
 from typing import Optional, List
 
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtWidgets import QDialog, QGroupBox, QFormLayout, QLabel, QComboBox, QDialogButtonBox, QPushButton, \
+from PySide2 import QtCore, QtGui
+from PySide2.QtWidgets import QDialog, QGroupBox, QFormLayout, QLabel, QComboBox, QDialogButtonBox, QPushButton, \
     QVBoxLayout
 
 

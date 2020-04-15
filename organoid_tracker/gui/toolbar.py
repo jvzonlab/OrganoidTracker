@@ -1,7 +1,7 @@
 from typing import Callable, List
 
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QMainWindow, QToolBar, QComboBox
+from PySide2.QtGui import QIcon
+from PySide2.QtWidgets import QMainWindow, QToolBar, QComboBox
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 

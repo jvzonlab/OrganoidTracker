@@ -4,7 +4,6 @@ from typing import List, Tuple, Optional
 import cv2
 import numpy
 from numpy import ndarray
-from shapely.geometry.polygon import LinearRing
 
 
 def _max(a: Optional[int], b: Optional[int]) -> int:
@@ -32,7 +31,6 @@ class Ellipse:
     _angle: float  # Degrees, 0 <= angle < 180
 
     _polyline: ndarray = None
-    _linear_ring: LinearRing = None
 
     def __init__(self, x: float, y: float, width: float, height: float, angle: float):
         self._x = x
@@ -42,15 +40,6 @@ class Ellipse:
         self._angle = angle
         if height < width:
             raise ValueError("height < width, this is not allowed")
-
-    def intersects(self, other: "Ellipse") -> bool:
-        """Tests if this ellipse intersects another ellipse."""
-        return self._get_linear_ring().intersects(other._get_linear_ring())
-
-    def _get_linear_ring(self):
-        if self._linear_ring is None:
-            self._linear_ring = LinearRing(self._get_polyline())
-        return self._linear_ring
 
     def _get_polyline(self, n=100) -> ndarray:
         """Approximates the ellipse as n connected line segments. You can then use the intersection method on the

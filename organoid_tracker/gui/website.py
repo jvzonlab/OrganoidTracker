@@ -1,9 +1,6 @@
 from abc import ABC
 from typing import Optional
 
-import markdown
-from mdx_gfm import GithubFlavoredMarkdownExtension
-
 
 class Website(ABC):
     """Represents a "website" (a collection of HTML pages), shown using dialog.show_website(). The help files are one

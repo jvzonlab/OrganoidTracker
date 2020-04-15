@@ -4,10 +4,10 @@ import sys
 from os import path
 from typing import Optional
 
-from PyQt5 import QtCore
-from PyQt5.QtCore import QUrl
-from PyQt5.QtGui import QPalette
-from PyQt5.QtWidgets import QMainWindow, QWidget, QTextBrowser
+from PySide2 import QtCore
+from PySide2.QtCore import QUrl
+from PySide2.QtGui import QPalette
+from PySide2.QtWidgets import QMainWindow, QWidget, QTextBrowser
 
 from organoid_tracker.core import UserError
 from organoid_tracker.gui.website import Website
@@ -97,9 +97,8 @@ def show_website(parent: QWidget, website: Website):
 def _markdown_to_styled_html(markdown_str: str, *, relative_to_folder: str = ".") -> str:
     """Converts the given Markdown text to HTML, with some basic CSS styles applied."""
     import markdown
-    from mdx_gfm import GithubFlavoredMarkdownExtension
-    html_text = markdown.markdown(markdown_str,
-                      extensions=[GithubFlavoredMarkdownExtension()])
+    from markdown.extensions.fenced_code import FencedCodeExtension
+    html_text = markdown.markdown(markdown_str, extensions=[FencedCodeExtension()])
 
     # Apply special corrections for images
     html_text = html_text.replace("<p><img ", '<p style="line-height: 100; color: #444;'

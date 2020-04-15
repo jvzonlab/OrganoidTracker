@@ -31,12 +31,12 @@ To test if the software is working, run `python organoid_tracker.py`. A window s
 
 However, you're not done yet. To use the neural network, you'll also need to install CUDA 9.0 ([developer.nvidia.com/cuda-90-download-archive](https://developer.nvidia.com/cuda-90-download-archive)) and cuDNN ([developer.nvidia.com/rdp/cudnn-download](https://developer.nvidia.com/rdp/cudnn-download)). While the installation of CUDA is straightforward, the installation of cuDNN is not. You'll first need to register for a (free) Nvidia account. Then, you'll need to download the right version of cuDNN: download the version for CUDA 9.0. Then, you'll need to very carefully follow the installation instructions. cuDNN does not have an installation wizard, so you have to move all downloaded files yourself to the right location.
 
-## macOs and Linux
+## macOS and Linux
 Unfortunately, OrganoidTracker has not been tested on any other OSes. If you're in for a challenge, here are some instructions. Feel free to ask the authors if you run into any problems, we're interested in getting OrganoidTracker to work on other OSes.
 
 Download and install Anaconda/Miniconda and open the Anaconda Prompt. Use the `cd` command to navigate to the directory of OrganoidTracker. Run the following commands:
 
-    conda env create -f environment.yml
+    conda create -n organoid_tracker -c chaubold -c conda-forge -c aaronzs python=3.6 dpct tensorflow-gpu matplotlib-base mahotas tifffile scikit-image scipy nd2reader opencv pyside2 py-gfm
     source activate organoid_tracker
 
 The first command creates an Anaconda environment named "organoid_tracker" with all dependencies installed. The second command activates this environment.

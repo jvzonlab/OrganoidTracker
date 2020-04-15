@@ -5,9 +5,9 @@ import traceback as _traceback
 from enum import Enum
 from typing import Tuple, List, Optional, Callable, ClassVar, Any, Dict
 
-from PyQt5 import QtCore
-from PyQt5.QtGui import QCloseEvent, QColor
-from PyQt5.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow, QVBoxLayout, \
+from PySide2 import QtCore
+from PySide2.QtGui import QCloseEvent, QColor
+from PySide2.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow, QVBoxLayout, \
     QLabel, QSizePolicy, QPushButton, QColorDialog, QMenuBar
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg

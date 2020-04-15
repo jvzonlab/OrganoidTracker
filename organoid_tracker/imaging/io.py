@@ -384,19 +384,6 @@ def _encode_positions_and_shapes(positions: PositionCollection, shapes: Position
     return data_structure
 
 
-def save_dataframe_to_csv(data_frame, csv_file_name: str):
-    """Saves the data frame to a CSV file, creating necessary parent directories first."""
-    from pandas import DataFrame  # Pandas is quite slow to load, so only load it inside this method
-    assert isinstance(data_frame, DataFrame)
-
-    _create_parent_directories(csv_file_name)
-    try:
-        data_frame.to_csv(csv_file_name, index=False)
-    except PermissionError as e:
-        data_frame.to_csv(csv_file_name + ".ALT", index=False)
-        raise e
-
-
 def _encode_data_axes_to_json(data_axes: SplineCollection) -> List[Dict]:
     json_list = list()
     for spline_id, time_point, spline in data_axes.all_splines():

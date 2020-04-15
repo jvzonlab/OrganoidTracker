@@ -2,8 +2,8 @@
 
 from typing import Optional
 
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import QDoubleSpinBox, QDialog, QPushButton, QWidget, QGroupBox, QFormLayout, QLabel, \
+from PySide2 import QtCore
+from PySide2.QtWidgets import QDoubleSpinBox, QDialog, QPushButton, QWidget, QGroupBox, QFormLayout, QLabel, \
     QDialogButtonBox, QVBoxLayout
 
 from organoid_tracker.core import UserError

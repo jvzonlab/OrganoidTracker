@@ -2,7 +2,7 @@ import re
 from os import path
 from typing import Optional
 
-from PyQt5.QtWidgets import QApplication
+from PySide2.QtWidgets import QApplication
 from matplotlib.figure import Figure
 
 from organoid_tracker.core import UserError
