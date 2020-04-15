@@ -276,8 +276,8 @@ class _MarkPositionAsUncertainAction(UndoableAction):
 
 
 class LinkAndPositionEditor(AbstractEditor):
-    """Editor for cell links and positions. Use the Insert key to insert new cells or links, and Delete to delete
-     them."""
+    """Editor for cell links and positions. Use the Insert or Enter key to insert new cells or links, and use the Delete
+     or Backspace key to delete them."""
 
     _selected1: Optional[Position] = None
     _selected2: Optional[Position] = None
@@ -363,9 +363,9 @@ class LinkAndPositionEditor(AbstractEditor):
         elif event.key == "e":
             position = self._get_position_at(event.xdata, event.ydata)
             self._show_linking_errors(position)
-        elif event.key == "insert":
+        elif event.key == "insert" or event.key == "enter":
             self._try_insert(event)
-        elif event.key == "delete":
+        elif event.key == "delete" or event.key == "backspace":
             self._try_delete()
         elif event.key == "shift":
             if self._selected1 is None or self._selected2 is not None:

@@ -86,9 +86,9 @@ class BeaconEditor(AbstractEditor):
         return self._experiment.beacons.get_beacon_by_index(self._time_point, self._selected_index)
 
     def _on_key_press(self, event: KeyEvent):
-        if event.key == "insert":
+        if event.key == "insert" or event.key == "enter":
             self._try_insert(event)
-        elif event.key == "delete":
+        elif event.key == "delete" or event.key == "backspace":
             self._try_remove()
         else:
             super()._on_key_press(event)

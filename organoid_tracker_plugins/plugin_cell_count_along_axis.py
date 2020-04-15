@@ -3,7 +3,6 @@ from typing import Dict, Any, List, Optional
 from matplotlib.figure import Figure
 
 from organoid_tracker.core import UserError, TimePoint
-from organoid_tracker.core.spline import Spline
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.window import Window

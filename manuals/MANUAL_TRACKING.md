@@ -6,6 +6,8 @@ You cannot edit tracking data from the main screen. Instead, you need to use `Ed
 ### Working with (cell) positions
 To insert positions, make sure you have no cell selected, and then press the Insert key. To delete that cell position again, make sure that you have only selected that cell, and press the Delete key.
 
+You can also use the Enter and Backspace keys as alternatives for the Insert and Delete keys, respectively. Both keys perform exactly the same function, so depending on your keyboard layout, you might find it easier to use one or the other.
+
 If you press Shift while having a single cell selected, that cell will be moved to your mouse psotion. The shape and links of the cell will be preserved.
 
 Undo and Redo functions are available from the Edit menu. You can also use the Control+Z and Control+Y keyboard shortcuts, respectively.

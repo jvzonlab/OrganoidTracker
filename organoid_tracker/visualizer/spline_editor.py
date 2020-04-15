@@ -181,7 +181,7 @@ class SplineEditor(AbstractEditor):
         return f"Axis {axis_id}: {marker.display_name}"
 
     def _on_key_press(self, event: KeyEvent):
-        if event.key == "insert":
+        if event.key == "insert" or event.key == "enter":
             selected_path = self._get_selected_spline_of_current_time_point()
             if selected_path is None:
                 # Time for a new path
@@ -194,7 +194,7 @@ class SplineEditor(AbstractEditor):
                 # Can modify existing path
                 point = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
                 self._perform_action(_AddPointAction(selected_path, point))
-        elif event.key == "delete":
+        elif event.key == "delete" or event.key == "backspace":
             selected_path = self._get_selected_spline_of_current_time_point()
             if selected_path is None:
                 self.update_status("No path selected - cannot delete anything.")
