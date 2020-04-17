@@ -48,7 +48,7 @@ class _TrackExporter:
     def __init__(self, experiment: Experiment):
         self._links = experiment.links
         self._position_data = experiment.position_data
-        self._offsets = experiment.offsets
+        self._offsets = experiment.images.offsets
         self._mother_daughter_pairs = []
         self._dead_track_ids = []
         self._typed_track_ids = dict()
@@ -67,13 +67,14 @@ class _TrackExporter:
         track = track_lib_v4.Track(x=numpy.array([moved_position.x, moved_position.y, moved_position.z]),
                                    t=position.time_point_number())
         position_type = linking_markers.get_position_type(self._position_data, position)
-        track_ids_of_cell_type = self._typed_track_ids.get(position_type)
-        if track_ids_of_cell_type is None:
-            # Start new list
-            self._typed_track_ids[position_type] = [track_id]
-        else:
-            # Append to existing list
-            track_ids_of_cell_type.append(track_id)
+        if position_type is not None:
+            track_ids_of_cell_type = self._typed_track_ids.get(position_type)
+            if track_ids_of_cell_type is None:
+                # Start new list
+                self._typed_track_ids[position_type] = [track_id]
+            else:
+                # Append to existing list
+                track_ids_of_cell_type.append(track_id)
 
         while True:
             future_positions = self._links.find_futures(position)
