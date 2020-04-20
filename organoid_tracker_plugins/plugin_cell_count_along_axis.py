@@ -10,7 +10,7 @@ from organoid_tracker.gui.window import Window
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-         "Graph//Over space-Histogram of cells on crypt axis...": lambda: _view_crypt_axis_positions(window),
+         "Graph//Over space and time-Histogram of cells on crypt axis...": lambda: _view_crypt_axis_positions(window),
     }
 
 
