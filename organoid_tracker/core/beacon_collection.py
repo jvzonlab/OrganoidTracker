@@ -106,7 +106,7 @@ class BeaconCollection:
         return len(beacons_at_time_point) + 1
 
     def get_beacon_by_index(self, time_point: TimePoint, index: int) -> Optional[Position]:
-        """Gets the beacon with the given index at the given time point."""
+        """Gets the beacon with the given index at the given time point. Index 1 is the first beacon."""
         beacons_at_time_point = self._beacons.get(time_point)
         if beacons_at_time_point is None:
             return None

@@ -28,7 +28,7 @@ class SphericalCoordinate:
 
     radius_um: float  # Radius, r >= 0. Read-only.
     theta_degrees: float  # Inclination, 0 <= theta <= 180. Read-only.
-    phi_degrees: float  # Azimuth, 0 <= phi <= 360. Read-only.
+    phi_degrees: float  # Azimuth/longitude, 0 <= phi <= 360. Read-only.
 
     def __init__(self, radius_um: float, theta_degrees: float, phi_degrees: float):
         if radius_um < 0 or theta_degrees < 0 or theta_degrees > 180 or phi_degrees < 0 or phi_degrees > 360:
@@ -63,3 +63,15 @@ class SphericalCoordinate:
 
     def __repr__(self) -> str:
         return f"SphericalCoordinate({self.radius_um}, {self.theta_degrees}, {self.phi_degrees})"
+
+    def angular_difference(self, other: "SphericalCoordinate") -> "SphericalCoordinate":
+        """Gets a spherical coordinate that is the angular difference between self and other. The radius is ignored; the
+        radius of the returned object is always self.radius_um."""
+        phi = self.phi_degrees - other.phi_degrees
+        if phi < 0:
+            phi += 360
+
+        theta = self.theta_degrees
+
+        return SphericalCoordinate(self.radius_um, theta, phi)
+
