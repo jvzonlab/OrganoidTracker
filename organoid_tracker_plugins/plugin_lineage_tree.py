@@ -100,6 +100,12 @@ class LineageTreeVisualizer(Visualizer):
             self.update_status("No longer displaying lineage ids")
         self.draw_view()
 
+    def _get_track_label(self, track: LinkingTrack) -> Optional[str]:
+        """Gets the label that should be displayed for the given track."""
+        if self._display_track_id:
+            return str(self._experiment.links.get_track_id(track))
+        return None
+
     def _set_minimum_divisions(self):
         min_division_count = dialog.prompt_int("Minimum division count",
                                                "How many divisions need to happen in a lineage"
@@ -170,7 +176,7 @@ class LineageTreeVisualizer(Visualizer):
                                                             resolution=resolution,
                                                             location_map=self._location_map,
                                                             lineage_filter=lineage_filter,
-                                                            draw_track_id=self._display_track_id)
+                                                            label_getter=self._get_track_label)
 
         self._ax.set_ylabel("Time (time points)")
         if self._ax.get_xlim() == (0, 1):
