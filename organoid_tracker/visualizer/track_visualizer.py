@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Set
 
 import matplotlib.cm
 from matplotlib.backend_bases import KeyEvent, MouseEvent
@@ -11,9 +11,12 @@ from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.resolution import ImageResolution
+from organoid_tracker.core.typing import MPLColor
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.window import Window, DisplaySettings
 from organoid_tracker.linking_analysis import linking_markers
+from organoid_tracker.linking_analysis.lineage_drawing import LineageDrawing
+from organoid_tracker.util.mpl_helper import SANDER_APPROVED_COLORS
 from organoid_tracker.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 
 
@@ -171,6 +174,7 @@ class TrackVisualizer(ExitableImageVisualizer):
             "Graph//Over time-Displacement over time...": self._show_displacement,
             "Graph//Over time-Axes positions over time...": self._show_data_axes_locations,
             "Graph//Over time-Volume over time...": self._show_volumes,
+            "Graph//Visualization-Lineage tree...": self._show_lineage_tree
         }
 
     def _show_displacement(self):
@@ -223,11 +227,61 @@ class TrackVisualizer(ExitableImageVisualizer):
             axes.set_title("Volume of the cells")
             for i, lineage in enumerate(self._selected_lineages):
                 for track in lineage.find_all_tracks():
-                    _plot_volume(axes, self._experiment.positions, track, i + 1)
+                    _plot_volume(axes, self._experiment.position_data, track, i + 1)
             if len(self._selected_lineages) > 1:
                 axes.legend()
 
         dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
+
+    def _show_lineage_tree(self):
+        lineage_drawing = LineageDrawing(self._experiment.links)
+        tracks = self._find_lineage_tracks()
+
+        def lineage_filter(track: LinkingTrack) -> bool:
+            return track in tracks
+
+        def color_getter(time_point_number: int, track: LinkingTrack) -> MPLColor:
+            position = track.find_position_at_time_point_number(time_point_number)
+            for i, lineage in enumerate(self._selected_lineages):
+                if lineage.contains_position(position):
+                    return tuple(SANDER_APPROVED_COLORS[i % len(SANDER_APPROVED_COLORS)])
+            return "black"
+
+        def label_getter(track: LinkingTrack) -> Optional[str]:
+            if len(track.get_previous_tracks()) != 0:
+                return None  # Not a start of a lineage, don't label
+            position = track.find_first_position()
+            for i, lineage in enumerate(self._selected_lineages):
+                if lineage.contains_position(position):
+                    return str(i + 1)
+            return None
+
+        def draw_function(figure: Figure):
+            experiment = self._experiment
+            axes: Axes = figure.gca()
+            width = lineage_drawing.draw_lineages_colored(axes, color_getter=color_getter,
+                                                          lineage_filter=lineage_filter,
+                                                          label_getter=label_getter)
+            axes.set_xlim(-1, width + 1)
+            axes.set_ylim([experiment.last_time_point_number(), experiment.first_time_point_number() - 1])
+            axes.set_ylabel("Time point")
+            axes.set_xticks([])
+
+        dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
+
+    def _find_lineage_tracks(self) -> Set[LinkingTrack]:
+        """Finds all linking tracks in the same lineage, including sisters, daughters, etc."""
+        links = self._experiment.links
+        result = set()
+
+        for lineage in self._selected_lineages:
+            for starting_track in lineage.find_starting_tracks():
+                starting_position = starting_track.find_first_position()
+                track = links.get_track(starting_position)
+                if track is not None:
+                    result |= set(track.find_all_descending_tracks(include_self=True))
+        return result
+
 
     def _on_command(self, command: str) -> bool:
         if command == "exit":
