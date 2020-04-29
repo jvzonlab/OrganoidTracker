@@ -118,6 +118,15 @@ class LinkingTrack:
         """Gets the time length of the track, in number of time points."""
         return len(self._positions_by_time_point)
 
+    def __hash__(self) -> int:
+        return hash(self._positions_by_time_point[0])
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, LinkingTrack):
+            return False
+        if other._min_time_point_number != self._min_time_point_number:
+            return False
+        return other._positions_by_time_point == self._positions_by_time_point
 
 class Links:
     """Represents all links between positions at different time points. This is used to follow particles over time. If a
