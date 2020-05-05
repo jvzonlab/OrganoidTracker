@@ -4,6 +4,9 @@ import matplotlib.cm
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 from matplotlib.figure import Figure, Axes
 
+from organoid_tracker.coordinate_system import orientation_spline_adder, sphere_representer
+from organoid_tracker.coordinate_system.orientation_spline_adder import ColoredTrackAdder
+from organoid_tracker.coordinate_system.sphere_representer import SphereRepresentation
 from organoid_tracker.core import UserError, TimePoint
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import Links, LinkingTrack
@@ -174,7 +177,8 @@ class TrackVisualizer(ExitableImageVisualizer):
             "Graph//Over time-Displacement over time...": self._show_displacement,
             "Graph//Over time-Axes positions over time...": self._show_data_axes_locations,
             "Graph//Over time-Volume over time...": self._show_volumes,
-            "Graph//Visualization-Lineage tree...": self._show_lineage_tree
+            "Graph//Visualization-Lineage tree...": self._show_lineage_tree,
+            "Graph//Visualization-Projection on sphere...": self._show_sphere
         }
 
     def _show_displacement(self):
@@ -266,6 +270,20 @@ class TrackVisualizer(ExitableImageVisualizer):
             axes.set_ylim([experiment.last_time_point_number(), experiment.first_time_point_number() - 1])
             axes.set_ylabel("Time point")
             axes.set_xticks([])
+
+        dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
+
+    def _show_sphere(self):
+        experiment = self._experiment
+        sphere_representation = SphereRepresentation(experiment.beacons, 1, experiment.images.resolution())
+        orientation_spline_adder.add_all_splines(sphere_representation, experiment.splines)
+        track_adder = ColoredTrackAdder(experiment)
+        for lineage in self._selected_lineages:
+            for track in lineage.find_all_tracks():
+                track_adder.add_track_colored_by_spline_position(sphere_representation, track.positions())
+
+        def draw_function(figure: Figure):
+            sphere_representer.setup_figure_3d(figure, sphere_representation)
 
         dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
 

@@ -1,5 +1,6 @@
 from typing import Iterable, List, Optional, Dict
 
+from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 
 from organoid_tracker.coordinate_system.spherical_coordinates import SphericalCoordinate
@@ -157,3 +158,26 @@ class SphereRepresentation:
             y_list.append(draw_coords.y + center.y)
             z_list.append(draw_coords.z + center.z)
         ax.scatter(x_list, y_list, z_list, color=colors, **kwargs)
+
+
+def setup_figure_3d(figure: Figure, sphere_representation: SphereRepresentation):
+    from mpl_toolkits.mplot3d import Axes3D
+    # Right now, this ignores the fact that there may be multiple spheres, and just plots everything on a single sphere
+
+    # noinspection PyTypeChecker
+    ax: Axes3D = figure.add_subplot(111, projection='3d')
+
+    sphere_representation.draw_3d(ax, Vector3(0, 0, 0))
+
+    ax.set_xticks([-1, 1])
+    ax.set_yticks([-1, 1])
+    ax.set_zticks([-1, 1])
+    ax.set_xticklabels(["-", "+"])
+    ax.set_yticklabels(["-", "+"])
+    ax.set_zticklabels(["-", "+"])
+    ax.set_xlim([-1, 1])
+    ax.set_ylim([1, -1])
+    ax.set_zlim([1, -1])
+    ax.set_xlabel('X-axis')
+    ax.set_ylabel('Y-axis')
+    ax.set_zlabel('Z-axis')
