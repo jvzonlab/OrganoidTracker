@@ -5,4 +5,4 @@ from PySide2.QtGui import QIcon
 
 
 def get_icon(file_name: str) -> QIcon:
-    return QIcon(path.join(path.dirname(path.abspath(sys.argv[0])), 'organoid_tracker', 'icons', file_name))
+    return QIcon(path.join(path.dirname(path.dirname(path.abspath(__file__))), "icons", file_name))

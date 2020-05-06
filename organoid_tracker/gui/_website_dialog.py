@@ -13,7 +13,7 @@ from organoid_tracker.core import UserError
 from organoid_tracker.gui.website import Website
 
 _MANUALS_FOLDER = "manuals"
-_MANUALS_FOLDER_ABSOLUTE = path.join(path.dirname(path.abspath(sys.argv[0])), _MANUALS_FOLDER)
+_MANUALS_FOLDER_ABSOLUTE = path.join(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))), _MANUALS_FOLDER)
 _MAIN_MANUAL = "INDEX.md"
 _SCROLL_AREA_PALETTE = QPalette()
 _SCROLL_AREA_PALETTE.setColor(QPalette.Background, QtCore.Qt.white)
