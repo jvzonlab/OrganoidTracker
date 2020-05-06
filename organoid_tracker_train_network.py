@@ -59,7 +59,7 @@ while True:
                                                  " representing the time point, use {channel} for the channel)")
     channels_str = config.get_or_default(f"image_channels_{i}", "1", comment="What image channels are used? For"
                                          " example, use 1,2,4 to train on the sum of the 1st, 2nd and 4th channel.")
-    params.images_channels = {int(part) for part in ",".split(channels_str)}
+    params.images_channels = {int(part) for part in channels_str.split(",")}
     params.training_positions_file = config.get_or_default(f"positions_file_{i}",
                                                            f"positions_{i}.{io.FILE_EXTENSION}",
                                                            comment="What are the detected positions for those images?")
