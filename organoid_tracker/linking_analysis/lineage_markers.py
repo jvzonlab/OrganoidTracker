@@ -1,6 +1,4 @@
 """High-level API for handling the lineage metadata."""
-from typing import Optional
-
 from organoid_tracker.core import Color
 from organoid_tracker.core.links import LinkingTrack, Links
 

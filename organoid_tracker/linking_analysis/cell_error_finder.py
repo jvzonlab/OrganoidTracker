@@ -19,10 +19,6 @@ from organoid_tracker.linking_analysis.linking_markers import EndMarker
 def find_errors_in_experiment(experiment: Experiment) -> int:
     """Adds errors for all logical inconsistencies in the graph, like cells that spawn out of nowhere, cells that
     merge together and cells that have three or more daughters. Returns the amount of errors."""
-    links = experiment.links
-    scores = experiment.scores
-    positions = experiment.positions
-    resolution = experiment.images.resolution()
     position_data = experiment.position_data
 
     count = 0
@@ -98,8 +94,7 @@ def get_error(experiment: Experiment, position: Position) -> Optional[Error]:
         # Check movement distance (fast movement is only allowed when a cell is launched into its death)
         distance_moved_um_per_m = past_position.distance_um(position, resolution) / resolution.time_point_interval_m
         if distance_moved_um_per_m > warning_limits.max_distance_moved_um_per_min:
-            end_marker = linking_markers.get_track_end_marker(position_data, position)
-            if end_marker != EndMarker.DEAD and end_marker != EndMarker.SHED:
+            if linking_markers.is_live(position_data, position):
                 return Error.MOVED_TOO_FAST
     return None
 

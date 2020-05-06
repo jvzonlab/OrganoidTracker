@@ -15,6 +15,7 @@ class EndMarker(Enum):
     DEAD = 1
     OUT_OF_VIEW = 2
     SHED = 3
+    SHED_OUTSIDE = 4
 
     def get_display_name(self):
         """Gets a user-friendly display name."""
@@ -42,7 +43,7 @@ def get_track_end_marker(position_data: PositionData, position: Position) -> Opt
 def is_live(position_data: PositionData, position: Position) -> bool:
     """Returns true if the position is a live cell, i.e. it does not have a shed or death marker."""
     end_marker = get_track_end_marker(position_data, position)
-    return end_marker != EndMarker.DEAD and end_marker != EndMarker.SHED
+    return end_marker != EndMarker.DEAD and end_marker != EndMarker.SHED and end_marker != EndMarker.SHED_OUTSIDE
 
 
 def set_track_end_marker(position_data: PositionData, position: Position, end_marker: Optional[EndMarker]):
@@ -57,22 +58,24 @@ def find_death_and_shed_positions(links: Links, position_data: PositionData) -> 
     """Gets all positions that were marked as a cell death or a cell shedding event."""
     death_marker = EndMarker.DEAD.name.lower()
     shed_marker = EndMarker.SHED.name.lower()
+    shed_outside_marker = EndMarker.SHED_OUTSIDE.name.lower()
     for position, ending_marker in position_data.find_all_positions_with_data("ending"):
         if len(links.find_futures(position)) > 0:
             continue  # Not actually ending, ending marker is useless
 
-        if ending_marker == death_marker or ending_marker == shed_marker:
+        if ending_marker == death_marker or ending_marker == shed_marker or ending_marker == shed_outside_marker:
             yield position
 
 
 def find_shed_positions(links: Links, position_data: PositionData) -> Iterable[Position]:
     """Gets all positions that were marked as a cell shedding event."""
     shed_marker = EndMarker.SHED.name.lower()
+    shed_outside_marker = EndMarker.SHED_OUTSIDE.name.lower()
     for position, ending_marker in position_data.find_all_positions_with_data("ending"):
         if len(links.find_futures(position)) > 0:
             continue  # Not actually ending, ending marker is useless
 
-        if ending_marker == shed_marker:
+        if ending_marker == shed_marker or ending_marker == shed_outside_marker:
             yield position
 
 
