@@ -110,6 +110,7 @@ def _generate_training_config(window: Window):
 
         config.get_or_default(f"images_container_{i}", image_loader.serialize_to_config()[0])
         config.get_or_default(f"images_pattern_{i}", image_loader.serialize_to_config()[1])
+        config.get_or_default(f"images_channels_{i}", "1")
         config.get_or_default(f"min_time_point_{i}", str(experiment.positions.first_time_point_number()))
         config.get_or_default(f"max_time_point_{i}", str(experiment.positions.last_time_point_number()))
         config.get_or_default(f"positions_file_{i}", positions_file)

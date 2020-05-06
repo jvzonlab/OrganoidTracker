@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 """Script used to train the convolutional neural network, so that it can recognize nuclei in 3D images."""
+from typing import Set, Tuple
 from os import path
 import os
 
 from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int
 from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.image_loading.channel_merging_image_loader import ChannelMergingImageLoader
 from organoid_tracker.imaging import io
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.position_detection_cnn import training_data_creator, trainer
@@ -15,6 +17,7 @@ from organoid_tracker.position_detection_cnn import training_data_creator, train
 class _PerExperimentParameters:
     images_container: str
     images_pattern: str
+    images_channels: Set[int]
     min_time_point: int
     max_time_point: int
     training_positions_file: str
@@ -23,6 +26,12 @@ class _PerExperimentParameters:
         experiment = io.load_data_file(self.training_positions_file, self.min_time_point, self.max_time_point)
         general_image_loader.load_images(experiment, self.images_container, self.images_pattern,
                                          min_time_point=self.min_time_point, max_time_point=self.max_time_point)
+        if self.images_channels != {1}:
+            # Replace the first channel
+            old_channels = experiment.images.get_channels()
+            new_channels = [old_channels[index - 1] for index in self.images_channels]
+            channel_merging_image_loader = ChannelMergingImageLoader(experiment.images.image_loader(), [new_channels])
+            experiment.images.image_loader(channel_merging_image_loader)
         return experiment
 
 
@@ -48,6 +57,9 @@ while True:
     params.images_pattern = config.get_or_prompt(f"images_pattern_{i}",
                                                  "What are the image file names? (Use {time:03} for three digits"
                                                  " representing the time point, use {channel} for the channel)")
+    channels_str = config.get_or_default(f"image_channels_{i}", "1", comment="What image channels are used? For"
+                                         " example, use 1,2,4 to train on the sum of the 1st, 2nd and 4th channel.")
+    params.images_channels = {int(part) for part in ",".split(channels_str)}
     params.training_positions_file = config.get_or_default(f"positions_file_{i}",
                                                            f"positions_{i}.{io.FILE_EXTENSION}",
                                                            comment="What are the detected positions for those images?")
