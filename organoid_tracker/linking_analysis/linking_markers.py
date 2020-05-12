@@ -17,6 +17,10 @@ class EndMarker(Enum):
     SHED = 3
     SHED_OUTSIDE = 4
 
+    @staticmethod
+    def is_shed(marker: Optional["EndMarker"]) -> bool:
+        return marker == EndMarker.SHED or marker == EndMarker.SHED_OUTSIDE
+
     def get_display_name(self):
         """Gets a user-friendly display name."""
         return self.name.lower().replace("_", " ")

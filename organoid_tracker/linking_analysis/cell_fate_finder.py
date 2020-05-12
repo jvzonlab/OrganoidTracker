@@ -57,7 +57,7 @@ def get_fate_ext(links: Links, position_data: PositionData, division_lookahead_t
             # Actual cell death
             time_points_remaining = track.max_time_point_number() - position.time_point_number()
             return CellFate(CellFateType.WILL_DIE, time_points_remaining)
-        elif marker == EndMarker.SHED:
+        elif EndMarker.is_shed(marker):
             # Cell shedding
             time_points_remaining = track.max_time_point_number() - position.time_point_number()
             return CellFate(CellFateType.WILL_SHED, time_points_remaining)

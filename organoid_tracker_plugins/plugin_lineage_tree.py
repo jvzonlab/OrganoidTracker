@@ -153,7 +153,7 @@ class LineageTreeVisualizer(Visualizer):
                 end_marker = linking_markers.get_track_end_marker(position_data, track.find_last_position())
                 if end_marker == EndMarker.DEAD:
                     return 1, 0, 0
-                elif end_marker == EndMarker.SHED:
+                elif EndMarker.is_shed(end_marker):
                     return 0, 0, 1
             if self._display_manual_colors:
                 color = self._track_to_manual_color.get(track)

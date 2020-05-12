@@ -89,8 +89,7 @@ class _TrackExporter:
                 self._add_track_including_child_tracks(daughter_2, track_id_2)
                 break
             if len(future_positions) == 0:
-                end_marker = linking_markers.get_track_end_marker(self._position_data, position)
-                if end_marker == EndMarker.DEAD or end_marker == EndMarker.SHED:
+                if not linking_markers.is_live(self._position_data, position):
                     # Actual cell dead, mark as such
                     self._dead_track_ids.append(track_id)
                 break  # End of track
