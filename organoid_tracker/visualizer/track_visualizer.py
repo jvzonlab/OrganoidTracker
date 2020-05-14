@@ -300,12 +300,18 @@ class TrackVisualizer(ExitableImageVisualizer):
                     result |= set(track.find_all_descending_tracks(include_self=True))
         return result
 
+    def _is_selected(self, position: Position) -> bool:
+        """Checks if the given position is currently part of a selected track."""
+        for i, lineage in enumerate(self._selected_lineages):
+            if lineage.contains_position(position):
+                return True
+        return False
 
-    def _on_command(self, command: str) -> bool:
-        if command == "exit":
-            self._exit_view()
-            return True
-        return super()._on_command(command)
+    def _move_to_position(self, position: Position) -> bool:
+        # Select that lineage
+        if not self._is_selected(position):
+            self._selected_lineages.append(_get_lineage(self._experiment.links, position))
+        return super()._move_to_position(position)
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "t":
