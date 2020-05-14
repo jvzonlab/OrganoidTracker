@@ -11,7 +11,7 @@ from organoid_tracker.visualizer.exitable_image_visualizer import ExitableImageV
 
 def _lineage_fate_to_text(lineage_fate: Optional[LineageFate]):
     # Special cases
-    if lineage_fate is None or lineage_fate.errors > 0:
+    if lineage_fate is None or lineage_fate.tracks == 0:
         return "?"
     if lineage_fate.deaths == 1 and lineage_fate.sheds == 0 and lineage_fate.divisions == 0:
         return "X"
@@ -50,8 +50,8 @@ class LineageFateVisualizer(ExitableImageVisualizer):
     def _calculate_time_point_metadata(self):
         super()._calculate_time_point_metadata()
 
-        self._update_deaths_and_divisions(time_point)
-        self._update_axis_positions(time_point)
+        self._update_deaths_and_divisions(self._time_point)
+        self._update_axis_positions(self._time_point)
 
     def _update_deaths_and_divisions(self, time_point: TimePoint):
         # Check what lineages contain errors
