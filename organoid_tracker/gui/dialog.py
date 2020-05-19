@@ -3,7 +3,7 @@ import subprocess as _subprocess
 import sys as _sys
 import traceback as _traceback
 from enum import Enum
-from typing import Tuple, List, Optional, Callable, ClassVar, Any, Dict
+from typing import Tuple, List, Optional, Callable, Any, Dict
 
 from PySide2 import QtCore
 from PySide2.QtGui import QCloseEvent, QColor
@@ -15,7 +15,7 @@ from matplotlib.figure import Figure
 
 from organoid_tracker.core import UserError, Name, CM_TO_INCH, Color
 from organoid_tracker.gui.gui_experiment import GuiExperiment
-from organoid_tracker.gui.website import Website
+from organoid_tracker.text_popup.text_popup import RichTextPopup
 from organoid_tracker.gui.window import Window
 
 
@@ -324,11 +324,12 @@ def open_file(filepath: str):
 
 def popup_manual():
     """Shows the manual of the program."""
-    from organoid_tracker.gui import _website_dialog
-    _website_dialog.show_help(_window())
+    from organoid_tracker.gui import _rich_text_dialog
+    from organoid_tracker.text_popup import help_popup
+    _rich_text_dialog.show_popup(_window(), help_popup.HelpPopup())
 
 
-def popup_website(website: Website):
-    from organoid_tracker.gui import _website_dialog
-    _website_dialog.show_website(_window(), website)
-
+def popup_rich_text(text: RichTextPopup):
+    """Pops up a rich text window, so that you can easily show dialogs with text, links and images."""
+    from organoid_tracker.gui import _rich_text_dialog
+    _rich_text_dialog.show_popup(_window(), text)

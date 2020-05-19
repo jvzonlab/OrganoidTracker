@@ -5,7 +5,7 @@ from organoid_tracker.core import UserError, COLOR_CELL_CURRENT
 from organoid_tracker.core.position import Position
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.dialog import DefaultOption
-from organoid_tracker.gui.website import Website
+from organoid_tracker.text_popup.text_popup import RichTextPopup
 from organoid_tracker.gui.window import Window
 from organoid_tracker.visualizer import activate
 from organoid_tracker.visualizer.exitable_image_visualizer import ExitableImageVisualizer
@@ -49,7 +49,7 @@ class _ComparisonVisualizer(ExitableImageVisualizer):
             self._draw_selection(position, COLOR_CELL_CURRENT)
 
 
-class _ComparisonSite(Website):
+class _ComparisonTextPopup(RichTextPopup):
     """Text-based overview of the report."""
 
     _window: Window  # The main window
@@ -63,7 +63,7 @@ class _ComparisonSite(Website):
         return self._report.title
 
     def navigate(self, url: str) -> Optional[str]:
-        if url == Website.INDEX:
+        if url == RichTextPopup.INDEX:
             return self._main_page()
         if url.startswith("category/"):
             category = Category(url[len("category/"):])
@@ -137,7 +137,7 @@ class _ComparisonSite(Website):
 
     def _category_page(self, category: Category) -> str:
         """Renders the category page, which shows a list of all positions."""
-        text = "# "+ category.name + "\n\n[← Back to main page](" + Website.INDEX + ")\n\n"
+        text = "# " + category.name + "\n\n[← Back to main page](" + RichTextPopup.INDEX + ")\n\n"
         text += f"[Highlight positions](visualize_category/{category.name})\n"
 
         count = 0
@@ -185,4 +185,4 @@ def _x_y_z_t(position: Position) -> str:
 
 
 def _popup_comparison_report(window: Window, report: ComparisonReport):
-    dialog.popup_website(_ComparisonSite(window, report))
+    dialog.popup_rich_text(_ComparisonTextPopup(window, report))

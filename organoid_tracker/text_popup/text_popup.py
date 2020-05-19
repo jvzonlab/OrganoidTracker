@@ -2,9 +2,9 @@ from abc import ABC
 from typing import Optional
 
 
-class Website(ABC):
-    """Represents a "website" (a collection of HTML pages), shown using dialog.show_website(). The help files are one
-    example of a Website. If you need to build a quick GUI with text, """
+class RichTextPopup(ABC):
+    """Represents a "rich text popup" (a collection of HTML pages), shown using dialog.popup_rich_text(). The help files
+    are one example of a RichTextPopup. If you need to build a quick GUI with text, this class could help you."""
 
     INDEX = "index"  # The first page that is loaded
 

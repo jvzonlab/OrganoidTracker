@@ -1,20 +1,14 @@
 """Shows a "website" (multiple HTML files, see the Website class) in a popup window. Used by dialog.show_website()."""
 
-import sys
 from os import path
-from typing import Optional
 
 from PySide2 import QtCore
 from PySide2.QtCore import QUrl
 from PySide2.QtGui import QPalette
 from PySide2.QtWidgets import QMainWindow, QWidget, QTextBrowser
 
-from organoid_tracker.core import UserError
-from organoid_tracker.gui.website import Website
+from organoid_tracker.text_popup.text_popup import RichTextPopup
 
-_MANUALS_FOLDER = "manuals"
-_MANUALS_FOLDER_ABSOLUTE = path.join(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))), _MANUALS_FOLDER)
-_MAIN_MANUAL = "INDEX.md"
 _SCROLL_AREA_PALETTE = QPalette()
 _SCROLL_AREA_PALETTE.setColor(QPalette.Background, QtCore.Qt.white)
 _DOCUMENT_STYLE = """
@@ -23,45 +17,19 @@ font-family: Georgia, "Times New Roman", serif;
 """
 
 
-def _file_get_contents(file_name: str):
-    with open(file_name, encoding="utf8") as file:
-        return file.read()
-
-
-class _HelpWebsite(Website):
-
-    def get_root_folder(self) -> str:
-        return _MANUALS_FOLDER
-
-    def get_title(self) -> str:
-        return "Manual"
-
-    def navigate(self, url: str) -> Optional[str]:
-        if url == Website.INDEX:
-            url = _MAIN_MANUAL
-
-        if ":" in url or ".." in url:
-            raise UserError("Unhandled URL", "Don't know how to open " + url)
-
-        file = path.join(_MANUALS_FOLDER_ABSOLUTE, url)
-        if not path.isfile(file):
-            raise UserError("File not found", url + " does not exist")
-        return _file_get_contents(file)
-
-
 class _HtmlWindow(QMainWindow):
 
     _text_view: QTextBrowser
-    _website: Website
+    _website: RichTextPopup
 
-    def __init__(self, parent: QWidget, website: Website):
+    def __init__(self, parent: QWidget, website: RichTextPopup):
         super().__init__(parent)
         self._website = website
 
         self.setMinimumSize(800, 600)
         self.setWindowTitle(website.get_title())
 
-        html = _markdown_to_styled_html(website.navigate(Website.INDEX), relative_to_folder=website.get_root_folder())
+        html = _markdown_to_styled_html(website.navigate(RichTextPopup.INDEX), relative_to_folder=website.get_root_folder())
 
         # Setup scrollable layout
         self._text_view = QTextBrowser(self)
@@ -86,11 +54,7 @@ class _HtmlWindow(QMainWindow):
             dialog.popup_exception(e)
 
 
-def show_help(parent: QWidget):
-    _HtmlWindow(parent, _HelpWebsite())
-
-
-def show_website(parent: QWidget, website: Website):
+def show_popup(parent: QWidget, website: RichTextPopup):
     _HtmlWindow(parent, website)
 
 
