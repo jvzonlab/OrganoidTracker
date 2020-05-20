@@ -32,6 +32,11 @@ Editing the source code
 Install the program as normal, and then point your Python editor (I recommend Pycharm or Visual Studio Code) to this directory. Make sure to select the `organoid_tracker` Anaconda environment as the Python environment.
 
 
+License and reuse
+-----------------
+The [files dealing with the neural network](organoid_tracker/position_detection_cnn) are licensed under the MIT license. This is indicated at the top of those files. Other files are licensed under the [GPL license](LICENSE.txt). Please cite the [pre-print on bioRxiv] if you're using this work.
+
+
 [API]: manuals/API.md
 [installation]: manuals/INSTALLATION.md
 [manual]: manuals/INDEX.md
