@@ -646,7 +646,7 @@ class Links:
     def get_position_near_time_point(self, position: Position, time_point: TimePoint) -> Position:
         """Follows the position backwards or forwards in time through the linking network, until a position as close as
         possible to the specified time has been reached. If the given position has no links, the same position will just
-        be returned. If a cell divides, an arbritrary daughter cell will be picked.
+        be returned. If a cell divides, an arbitrary daughter cell will be picked.
 
         See `particle_movement_finder.find_future_positions_at` if you need an accurate list of all future positions at a
         certain time point in the future."""
