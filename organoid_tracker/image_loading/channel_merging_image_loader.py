@@ -38,19 +38,6 @@ class _MergedImageChannel(ImageChannel):
         return hash(self._channels)
 
 
-def _add_and_return_8bit(a: ndarray, b: ndarray) -> ndarray:
-    """Adds the two arrays. First, the arrays are scaled to 8bit if they aren't already, and then they are added without
-    overflow issues: 240 + 80 is capped at 255."""
-    a = bits.ensure_8bit(a)
-    b = bits.ensure_8bit(b)
-
-    # https://stackoverflow.com/questions/29611185/avoid-overflow-when-adding-numpy-arrays
-    b = 255 - b  # old b is gone shortly after new array is created
-    numpy.putmask(a, b < a, b)  # a temp bool array here, then it's gone
-    a += 255 - b  # a temp array here, then it's gone
-    return a
-
-
 class ChannelMergingImageLoader(ImageLoader):
     """Sums multiple channels, which is useful to enhance an image."""
     _image_loader: ImageLoader
@@ -77,7 +64,7 @@ class ChannelMergingImageLoader(ImageLoader):
                 image = returned_image
                 continue
             # Need to merge two images
-            image = _add_and_return_8bit(image, returned_image)
+            image = bits.add_and_return_8bit(image, returned_image)
         return image
 
     def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
@@ -95,7 +82,7 @@ class ChannelMergingImageLoader(ImageLoader):
                 image = returned_image
                 continue
             # Need to merge two images
-            image = _add_and_return_8bit(image, returned_image)
+            image = bits.add_and_return_8bit(image, returned_image)
         return image
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:

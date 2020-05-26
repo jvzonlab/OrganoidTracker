@@ -16,3 +16,16 @@ def ensure_8bit(image: ndarray):
     if image.dtype == numpy.uint8:
         return image
     return image_to_8bit(image)
+
+
+def add_and_return_8bit(a: ndarray, b: ndarray) -> ndarray:
+    """Adds the two arrays. First, the arrays are scaled to 8bit if they aren't already, and then they are added without
+    overflow issues: 240 + 80 is capped at 255."""
+    a = ensure_8bit(a)
+    b = ensure_8bit(b)
+
+    # https://stackoverflow.com/questions/29611185/avoid-overflow-when-adding-numpy-arrays
+    b = 255 - b  # old b is gone shortly after new array is created
+    numpy.putmask(a, b < a, b)  # a temp bool array here, then it's gone
+    a += 255 - b  # a temp array here, then it's gone
+    return a
