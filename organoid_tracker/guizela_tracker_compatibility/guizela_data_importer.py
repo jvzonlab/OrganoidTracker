@@ -111,6 +111,8 @@ def _read_lineage_file(tracks_dir: str, links: Links, tracks: List[Track], min_t
     """Connects the lineages in the graph based on information from the lineages.p file"""
     print("Reading lineages file")
     lineage_file = os.path.join(tracks_dir, "lineages.p")
+    if not os.path.exists(lineage_file):
+        return
     with open(lineage_file, "rb") as file_handle:
         lineages = pickle.load(file_handle, encoding='latin1')
         for lineage in lineages:

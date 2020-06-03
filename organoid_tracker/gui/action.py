@@ -123,7 +123,7 @@ def load_tracking_data(window: Window):
         (io.FILE_EXTENSION.upper() + " file", "*." + io.FILE_EXTENSION),
         ("Detection or linking files", "*.json"),
         ("Cell tracking challenge files", "*.txt"),
-        ("Guizela's tracking files", "lineages.p")])
+        ("Guizela's tracking files", "track_00000.p")])
     if file_name is None:
         return  # Cancelled
 
