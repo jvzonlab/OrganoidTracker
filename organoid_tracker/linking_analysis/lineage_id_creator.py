@@ -8,6 +8,7 @@ from typing import Tuple
 
 import matplotlib.cm, matplotlib.colors
 
+from organoid_tracker.core import Color
 from organoid_tracker.core.links import Links, LinkingTrack
 from organoid_tracker.core.position import Position
 
@@ -33,18 +34,18 @@ def get_original_track_id(links: Links, position: Position) -> int:
     return track_id
 
 
-def generate_color_for_lineage_id(track_id: int) -> Tuple[float, float, float]:
-    """Gets the RGB color (from 0 to 1) that the given lineage tree should be drawn in. The id must be a track id or a
+def generate_color_for_lineage_id(track_id: int) -> Color:
+    """Gets the RGB color (three numbers from 0 to 1) that the given lineage tree should be drawn in. The id must be a track id or a
     lineage id."""
     if track_id == -1:
-        return 1, 1, 1  # Returns white for tracks without a lineage
+        return Color.black()  # Returns black for tracks without a lineage
 
     _RANDOM.seed(track_id ** 3)
 
     hue = _RANDOM.random()
     saturation = 0.3 + _RANDOM.random() * 0.7
     value = 0.3 + _RANDOM.random() * 0.7
-    return tuple(matplotlib.colors.hsv_to_rgb((hue, saturation, value)))
+    return Color.from_rgb_floats(*matplotlib.colors.hsv_to_rgb((hue, saturation, value)))
 
 
 def get_lineage_id(links: Links, position: Position) -> int:

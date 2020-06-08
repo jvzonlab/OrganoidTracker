@@ -86,6 +86,11 @@ class Color:
         return Color(rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff)
 
     @staticmethod
+    def from_rgb_floats(red: float, green: float, blue: float) -> "Color":
+        """Creates a color using a RGB float color, for example (1.0, 1.0, 1.0) for white."""
+        return Color(int(round(red * 255)), int(round(green * 255)), int(round(blue * 255)))
+
+    @staticmethod
     def white():
         """Returns a fully white color."""
         return Color(255, 255, 255)

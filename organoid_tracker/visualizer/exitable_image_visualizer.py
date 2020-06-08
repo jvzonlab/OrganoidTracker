@@ -24,7 +24,6 @@ class ExitableImageVisualizer(AbstractImageVisualizer):
         }
 
     def _exit_view(self):
-        from organoid_tracker.visualizer.standard_image_visualizer import StandardImageVisualizer
         image_visualizer = self._parent_viewer(self._window)
         activate(image_visualizer)
 
