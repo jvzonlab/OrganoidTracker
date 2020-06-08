@@ -30,7 +30,7 @@ def _load_links(experiment: Experiment, tracks_dir: str, min_time_point: int = 0
     position_data = experiment.position_data
 
     # Read tracks and divisions for links
-    tracks = _read_track_files(tracks_dir, links, min_time_point=min_time_point, max_time_point=max_time_point)
+    tracks = _read_track_files(tracks_dir, experiment, min_time_point=min_time_point, max_time_point=max_time_point)
     _read_lineage_file(tracks_dir, links, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
 
     # Also add as positions
@@ -77,7 +77,7 @@ def add_data_to_experiment(experiment: Experiment, tracks_dir: str, min_time_poi
     _load_crypt_axis(tracks_dir, experiment.positions, experiment.splines, min_time_point, max_time_point)
 
 
-def _read_track_files(tracks_dir: str, links: Links, min_time_point: int = 0, max_time_point: int = 5000
+def _read_track_files(tracks_dir: str, experiment: Experiment, min_time_point: int = 0, max_time_point: int = 5000
                       ) -> List[Track]:
     """Adds all tracks to the graph, and returns the original tracks"""
     track_files = os.listdir(tracks_dir)
@@ -99,7 +99,7 @@ def _read_track_files(tracks_dir: str, links: Links, min_time_point: int = 0, ma
             print("Reading track " + str(track_index))
 
         # Note that the first track will get id 0, the second id 1, etc. This is required for the lineages file
-        tracks.append(_extract_links_from_track(track_file, links, min_time_point=min_time_point, max_time_point=max_time_point))
+        tracks.append(_extract_links_from_track(track_file, experiment, min_time_point=min_time_point, max_time_point=max_time_point))
 
         track_index += 1
 
@@ -188,8 +188,10 @@ def _get_cell_in_time_point(track: Track, time_point_number: int) -> Optional[Po
     return Position(position_array[0], position_array[1], position_array[2], time_point_number=time_point_number)
 
 
-def _extract_links_from_track(track_file: str, links: Links, min_time_point: int = 0,
+def _extract_links_from_track(track_file: str, experiment: Experiment, min_time_point: int = 0,
                               max_time_point: int = 5000) -> Track:
+    links = experiment.links
+    positions = experiment.positions
     with open(track_file, "rb") as file_handle:
         track = pickle.load(file_handle, encoding='latin1')
         current_position = None
@@ -204,6 +206,7 @@ def _extract_links_from_track(track_file: str, links: Links, min_time_point: int
                 print("Warning: found invalid " + str(current_position))
                 continue
 
+            positions.add(current_position)
             if previous_position is not None:
                 while previous_position.time_point_number() < current_position.time_point_number() - 1:
                     temp_position = previous_position.with_time_point_number(previous_position.time_point_number() + 1)
