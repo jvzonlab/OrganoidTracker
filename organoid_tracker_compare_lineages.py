@@ -2,7 +2,7 @@
 
 """Compares two linking results on the level of lineages, so that missing cell deaths and divisions will be reported.
 The baseline links are assumed to be 100% correct, any deviations from that are counted as errors."""
-from organoid_tracker.comparison import lineage_comparison, report_io
+from organoid_tracker.comparison import lineage_comparison, report_json_io
 from organoid_tracker.config import ConfigFile, config_type_json_file
 from organoid_tracker.imaging import io
 
@@ -26,7 +26,7 @@ baseline_experiment = io.load_data_file(_baseline_links_file, _min_time_point, _
 print("Comparing...")
 report = lineage_comparison.compare_links(baseline_experiment, scratch_experiment, _max_distance_um)
 if _output_file:
-    report_io.save_report(report, _output_file)
+    report_json_io.save_report(report, _output_file)
 print(report)
 
 print("Done!")

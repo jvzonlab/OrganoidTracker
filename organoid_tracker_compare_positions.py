@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """Compares two sets of positions. Used to calculate the recall and precision."""
-from organoid_tracker.comparison import positions_comparison, report_io
+from organoid_tracker.comparison import positions_comparison, report_json_io
 from organoid_tracker.config import ConfigFile, config_type_json_file
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.imaging import io
@@ -32,7 +32,7 @@ print("Comparing...")
 result = positions_comparison.compare_positions(ground_truth, automatic_data, max_distance_um=_max_distance_um,
                                                 rejection_distance_um=_rejection_distance_um)
 if _output_file:
-    report_io.save_report(result, _output_file)
+    report_json_io.save_report(result, _output_file)
 print(result)
 result.calculate_time_detection_statistics().debug_plot()
 result.calculate_z_detection_statistics().debug_plot()
