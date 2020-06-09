@@ -122,11 +122,13 @@ class LinkingTrack:
         return hash(self._positions_by_time_point[0])
 
     def __eq__(self, other: Any) -> bool:
+        if other is self:
+            return True
         if not isinstance(other, LinkingTrack):
             return False
         if other._min_time_point_number != self._min_time_point_number:
             return False
-        return other._positions_by_time_point == self._positions_by_time_point
+        return other._positions_by_time_point[0] == self._positions_by_time_point[0]
 
 class Links:
     """Represents all links between positions at different time points. This is used to follow particles over time. If a
@@ -266,8 +268,13 @@ class Links:
         dt = position1.time_point_number() - position2.time_point_number()
         if dt == 0:
             raise ValueError(f"Positions are in the same time point: {position1} cannot be linked to {position2}")
-        if abs(dt) > 1:
+        if dt > 0:
+            # Make sure position1 comes first in time
+            position1, position2 = position2, position1
+            dt = -dt
+        if dt > 1:
             raise ValueError(f"Link skipped a time point: {position1} cannot be linked to {position2}")
+
 
         track1 = self._position_to_track.get(position1)
         track2 = self._position_to_track.get(position2)
@@ -295,11 +302,6 @@ class Links:
             track2 = LinkingTrack([position2])
             self._tracks.append(track2)
             self._position_to_track[position2] = track2
-
-        # Make sure position1 comes first in time
-        if position1.time_point_number() > position2.time_point_number():
-            track1, track2 = track2, track1  # Switch around to make position1 always the earliest
-            position1, position2 = position2, position1
 
         if position1.time_point_number() < track1.max_time_point_number():
             # Need to split track 1 so that position1 is at the end

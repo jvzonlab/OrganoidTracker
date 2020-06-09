@@ -1,10 +1,8 @@
 """Contains function that allows you to find the nearest few positions"""
 
 import operator
-from typing import Iterable, List, Optional, Set
+from typing import Iterable, List, Optional, Set, Dict
 
-from organoid_tracker.core import TimePoint
-from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.resolution import ImageResolution
 
@@ -12,38 +10,43 @@ from organoid_tracker.core.resolution import ImageResolution
 class _NearestPositions:
     """Internal class for bookkeeping of what the nearest few positions are"""
 
-    def __init__(self, tolerance: float):
+    _tolerance_squared: float
+    _all_distances: Dict[Position, float]
+    _shortest_distance_squared: float
+    _max_distance_squared_um2: float  # Used to set a maximum distance above which we don't even need to look anymore
+
+    def __init__(self, tolerance: float, max_distance_um: float):
         self._tolerance_squared = tolerance ** 2
-        self._nearest = {}
-        self._shorted_distance_squared = float("inf")
+        self._max_distance_squared_um2 = max_distance_um ** 2
+        self._all_distances = {}
+        self._shortest_distance_squared = float("inf")
 
     def add_candidate(self, new_position: Position, distance_squared: float) -> None:
-        if distance_squared > self._tolerance_squared * self._shorted_distance_squared:
-            return # Position is too far away compared to nearest
+        if distance_squared > self._max_distance_squared_um2:
+            return  # Too far according to global limit
+        if distance_squared > self._tolerance_squared * self._shortest_distance_squared:
+            return  # Position is too far away compared to nearest
 
-        if distance_squared < self._shorted_distance_squared:
-            # New shortest distance, remove positions that do not conform
-            self._shorted_distance_squared = distance_squared
-            self._prune()
+        if distance_squared < self._shortest_distance_squared:
+            # New shortest distance
+            self._shortest_distance_squared = distance_squared
 
-        self._nearest[new_position] = distance_squared
-
-    def _prune(self):
-        """Removes all cells with distances greater than shortest_distance * tolerance. Useful when the shortest
-        distance just changed."""
-        max_allowed_distance_squared = self._shorted_distance_squared * self._tolerance_squared
-        for position in list(self._nearest.keys()): # Iterating over copy of keys to avoid a RuntimeError
-            its_distance_squared = self._nearest[position]
-            if its_distance_squared > max_allowed_distance_squared:
-                del self._nearest[position]
+        self._all_distances[new_position] = distance_squared
 
     def get_positions(self, max_amount: int) -> List[Position]:
         """Gets the found positions."""
-        items = sorted(self._nearest.items(), key=operator.itemgetter(1))
-        positions = [item[0] for item in items]
-        if len(positions) > max_amount:
-            return positions[0:max_amount]
-        return positions
+        max_allowed_distance_squared = self._shortest_distance_squared * self._tolerance_squared
+        return_list = []
+        for position, distance_squared in self._all_distances.items():
+            if distance_squared <= max_allowed_distance_squared:
+                return_list.append(position)
+        if len(return_list) > max_amount:
+            # Need to return only the closest
+            def get_distance_squared(pos: Position):
+                return self._all_distances[pos]
+            return_list.sort(key=get_distance_squared)
+            return return_list[0:max_amount]
+        return return_list
 
 
 def find_close_positions(positions: Iterable[Position], *, around: Position, tolerance: float, resolution: ImageResolution,
