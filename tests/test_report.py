@@ -14,14 +14,16 @@ class TestFindNearestFew(unittest.TestCase):
         report.add_data(Category("My category"), Position(0, 0, 0, time_point_number=2), "This is another test")
         report.add_data(Category("Other category"), Position(0, 0, 0, time_point_number=3), "Last test")
         self.assertEquals(f"""My title
---------
+========
 
 My summary
 
 My category: (2)
+----------------
 * {Position(0, 0, 0, time_point_number=1)} - This is a test
 * {Position(0, 0, 0, time_point_number=2)} - This is another test
 
 Other category: (1)
+-------------------
 * {Position(0, 0, 0, time_point_number=3)} - Last test
 """, str(report))

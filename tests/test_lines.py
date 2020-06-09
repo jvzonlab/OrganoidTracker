@@ -20,8 +20,15 @@ class TestLines(TestCase):
     def test_direction_along_x_line(self):
         line_along_x_axis = Line3(Vector3(5, 0, 0), Vector3(6, 0, 0.001))
 
-        self.assertEqual(0, lines.direction_to_point(line_along_x_axis, Vector3(2, -2, 0)))
-        self.assertEqual(45, lines.direction_to_point(line_along_x_axis, Vector3(2, -2, -2)))
-        self.assertEqual(90, lines.direction_to_point(line_along_x_axis, Vector3(2, 0, -2)))
-        self.assertEqual(180, lines.direction_to_point(line_along_x_axis, Vector3(2, 2, 0)))
-        self.assertEqual(270, lines.direction_to_point(line_along_x_axis, Vector3(2, 0, 2)))
+        self.assertEqual(0, _angle_round(lines.direction_to_point(line_along_x_axis, Vector3(2, -2, 0))))
+        self.assertEqual(45, _angle_round(lines.direction_to_point(line_along_x_axis, Vector3(2, -2, -2))))
+        self.assertEqual(90, _angle_round(lines.direction_to_point(line_along_x_axis, Vector3(2, 0, -2))))
+        self.assertEqual(180, _angle_round(lines.direction_to_point(line_along_x_axis, Vector3(2, 2, 0))))
+        self.assertEqual(270, _angle_round(lines.direction_to_point(line_along_x_axis, Vector3(2, 0, 2))))
+
+
+def _angle_round(angle: float) -> int:
+    rounded = int(round(angle))
+    if rounded == 360:
+        return 0
+    return rounded
