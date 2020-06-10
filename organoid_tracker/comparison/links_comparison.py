@@ -101,9 +101,10 @@ def compare_links(ground_truth: Experiment, scratch: Experiment, max_distance_um
     # Check if all scratch links are real
     used_ground_truth_links = set()
     for position1, position2 in scratch.links.find_all_links():
-        if not images.is_inside_image(position1, margin_xy=margin_xy_px) \
-                or not images.is_inside_image(position2, margin_xy=margin_xy_px):
-            continue  # Too close to edge, ignore
+        if margin_xy_px >= 0:
+            if not images.is_inside_image(position1, margin_xy=margin_xy_px) \
+                    or not images.is_inside_image(position2, margin_xy=margin_xy_px):
+                continue  # Too close to edge, ignore
 
         ground_truth_positions1 = _find_close_positions(position1, ground_truth, max_distance_um)
         ground_truth_positions2 = _find_close_positions(position2, ground_truth, max_distance_um)
