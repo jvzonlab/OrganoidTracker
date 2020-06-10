@@ -50,7 +50,7 @@ class _NearestPositions:
 
 
 def find_close_positions(positions: Iterable[Position], *, around: Position, tolerance: float, resolution: ImageResolution,
-                         max_amount: int = 1000) -> List[Position]:
+                         max_amount: int = 1000, max_distance_um: float = float("inf")) -> List[Position]:
     """Finds the positions nearest to the given position.
 
     - search_in is the time_point to search in
@@ -64,7 +64,7 @@ def find_close_positions(positions: Iterable[Position], *, around: Position, tol
     """
     if tolerance < 1:
         raise ValueError()
-    nearest_positions = _NearestPositions(tolerance)
+    nearest_positions = _NearestPositions(tolerance, max_distance_um)
     for position in positions:
         nearest_positions.add_candidate(position, position.distance_squared(around, resolution))
     return nearest_positions.get_positions(max_amount)
