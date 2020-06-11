@@ -34,6 +34,10 @@ class CellFate:
         return "CellFate(" + str(self.type) + ", " + repr(self.time_points_remaining) + ")"
 
 
+# Cell fate used when no fate is found
+UNKNOWN_FATE = CellFate(CellFateType.UNKNOWN, None)
+
+
 def get_fate(experiment: Experiment, position: Position) -> CellFate:
     """Checks if a cell will undergo a division later in the experiment. Returns None if not sure, because we are near
     the end of the experiment. max_time_point_number is the number of the last time point in the experiment."""
@@ -66,7 +70,7 @@ def get_fate_ext(links: Links, position_data: PositionData, division_lookahead_t
             return CellFate(CellFateType.JUST_MOVING, None)
 
         # We didn't follow the cell for a long enough time, we cannot say anything about the fate of this cell
-        return CellFate(CellFateType.UNKNOWN, None)
+        return UNKNOWN_FATE
     elif len(next_tracks) >= 2:
         # Found the next division
         time_points_remaining = track.max_time_point_number() - position.time_point_number()
