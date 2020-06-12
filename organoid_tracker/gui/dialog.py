@@ -8,7 +8,7 @@ from typing import Tuple, List, Optional, Callable, Any, Dict
 from PySide2 import QtCore
 from PySide2.QtGui import QCloseEvent, QColor
 from PySide2.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow, QVBoxLayout, \
-    QLabel, QSizePolicy, QPushButton, QColorDialog, QMenuBar
+    QLabel, QSizePolicy, QColorDialog, QMenuBar
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
@@ -71,13 +71,13 @@ def prompt_options(title: str, question: str, *, option_1: str, option_2: Option
     box.setWindowTitle(title)
     box.setText(question)
     button_count = 1
-    box.addButton(QPushButton(option_1), QMessageBox.ActionRole)
+    box.addButton(option_1, QMessageBox.ActionRole)
     if option_2 is not None:
         button_count += 1
-        box.addButton(QPushButton(option_2), QMessageBox.ActionRole)
+        box.addButton(option_2, QMessageBox.ActionRole)
         if option_3 is not None:
             button_count += 1
-            box.addButton(QPushButton(option_3), QMessageBox.ActionRole)
+            box.addButton(option_3, QMessageBox.ActionRole)
     if option_default == DefaultOption.OK:
         box.addButton(QMessageBox.Ok)
     else:
