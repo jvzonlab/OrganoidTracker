@@ -75,3 +75,10 @@ class SphericalCoordinate:
 
         return SphericalCoordinate(self.radius_um, theta, phi)
 
+    def longitude_degrees(self) -> float:
+        """Returns the longitude, which is simply phi."""
+        return self.phi_degrees
+
+    def latitude_degrees(self) -> float:
+        """Returns the latitude, which is theta - 90. Range is [-90, +90]."""
+        return self.theta_degrees - 90

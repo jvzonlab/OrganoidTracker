@@ -178,7 +178,8 @@ class TrackVisualizer(ExitableImageVisualizer):
             "Graph//Over time-Axes positions over time...": self._show_data_axes_locations,
             "Graph//Over time-Volume over time...": self._show_volumes,
             "Graph//Visualization-Lineage tree...": self._show_lineage_tree,
-            "Graph//Visualization-Projection on sphere...": self._show_sphere
+            "Graph//Visualization-Projection on sphere...": self._show_sphere,
+            "Graph//Visualization-Projection on world map...": self._show_world_map
         }
 
     def _show_displacement(self):
@@ -284,6 +285,21 @@ class TrackVisualizer(ExitableImageVisualizer):
 
         def draw_function(figure: Figure):
             sphere_representer.setup_figure_3d(figure, sphere_representation)
+
+        dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
+
+    def _show_world_map(self):
+        experiment = self._experiment
+        sphere_representation = SphereRepresentation(experiment.beacons, 1, experiment.images.resolution())
+        orientation_spline_adder.add_all_splines(sphere_representation, experiment.splines)
+        track_adder = ColoredTrackAdder(experiment)
+        for lineage in self._selected_lineages:
+            for track in lineage.find_all_tracks():
+                track_adder.add_track_colored_by_spline_position(sphere_representation, track.positions())
+
+        def draw_function(figure: Figure):
+            ax = figure.gca()
+            sphere_representer.setup_figure_2d(ax, sphere_representation)
 
         dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
 
