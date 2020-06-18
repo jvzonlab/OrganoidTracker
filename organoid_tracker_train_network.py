@@ -57,7 +57,7 @@ while True:
     params.images_pattern = config.get_or_prompt(f"images_pattern_{i}",
                                                  "What are the image file names? (Use {time:03} for three digits"
                                                  " representing the time point, use {channel} for the channel)")
-    channels_str = config.get_or_default(f"image_channels_{i}", "1", comment="What image channels are used? For"
+    channels_str = config.get_or_default(f"images_channels_{i}", "1", comment="What image channels are used? For"
                                          " example, use 1,2,4 to train on the sum of the 1st, 2nd and 4th channel.")
     params.images_channels = {int(part) for part in channels_str.split(",")}
     params.training_positions_file = config.get_or_default(f"positions_file_{i}",
