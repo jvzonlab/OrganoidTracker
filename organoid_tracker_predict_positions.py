@@ -2,6 +2,7 @@
 
 from organoid_tracker.config import ConfigFile, config_type_bool
 from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.image_loading.channel_merging_image_loader import ChannelMergingImageLoader
 from organoid_tracker.imaging import io
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.position_detection_cnn import predicter
@@ -24,6 +25,8 @@ general_image_loader.load_images(experiment, _images_folder, _images_format,
 
 _checkpoint_folder = config.get_or_prompt("checkpoint_folder", "Please paste the path here to the \"checkpoints\" folder containing the trained model.")
 _output_file = config.get_or_default("positions_output_file", "Automatic positions.aut", comment="Output file for the positions, can be viewed using the visualizer program.")
+_channels_str = config.get_or_default("images_channels", str(1), comment="Index(es) of the channels to use. Use \"3\" to use the third channel for predictions. Use \"1,3,4\" to use the sum of the first, third and fourth channel for predictions.")
+_images_channels = {int(part) for part in _channels_str.split(",")}
 _mid_layers = int(config.get_or_default("mid_layers", str(5), comment="Number of layers to interpolate in between"
                                         " z-planes. Used to improve peak finding."))
 _peak_min_distance_px = int(config.get_or_default("peak_min_distance_px", str(9), comment="Minimum distance in pixels"
@@ -37,10 +40,19 @@ if len(_debug_folder) == 0:
 config.save()
 # END OF PARAMETERS
 
+# Check if images were loaded
 if not experiment.images.image_loader().has_images():
     print("No images were found. Please check the configuration file and make sure that you have stored images at"
           " the specified location.")
     exit(1)
+
+# Edit image channels if necessary
+if _images_channels != {1}:
+    # Replace the first channel
+    old_channels = experiment.images.get_channels()
+    new_channels = [old_channels[index - 1] for index in _images_channels]
+    channel_merging_image_loader = ChannelMergingImageLoader(experiment.images.image_loader(), [new_channels])
+    experiment.images.image_loader(channel_merging_image_loader)
 
 print("Using neural networks to predict positions...")
 positions = predicter.predict(experiment.images, _checkpoint_folder, split=_split, out_dir=_debug_folder,
