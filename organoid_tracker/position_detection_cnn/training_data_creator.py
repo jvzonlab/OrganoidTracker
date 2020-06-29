@@ -68,7 +68,7 @@ def _create_serialized_data(image_with_positions: _ImageWithPositions, image_siz
     # int64 is an accepted format for serializing in tfrecord
     multi_im = image_with_positions.load_image()
     if multi_im is None:
-        raise Exception()
+        raise Exception(f"Image not found: {image_with_positions}")
 
     # this will create the labels, we create them at this stage
     # it is a preprocessing step, it is less flexible but more efficient for later
