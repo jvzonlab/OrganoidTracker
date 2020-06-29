@@ -210,7 +210,7 @@ def predict(images: Images, checkpoint_dir: str, out_dir: Optional[str] = None, 
         # Comparison between image_max and im to find the coordinates of local maxima
         coordinates = peak_local_max(im, min_distance=min_peak_distance_px, threshold_abs=0.1, exclude_border=False)
         for coordinate in coordinates:
-            pos = Position(coordinate[2], coordinate[1], coordinate[0] / z_divisor,
+            pos = Position(coordinate[2], coordinate[1], coordinate[0] / z_divisor - 1,
                            time_point=time_point) + image_offset
             all_positions.add(pos)
     return all_positions
