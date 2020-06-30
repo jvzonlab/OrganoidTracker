@@ -1,4 +1,3 @@
-import re
 from os import path
 from typing import Optional
 
@@ -119,11 +118,7 @@ def load_tracking_data(window: Window):
     if not ask_save_unsaved_changes(window.get_gui_experiment()):
         return  # Cancelled
 
-    file_name = dialog.prompt_load_file("Select data file", [
-        (io.FILE_EXTENSION.upper() + " file", "*." + io.FILE_EXTENSION),
-        ("Detection or linking files", "*.json"),
-        ("Cell tracking challenge files", "*.txt"),
-        ("Guizela's tracking files", "track_00000.p")])
+    file_name = dialog.prompt_load_file("Select data file", io.SUPPORTED_IMPORT_FILES)
     if file_name is None:
         return  # Cancelled
 

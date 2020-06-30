@@ -23,7 +23,12 @@ from organoid_tracker.core.warning_limits import WarningLimits
 from organoid_tracker.linking_analysis import linking_markers
 
 FILE_EXTENSION = "aut"
-
+SUPPORTED_IMPORT_FILES = [
+        (FILE_EXTENSION.upper() + " file", "*." + FILE_EXTENSION),
+        ("Detection or linking files", "*.json"),
+        ("Cell tracking challenge files", "*.txt"),
+        ("TrackMate file", "*.xml"),
+        ("Guizela's tracking files", "track_00000.p")]
 
 def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: str,
                                         min_time_point: int = 0, max_time_point: int = 5000):
@@ -45,6 +50,11 @@ def _load_cell_tracking_challenge_file(experiment: Experiment, file_name: str, m
     ctc_io.load_data_file(file_name, min_time_point, max_time_point, experiment=experiment)
 
 
+def _load_trackmate_file(experiment: Experiment, file_name: str, min_time_point: int, max_time_point: int):
+    from organoid_tracker.imaging import trackmate_io
+    trackmate_io.load_data_file(file_name, min_time_point, max_time_point, experiment=experiment)
+
+
 def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int = 5000, *,
                    experiment: Optional[Experiment] = None) -> Experiment:
     """Loads some kind of data file. This should support all data formats of our research group. Raises ValueError if
@@ -60,6 +70,9 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
         return experiment
     elif file_name.lower().endswith(".txt"):
         _load_cell_tracking_challenge_file(experiment, file_name, min_time_point, max_time_point)
+        return experiment
+    elif file_name.lower().endswith(".xml"):
+        _load_trackmate_file(experiment, file_name, min_time_point, max_time_point)
         return experiment
     else:
         raise ValueError(f"Cannot load data from file \"{file_name}\": it is of an unknown format")
