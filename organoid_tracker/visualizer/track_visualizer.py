@@ -278,10 +278,11 @@ class TrackVisualizer(ExitableImageVisualizer):
         experiment = self._experiment
         sphere_representation = SphereRepresentation(experiment.beacons, 1, experiment.images.resolution())
         orientation_spline_adder.add_all_splines(sphere_representation, experiment.splines)
-        track_adder = ColoredTrackAdder(experiment)
-        for lineage in self._selected_lineages:
+        for i, lineage in enumerate(self._selected_lineages):
             for track in lineage.find_all_tracks():
-                track_adder.add_track_colored_by_spline_position(sphere_representation, track.positions())
+                track_color = SANDER_APPROVED_COLORS[i % len(SANDER_APPROVED_COLORS)]
+                sphere_representation.add_track(track.positions(), color=track_color, highlight_first=False,
+                                                highlight_last=True)
 
         def draw_function(figure: Figure):
             sphere_representer.setup_figure_3d(figure, sphere_representation)
@@ -292,10 +293,11 @@ class TrackVisualizer(ExitableImageVisualizer):
         experiment = self._experiment
         sphere_representation = SphereRepresentation(experiment.beacons, 1, experiment.images.resolution())
         orientation_spline_adder.add_all_splines(sphere_representation, experiment.splines)
-        track_adder = ColoredTrackAdder(experiment)
-        for lineage in self._selected_lineages:
+        for i, lineage in enumerate(self._selected_lineages):
             for track in lineage.find_all_tracks():
-                track_adder.add_track_colored_by_spline_position(sphere_representation, track.positions())
+                track_color = SANDER_APPROVED_COLORS[i % len(SANDER_APPROVED_COLORS)]
+                sphere_representation.add_track(track.positions(), color=track_color, highlight_first=False,
+                                                highlight_last=True)
 
         def draw_function(figure: Figure):
             ax = figure.gca()
