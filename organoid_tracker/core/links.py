@@ -272,7 +272,7 @@ class Links:
             # Make sure position1 comes first in time
             position1, position2 = position2, position1
             dt = -dt
-        if dt > 1:
+        if dt < -1:
             raise ValueError(f"Link skipped a time point: {position1} cannot be linked to {position2}")
 
 
@@ -558,7 +558,7 @@ class Links:
         gap_length = second_track._min_time_point_number -\
                      (first_track._min_time_point_number + len(first_track._positions_by_time_point))
         if gap_length != 0:
-            first_track._positions_by_time_point += [None] * gap_length
+            raise ValueError("Skipping a time point")
         first_track._positions_by_time_point += second_track._positions_by_time_point
 
         # Update registries
