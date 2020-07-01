@@ -3,9 +3,37 @@
 
 [Pre-print on bioRxiv]
 
-Code for tracking cell nuclei in (intestinal) organoids over time. Uses a convolutional neural network for nucleus detection, a min-cost flow solver ([Haubold, 2016]) for linking nuclei over time and tools for manual error correction.
+Program for tracking cell nuclei in (intestinal) organoids over time. Uses a convolutional neural network for nucleus detection, a min-cost flow solver ([Haubold, 2016]) for linking nuclei over time and tools for manual error correction.
+
+
+Features
+--------
+
+* Manual tracking with live error-detection.
+* Automated cell detection using a convolutional neural network based on U-net.
+* Support for automatically linking nuclei over time using a min-cost flow solver ([Haubold, 2016])
+* Supports [TIFF files, TIFF series, Leica LIF files and NIKON nd2 files](manuals/IMAGE_FORMATS.md).
+* [Plugin API with live-reload for fast data analysis](manuals/PLUGIN_TUTORIAL.md)
+
+
+Screenshot
+----------
 
 ![Screenshot of the program](manuals/images/screenshot.png)
+
+
+Intended workflow
+-----------------
+1. Do some manual tracking to obtain ground truth data and training data.
+2. Train a neural network.
+3. Apply the automated tracker on some new time lapse movie.
+4. Correct the errors in the tracking data of that time lapse movie.
+5. Use the corrected tracking data as additional training data for the neural network.
+6. Want to track another time lapse movie? Go back to step 3.
+
+[Tutorial on manual tracking](manuals/MANUAL_TRACKING)  
+[Tutorial on automated tracking](manuals/AUTOMATIC_TRACKING)
+
 
 Installation
 ------------
