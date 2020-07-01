@@ -5,6 +5,7 @@
 
 Code for tracking cell nuclei in (intestinal) organoids over time. Uses a convolutional neural network for nucleus detection, a min-cost flow solver ([Haubold, 2016]) for linking nuclei over time and tools for manual error correction.
 
+![Screenshot of the program](manuals/images/screenshot.png)
 
 Installation
 ------------
