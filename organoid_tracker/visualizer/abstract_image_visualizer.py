@@ -116,6 +116,7 @@ class AbstractImageVisualizer(Visualizer):
             extent = (offset.x, offset.x + self._image_slice_2d.shape[1],
                       offset.y + self._image_slice_2d.shape[0], offset.y)
             self._ax.imshow(self._image_slice_2d, cmap=self._color_map, extent=extent)
+            self._ax.set_aspect("equal", adjustable="datalim")
 
     def _draw_selection(self, position: Position, color: MPLColor):
         """Draws a marker for the given position that indicates that the position is selected. Subclasses can call this
