@@ -27,6 +27,8 @@ class AbstractImageVisualizer(Visualizer):
 
     MAX_Z_DISTANCE: int = 3
     DEFAULT_SIZE = (30, 500, 500)
+    _MOUSE_WHEEL_ZOOM_SCALE = 1.2
+    _MOUSE_WHEEL_TRANSLATE_SCALE = 8
 
     _image_slice_2d: Optional[ndarray] = None
 
@@ -386,10 +388,59 @@ class AbstractImageVisualizer(Visualizer):
 
     def _on_scroll(self, event: MouseEvent):
         """Move in z."""
-        if event.button == 'up':
-            self._move_in_z(1)
+        if event.key == "control":
+            # Zooming
+            self._scroll_zoom(event)
+        elif event.key == "shift":
+            # Move in x
+            self._scroll_shift_x(event)
+        elif event.key == "shift+ctrl" or event.key == "ctrl+shift":
+            # Move in y
+            self._scroll_shift_y(event)
+        elif event.key is None:
+            # Move in z
+            if event.button == "up":
+                self._move_in_z(1)
+            else:
+                self._move_in_z(-1)
+
+    def _scroll_shift_y(self, event: MouseEvent):
+        old_ylim = self._ax.get_ylim()
+        old_height = old_ylim[1] - old_ylim[0]
+        shift_y = old_height / self._MOUSE_WHEEL_TRANSLATE_SCALE
+        if event.button == "up":
+            shift_y *= -1  # Inverse direction
+        self._ax.set_ylim(old_ylim[0] + shift_y, old_ylim[1] + shift_y)
+        self._fig.canvas.draw()
+
+    def _scroll_shift_x(self, event: MouseEvent):
+        old_xlim = self._ax.get_xlim()
+        old_width = old_xlim[1] - old_xlim[0]
+        shift_x = old_width / self._MOUSE_WHEEL_TRANSLATE_SCALE
+        if event.button == "up":
+            shift_x *= -1  # Inverse direction
+        self._ax.set_xlim(old_xlim[0] + shift_x, old_xlim[1] + shift_x)
+        self._fig.canvas.draw()
+
+    def _scroll_zoom(self, event: MouseEvent):
+        old_xlim = self._ax.get_xlim()
+        old_ylim = self._ax.get_ylim()
+        old_xdata = event.xdata
+        old_ydata = event.ydata
+        if event.button == "down":
+            # Zooming out
+            scale_factor = 1 / self._MOUSE_WHEEL_ZOOM_SCALE
         else:
-            self._move_in_z(-1)
+            # Zooming in
+            scale_factor = self._MOUSE_WHEEL_ZOOM_SCALE
+        # Set the new limits
+        # noinspection PyTypeChecker
+        self._ax.set_xlim([old_xdata - (old_xdata - old_xlim[0]) / scale_factor,
+                           old_xdata + (old_xlim[1] - old_xdata) / scale_factor])
+        # noinspection PyTypeChecker
+        self._ax.set_ylim([old_ydata - (old_ydata - old_ylim[0]) / scale_factor,
+                           old_ydata + (old_ylim[1] - old_ydata) / scale_factor])
+        self._fig.canvas.draw()
 
     def _on_command(self, command: str) -> bool:
         if len(command) > 0 and command[0] == "t":
