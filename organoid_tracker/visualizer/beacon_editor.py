@@ -55,6 +55,9 @@ class BeaconEditor(AbstractEditor):
             "Edit//Positions-Toggle showing distances to positions": self._toggle_showing_beacon_distances
         }
 
+    def _get_figure_title(self) -> str:
+        return "Editing beacons of time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
+
     def _toggle_showing_beacon_distances(self):
         self._draw_beacon_distances = not self._draw_beacon_distances
         self.draw_view()
