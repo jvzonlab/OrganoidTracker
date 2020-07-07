@@ -1,4 +1,4 @@
-from typing import Optional, Callable
+from typing import Optional, Callable, Union
 
 import mahotas
 import numpy
@@ -142,6 +142,45 @@ class Mask:
         # Apply mask
         image_for_masking[self._mask == 0] = 0
         return image_for_masking
+
+    def stamp_image(self, image: ndarray, stamp_value: Union[int, float]):
+        """Stamps (part of) this mask on the given image. Takes offset into account."""
+        image_start_x = self.offset_x
+        image_start_y = self.offset_y
+        image_start_z = self.offset_z
+        image_max_z, image_max_y, image_max_x = image.shape
+
+        mask = self.get_mask_array()
+        mask_start_x, mask_start_y, mask_start_z = 0, 0, 0
+        mask_length_z, mask_length_y, mask_length_x = mask.shape
+
+        # Skip lower parts of mask if necessary
+        if image_start_x < 0:
+            mask_start_x += abs(image_start_x)
+            mask_length_x -= abs(image_start_x)
+            image_start_x = 0
+        if image_start_y < 0:
+            mask_start_y += abs(image_start_y)
+            mask_length_y -= abs(image_start_y)
+            image_start_y = 0
+        if image_start_z < 0:
+            mask_start_z += abs(image_start_z)
+            mask_length_z -= abs(image_start_z)
+            image_start_z = 0
+
+        # Limit higher coordinates of mask
+        mask_length_z = min(image_max_z - image_start_z, mask_length_z)
+        mask_length_y = min(image_max_y - image_start_y, mask_length_y)
+        mask_length_x = min(image_max_x - image_start_x, mask_length_x)
+
+        cropped_image = image[image_start_z:image_start_z+mask_length_z,
+                        image_start_y:image_start_y+mask_length_y,
+                        image_start_x:image_start_x+mask_length_x]
+        cropped_mask = mask[mask_start_z:mask_start_z+mask_length_z,
+                       mask_start_y:mask_start_y+mask_length_y,
+                       mask_start_x:mask_start_x+mask_length_x]
+        cropped_image[cropped_mask == 1] = stamp_value
+
 
     def add_from_labeled(self, labeled_image: ndarray, label: int):
         """This adds all values of the given full size image with the given color (== label) to the mask."""

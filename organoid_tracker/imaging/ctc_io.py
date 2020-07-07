@@ -1,5 +1,6 @@
 """IO functions for the Cell Tracking Challenge data format, following the specification at
 https://public.celltrackingchallenge.net/documents/Naming%20and%20file%20content%20conventions.pdf """
+import math
 import os
 from typing import Optional, Dict, List
 
@@ -9,12 +10,14 @@ from numpy import ndarray
 import mahotas
 from tifffile import tifffile
 
-from organoid_tracker.core import UserError
+from organoid_tracker.core import UserError, bounding_box
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import Links
+from organoid_tracker.core.mask import Mask
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position_data import PositionData
+from organoid_tracker.core.resolution import ImageResolution
 
 
 class _Link:
@@ -119,6 +122,21 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
     return experiment
 
 
+def _create_spherical_mask(radius_um: float, resolution: ImageResolution) -> Mask:
+    """Creates a mask that is spherical in micrometers. If the resolution is not the same in the x, y and z directions,
+    this sphere will appear as a spheroid in the images."""
+    radius_x_px = math.ceil(radius_um / resolution.pixel_size_x_um)
+    radius_y_px = math.ceil(radius_um / resolution.pixel_size_y_um)
+    radius_z_px = math.ceil(radius_um / resolution.pixel_size_z_um)
+    mask = Mask(bounding_box.ONE.expanded(radius_x_px, radius_y_px, radius_z_px))
+
+    # Evaluate the spheroid function to draw it
+    mask.add_from_function(lambda x, y, z:
+                           x ** 2 / radius_x_px ** 2 + y ** 2 / radius_y_px ** 2 + z ** 2 / radius_z_px ** 2 <= 1)
+
+    return mask
+
+
 def save_data_files(experiment: Experiment, folder: str):
     """Saves all cell tracks in the data format of the Cell Tracking Challenge. Requires the presence of links and
      images. Also requires an image size to be known, as well as the file name ending with .txt (case insensitive).
@@ -128,54 +146,54 @@ def save_data_files(experiment: Experiment, folder: str):
     if not is_ground_truth and not is_scratch:
         raise UserError("Invalid folder name", "Folder name should end with \"_GT\" or \"_RES\", depending on whether"
                                                " the active dataset represent ground truth or tracked data.")
-    sub_folder = os.path.join(folder, "TRA") if is_ground_truth else folder
-    os.makedirs(sub_folder, exist_ok=True)
-
     image_size_zyx = experiment.images.image_loader().get_image_size_zyx()
     if image_size_zyx is None:
         raise ValueError("Couldn't find an image size.")
     if not experiment.links.has_links():
         raise ValueError("No links found")
 
+    # Create mask for stamping the positions in the images
+    if is_scratch:
+        mask = _create_spherical_mask(4, experiment.images.resolution())
+    else:
+        mask = Mask(bounding_box.ONE.expanded(2, 2, 0))
+        mask.get_mask_array().fill(1)
+
+    # Create folder
+    sub_folder = os.path.join(folder, "TRA") if is_ground_truth else folder
+    os.makedirs(sub_folder, exist_ok=True)
+
     image_prefix = "man_track" if is_ground_truth else "mask"
-    _save_track_images(experiment, os.path.join(sub_folder, image_prefix))
+    _save_track_images(experiment, os.path.join(sub_folder, image_prefix), mask)
 
     file_name = os.path.join("man_track.txt") if is_ground_truth else "res_track.txt"
     _save_overview_file(experiment, os.path.join(sub_folder, file_name))
 
 
-def _save_track_images(experiment: Experiment, image_prefix: str):
+def _save_track_images(experiment: Experiment, image_prefix: str, mask: Mask):
+    """Saves images colored with all tracks at the right location. Each track is marked using the given mask."""
     image_size_zyx = experiment.images.image_loader().get_image_size_zyx()
     links = experiment.links
     positions = experiment.positions
     offsets = experiment.images.offsets
 
-    position_half_width_px = 2  # Positions will have a visible size of 2x + 1
     for time_point in positions.time_points():
         image_file_name = f"{image_prefix}{time_point.time_point_number():03}.tif"
-        image_array = numpy.zeros(image_size_zyx, dtype=numpy.uint16)
+        image_fill_array = numpy.zeros(image_size_zyx, dtype=numpy.uint16)
         image_offset = offsets.of_time_point(time_point)
 
         for position in positions.of_time_point(time_point):
             moved_position = position - image_offset
-            x, y, z = int(moved_position.x), int(moved_position.y), int(moved_position.z)
 
-            # Only export positions in the images
-            if x < position_half_width_px or x >= image_size_zyx[2] - position_half_width_px:
-                continue
-            if y < position_half_width_px or y >= image_size_zyx[1] - position_half_width_px:
-                continue
-            if z < 0 or z >= image_size_zyx[0]:
-                continue
             track = links.get_track(position)
             if track is None:
                 continue  # No links, so we cannot save the position
 
             track_id = links.get_track_id(track)
-            image_array[z,
-            y - position_half_width_px: y + position_half_width_px + 1,
-            x - position_half_width_px: x + position_half_width_px + 1] = track_id
-        tifffile.imsave(image_file_name, image_array, compress=9)
+            mask.center_around(moved_position)
+            mask.stamp_image(image_fill_array, track_id)
+
+        tifffile.imsave(image_file_name, image_fill_array, compress=9)
 
 
 def _save_overview_file(experiment: Experiment, file_name: str):
