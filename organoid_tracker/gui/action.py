@@ -169,12 +169,13 @@ def export_links_ctc(experiment: Experiment):
     if not experiment.links.has_links():
         raise UserError("No links found", "This save format can only save tracks. Currently, there are no links"
                                           " loaded, so we have no tracks, and therefore we cannot save anything.")
-    tracks_folder = dialog.prompt_save_file("Save tracks as...", [("Folder", "*")])
+    tracks_folder = dialog.prompt_save_file("Save tracks as...",
+                                            [("_GT or _RES folder", "*")])
     if tracks_folder is None:
         return
 
     from organoid_tracker.imaging import ctc_io
-    ctc_io.save_data_files(experiment, tracks_folder + "/man_track.txt")
+    ctc_io.save_data_files(experiment, tracks_folder)
 
 
 def save_tracking_data(gui_experiment: GuiExperiment) -> bool:

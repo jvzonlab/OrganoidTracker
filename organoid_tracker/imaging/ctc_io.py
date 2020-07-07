@@ -119,13 +119,17 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
     return experiment
 
 
-def save_data_files(experiment: Experiment, file_name: str):
+def save_data_files(experiment: Experiment, folder: str):
     """Saves all cell tracks in the data format of the Cell Tracking Challenge. Requires the presence of links and
      images. Also requires an image size to be known, as well as the file name ending with .txt (case insensitive).
      Throws ValueError if any of these conditions are violated."""
-    if not file_name.lower().endswith(".txt"):
-        raise ValueError("Must save as a .txt file")
-    os.makedirs(os.path.dirname(file_name), exist_ok=True)
+    is_ground_truth = folder.endswith("_GT")
+    is_scratch = folder.endswith("_RES")
+    if not is_ground_truth and not is_scratch:
+        raise UserError("Invalid folder name", "Folder name should end with \"_GT\" or \"_RES\", depending on whether"
+                                               " the active dataset represent ground truth or tracked data.")
+    sub_folder = os.path.join(folder, "TRA") if is_ground_truth else folder
+    os.makedirs(sub_folder, exist_ok=True)
 
     image_size_zyx = experiment.images.image_loader().get_image_size_zyx()
     if image_size_zyx is None:
@@ -133,9 +137,11 @@ def save_data_files(experiment: Experiment, file_name: str):
     if not experiment.links.has_links():
         raise ValueError("No links found")
 
-    image_prefix = file_name[0:-4]
-    _save_track_images(experiment, image_prefix)
-    _save_overview_file(experiment, file_name)
+    image_prefix = "man_track" if is_ground_truth else "mask"
+    _save_track_images(experiment, os.path.join(sub_folder, image_prefix))
+
+    file_name = os.path.join("man_track.txt") if is_ground_truth else "res_track.txt"
+    _save_overview_file(experiment, os.path.join(sub_folder, file_name))
 
 
 def _save_track_images(experiment: Experiment, image_prefix: str):
