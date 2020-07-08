@@ -8,7 +8,7 @@ The following scripts are available:
 * `organoid_tracker_compare_links.py` - compare two sets of linking data.
 * `organoid_tracker_create_links.py` - uses a cell positions file to link cells from different time points together.
 * `organoid_tracker_detect_gaussian_shapes.py` - uses the raw images and provided cell positions to 
-* `organoid_tracker_extract_mother_scores.py` - creates a CSV file, showing how the mother scores are built up.
+* `organoid_tracker_extract_validate_errors.py` - after you have corrected all the warnings, counts in how many cases a change was made to the tracking data.
 
 The command-line scripts have documentation included inside themselves. The visual scripts are all essentially the same, and are documented in [VISUALIZER].
 
