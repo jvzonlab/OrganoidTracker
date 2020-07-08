@@ -189,12 +189,14 @@ class ComparisonReport:
     def calculate_time_statistics(self, true_positives_cat: Category, false_positives_cat: Category,
                                   false_negatives_cat: Category) -> Statistics:
         """Calculate statistics using the given categories as false/true positives/negatives."""
-        min_time_point_number = min(self._positions_by_category[true_positives_cat].first_time_point_number(),
-                                    self._positions_by_category[false_positives_cat].first_time_point_number(),
-                                    self._positions_by_category[false_negatives_cat].first_time_point_number())
-        max_time_point_number = max(self._positions_by_category[true_positives_cat].last_time_point_number(),
-                                    self._positions_by_category[false_positives_cat].last_time_point_number(),
-                                    self._positions_by_category[false_negatives_cat].last_time_point_number())
+        empty = PositionCollection()  # Used for non-existing categories
+
+        min_time_point_number = min_none(self._positions_by_category.get(true_positives_cat, empty).first_time_point_number(),
+                                         self._positions_by_category.get(false_positives_cat, empty).first_time_point_number(),
+                                         self._positions_by_category.get(false_negatives_cat, empty).first_time_point_number())
+        max_time_point_number = max_none(self._positions_by_category.get(true_positives_cat, empty).last_time_point_number(),
+                                         self._positions_by_category.get(false_positives_cat, empty).last_time_point_number(),
+                                         self._positions_by_category.get(false_negatives_cat, empty).last_time_point_number())
 
         time_point_count = max_time_point_number - min_time_point_number + 1
         true_positives = numpy.ones(time_point_count, dtype=numpy.uint16)
@@ -202,9 +204,9 @@ class ComparisonReport:
         false_negatives = numpy.ones(time_point_count, dtype=numpy.uint16)
         for i in range(time_point_count):
             time_point = TimePoint(i + min_time_point_number)
-            true_positives[i] = len(self._positions_by_category[true_positives_cat].of_time_point(time_point))
-            false_positives[i] = len(self._positions_by_category[false_positives_cat].of_time_point(time_point))
-            false_negatives[i] = len(self._positions_by_category[false_negatives_cat].of_time_point(time_point))
+            true_positives[i] = len(self._positions_by_category.get(true_positives_cat, empty).of_time_point(time_point))
+            false_positives[i] = len(self._positions_by_category.get(false_positives_cat, empty).of_time_point(time_point))
+            false_negatives[i] = len(self._positions_by_category.get(false_negatives_cat, empty).of_time_point(time_point))
         return Statistics(min_time_point_number, "Time point", true_positives, false_positives, false_negatives)
 
     def calculate_z_statistics(self, true_positives_cat: Category, false_positives_cat: Category,
