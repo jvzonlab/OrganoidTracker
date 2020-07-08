@@ -7,11 +7,17 @@ from organoid_tracker.core import typing
 
 def config_type_str(input: str) -> str:
     """Default type of settings in a configuration file."""
+    if len(input) >= 2:
+        if input.startswith("'") and input.endswith("'"):
+            return input[1:-1]
+        if input.startswith('"') and input.endswith('"'):
+            return input[1:-1]
     return input
 
 
 def config_type_json_file(input: str) -> str:
     """A string that will automatically have ".json" appended to it if it hasn't already (except for empty strings)."""
+    input = config_type_str(input)  # First parse as string
     if len(input) == 0:
         return input
     if not input.lower().endswith(".json"):
