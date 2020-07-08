@@ -191,7 +191,7 @@ def _save_track_images(experiment: Experiment, image_prefix: str, mask: Mask):
 
             track_id = links.get_track_id(track)
             mask.center_around(moved_position)
-            mask.stamp_image(image_fill_array, track_id)
+            mask.stamp_image(image_fill_array, track_id + 1)  # Track id is offset by 1 to avoid track id 0
 
         tifffile.imsave(image_file_name, image_fill_array, compress=9)
 
@@ -202,12 +202,13 @@ def _save_overview_file(experiment: Experiment, file_name: str):
     links = experiment.links
     with open(file_name, "w") as handle:
         for track_id, track in experiment.links.find_all_tracks_and_ids():
-            parent_id = 0
+            parent_id = -1
             previous_tracks = track.get_previous_tracks()
             if len(previous_tracks) == 1:
                 parent_id = links.get_track_id(previous_tracks.pop())
                 if parent_id is None:
-                    parent_id = 0
+                    parent_id = -1
 
+            # Write the line, adding 1 to all track ids to avoid track 0
             handle.write(
-                f"{track_id} {track.min_time_point_number()} {track.max_time_point_number()} {parent_id}\n")
+                f"{track_id + 1} {track.min_time_point_number()} {track.max_time_point_number()} {parent_id + 1}\n")
