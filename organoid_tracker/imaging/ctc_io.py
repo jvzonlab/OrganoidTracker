@@ -154,7 +154,7 @@ def save_data_files(experiment: Experiment, folder: str):
 
     # Create mask for stamping the positions in the images
     if is_scratch:
-        mask = _create_spherical_mask(4, experiment.images.resolution())
+        mask = _create_spherical_mask(5, experiment.images.resolution())
     else:
         mask = Mask(bounding_box.ONE.expanded(2, 2, 0))
         mask.get_mask_array().fill(1)
