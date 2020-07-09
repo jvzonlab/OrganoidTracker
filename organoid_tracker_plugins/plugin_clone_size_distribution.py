@@ -11,8 +11,6 @@ from organoid_tracker.gui import dialog
 from organoid_tracker.gui.window import Window
 from organoid_tracker.linking_analysis.lineage_division_counter import get_division_count_in_lineage
 
-_LINEAGE_FOLLOW_TIME_H = 40
-
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
@@ -33,14 +31,17 @@ def _show_clone_size_distribution(window: Window):
         raise UserError("Failed to calculate clone size distribution", "Cannot calculate clone size distribution. "
                                                                         "No time resolution is provided.")
 
-    # Calculate the number of time points in the given follow time
-    time_point_window = int(_LINEAGE_FOLLOW_TIME_H / experiment.images.resolution().time_point_interval_h)
-    print("Time point window is", time_point_window)
+    lineage_follow_time_h = dialog.prompt_float("Time window", "The clone size is the number of progeny a single cell"
+                                                               " generated after a certain time window.\nHow long"
+                                                               " should this time window be, in hours?", default=40,
+                                                minimum=1)
 
-    # Run the task on another thread, as calculating is quite slow
+    # Calculate the number of time points in the given follow time
+    time_point_window = int(lineage_follow_time_h / experiment.images.resolution().time_point_interval_h)
+
     clone_sizes = _get_clone_sizes_list(links, position_data, time_point_window, experiment.first_time_point_number(),
                                                             experiment.last_time_point_number())
-    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_clone_sizes(figure, clone_sizes))
+    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_clone_sizes(figure, lineage_follow_time_h, clone_sizes))
 
 
 def _get_clone_sizes_list(links: Links, position_data: PositionData, time_point_window: int,
@@ -58,7 +59,7 @@ def _get_clone_sizes_list(links: Links, position_data: PositionData, time_point_
     return numpy.array(clone_sizes, dtype=numpy.int32)
 
 
-def _draw_clone_sizes(figure: Figure, clone_sizes: ndarray):
+def _draw_clone_sizes(figure: Figure, lineage_follow_time_h: float, clone_sizes: ndarray):
     axes = figure.gca()
 
     max_clone_size = 1
@@ -67,9 +68,9 @@ def _draw_clone_sizes(figure: Figure, clone_sizes: ndarray):
         axes.hist(clone_sizes, range(1, max_clone_size + 2), color="blue")
     else:
         axes.text(0, 0, "No histogram: no lineages without dissappearing cells spanning at least"
-                        f" {_LINEAGE_FOLLOW_TIME_H} h were found")
+                        f" {lineage_follow_time_h} h were found")
     axes.set_title("Clone size distribution")
     axes.set_ylabel("Relative frequency")
-    axes.set_xlabel(f"Clone size after {_LINEAGE_FOLLOW_TIME_H} h")
+    axes.set_xlabel(f"Clone size after {lineage_follow_time_h} h")
     axes.set_xticks(range(2, max_clone_size + 1, 2))
 
