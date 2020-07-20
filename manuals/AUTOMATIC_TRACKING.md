@@ -40,8 +40,10 @@ First, the script will create some very basic initial links. Then it will calcul
 
 If you're not satisfied with the results, try changing the input parameters in the `organoid_tracker.ini` file. There are comments in there to explain each setting. You can make cell divisions more/less likely, allow more or less cellular movement and make cell deaths more likely. If you don't see (m)any links anymore, then you have made link creation too expensive, and you should make events like cellular movement cheaper.
 
-### Correcting for large collective cell movement
-Note: the linking algorithm cannot cope with a large, collective, sudden movement of the cells. The program would need to create a lot of large-distance links, which it will refuse to do. For example, we often move the microscope view halfway during the experiment (so that the moving cells are nicely back into the view), which causes an apparant movement of all the cells in the images. To correct for this, *before running the linking process*, open the OrganoidTracker GUI and load the images and positions (`File` menu). Then edit the data (`Edit -> Manually change data...`) and edit the image offsets (`Edit -> Edit image offsets...`) of the correct time point. Instructions are on the bottom of the window.
+### Correcting for changed image offsets
+When taking longer time lapse movies, the organoid can slowly slide out of the view. For this reason, the microscope user can move the imaged area so that the organoid stays in the view. In the time lapse movie, this makes the organoid appear to "teleport": from the edges of the image it jumps back to the center.
+
+To create links over this "jump", the program would need to create a lot of large-distance links. The program will likely refuse to do this. To correct for this, *before running the linking process*, open the OrganoidTracker GUI and load the images and positions (`File` menu). Then edit the data (`Edit -> Manually change data...`) and edit the image offsets (`Edit -> Edit image offsets...`) of the correct time point. Instructions are on the bottom of the window.
 
 Step 4: Manually correct warnings
 ---------------------------------
@@ -50,8 +52,10 @@ This step is not automated. 😉 Open the OrganoidTracker GUI and load the image
 
 To do this, hover you mouse over a nucleus and press E. You will be shown all errors in the lineage tree. Use the left and right arrow keys to move to the next error. Press E again to exit that view, and edit the data.
 
+There's also the L key - this key shows a screen that highlights the cells of the organoid that are in a lineage with warnings in them. If you hover your mouse over such a lineage and press E, the program will take you to the (first) warning in that lineage tree.
+
 Data editing is done mainly using the Insert and Delete keys, which are used to insert and delete links. Detected positions can also be inserted and deleted if necessary. Because correcting data works exactly the same as manual tracking, please see the [manual tracking](MANUAL_TRACKING.md) tutorial for more information.
 
 If you don't want to correct everything, in the `Edit` menu there's an option to delete all lineage trees that still have errors. Make sure you have backed-up your data before you do this. You can also delete all tracking data in certain parts of the images at certain times, see [batch editing](BATCH_OPERATIONS.md) for details.
 
-You can change a few settings of the error checker, to make it stricter or less strick. In the error checking screen (the screen you opened with `E`) there are three options available in the `Edit` menu: the minimum time in between two cell divisions of the same cell, and the maximum distance a cell may move per minute.
+You can change a few settings of the error checker, to make it stricter or less strict. In the error checking screen (the screen you opened with `E`) there are three options available in the `Edit` menu: the minimum time in between two cell divisions of the same cell, and the maximum distance a cell may move per minute.
