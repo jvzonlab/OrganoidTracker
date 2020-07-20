@@ -48,13 +48,17 @@ To create links over this "jump", the program would need to create a lot of larg
 Step 4: Manually correct warnings
 ---------------------------------
 
-This step is not automated. 😉 Open the OrganoidTracker GUI and load the images and data (`File` menu). Then go to `Edit -> Manually change data...`. Now you can use `View -> Lineage errors and warnings` to view which lineages have warnings in them. Lineages that are marked green are OK, lineages that are marked in gray need to be manually revisited.
+This step is not automated. 😉 Open the OrganoidTracker GUI and load the images and data (`File` menu). Then go to `Edit -> Manually change data...`. A cross will appear over all locations where the program has detected some inconsistency in the tracking data:
 
-To do this, hover you mouse over a nucleus and press E. You will be shown all errors in the lineage tree. Use the left and right arrow keys to move to the next error. Press E again to exit that view, and edit the data.
+![Example of a warning](images/warning.png)
 
-There's also the L key - this key shows a screen that highlights the cells of the organoid that are in a lineage with warnings in them. If you hover your mouse over such a lineage and press E, the program will take you to the (first) warning in that lineage tree.
+To view why OrganoidTracker warned you about this position, hover you mouse over a nucleus and press E. This will show you what the warning is. If the warning was a false positive, just press Delete to delete the warning. Otherwise, exit the warning screen (press E or Escape). This takes you back to the cell track editor, where you can fix the error.
 
 Data editing is done mainly using the Insert and Delete keys, which are used to insert and delete links. Detected positions can also be inserted and deleted if necessary. Because correcting data works exactly the same as manual tracking, please see the [manual tracking](MANUAL_TRACKING.md) tutorial for more information.
+
+If you press Left and Right in the warning screen, you will be taken to other warnings in the same lineage. If you press Up or Down, you will be taken to the warnings of other lineage trees.
+
+If you press the L key from the cell track editor, a screen is opened that shows whether there are still warnings remaining in the lineage of that cell. If you hover your mouse over such a lineage and press E, the program will take you to the (first) warning in that lineage tree.
 
 If you don't want to correct everything, in the `Edit` menu there's an option to delete all lineage trees that still have errors. Make sure you have backed-up your data before you do this. You can also delete all tracking data in certain parts of the images at certain times, see [batch editing](BATCH_OPERATIONS.md) for details.
 
