@@ -26,7 +26,7 @@ class AbstractImageVisualizer(Visualizer):
     """A generic image visualizer."""
 
     MAX_Z_DISTANCE: int = 3
-    DEFAULT_SIZE = (30, 500, 500)
+    DEFAULT_SIZE = (30, 1000, 1000)
     _MOUSE_WHEEL_ZOOM_SCALE = 1.2
     _MOUSE_WHEEL_TRANSLATE_SCALE = 8
 
@@ -77,7 +77,8 @@ class AbstractImageVisualizer(Visualizer):
                 rgb_image_2d.clip(0, 0.25, out=rgb_image_2d)
             else:
                 # No images - create empty background
-                image_shape = self.DEFAULT_SIZE[:-2] + (3,)
+                image_for_shape = self.load_image(self._time_point, self._z, show_next_time_point=False)
+                image_shape = image_for_shape.shape[0:2] + (3,) if image_for_shape is not None else self.DEFAULT_SIZE[1:] + (3,)
                 rgb_image_2d = numpy.zeros(image_shape, dtype=numpy.float32)
 
             # Create reconstruction
@@ -86,6 +87,31 @@ class AbstractImageVisualizer(Visualizer):
 
         self._image_slice_2d = image_2d
         self._clamp_z()
+
+    def _return_3d_image(self) -> ndarray:
+        """Just returns the full 3D image. Likely requites loading additional images from disk."""
+        image_3d = self._experiment.images.get_image_stack(self._display_settings.time_point,
+                                                           self._display_settings.image_channel)
+        if not self._display_settings.show_reconstruction:
+            return image_3d  # Done, just return the image
+
+        # Create reconstruction
+        image_shape_rgb = image_3d.shape[0:3] + (3,) if image_3d is not None else self.DEFAULT_SIZE + (3,)
+        rgb_image_3d = numpy.zeros(image_shape_rgb, dtype=numpy.float32)
+
+        if self._display_settings.show_images and image_3d is not None:
+            # Create background based on microscopy images
+            if len(image_3d.shape) == 3:
+                rgb_image_3d[...] = image_3d
+            else:
+                rgb_image_3d[:, :, :, 0] = image_3d
+                rgb_image_3d[:, :, :, 1] = image_3d
+                rgb_image_3d[:, :, :, 2] = image_3d
+            rgb_image_3d /= (rgb_image_3d.max() * 2)
+            rgb_image_3d.clip(0, 0.25, out=rgb_image_3d)
+
+        self.reconstruct_image_3d(self._time_point, rgb_image_3d)
+        return rgb_image_3d
 
     def refresh_data(self):
         self._calculate_time_point_metadata()
@@ -494,10 +520,9 @@ class AbstractImageVisualizer(Visualizer):
         return False
 
     def _export_3d_image(self):
-        image_3d = self._experiment.images.get_image_stack(self._display_settings.time_point,
-                                                           self._display_settings.image_channel)
+        image_3d = self._return_3d_image()
         if image_3d is None:
-            raise core.UserError("No images loaded", "Saving images failed: there are no images loaded")
+            raise core.UserError("No images loaded", "Saving images failed: there are no images loaded.")
         file = dialog.prompt_save_file("Save 3D file as...", [("TIF file", "*.tif")])
         if file is None:
             return

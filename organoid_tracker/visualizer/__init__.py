@@ -224,6 +224,21 @@ class Visualizer:
             i += 1
         rgb_canvas_2d.clip(min=0, max=1, out=rgb_canvas_2d)
 
+    def reconstruct_image_3d(self, time_point: TimePoint, rgb_canvas_3d: ndarray):
+        """Draws all positions and shapes to the given canvas. The canvas must be a float array,
+        and will be clipped from 0 to 1."""
+        offset = self._experiment.images.offsets.of_time_point(time_point)
+        position_data = self._experiment.position_data
+        colors = [(1, 1, 0), (1, 0, 1), (0, 1, 1), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
+        i = 0
+
+        for position in self._experiment.positions.of_time_point(time_point):
+            shape = linking_markers.get_shape(position_data, position)
+            shape.draw3d_color(position.x - offset.x, position.y - offset.y, position.z - offset.z,
+                               0, rgb_canvas_3d, colors[i % len(colors)])
+            i += 1
+        rgb_canvas_3d.clip(min=0, max=1, out=rgb_canvas_3d)
+
     def _get_type_color(self, position: Position) -> Optional[MPLColor]:
         """Gets the color that the given position should be annotated with, based on the type of the position. Usually
         this color is used to decorate the edge of the position marker."""
