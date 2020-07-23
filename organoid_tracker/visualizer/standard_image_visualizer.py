@@ -50,7 +50,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             **super().get_extra_menu_options(),
             "File//Export-Export 2D depth-colored image//This time point...": self._export_depth_colored_image,
             "File//Export-Export 2D depth-colored image//All time points...": self._export_depth_colored_movie,
-            "Edit//Experiment-Merge tracking data...": self._ask_merge_experiments,
+            "Edit//Batch-Merge tracking data...": self._ask_merge_experiments,
             "Edit//Experiment-Manually change data... [C]": self._show_data_editor,
             "View//Cells-Cell divisions... [M]": self._show_mother_cells,
             "View//Cells-Cell shedding and deaths... [S]": self._show_dead_cells,
