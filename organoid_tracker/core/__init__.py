@@ -2,7 +2,7 @@
 which are placed in an Experiment. A TimePoint also stores scores of possible mother-daughter cell combinations.
 An Experiment also stores an ImageLoader and up to two cell links networks (stored as Graph objects)."""
 import re
-from typing import Optional, Iterable, Union, Tuple
+from typing import Optional, Iterable, Union, Tuple, Any
 
 COLOR_CELL_NEXT = "#d63031"
 COLOR_CELL_PREVIOUS = "#74b9ff"
@@ -47,6 +47,9 @@ class TimePoint:
 class Name:
     _name: Optional[str] = None
 
+    def __init__(self, name: Optional[str] = None):
+        self._name = name
+
     def has_name(self) -> bool:
         """Returns True if there is any name stored."""
         return self._name is not None
@@ -60,22 +63,24 @@ class Name:
         Note: use str(self) if you want "Unnamed" instead of None if there is no name."""
         return self._name
 
-    def get_save_name(self):
+    def get_save_name(self) -> str:
         """Gets a name that is safe for file saving. It does not contain characters like / or \\."""
         return re.sub(r'[^A-Za-z0-9_\- ]+', '_', str(self))
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(str(self))
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         """Checks if the name as returned by str(...) is equal."""
         return isinstance(other, Name) and str(self) == str(other)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Returns the name if there is any name stored, otherwise it returns "Unnamed"."""
         name = self._name
         return name if name is not None else "Unnamed"
 
+    def __repr__(self) -> str:
+        return "Name(" + repr(self._name) + ")"
 
 class Color:
     """Represents an RGB color."""
