@@ -21,6 +21,11 @@ def load_data_file(file_name: str, min_time_point: int, max_time_point: int, exp
         _read_resolution(experiment, settings)
     model = root.find("Model")
 
+    # Validate
+    if model.attrib["spatialunits"] not in {"µm", "pixel"}:
+        raise ValueError("Can only handle coordinates in micrometers and pixels. Cannot handle \""
+                         + str(model.attrib["spatialunits"]) + "\".")
+
     # Read all spots
     spot_dictionary = _read_spots(experiment, model, min_time_point, max_time_point)
     all_tracks = model.find("AllTracks")
@@ -59,6 +64,7 @@ def _read_spots(experiment: Experiment, model: Element, min_time_point: int, max
         z_res = resolution.pixel_size_z_um
     except UserError:
         pass  # Ignore, seems TrackMate is actually storing positions.
+    coords_in_px = model.attrib["spatialunits"] == "pixel"
 
     all_spots = model.find("AllSpots")
     for frame in all_spots.findall("SpotsInFrame"):
@@ -67,9 +73,14 @@ def _read_spots(experiment: Experiment, model: Element, min_time_point: int, max
             continue  # Skip this time point
         time_point = TimePoint(time_point_number)
         for spot in frame.findall("Spot"):
-            x = float(spot.attrib["POSITION_X"]) / x_res
-            y = float(spot.attrib["POSITION_Y"]) / y_res
-            z = float(spot.attrib["POSITION_Z"]) / z_res
+            x = float(spot.attrib["POSITION_X"])
+            y = float(spot.attrib["POSITION_Y"])
+            z = float(spot.attrib["POSITION_Z"])
+            if not coords_in_px:
+                x /= x_res
+                y /= y_res
+                z /= z_res
+
             id = int(spot.attrib["ID"])
             position = Position(x, y, z, time_point=time_point)
             positions.add(position)
