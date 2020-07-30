@@ -1,9 +1,7 @@
 # API reference
 [← Back to main page](INDEX.md)
 
-OrganoidTracker contains many functions for working with experimental data. Those functions should make it possible to plot useful information.
-
-Parts of OrganoidTracker are pretty general, and can be used for any kind of position. Other parts are specialized towards biological cells. Each cell is then represented as a single position.
+OrganoidTracker contains many functions for working with experimental data. Those functions should make it possible to plot useful information. You can use these functions from standalone Python scripts, from [plugins](PLUGIN_TUTORIAL.md) or from [Jupyter Notebooks](JUPYTER_NOTEBOOK.md).
 
 Note: any method, function and field that has a name starting with an underscore (`_`) should not be used by external code. Ask if there is an alternative way to do it.
 
@@ -11,7 +9,7 @@ Note: any method, function and field that has a name starting with an underscore
 
 ### Saving and loading
 
-We have different data file formats. One is the original file format used by Guizela, another is my file format, which stores everything in a single file.
+Saving and loading should be straightforward. The function `io.load_data_file` can load any [supported tracking format](TRACKING_FORMATS.md). The function `io.save_data_to_json` can just save to the standard data format.
 
 ```python
 from organoid_tracker.core.experiment import Experiment
@@ -22,11 +20,6 @@ experiment = Experiment()
 
 # Loading a new experiment from existing data
 experiment = io.load_data_file("my_file_name.aut")
-
-# Loading an experiment from Guizela's data
-# Make sure that the lineages.p file is still in the same directory
-# as the track_XXXXX.p files
-experiment = io.load_data_file("path/to/data/lineages.p")
 
 # Saving
 io.save_data_to_json(experiment, "my_file_name.aut")

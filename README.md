@@ -55,6 +55,10 @@ API
 ---
 You can also use OrganoidTracker as a library to write your own scripts. All public functions in OrganoidTracker have docstrings to explain what they are doing. As a starting point for using the API, see the [API] page.
 
+Using a Jupyter Notebook
+----------------
+It's possible to use OrganoidTracker from Jupyter Notebooks. Just install the `notebook` conda package into your OrganoidTracker environment and everything should be ready. Detailed instructions to get you started are available at the [Jupyter] manual page.
+
 
 Editing the source code
 -----------------------
@@ -69,5 +73,6 @@ The [files dealing with the neural network](organoid_tracker/position_detection_
 [API]: manuals/API.md
 [installation]: manuals/INSTALLATION.md
 [manual]: manuals/INDEX.md
+[Jupyter]: manuals/JUPYTER_NOTEBOOK.md
 [Pre-print on bioRxiv]: https://doi.org/10.1101/2020.03.18.996421
 [Haubold, 2016]: https://doi.org/10.1007/978-3-319-46478-7_35
