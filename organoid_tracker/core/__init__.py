@@ -134,8 +134,12 @@ class Color:
         return self._rgb
     
     def to_rgb_floats(self) -> Tuple[float, float, float]:
-        """Gets the color as a RGBA tuple, for use with matplotlib."""
+        """Gets the color as a RGB tuple, for use with matplotlib."""
         return self.red / 255, self.green / 255, self.blue / 255
+
+    def to_rgba_floats(self) -> Tuple[float, float, float, float]:
+        """Gets the color as a RGBA tuple, for use with matplotlib."""
+        return self.red / 255, self.green / 255, self.blue / 255, 1.0
 
     def __str__(self) -> str:
         """Returns the color as a hexadecimal value."""
