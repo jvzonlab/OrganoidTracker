@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Tuple
 import importlib
 
 from organoid_tracker.gui.application import Plugin
@@ -9,27 +9,35 @@ from organoid_tracker.gui.window import Window
 
 class _ModulePlugin(Plugin):
     """A plugin that consists of a single .py file."""
-    __loaded_script: Any
+    _loaded_module_name: str
+    _loaded_script: Any
 
     def __init__(self, file_name: str):
-        self.__loaded_script = _load_file(file_name)
+        self._loaded_module_name = _to_module_name(file_name)
+        self._loaded_script = importlib.import_module(self._loaded_module_name)
 
     def init(self, window: Window):
-        if hasattr(self.__loaded_script, 'init'):
-            self.__loaded_script.init(window)
+        if hasattr(self._loaded_script, 'init'):
+            self._loaded_script.init(window)
 
     def get_menu_items(self, window: Window):
-        if hasattr(self.__loaded_script, 'get_menu_items'):
-            return self.__loaded_script.get_menu_items(window)
+        if hasattr(self._loaded_script, 'get_menu_items'):
+            return self._loaded_script.get_menu_items(window)
         return {}
 
     def reload(self):
-        importlib.reload(self.__loaded_script)
+        importlib.reload(self._loaded_script)
+
+        to_unload_prefix = self._loaded_module_name + "."
+        for module_name in list(sys.modules.keys()):
+            # Reload submodules
+            if module_name.startswith(to_unload_prefix):
+                importlib.reload(sys.modules[module_name])
 
 
-def _load_file(file: str) -> Any:
-    """Loads the Python file as a normal module. A file stored in example_folder/test.py will end up as the module
-    `example_folder.test`. In this way, relative imports still work fine."""
+def _to_module_name(file: str) -> str:
+    """Returns the module name for the given file. A file stored in example_folder/test.py will end up as the module
+    `example_folder.test`. In this way, relative imports still work fine. Returns the module name."""
     file = os.path.abspath(file)
     if not file.endswith(".py") and not os.path.exists(os.path.join(file, "__init__.py")):
         raise ValueError("Not a Python file or module: " + file)
@@ -44,7 +52,7 @@ def _load_file(file: str) -> Any:
     file_name = os.path.basename(file)
     module_name = os.path.basename(parent_folder) + "." + \
                   (file_name[:-len(".py")] if file_name.endswith(".py") else file_name)
-    return importlib.import_module(module_name)
+    return module_name
 
 
 def load_plugins(folder: str) -> List[Plugin]:
