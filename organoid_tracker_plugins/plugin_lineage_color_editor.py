@@ -53,9 +53,11 @@ class _SetLineageColor(UndoableAction):
 class _GiveRandomLineageColor(UndoableAction):
 
     _old_colors: Dict[int, Color]
+    _color_only_if_dividing: bool
 
-    def __init__(self):
+    def __init__(self, *, color_only_if_dividing: bool):
         self._old_colors = dict()
+        self._color_only_if_dividing = color_only_if_dividing
 
     def do(self, experiment: Experiment) -> str:
         from organoid_tracker.linking_analysis import lineage_id_creator
@@ -65,12 +67,14 @@ class _GiveRandomLineageColor(UndoableAction):
         links.sort_tracks_by_x()
         for starting_track in links.find_starting_tracks():
             color = Color.black()
-            if len(starting_track.get_next_tracks()) > 0:
-                # Found a lineage, give a proper color
+            if not self._color_only_if_dividing or len(starting_track.get_next_tracks()) > 0:
+                # Give a proper color
                 color = lineage_id_creator.generate_color_for_lineage_id(links.get_track_id(starting_track))
             for track in starting_track.find_all_descending_tracks(include_self=True):
                 self._old_colors[links.get_track_id(starting_track)] = lineage_markers.get_color(links, track)
                 lineage_markers.set_color(links, track, color)
+        if self._color_only_if_dividing:
+            return "Changed all lineages with cell divisions to have a single, random color"
         return "Changed all lineages to have a single, random color"
 
     def undo(self, experiment: Experiment) -> str:
@@ -93,11 +97,15 @@ class _CellsColoredByLineageVisualizer(AbstractEditor):
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
             **super().get_extra_menu_options(),
-            "Edit//Randomize-Randomize colors": self._randomize_colors
+            "Edit//Randomize-Randomize colors//All lineages": self._randomize_all_colors,
+            "Edit//Randomize-Randomize colors//Dividing lineages only": self._randomize_dividing_colors
         }
 
-    def _randomize_colors(self):
-        self._perform_action(_GiveRandomLineageColor())
+    def _randomize_all_colors(self):
+        self._perform_action(_GiveRandomLineageColor(color_only_if_dividing=False))
+
+    def _randomize_dividing_colors(self):
+        self._perform_action(_GiveRandomLineageColor(color_only_if_dividing=True))
 
     def _on_mouse_click(self, event: MouseEvent):
         if event.xdata is None or event.ydata is None:
