@@ -67,10 +67,11 @@ You will now end up with a nice 3D view of the detected points. To save a movie,
 How to color the lineages correctly
 ===================================
 This assumes you want to color the lineage trees in the same way as OrganoidTracker does.
-1. Select the TableToPoints filter and color by lineage id.
+1. Select the TableToPoints filter and color by original_track_id (to color all cells)
+   or lineage_id (to color only cells that have divided or will divide during the time lapse).
 2. On the right of the screen you see a color panel. Make sure "Interpret Values as Categories" is OFF.
 3. Click "Choose Preset" (small square button with an icon, on the right of the "Mapping Data" color graph).
-4. Press the gear icon near the top right of the screen of the popup to show the advanced options. 
+4. In the dropdown-menu on the top right, change "default" into "All". 
 5. Import the lineage_colormap.json file from this folder, press Apply and close the popup. The colors of the spheres
    should change.
 6. Click "Rescale to custom range" (similar button to "Choose Preset") and set the scale from -1 to {links.get_highest_track_id()}.
