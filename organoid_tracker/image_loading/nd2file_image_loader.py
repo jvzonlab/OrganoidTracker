@@ -90,12 +90,12 @@ class _Nd2ImageLoader(ImageLoader):
             return None
 
         frame_number = time_point.time_point_number()
-        channel_name = image_channel.name
+        channel_index = self._channels.index(image_channel)
         depth, height, width = self.get_image_size_zyx()
         image = None
         for z in self._nd2_parser.metadata["z_levels"]:
             # Using "location - 1": Nikon NIS-Elements GUI is one-indexed, but save format is zero-indexed
-            frame = self._nd2_parser.get_image_by_attributes(frame_number, self._location - 1, channel_name, z, height, width)
+            frame = self._nd2_parser.get_image_by_attributes(frame_number, self._location - 1, channel_index, z, height, width)
             if image is None:
                 image = numpy.zeros((depth, height, width), dtype=frame.dtype)
             if len(frame) > 0:
@@ -114,9 +114,12 @@ class _Nd2ImageLoader(ImageLoader):
             return None
 
         frame_number = time_point.time_point_number()
-        channel_name = image_channel.name
+        channel_index = self._channels.index(image_channel)
         # Using "location - 1": Nikon NIS-Elements GUI is one-indexed, but save format is zero-indexed
-        return self._nd2_parser.get_image_by_attributes(frame_number, self._location - 1, channel_name, image_z, height, width)
+        image = self._nd2_parser.get_image_by_attributes(frame_number, self._location - 1, channel_index, image_z, height, width)
+        if len(image.shape) != 2:
+            return None
+        return image
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
         height = self._nd2_parser.metadata["height"]
