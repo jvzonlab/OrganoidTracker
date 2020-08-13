@@ -18,14 +18,16 @@ from organoid_tracker.linking_analysis.linking_markers import EndMarker
 
 def find_errors_in_experiment(experiment: Experiment) -> int:
     """Adds errors for all logical inconsistencies in the graph, like cells that spawn out of nowhere, cells that
-    merge together and cells that have three or more daughters. Returns the amount of errors."""
+    merge together and cells that have three or more daughters. Returns the amount of errors, exluding errors for
+     positions without links."""
     position_data = experiment.position_data
+    links = experiment.links
 
     count = 0
     for position in experiment.positions:
         error = get_error(experiment, position)
         linking_markers.set_error_marker(position_data, position, error)
-        if error is not None:
+        if error is not None and links.contains_position(position):
             count += 1
     return count
 
