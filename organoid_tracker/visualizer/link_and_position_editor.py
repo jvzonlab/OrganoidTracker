@@ -361,6 +361,9 @@ class LinkAndPositionEditor(AbstractEditor):
     def _on_key_press(self, event: KeyEvent):
         if event.key == "c":
             self._exit_view()
+        elif event.xdata is None or event.ydata is None:
+            # Rest of the keys requires a mouse position
+            super()._on_key_press(event)
         elif event.key == "e":
             position = self._get_position_at(event.xdata, event.ydata)
             self._show_linking_errors(position)
