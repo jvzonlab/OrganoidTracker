@@ -15,7 +15,7 @@ LIF files are used by Leica microscopes while ND2 files are used by Nikon micros
 ## A folder containing one 3D image for every time point
 Many biologists save images like `image_0.tif`, `image_1.tif`, `image_2.tif` etc., with each image representing a single channel of a single time point. If you load an image **from time point 0 or 1**, the program will automatically try to search for other images with a similar naming pattern. The program is able to recognize the following naming patterns:
 
-* Images **ending** with a `_` followed by a number, like `image_0.png`, `image_1.png`, `image_2.png`. The number will be interpreted as a time point number.
+* Images **ending** with a number, like `image0.png`, `image1.png`, `image2.png`. The number will be interpreted as a time point number.
 * Images **containing** the letter `t` followed by a number, like `nd56t1.tif`, `nd56t2.tif`. The number will be interpreted as a time point number. A captial `T` instead of a `t` is also allowed.
 * Images **containing** the letter `c` followed by a number, like `nd56t1c1.tif`, `nd56t1c2.tif`. The number will now be interpreted as a channel. A capital `C` instead of a `c` is also allowed.
 

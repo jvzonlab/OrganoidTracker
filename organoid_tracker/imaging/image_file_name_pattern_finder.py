@@ -37,11 +37,11 @@ def _find_time_pattern(file_name: str) -> Optional[str]:
         start, end = counting_part.start(0), counting_part.end(0)
         return _fixup_pattern("time", file_name[0:start] + "T{time:0" + str(end - start - 1) + "}" + file_name[end:])
 
-    # Support _001.
-    counting_part = re.search('_0*[01]\.', file_name)
+    # Support 001.(extension)
+    counting_part = re.search('0*[01]\.[A-Za-z]', file_name)
     if counting_part is not None:
         start, end = counting_part.start(0), counting_part.end(0)
-        return _fixup_pattern("time", file_name[0:start] + "_{time:0" + str(end - start - 2) + "}." + file_name[end:])
+        return _fixup_pattern("time", file_name[0:start] + "{time:0" + str(end - start - 3) + "}." + file_name[end-1:])
 
     # Fail
     return None
