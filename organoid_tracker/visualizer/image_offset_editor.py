@@ -49,6 +49,7 @@ class ImageOffsetEditor(ExitableImageVisualizer):
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
+            **super().get_extra_menu_options(),
             "Edit//Offsets-Reset all image offsets": self._reset_all_offsets
         }
 
