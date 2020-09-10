@@ -19,14 +19,40 @@ from organoid_tracker.linking_analysis.cell_fate_finder import CellFateType
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
+        "File//Export-Export positions//CSV, as px coordinates...":
+            lambda: _export_positions_px_as_csv(window),
         "File//Export-Export positions//CSV, as μm coordinates...":
-            lambda: _export_positions_as_csv(window, metadata=False),
+            lambda: _export_positions_um_as_csv(window, metadata=False),
         "File//Export-Export positions//CSV, as μm coordinates with metadata...":
-            lambda: _export_positions_as_csv(window, metadata=True),
+            lambda: _export_positions_um_as_csv(window, metadata=True),
     }
 
 
-def _export_positions_as_csv(window: Window, *, metadata: bool):
+def _export_positions_px_as_csv(window: Window):
+    experiment = window.get_experiment()
+    if not experiment.positions.has_positions():
+        raise UserError("No positions are found", "No annotated positions are found. Cannot export anything.")
+
+    folder = dialog.prompt_save_file("Select a directory", [("Folder", "*")])
+    if folder is None:
+        return
+    os.mkdir(folder)
+    positions = experiment.positions
+
+    file_prefix = experiment.name.get_save_name() + ".csv."
+    for time_point in positions.time_points():
+        offset = experiment.images.offsets.of_time_point(time_point)
+        file_name = os.path.join(folder, file_prefix + str(time_point.time_point_number()))
+        with open(file_name, "w") as file_handle:
+            file_handle.write("x,y,z\n")
+            for position in positions.of_time_point(time_point):
+                position_px = position - offset
+                file_handle.write(f"{position_px.x:.0f},{position_px.y:.0f},{position_px.z:.0f}\n")
+
+    dialog.popup_message("Positions", "Exported all positions as CSV files.")
+
+
+def _export_positions_um_as_csv(window: Window, *, metadata: bool):
     experiment = window.get_experiment()
     if not experiment.positions.has_positions():
         raise UserError("No positions are found", "No annotated positions are found. Cannot export anything.")
