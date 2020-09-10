@@ -81,11 +81,6 @@ class Dataset:
                                         lambda: (tf.reverse(image_data, [2]), tf.reverse(label, [2])),
                                         lambda: (image_data, label))
 
-            random_flip_z = tf.less(tf.random_uniform(()), 0.5)
-            image_data, label = tf.cond(random_flip_z,
-                                        lambda: (tf.reverse(image_data, [1]), tf.reverse(label, [1])),
-                                        lambda: (image_data, label))
-
             #TODO small translations in Z only
 
             #convert to NHWC for tf.image functions
