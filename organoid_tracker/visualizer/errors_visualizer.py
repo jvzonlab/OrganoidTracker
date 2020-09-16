@@ -1,7 +1,8 @@
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
 
 from matplotlib.backend_bases import KeyEvent
 
+from organoid_tracker.core import TimePoint
 from organoid_tracker.core.position import Position
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.window import Window
@@ -67,6 +68,8 @@ class ErrorsVisualizer(PositionListVisualizer):
             "Edit//Errors-Recheck all errors": self._recheck_errors,
             "Edit//Error settings-Change minimum allowed time in between divisions...": self._change_min_division_time,
             "Edit//Error settings-Change maximum allowed movement per minute...": self._change_max_distance,
+            "Edit//Correction settings-Change minimum time point for correction...": self._change_min_time_point,
+            "Edit//Correction settings-Change maximum time point for correction...": self._change_max_time_point,
             "Navigate//Lineage-Next lineage [Up]": self.__goto_next_lineage,
             "Navigate//Lineage-Previous lineage [Down]": self.__goto_previous_lineage
         }
@@ -94,6 +97,57 @@ class ErrorsVisualizer(PositionListVisualizer):
         if new_distance != old_distance:
             self._experiment.warning_limits.max_distance_moved_um_per_min = new_distance
             self._recheck_errors()
+
+    def _change_min_time_point(self):
+        # Find out the bounds
+        first_time_point_number, last_time_point_number = self._get_error_checking_time_points()
+
+        # Find the current value
+        current_min_time_point = self.get_window().display_settings.error_correction_min_time_point
+        if current_min_time_point is None:
+            current_min_time_point = TimePoint(first_time_point_number)
+
+        # Update new value
+        answer = dialog.prompt_int("Error checking", "At which time point should error checking start?",
+                                   default=current_min_time_point.time_point_number(), minimum=first_time_point_number,
+                                   maximum=last_time_point_number)
+        if answer is None:
+            return
+        new_min_time_point = None if answer <= first_time_point_number else TimePoint(answer)
+        self.get_window().display_settings.error_correction_min_time_point = new_min_time_point
+        self._recalculate_errors()
+        self.update_status("Now checking errors starting at time point " + str(answer) + ".")
+
+    def _change_max_time_point(self):
+        # Find out the bounds
+        first_time_point_number, last_time_point_number = self._get_error_checking_time_points()
+
+        # Find the current value
+        current_max_time_point = self.get_window().display_settings.error_correction_max_time_point
+        if current_max_time_point is None:
+            current_max_time_point = TimePoint(last_time_point_number)
+
+        # Update new value
+        answer = dialog.prompt_int("Error checking", "Up to and including which time point should error checking"
+                                   " continue?", default=current_max_time_point.time_point_number(),
+                                   minimum=first_time_point_number, maximum=last_time_point_number)
+        if answer is None:
+            return
+        new_max_time_point = None if answer >= last_time_point_number else TimePoint(answer)
+        self.get_window().display_settings.error_correction_max_time_point = new_max_time_point
+        self._recalculate_errors()
+        self.update_status("Now checking errors up too and including time point " + str(answer) + ".")
+
+    def _get_error_checking_time_points(self) -> Tuple[int, int]:
+        """Gets the min and max time point used for error checking. If no positions are loaded, arbitrary values are
+        returned."""
+        first_time_point_number = self._experiment.positions.first_time_point_number()
+        if first_time_point_number is None:
+            first_time_point_number = 0
+        last_time_point_number = self._experiment.positions.last_time_point_number()
+        if last_time_point_number is None:
+            last_time_point_number = 9999
+        return first_time_point_number, last_time_point_number
 
     def get_message_no_positions(self):
         if len(self._problematic_lineages) > 0:
@@ -131,6 +185,12 @@ class ErrorsVisualizer(PositionListVisualizer):
         activate(ErrorsVisualizer(self.get_window(), selected_position))
         self.update_status("Rechecked all cells in the experiment. "
                            "Please note that suppressed warnings remain suppressed.")
+
+    def _recalculate_errors(self):
+        selected_position = None
+        if 0 <= self._current_position_index < len(self._position_list):
+            selected_position = self._position_list[self._current_position_index]
+        activate(ErrorsVisualizer(self.get_window(), selected_position))
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "e":
