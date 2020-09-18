@@ -20,8 +20,12 @@ def get_menu_items(window: Window):
 
 
 def _prompt_average_movement_speed(window: Window):
-    experiment = window.get_experiment()
-    distances_um = _get_average_movement_speed(experiment)
+    # Collect all distances, switch to 2D
+    distances_um = []
+    for experiment in window.get_active_experiments():
+        distances_um.append(_get_average_movement_speed(experiment))
+    distances_um = numpy.array(distances_um).flatten()
+
     mean = numpy.mean(distances_um)
     stdev = numpy.std(distances_um)
     result = dialog.prompt_options("Average movement speed",
