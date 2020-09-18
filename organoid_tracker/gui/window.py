@@ -119,11 +119,11 @@ class Window:
             self.__q_window.setWindowTitle(APP_NAME + " - " + text)
 
     def get_experiment(self) -> Experiment:
-        """Gets the experiment that is being shown."""
-        return self.__gui_experiment.experiment
+        """Gets the experiment that is being shown. Raises UserError if no particular experiment was selected."""
+        return self.__gui_experiment.get_experiment()
 
-    def get_experiments(self) -> Iterable[Experiment]:
-        return self.__gui_experiment.get_experiments()
+    def get_active_experiments(self) -> Iterable[Experiment]:
+        return self.__gui_experiment.get_active_experiments()
 
     def get_gui_experiment(self) -> GuiExperiment:
         """Gets the GUI experiment, which stores the experiment along with undo/redo data, and some other non-saveable

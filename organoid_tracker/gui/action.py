@@ -184,7 +184,7 @@ def save_tracking_data(gui_experiment: GuiExperiment) -> bool:
     if not data_file:
         return False # Cancelled
 
-    io.save_data_to_json(gui_experiment.experiment, data_file)
+    io.save_data_to_json(gui_experiment.get_experiment(), data_file)
     gui_experiment.undo_redo.mark_everything_saved()
     return True
 

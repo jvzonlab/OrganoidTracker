@@ -49,7 +49,7 @@ class _PruneTask(Task):
 
     def __init__(self, experiment_gui: GuiExperiment, prune_mask_file: str, max_distance_um: float):
         self._experiment_gui = experiment_gui
-        self._experiment = experiment_gui.experiment
+        self._experiment = experiment_gui.get_experiment()
         self._positions_copy = self._experiment.positions.copy()
         self._resolution = self._experiment.images.resolution()
         self._prune_mask_file = prune_mask_file

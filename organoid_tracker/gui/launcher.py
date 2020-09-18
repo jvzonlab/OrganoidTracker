@@ -224,10 +224,10 @@ def _connect_toolbar_actions(toolbar: Toolbar, window: Window):
     def update_experiment_list(*args):
         selected_index = 0
         experiment_names = []
-        for i, experiment in enumerate(window.get_gui_experiment().get_experiments()):
-            if experiment is window.get_gui_experiment().experiment:
+        for i, experiment_name in window.get_gui_experiment().get_selectable_experiments():
+            if window.get_gui_experiment().is_selected(i):
                 selected_index = i
-            experiment_names.append(str(experiment.name))
+            experiment_names.append(experiment_name)
         toolbar.update_selectable_experiments(experiment_names, selected_index)
     toolbar.new_handler = new
     toolbar.close_handler = close

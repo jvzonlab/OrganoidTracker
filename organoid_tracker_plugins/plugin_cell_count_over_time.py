@@ -3,8 +3,6 @@ from typing import Tuple, List, Dict, Any
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from organoid_tracker.core.position_collection import PositionCollection
-from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.window import Window
 from organoid_tracker.util.mpl_helper import SANDER_APPROVED_COLORS

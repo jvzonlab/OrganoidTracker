@@ -7,7 +7,7 @@ from matplotlib.figure import Figure, Axes
 from numpy import ndarray
 
 from organoid_tracker import core
-from organoid_tracker.core import TimePoint
+from organoid_tracker.core import TimePoint, UserError
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.resolution import ImageResolution
@@ -53,7 +53,11 @@ class Visualizer:
     def _experiment(self) -> Experiment:
         """By making this a dynamic property (instead of just using self._experiment = window.get_experiment()), its
         value is always up-to-date, even if window.set_experiment(...) is called."""
-        return self._window.get_experiment()
+        try:
+            return self._window.get_experiment()
+        except UserError:
+            # Just use an empty experiment
+            return Experiment()
 
     @property
     def _time_point(self) -> TimePoint:

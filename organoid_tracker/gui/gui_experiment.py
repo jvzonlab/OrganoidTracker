@@ -1,4 +1,4 @@
-from typing import Callable, List, Dict, Any, Iterable, Optional, Type
+from typing import Callable, List, Dict, Any, Iterable, Optional, Type, Tuple
 
 from organoid_tracker.core import UserError
 from organoid_tracker.core.experiment import Experiment
@@ -46,6 +46,7 @@ class _SingleGuiExperiment:
     def __repr__(self) -> str:
         return "<Experiment " + self.experiment.name.get_save_name() + ">"
 
+
 class GuiExperiment:
     """Used to store the experiment, along with some data that is only relevant within a GUI app, but that doesn't
     need to be saved."""
@@ -53,7 +54,7 @@ class GuiExperiment:
     KNOWN_EVENTS = {"data_updated_event", "any_updated_event", "command_event"}
 
     _experiments: List[_SingleGuiExperiment]
-    _selected_experiment: int
+    _selected_experiment: int  # Index in self._experiments, or equal to len(self._experiments) if all are open.
     _data_updated_handlers: _EventListeners
     _any_updated_event: _EventListeners
     _command_handlers: _EventListeners
@@ -71,10 +72,6 @@ class GuiExperiment:
     @property  # read-only
     def undo_redo(self) -> UndoRedo:
         return self._experiments[-1].undo_redo
-
-    @property  # read-only
-    def experiment(self) -> Experiment:
-        return self._experiments[self._selected_experiment].experiment
 
     def register_event_handler(self, event: str, source: str, action: Callable):
         """Registers an event handler. Supported events:
@@ -118,8 +115,8 @@ class GuiExperiment:
 
     def add_experiment(self, experiment: Experiment):
         # Remove current experiment if it contains no data
-        if self.experiment.first_time_point_number() is None:
-            self._remove_experiment_without_update(self.experiment)
+        if self.get_experiment().first_time_point_number() is None:
+            self._remove_experiment_without_update(self.get_experiment())
 
         # Add new experiment
         self._experiments.append(_SingleGuiExperiment(experiment))
@@ -131,10 +128,23 @@ class GuiExperiment:
         self._experiments[self._selected_experiment] = _SingleGuiExperiment(experiment)
         self._any_updated_event.call_all()
 
-    def get_experiments(self) -> Iterable[Experiment]:
-        """Gets all currently loaded experiments."""
-        for gui_experiment in self._experiments:
-            yield gui_experiment.experiment
+    def get_experiment(self) -> Experiment:
+        """Gets the currently selected experiment. Raises UserError if no particular experiment has been selected."""
+        if self._selected_experiment == len(self._experiments):
+            # Not available when all experiments are open
+            raise UserError("No experiment selected", "This function only works on a single experiment. Please select"
+                                                      " one in the upper-right corner of the window.")
+        return self._experiments[self._selected_experiment].experiment
+
+    def get_active_experiments(self) -> Iterable[Experiment]:
+        """Gets all currently active experiments. This will usually be one experiment,
+        but the user has the option to open all experiments."""
+        if self._selected_experiment == len(self._experiments):
+            # All are open
+            for gui_experiment in self._experiments:
+                yield gui_experiment.experiment
+        # One experiment is open
+        yield self._experiments[self._selected_experiment]
 
     def _remove_experiment_without_update(self, experiment: Experiment):
         """Removes an experiment. Does not add a new experiment in case the list becomes empty."""
@@ -171,11 +181,25 @@ class GuiExperiment:
             raise ValueError("No time point number set")
         self.execute_command(f"goto {position.x} {position.y} {position.z} {position.time_point_number()}")
 
+    def get_selectable_experiments(self) -> Iterable[Tuple[int, str]]:
+        """Gets all selectable experiment names, along with an index for self.select_experiment()"""
+        for i, gui_experiment in enumerate(self._experiments):
+            yield i, str(gui_experiment.experiment.name)
+        if len(self._experiments) > 1:
+            yield len(self._experiments), "<all experiments>"
+
+    def is_selected(self, select_index: int) -> bool:
+        """Checks if the select_index is of the currently selected experiment."""
+        return select_index == self._selected_experiment
+
     def select_experiment(self, index: int):
-        """Sets the experiment with the given index (from get_experiments()) as the visible experiment."""
-        if index < 0 or index >= len(self._experiments):
-            raise ValueError(f"Out of range: {index}")
+        """Sets the experiment with the given index (from self.get_selectable_experiments()) as the visible
+        experiment."""
         if self._selected_experiment == index:
             return  # Nothing changed
+        if index < 0 or index > len(self._experiments):
+            raise ValueError(f"Out of range: {index}")
+
         self._selected_experiment = index
         self._any_updated_event.call_all()
+

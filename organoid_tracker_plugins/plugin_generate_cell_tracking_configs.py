@@ -54,25 +54,24 @@ def _popup_confirmaton(output_folder: str, script_name: str, ):
 
 def _generate_training_config(window: Window):
     """For training the neural network."""
-    experiments = list(window.get_experiments())
+    experiments = list(window.get_active_experiments())
     if len(experiments) == 0:
-        raise UserError("No experimental data loaded", "No projects are open. Please load all data (images and"
+        raise UserError("No experimental data loaded", "No experiments are open. Please load all data (images and"
                                                        " tracking data) that you want to use for training.")
+    if len(experiments) == 1:
+        if not dialog.prompt_yes_no("Experiments", "Only one experiment is currently open. Training on a single data"
+                                                   " set is not recommended. For a quick test it's fine, but ideally"
+                                                   " you should have a more data sets open. So please load multiple"
+                                                   " datasets and have them all open (see the dropdown at the top-right"
+                                                   " of the main window)."
+                                                   "\n\nDo you want to continue with just this data set?"):
+            return
 
-    if not dialog.popup_message_cancellable("Output folder",
-                                            "All projects that are currently open will be used for training. You will"
-                                            " be asked to select an output folder for training."):
-        return
     save_directory = dialog.prompt_save_file("Output directory", [("Folder", "*")])
     if save_directory is None:
         return
 
     config = ConfigFile("train_network", folder_name=save_directory)
-    if len(experiments) == 1:
-        if not dialog.prompt_yes_no("Experiments", "Only one project is open. Training on a single data set is not"
-                                                   " recommended. For a quick test it's fine, but ideally you should have a more"
-                                                   " data sets loaded.\n\nDo you want to continue with just this data set?"):
-            return
 
     config.get_or_default("max_training_steps", "100000")
     config.get_or_default("patch_shape",

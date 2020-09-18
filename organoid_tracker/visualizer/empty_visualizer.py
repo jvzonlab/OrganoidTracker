@@ -1,3 +1,4 @@
+from organoid_tracker.core import UserError
 from organoid_tracker.gui.window import Window
 from organoid_tracker.visualizer.standard_image_visualizer import StandardImageVisualizer
 from organoid_tracker.visualizer import Visualizer, activate
