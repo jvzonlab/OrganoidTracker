@@ -144,7 +144,7 @@ class GuiExperiment:
             for gui_experiment in self._experiments:
                 yield gui_experiment.experiment
         # One experiment is open
-        yield self._experiments[self._selected_experiment]
+        yield self._experiments[self._selected_experiment].experiment
 
     def _remove_experiment_without_update(self, experiment: Experiment):
         """Removes an experiment. Does not add a new experiment in case the list becomes empty."""
