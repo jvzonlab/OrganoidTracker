@@ -74,8 +74,8 @@ class _GiveRandomLineageColor(UndoableAction):
                 self._old_colors[links.get_track_id(starting_track)] = lineage_markers.get_color(links, track)
                 lineage_markers.set_color(links, track, color)
         if self._color_only_if_dividing:
-            return "Changed all lineages with cell divisions to have a single, random color"
-        return "Changed all lineages to have a single, random color"
+            return "Changed all lineages with cell divisions to have a single, random color."
+        return "Changed all lineages to have a single, random color."
 
     def undo(self, experiment: Experiment) -> str:
         links = experiment.links
@@ -83,7 +83,35 @@ class _GiveRandomLineageColor(UndoableAction):
             old_color = self._old_colors.get(track_id)
             if old_color is not None:
                 lineage_markers.set_color(links, track, old_color)
-        return "Restored the original color of all lineages"
+        self._old_colors.clear()
+        return "Restored the original color of all lineages."
+
+
+class _RemoveColors(UndoableAction):
+    _old_colors: Dict[Position, Color]
+
+    def __init__(self):
+        self._old_colors = dict()
+
+    def do(self, experiment: Experiment) -> str:
+        black = Color.black()
+        links = experiment.links
+        for starting_track in links.find_starting_tracks():
+            old_color = lineage_markers.get_color(links, starting_track)
+            if old_color != black:
+                self._old_colors[starting_track.find_first_position()] = old_color
+            lineage_markers.set_color(links, starting_track, black)
+
+        return "Removed all colors. Don't worry, we have undo functionality."
+
+    def undo(self, experiment: Experiment) -> str:
+        links = experiment.links
+        for position, color in self._old_colors.items():
+            track = links.get_track(position)
+            if track is not None:
+                lineage_markers.set_color(links, track, color)
+        self._old_colors.clear()  # Not needed anymore
+        return "Restored the original color of all lineages."
 
 
 class _CellsColoredByLineageVisualizer(AbstractEditor):
@@ -97,9 +125,13 @@ class _CellsColoredByLineageVisualizer(AbstractEditor):
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
             **super().get_extra_menu_options(),
-            "Edit//Randomize-Randomize colors//All lineages": self._randomize_all_colors,
-            "Edit//Randomize-Randomize colors//Dividing lineages only": self._randomize_dividing_colors
+            "Edit//Color-Remove all colors": self._remove_all_colors,
+            "Edit//Color-Randomize colors//All lineages": self._randomize_all_colors,
+            "Edit//Color-Randomize colors//Dividing lineages only": self._randomize_dividing_colors
         }
+
+    def _remove_all_colors(self):
+        self._perform_action(_RemoveColors())
 
     def _randomize_all_colors(self):
         self._perform_action(_GiveRandomLineageColor(color_only_if_dividing=False))
