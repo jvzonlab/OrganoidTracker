@@ -238,7 +238,8 @@ def _write_positions_and_metadata_to_csv(positions: PositionCollection, position
     from organoid_tracker.linking import cell_division_finder
     from organoid_tracker.position_analysis import cell_density_calculator
     from organoid_tracker.linking_analysis import lineage_id_creator, linking_markers, cell_division_counter, cell_nearby_death_counter,\
-        cell_fate_finder
+        cell_fate_finder, cell_compartment_finder
+    from organoid_tracker.linking_analysis.cell_compartment_finder import CellCompartment
 
     deaths_nearby_tracks = cell_nearby_death_counter.NearbyDeaths(links, position_data, resolution)
     first_time_point_number = positions.first_time_point_number()
@@ -247,8 +248,9 @@ def _write_positions_and_metadata_to_csv(positions: PositionCollection, position
     for time_point in positions.time_points():
         file_name = os.path.join(folder, file_prefix + str(time_point.time_point_number()))
         with open(file_name, "w") as file_handle:
-            file_handle.write("x,y,z,density_mm1,times_divided,times_neighbor_died,cell_type_id,"
-                              "hours_until_division,hours_until_dead,hours_since_division,lineage_id,original_track_id\n")
+            file_handle.write("x,y,z,density_mm1,times_divided,times_neighbor_died,cell_in_dividing_compartment,"
+                              "cell_type_id,hours_until_division,hours_until_dead,hours_since_division,lineage_id,"
+                              "original_track_id\n")
             positions_of_time_point = positions.of_time_point(time_point)
             for position in positions_of_time_point:
                 lineage_id = lineage_id_creator.get_lineage_id(links, position)
@@ -257,6 +259,10 @@ def _write_positions_and_metadata_to_csv(positions: PositionCollection, position
                 density = cell_density_calculator.get_density_mm1(positions_of_time_point, position, resolution)
                 times_divided = cell_division_counter.find_times_divided(links, position, first_time_point_number)
                 times_neighbor_died = deaths_nearby_tracks.count_nearby_deaths_in_past(links, position)
+                cell_compartment_id = cell_compartment_finder.find_compartment_ext(positions, links, resolution,
+                                             division_lookahead_time_points, position).value
+                if cell_compartment_id == cell_compartment_finder.CellCompartment.UNKNOWN.value:
+                    cell_compartment_id = None  # Set to none if unknown
                 cell_fate = cell_fate_finder.get_fate_ext(links, position_data, division_lookahead_time_points, position)
                 hours_until_division = cell_fate.time_points_remaining * resolution.time_point_interval_h \
                         if cell_fate.type == CellFateType.WILL_DIVIDE else -1
@@ -271,9 +277,9 @@ def _write_positions_and_metadata_to_csv(positions: PositionCollection, position
 
                 vector = position.to_vector_um(resolution)
                 file_handle.write(f"{vector.x},{vector.y},{vector.z},{density},{_str(times_divided)},"
-                                  f"{times_neighbor_died},{_str(cell_type_id)},{_str(hours_until_division)},"
-                                  f"{_str(hours_until_dead)},{_str(hours_since_division)},{lineage_id},"
-                                  f"{original_track_id}\n")
+                                  f"{times_neighbor_died},{_str(cell_compartment_id)},{_str(cell_type_id)},"
+                                  f"{_str(hours_until_division)},{_str(hours_until_dead)},{_str(hours_since_division)},"
+                                  f"{lineage_id},{original_track_id}\n")
 
 
 def _export_colormap_file(folder: str, links: Links):
