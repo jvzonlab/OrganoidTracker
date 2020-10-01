@@ -94,7 +94,7 @@ class _MovieGenerator(Task):
 
 
 def _draw_marker(image_rgb: ndarray, image_x: float, image_y: float):
-    cv2.circle(image_rgb, (int(image_x), int(image_y)), radius=7, color=(142, 68, 173),  # Magenta
+    cv2.circle(image_rgb, (int(image_x), int(image_y)), radius=7, color=(255, 0, 255),  # Magenta
                thickness=-1)
 
 
