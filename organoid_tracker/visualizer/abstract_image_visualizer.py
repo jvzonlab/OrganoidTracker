@@ -391,7 +391,7 @@ class AbstractImageVisualizer(Visualizer):
                                 f"{max_value}.")
         return {
             **super().get_extra_menu_options(),
-            "File//Export-Export 3D image...": self._export_3d_image,
+            "File//Export-Export image//3D TIF stack...": self._export_3d_image,
             "View//Toggle-Toggle showing two time points [" + DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + "]":
                 self._toggle_showing_next_time_point,
             "View//Toggle-Toggle showing images [" + DisplaySettings.KEY_SHOW_IMAGES.upper() + "]":
