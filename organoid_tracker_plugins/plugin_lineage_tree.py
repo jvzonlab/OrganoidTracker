@@ -2,6 +2,7 @@ from typing import Dict, Any, Tuple, Set, Optional
 
 from matplotlib.backend_bases import MouseEvent
 import matplotlib.colors
+import matplotlib.cm
 
 from organoid_tracker.core import UserError, Color
 from organoid_tracker.core.links import LinkingTrack, Links
@@ -16,6 +17,9 @@ from organoid_tracker.linking_analysis.lineage_division_counter import get_min_d
 from organoid_tracker.linking_analysis.lineage_drawing import LineageDrawing
 from organoid_tracker.linking_analysis.linking_markers import EndMarker
 from organoid_tracker.visualizer import Visualizer
+
+
+_SPLINE_COLORMAP = matplotlib.cm.get_cmap("YlOrBr")
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -43,7 +47,8 @@ class LineageTreeVisualizer(Visualizer):
     _display_warnings: bool = True
     _display_manual_colors: bool = False
     _display_cell_type_colors: bool = True
-    _display_track_id: bool = True
+    _display_axis_colors: bool = False
+    _display_track_id: bool = False
 
     def __init__(self, window: Window):
         super().__init__(window)
@@ -53,11 +58,17 @@ class LineageTreeVisualizer(Visualizer):
         return {
             "View//Toggles-Toggle showing warnings": self._toggle_errors,
             "View//Toggles-Toggle showing deaths": self._toggle_deaths,
-            "View//Toggles-Toggle showing cell types": self._toggle_cell_types,
-            "View//Toggles-Toggle showing manual colors": self._toggle_manual_colors,
             "View//Toggles-Toggle showing lineage ids": self._toggle_track_id,
+            "View//Color toggles-Toggle showing cell types": self._toggle_cell_types,
+            "View//Color toggles-Toggle showing manual colors": self._toggle_manual_colors,
+            "View//Color toggles-Toggle showing axis positions": self._toggle_axis_colors,
             "View//Divisions-Require X amount of divisions...": self._set_minimum_divisions
         }
+
+    def _uncolor_lineages(self):
+        self._display_cell_type_colors = False
+        self._display_axis_colors = False
+        self._display_manual_colors = False
 
     def _toggle_deaths(self):
         self._display_deaths = not self._display_deaths
@@ -71,11 +82,9 @@ class LineageTreeVisualizer(Visualizer):
         self._display_cell_type_colors = not self._display_cell_type_colors
 
         if self._display_cell_type_colors:
-            if self._display_manual_colors:
-                self._display_manual_colors = False
-                self.update_status("Now coloring by cell type; turned off showing manual colors.")
-            else:
-                self.update_status("Now coloring by cell type")
+            self._uncolor_lineages()
+            self._display_cell_type_colors = True
+            self.update_status("Now coloring by cell type; turned off other lineage coloring")
         else:
             self.update_status("No longer coloring by cell type")
         self.draw_view()
@@ -83,13 +92,21 @@ class LineageTreeVisualizer(Visualizer):
     def _toggle_manual_colors(self):
         self._display_manual_colors = not self._display_manual_colors
         if self._display_manual_colors:
-            if self._display_cell_type_colors:
-                self._display_cell_type_colors = False
-                self.update_status("Now coloring by manually assigned colors; turned off showing colors based on cell type")
-            else:
-                self.update_status("Now coloring by manually assigned colors")
+            self._uncolor_lineages()
+            self._display_manual_colors = True
+            self.update_status("Now coloring by manually assigned colors; turned off other lineage coloring")
         else:
             self.update_status("No longer coloring by manually assigned colors")
+        self.draw_view()
+
+    def _toggle_axis_colors(self):
+        self._display_axis_colors = not self._display_axis_colors
+        if self._display_axis_colors:
+            self._uncolor_lineages()
+            self._display_axis_colors = True
+            self.update_status("Now coloring by axis position; turned off other lineage coloring")
+        else:
+            self.update_status("No longer coloring by axis position")
         self.draw_view()
 
     def _toggle_track_id(self):
@@ -128,6 +145,28 @@ class LineageTreeVisualizer(Visualizer):
                 color = lineage_markers.get_color(links, track)
                 self._give_lineage_color(track, color)
 
+    def _calculate_axis_positions_if_enabled(self) -> Tuple[Dict[Position, float], float]:
+        """Calculates, for all positions in the experiment, the position on the axis."""
+        all_positions = dict()
+        max_position = 0.001
+        if not self._display_axis_colors:
+            # Skip rest of method, coloring this way is disabled.
+            return all_positions, max_position
+
+        experiment = self._experiment
+        splines = experiment.splines
+        positions = experiment.positions
+        for time_point in positions.time_points():
+            for position in positions.of_time_point(time_point):
+                axis_position = splines.to_position_on_original_axis(experiment.links, position)
+                if axis_position is None:
+                    continue
+                axis_position_float = axis_position.pos
+                all_positions[position] = axis_position_float
+                max_position = max(max_position, axis_position_float)
+
+        return all_positions, max_position
+
     def _give_lineage_color(self, linking_track: LinkingTrack, color: Color):
         """Gives a while lineage (including all children) a color."""
         self._track_to_manual_color[linking_track] = color
@@ -143,6 +182,8 @@ class LineageTreeVisualizer(Visualizer):
         links.sort_tracks_by_x()
 
         self._calculate_track_colors()
+        axis_positions, highest_axis_position = self._calculate_axis_positions_if_enabled()
+        print(axis_positions, highest_axis_position)
 
         def color_getter(time_point_number: int, track: LinkingTrack) -> Tuple[float, float, float]:
             if self._display_warnings:
@@ -159,6 +200,11 @@ class LineageTreeVisualizer(Visualizer):
                 color = self._track_to_manual_color.get(track)
                 if color is not None:
                     return color.to_rgb_floats()
+            if self._display_axis_colors:
+                axis_position = axis_positions.get(track.find_position_at_time_point_number(time_point_number))
+                if axis_position is not None:
+                    color_fraction = axis_position / highest_axis_position * 0.8 + 0.2
+                    return _SPLINE_COLORMAP(color_fraction)
             if self._display_cell_type_colors:
                 color = self._get_type_color(track.find_position_at_time_point_number(time_point_number))
                 if color is not None:
