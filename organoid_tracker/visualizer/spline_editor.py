@@ -132,10 +132,10 @@ class SplineEditor(AbstractEditor):
             links = self._experiment.links
             position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
             spline_position = self._experiment.splines.to_position_on_spline(position)
-            if spline_position is None or spline_position.distance > 10 or spline_position.axis_id == self._selected_spline_id:
+            if spline_position is None or spline_position.distance > 10 or spline_position.spline_id == self._selected_spline_id:
                 self._selected_spline_id = None
             else:
-                self._selected_spline_id = spline_position.axis_id
+                self._selected_spline_id = spline_position.spline_id
             self.draw_view()
 
     def _get_figure_title(self) -> str:
@@ -160,7 +160,7 @@ class SplineEditor(AbstractEditor):
         if spline_position is None:
             return super()._on_position_draw(position, color, dz, dt)
 
-        background_color = (1, 1, 1, 0.8) if spline_position.axis_id == self._selected_spline_id else (0, 1, 0, 0.8)
+        background_color = (1, 1, 1, 0.8) if spline_position.spline_id == self._selected_spline_id else (0, 1, 0, 0.8)
         self._draw_annotation(position, f"{spline_position.pos:.1f}", background_color=background_color)
 
     def _draw_spline(self, data_axis: Spline, id: int, color: str, marker_size_max: int):

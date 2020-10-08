@@ -30,17 +30,17 @@ def _view_cell_death_locations(window: Window):
     for dead_cell in linking_markers.find_shed_positions(experiment.links, experiment.position_data):
         crypt_position = data_axes.to_position_on_original_axis(experiment.links, dead_cell)
         if crypt_position is not None:
-            if crypt_position.axis_id not in death_crypt_positions:
-                death_crypt_positions[crypt_position.axis_id] = []
-            death_crypt_positions[crypt_position.axis_id].append(crypt_position.pos * resolution.pixel_size_x_um)
+            if crypt_position.spline_id not in death_crypt_positions:
+                death_crypt_positions[crypt_position.spline_id] = []
+            death_crypt_positions[crypt_position.spline_id].append(crypt_position.pos * resolution.pixel_size_x_um)
 
     mother_crypt_positions = dict()
     for mother_cell in cell_division_finder.find_mothers(experiment.links):
         crypt_position = data_axes.to_position_on_original_axis(experiment.links, mother_cell)
         if crypt_position is not None:
-            if crypt_position.axis_id not in mother_crypt_positions:
-                mother_crypt_positions[crypt_position.axis_id] = []
-            mother_crypt_positions[crypt_position.axis_id].append(crypt_position.pos * resolution.pixel_size_x_um)
+            if crypt_position.spline_id not in mother_crypt_positions:
+                mother_crypt_positions[crypt_position.spline_id] = []
+            mother_crypt_positions[crypt_position.spline_id].append(crypt_position.pos * resolution.pixel_size_x_um)
 
     cell_densities = _get_cell_densities(experiment)
 

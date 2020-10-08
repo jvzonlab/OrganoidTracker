@@ -46,9 +46,9 @@ def _get_crypt_axis_positions(experiment: Experiment, time_point: Optional[TimeP
     for position in positions:
         axis_position = data_axes.to_position_on_original_axis(links, position)
         if axis_position is not None:
-            if axis_position.axis_id not in return_value:
-                return_value[axis_position.axis_id] = []
-            return_value[axis_position.axis_id].append(axis_position.pos * resolution.pixel_size_x_um)
+            if axis_position.spline_id not in return_value:
+                return_value[axis_position.spline_id] = []
+            return_value[axis_position.spline_id].append(axis_position.pos * resolution.pixel_size_x_um)
 
     return return_value
 

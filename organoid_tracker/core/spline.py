@@ -21,13 +21,13 @@ class SplinePosition:
     to the spline are recorded."""
 
     spline: "Spline"  # The spline at a particular time point.
-    axis_id: int  # Used to identify the data axis over multiple time points.
+    spline_id: int  # Used to identify the data axis over multiple time points.
     pos: float  # The position on the spline in pixels.
     distance: float  # The distance from the point to the nearest point on the data axis.
 
     def __init__(self, axis: "Spline", pos: float, distance: float):
         self.spline = axis
-        self.axis_id = 0
+        self.spline_id = 0
         self.pos = pos
         self.distance = distance
 
@@ -341,7 +341,7 @@ class SplineCollection:
             axis_position = data_axis.to_position_on_axis(position)
             if axis_position is None:
                 continue
-            axis_position.axis_id = axis_id
+            axis_position.spline_id = axis_id
             if lowest_distance_position is None or axis_position.distance < lowest_distance_position.distance:
                 lowest_distance_position = axis_position
         return lowest_distance_position
@@ -357,10 +357,10 @@ class SplineCollection:
         if first_axis_position is None:
             return None
         for axis_id, axis in self.of_time_point(position.time_point()):
-            if axis_id == first_axis_position.axis_id:
+            if axis_id == first_axis_position.spline_id:
                 position = axis.to_position_on_axis(position)
                 if position is not None:
-                    position.axis_id = axis_id
+                    position.spline_id = axis_id
                 return position
 
     def add_spline(self, time_point: TimePoint, path: Spline, spline_id: Optional[int]) -> int:
