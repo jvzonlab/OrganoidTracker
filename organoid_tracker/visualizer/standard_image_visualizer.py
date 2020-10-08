@@ -52,15 +52,15 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             "File//Export-Export 2D depth-colored image//All time points...": self._export_depth_colored_movie,
             "Edit//Batch-Merge tracking data...": self._ask_merge_experiments,
             "Edit//Experiment-Manually change data... [C]": self._show_data_editor,
-            "View//Cells-Cell divisions... [M]": self._show_mother_cells,
-            "View//Cells-Cell shedding and deaths... [S]": self._show_dead_cells,
-            "View//Cells-Cell density...": self._show_cell_density,
-            "View//Cells-Cell curvature...": self._show_cell_curvature,
+            "View//Analyze-Lists//Cell divisions... [M]": self._show_mother_cells,
+            "View//Analyze-Lists//Cell shedding and deaths... [S]": self._show_dead_cells,
+            "View//Analyze-Cell properties//Cell density...": self._show_cell_density,
+            "View//Analyze-Cell properties//Cell curvature...": self._show_cell_curvature,
             "View//Tracks-Track follower... [T]": self._show_track_follower,
-            "View//Tracks-Movement arrows...": self._show_movement_arrows,
-            "View//Tracks-Cell fates...": self._show_cell_fates,
-            "View//Tracks-Cell compartments...": self._show_cell_compartments,
-            "View//Tracks-Whole lineage fates...": self._show_lineage_fates,
+            "View//Analyze-Analyze fate of cells//Movement arrows...": self._show_movement_arrows,
+            "View//Analyze-Analyze fate of cells//Cell fates...": self._show_cell_fates,
+            "View//Analyze-Analyze fate of cells//Cell compartments...": self._show_cell_compartments,
+            "View//Analyze-Analyze fate of cells//Whole lineage fates...": self._show_lineage_fates,
         }
 
     def _get_must_show_plugin_menus(self) -> bool:

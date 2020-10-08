@@ -15,7 +15,7 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
         "View//Image-Image filters//Increase brightness...": lambda: _enhance_brightness(window),
         "View//Image-Image filters//Threshold...": lambda: _threshold(window),
         "View//Image-Image filters//Gaussian blur...": lambda: _gaussian_blur(window),
-        "View//Image-Image filters//Remove all filters": lambda: _remove_filters(window)
+        "View//Image-Image filters//Remove-Remove all filters": lambda: _remove_filters(window)
     }
 
 
