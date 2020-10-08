@@ -101,9 +101,7 @@ class Visualizer:
             def on_finished(self, result: Any):
                 result_handler(result)
 
-        def internal():
-            self._window.get_scheduler().add_task(MyTask())
-        return internal
+        self._window.get_scheduler().add_task(MyTask())
 
     def draw_view(self):
         """Draws the view."""
