@@ -101,7 +101,7 @@ def load_images(window: Window):
         if file_name_lower.endswith(".tif") or file_name_lower.endswith(".tiff"):
             # Try as TIF container
             from organoid_tracker.image_loading import merged_tiff_image_loader
-            merged_tiff_image_loader.load_from_tif_file(window.get_experiment().images, full_path)
+            merged_tiff_image_loader.load_from_tif_file(window.get_experiment(), full_path)
             window.redraw_all()
             return
         dialog.popup_message("Could not read file pattern", "Could not find 't01' (or similar) in the file name \"" +

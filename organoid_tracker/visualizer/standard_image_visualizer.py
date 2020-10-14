@@ -48,8 +48,8 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     def get_extra_menu_options(self):
         return {
             **super().get_extra_menu_options(),
-            "File//Export-Export 2D depth-colored image//This time point...": self._export_depth_colored_image,
-            "File//Export-Export 2D depth-colored image//All time points...": self._export_depth_colored_movie,
+            "File//Export-Export image//Projection-Depth-colored projection...": self._export_depth_colored_image,
+            "File//Export-Export movie//Projection-Depth-colored projection...": self._export_depth_colored_movie,
             "Edit//Batch-Merge tracking data...": self._ask_merge_experiments,
             "Edit//Experiment-Manually change data... [C]": self._show_data_editor,
             "View//Analyze-Lists//Cell divisions... [M]": self._show_mother_cells,

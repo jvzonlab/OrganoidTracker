@@ -40,7 +40,7 @@ class _CachedImageLoader(ImageLoader):
                 try:
                     # Found cache entry for this z
                     image_layers_by_z[cached_z] = entry[3]
-                except KeyError:
+                except IndexError:
                     pass  # Ignore, image contains extra z levels
         if self._is_complete(image_layers_by_z):
             # Collected all necessary cache entries

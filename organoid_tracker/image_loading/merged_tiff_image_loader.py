@@ -1,28 +1,36 @@
+import os.path
 from typing import Tuple, Any, List, Optional
 
 import numpy
+import tifffile
 from numpy.core.multiarray import ndarray
 from tifffile import TiffFile, TiffPageSeries
-import tifffile
 from tifffile.tifffile import TiffTags
 
 from organoid_tracker.core import TimePoint, max_none, min_none, UserError
+from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.image_loader import ImageLoader, ImageChannel
-from organoid_tracker.core.images import Images
 from organoid_tracker.core.resolution import ImageResolution
 
 
-def load_from_tif_file(images: Images, file: str, min_time_point: Optional[int] = None, max_time_point: Optional[int] = None):
+def load_from_tif_file(experiment: Experiment, file: str, min_time_point: Optional[int] = None,
+                       max_time_point: Optional[int] = None):
     """Creates an image loader for the individual images in the TIF file."""
     image_loader = _MergedTiffImageLoader(file, min_time_point, max_time_point)
-    images.image_loader(image_loader)
+    experiment.images.image_loader(image_loader)
+
+    # Update resolution
     try:
-        images.resolution()  # Tests if a resolution is already stored
+        experiment.images.resolution()  # Tests if a resolution is already stored
     except UserError:
         # No resolution stored. Guess the resolution from the images
         resolution = image_loader._guess_resolution()
         if resolution is not None:
-            images.set_resolution(resolution)
+            experiment.images.set_resolution(resolution)
+
+    # Update experiment name
+    if not experiment.name.has_name():
+        experiment.name.set_name(image_loader.get_suggested_experiment_name())
 
 
 class _IndexedImageChannel(ImageChannel):
@@ -97,12 +105,13 @@ class _MergedTiffImageLoader(ImageLoader):
         if self._axes[-2:] != "YX":
             self._tiff.close()
             raise UserError("Unsupported image", "We can only read TIF-stacks of black-and-white images, not RGB(A)"
-                            " stacks.\nThis data format (" + self._axes + ") is therefore not supported.")
+                                                 " stacks.\nThis data format (" + self._axes + ") is therefore not supported.")
 
         self._channels = self._init_channels(self._axes, self._shape)
         self._image_size_zyx = self._init_image_size_zyx(self._axes, self._shape)
         self._min_time_point_number = max_none(0, min_time_point_number)
-        self._max_time_point_number = min_none(self._get_highest_time_point(self._axes, self._shape), max_time_point_number)
+        self._max_time_point_number = min_none(self._get_highest_time_point(self._axes, self._shape),
+                                               max_time_point_number)
 
     def _guess_resolution(self) -> Optional[ImageResolution]:
         tags: TiffTags = self._series.pages[0].tags
@@ -204,3 +213,12 @@ class _MergedTiffImageLoader(ImageLoader):
             type_code = self._tiff.byteorder + self._series.dtype.char
             self._tiff.filehandle.seek(offset)
             self._tiff.filehandle.read_array(type_code, numpy.product(shape_2d), out=out)
+
+    def get_suggested_experiment_name(self) -> str:
+        """Gets the suggested experiment name. Returns "nd799xy08" for "C:/Images/nd799xy08.tif"."""
+        file_name = os.path.basename(self._file_name)
+        if file_name.lower().endswith(".tif"):
+            return file_name[0:-4]
+        if file_name.lower().endswith(".tiff"):
+            return file_name[0:-5]
+        return file_name

@@ -21,7 +21,7 @@ def load_images(experiment: Experiment, container: str, pattern: str,
         return
     if container.endswith(".tif"):
         from organoid_tracker.image_loading import merged_tiff_image_loader
-        merged_tiff_image_loader.load_from_tif_file(experiment.images, container, min_time_point, max_time_point)
+        merged_tiff_image_loader.load_from_tif_file(experiment, container, min_time_point, max_time_point)
         return
     if not os.path.exists(container):
         raise ValueError("File or directory does not exist: " + container)
