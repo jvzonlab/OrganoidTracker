@@ -21,25 +21,16 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import logging
-import os
-import random
-import shutil
+
 from typing import List, Optional, Iterable, Tuple
 
 import numpy
-import tensorflow as tf
 from numpy import ndarray
 
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.images import Images
-from organoid_tracker.position_detection_cnn.convolutional_neural_network import TRAIN_TFRECORD, TEST_TFRECORD
-
-logging.basicConfig()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-tf.logging.set_verbosity(tf.logging.INFO)
+from organoid_tracker.core.position import Position
 
 
 class _ImageWithPositions:
@@ -55,106 +46,107 @@ class _ImageWithPositions:
         self._images = images
         self.xyz_positions = xyz_positions
 
-    def load_image(self) -> Optional[ndarray]:
-        return self._images.get_image_stack(self._time_point)
-
     def __str__(self) -> str:
         return f"{self.experiment_name} t{self._time_point.time_point_number()}"
 
+    def load_image(self, dt: int = 0) -> Optional[ndarray]:
+        time_point = TimePoint(self._time_point.time_point_number() + dt)
+        return self._images.get_image_stack(time_point)
 
-def _create_serialized_data(image_with_positions: _ImageWithPositions, image_size_zyx: Tuple[int, int, int]):
-    sub_data_xyz = image_with_positions.xyz_positions
+    # loads images in a time window
+    def load_image_time_stack(self, time_window: List[int] = [0, 0]) -> Optional[ndarray]:
 
-    # int64 is an accepted format for serializing in tfrecord
-    multi_im = image_with_positions.load_image()
-    if multi_im is None:
-        raise Exception(f"Image not found: {image_with_positions}")
+        center_image = self.load_image()
+        offset_ref = self._images.offsets.of_time_point(self._time_point)
+        image_shape_ref = center_image.shape
 
-    # this will create the labels, we create them at this stage
-    # it is a preprocessing step, it is less flexible but more efficient for later
-    # create a volume the same shape as the images volume,
-    # will contain little gaussian disks where the labels are, float32 format values between 0-1
-    markers = numpy.zeros(multi_im.shape).astype(numpy.float32)
+        def aligner(image: ndarray, image_ref: ndarray, offset: Position, offset_ref: Position):
+            shift = offset - offset_ref
 
-    # this fills in the labels volume (markers) with the gaussian disks
-    for dz in numpy.unique(sub_data_xyz[:, -1]):
-        mask = None
-        for xyz in sub_data_xyz[numpy.where(sub_data_xyz[:, -1] == dz)]:
-            y, x = numpy.ogrid[-xyz[1]:multi_im.shape[1] - xyz[1], -xyz[0]:multi_im.shape[2] - xyz[0]]
-            sigma = 2
-            gaussian_mask = (x ** 2 + y ** 2 < 4 ** 2) * numpy.exp(-(x ** 2 + y ** 2) /
-                                                                   (2. * sigma ** 2))
-            if mask is None:
-                mask = gaussian_mask
+            shift.x = round(shift.x)
+            shift.y = round(shift.y)
+            shift.z = round(shift.z)
+
+            # shift images according to offsets
+            image = numpy.roll(image, shift=(shift.z, shift.y, shift.x), axis=(0, 1, 2))
+
+            # if in region information at a timepoint is unknown due to shifts the t=0 image is copied
+            if shift.x < 0:
+                image[:, :, shift.x:] = image_ref[:, :, shift.x:]
             else:
-                mask = numpy.where(gaussian_mask == 0, mask, gaussian_mask)
-        if mask is not None:
-            if int(dz) < len(markers):  # Skip positions that were set outside the images
-                markers[int(dz)] = mask
+                image[:, :, :shift.x] = image_ref[:, :, :shift.x]
 
-    # we need all of the volume to have the same shape
-    # so pad smaller images with zeroes
-    if multi_im.shape[0] > image_size_zyx[0] or multi_im.shape[1] > image_size_zyx[1] or multi_im.shape[2] > image_size_zyx[2]:
-        raise Exception(f"Image is bigger than maximum allowed size. Image is (z,y,x) {multi_im.shape}, max size is"
-                        f" {image_size_zyx}")
+            if shift.y < 0:
+                image[:, shift.y:, :] = image_ref[:, shift.y:, :]
+            else:
+                image[:, :shift.y, :] = image_ref[:, :shift.y, :]
 
-    # pad data and labels in the same way
-    data = numpy.zeros(image_size_zyx).astype(numpy.int64)
-    dz = int((data.shape[0] - multi_im.shape[0]) / 2)
-    dy = int((data.shape[1] - multi_im.shape[1]) / 2)
-    dx = int((data.shape[2] - multi_im.shape[2]) / 2)
-    data[dz: dz + multi_im.shape[0], dy: dy + multi_im.shape[1], dx: dx + multi_im.shape[2]] = multi_im
-    label = numpy.zeros(image_size_zyx).astype(numpy.float32)
-    label[dz: dz + multi_im.shape[0], dy: dy + multi_im.shape[1], dx: dx + multi_im.shape[2]] = markers
+            if shift.z < 0:
+                image[shift.z:, :, :] = image_ref[shift.z:, :, :]
+            else:
+                image[:shift.z, :, :] = image_ref[:shift.z, :, :]
 
-    # we store data and label with sparse matrix format because the labels are mostly zeros and data also but less
-    # this reduces size of tfrecord
-    # maybe could be changed to dense matrix for data only depending on the amount of zeroes
-    label_non_zero = numpy.where(label > 0.0)
-    data_non_zero = numpy.where(data != 0)
-    feature = {
-        'data_index_0': tf.train.Feature(int64_list=tf.train.Int64List(value=data_non_zero[0])),
-        'data_index_1': tf.train.Feature(int64_list=tf.train.Int64List(value=data_non_zero[1])),
-        'data_index_2': tf.train.Feature(int64_list=tf.train.Int64List(value=data_non_zero[2])),
-        'data_value': tf.train.Feature(int64_list=tf.train.Int64List(value=data[data_non_zero])),
-        'label_index_0': tf.train.Feature(int64_list=tf.train.Int64List(value=label_non_zero[0])),
-        'label_index_1': tf.train.Feature(int64_list=tf.train.Int64List(value=label_non_zero[1])),
-        'label_index_2': tf.train.Feature(int64_list=tf.train.Int64List(value=label_non_zero[2])),
-        'label_value': tf.train.Feature(float_list=tf.train.FloatList(value=label[label_non_zero])),
-    }
-    example = tf.train.Example(features=tf.train.Features(feature=feature))
-    serialized = example.SerializeToString()
-    return serialized
+            return image
+
+        images = list()
+        # records at which timepoints images were available
+        image_dt = list()
+
+        frames = range(time_window[0], time_window[1]+1)
+
+        for dt in frames:
+            image = self.load_image(dt)
+
+            if image is not None and image.shape == image_shape_ref:
+                time_point = TimePoint(self._time_point.time_point_number() + dt)
+                offset = self._images.offsets.of_time_point(time_point)
+
+                image = aligner(image, center_image, offset, offset_ref)
+                images.append(image)
+
+                image_dt.append(dt)
+
+        # pads timestack if images are missing
+        images_padded = list()
+        for dt in frames:
+            if dt < numpy.min(image_dt):
+                images_padded.append(images[0])
+
+        images_padded = images_padded + images
+
+        for dt in frames:
+            if dt > numpy.max(image_dt):
+                images_padded.append(images[-1])
+
+        stack = numpy.stack(images_padded, axis=-1)
+
+        return stack
+
+    def create_labels(self, image_size_zyx: Tuple[int, int, int]):
+        sub_data_xyz = self.xyz_positions
+        markers = numpy.zeros(image_size_zyx).astype(numpy.float32)
+
+        max_x = image_size_zyx[2]
+        max_y = image_size_zyx[1]
+        max_z = image_size_zyx[0]
+
+        x = sub_data_xyz[:, 0]
+        y = sub_data_xyz[:, 1]
+        z = sub_data_xyz[:, 2]-1
+
+        in_range = numpy.where((x >= max_x) + (y >= max_y) + (z >= max_z) == 0)
+
+        x = tuple(x[in_range])
+        y = tuple(y[in_range])
+        z = tuple(z[in_range])
+        values = [1] * len(z)
+
+        markers[z, y, x] = values
+
+        return markers
 
 
-def _make_tfrecord(tfrecord_path: str, image_with_positions_list: List[_ImageWithPositions],
-                   image_size_zyx: Tuple[int, int, int]):
-    if os.path.exists(tfrecord_path):
-        os.remove(tfrecord_path)
-
-    tfwriter = tf.python_io.TFRecordWriter(tfrecord_path)
-
-    for i, image_with_positions in enumerate(image_with_positions_list):
-        logging.info('processing file {}/{} for {}'.format(i + 1, len(image_with_positions_list), tfrecord_path))
-
-        tfwriter.write(_create_serialized_data(image_with_positions, image_size_zyx))
-
-    tfwriter.close()
-
-
-def create_training_data(experiments: Iterable[Experiment], *, out_dir: str, split_proportion: float = 0.8,
-                         image_size_zyx: Tuple[int, int, int]):
-    """
-    This script creates the dataset for training in the format tfrecord,
-    from images and corresponding annotations (json files)
-    output : train.tfrecord and test.tfrecord
-    """
-
-    if os.path.exists(out_dir):
-        shutil.rmtree(out_dir)  # This empties the directory, but actually removing
-                                # it may not happen immediately on Windows
-    os.makedirs(out_dir, exist_ok=True)
-
+def create_image_with_positions_list(experiments: Iterable[Experiment]):
     image_with_positions_list = []
     for experiment in experiments:
         # read a complete experiment
@@ -173,14 +165,16 @@ def create_training_data(experiments: Iterable[Experiment], *, out_dir: str, spl
             image_with_positions_list.append(
                 _ImageWithPositions(str(experiment.name), experiment.images, time_point, positions_xyz))
 
-    # shuffle images & positions pseudo-randomly and then split into test and training set
-    random.seed("using a fixed seed to ensure reproducibility")
-    random.shuffle(image_with_positions_list)
-    train_eval_split = int(split_proportion * len(image_with_positions_list))
-    train_files = image_with_positions_list[:train_eval_split]
-    test_files = image_with_positions_list[train_eval_split:]
-    numpy.savetxt(os.path.join(out_dir, 'train_files.txt'), [str(train_file) for train_file in train_files], fmt="%s")
-    numpy.savetxt(os.path.join(out_dir, 'test_files.txt'), [str(test_file) for test_file in test_files], fmt="%s")
+    return image_with_positions_list
 
-    _make_tfrecord(os.path.join(out_dir, TRAIN_TFRECORD), train_files, image_size_zyx)
-    _make_tfrecord(os.path.join(out_dir, TEST_TFRECORD), test_files, image_size_zyx)
+
+def create_image_list(experiment: Experiment):
+    image_list = []
+
+    for time_point in experiment.time_points():
+        image_list.append(
+            _ImageWithPositions(str(experiment.name), experiment.images, time_point, None))
+
+    return image_list
+
+
