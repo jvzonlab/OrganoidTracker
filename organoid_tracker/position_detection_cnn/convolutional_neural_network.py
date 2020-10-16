@@ -42,7 +42,7 @@ def build_model(shape: Tuple, batch_size):
     model = keras.Model(inputs=input, outputs=output, name="YOLO")
 
     #model.compile(optimizer='Adam', loss=keras.losses.mean_squared_error,metrics=custom_loss)
-    model.compile(optimizer='Adam', loss=custom_loss_with_blur, metrics=new_loss2, callbacks=[tensorboard_callback])
+    model.compile(optimizer='Adam', loss=custom_loss_with_blur, metrics=new_loss2)
     #model.compile(optimizer='Adam', loss=new_loss2, metrics=custom_loss)
 
     return model
