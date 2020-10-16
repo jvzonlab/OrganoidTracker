@@ -18,7 +18,7 @@ from organoid_tracker.imaging import io
 # from organoid_tracker.position_detection_cnn import training_data_creator, trainer
 
 from organoid_tracker.position_detection_cnn.ImageWithPositions_to_tensor_loader import dataset_writer
-from organoid_tracker.position_detection_cnn.convolutional_neural_network import build_model
+from organoid_tracker.position_detection_cnn.convolutional_neural_network import build_model, tensorboard_callback
 from organoid_tracker.position_detection_cnn.training_data_creator import create_image_with_positions_list
 
 from organoid_tracker.position_detection_cnn.training_dataset import  training_data_creator_from_TFR, training_data_creator_from_raw
@@ -145,7 +145,8 @@ history = model.fit(training_dataset,
                     epochs=1,
                     steps_per_epoch=50000,
                     validation_data=validation_dataset,
-                    validation_steps=100)
+                    validation_steps=10,
+                    callbacks=[tensorboard_callback])
 
 print("Saving model...")
 tf.keras.models.save_model(model, "model_test")
