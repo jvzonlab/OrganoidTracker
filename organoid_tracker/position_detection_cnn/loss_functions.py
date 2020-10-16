@@ -42,8 +42,8 @@ def _gaussian_kernel(kernel_size, sigma, n_channels, dtype):
     g = tf.math.exp(-(tf.pow(x, 2) / (2 * tf.pow(tf.cast(sigma, dtype), 2))))
     g_kernel = tf.tensordot(g, g, axes=0)
 
-    #g_kernel = tf.stack([0.1 * g_kernel, 0.25 * g_kernel, 0.5 * g_kernel, 0.25 * g_kernel, 0.1 * g_kernel])
-    g_kernel = tf.stack([0.25 * g_kernel, 0.5 * g_kernel, 0.25 * g_kernel])
+    g_kernel = tf.stack([0.1 * g_kernel, 0.25 * g_kernel, 0.5 * g_kernel, 0.25 * g_kernel, 0.1 * g_kernel])
+    #g_kernel = tf.stack([0.25 * g_kernel, 0.5 * g_kernel, 0.25 * g_kernel])
     # scale so maximum is at 1.
     g_kernel = g_kernel / tf.reduce_max(g_kernel)
 

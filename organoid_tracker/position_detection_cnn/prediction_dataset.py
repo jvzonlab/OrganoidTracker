@@ -37,7 +37,7 @@ def split(image, corners, patch_shape, buffer, image_shape):
 
     # add padding
     padding = tf.concat([buffer, tf.zeros((1, 2), dtype=tf.int32)], axis=0)
-    image = tf.pad(image, padding, mode='CONSTANT', constant_values=0)
+    image = tf.pad(image, padding)
 
     # The shape that has to be cropped form the images, needed?
     final_shape = [patch_shape[0] + buffer[0, 0] + buffer[0, 1],

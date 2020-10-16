@@ -9,7 +9,6 @@ from typing import Set
 
 import tensorflow as tf
 from PIL import Image as Img
-from tifffile import tifffile
 
 from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int
 from organoid_tracker.core.experiment import Experiment
@@ -19,7 +18,7 @@ from organoid_tracker.imaging import io
 # from organoid_tracker.position_detection_cnn import training_data_creator, trainer
 
 from organoid_tracker.position_detection_cnn.ImageWithPositions_to_tensor_loader import dataset_writer
-from organoid_tracker.position_detection_cnn.convolutional_neural_network import build_model, tensorboard_callback
+from organoid_tracker.position_detection_cnn.convolutional_neural_network import build_model
 from organoid_tracker.position_detection_cnn.training_data_creator import create_image_with_positions_list
 
 from organoid_tracker.position_detection_cnn.training_dataset import  training_data_creator_from_TFR, training_data_creator_from_raw
@@ -144,10 +143,9 @@ model.summary()
 print("Training...")
 history = model.fit(training_dataset,
                     epochs=1,
-                    steps_per_epoch=10,#round(0.8*len(image_with_positions_list)),
+                    steps_per_epoch=50000,
                     validation_data=validation_dataset,
-                    validation_steps=5,
-                    callbacks=[tensorboard_callback])
+                    validation_steps=100)
 
 print("Saving model...")
 tf.keras.models.save_model(model, "model_test")
@@ -170,15 +168,18 @@ for i in range(10):
     element = iterator.get_next()
 
     array = element[0].numpy()
-    array = array[0, :, :, :, 0]
-    tifffile.imsave("example_input" + str(i) + ".tiff", array, compress=9)
+    array = array[0, 10, :, :, 0]
+    im = Img.fromarray(array)
+    im.save("example_input" + str(i) + ".tiff")
 
     array = element[1].numpy()
-    array = array[0, :, :, :, 0]
-    tifffile.imsave("example_prediction" + str(i) + ".tiff", array, compress=9)
+    array = array[0, 10, :, :, 0]
+    im = Img.fromarray(array)
+    im.save("example_prediction" + str(i) + ".tiff")
 
     array = element[2].numpy()
-    array = array[0, :, :, :, 0]
-    tifffile.imsave("input_prediction" + str(i) + ".tiff", array, compress=9)
+    array = array[0, 10, :, :, 0]
+    im = Img.fromarray(array)
+    im.save("example_labels" + str(i) + ".tiff")
 
 
