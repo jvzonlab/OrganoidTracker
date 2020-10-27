@@ -13,7 +13,7 @@ from organoid_tracker.core.marker import Marker
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.window import Window
-from organoid_tracker.linking_analysis import cell_error_finder, linking_markers, lineage_positions_finder, lineage_markers
+from organoid_tracker.linking_analysis import cell_error_finder, linking_markers, track_positions_finder, lineage_markers
 from organoid_tracker.linking_analysis.linking_markers import EndMarker
 from organoid_tracker.visualizer import activate
 from organoid_tracker.visualizer.abstract_editor import AbstractEditor
@@ -191,17 +191,23 @@ class _ReplaceConnectionsAction(UndoableAction):
 
 class _SetAllAsType(UndoableAction):
     _previous_position_types: Dict[Position, str]
-    _type: Marker
+    _type: Optional[Marker]
 
-    def __init__(self, previous_position_types: Dict[Position, str], new_type: Marker):
+    def __init__(self, previous_position_types: Dict[Position, str], new_type: Optional[Marker]):
         self._previous_position_types = previous_position_types
         self._type = new_type
 
     def do(self, experiment: Experiment) -> str:
         position_data = experiment.position_data
+        save_name = self._type.save_name if self._type is not None else None
         for position in self._previous_position_types.keys():
-            linking_markers.set_position_type(position_data, position, self._type.save_name)
-        return f"All positions in the lineage tree are now of the type \"{self._type.display_name}\""
+            linking_markers.set_position_type(position_data, position, save_name)
+        position_count = len(self._previous_position_types.keys())
+        if self._type is None:
+            return f"Removed the type of {position_count} position(s)"
+        if position_count == 1:
+            return f"Set the type of the selected position to \"{self._type.display_name}\""
+        return f"{position_count} positions are now of the type \"{self._type.display_name}\""
 
     def undo(self, experiment: Experiment) -> str:
         position_data = experiment.position_data
@@ -342,10 +348,10 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//LineageEnd-Mark as cell shedding to outside": lambda: self._try_set_end_marker(EndMarker.SHED_OUTSIDE),
             "Edit//LineageEnd-Mark as moving out of view [V]": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
             "Edit//LineageEnd-Remove end marker": lambda: self._try_set_end_marker(None),
-            "Edit//Uncertain-Mark position as uncertain": lambda: self._try_mark_uncertainty(True),
-            "Edit//Uncertain-Remove uncertainty marker": lambda: self._try_mark_uncertainty(False),
-            "Edit//Track-Set color of lineage...": self._set_color_of_lineage,
-            "Edit//Track-Delete entire lineage": self._delete_selected_lineage,
+            "Edit//Marker-Mark position as uncertain": lambda: self._try_mark_uncertainty(True),
+            "Edit//Marker-Remove uncertainty marker": lambda: self._try_mark_uncertainty(False),
+            "Edit//Marker-Set color of lineage...": self._set_color_of_lineage,
+            "Edit//Marker-Delete entire lineage": self._delete_selected_lineage,
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
             "View//Linking-Lineage errors and warnings [L]": self._show_lineage_errors,
         }
@@ -353,9 +359,12 @@ class LinkAndPositionEditor(AbstractEditor):
         # Add options for changing position types
         for position_type in self.get_window().get_gui_experiment().get_registered_markers(Position):
             # Create copy of position_type variable to avoid it changing in loop iteration
-            action = lambda bound_position_type = position_type: self._set_all_positions_to_type(bound_position_type)
-
-            options["Edit//Track-Set type of track//" + position_type.display_name] = action
+            track_action = lambda bound_position_type = position_type: self._set_track_to_type(bound_position_type)
+            options["Edit//Marker-Set type of track//Type-" + position_type.display_name] = track_action
+            position_action = lambda bound_position_type=position_type: self._set_position_to_type(bound_position_type)
+            options["Edit//Marker-Set type of position//Type-" + position_type.display_name] = position_action
+        options["Edit//Marker-Set type of track//Clear-Remove type"] = lambda: self._set_track_to_type(None)
+        options["Edit//Marker-Set type of position//Clear-Remove type"] = lambda: self._set_position_to_type(None)
         return options
 
     def _on_key_press(self, event: KeyEvent):
@@ -607,8 +616,8 @@ class LinkAndPositionEditor(AbstractEditor):
             self._selected1, self._selected2 = None, None
             self._perform_action(_InsertLinkAction(position1, position2))
 
-    def _set_all_positions_to_type(self, position_type: Marker):
-        """Sets all cells in the experiment to the given type."""
+    def _set_track_to_type(self, position_type: Optional[Marker]):
+        """Sets all cells in the selected track to the given type."""
         if self._selected1 is None:
             self.update_status("You need to select a position first.")
             return
@@ -616,8 +625,21 @@ class LinkAndPositionEditor(AbstractEditor):
             self.update_status("You have multiple positions selected - please unselect one.")
             return
 
-        positions = lineage_positions_finder.find_all_positions_in_lineage_of(self._experiment.links, self._selected1)
+        positions = track_positions_finder.find_all_positions_in_track_of(self._experiment.links, self._selected1)
         old_position_types = linking_markers.get_position_types(self._experiment.position_data, set(positions))
+        self._perform_action(_SetAllAsType(old_position_types, position_type))
+
+    def _set_position_to_type(self, position_type: Optional[Marker]):
+        """Sets the selected cell to the given type."""
+        if self._selected1 is None:
+            self.update_status("You need to select a position first.")
+            return
+        if self._selected2 is not None:
+            self.update_status("You have multiple positions selected - please unselect one.")
+            return
+
+        positions = {self._selected1}
+        old_position_types = linking_markers.get_position_types(self._experiment.position_data, positions)
         self._perform_action(_SetAllAsType(old_position_types, position_type))
 
     def _set_color_of_lineage(self):
