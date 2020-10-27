@@ -1,5 +1,6 @@
-from typing import Dict, Tuple, Optional
+from typing import Dict, Tuple, Optional, Iterable
 
+from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.typing import DataType
 
@@ -43,6 +44,10 @@ class LinkData:
         if data_name.startswith("__"):
             # Reserved for future/internal use
             raise ValueError(f"The data name {data_name} is not allowed: data names must not start with '__'.")
+        if data_name == "source" or data_name == "target":
+            # Would go wrong when saving to JSON
+            raise ValueError(f"The data name {data_name} is not allowed: this is a reserved word.")
+
         link_tuple = _create_link_tuple(position1, position2)
         data_of_links = self._link_data.get(data_name)
         if data_of_links is None:
@@ -85,6 +90,7 @@ class LinkData:
         link_tuple = _create_link_tuple(position1, position2)
 
         for data_name, data_of_links in list(self._link_data.items()):
+            # ^ The list(...) makes a defensive copy, so we can delete things while iterating over it
             if link_tuple in data_of_links:
                 # Delete data for given link
                 del data_of_links[link_tuple]
@@ -107,3 +113,11 @@ class LinkData:
                 data_old = data_of_links[link_tuple_old]
                 del data_of_links[link_tuple_old]
                 data_of_links[link_tuple_new] = data_old
+
+    def find_all_data_of_link(self, position1: Position, position2: Position) -> Iterable[Tuple[str, DataType]]:
+        """Finds all data associated with the given link. Raises ValueError if the two positions are not in
+        consecutive time points."""
+        link_tuple = _create_link_tuple(position1, position2)
+        for data_name, data_of_links in self._link_data.items():
+            if link_tuple in data_of_links:
+                yield data_name, data_of_links[link_tuple]

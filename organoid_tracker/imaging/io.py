@@ -12,6 +12,7 @@ from organoid_tracker.core.beacon_collection import BeaconCollection
 from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.images import ImageOffsets
+from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position import Position
@@ -157,11 +158,12 @@ def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List],
                 linking_markers.set_shape(position_data, position, position_shape)
 
 
-def _parse_links_format(experiment: Experiment, link_data: Dict[str, Any], min_time_point: int, max_time_point: int):
+def _parse_links_format(experiment: Experiment, links_json: Dict[str, Any], min_time_point: int, max_time_point: int):
     """Parses a node_link_graph and adds all links and positions to the experiment."""
     links = experiment.links
     position_data = experiment.position_data
-    _add_d3_data(links, position_data, link_data, min_time_point, max_time_point)
+    link_data = experiment.link_data
+    _add_d3_data(links, link_data, position_data, links_json, min_time_point, max_time_point)
     positions = experiment.positions
     for position in links.find_all_positions():
         positions.add(position)
@@ -230,11 +232,11 @@ def _parse_connections_format(experiment: Experiment, connections_data: Dict[str
                                        position2.with_time_point_number(time_point_number))
 
 
-def _add_d3_data(links: Links, position_data: PositionData, data: Dict, min_time_point: int = -100000, max_time_point: int = 100000):
+def _add_d3_data(links: Links, link_data: LinkData, position_data: PositionData, links_json: Dict, min_time_point: int = -100000, max_time_point: int = 100000):
     """Adds data in the D3.js node-link format. Used for deserialization."""
 
     # Add position data
-    for node in data["nodes"]:
+    for node in links_json["nodes"]:
         if len(node.keys()) == 1:
             # No extra data found
             continue
@@ -245,8 +247,8 @@ def _add_d3_data(links: Links, position_data: PositionData, data: Dict, min_time
 
             position_data.set_position_data(position, data_key, data_value)
 
-    # Add links (and lineage data)
-    for link in data["links"]:
+    # Add links (and link and lineage data)
+    for link in links_json["links"]:
         source: Position = link["source"]
         target: Position = link["target"]
         if source.time_point_number() < min_time_point or target.time_point_number() < min_time_point \
@@ -254,10 +256,14 @@ def _add_d3_data(links: Links, position_data: PositionData, data: Dict, min_time
             continue  # Ignore time points out of range
         links.add_link(source, target)
 
-        # Now that we have a link, we can add lineage data
+        # Now that we have a link, we can add link and lineage data
         for data_key, data_value in link.items():
             if data_key.startswith("__lineage_"):
+                # Lineage metadata, store it
                 links.set_lineage_data(links.get_track(source), data_key[len("__lineage_"):], data_value)
+            elif data_key != "source" and data_key != "target":
+                # Link metadata, store it
+                link_data.set_link_data(source, target, data_key, data_value)
 
 
 class _MyEncoder(JSONEncoder):
@@ -301,7 +307,7 @@ def _my_decoder(json_object):
     return json_object
 
 
-def _links_to_d3_data(links: Links, positions: Iterable[Position], position_data: PositionData) -> Dict:
+def _links_to_d3_data(links: Links, positions: Iterable[Position], position_data: PositionData, link_data: LinkData) -> Dict:
     """Return data in D3.js node-link format that is suitable for JSON serialization
     and use in Javascript documents."""
     nodes = list()
@@ -329,6 +335,8 @@ def _links_to_d3_data(links: Links, positions: Iterable[Position], position_data
             # Start of a lineage, so add lineage data
             for data_name, data_value in links.find_all_data_of_lineage(links.get_track(source)):
                 edge["__lineage_" + data_name] = data_value
+        for data_name, data_value in link_data.find_all_data_of_link(source, target):
+            edge[data_name] = data_value
         edges.append(edge)
 
     return {
@@ -447,7 +455,8 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
 
     # Save links
     if experiment.links.has_links() or experiment.position_data.has_position_data():
-        save_data["links"] = _links_to_d3_data(experiment.links, experiment.positions, experiment.position_data)
+        save_data["links"] = _links_to_d3_data(experiment.links, experiment.positions, experiment.position_data,
+                                               experiment.link_data)
 
     # Save scores of families
     scored_families = list(experiment.scores.all_scored_families())

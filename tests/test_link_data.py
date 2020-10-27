@@ -101,3 +101,20 @@ class TestLinkData(TestCase):
         link_data.replace_link(pos1, pos2, pos3, pos4)
         self.assertIsNone(link_data.get_link_data(pos1, pos2, "test"))
         self.assertEqual("test value", link_data.get_link_data(pos3, pos4, "test"))
+
+    def test_find_data_of_link(self):
+        link_data = LinkData()
+        pos1 = Position(0, 0, 0, time_point_number=0)
+        pos2 = Position(0, 0, 0, time_point_number=1)
+        pos_wrong = Position(0, 0, 0, time_point_number=2)
+
+        # Set three data entries, but only two on the correct link
+        link_data.set_link_data(pos1, pos2, "test1", "test1 value")
+        link_data.set_link_data(pos1, pos2, "test2", "test2 value")
+        link_data.set_link_data(pos2, pos_wrong, "test2", "wrong value")
+
+        # Check if we got the correct two data entries back
+        found_link_data = dict(link_data.find_all_data_of_link(pos1, pos2))
+        self.assertEqual("test1 value", found_link_data["test1"])
+        self.assertEqual("test2 value", found_link_data["test2"])
+        self.assertEqual(2, len(found_link_data))
