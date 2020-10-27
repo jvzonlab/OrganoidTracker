@@ -1,6 +1,5 @@
 from typing import Dict, Tuple, Optional, Iterable
 
-from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.typing import DataType
 
@@ -16,6 +15,8 @@ def _create_link_tuple(position1: Position, position2: Position) -> Tuple[Positi
 
 
 class LinkData:
+    """Used to supply additional metadata to links."""
+
     _link_data: Dict[str, Dict[Tuple[Position, Position], DataType]]
 
     def __init__(self):
@@ -70,6 +71,7 @@ class LinkData:
             data_of_links[link_tuple] = value
 
     def copy(self) -> "LinkData":
+        """Creates a copy of this linking dataset. Changes to the copy will not affect this object, and vice versa."""
         copy = LinkData()
         for data_name, data_value in self._link_data.items():
             copy._link_data[data_name] = data_value.copy()
