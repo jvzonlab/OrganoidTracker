@@ -6,6 +6,7 @@ from organoid_tracker.core import TimePoint, Name, UserError, min_none, max_none
 from organoid_tracker.core.beacon_collection import BeaconCollection
 from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.images import Images
+from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position import Position
@@ -26,6 +27,7 @@ class Experiment:
     scores: ScoreCollection  # Used to assign scores to putative mother cells
     _links: Links  # Used to link cells together accross multiple time points
     _position_data: PositionData  # Used for metadata of cells
+    _link_data: LinkData  # Used for metadata of links
     _images: Images  # Used for microscopy images
     _connections: Connections  # Used to create connections in a single time point, for example for related cells
     _name: Name  # Name of the experiment
@@ -40,6 +42,7 @@ class Experiment:
         self.scores = ScoreCollection()
         self.splines = SplineCollection()
         self._links = Links()
+        self._link_data = LinkData()
         self._images = Images()
         self._connections = Connections()
         self._warning_limits = WarningLimits()
@@ -61,6 +64,10 @@ class Experiment:
         moving all positions."""
         affected_time_points = set()
         for position in positions:
+            old_links = self._links.find_links_of(position)
+            for old_link in old_links:
+                self._link_data.remove_link(position, old_link)
+
             self._positions.detach_position(position)
             self._links.remove_links_of_position(position)
             self._connections.remove_connections_of_position(position)
@@ -84,6 +91,8 @@ class Experiment:
         position_new.check_time_point(position_old.time_point())  # Make sure both have the same time point
 
         # Replace in all collections
+        for linked_position in self._links.find_links_of(position_old):
+            self._link_data.replace_link(position_old, linked_position, position_new, linked_position)
         self._links.replace_position(position_old, position_new)
         self._connections.replace_position(position_old, position_new)
         self._positions.move_position(position_old, position_new)
@@ -236,6 +245,19 @@ class Experiment:
         self._links = links
 
     @property
+    def link_data(self) -> LinkData:
+        """Gets all metadata of links."""
+        # Using a property to prevent someone from setting link_data to None
+        return self._link_data
+
+    @link_data.setter
+    def link_data(self, link_data: LinkData):
+        """Sets the links to the given value. May not be None."""
+        if not isinstance(link_data, LinkData):
+            raise TypeError(f"link_data must be a {LinkData.__name__} object, was " + repr(link_data))
+        self._link_data = link_data
+
+    @property
     def images(self) -> Images:
         """Gets all images stored in the experiment."""
         return self._images
@@ -282,10 +304,11 @@ class Experiment:
         self.beacons.add_beacons(other.beacons)
         self.links.add_links(other.links)
         self.position_data.merge_data(other.position_data)
+        self.link_data.merge_data(other.link_data)
         self.connections.add_connections(other.connections)
 
     def copy_selected(self, images: bool = False, positions: bool = False, position_data: bool = False,
-                      links: bool = False) -> "Experiment":
+                      links: bool = False, link_data: bool = False) -> "Experiment":
         """Copies the selected attributes over to a new experiment. Note that position_data and links can only be copied
         if the positions are copied."""
         copy = Experiment()
@@ -297,4 +320,6 @@ class Experiment:
                 copy.position_data = self._position_data.copy()
             if links:
                 copy.links = self._links.copy()
+                if link_data:
+                    copy.link_data = self._link_data.copy()
         return copy
