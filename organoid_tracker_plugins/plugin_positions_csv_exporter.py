@@ -140,11 +140,11 @@ class _CellTypesToId:
     def __init__(self):
         self._save_name_to_id = dict()
 
-    def get_or_add_id(self, save_name: Optional[str]) -> Optional[int]:
-        """Gets the id of the given cell type. Creates a new id if this type doesn't have an id yet. Returns None if
+    def get_or_add_id(self, save_name: Optional[str]) -> int:
+        """Gets the id of the given cell type. Creates a new id if this type doesn't have an id yet. Returns -1 if
         (and only if) the input value is None."""
         if save_name is None:
-            return None
+            return -1
         id = self._save_name_to_id.get(save_name)
         if id is None:
             # Create new id
@@ -174,7 +174,7 @@ def _export_cell_types_file(folder: str, cell_types: List[Marker], cell_type_ids
             indexed_colors_list.append(cell_type.mpl_color[2])
 
     # Add NaN for unknown cell types
-    annotations_list.append("nan")
+    annotations_list.append("-1")
     annotations_list.append("Unknown type")
     indexed_colors_list.append(1)
     indexed_colors_list.append(1)
