@@ -12,6 +12,7 @@ from organoid_tracker.core.images import ImageOffsets
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
+from organoid_tracker.guizela_tracker_compatibility import cell_type_converter
 from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.linking_analysis.linking_markers import EndMarker
 
@@ -144,12 +145,10 @@ class _TrackExporter:
         with open(os.path.join(output_folder, "dead_cells.p"), "wb") as handle:
             pickle.dump(self._dead_track_ids, handle)
         for cell_type, track_id_list in self._typed_track_ids.items():
-            file_name = cell_type.lower() + ".p"
-            if cell_type == "STEM":
-                # Exception to naming system
-                file_name = "stemcell.p"
-            with open(os.path.join(output_folder, file_name), "wb") as handle:
-                pickle.dump(track_id_list, handle)
+            file_name = cell_type_converter.CELL_TYPE_TO_FILE.get(cell_type)
+            if file_name is not None:
+                with open(os.path.join(output_folder, file_name), "wb") as handle:
+                    pickle.dump(track_id_list, handle)
 
     def _swap_ids(self, id1: int, id2: int):
         """All tracks with id1 will have id2, and vice versa."""
