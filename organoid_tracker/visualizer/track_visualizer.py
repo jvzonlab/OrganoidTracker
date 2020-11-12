@@ -7,7 +7,7 @@ from matplotlib.figure import Figure, Axes
 from organoid_tracker.coordinate_system import orientation_spline_adder, sphere_representer
 from organoid_tracker.coordinate_system.orientation_spline_adder import ColoredTrackAdder
 from organoid_tracker.coordinate_system.sphere_representer import SphereRepresentation
-from organoid_tracker.core import UserError, TimePoint
+from organoid_tracker.core import UserError, TimePoint, Color
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import Links, LinkingTrack
 from organoid_tracker.core.position import Position
@@ -21,6 +21,7 @@ from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.linking_analysis.lineage_drawing import LineageDrawing
 from organoid_tracker.util.mpl_helper import SANDER_APPROVED_COLORS
 from organoid_tracker.visualizer.exitable_image_visualizer import ExitableImageVisualizer
+from organoid_tracker.visualizer.lineage_tree_visualizer import LineageTreeVisualizer
 
 
 def _get_lineage(links: Links, position: Position) -> Links:
@@ -239,40 +240,8 @@ class TrackVisualizer(ExitableImageVisualizer):
         dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
 
     def _show_lineage_tree(self):
-        lineage_drawing = LineageDrawing(self._experiment.links)
-        tracks = self._find_lineage_tracks()
-
-        def lineage_filter(track: LinkingTrack) -> bool:
-            return track in tracks
-
-        def color_getter(time_point_number: int, track: LinkingTrack) -> MPLColor:
-            position = track.find_position_at_time_point_number(time_point_number)
-            for i, lineage in enumerate(self._selected_lineages):
-                if lineage.contains_position(position):
-                    return tuple(SANDER_APPROVED_COLORS[i % len(SANDER_APPROVED_COLORS)])
-            return "black"
-
-        def label_getter(track: LinkingTrack) -> Optional[str]:
-            if len(track.get_previous_tracks()) != 0:
-                return None  # Not a start of a lineage, don't label
-            position = track.find_first_position()
-            for i, lineage in enumerate(self._selected_lineages):
-                if lineage.contains_position(position):
-                    return str(i + 1)
-            return None
-
-        def draw_function(figure: Figure):
-            experiment = self._experiment
-            axes: Axes = figure.gca()
-            width = lineage_drawing.draw_lineages_colored(axes, color_getter=color_getter,
-                                                          lineage_filter=lineage_filter,
-                                                          label_getter=label_getter)
-            axes.set_xlim(-1, width + 1)
-            axes.set_ylim([experiment.last_time_point_number(), experiment.first_time_point_number() - 1])
-            axes.set_ylabel("Time point")
-            axes.set_xticks([])
-
-        dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
+        dialog.popup_visualizer(self.get_window().get_gui_experiment(),
+                                lambda w: _SelectedTracksTreeVisualizer(w, self._selected_lineages))
 
     def _show_sphere(self):
         experiment = self._experiment
@@ -304,19 +273,6 @@ class TrackVisualizer(ExitableImageVisualizer):
             sphere_representer.setup_figure_2d(ax, sphere_representation)
 
         dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
-
-    def _find_lineage_tracks(self) -> Set[LinkingTrack]:
-        """Finds all linking tracks in the same lineage, including sisters, daughters, etc."""
-        links = self._experiment.links
-        result = set()
-
-        for lineage in self._selected_lineages:
-            for starting_track in lineage.find_starting_tracks():
-                starting_position = starting_track.find_first_position()
-                track = links.get_track(starting_position)
-                if track is not None:
-                    result |= set(track.find_all_descending_tracks(include_self=True))
-        return result
 
     def _is_selected(self, position: Position) -> bool:
         """Checks if the given position is currently part of a selected track."""
@@ -367,3 +323,61 @@ class TrackVisualizer(ExitableImageVisualizer):
         self.draw_view()
         self.update_status("Selected " + str(position))
 
+
+def _find_lineage_tracks(experiment: Experiment, selected_lineages: List[Links]) -> Set[LinkingTrack]:
+    """Finds all linking tracks in the same lineage, including sisters, daughters, etc."""
+    links = experiment.links
+    result = set()
+
+    for lineage in selected_lineages:
+        for starting_track in lineage.find_starting_tracks():
+            starting_position = starting_track.find_first_position()
+            track = links.get_track(starting_position)
+            if track is not None:
+                result |= set(track.find_all_descending_tracks(include_self=True))
+    return result
+
+
+# Lineage tree that only shows the selected tracks
+class _SelectedTracksTreeVisualizer(LineageTreeVisualizer):
+
+    # List of colors for the lineages.
+    _LINEAGE_COLORS = [Color.from_rgb_floats(color[0], color[1], color[2]) for color in SANDER_APPROVED_COLORS]
+
+    _selected_lineages: List[Links]
+    _tracks: Set[LinkingTrack]
+
+    def __init__(self, window: Window, selected_lineages: List[Links]):
+        super().__init__(window)
+        self._selected_lineages = selected_lineages
+        self._tracks = _find_lineage_tracks(window.get_experiment(), selected_lineages)
+        self._display_track_id = len(selected_lineages) > 1
+
+        self._uncolor_lineages()
+        self._display_custom_colors = True
+
+    def _lineage_filter(self, linking_track: LinkingTrack) -> bool:
+        return linking_track in self._tracks
+
+    def _allow_lineage_filtering(self) -> bool:
+        return False  # We filter by selected tracks
+
+    def _get_custom_color(self, position: Position) -> Optional[Color]:
+        for i, lineage in enumerate(self._selected_lineages):
+            if lineage.contains_position(position):
+                return self._LINEAGE_COLORS[i % len(SANDER_APPROVED_COLORS)]
+        return None
+
+    def _get_custom_color_label(self) -> Optional[str]:
+        return "selected tracks"
+
+    def _get_track_label(self, track: LinkingTrack) -> Optional[str]:
+        if len(track.get_previous_tracks()) != 0:
+            return None  # Not a start of a lineage, don't label
+        if self._display_track_id:
+            # Find the lineage id within the selected lineages
+            position = track.find_first_position()
+            for i, lineage in enumerate(self._selected_lineages):
+                if lineage.contains_position(position):
+                    return str(i + 1)
+        return None
