@@ -393,6 +393,13 @@ class LinkAndPositionEditor(AbstractEditor):
         else:
             super()._on_key_press(event)
 
+    def _move_to_position(self, position: Position) -> bool:
+        if position != self._selected1 and position != self._selected2:
+            # Select that position
+            self._selected2 = self._selected1
+            self._selected1 = position
+        return super()._move_to_position(position)
+
     def _try_delete(self):
         if self._selected1 is None:
             self.update_status("You need to select a cell first")
