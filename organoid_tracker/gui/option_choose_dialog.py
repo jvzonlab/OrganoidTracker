@@ -5,7 +5,7 @@ from PySide2.QtWidgets import QDialog, QGroupBox, QFormLayout, QLabel, QComboBox
     QVBoxLayout
 
 
-class _ImageSeriesSelectionWindow(QDialog):
+class _ListItemSelectionWindow(QDialog):
 
     image_series_selector: QComboBox
 
@@ -37,7 +37,7 @@ class _ImageSeriesSelectionWindow(QDialog):
         self.setVisible(True)
 
 
-def popup_image_getter(title: str, header: str, label: str, options: List[str]) -> Optional[int]:
+def popup_list(title: str, header: str, label: str, options: List[str]) -> Optional[int]:
     """Shows a popup that allows you to choose from the given list of options. If `len(options) == 1`, then this method
     doesn't show a popup, but immediately returns 0. If options is empty, None is returned."""
     if len(options) == 0:
@@ -45,7 +45,7 @@ def popup_image_getter(title: str, header: str, label: str, options: List[str]) 
     if len(options) == 1:
         return 0
 
-    popup = _ImageSeriesSelectionWindow(title, header, label, options)
+    popup = _ListItemSelectionWindow(title, header, label, options)
     result = popup.exec_()
     if result != QDialog.Accepted:
         return None

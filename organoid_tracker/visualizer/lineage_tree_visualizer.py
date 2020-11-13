@@ -12,7 +12,7 @@ from organoid_tracker.core.links import LinkingTrack
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.resolution import ImageResolution
-from organoid_tracker.gui import dialog
+from organoid_tracker.gui import dialog, option_choose_dialog
 from organoid_tracker.gui.location_map import LocationMap
 from organoid_tracker.gui.window import Window
 from organoid_tracker.linking_analysis import linking_markers, lineage_markers
@@ -25,13 +25,24 @@ from organoid_tracker.visualizer import Visualizer
 _SPLINE_COLORMAP = matplotlib.cm.get_cmap("YlOrBr")  # For drawing position on axis
 
 
+def _includes_cell_type(position_data: PositionData, linking_track: LinkingTrack, cell_type: str):
+    """Checks if the given lineage (starting at linking_track) includes the given cell type. Only checks the last
+    position of each track."""
+    for track_in_lineage in linking_track.find_all_descending_tracks(include_self=True):
+        if linking_markers.get_position_type(position_data, track_in_lineage.find_last_position()) == cell_type:
+            return True
+    return False
+
+
 class LineageTreeVisualizer(Visualizer):
     """Shows lineage trees. Double-click somewhere to go to that location in the microscopy data."""
 
     _location_map: Optional[LocationMap] = None
     _track_to_manual_color: Dict[LinkingTrack, Color]
 
-    _min_division_count: int = 0
+    _filter_min_division_count: int = 0
+    _filter_cell_type: Optional[str] = None
+
     _display_deaths: bool = True
     _display_warnings: bool = True
     _display_manual_colors: bool = False
@@ -50,9 +61,15 @@ class LineageTreeVisualizer(Visualizer):
 
     def _lineage_filter(self, linking_track: LinkingTrack) -> bool:
         """Returns True if the given lineage (actually: first track in a lineage) should be drawn."""
-        if self._min_division_count <= 0:
-            return True  # Don't even check, every lineage has 0 or more divisions
-        return get_min_division_count_in_lineage(linking_track) >= self._min_division_count
+
+        # Filter for min division count
+        if self._filter_min_division_count > 0:
+            if get_min_division_count_in_lineage(linking_track) < self._filter_min_division_count:
+                return False  # Don't even check, every lineage has 0 or more divisions
+        if self._filter_cell_type != "":
+            if not _includes_cell_type(self._experiment.position_data, linking_track, self._filter_cell_type):
+                return False
+        return True
 
     def _get_custom_color_label(self) -> Optional[str]:
         """Intended to be overridden. If this returns a value, then a menu option is added to show the color that
@@ -75,8 +92,10 @@ class LineageTreeVisualizer(Visualizer):
         }
         if self._allow_lineage_filtering():
             # Allow additional filters
-            options += {
-                "View//Divisions-Require X amount of divisions...": self._set_minimum_divisions
+            options = {
+                **options,
+                "View//Filters-Require X amount of divisions...": self._set_minimum_divisions,
+                "View//Filters-Require cell type...": self._set_required_cell_type
             }
         if self._get_custom_color_label() is not None:
             options[f"View//Color toggles-Toggle showing {self._get_custom_color_label()}"] = self._toggle_custom_colors
@@ -154,11 +173,29 @@ class LineageTreeVisualizer(Visualizer):
     def _set_minimum_divisions(self):
         min_division_count = dialog.prompt_int("Minimum division count",
                                                "How many divisions need to happen in a lineage"
-                                               " tree before it shows up?", minimum=0, default=self._min_division_count)
+                                               " tree before it shows up?", minimum=0, default=self._filter_min_division_count)
         if min_division_count is None:
             return
-        self._min_division_count = min_division_count
+        self._filter_min_division_count = min_division_count
         self.draw_view()
+
+    def _set_required_cell_type(self):
+        cell_types = list(self.get_window().get_gui_experiment().get_registered_markers(Position))
+        cell_type_names = [cell_type.display_name for cell_type in cell_types]
+        cell_type_names += ["<do not filter>"]
+        answer = option_choose_dialog.popup_list("Required cell type", "Required cell type",
+                        "Which cell type needs to be in the lineage in order for it to be drawn?", cell_type_names)
+        if answer is None:
+            return
+
+        if answer == len(cell_types):
+            self._filter_cell_type = None
+            message = "No longer filtering by cell type"
+        else:
+            self._filter_cell_type = cell_types[answer].save_name
+            message = f"Now filtering by lineages containing {cell_type_names[answer]} cells"
+        self.draw_view()
+        self.update_status(message)
 
     def _calculate_track_colors(self):
         """Places the manually assigned lineage colors in a track-to-color map."""
