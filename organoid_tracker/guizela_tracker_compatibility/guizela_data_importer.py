@@ -17,6 +17,7 @@ from organoid_tracker.core.links import Links
 from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.resolution import ImageResolution
+from organoid_tracker.guizela_tracker_compatibility import cell_type_converter
 from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.linking_analysis.linking_markers import EndMarker
 from organoid_tracker.guizela_tracker_compatibility.track_lib import Track
@@ -39,9 +40,8 @@ def _load_links(experiment: Experiment, tracks_dir: str, min_time_point: int = 0
         positions.add(position)
 
     _read_deaths_file(tracks_dir, position_data, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
-    for cell_type in ["paneth", "goblet", "enteroendocrine", "enterocyte"]:
-        _read_cell_type_file(tracks_dir, position_data, tracks, cell_type)
-    _read_cell_type_file(tracks_dir, position_data, tracks, "stem", file_name="stemcell.p")
+    for cell_type, file_name in cell_type_converter.CELL_TYPE_TO_FILE.items():
+        _read_cell_type_file(tracks_dir, position_data, tracks, cell_type, file_name=file_name)
 
 
 def _load_crypt_axis(tracks_dir: str, positions: PositionCollection, paths: SplineCollection, min_time_point: int,
@@ -160,18 +160,16 @@ def _read_deaths_file(tracks_dir: str, position_data: PositionData, tracks_by_id
 
 
 def _read_cell_type_file(tracks_dir: str, position_data: PositionData, tracks_by_id: List[Track], cell_type: str, *,
-                         file_name: Optional[str] = None):
+                         file_name: str):
     """Adds all marked cell deaths to the linking network. If the file name is not specified, it is assumed to be
     cell_type.p ."""
     _fix_python_path_for_pickle()
-    if file_name is None:
-        file_name = cell_type.lower() + ".p"
 
     file = os.path.join(tracks_dir, file_name)
     if not os.path.exists(file):
         return  # No crypt axis stored
 
-    print(f"Reading {cell_type} cell file")
+    print(f"Reading {file_name} for cells of type \"{cell_type.lower()}\"")
     with open(file, 'rb') as file_handle:
         paneth_cell_numbers = pickle.load(file_handle, encoding="latin1")
         for paneth_cell_number in paneth_cell_numbers:
