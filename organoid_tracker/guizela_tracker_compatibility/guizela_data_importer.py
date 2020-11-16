@@ -5,7 +5,7 @@ import os
 import pickle
 import re
 import sys
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 import numpy
 
@@ -78,14 +78,15 @@ def add_data_to_experiment(experiment: Experiment, tracks_dir: str, min_time_poi
 
 
 def _read_track_files(tracks_dir: str, experiment: Experiment, min_time_point: int = 0, max_time_point: int = 5000
-                      ) -> List[Track]:
+                      ) -> Dict[int, Track]:
     """Adds all tracks to the graph, and returns the original tracks"""
     track_files = os.listdir(tracks_dir)
     print("Found " + str(len(track_files)) + " files to analyse")
 
-    tracks = []
+    tracks = dict()
     track_file_pattern = re.compile(r"^track_([0-9]{5})\.p$")
 
+    track_counter = 1
     for track_file in track_files:
         match = track_file_pattern.match(track_file)
         if match is None:
@@ -95,18 +96,18 @@ def _read_track_files(tracks_dir: str, experiment: Experiment, min_time_point: i
         if not os.path.exists(track_file):
             break
 
-        if track_index % 10 == 0:
-            print("Reading track " + str(track_index))
+        if track_counter % 10 == 0:
+            print("Reading track " + str(track_counter))
 
         # Note that the first track will get id 0, the second id 1, etc. This is required for the lineages file
-        tracks.append(_extract_links_from_track(track_file, experiment, min_time_point=min_time_point, max_time_point=max_time_point))
+        tracks[track_index] = _extract_links_from_track(track_file, experiment, min_time_point=min_time_point, max_time_point=max_time_point)
 
-        track_index += 1
+        track_counter += 1
 
     return tracks
 
 
-def _read_lineage_file(tracks_dir: str, links: Links, tracks: List[Track], min_time_point: int = 0,
+def _read_lineage_file(tracks_dir: str, links: Links, tracks: Dict[int, Track], min_time_point: int = 0,
                        max_time_point: int = 5000) -> None:
     """Connects the lineages in the graph based on information from the lineages.p file"""
     print("Reading lineages file")
@@ -116,7 +117,7 @@ def _read_lineage_file(tracks_dir: str, links: Links, tracks: List[Track], min_t
     with open(lineage_file, "rb") as file_handle:
         lineages = pickle.load(file_handle, encoding='latin1')
         for lineage in lineages:
-            if lineage[0] >= len(tracks) or lineage[1] >= len(tracks) or lineage[2] >= len(tracks):
+            if lineage[0] not in tracks or lineage[1] not in tracks or lineage[2] not in tracks:
                 print("Skipping division", lineage, ", not all tracks are found (there are", len(tracks), "tracks)")
                 continue
             mother_track = tracks[lineage[0]]
@@ -138,7 +139,7 @@ def _read_lineage_file(tracks_dir: str, links: Links, tracks: List[Track], min_t
                 links.add_link(mother_last_snapshot, child_2_first_snapshot)
 
 
-def _read_deaths_file(tracks_dir: str, position_data: PositionData, tracks_by_id: List[Track], min_time_point: int,
+def _read_deaths_file(tracks_dir: str, position_data: PositionData, tracks_by_id: Dict[int, Track], min_time_point: int,
                       max_time_point: int):
     """Adds all marked cell deaths to the linking network."""
     _fix_python_path_for_pickle()
@@ -150,6 +151,9 @@ def _read_deaths_file(tracks_dir: str, position_data: PositionData, tracks_by_id
     with open(file, 'rb') as file_handle:
         dead_track_numbers = pickle.load(file_handle, encoding="latin1")
         for dead_track_number in dead_track_numbers:
+            if dead_track_number not in tracks_by_id:
+                print(f"Track with id {dead_track_number} was marked as dead, but no such track exists.")
+                continue
             track = tracks_by_id[dead_track_number]
             last_position_time = track.t[-1]
             if last_position_time < min_time_point or last_position_time > max_time_point:
@@ -159,7 +163,7 @@ def _read_deaths_file(tracks_dir: str, position_data: PositionData, tracks_by_id
             linking_markers.set_track_end_marker(position_data, last_position, EndMarker.DEAD)
 
 
-def _read_cell_type_file(tracks_dir: str, position_data: PositionData, tracks_by_id: List[Track], cell_type: str, *,
+def _read_cell_type_file(tracks_dir: str, position_data: PositionData, tracks_by_id: Dict[int, Track], cell_type: str, *,
                          file_name: str):
     """Adds all marked cell deaths to the linking network. If the file name is not specified, it is assumed to be
     cell_type.p ."""
@@ -171,9 +175,13 @@ def _read_cell_type_file(tracks_dir: str, position_data: PositionData, tracks_by
 
     print(f"Reading {file_name} for cells of type \"{cell_type.lower()}\"")
     with open(file, 'rb') as file_handle:
-        paneth_cell_numbers = pickle.load(file_handle, encoding="latin1")
-        for paneth_cell_number in paneth_cell_numbers:
-            track = tracks_by_id[paneth_cell_number]
+        typed_cell_numbers = pickle.load(file_handle, encoding="latin1")
+        for typed_cell_number in typed_cell_numbers:
+            if typed_cell_number not in tracks_by_id:
+                print(f"Track of id {typed_cell_number} as marked as having type \"{cell_type.lower()}\", but no such"
+                      f" track exists")
+                continue
+            track = tracks_by_id[typed_cell_number]
             for i in range(len(track.x)):
                 position = Position(*track.x[i], time_point_number=track.t[i])
                 linking_markers.set_position_type(position_data, position, cell_type.upper())
