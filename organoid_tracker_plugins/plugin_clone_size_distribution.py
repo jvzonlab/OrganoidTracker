@@ -35,6 +35,8 @@ def _show_clone_size_distribution(window: Window):
                                                                " generated after a certain time window.\nHow long"
                                                                " should this time window be, in hours?", default=40,
                                                 minimum=1)
+    if lineage_follow_time_h is None:
+        return
 
     # Calculate the number of time points in the given follow time
     time_point_window = int(lineage_follow_time_h / experiment.images.resolution().time_point_interval_h)
