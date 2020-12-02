@@ -1,9 +1,9 @@
+import webbrowser
+from os import path
 from typing import Optional
 
 from organoid_tracker.core import UserError
 from organoid_tracker.text_popup.text_popup import RichTextPopup
-from os import path
-
 
 _MANUALS_FOLDER = "manuals"
 _MANUALS_FOLDER_ABSOLUTE = path.join(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))), _MANUALS_FOLDER)
@@ -24,6 +24,11 @@ class HelpPopup(RichTextPopup):
         return "Manual"
 
     def navigate(self, url: str) -> Optional[str]:
+        # Open WWW links in a web browser
+        if url.startswith("https:") or url.startswith("http:"):
+            webbrowser.open(url)
+            return None
+
         if url == RichTextPopup.INDEX:
             url = _MAIN_MANUAL
 

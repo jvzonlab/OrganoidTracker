@@ -50,6 +50,10 @@ Reading the manual
 ------------------
 After you have installed the software, please have a look at the [manual]. The manual is also available from the `Help` menu in the program; this works even when you're offline.
 
+Pre-trained neural networks
+---------------------------
+1. [The original published network](https://doi.org/10.17026/dans-274-a78v) - for images with low background noise, 0.32 μm/px, z-step 2 μm
+2. [For lower resolution](https://drive.google.com/file/d/1WVGWlR7aHD2w8MWgrGp755MZR6FLPL8V/view?usp=sharing) - for images with low background noise, **0.41 μm/px**, z-step 2 μm
 
 API
 ---
