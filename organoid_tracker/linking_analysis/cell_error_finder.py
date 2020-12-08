@@ -1,35 +1,32 @@
-from typing import Optional, Iterable, Callable
+from typing import Optional, Iterable, Callable, Tuple
 
-import numpy
-
-from organoid_tracker.core import TimePoint
 from organoid_tracker.core.experiment import Experiment
-from organoid_tracker.core.links import Links
-from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
-from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.core.score import Score, ScoreCollection, Family
 from organoid_tracker.linking import cell_division_finder
 from organoid_tracker.linking_analysis import linking_markers, particle_age_finder
 from organoid_tracker.linking_analysis.errors import Error
-from organoid_tracker.linking_analysis.linking_markers import EndMarker
 
 
-def find_errors_in_experiment(experiment: Experiment) -> int:
+def find_errors_in_experiment(experiment: Experiment) -> Tuple[int, int]:
     """Adds errors for all logical inconsistencies in the graph, like cells that spawn out of nowhere, cells that
-    merge together and cells that have three or more daughters. Returns the amount of errors, exluding errors for
-     positions without links."""
+    merge together and cells that have three or more daughters.
+    Returns the amount of errors (excluding positions without links) and the number of positions without links."""
     position_data = experiment.position_data
     links = experiment.links
 
-    count = 0
+    warning_count = 0
+    no_links_count = 0
     for position in experiment.positions:
         error = get_error(experiment, position)
         linking_markers.set_error_marker(position_data, position, error)
-        if error is not None and links.contains_position(position):
-            count += 1
-    return count
+        if error is not None:
+            if links.contains_position(position):
+                warning_count += 1
+            else:  # It's just a position without links
+                no_links_count += 1
+    return warning_count, no_links_count
 
 
 def get_error(experiment: Experiment, position: Position) -> Optional[Error]:

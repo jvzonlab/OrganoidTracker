@@ -28,7 +28,8 @@ print("Performing nearest-neighbor linking...")
 link_result = nearest_neighbor_linker.nearest_neighbor(experiment, tolerance=1, back=True, forward=False)
 experiment.links = link_result
 print("Checking results for common errors...")
-warning_count = cell_error_finder.find_errors_in_experiment(experiment)
+warning_count, no_links_count = cell_error_finder.find_errors_in_experiment(experiment)
 print("Writing results to file...")
 io.save_data_to_json(experiment, _links_output_file)
-print(f"Done! Found {warning_count} potential errors in the data.")
+print(f"Done! Found {warning_count} potential errors in the data. In addition, {no_links_count} positions didn't get"
+      f" links.")
