@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Any
 from numpy import ndarray
 
 from organoid_tracker.core import TimePoint
@@ -13,6 +13,13 @@ class ImageChannel(ABC):
         """Returns some way to recreate this image channel, used for debugging."""
         pass
 
+    @abstractmethod
+    def __hash__(self) -> int:
+        pass
+
+    @abstractmethod
+    def __eq__(self, other: Any) -> bool:
+        pass
 
 class ImageLoader(ABC):
     """Responsible for loading all images in an experiment."""

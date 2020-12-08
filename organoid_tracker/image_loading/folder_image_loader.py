@@ -1,5 +1,5 @@
 from os import path
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Any
 
 from numpy import ndarray
 
@@ -22,6 +22,14 @@ class _IndexedChannel(ImageChannel):
 
     def __repr__(self) -> str:
         return f"_IndexedChannel({self._index})"
+
+    def __hash__(self) -> int:
+        return self._index
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, _IndexedChannel):
+            return False
+        return other._index == self._index
 
 
 def _discover_min_time_point_and_channel(folder: str, file_name_format: str, guess_time_point: int) -> Tuple[Optional[int], Optional[int]]:

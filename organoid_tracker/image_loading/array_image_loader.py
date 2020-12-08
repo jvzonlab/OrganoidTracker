@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Any
 
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.image_loader import ImageLoader, ImageChannel
@@ -9,6 +9,12 @@ class _DummyImageChannel(ImageChannel):
 
     def __repr__(self) -> str:
         return "_ONLY_CHANNEL"
+
+    def __hash__(self) -> int:
+        return 100
+
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, _DummyImageChannel)
 
 
 _ONLY_CHANNEL = _DummyImageChannel()

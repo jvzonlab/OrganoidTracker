@@ -1,5 +1,5 @@
 """Image loader for LIF files."""
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Any
 from xml.dom.minidom import Element
 
 import numpy
@@ -83,6 +83,14 @@ class _IndexedChannel(ImageChannel):
 
     def __repr__(self) -> str:
         return f"_IndexedChannel({self.index})"
+
+    def __hash__(self) -> int:
+        return self.index
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, _IndexedChannel):
+            return False
+        return other.index == self.index
 
 
 class _LifImageLoader(ImageLoader):
