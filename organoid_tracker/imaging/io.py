@@ -7,7 +7,7 @@ from typing import List, Dict, Any, Iterable, Optional
 
 import numpy
 
-from organoid_tracker.core import shape, TimePoint, UserError
+from organoid_tracker.core import shape, TimePoint, UserError, Color
 from organoid_tracker.core.beacon_collection import BeaconCollection
 from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.experiment import Experiment
@@ -139,6 +139,10 @@ def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point:
 
         if "image_offsets" in data:
             experiment.images.offsets = ImageOffsets(data["image_offsets"])
+
+        if "color" in data:
+            color = data["color"]
+            experiment.color = Color.from_rgb_floats(color[0], color[1], color[2])
 
 
 def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List], min_time_point: int, max_time_point: int):
@@ -492,6 +496,9 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
 
     # Save image offsets
     save_data["image_offsets"] = experiment.images.offsets.to_list()
+
+    # Save color
+    save_data["color"] = list(experiment.color.to_rgb_floats())
 
     _create_parent_directories(json_file_name)
     json_file_name_old = json_file_name + ".OLD"

@@ -2,7 +2,7 @@ from typing import Optional, Iterable
 
 from numpy import ndarray
 
-from organoid_tracker.core import TimePoint, Name, UserError, min_none, max_none
+from organoid_tracker.core import TimePoint, Name, UserError, min_none, max_none, Color
 from organoid_tracker.core.beacon_collection import BeaconCollection
 from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.images import Images
@@ -33,6 +33,7 @@ class Experiment:
     _name: Name  # Name of the experiment
     splines: SplineCollection  # Splines, can be used to track progress of a cell across a trajectory.
     _warning_limits: WarningLimits
+    _color: Color
 
     def __init__(self):
         self._name = Name()
@@ -46,6 +47,7 @@ class Experiment:
         self._images = Images()
         self._connections = Connections()
         self._warning_limits = WarningLimits()
+        self._color = Color.black()
 
     def remove_position(self, position: Position, *, update_splines: bool = True):
         """Removes a position and its links and other data from the experiment.
@@ -175,6 +177,18 @@ class Experiment:
     def get_image_stack(self, time_point: TimePoint) -> Optional[ndarray]:
         """Gets a stack of all images for a time point, one for every z layer. Returns None if there is no image."""
         return self._images.get_image_stack(time_point)
+
+    @property
+    def color(self) -> Color:
+        """Returns the color of this experiment, used in various plots."""
+        return self._color
+
+    @color.setter
+    def color(self, color: Color):
+        """Sets the cell positions."""
+        if not isinstance(color, Color):
+            raise TypeError(f"color must be a {Color.__name__} object, was " + repr(color))
+        self._color = color
 
     @property
     def positions(self) -> PositionCollection:

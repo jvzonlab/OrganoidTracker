@@ -157,6 +157,10 @@ class Color:
         """Returns True if this color is completely black."""
         return self._rgb == 0
 
+    def to_html_hex(self):
+        """Returns the color as a hexadecimal value. Same as str(...)."""
+        return self.__str__()
+
 
 def min_none(numbers: Union[Optional[float], Iterable[Optional[float]]], *args: Optional[float]):
     """Calculates the minimal number. None values are ignored. Usage:
