@@ -9,12 +9,10 @@ import numpy
 from organoid_tracker.core import UserError
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.images import ImageOffsets
-from organoid_tracker.core.links import Links
-from organoid_tracker.core.position import Position
+from organoid_tracker.core.links import Links, LinkingTrack
 from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.guizela_tracker_compatibility import cell_type_converter
 from organoid_tracker.linking_analysis import linking_markers
-from organoid_tracker.linking_analysis.linking_markers import EndMarker
 
 
 def export_links(experiment: Experiment, output_folder: str, comparison_folder: Optional[str] = None):
@@ -56,18 +54,27 @@ class _TrackExporter:
         self._tracks_by_id = {}
 
         # Convert graph to list of tracks
-        for position in self._links.find_appeared_positions():
-            self._add_track_including_child_tracks(position, self._get_new_track_id())
+        self._links.sort_tracks_by_x()
+        for track_id, track in self._links.find_all_tracks_and_ids():
+            self._add_track_including_child_tracks(track, track_id)
 
-    def _add_track_including_child_tracks(self, position: Position, track_id: int):
+    def _add_track_including_child_tracks(self, track: LinkingTrack, track_id: int):
         """Exports a track, starting from the first position position in the track."""
         _allow_loading_classes_without_namespace()
         import track_lib_v4
 
-        moved_position = position - self._offsets.of_time_point(position.time_point())
-        track = track_lib_v4.Track(x=numpy.array([moved_position.x, moved_position.y, moved_position.z]),
-                                   t=position.time_point_number())
-        position_type = linking_markers.get_position_type(self._position_data, position)
+        guizela_track = None
+        for position in track.positions():
+            moved_position = position - self._offsets.of_time_point(position.time_point())
+            if guizela_track is None:
+                guizela_track = track_lib_v4.Track(x=numpy.array([moved_position.x, moved_position.y, moved_position.z]),
+                                                   t=position.time_point_number())
+            else:
+                guizela_track.add_point(x=numpy.array([moved_position.x, moved_position.y, moved_position.z]),
+                                        t=position.time_point_number())
+
+        # Register cell type
+        position_type = linking_markers.get_position_type(self._position_data, track.find_last_position())
         if position_type is not None:
             track_ids_of_cell_type = self._typed_track_ids.get(position_type)
             if track_ids_of_cell_type is None:
@@ -77,31 +84,22 @@ class _TrackExporter:
                 # Append to existing list
                 track_ids_of_cell_type.append(track_id)
 
-        while True:
-            future_positions = self._links.find_futures(position)
-            if len(future_positions) == 2:
-                # Division: end current track and start two new ones
-                daughter_1 = future_positions.pop()
-                daughter_2 = future_positions.pop()
-                track_id_1 = self._get_new_track_id()
-                track_id_2 = self._get_new_track_id()
-                self._mother_daughter_pairs.append([track_id, track_id_1, track_id_2])
-                self._add_track_including_child_tracks(daughter_1, track_id_1)
-                self._add_track_including_child_tracks(daughter_2, track_id_2)
-                break
-            if len(future_positions) == 0:
-                if not linking_markers.is_live(self._position_data, position):
-                    # Actual cell dead, mark as such
-                    self._dead_track_ids.append(track_id)
-                break  # End of track
+        future_tracks = track.get_next_tracks()
+        if len(future_tracks) == 2:
+            # Division: end current track and start two new ones
+            daughter_track_1, daughter_track_2 = future_tracks
+            track_id_1 = self._links.get_track_id(daughter_track_1)
+            track_id_2 = self._links.get_track_id(daughter_track_2)
+            self._mother_daughter_pairs.append([track_id, track_id_1, track_id_2])
+            self._add_track_including_child_tracks(daughter_track_1, track_id_1)
+            self._add_track_including_child_tracks(daughter_track_2, track_id_2)
+        elif len(future_tracks) == 0:
+            # End of the road
+            if not linking_markers.is_live(self._position_data, track.find_last_position()):
+                # Actual cell dead, mark as such
+                self._dead_track_ids.append(track_id)
 
-            # Add point to track
-            position = future_positions.pop()
-            moved_position = position - self._offsets.of_time_point(position.time_point())
-            track.add_point(x=numpy.array([moved_position.x, moved_position.y, moved_position.z]),
-                            t=position.time_point_number())
-
-        self._tracks_by_id[track_id] = track
+        self._tracks_by_id[track_id] = guizela_track
 
     def synchronize_ids_with_folder(self, input_folder: str):
         for file in os.listdir(input_folder):
@@ -184,11 +182,6 @@ class _TrackExporter:
             list.append(id1)
         else:
             pass  # Both or none were affected - no need to swap
-
-    def _get_new_track_id(self) -> int:
-        track_id = self._next_track_id
-        self._next_track_id += 1
-        return track_id
 
 
 def _allow_loading_classes_without_namespace():
