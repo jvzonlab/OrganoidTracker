@@ -62,8 +62,8 @@ def _load_crypt_axis(tracks_dir: str, positions: PositionCollection, paths: Spli
                 continue
 
             path = Spline()
-            axis.x.reverse()  # Guizela's paths are defined in exactly the opposite way of what we want
-            for position in axis.x:  # axis.x == [[x,y,z],[x,y,z],[x,y,z],...]
+            # Reversed iteration - Guizela's paths are defined in exactly the opposite way of what we want
+            for position in reversed(axis.x):  # axis.x == [[x,y,z],[x,y,z],[x,y,z],...]
                 path.add_point(position[0], position[1], position[2])
 
             time_point = TimePoint(axis.t)
