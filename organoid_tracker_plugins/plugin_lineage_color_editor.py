@@ -19,7 +19,7 @@ from organoid_tracker.visualizer.exitable_image_visualizer import ExitableImageV
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Edit//Experiment-Recolor lineages...": lambda: _view_cells_colored_by_lineage(window)
+        "Edit//Experiment-Recolor individual lineages...": lambda: _view_cells_colored_by_lineage(window)
     }
 
 
