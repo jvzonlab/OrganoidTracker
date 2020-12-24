@@ -8,8 +8,7 @@ from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.window import Window
 from organoid_tracker.linking_analysis import cell_fate_finder, linking_markers
-from organoid_tracker.linking_analysis.cell_fate_finder import CellFate, CellFateType
-from organoid_tracker.util.mpl_helper import SANDER_APPROVED_COLORS
+from organoid_tracker.linking_analysis.cell_fate_finder import CellFateType
 
 
 def get_menu_items(window: Window):
@@ -48,6 +47,9 @@ class _DividingCells:
 
         resolution = experiment.images.resolution()
         for time_point in experiment.time_points():
+            if time_point.time_point_number() >= \
+                    experiment.last_time_point_number() - experiment.division_lookahead_time_points:
+                continue
             dividing_count_min = 0
             dividing_count_max = 0
             paneth_count = 0
@@ -88,9 +90,8 @@ def _draw_figure(figure: Figure, dividing_cells: List[_DividingCells]):
         axes.legend()
     else:
         for i, single_experiment in enumerate(dividing_cells):
-            color = single_experiment.experiment_color
+            color = single_experiment.experiment_color.to_rgba_floats()
             axes.plot(single_experiment.time_point_hours, single_experiment.dividing_counts_min, color=color)
-            axes.plot(single_experiment.time_point_hours, single_experiment.paneth_counts, color=color, linestyle='dashed')
-        axes.set_ylabel("Number of cells (dividing and Paneth)")
+        axes.set_ylabel("Number of dividing cells")
     axes.set_xlabel("Time (h)")
 
