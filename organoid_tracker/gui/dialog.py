@@ -1,3 +1,4 @@
+import json
 import os as _os
 import subprocess as _subprocess
 import sys as _sys
@@ -9,6 +10,7 @@ from PySide2 import QtCore
 from PySide2.QtGui import QCloseEvent, QColor
 from PySide2.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow, QVBoxLayout, \
     QLabel, QSizePolicy, QColorDialog, QMenuBar
+from matplotlib.backend_bases import KeyEvent
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
@@ -273,13 +275,31 @@ def popup_visualizer(experiment: GuiExperiment, visualizer_callable: Callable[[W
 
 
 def popup_figure(experiment: GuiExperiment, draw_function: Callable[[Figure], None], *,
-                 size_cm: Tuple[float, float] = (14, 12.7)):
-    """Pops up a figure. The figure is drawn inside draw_function."""
+                 size_cm: Tuple[float, float] = (14, 12.7),
+                 export_function: Optional[Callable[[], Dict[str, Any]]] = None):
+    """Pops up a figure. The figure is drawn inside draw_function. Size (x, y) is specified using size_cm.
+    export_function is used to save a JSON structure when the user presses Ctrl+E."""
     def do_nothing_on_close():
         pass  # Used to indicate that no action needs to be taken once the window closes
 
     figure = Figure(figsize=(size_cm[0] * CM_TO_INCH, size_cm[1] * CM_TO_INCH), dpi=95)
     q_window = _PopupQWindow(_window(), figure, draw_function, do_nothing_on_close)
+
+    # Support for exporting the raw data
+    def try_export(event: KeyEvent):
+        if event.key != "ctrl+e":
+            return
+        if export_function is None:
+            popup_error("Export not available", "Export to raw data is not available for this figure.")
+            return
+        file = prompt_save_file("Raw data", [("JSON files", "*.json")])
+        if file is None:
+            return
+        data = export_function()
+        with open(file, 'w') as handle:
+            json.dump(data, handle)
+    figure.canvas.mpl_connect("key_release_event", try_export)
+
     PopupWindow(q_window, figure, experiment, q_window._title_text, q_window._status_text)
 
 

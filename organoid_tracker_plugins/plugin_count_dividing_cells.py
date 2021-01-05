@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict, Any
 
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
@@ -26,7 +26,8 @@ def _show_number_of_dividing_cells(window: Window):
     for experiment in window.get_active_experiments():
         dividing_cells.append(_DividingCells(experiment))
 
-    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_figure(figure, dividing_cells))
+    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _draw_figure(figure, dividing_cells),
+                        export_function=lambda: _export_figure(dividing_cells))
 
 
 class _DividingCells:
@@ -74,6 +75,15 @@ class _DividingCells:
             self.paneth_counts.append(paneth_count)
             self.total_counts.append(total_count)
 
+    def to_dictionary(self) -> Dict[str, Any]:
+        return {
+            "experiment_color": self.experiment_color.to_rgb_floats(),
+            "time_point_hours": self.time_point_hours,
+            "dividing_counts_min": self.dividing_counts_min,
+            "dividing_counts_max": self.dividing_counts_max,
+            "paneth_counts": self.paneth_counts,
+            "total_counts": self.total_counts
+        }
 
 def _draw_figure(figure: Figure, dividing_cells: List[_DividingCells]):
     axes: Axes = figure.gca()
@@ -89,9 +99,16 @@ def _draw_figure(figure: Figure, dividing_cells: List[_DividingCells]):
         axes.set_ylabel("Number of cells (min and max)")
         axes.legend()
     else:
-        for i, single_experiment in enumerate(dividing_cells):
+        for single_experiment in dividing_cells:
             color = single_experiment.experiment_color.to_rgba_floats()
-            axes.plot(single_experiment.time_point_hours, single_experiment.dividing_counts_min, color=color)
+            axes.plot(single_experiment.time_point_hours, single_experiment.dividing_counts_min, color=color,
+                      linewidth=1.65)
         axes.set_ylabel("Number of dividing cells")
     axes.set_xlabel("Time (h)")
+
+
+def _export_figure(dividing_cells: List[_DividingCells]) -> Dict[str, Any]:
+    return {
+        "experiments": [d.to_dictionary() for d in dividing_cells]
+    }
 
