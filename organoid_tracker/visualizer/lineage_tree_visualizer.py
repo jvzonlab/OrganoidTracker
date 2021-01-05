@@ -66,7 +66,7 @@ class LineageTreeVisualizer(Visualizer):
         if self._filter_min_division_count > 0:
             if get_min_division_count_in_lineage(linking_track) < self._filter_min_division_count:
                 return False  # Don't even check, every lineage has 0 or more divisions
-        if self._filter_cell_type != "":
+        if self._filter_cell_type is not None:
             if not _includes_cell_type(self._experiment.position_data, linking_track, self._filter_cell_type):
                 return False
         return True
