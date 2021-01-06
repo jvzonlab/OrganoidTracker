@@ -6,6 +6,7 @@ class TestImageOffsets(unittest.TestCase):
 
     def test_time(self):
         self.assertEquals("image_{time}.png", find_time_and_channel_pattern("image_1.png"))
+        self.assertEquals("image_({time}).png", find_time_and_channel_pattern("image_(1).png"))
         self.assertEquals("image_{time}.png", find_time_and_channel_pattern("image_0.png"))
         self.assertEquals("image_{time:03}.png", find_time_and_channel_pattern("image_001.png"))
         self.assertEquals("image_{time:02}.png", find_time_and_channel_pattern("image_01.png"))

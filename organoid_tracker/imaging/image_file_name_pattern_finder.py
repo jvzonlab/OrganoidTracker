@@ -41,13 +41,13 @@ def _find_time_pattern(file_name: str) -> Optional[str]:
     counting_part = re.search('0*[01]\\.[A-Za-z]', file_name)
     if counting_part is not None:
         start, end = counting_part.start(0), counting_part.end(0)
-        return _fixup_pattern("time", file_name[0:start] + "{time:0" + str(end - start - 3) + "}." + file_name[end-1:])
+        return _fixup_pattern("time", file_name[0:start] + "{time:0" + str(end - start - 2) + "}." + file_name[end-1:])
 
     # Support (001).extension
     counting_part = re.search('\\(0*[01]\\)\\.[A-Za-z]', file_name)
     if counting_part is not None:
         start, end = counting_part.start(0), counting_part.end(0)
-        return _fixup_pattern("time", file_name[0:start] + "({time:0" + str(end - start - 5) + "})." + file_name[end-1:])
+        return _fixup_pattern("time", file_name[0:start] + "({time:0" + str(end - start - 4) + "})." + file_name[end-1:])
 
     # Fail
     return None
