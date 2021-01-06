@@ -53,9 +53,12 @@ print("Calculating scores of possible mothers...")
 if experiment.scores.has_family_scores():
     print("    found existing scores, using those instead")
     scores = experiment.scores
-else:
+elif experiment.position_data.has_position_data_with_name("shape"):
     score_system = RationalScoringSystem()
     scores = cell_division_finder.calculates_scores(experiment.images, experiment.position_data, possible_links, score_system)
+else:
+    print("    no scores found, no Gaussian fit found: cell divisions will NOT be recognized")
+    scores = experiment.scores
 print("Deciding on what links to use...")
 link_result = dpct_linker.run(experiment.positions, experiment.position_data, possible_links, scores,
                               experiment.images.resolution(), link_weight=_link_weight,
