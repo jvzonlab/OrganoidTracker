@@ -129,9 +129,9 @@ def pad_to_patch(stacked, patch_shape):
                     lambda: 0)
     pad_x = tf.cond(tf.less(stacked_shape[2], patch_shape[2]), lambda: patch_shape[2] - stacked_shape[2],
                     lambda: 0)
-    padding = [[pad_z, 0], [pad_y, 0], [pad_x, 0], [0, 0]]
+    padding = [[0, pad_z], [0, pad_y], [0, pad_x], [0, 0]]
 
-    return tf.pad(stacked, padding)
+    return tf.pad(stacked, padding, mode='CONSTANT', constant_values=0)
 
 
 # generates single patch without pertubations for validation set
