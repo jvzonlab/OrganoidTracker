@@ -9,6 +9,7 @@ from typing import Set
 
 import tensorflow as tf
 from PIL import Image as Img
+from tifffile import tifffile
 
 from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int
 from organoid_tracker.core.experiment import Experiment
@@ -145,7 +146,7 @@ history = model.fit(training_dataset,
                     epochs=50,
                     steps_per_epoch=round(0.8*len(image_with_positions_list)),
                     validation_data=validation_dataset,
-                    validation_steps=10,
+                    validation_steps=50,
                     callbacks=[tensorboard_callback])
 
 print("Saving model...")
@@ -169,18 +170,15 @@ for i in range(10):
     element = iterator.get_next()
 
     array = element[0].numpy()
-    array = array[0, 10, :, :, 0]
-    im = Img.fromarray(array)
-    im.save("example_input" + str(i) + ".tiff")
+    array = array[0, :, :, :, 0]
+    tifffile.imsave("example_input" + str(i) + ".tiff", array, compress=9)
 
     array = element[1].numpy()
-    array = array[0, 10, :, :, 0]
-    im = Img.fromarray(array)
-    im.save("example_prediction" + str(i) + ".tiff")
+    array = array[0, :, :, :, 0]
+    tifffile.imsave("example_prediction" + str(i) + ".tiff", array, compress=9)
 
     array = element[2].numpy()
-    array = array[0, 10, :, :, 0]
-    im = Img.fromarray(array)
-    im.save("example_labels" + str(i) + ".tiff")
+    array = array[0, :, :, :, 0]
+    tifffile.imsave("input_prediction" + str(i) + ".tiff", array, compress=9)
 
 
