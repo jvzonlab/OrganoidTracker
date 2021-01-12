@@ -153,9 +153,11 @@ class _MergedTiffImageLoader(ImageLoader):
     def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
         if time_point.time_point_number() < self.first_time_point_number() \
                 or time_point.time_point_number() > self.last_time_point_number():
-            return None
+            return None  # Time out of range
         if not isinstance(image_channel, _IndexedImageChannel) or image_channel not in self._channels:
-            return None
+            return None  # Invalid channel
+        if image_z < 0 or image_z >= self._image_size_zyx[0]:
+            return None  # Z out of range
 
         out = tifffile.create_output(None, self._image_size_zyx[1:], self._series.dtype)
         self._get_2d_image_array(time_point.time_point_number(), image_channel.index, image_z, out)
