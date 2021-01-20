@@ -80,8 +80,7 @@ def _generate_training_config(window: Window):
 
     config = ConfigFile("train_network", folder_name=save_directory)
 
-
-    config.get_or_default("max_training_steps", "100000")
+    config.get_or_default("epochs", "50")
     config.get_or_default("patch_shape",
                           f"{_TRAINING_PATCH_SHAPE_ZYX[2]}, {_TRAINING_PATCH_SHAPE_ZYX[1]}, {_TRAINING_PATCH_SHAPE_ZYX[0]}")
     config.get_or_default("output_folder", "./output")

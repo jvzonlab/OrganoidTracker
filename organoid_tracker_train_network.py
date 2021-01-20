@@ -99,10 +99,10 @@ output_folder = config.get_or_default("output_folder", "training_output_folder",
 batch_size = config.get_or_default("batch_size", "64", comment="How many patches are used for training at once. A"
                                                                " higher batch size can load to a better training"
                                                                " result.", type=config_type_int)
-max_training_steps = config.get_or_default("max_training_steps", "100000", comment="For how many iterations the network"
-                                                                                   " is trained. Larger is not always better; at some point the network might"
-                                                                                   " get overfitted to your training data.",
-                                           type=config_type_int)
+epochs = config.get_or_default("epochs", "50", comment="For how many epochs the network is trained. Larger is not"
+                                                       " always better; at some point the network might get overfitted"
+                                                       " to your training data.",
+                                type=config_type_int)
 config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
@@ -142,7 +142,7 @@ model.summary()
 
 print("Training...")
 history = model.fit(training_dataset,
-                    epochs=50,
+                    epochs=epochs,
                     steps_per_epoch=round(0.8*len(image_with_positions_list)),
                     validation_data=validation_dataset,
                     validation_steps=10,
