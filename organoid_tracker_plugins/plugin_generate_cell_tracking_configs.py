@@ -28,10 +28,15 @@ def _create_run_script(output_folder: str, script_name: str):
     script_file = os.path.abspath(script_name + ".py")
 
     # For Windows
+    conda_env_folder = os.sep + "envs" + os.sep
+    conda_installation_folder = sys.base_exec_prefix
+    if conda_env_folder in conda_installation_folder:
+        conda_installation_folder = conda_installation_folder[0:conda_installation_folder.index(conda_env_folder)]
     bat_file = os.path.join(output_folder, script_name + ".bat")
     with open(bat_file, "w") as writer:
         writer.write(f"""@rem Automatically generated script for running {script_name}
 @echo off
+@CALL "{conda_installation_folder}\\condabin\\conda.bat" activate {os.getenv('CONDA_DEFAULT_ENV')}
 "{sys.executable}" "{script_file}"
 pause""")
 
@@ -45,7 +50,7 @@ pause""")
     os.chmod(sh_file, 0o777)
 
 
-def _popup_confirmaton(output_folder: str, script_name: str, ):
+def _popup_confirmation(output_folder: str, script_name: str, ):
     if dialog.prompt_options("Configuration files created", f"The configuration files were created successfully. Please"
                              f" run the {script_name} script from that directory:\n\n{output_folder}",
                              option_1="Open that directory", option_default=DefaultOption.OK) == 1:
@@ -56,28 +61,36 @@ def _generate_training_config(window: Window):
     """For training the neural network."""
     experiments = list(window.get_active_experiments())
     if len(experiments) == 0:
-        raise UserError("No experimental data loaded", "No experiments are open. Please load all data (images and"
+        raise UserError("No experimental data loaded", "No projects are open. Please load all data (images and"
                                                        " tracking data) that you want to use for training.")
     if len(experiments) == 1:
-        if not dialog.prompt_yes_no("Experiments", "Only one experiment is currently open. Training on a single data"
-                                                   " set is not recommended. For a quick test it's fine, but ideally"
-                                                   " you should have a more data sets open. So please load multiple"
-                                                   " datasets and have them all open (see the dropdown at the top-right"
-                                                   " of the main window)."
-                                                   "\n\nDo you want to continue with just this data set?"):
+        if not dialog.prompt_yes_no("Experiments", "Only one project is open. Training on a single data set is not"
+                                                   " recommended. For a quick test it's fine, but ideally you should have a more"
+                                                   " data sets loaded.\n\nIf you already have multiple experiments loaded, make"
+                                                   " sure to select <all experiments> in the experiment selection box.\n\nDo you"
+                                                   " want to continue with just this data set?"):
             return
-
+    if not dialog.popup_message_cancellable("Output folder",
+                                            f"{len(experiments)} experiment(s) will be used for training. You will"
+                                            f" be asked to select an output folder for training."):
+        return
     save_directory = dialog.prompt_save_file("Output directory", [("Folder", "*")])
     if save_directory is None:
         return
 
     config = ConfigFile("train_network", folder_name=save_directory)
 
+
     config.get_or_default("max_training_steps", "100000")
     config.get_or_default("patch_shape",
                           f"{_TRAINING_PATCH_SHAPE_ZYX[2]}, {_TRAINING_PATCH_SHAPE_ZYX[1]}, {_TRAINING_PATCH_SHAPE_ZYX[0]}")
     config.get_or_default("output_folder", "./output")
-    config.get_or_default("batch_size", "64")
+    config.get_or_default("batch_size", "30")
+
+    config.get_or_default(f"time_window_before", str(-1))
+    config.get_or_default(f"time_window_after", str(1))
+
+    config.get_or_default(f"use_TFRecords", str(True))
 
     i = 0
     for index, experiment in enumerate(experiments):
@@ -96,15 +109,8 @@ def _generate_training_config(window: Window):
                 raise UserError("Image size is not constant", f"No constant size is specified for the loaded images of"
                                                               f" project {experiment.name}. Cannot use the project for training.")
 
-            # Make sure image is at least as large as the patch
-            image_size_zyx = list(image_size_zyx)  # From tuple to list - this makes it mutable
-            for i in range(len(image_size_zyx)):
-                image_size_zyx[i] = max(image_size_zyx[i], _TRAINING_PATCH_SHAPE_ZYX[i])
-
-            config.get_or_default("image_shape", f"{image_size_zyx[2]}, {image_size_zyx[1]}, {image_size_zyx[0]}")
-
         i = index + 1
-        positions_file = f"ground_thruth_positions/positions_{i}.json"
+        positions_file = f"ground_truth_positions/positions_{i}.json"
         io.save_positions_to_json(experiment, os.path.join(save_directory, positions_file))
 
         config.get_or_default(f"images_container_{i}", image_loader.serialize_to_config()[0])
@@ -113,12 +119,13 @@ def _generate_training_config(window: Window):
         config.get_or_default(f"min_time_point_{i}", str(experiment.positions.first_time_point_number()))
         config.get_or_default(f"max_time_point_{i}", str(experiment.positions.last_time_point_number()))
         config.get_or_default(f"positions_file_{i}", positions_file)
+        # new
+
 
     config.get_or_default(f"images_container_{i + 1}", "<stop>")
     config.save()
     _create_run_script(save_directory, "organoid_tracker_train_network")
-    _popup_confirmaton(save_directory, "organoid_tracker_train_network")
-
+    _popup_confirmation(save_directory, "organoid_tracker_train_network")
 
 
 def _generate_detection_config(window: Window):
@@ -129,7 +136,7 @@ def _generate_detection_config(window: Window):
         raise UserError("No images", "No images were loaded, so no cells can be detected. Please load some images"
                                      " first.")
 
-    checkpoint_directory = _get_checkpoints_folder()
+    checkpoint_directory = _get_model_folder()
     if checkpoint_directory is None:
         return
 
@@ -147,10 +154,21 @@ def _generate_detection_config(window: Window):
     config.get_or_default("max_time_point", str(image_loader.last_time_point_number()), store_in_defaults=True)
     config.get_or_default("checkpoint_folder", checkpoint_directory)
     config.get_or_default("predictions_output_folder", "out")
+
+    config.get_or_default("patch_shape_z", str(30))
+    config.get_or_default("patch_shape_y", str(240))
+    config.get_or_default("patch_shape_x", str(240))
+    config.get_or_default("buffer_z", str(1))
+    config.get_or_default("buffer_y", str(8))
+    config.get_or_default("buffer_x", str(8))
+    config.get_or_default("time_window_before", str(-1))
+    config.get_or_default("time_window_after", str(1))
+
     config.get_or_default("save_video_ram", "true")
+
     config.save()
     _create_run_script(save_directory, "organoid_tracker_predict_positions")
-    _popup_confirmaton(save_directory, "organoid_tracker_predict_positions")
+    _popup_confirmation(save_directory, "organoid_tracker_predict_positions")
 
 
 def _generate_gaussian_fit_configs(window: Window):
@@ -202,7 +220,7 @@ def _generate_gaussian_fit_configs(window: Window):
     config.get_or_default("gaussian_fit_smooth_size", str(7))
     config.save()
     _create_run_script(save_directory, "organoid_tracker_detect_gaussian_shapes")
-    _popup_confirmaton(save_directory, "organoid_tracker_detect_gaussian_shapes")
+    _popup_confirmation(save_directory, "organoid_tracker_detect_gaussian_shapes")
 
 
 def _generate_linking_config(window: Window):
@@ -237,20 +255,22 @@ def _generate_linking_config(window: Window):
     config.get_or_default("output_file", "./Automatic links." + io.FILE_EXTENSION)
     config.save()
     _create_run_script(save_directory, "organoid_tracker_create_links")
-    _popup_confirmaton(save_directory, "organoid_tracker_create_links")
+    _popup_confirmation(save_directory, "organoid_tracker_create_links")
 
-def _get_checkpoints_folder() -> Optional[str]:
+
+def _get_model_folder() -> Optional[str]:
     if not dialog.popup_message_cancellable("Checkpoints folder",
-                                            "First, we will ask you where you have stored the checkpoints folder, which contains the trained model."):
+                                            "First, we will ask you where you have stored the model."):
         return None
     while True:
         directory = dialog.prompt_directory("Please choose a checkpoint folder")
         if not directory:
             return None  # Cancelled, stop loop
-        if os.path.isfile(os.path.join(directory, "checkpoint")):
+        if os.path.isfile(os.path.join(directory, "saved_model.pb")):
             return directory  # Successful, stop loop
 
         # Unsuccessful
-        dialog.popup_error("Not a checkpoint folder",
+        dialog.popup_error("Not a model containing folder",
                            "The selected folder does not contain a trained model; it contains no 'checkpoint' file."
                            " Please select another folder. Typically, this folder is named `checkpoints`.")
+
