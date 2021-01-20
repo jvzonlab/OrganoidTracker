@@ -2,15 +2,24 @@
 import os
 from typing import Tuple, List
 import tensorflow as tf
+import numpy as np
 from functools import partial
 from organoid_tracker.position_detection_cnn.training_data_creator import _ImageWithPositions
 
 
-def load_images_with_positions(i, image_with_positions_list: List[_ImageWithPositions], time_window=[0, 0]):
+def load_images_with_positions(i, image_with_positions_list: List[_ImageWithPositions], time_window=[0, 0], crop=True):
     image_with_positions = image_with_positions_list[i]
 
     image = image_with_positions.load_image_time_stack(time_window)
     label = image_with_positions.create_labels(image.shape[0:3])
+
+    if crop:
+        coords = image_with_positions.xyz_positions
+        min_coords = np.amin(coords, axis=0)
+        max_coords = np.amax(coords, axis=0)
+
+        image = image[min_coords[2]:max_coords[2], min_coords[1]:max_coords[1], min_coords[0]:max_coords[0]]
+        label = label[min_coords[2]:max_coords[2], min_coords[1]:max_coords[1], min_coords[0]:max_coords[0]]
 
     return image, label
 
