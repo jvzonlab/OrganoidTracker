@@ -10,7 +10,7 @@ from typing import Set
 import tensorflow as tf
 from PIL import Image as Img
 
-from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int
+from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int, config_type_bool
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.channel_merging_image_loader import ChannelMergingImageLoader
@@ -86,8 +86,7 @@ while True:
 time_window = [int(config.get_or_default(f"time_window_before", str(-1))),
                int(config.get_or_default(f"time_window_after", str(1)))]
 
-use_TFR = config.get_or_default(f"use_TFRecords", str(True))
-use_TFR = bool(use_TFR == "True")
+use_tfrecords = config.get_or_default(f"use_tfrecords", str(True), type=config_type_bool)
 
 patch_shape = list(
     config.get_or_default("patch_shape", "64, 64, 32", comment="Size in pixels (x, y, z) of the patches used"
@@ -117,7 +116,7 @@ random.seed("using a fixed seed to ensure reproducibility")
 random.shuffle(image_with_positions_list)
 
 # create tf.datasets that generate the data
-if use_TFR:
+if use_tfrecords:
     print("creating_TFRecords...")
     image_files, label_files = dataset_writer(image_with_positions_list, time_window, shards=10)
 
