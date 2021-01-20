@@ -5,10 +5,11 @@ import os
 import random
 from functools import partial
 from os import path
-from typing import Set
+from typing import Set, Tuple
 
 import tensorflow as tf
-from PIL import Image as Img
+import tifffile
+from tensorflow.python.data import Dataset
 
 from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int, config_type_bool
 from organoid_tracker.core.experiment import Experiment
@@ -153,33 +154,28 @@ tf.keras.models.save_model(model, "model_test")
 
 # Sanity check, do predictions on 10 samples of the validation set
 print("Sanity check...")
+os.makedirs(os.path.join(output_folder, "examples"), exist_ok=True)
 
 
-def predict(image, label, model=model):
+def predict(image: tf.Tensor, label: tf.Tensor, model: tf.keras.Model) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     return image, model(image, training=False), label
 
 
-quick_dataset = validation_dataset.unbatch().take(10).batch(1)
+quick_dataset: Dataset = validation_dataset.unbatch().take(10).batch(1)
 predictions = quick_dataset.map(partial(predict, model=model))
 
-iterator = iter(predictions)
-
-for i in range(10):
-    element = iterator.get_next()
+for i, element in enumerate(predictions):
 
     array = element[0].numpy()
-    array = array[0, 10, :, :, 0]
-    im = Img.fromarray(array)
-    im.save("example_input" + str(i) + ".tiff")
+    array = array[0, :, :, :, 0]
+    tifffile.imwrite(os.path.join(output_folder, "examples", "example_input" + str(i) + ".tiff"), array)
 
     array = element[1].numpy()
-    array = array[0, 10, :, :, 0]
-    im = Img.fromarray(array)
-    im.save("example_prediction" + str(i) + ".tiff")
+    array = array[0, :, :, :, 0]
+    tifffile.imwrite(os.path.join(output_folder, "examples", "example_prediction" + str(i) + ".tiff"), array)
 
     array = element[2].numpy()
-    array = array[0, 10, :, :, 0]
-    im = Img.fromarray(array)
-    im.save("example_labels" + str(i) + ".tiff")
+    array = array[0, :, :, :, 0]
+    tifffile.imwrite(os.path.join(output_folder, "examples", "example_labels" + str(i) + ".tiff"), array)
 
 
