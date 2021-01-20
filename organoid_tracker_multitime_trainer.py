@@ -143,10 +143,10 @@ model.summary()
 
 print("Training...")
 history = model.fit(training_dataset,
-                    epochs=50,
-                    steps_per_epoch=round(0.8*len(image_with_positions_list)),
+                    epochs=1,
+                    steps_per_epoch=10,#round(0.8*len(image_with_positions_list)),
                     validation_data=validation_dataset,
-                    validation_steps=50,
+                    validation_steps=5,
                     callbacks=[tensorboard_callback])
 
 print("Saving model...")
