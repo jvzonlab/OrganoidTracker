@@ -11,13 +11,15 @@ from organoid_tracker.gui.icon_getter import get_icon
 
 class Toolbar(NavigationToolbar2QT):
 
-    toolitems = (  # The icons of Matplotlib that we use. Matplotlib reads these.
-        ('Save', 'Save tracking data', 'filesave', 'save_figure'),
+    toolitems = [  # The icons of Matplotlib that we use. Matplotlib reads these
+        ('Load images', 'Load images', '$custom-icon$file_image', 'button_load_image'),
+        ('Load', 'Load tracking data', '$custom-icon$file_load', 'button_load_tracking'),
+        ('Save', 'Save tracking data', 'filesave', 'button_save_tracking'),
         (None, None, None, None),
-        ('Home', 'Reset original view', 'home', 'home'),
+        ('Home', 'Reset original view', 'home', 'button_home'),
         ('Pan', 'Pan axes with left mouse, zoom with right', 'move', 'pan'),
         ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
-    )
+    ]
 
     # Handlers for the toolbar buttons - set by another class
     new_handler = lambda e: ...
@@ -44,6 +46,16 @@ class Toolbar(NavigationToolbar2QT):
         self.addAction(get_icon("file_new.png"), "New", lambda *e: self._call(self.new_handler))
         self.addAction(get_icon("file_close.png"), "Close", lambda *e: self._call(self.close_handler))
 
+    def _icon(self, name):
+        # Overridden to provide custom icons
+        if name.startswith("$custom-icon$"):
+            # One of our icons!
+            name = name[len("$custom-icon$"):]
+            return get_icon(name)
+        else:
+            # Default matplotlib icon
+            return super()._icon(name)
+
     def update_selectable_experiments(self, experiment_names: List[str], selected_index: int):
         if len(experiment_names) == 0:
             experiment_names = ["<no data loaded>"]
@@ -58,23 +70,20 @@ class Toolbar(NavigationToolbar2QT):
 
         self._experiment_selector_box.setCurrentIndex(selected_index)
 
-    def _init_toolbar(self):
-        # Add some additional buttons
-        self.addAction(get_icon("file_image.png"), "Load images", lambda *e: self._call(self.image_handler))
-        self.addAction(get_icon("file_load.png"), "Load tracking data", lambda *e: self._call(self.load_handler))
-
-        # Add the Matplotlib buttons
-        super()._init_toolbar()
-
     def _call(self, action: Callable):
         try:
             action()
         except BaseException as e:
             dialog.popup_exception(e)
 
-    def home(self):
-        self.home_handler()
+    def button_load_image(self):
+        self._call(self.image_handler)
 
-    def save_figure(self):
+    def button_load_tracking(self):
+        self._call(self.load_handler)
+
+    def button_save_tracking(self):
         self._call(self.save_handler)
 
+    def button_home(self):
+        self._call(self.home_handler)
