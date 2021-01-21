@@ -141,15 +141,17 @@ model = build_model(shape=(patch_shape[0], None, None, time_window[1] - time_win
 model.summary()
 
 print("Training...")
+os.makedirs(output_folder, exist_ok=True)
+tensorboard_folder = os.path.join(output_folder, "tensorboard")
 history = model.fit(training_dataset,
                     epochs=epochs,
                     steps_per_epoch=round(0.8*len(image_with_positions_list)),
                     validation_data=validation_dataset,
                     validation_steps=10,
-                    callbacks=[tensorboard_callback])
+                    callbacks=[tensorboard_callback(tensorboard_folder)])
 
 print("Saving model...")
-tf.keras.models.save_model(model, "model_test")
+tf.keras.models.save_model(model, os.path.join(output_folder, "trained_model"))
 
 
 # Sanity check, do predictions on 10 samples of the validation set

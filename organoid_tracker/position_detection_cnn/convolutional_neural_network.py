@@ -122,15 +122,16 @@ def add_3d_coord(layer):
     return layer
 
 
-tensorboard_callback = tf.keras.callbacks.TensorBoard(
-    log_dir="logs",
-    histogram_freq=0,
-    write_graph=False,
-    write_images=False,
-    update_freq=1000,
-    profile_batch=(100, 105),
-    embeddings_freq=0,
-    embeddings_metadata=None,
-)
+def tensorboard_callback(tensorboard_folder: str) -> tf.keras.callbacks.Callback:
+    return tf.keras.callbacks.TensorBoard(
+        log_dir=tensorboard_folder,
+        histogram_freq=0,
+        write_graph=False,
+        write_images=False,
+        update_freq=1000,
+        profile_batch=(100, 105),
+        embeddings_freq=0,
+        embeddings_metadata=None,
+    )
 
 
