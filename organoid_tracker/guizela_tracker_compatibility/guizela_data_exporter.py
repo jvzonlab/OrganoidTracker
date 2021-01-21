@@ -137,16 +137,16 @@ class _TrackExporter:
         for track_id, track in self._tracks_by_id.items():
             if track is not None:
                 with open(os.path.join(output_folder, f"track_{track_id:05d}.p"), "wb") as handle:
-                    pickle.dump(track, handle)
+                    pickle.dump(track, handle, protocol=2)
         with open(os.path.join(output_folder, "lineages.p"), "wb") as handle:
-            pickle.dump(self._mother_daughter_pairs, handle)
+            pickle.dump(self._mother_daughter_pairs, handle, protocol=2)
         with open(os.path.join(output_folder, "dead_cells.p"), "wb") as handle:
-            pickle.dump(self._dead_track_ids, handle)
+            pickle.dump(self._dead_track_ids, handle, protocol=2)
         for cell_type, track_id_list in self._typed_track_ids.items():
             file_name = cell_type_converter.CELL_TYPE_TO_FILE.get(cell_type)
             if file_name is not None:
                 with open(os.path.join(output_folder, file_name), "wb") as handle:
-                    pickle.dump(track_id_list, handle)
+                    pickle.dump(track_id_list, handle, protocol=2)
 
     def _swap_ids(self, id1: int, id2: int):
         """All tracks with id1 will have id2, and vice versa."""
