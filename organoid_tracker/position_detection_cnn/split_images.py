@@ -1,11 +1,12 @@
 """"Helps to split images in smaller parts and the reconstructs them"""
-from typing import List
+from typing import List, Union
 
 import numpy as np
 
 
 # gives a list of the corner coordinates (top-left) of the splits
-def corners_split(image_shape, patch_shape):
+def corners_split(image_shape: Union[np.ndarray, List[int]], patch_shape: Union[np.ndarray, List[int]]
+                  ) -> List[np.ndarray]:
     corners = list([np.zeros(3, dtype=int)])
 
     for dim in range(3):
@@ -36,9 +37,9 @@ def corners_split(image_shape, patch_shape):
 
 def reconstruction(image_batch, corners, buffer, image_shape, patch_shape):
     # add channel dimension and create empty volume
-    final_image = np.zeros(image_shape + [image_batch.shape[4]])
+    final_image = np.zeros(image_shape + [image_batch.shape[4]], dtype=np.float32)
     # records if volume is filled by a patch
-    filled = np.zeros(image_shape + [image_batch.shape[4]], dtype=int)
+    filled = np.zeros(image_shape + [image_batch.shape[4]], dtype=np.uint8)
 
     for i, corner in zip(range(len(corners)), corners):
         input_data = image_batch[i,]
