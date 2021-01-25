@@ -84,7 +84,7 @@ if _images_channels != {1}:
     experiment.images.image_loader(channel_merging_image_loader)
 
 # create image_list from experiment
-image_list = create_image_list(experiment)
+image_list = create_image_list_without_positions(experiment)
 
 # set relevant parameters
 mid_layers_nb = _mid_layers

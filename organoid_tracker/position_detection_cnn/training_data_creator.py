@@ -168,12 +168,12 @@ def create_image_with_positions_list(experiments: Iterable[Experiment]):
     return image_with_positions_list
 
 
-def create_image_list(experiment: Experiment):
+def create_image_list_without_positions(experiment: Experiment):
     image_list = []
 
     for time_point in experiment.time_points():
         image_list.append(
-            _ImageWithPositions(str(experiment.name), experiment.images, time_point, None))
+            _ImageWithPositions(str(experiment.name), experiment.images, time_point, numpy.empty((0, 3), dtype=numpy.float32)))
 
     return image_list
 
