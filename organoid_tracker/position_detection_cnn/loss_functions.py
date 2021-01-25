@@ -22,17 +22,18 @@ def custom_loss_with_blur(y_true, y_pred):
     y_true_blur = blur_labels(y_true)
 
     non_zero_count = tf.cast(tf.math.count_nonzero(y_true_blur), tf.float32)
-    size = tf.cast(tf.size(y_true_blur), tf.float32)
+    full_size = tf.cast(tf.size(y_true_blur), tf.float32)
+    zero_count = full_size - non_zero_count
+    mean_labels = tf.cast(tf.reduce_mean(y_true_blur), tf.float32)
+
     # weight the loss by the amount of non zeroes values in label
-    zero_count = tf.subtract(size, non_zero_count)
-
     weights = tf.where(tf.equal(y_true_blur, 0),
-                       tf.fill(tf.shape(y_pred), tf.divide(0.5 * size, zero_count)),
-                       tf.fill(tf.shape(y_pred), tf.divide(0.5 * size, non_zero_count)))
+                       tf.fill(tf.shape(y_true_blur), 0.5 * full_size / zero_count),
+                       tf.divide(y_true_blur, mean_labels * 2))
 
+    # Calculate weighted mean square error
     squared_difference = tf.square(y_true_blur - y_pred)
     squared_difference = tf.multiply(weights, squared_difference)
-
     return tf.reduce_mean(squared_difference, axis=[1, 2, 3, 4])
 
 
