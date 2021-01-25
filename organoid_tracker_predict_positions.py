@@ -1,4 +1,5 @@
 """Predictions particle positions using an already-trained convolutional neural network."""
+import math
 import os
 from typing import Tuple
 
@@ -16,10 +17,12 @@ from organoid_tracker.position_detection_cnn.loss_functions import new_loss2, cu
 from organoid_tracker.position_detection_cnn.peak_calling import _reconstruct_volume
 from organoid_tracker.position_detection_cnn.prediction_dataset import predicting_data_creator
 from organoid_tracker.position_detection_cnn.split_images import corners_split, reconstruction
-from organoid_tracker.position_detection_cnn.training_data_creator import create_image_list
+from organoid_tracker.position_detection_cnn.training_data_creator import create_image_list_without_positions
 
 import tensorflow as tf
 import numpy as np
+
+from organoid_tracker.util import bits
 
 experiment = Experiment()
 
@@ -107,27 +110,26 @@ corners = corners_split(max_image_shape, patch_shape)
 set_size = 10
 
 # load models
-print("load model...")
+print("Loading model...")
 model = tf.keras.models.load_model(_checkpoint_folder, custom_objects={"new_loss2": new_loss2, "custom_loss_with_blur": custom_loss_with_blur})
 
-out_dir = _debug_folder
-if out_dir is not None:
-    if not os.path.exists(out_dir):
-        os.mkdir(out_dir)
+if _debug_folder is not None:
+    os.makedirs(_debug_folder, exist_ok=True)
 
-print("start predicting...")
+print("Starting predictions...")
 all_positions = PositionCollection()
 
-for i in range(len(image_list) // set_size + 1):
+image_set_count = int(math.ceil(len(image_list) / set_size))
+for image_set_index in range(image_set_count):
 
     # pick part of the image_list
-    if (set_size*i) < len(image_list):
-        image_list_subset = image_list[i * set_size: (i+1) * set_size]
+    if (set_size * image_set_index) < len(image_list):
+        image_list_subset = image_list[image_set_index * set_size: (image_set_index + 1) * set_size]
         print(len(image_list_subset))
     else:
-        image_list_subset = image_list[i * set_size:]
+        image_list_subset = image_list[image_set_index * set_size:]
 
-    print("predict set of images {}/{}".format(i, len(image_list) // set_size + 1))
+    print(f"Predicting set of images {image_set_index + 1}/{image_set_count}")
 
     # create dataset and predict
     prediction_dataset = predicting_data_creator(image_list_subset, time_window, corners,
@@ -148,13 +150,12 @@ for i in range(len(image_list) // set_size + 1):
         # remove channel dimension
         prediction = np.squeeze(prediction, axis=-1)
 
-        if out_dir is not None:
-            print("saving TIFF...")
+        if _debug_folder is not None:
             image_name = "image_" + str(time_point.time_point_number())
-            tifffile.imsave(os.path.join(out_dir, '{}.tif'.format(image_name)), prediction, compress=9)
+            tifffile.imsave(os.path.join(_debug_folder, '{}.tif'.format(image_name)), bits.ensure_8bit(prediction), compress=9)
 
         # peak detection
-        print("Detect peaks...")
+        print(f"Detecting peaks at time point {time_point.time_point_number()}...")
         im, z_divisor = _reconstruct_volume(prediction, mid_layers_nb)  # interpolate between layers for peak detection
 
         # Comparison between image_max and im to find the coordinates of local maxima
