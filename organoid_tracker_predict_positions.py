@@ -3,7 +3,7 @@ import math
 import os
 from typing import Tuple
 
-from organoid_tracker.config import ConfigFile, config_type_bool
+from organoid_tracker.config import ConfigFile, config_type_bool, config_type_int
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.image_loading.channel_merging_image_loader import ChannelMergingImageLoader
 from organoid_tracker.imaging import io
@@ -40,16 +40,18 @@ _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_i
 general_image_loader.load_images(experiment, _images_folder, _images_format,
                                  min_time_point=_min_time_point, max_time_point=_max_time_point)
 
-_buffer_z = int(config.get_or_default("buffer_z", str(1), store_in_defaults=True))
-_buffer_y = int(config.get_or_default("buffer_y", str(8), store_in_defaults=True))
-_buffer_x = int(config.get_or_default("buffer_x", str(8), store_in_defaults=True))
+_patch_shape_z = config.get_or_default("patch_shape_z", str(30), comment="Maximum patch size to use for predictions."
+                                       " Make this smaller if you run out of video card memory.", type=config_type_int)
+_patch_shape_y = config.get_or_default("patch_shape_y", str(240), type=config_type_int)
+_patch_shape_x = config.get_or_default("patch_shape_x", str(240), type=config_type_int)
 
-_patch_shape_z = int(config.get_or_default("patch_shape_z", str(30), store_in_defaults=True))
-_patch_shape_y = int(config.get_or_default("patch_shape_y", str(240), store_in_defaults=True))
-_patch_shape_x = int(config.get_or_default("patch_shape_x", str(240), store_in_defaults=True))
+_buffer_z = config.get_or_default("buffer_z", str(1), comment="Buffer space to use when stitching multiple patches"
+                                  " together", type=config_type_int)
+_buffer_y = config.get_or_default("buffer_y", str(8), type=config_type_int)
+_buffer_x = config.get_or_default("buffer_x", str(8), type=config_type_int)
 
-_time_window_before = int(config.get_or_default("time_window_before", str(-1), store_in_defaults=True))
-_time_window_after = int(config.get_or_default("time_window_after", str(1), store_in_defaults=True))
+_time_window_before = int(config.get_or_default("time_window_before", str(-1)))
+_time_window_after = int(config.get_or_default("time_window_after", str(1)))
 
 _checkpoint_folder = config.get_or_prompt("checkpoint_folder", "Please paste the path here to the \"checkpoints\" folder containing the trained model.")
 _output_file = config.get_or_default("positions_output_file", "Automatic positions.aut", comment="Output file for the positions, can be viewed using the visualizer program.")
@@ -120,7 +122,6 @@ for image_set_index in range(image_set_count):
     # pick part of the image_list
     if (set_size * image_set_index) < len(image_list):
         image_list_subset = image_list[image_set_index * set_size: (image_set_index + 1) * set_size]
-        print(len(image_list_subset))
     else:
         image_list_subset = image_list[image_set_index * set_size:]
 
