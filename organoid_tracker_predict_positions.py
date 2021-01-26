@@ -60,11 +60,6 @@ _mid_layers = int(config.get_or_default("mid_layers", str(5), comment="Number of
 _peak_min_distance_px = int(config.get_or_default("peak_min_distance_px", str(9), comment="Minimum distance in pixels"
                                                   " between detected positions."))
 
-
-
-_split = config.get_or_default("save_video_ram", "true", comment="Whether video RAM should be saved by splitting"
-                                                                 " the images into smaller parts, and processing"
-                                                                 " each part independently.", type=config_type_bool)
 _debug_folder = config.get_or_default("predictions_output_folder", "", comment="If you want to see the raw prediction images, paste the path to a folder here. In that folder, a prediction image will be placed for each time point.")
 if len(_debug_folder) == 0:
     _debug_folder = None
