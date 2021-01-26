@@ -65,7 +65,7 @@ def _markdown_to_styled_html(markdown_str: str, *, relative_to_folder: str = "."
     html_text = markdown.markdown(markdown_str, extensions=[FencedCodeExtension()])
 
     # Apply special corrections for images
-    html_text = html_text.replace("<p><img ", '<p style="line-height: 100; color: #444;'
+    html_text = html_text.replace("<p><img ", '<p style="line-height: 1; color: #444;'
                                                           ' font-family:sans-serif"><img ')
     html_text = html_text.replace(" src=\"", " src=\"" + relative_to_folder + "/")  # Change images path
 
@@ -78,8 +78,8 @@ def _markdown_to_styled_html(markdown_str: str, *, relative_to_folder: str = "."
                     h1 { margin: 40px 40px 20px 40px }
                     h2 { margin: 40px 40px 20px 40px }
                     h3 { margin: 20px 40px }
-                    li { line-height: 140 }
-                    p { margin: 20px 40px; line-height: 140 }
+                    li { line-height: 1.4 }
+                    p { margin: 20px 40px; line-height: 1.4 }
                     pre { margin: 40px }
                 </style>
             </head>
