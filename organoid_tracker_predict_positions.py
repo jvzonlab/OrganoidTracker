@@ -100,7 +100,7 @@ buffer = np.array([[_buffer_z, _buffer_z], [_buffer_y, _buffer_y], [_buffer_x, _
 # find the maximum image size to use as the basis for splitting
 max_image_shape = np.zeros(3, dtype=int)
 for i in range(len(image_list)):
-    image_shape = np.asarray(image_list[i].load_image().shape)
+    image_shape = np.asarray(image_list[i].get_image_size_zyx())
     max_image_shape = np.maximum(max_image_shape, image_shape)
 
 # define how to split input
@@ -143,7 +143,7 @@ for image_set_index in range(image_set_count):
         # register image information
         time_point = image._time_point
         image_offset = image._images.offsets.of_time_point(time_point)
-        image_shape = list(image.load_image().shape)
+        image_shape = list(image.get_image_size_zyx())
 
         # reconstruct image from patches
         prediction = reconstruction(prediction_batch, corners, buffer, image_shape, patch_shape)

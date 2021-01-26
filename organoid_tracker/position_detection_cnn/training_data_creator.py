@@ -53,6 +53,13 @@ class _ImageWithPositions:
         time_point = TimePoint(self._time_point.time_point_number() + dt)
         return self._images.get_image_stack(time_point)
 
+    def get_image_size_zyx(self, dt: int = 0) -> Tuple[int, int, int]:
+        """Gets the shape of the image. This method tries to avoid loading the actual image data to find it out."""
+        size = self._images.image_loader().get_image_size_zyx()
+        if size is None:
+            return self.load_image(dt).shape
+        return size
+
     # loads images in a time window
     def load_image_time_stack(self, time_window: List[int] = [0, 0]) -> Optional[ndarray]:
 
