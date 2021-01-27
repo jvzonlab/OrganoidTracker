@@ -53,7 +53,7 @@ _buffer_x = config.get_or_default("buffer_x", str(8), type=config_type_int)
 _time_window_before = int(config.get_or_default("time_window_before", str(-1)))
 _time_window_after = int(config.get_or_default("time_window_after", str(1)))
 
-_checkpoint_folder = config.get_or_prompt("checkpoint_folder", "Please paste the path here to the \"checkpoints\" folder containing the trained model.")
+_model_folder = config.get_or_prompt("model_folder", "Please paste the path here to the \"trained_model\" folder containing the trained model.")
 _output_file = config.get_or_default("positions_output_file", "Automatic positions.aut", comment="Output file for the positions, can be viewed using the visualizer program.")
 _channels_str = config.get_or_default("images_channels", str(1), comment="Index(es) of the channels to use. Use \"3\" to use the third channel for predictions. Use \"1,3,4\" to use the sum of the first, third and fourth channel for predictions.")
 _images_channels = {int(part) for part in _channels_str.split(",")}
@@ -108,7 +108,7 @@ set_size = 10
 
 # load models
 print("Loading model...")
-model = tf.keras.models.load_model(_checkpoint_folder, custom_objects={"new_loss2": new_loss2, "custom_loss_with_blur": custom_loss_with_blur})
+model = tf.keras.models.load_model(_model_folder, custom_objects={"new_loss2": new_loss2, "custom_loss_with_blur": custom_loss_with_blur})
 
 if _debug_folder is not None:
     os.makedirs(_debug_folder, exist_ok=True)

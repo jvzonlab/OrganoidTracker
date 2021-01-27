@@ -135,8 +135,8 @@ def _generate_detection_config(window: Window):
         raise UserError("No images", "No images were loaded, so no cells can be detected. Please load some images"
                                      " first.")
 
-    checkpoint_directory = _get_model_folder()
-    if checkpoint_directory is None:
+    model_folder = _get_model_folder()
+    if model_folder is None:
         return
 
     if not dialog.popup_message_cancellable("Out folder",
@@ -151,7 +151,7 @@ def _generate_detection_config(window: Window):
     config.get_or_default("images_pattern", image_loader.serialize_to_config()[1], store_in_defaults=True)
     config.get_or_default("min_time_point", str(image_loader.first_time_point_number()), store_in_defaults=True)
     config.get_or_default("max_time_point", str(image_loader.last_time_point_number()), store_in_defaults=True)
-    config.get_or_default("checkpoint_folder", checkpoint_directory)
+    config.get_or_default("model_folder", model_folder)
     config.get_or_default("predictions_output_folder", "out")
 
     config.get_or_default("patch_shape_z", str(30))
@@ -256,11 +256,11 @@ def _generate_linking_config(window: Window):
 
 
 def _get_model_folder() -> Optional[str]:
-    if not dialog.popup_message_cancellable("Checkpoints folder",
+    if not dialog.popup_message_cancellable("Trained model folder",
                                             "First, we will ask you where you have stored the model."):
         return None
     while True:
-        directory = dialog.prompt_directory("Please choose a checkpoint folder")
+        directory = dialog.prompt_directory("Please choose a model folder")
         if not directory:
             return None  # Cancelled, stop loop
         if os.path.isfile(os.path.join(directory, "saved_model.pb")):
@@ -268,6 +268,6 @@ def _get_model_folder() -> Optional[str]:
 
         # Unsuccessful
         dialog.popup_error("Not a model containing folder",
-                           "The selected folder does not contain a trained model; it contains no 'checkpoint' file."
-                           " Please select another folder. Typically, this folder is named `checkpoints`.")
+                           "The selected folder does not contain a trained model; it contains no 'saved_model.pb' file."
+                           " Please select another folder. Typically, this folder is named `trained_model`.")
 
