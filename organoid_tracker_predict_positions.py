@@ -148,7 +148,7 @@ for image_set_index in range(image_set_count):
 
         if _debug_folder is not None:
             image_name = "image_" + str(time_point.time_point_number())
-            tifffile.imsave(os.path.join(_debug_folder, '{}.tif'.format(image_name)), bits.ensure_8bit(prediction), compress=9)
+            tifffile.imsave(os.path.join(_debug_folder, '{}.tif'.format(image_name)), prediction)
 
         # peak detection
         print(f"Detecting peaks at time point {time_point.time_point_number()}...")
