@@ -1,12 +1,9 @@
-from typing import List
-import tensorflow as tf
-import tensorflow_addons as tfa
 from functools import partial
-import numpy as np
-from tensorflow import Tensor
+from typing import List
 
-from organoid_tracker.position_detection_cnn.ImageWithPositions_to_tensor_loader import tf_load_images
-from organoid_tracker.position_detection_cnn.split_images import corners_split
+import tensorflow as tf
+
+from organoid_tracker.position_detection_cnn.image_with_positions_to_tensor_loader import tf_load_images
 from organoid_tracker.position_detection_cnn.training_data_creator import _ImageWithPositions
 from organoid_tracker.position_detection_cnn.training_dataset import pad_to_patch
 

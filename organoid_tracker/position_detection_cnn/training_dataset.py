@@ -23,13 +23,12 @@
 # SOFTWARE.
 from typing import Tuple, List
 
-import numpy
 import tensorflow as tf
 import tensorflow_addons as tfa
 from functools import partial
 import numpy as np
 
-from organoid_tracker.position_detection_cnn.ImageWithPositions_to_tensor_loader import tf_load_images_with_positions
+from organoid_tracker.position_detection_cnn.image_with_positions_to_tensor_loader import tf_load_images_with_positions
 from organoid_tracker.position_detection_cnn.training_data_creator import _ImageWithPositions
 
 # Creates training and validation data from an image_with_positions_list
