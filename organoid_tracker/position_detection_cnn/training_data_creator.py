@@ -60,8 +60,8 @@ class _ImageWithPositions:
             return self.load_image(dt).shape
         return size
 
-    # loads images in a time window
-    def load_image_time_stack(self, time_window: List[int] = [0, 0]) -> Optional[ndarray]:
+    def load_image_time_stack(self, time_window: Tuple[int, int] = (0, 0)) -> Optional[ndarray]:
+        """Loads images in a time window. Returns a 4D array, [z, y, x, t]."""
 
         center_image = self.load_image()
         offset_ref = self._images.offsets.of_time_point(self._time_point)
