@@ -183,7 +183,7 @@ class LineageTreeVisualizer(Visualizer):
         cell_types = list(self.get_window().get_gui_experiment().get_registered_markers(Position))
         cell_type_names = [cell_type.display_name for cell_type in cell_types]
         cell_type_names += ["<do not filter>"]
-        answer = option_choose_dialog.popup_list("Required cell type", "Required cell type",
+        answer = option_choose_dialog.prompt_list("Required cell type", "Required cell type",
                         "Which cell type needs to be in the lineage in order for it to be drawn?", cell_type_names)
         if answer is None:
             return
