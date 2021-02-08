@@ -5,8 +5,10 @@ from numpy.core.multiarray import ndarray
 
 from organoid_tracker.core import UserError
 from organoid_tracker.core.image_loader import ImageFilter
-from organoid_tracker.gui import dialog
+from organoid_tracker.core.images import Images
+from organoid_tracker.gui import dialog, option_choose_dialog
 from organoid_tracker.gui.window import Window
+from organoid_tracker.image_loading.channel_merging_image_loader import ChannelMergingImageLoader
 from organoid_tracker.image_loading.noise_suppressing_filters import ThresholdFilter, GaussianBlurFilter
 
 
@@ -15,6 +17,7 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
         "View//Image-Image filters//Increase brightness...": lambda: _enhance_brightness(window),
         "View//Image-Image filters//Threshold...": lambda: _threshold(window),
         "View//Image-Image filters//Gaussian blur...": lambda: _gaussian_blur(window),
+        "View//Image-Image filters//Merge channels...": lambda: _merge_channels(window),
         "View//Image-Image filters//Remove-Remove all filters": lambda: _remove_filters(window)
     }
 
@@ -52,15 +55,54 @@ def _enhance_brightness(window: Window):
     window.get_gui_experiment().redraw_image_and_data()
 
 
+def _merge_channels(window: Window):
+    """Not implemented as a filter, but as a separate image loader."""
+    images: Images = window.get_experiment().images
+    channels = images.get_channels()
+    channel_ids = list(range(len(channels)))
+    channel_names = ["Channel " + str(i + 1) for i in channel_ids]
+
+    chosen_channel_ids = option_choose_dialog.prompt_list_multiple("Channels to merge",
+                                                                   "Which channels should be merged?",
+                                                                   "Channels:", channel_names)
+    if chosen_channel_ids is None:
+        return
+    if len(chosen_channel_ids) == 0:
+        raise UserError("No channels selected", "No channels were selected.")
+    remaining_channel_ids = [i for i in channel_ids if i not in chosen_channel_ids]
+
+    # Build the new channel groups
+    channel_groups = list()
+    channel_groups.append([channels[i] for i in chosen_channel_ids])  # Merge
+    for remaining_channel_id in remaining_channel_ids:
+        # Keep these separate
+        channel_groups.append([channels[remaining_channel_id]])
+
+    channel_merger = ChannelMergingImageLoader(images.image_loader(), channel_groups)
+    images.image_loader(channel_merger)
+    window.get_gui_experiment().redraw_image_and_data()
+
+
 def _remove_filters(window: Window):
-    filters = window.get_experiment().images.filters
-    filters_len = len(filters)
+    images = window.get_experiment().images
+
+    removed_count = 0
+
+    # Undo channel merging
+    image_loader = images.image_loader()
+    if isinstance(image_loader, ChannelMergingImageLoader):
+        images.image_loader(image_loader.get_unmerged_image_loader())
+        removed_count += 1
+
+    # Undo filters
+    filters = images.filters
+    removed_count += len(filters)
     filters.clear()
 
-    if filters_len == 1:
+    if removed_count == 1:
         window.set_status("Removed 1 filter.")
     else:
-        window.set_status(f"Removed {filters_len} filters.")
+        window.set_status(f"Removed {removed_count} filters.")
 
     window.get_gui_experiment().redraw_image_and_data()
 

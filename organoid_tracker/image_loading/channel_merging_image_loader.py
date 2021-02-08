@@ -100,6 +100,9 @@ class ChannelMergingImageLoader(ImageLoader):
     def serialize_to_config(self) -> Tuple[str, str]:
         return self._image_loader.serialize_to_config()
 
+    def get_unmerged_image_loader(self) -> ImageLoader:
+        return self._image_loader
+
     def copy(self) -> "ImageLoader":
         return ChannelMergingImageLoader(self._image_loader.copy(),
                                          (channel._channels for channel in self._channels))
