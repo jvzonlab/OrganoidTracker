@@ -1,4 +1,5 @@
 import os.path
+from threading import Lock
 from typing import Tuple, Any, List, Optional
 
 import numpy
@@ -24,7 +25,7 @@ def load_from_tif_file(experiment: Experiment, file: str, min_time_point: Option
         experiment.images.resolution()  # Tests if a resolution is already stored
     except UserError:
         # No resolution stored. Guess the resolution from the images
-        resolution = image_loader._guess_resolution()
+        resolution = image_loader.guess_resolution()
         if resolution is not None:
             experiment.images.set_resolution(resolution)
 
@@ -83,12 +84,14 @@ class _MergedTiffImageLoader(ImageLoader):
         except ValueError:
             return 0  # No time axis
 
+    # These are not thread safe, so we need to protect them behind a lock
     _tiff: TiffFile
-    _file_name: str
+    _tiff_series: TiffPageSeries
+    _tiff_lock: Lock  # Acquired from the public (outer) methods
 
+    _file_name: str
     _axes: str
     _shape: Tuple[int, ...]
-    _series: TiffPageSeries
     _is_rgb: bool = False
     _channels: List[ImageChannel]
     _image_size_zyx: Tuple[int, int, int]
@@ -97,10 +100,13 @@ class _MergedTiffImageLoader(ImageLoader):
 
     def __init__(self, file_name: str, min_time_point_number: Optional[int], max_time_point_number: Optional[int]):
         self._file_name = file_name
+
         self._tiff = TiffFile(file_name)
-        self._series = self._tiff.series[0]
-        self._axes = self._series.axes
-        self._shape = self._series.shape
+        self._tiff_series = self._tiff.series[0]
+        self._tiff_lock = Lock()
+
+        self._axes = self._tiff_series.axes
+        self._shape = self._tiff_series.shape
 
         if self._axes[-2:] != "YX":
             self._tiff.close()
@@ -113,8 +119,9 @@ class _MergedTiffImageLoader(ImageLoader):
         self._max_time_point_number = min_none(self._get_highest_time_point(self._axes, self._shape),
                                                max_time_point_number)
 
-    def _guess_resolution(self) -> Optional[ImageResolution]:
-        tags: TiffTags = self._series.pages[0].tags
+    def guess_resolution(self) -> Optional[ImageResolution]:
+        with self._tiff_lock:
+            tags: TiffTags = self._tiff_series.pages[0].tags
         if "XResolution" not in tags or "YResolution" not in tags:
             return None
         x_res = tags["XResolution"].value
@@ -135,7 +142,7 @@ class _MergedTiffImageLoader(ImageLoader):
         """Some files (over 2 GB) have an apparently incorrect page count. This method returns True if that is the case.
         In that case, more low-level page reading functions need to be used."""
         expected_page_count = numpy.product(self._shape[0:-2])  # Every page is a 2D image
-        page_count = len(self._series.pages)
+        page_count = len(self._tiff_series.pages)
         return page_count == 1 and expected_page_count > 1
 
     def get_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
@@ -145,9 +152,10 @@ class _MergedTiffImageLoader(ImageLoader):
         if not isinstance(image_channel, _IndexedImageChannel) or image_channel not in self._channels:
             return None
 
-        out = tifffile.create_output(None, self._image_size_zyx, self._series.dtype)
-        for z in range(self._image_size_zyx[0]):
-            self._get_2d_image_array(time_point.time_point_number(), image_channel.index, z, out[z])
+        with self._tiff_lock:
+            out = tifffile.create_output(None, self._image_size_zyx, self._tiff_series.dtype)
+            for z in range(self._image_size_zyx[0]):
+                self._get_2d_image_array(time_point.time_point_number(), image_channel.index, z, out[z])
         return out
 
     def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
@@ -159,8 +167,9 @@ class _MergedTiffImageLoader(ImageLoader):
         if image_z < 0 or image_z >= self._image_size_zyx[0]:
             return None  # Z out of range
 
-        out = tifffile.create_output(None, self._image_size_zyx[1:], self._series.dtype)
-        self._get_2d_image_array(time_point.time_point_number(), image_channel.index, image_z, out)
+        with self._tiff_lock:
+            out = tifffile.create_output(None, self._image_size_zyx[1:], self._tiff_series.dtype)
+            self._get_2d_image_array(time_point.time_point_number(), image_channel.index, image_z, out)
         return out
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
@@ -184,10 +193,12 @@ class _MergedTiffImageLoader(ImageLoader):
     def _get_offset(self, t: int, c: int, z: int) -> int:
         """Gets the pixel offset for the given 2D image."""
         offset = self._get_2d_page_number(t, c, z) * self._image_size_zyx[1] * self._image_size_zyx[2]
-        return int(offset + self._series.offset)
+        return int(offset + self._tiff_series.offset)
 
     def _get_2d_page_number(self, t: int, c: int, z: int) -> int:
-        """Gets the page number for the given 2D image."""
+        """Gets the page number for the given 2D image.
+
+        Note: this method must be called from within a synchronized block."""
         skip_axes = 3 if self._is_rgb else 2
         page = 0
         for i in range(len(self._axes) - skip_axes):
@@ -203,7 +214,9 @@ class _MergedTiffImageLoader(ImageLoader):
 
     def _get_2d_image_array(self, t: int, c: int, z: int, out: ndarray):
         """Reads a 2D image array into the given output array. No range checks are performed. Make sure that the
-        out array is created using tifffile.create_output(...)."""
+        out array is created using tifffile.create_output(...).
+
+        Note: this method must be called from within a synchronized block."""
         if not self._has_wrong_page_count():
             # Page count is correct - use high-level API
             page = self._get_2d_page_number(t, c, z)
@@ -212,7 +225,7 @@ class _MergedTiffImageLoader(ImageLoader):
             # Need to fiddle with bytes :(. Irfanview also has trouble with these files, tifffile is not the only one.
             offset = self._get_offset(t, c, z)
             shape_2d = self._shape[-2:]
-            type_code = self._tiff.byteorder + self._series.dtype.char
+            type_code = self._tiff.byteorder + self._tiff_series.dtype.char
             self._tiff.filehandle.seek(offset)
             self._tiff.filehandle.read_array(type_code, numpy.product(shape_2d), out=out)
 
