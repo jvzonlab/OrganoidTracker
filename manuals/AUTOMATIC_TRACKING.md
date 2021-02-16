@@ -60,6 +60,8 @@ If you press Left and Right in the warning screen, you will be taken to other wa
 
 If you press the L key from the cell track editor, a screen is opened that shows whether there are still warnings remaining in the lineage of that cell. If you hover your mouse over such a lineage and press E, the program will take you to the (first) warning in that lineage tree.
 
-If you don't want to correct everything, in the `Edit` menu there's an option to delete all lineage trees that still have errors. Make sure you have backed-up your data before you do this. You can also delete all tracking data in certain parts of the images at certain times, see [batch editing](BATCH_OPERATIONS.md) for details.
+If you don't want to correct everything, there are several options:
+* Limiting the number of time steps that you are looking at. In the warning screen, if you open the Edit menu, there's an option to set the minimum and maximum time point for correction.
+* Limiting the area you are looking at. This is most easily done by pressing L in the cell track editor, and then observing any lineages that still have warnings. Correct any lineages that need to be corrected (press E while you hover your mouse over them). Once you are satisfied, you can then delete all lineages that still have errors in them. This is done from the cell track editor: press `Edit > Batch deletion > Delete lineages with errors`. See [batch editing](BATCH_OPERATIONS.md) for more ways to delete a lot of lineages at once.
 
 You can change a few settings of the error checker, to make it stricter or less strict. In the error checking screen (the screen you opened with `E`) there are three options available in the `Edit` menu: the minimum time in between two cell divisions of the same cell, and the maximum distance a cell may move per minute.
