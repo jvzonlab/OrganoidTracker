@@ -31,8 +31,8 @@ Intended workflow
 5. Use the corrected tracking data as additional training data for the neural network.
 6. Want to track another time lapse movie? Go back to step 3.
 
-[Tutorial on manual tracking](manuals/MANUAL_TRACKING)  
-[Tutorial on automated tracking](manuals/AUTOMATIC_TRACKING)
+[Tutorial on manual tracking](manuals/MANUAL_TRACKING.md)  
+[Tutorial on automated tracking](manuals/AUTOMATIC_TRACKING.md)
 
 
 Installation
