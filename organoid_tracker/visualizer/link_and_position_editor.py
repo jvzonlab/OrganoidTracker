@@ -354,6 +354,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Marker-Delete entire lineage": self._delete_selected_lineage,
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
             "View//Linking-Lineage errors and warnings [L]": self._show_lineage_errors,
+            "Navigate//Layer-Layer of selected position [Space]": self._move_to_z_of_selected_position,
         }
 
         # Add options for changing position types
@@ -399,6 +400,17 @@ class LinkAndPositionEditor(AbstractEditor):
             self._selected2 = self._selected1
             self._selected1 = position
         return super()._move_to_position(position)
+
+    def _move_to_z_of_selected_position(self):
+        if self._selected2 is None:
+            if self._selected1 is not None:
+                self._move_to_z(int(round(self._selected1.z)))
+                self.update_status("Moved to z-pos of selected position.")
+            else:
+                self.update_status("No position selected - cannot move to its z-layer.")
+        else:
+            self._move_to_z(int(round(0.5 * (self._selected1.z + self._selected2.z))))
+            self.update_status("Moved to average z-pos of selected positions.")
 
     def _try_delete(self):
         if self._selected1 is None:
