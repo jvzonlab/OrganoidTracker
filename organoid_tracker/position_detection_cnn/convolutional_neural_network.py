@@ -3,7 +3,9 @@ from typing import List, Tuple
 import tensorflow as tf
 from tensorflow import keras
 
-from organoid_tracker.position_detection_cnn.loss_functions import custom_loss_with_blur, new_loss2
+from organoid_tracker.position_detection_cnn.custom_filters import local_softmax
+from organoid_tracker.position_detection_cnn.loss_functions import custom_loss_with_blur, \
+    KL_div_with_blur, new_loss2, position_loss, position_recall, position_precision, overcount
 
 
 def build_model(shape: Tuple, batch_size):
@@ -28,7 +30,10 @@ def build_model(shape: Tuple, batch_size):
     to_concat.append(to_concat_layer)
     layer, to_concat_layer = conv_block(2, layer, filters=filter_sizes[4], name="down4")
     to_concat.append(to_concat_layer)
+    #layer, to_concat_layer = conv_block(2, layer, filters=filter_sizes[4], name="down5")
+    #to_concat.append(to_concat_layer)
 
+    #layer = deconv_block(2, layer, to_concat.pop(), filters=filter_sizes[4], name="up0")
     layer = deconv_block(2, layer, to_concat.pop(), filters=filter_sizes[4], name="up1")
     layer = deconv_block(2, layer, to_concat.pop(), filters=filter_sizes[3], name="up2")
     layer = deconv_block(2, layer, to_concat.pop(), filters=filter_sizes[2], name="up3")
@@ -37,12 +42,19 @@ def build_model(shape: Tuple, batch_size):
     # apply final batch_normalization
     layer = tf.keras.layers.BatchNormalization()(layer)
 
-    output = tf.keras.layers.Conv3D(filters=1, kernel_size=3, padding="same", activation='relu', name='out_conv')(layer)
+    output = tf.keras.layers.Conv3D(filters=1, kernel_size=3, padding="same", activation='linear', name='out_conv')(layer)
+
+    output = local_softmax(output, exponentiate=True, blur=True)
+
+    #output = tf.keras.layers.Conv3D(filters=1, kernel_size=3, padding="same", activation='sigmoid', name='out_conv')(layer)
 
     model = keras.Model(inputs=input, outputs=output, name="YOLO")
 
     #model.compile(optimizer='Adam', loss=keras.losses.mean_squared_error,metrics=custom_loss)
-    model.compile(optimizer='Adam', loss=custom_loss_with_blur, metrics=new_loss2)
+    #model.compile(optimizer='Adam', loss=custom_loss_with_blur, metrics=new_loss2)
+    #model.compile(optimizer='Adam', loss=custom_loss_with_blur_2, metrics=[custom_loss_with_blur, KL_div_with_blur])
+    model.compile(optimizer='Adam', loss=position_loss, metrics=[custom_loss_with_blur, position_recall, position_precision, overcount])
+
     #model.compile(optimizer='Adam', loss=new_loss2, metrics=custom_loss)
 
     return model
@@ -133,5 +145,8 @@ def tensorboard_callback(tensorboard_folder: str) -> tf.keras.callbacks.Callback
         embeddings_freq=0,
         embeddings_metadata=None,
     )
+
+
+
 
 

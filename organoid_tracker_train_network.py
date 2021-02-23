@@ -143,7 +143,7 @@ print("Training...")
 os.makedirs(output_folder, exist_ok=True)
 tensorboard_folder = os.path.join(output_folder, "tensorboard")
 history = model.fit(training_dataset,
-                    epochs=epochs,
+                    epochs=10, #epochs,
                     steps_per_epoch=round(0.8*len(image_with_positions_list)),
                     validation_data=validation_dataset,
                     validation_steps=10,

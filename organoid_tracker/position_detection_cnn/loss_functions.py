@@ -1,5 +1,8 @@
 import tensorflow as tf
 
+from organoid_tracker.position_detection_cnn.custom_filters import local_softmax, blur_labels, disk_labels
+
+
 def custom_loss(y_true, y_pred):
 
     non_zero_count = tf.cast(tf.math.count_nonzero(y_true), tf.float32)
@@ -36,32 +39,128 @@ def custom_loss_with_blur(y_true, y_pred):
     squared_difference = tf.multiply(weights, squared_difference)
     return tf.reduce_mean(squared_difference, axis=[1, 2, 3, 4])
 
+def peak_finding(y_pred, threshold=0.1, volume = [3, 13, 13], softmax = False):
+    #local_sum = 3*13*13*tf.nn.avg_pool3d(tf.math.exp(y_pred), ksize=[3, 13, 13], strides=1, padding='SAME')
+    #softmax = tf.divide(tf.math.exp(y_pred), local_sum + 1)
+    if softmax:
+        softmax = local_softmax(y_pred)
+    else:
+        softmax = y_pred
 
-def _gaussian_kernel(kernel_size, sigma, n_channels, dtype):
-    # creates kernel in the XY plane
-    x = tf.range(-kernel_size // 2 + 1, kernel_size // 2 + 1, dtype=dtype)
-    g = tf.math.exp(-(tf.pow(x, 2) / (2 * tf.pow(tf.cast(sigma, dtype), 2))))
-    g_kernel = tf.tensordot(g, g, axes=0)
+    dilation = tf.nn.max_pool3d(softmax, ksize=volume, strides=1, padding='SAME')
 
-    g_kernel = tf.stack([0.1 * g_kernel, 0.25 * g_kernel, 0.5 * g_kernel, 0.25 * g_kernel, 0.1 * g_kernel])
-    #g_kernel = tf.stack([0.25 * g_kernel, 0.5 * g_kernel, 0.25 * g_kernel])
-    # scale so maximum is at 1.
-    g_kernel = g_kernel / tf.reduce_max(g_kernel)
+    peaks = tf.where(dilation == softmax, 1., 0)
 
-    # add channel dimension and later batch dimension
-    g_kernel = tf.expand_dims(g_kernel, axis=-1)
-    return tf.expand_dims(tf.tile(g_kernel, (1, 1, 1, n_channels)), axis=-1)
+    range = tf.reduce_max(y_pred) - tf.reduce_min(y_pred)
+
+    peaks = tf.where((softmax) > threshold*range, peaks, 0)
+
+    return peaks
+
+def position_precision(y_true, y_pred):
+
+    #dilation = tf.nn.max_pool3d(y_pred, ksize=[3, 13, 13], strides=1, padding='SAME')
+
+    #peaks = tf.where(dilation == y_pred, 1., 0)
+    #local_sum = 3*13*13*tf.nn.avg_pool3d(tf.math.exp(y_pred), ksize=[3, 13, 13], strides=1, padding='SAME')
+    #local_sum = disk_labels(tf.math.exp(y_pred))
+    #peaks = tf.where(local_sum > 1, peaks, 0)
+    #softmax = tf.divide(tf.math.exp(y_pred), local_sum + 1)
+    #peaks = tf.where(local_sum > 1, peaks, 0)
+
+    peaks = peak_finding(y_pred)
+
+    edges = get_edges(peaks)
+    peaks = tf.where(edges == 0, peaks, 0)
+    #y_true = tf.where(edges == 0, peaks, 0)
+
+    y_true_blur = disk_labels(y_true)
+    correct_peaks = tf.where(y_true_blur > 0, peaks, 0)
+
+    return (tf.reduce_sum(correct_peaks)+0.01)/(tf.reduce_sum(peaks)+0.01)
+
+def misses(y_true, y_pred):
+    peaks = peak_finding(y_pred)
+
+    peaks_blur = disk_labels(peaks)
+    undetected_positions = tf.where(peaks_blur == 0, y_true, 0)
+
+    return undetected_positions
+
+def falses(y_true, y_pred):
+    peaks = peak_finding(y_pred)
+    edges = get_edges(peaks)
+    peaks = tf.where(edges == 0, peaks, 0)
+
+    positions = peak_finding(y_true, volume=[3,3,3])
+
+    positions_blur = disk_labels(positions)
+    undetected_positions = tf.where(positions_blur == 0, peaks, 0)
+
+    return undetected_positions
 
 
-def blur_labels(label):
-    blur = _gaussian_kernel(kernel_size=12, sigma=3, n_channels=1, dtype=label.dtype)
+def get_edges(peaks):
+    edges = tf.zeros(tf.shape(peaks))
+    edges = tf.pad(edges, paddings=[[0, 0], [0, 1], [1, 1], [1, 1], [0, 0]], constant_values=1)
+    edges = disk_labels(edges)
+    edges = edges[:, 0:-1, 1:-1, 1:-1, :]
 
-    label_blur = tf.nn.conv3d(label, blur, [1, 1, 1, 1, 1], 'SAME')
+    return edges
 
-    return label_blur
+def position_recall(y_true, y_pred):
+    peaks = peak_finding(y_pred)
+
+    positions = peak_finding(y_true, softmax=False)
+
+    peaks_blur = disk_labels(peaks)
+    detected_positions = tf.where(peaks_blur > 0, positions, 0)
+
+    return tf.reduce_sum(detected_positions) / tf.reduce_sum(positions)
+
+def overcount(y_true, y_pred):
+    peaks = peak_finding(y_pred)
+
+    y_true_blur = disk_labels(y_true)
+    correct_positions = tf.where(y_true_blur > 0, peaks, 0)
+
+    positions = peak_finding(y_true, volume=[1, 3, 3], softmax=False)
+
+    return tf.reduce_sum(correct_positions) / tf.reduce_sum(positions)
+
+
+def position_loss(y_true, y_pred):
+
+    # target image
+    dilation = tf.nn.max_pool3d(y_true, ksize=[1, 3, 3], strides=1, padding='SAME')
+    peaks = tf.where(dilation == y_true, 1., 0)
+    y_true = tf.where(y_true > 0.1, peaks, 0)
+
+    y_true_blur = blur_labels(y_true, kernel_size=8, sigma=2, depth=3, normalize=True)
+
+    # weights
+    weights = blur_labels(y_true, kernel_size=16, sigma=4, depth=5)
+    mean_weights = tf.reduce_mean(weights)
+
+    non_zero_count = tf.cast(tf.math.count_nonzero(y_true_blur), tf.float32)
+    full_size = tf.cast(tf.size(y_true_blur), tf.float32)
+    zero_count = full_size - non_zero_count
+
+    # weight the loss by the amount of non zeroes values in label
+    weights = tf.where(tf.equal(weights, 0),
+                       tf.fill(tf.shape(y_true_blur), 0.5 * full_size / zero_count),
+                       tf.divide(weights * 0.5, mean_weights))
+
+    # Calculate weighted mean square error
+    squared_difference = tf.square(y_true_blur - y_pred)
+    squared_difference = tf.multiply(weights, squared_difference)
+    return tf.reduce_mean(squared_difference, axis=[1, 2, 3, 4])
 
 
 ## Experimental loss functions
+
+
+
 def new_loss(y_true, y_pred):
 
     max_project = tf.maximum(y_true, y_pred)
@@ -107,3 +206,23 @@ def new_loss2(y_true, y_pred):
     #loss = loss + epsilon * tf.square(y_pred - y_true)
 
     return tf.reduce_mean(loss, axis=[1, 2, 3, 4])
+
+def KL_div_with_blur(y_true, y_pred):
+
+    y_true_blur = blur_labels(y_true)
+
+    non_zero_count = tf.cast(tf.math.count_nonzero(y_true_blur), tf.float32)
+    size = tf.cast(tf.size(y_true_blur), tf.float32)
+
+    y_true_blur = tf.where(tf.equal(y_true_blur, 0),
+                           tf.fill(tf.shape(y_pred), tf.divide(0.01, size-non_zero_count)),
+                           y_true_blur)
+
+    y_pred = tf.where(tf.equal(y_pred, 0),
+                           tf.fill(tf.shape(y_pred), tf.divide(0.01, size-non_zero_count)),
+                           y_pred)
+
+    y_true_blur = tf.divide(y_true_blur, tf.reduce_sum(y_true_blur))
+    y_pred = tf.divide(y_pred, tf.reduce_sum(y_pred))
+
+    return tf.keras.losses.kl_divergence(y_true_blur, y_pred)

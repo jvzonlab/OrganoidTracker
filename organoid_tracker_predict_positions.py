@@ -13,7 +13,8 @@ from organoid_tracker.core.position import Position
 from skimage.feature import peak_local_max
 from tifffile import tifffile
 
-from organoid_tracker.position_detection_cnn.loss_functions import new_loss2, custom_loss, custom_loss_with_blur
+from organoid_tracker.position_detection_cnn.loss_functions import new_loss2, custom_loss, custom_loss_with_blur, \
+    custom_loss_with_blur_2, KL_div_with_blur, position_loss, position_precision, overcount
 from organoid_tracker.position_detection_cnn.peak_calling import _reconstruct_volume
 from organoid_tracker.position_detection_cnn.prediction_dataset import predicting_data_creator
 from organoid_tracker.position_detection_cnn.split_images import corners_split, reconstruction
@@ -108,7 +109,12 @@ set_size = 10
 
 # load models
 print("Loading model...")
-model = tf.keras.models.load_model(_model_folder, custom_objects={"new_loss2": new_loss2, "custom_loss_with_blur": custom_loss_with_blur})
+#model = tf.keras.models.load_model(_model_folder, custom_objects={"KL_div_with_blur": KL_div_with_blur, "custom_loss_with_blur": custom_loss_with_blur, "custom_loss_with_blur_2": custom_loss_with_blur_2})
+model = tf.keras.models.load_model(_model_folder, custom_objects={"position_loss": position_loss,
+                                                                  "custom_loss_with_blur": custom_loss_with_blur,
+                                                                  "position_precision": position_precision,
+                                                                  "position_recall": position_precision,
+                                                                  "overcount": overcount})
 
 if _debug_folder is not None:
     os.makedirs(_debug_folder, exist_ok=True)
