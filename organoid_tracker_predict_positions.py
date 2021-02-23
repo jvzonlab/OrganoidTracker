@@ -1,4 +1,5 @@
 """Predictions particle positions using an already-trained convolutional neural network."""
+import json
 import math
 import os
 from typing import Tuple
@@ -51,9 +52,6 @@ _buffer_z = config.get_or_default("buffer_z", str(1), comment="Buffer space to u
 _buffer_y = config.get_or_default("buffer_y", str(8), type=config_type_int)
 _buffer_x = config.get_or_default("buffer_x", str(8), type=config_type_int)
 
-_time_window_before = int(config.get_or_default("time_window_before", str(-1)))
-_time_window_after = int(config.get_or_default("time_window_after", str(1)))
-
 _model_folder = config.get_or_prompt("model_folder", "Please paste the path here to the \"trained_model\" folder containing the trained model.")
 _output_file = config.get_or_default("positions_output_file", "Automatic positions.aut", comment="Output file for the positions, can be viewed using the visualizer program.")
 _channels_str = config.get_or_default("images_channels", str(1), comment="Index(es) of the channels to use. Use \"3\" to use the third channel for predictions. Use \"1,3,4\" to use the sum of the first, third and fourth channel for predictions.")
@@ -91,7 +89,6 @@ image_list = create_image_list_without_positions(experiment)
 mid_layers_nb = _mid_layers
 min_peak_distance_px = _peak_min_distance_px
 
-time_window = [_time_window_before, _time_window_after]
 patch_shape = [_patch_shape_z, _patch_shape_y, _patch_shape_x]
 buffer = np.array([[_buffer_z, _buffer_z], [_buffer_y, _buffer_y], [_buffer_x, _buffer_x]])
 
@@ -109,12 +106,12 @@ set_size = 10
 
 # load models
 print("Loading model...")
-#model = tf.keras.models.load_model(_model_folder, custom_objects={"KL_div_with_blur": KL_div_with_blur, "custom_loss_with_blur": custom_loss_with_blur, "custom_loss_with_blur_2": custom_loss_with_blur_2})
-model = tf.keras.models.load_model(_model_folder, custom_objects={"position_loss": position_loss,
-                                                                  "custom_loss_with_blur": custom_loss_with_blur,
-                                                                  "position_precision": position_precision,
-                                                                  "position_recall": position_precision,
-                                                                  "overcount": overcount})
+model = tf.keras.models.load_model(_model_folder, custom_objects={"new_loss2": new_loss2, "custom_loss_with_blur": custom_loss_with_blur})
+if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
+    print("Error: no settings.json found in model folder.")
+    exit(1)
+with open(os.path.join(_model_folder, "settings.json")) as file_handle:
+    time_window = json.load(file_handle)["time_window"]
 
 if _debug_folder is not None:
     os.makedirs(_debug_folder, exist_ok=True)

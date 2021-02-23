@@ -160,8 +160,6 @@ def _generate_detection_config(window: Window):
     config.get_or_default("buffer_z", str(1))
     config.get_or_default("buffer_y", str(8))
     config.get_or_default("buffer_x", str(8))
-    config.get_or_default("time_window_before", str(-1))
-    config.get_or_default("time_window_after", str(1))
 
     config.save()
     _create_run_script(save_directory, "organoid_tracker_predict_positions")
