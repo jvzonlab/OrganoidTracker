@@ -13,7 +13,7 @@ def find_time_and_channel_pattern(file_name: str) -> Optional[str]:
         return channel_pattern  # No time pattern, at least we could find a channel pattern
     channel_pattern = _find_channel_pattern(time_pattern)
     if channel_pattern is None:
-        return time_pattern  # At least we could find a channel pattern
+        return time_pattern  # At least we could find a time pattern
     return channel_pattern  # Found both patterns
 
 
@@ -41,7 +41,12 @@ def _find_time_pattern(file_name: str) -> Optional[str]:
     counting_part = re.search('0*[01]\\.[A-Za-z]', file_name)
     if counting_part is not None:
         start, end = counting_part.start(0), counting_part.end(0)
-        return _fixup_pattern("time", file_name[0:start] + "{time:0" + str(end - start - 2) + "}." + file_name[end-1:])
+        prefix = file_name[0:start]
+        if prefix.endswith("position") or prefix.endswith("xy") or prefix.endswith("pos"):
+            # If the file ends with "position001.tif" (or similar),
+            # then "001" is not a time pattern
+            return None
+        return _fixup_pattern("time", prefix + "{time:0" + str(end - start - 2) + "}." + file_name[end-1:])
 
     # Support (001).extension
     counting_part = re.search('\\(0*[01]\\)\\.[A-Za-z]', file_name)
