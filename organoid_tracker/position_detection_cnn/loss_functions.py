@@ -2,7 +2,7 @@ from typing import List
 
 import tensorflow as tf
 
-from organoid_tracker.position_detection_cnn.custom_filters import local_softmax, blur_labels, disk_labels
+from organoid_tracker.position_detection_cnn.custom_filters import blur_labels, disk_labels
 
 
 def custom_loss(y_true, y_pred):

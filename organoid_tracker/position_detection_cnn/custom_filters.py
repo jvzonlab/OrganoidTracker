@@ -1,18 +1,15 @@
-from typing import Tuple, Optional
+from typing import Tuple
 
 import tensorflow as tf
 
 
-def local_softmax(y_pred: tf.Tensor, radius: Optional[float] = None, volume_zyx_px: Tuple[int, int, int] = (3, 13, 13), exponentiate: bool = False, blur: bool = True):
+def local_softmax(y_pred: tf.Tensor, volume_zyx_px: Tuple[int, int, int] = (3, 13, 13), exponentiate: bool = False, blur: bool = True):
     """Calculates the softmax for the given preditions. Softmax shows soft peaks on the
      locations of the maxima. Either radius or volume_zyx_px is used."""
     if exponentiate:
         y_pred = tf.math.exp(y_pred)
 
-    if radius is None:
-        local_sum = volume_zyx_px[0] * volume_zyx_px[1] * volume_zyx_px[2] * tf.nn.avg_pool3d(y_pred, ksize=volume_zyx_px, strides=1, padding='SAME')
-    else:
-        local_sum = disk_labels(y_pred, radius_um=radius)
+    local_sum = volume_zyx_px[0] * volume_zyx_px[1] * volume_zyx_px[2] * tf.nn.avg_pool3d(y_pred, ksize=volume_zyx_px, strides=1, padding='SAME')
 
     softmax = tf.divide(y_pred, local_sum + 1)
 
@@ -48,7 +45,7 @@ def _gaussian_kernel(kernel_size: int, sigma: float, depth: int, n_channels: int
 
 
 def blur_labels(label: tf.Tensor, kernel_size: int = 8, sigma: float = 2.0, depth: int = 3, normalize: bool = True):
-    """Blurs the given labels with a Gaussian kernel."""
+    """Blurs the given labels (single pixels) with a Gaussian kernel."""
     blur = _gaussian_kernel(kernel_size = kernel_size, sigma=sigma, depth=depth, n_channels=1, dtype=label.dtype, normalize=normalize)
 
     label_blur = tf.nn.conv3d(label, blur, [1, 1, 1, 1, 1], 'SAME')
@@ -56,48 +53,30 @@ def blur_labels(label: tf.Tensor, kernel_size: int = 8, sigma: float = 2.0, dept
     return label_blur
 
 
-def _disk(radius_um: float, resolution_zyx: Tuple[float, float, float], n_channels: int = 1):
-    z_range = tf.floor(radius_um / resolution_zyx[0])
-    z = tf.range(-z_range, z_range+1) * resolution_zyx[0]
+def _disk(range_zyx: Tuple[float, float, float] = (2.5, 11., 11.), n_channels: int = 1):
+    range_int = tf.floor(range_zyx)
 
-    y_range = tf.floor(radius_um / resolution_zyx[1])
-    y = tf.range(-y_range, y_range+1) * resolution_zyx[1]
+    z = tf.range(-range_int[0], range_int[0] + 1) / range_zyx[0]
 
-    x_range = tf.floor(radius_um / resolution_zyx[2])
-    x = tf.range(-x_range, x_range+1) * resolution_zyx[2]
+    y = tf.range(-range_int[1], range_int[1] + 1) / range_zyx[1]
+
+    x = tf.range(-range_int[2], range_int[2] + 1) / range_zyx[2]
 
     Z, Y, X = tf.meshgrid(z, x, y, indexing='ij')
 
     distance = tf.square(Z) + tf.square(Y) + tf.square(X)
 
-    disk = tf.where(distance < tf.square(radius_um), 1., 0.)
+    disk = tf.where(distance < 1, 1., 0.)
 
     disk = tf.expand_dims(disk, axis=-1)
     return tf.expand_dims(tf.tile(disk, (1, 1, 1, n_channels)), axis=-1)
 
 
-def disk_labels(label: tf.Tensor, radius_um=5.0):
-    """Converts labels into disks."""
-    disk = _disk(radius_um=radius_um, resolution_zyx=(2, 0.4, 0.4))
+def disk_labels(label, range_zyx: Tuple[float, float, float] = (2.5, 11., 11.)):
+    """Changes the labels (single pixels) into disks."""
+    disk = _disk(range_zyx= range_zyx)
 
     label_disk = tf.nn.conv3d(label, disk, [1, 1, 1, 1, 1], 'SAME')
 
     return label_disk
-
-
-def peak_finding_radius(y_pred: tf.Tensor, radius: float = 4.5, tolerance: float = 0.01, threshold: float = 0.01):
-
-    n = tf.cast(tf.reduce_sum(_disk(radius_um=radius, resolution_zyx=(2, 0.4, 0.4))), tf.float32)
-    range = tf.reduce_max(y_pred) - tf.reduce_min(y_pred)
-    alpha = tf.math.log(n) / (range * tolerance)
-
-    y_pred_exp = tf.math.exp(alpha * y_pred)
-    local_logexpsum = 1/alpha * tf.math.log(disk_labels(y_pred_exp, radius_um=radius))
-
-    peaks = tf.where(local_logexpsum - tolerance * range <= y_pred, y_pred, 0)
-
-    peaks = tf.where(peaks > threshold * range + tf.reduce_min(y_pred), 1, 0)
-
-    return peaks
-
 
