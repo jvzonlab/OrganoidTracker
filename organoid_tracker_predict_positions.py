@@ -158,7 +158,7 @@ for image_set_index in range(image_set_count):
         im, z_divisor = reconstruct_volume(prediction, _mid_layers)  # interpolate between layers for peak detection
 
         # Comparison between image_max and im to find the coordinates of local maxima
-        coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=0.1, exclude_border=False, footprint=prediction_mask)
+        coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=0.1, exclude_border=False, footprint=prediction_mask, p_norm=2)
 
         for coordinate in coordinates:
             pos = Position(coordinate[2], coordinate[1], coordinate[0] / z_divisor,
