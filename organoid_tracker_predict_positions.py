@@ -130,7 +130,9 @@ for image_set_index in range(image_set_count):
     # create dataset and predict
     prediction_dataset = predicting_data_creator(image_list_subset, time_window, corners,
                                                       patch_shape, buffer, max_image_shape)
-    prediction_mask = create_prediction_mask(_peak_min_distance_px, ImageResolution(1, 1, 1, 1))
+
+    prediction_mask_shape = 2*tf.floor(np.sqrt(_peak_min_distance_px ** 2 / 3)) + 1
+    prediction_mask = np.ones([int(prediction_mask_shape),]*3)
     predictions = model.predict(prediction_dataset)
 
     # split set in batches of patches belonging to single figure
@@ -157,6 +159,7 @@ for image_set_index in range(image_set_count):
 
         # Comparison between image_max and im to find the coordinates of local maxima
         coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=0.1, exclude_border=False, footprint=prediction_mask)
+
         for coordinate in coordinates:
             pos = Position(coordinate[2], coordinate[1], coordinate[0] / z_divisor,
                            time_point=time_point) + image_offset
