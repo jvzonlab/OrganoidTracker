@@ -2,10 +2,10 @@
 import json
 import math
 import os
-from typing import Tuple
 
-from organoid_tracker.config import ConfigFile, config_type_bool, config_type_int
+from organoid_tracker.config import ConfigFile, config_type_int
 from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.image_loading.channel_merging_image_loader import ChannelMergingImageLoader
 from organoid_tracker.imaging import io
 from organoid_tracker.image_loading import general_image_loader
@@ -14,9 +14,9 @@ from organoid_tracker.core.position import Position
 from skimage.feature import peak_local_max
 from tifffile import tifffile
 
-from organoid_tracker.position_detection_cnn.loss_functions import new_loss2, custom_loss, custom_loss_with_blur, \
-    custom_loss_with_blur_2, KL_div_with_blur, position_loss, position_precision, overcount
-from organoid_tracker.position_detection_cnn.peak_calling import _reconstruct_volume
+from organoid_tracker.position_detection_cnn.loss_functions import custom_loss_with_blur, \
+    position_loss, position_precision, overcount
+from organoid_tracker.position_detection_cnn.peak_calling import create_prediction_mask, reconstruct_volume
 from organoid_tracker.position_detection_cnn.prediction_dataset import predicting_data_creator
 from organoid_tracker.position_detection_cnn.split_images import corners_split, reconstruction
 from organoid_tracker.position_detection_cnn.training_data_creator import create_image_list_without_positions
@@ -86,9 +86,6 @@ if _images_channels != {1}:
 image_list = create_image_list_without_positions(experiment)
 
 # set relevant parameters
-mid_layers_nb = _mid_layers
-min_peak_distance_px = _peak_min_distance_px
-
 patch_shape = [_patch_shape_z, _patch_shape_y, _patch_shape_x]
 buffer = np.array([[_buffer_z, _buffer_z], [_buffer_y, _buffer_y], [_buffer_x, _buffer_x]])
 
@@ -133,6 +130,7 @@ for image_set_index in range(image_set_count):
     # create dataset and predict
     prediction_dataset = predicting_data_creator(image_list_subset, time_window, corners,
                                                       patch_shape, buffer, max_image_shape)
+    prediction_mask = create_prediction_mask(_peak_min_distance_px, ImageResolution(1, 1, 1, 1))
     predictions = model.predict(prediction_dataset)
 
     # split set in batches of patches belonging to single figure
@@ -155,10 +153,10 @@ for image_set_index in range(image_set_count):
 
         # peak detection
         print(f"Detecting peaks at time point {time_point.time_point_number()}...")
-        im, z_divisor = _reconstruct_volume(prediction, mid_layers_nb)  # interpolate between layers for peak detection
+        im, z_divisor = reconstruct_volume(prediction, _mid_layers)  # interpolate between layers for peak detection
 
         # Comparison between image_max and im to find the coordinates of local maxima
-        coordinates = peak_local_max(im, min_distance=min_peak_distance_px, threshold_abs=0.1, exclude_border=False)
+        coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=0.1, exclude_border=False, footprint=prediction_mask)
         for coordinate in coordinates:
             pos = Position(coordinate[2], coordinate[1], coordinate[0] / z_divisor,
                            time_point=time_point) + image_offset
