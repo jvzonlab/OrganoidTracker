@@ -206,6 +206,18 @@ class Image:
         """Gets a bounding box that encompasses the entire image."""
         return BoundingBox(self.min_x, self.min_y, self.min_z, self.limit_x, self.limit_y, self.limit_z)
 
+    def value_at(self, position: Position) -> Optional[int]:
+        """Gets the value at the given position. Takes the offset of this image into account.
+        Returns None if the position is outside the image."""
+        position -= self._offset
+        if position.x < 0 or position.x >= self._array.shape[2]:
+            return None
+        if position.y < 0 or position.y >= self._array.shape[1]:
+            return None
+        if position.z < 0 or position.z >= self._array.shape[0]:
+            return None
+        return self._array[int(position.z), int(position.y), int(position.x)]
+
 
 class Images:
     """Records the images (3D + time), their resolution and their offset."""
