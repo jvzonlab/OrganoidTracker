@@ -102,3 +102,11 @@ class PositionData:
             data_value = data_values.get(position)
             if data_value is not None:
                 yield data_name, data_value
+
+    def add_positions_data(self, data_name: str, data_set: Dict[Position, PositionDataType]):
+        """Bulk-addition of position data. Should be much faster that adding everything individually."""
+        existing_data_set = self._position_data.get(data_name)
+        if existing_data_set is None:
+            self._position_data[data_name] = data_set
+        else:
+            existing_data_set.update(data_set)
