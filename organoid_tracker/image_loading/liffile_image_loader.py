@@ -169,7 +169,12 @@ class _LifImageLoader(ImageLoader):
         return array
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
-        x_size, y_size, z_size = self._serie.getBoxShape()
+        shape = self._serie.getBoxShape()
+        if len(shape) == 2:
+            x_size, y_size = shape
+            z_size = 1
+        else:
+            x_size, y_size, z_size = shape
         return int(z_size), int(y_size), int(x_size)
 
     def copy(self) -> "_LifImageLoader":
