@@ -160,7 +160,7 @@ def perform_gaussian_mixture_fit_from_watershed(image: ndarray, watershed_image:
                 continue  # No center of mass for this cell id
             intensity = image[int(center.z), int(center.y), int(center.x)]
 
-            mask.add_from_labeled(watershed_image, cell_id)
+            mask.add_from_labeled(Image(watershed_image), cell_id)
 
             gaussians.append(Gaussian(intensity, center.x, center.y, center.z, 50, 50, 2, 0, 0, 0))
         mask.dilate_xy(blur_radius // 2)

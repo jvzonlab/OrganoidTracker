@@ -19,7 +19,8 @@ class OutsideImageError(Exception):
 class Mask:
     """Class used for drawing and applying masks.
 
-    - First, you set the bounds using one of the set_bounds methods.
+    - First, you set the bounds using one of the set_bounds methods. The bounds
+      use position coords, not the coords of the raw image.
     - Second, you create the mask using add_from_labeled, dilate, etc. (or draw your mask directly on get_mask_array)
     - Third, you apply the mask to an image using
     """
@@ -42,15 +43,18 @@ class Mask:
         self._max_z = box.max_z
 
     @property
-    def offset_x(self):
+    def offset_x(self) -> int:
+        """The x coordinate that this mask starts at (position coords, not image coords)."""
         return self._offset_x
 
     @property
-    def offset_y(self):
+    def offset_y(self) -> int:
+        """The y coordinate that this mask starts at (position coords, not image coords)."""
         return self._offset_y
 
     @property
-    def offset_z(self):
+    def offset_z(self) -> int:
+        """The z coordinate that this mask starts at (position coords, not image coords)."""
         return self._offset_z
 
     def set_bounds(self, box: BoundingBox):
@@ -144,7 +148,7 @@ class Mask:
         return image_for_masking
 
     def stamp_image(self, image: ndarray, stamp_value: Union[int, float]):
-        """Stamps (part of) this mask on the given image. Takes offset into account."""
+        """Stamps (part of) this mask on the given image. Takes offset of this mask into account."""
         image_start_x = self.offset_x
         image_start_y = self.offset_y
         image_start_z = self.offset_z
@@ -181,13 +185,17 @@ class Mask:
                        mask_start_x:mask_start_x+mask_length_x]
         cropped_image[cropped_mask == 1] = stamp_value
 
-
-    def add_from_labeled(self, labeled_image: ndarray, label: int):
-        """This adds all values of the given full size image with the given color (== label) to the mask."""
+    def add_from_labeled(self, labeled_image: Image, label: int):
+        """This adds all values of the given full size image with the given color (== label) to the
+        mask. It is advisable to first crop this mask to a small region (for example to the bounding box
+        of the desired label), as the mask array will be copied."""
         array = self.get_mask_array()
-        cropped_image = labeled_image[self._offset_z:self._max_z,
-                        self._offset_y:self._max_y,
-                        self._offset_x:self._max_x]
+        cropped_image = numpy.zeros_like(array, dtype=labeled_image.array.dtype)
+        cropper.crop_3d(labeled_image.array,
+                        x_start=self._offset_x - labeled_image.min_x,
+                        y_start=self._offset_y - labeled_image.min_y,
+                        z_start=self._offset_z - labeled_image.min_z,
+                        output=cropped_image)
         array[cropped_image == label] = 1
 
     def add_from_function(self, func: Callable[[ndarray, ndarray, ndarray], ndarray]):

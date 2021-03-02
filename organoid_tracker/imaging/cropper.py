@@ -81,8 +81,8 @@ def crop_3d_to_2d(image: Image, x_start: int, y_start: int, z: int, output: ndar
 
 
 def crop_3d(image: ndarray, x_start: int, y_start: int, z_start: int, output: ndarray):
-    """Similar to crop_2d, except that all layers are now copied instead of only a single layer. Output must now be a
-    3D image with the same number of layers as the input image."""
+    """Crops part of the image (from x/y/z_start with a size equal to output) and places it in
+    output. Parts outside the original image are ignored."""
     if x_start >= image.shape[2]:
         return  # We're completely outside the image, nothing to do
     if y_start >= image.shape[1]:
@@ -121,5 +121,8 @@ def crop_3d(image: ndarray, x_start: int, y_start: int, z_start: int, output: nd
         z_start = 0
         z_size -= output_z_offset
 
-    output[output_z_offset:output_z_offset + z_size, output_y_offset:output_y_offset + y_size, output_x_offset:output_x_offset + x_size] \
-        = image[z_start:z_start + z_size, y_start:y_start + y_size, x_start:x_start + x_size]
+    output[
+        output_z_offset:output_z_offset + z_size,
+        output_y_offset:output_y_offset + y_size,
+        output_x_offset:output_x_offset + x_size] \
+            = image[z_start:z_start + z_size, y_start:y_start + y_size, x_start:x_start + x_size]
