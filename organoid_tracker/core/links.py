@@ -72,8 +72,15 @@ class LinkingTrack:
             yield next_track
             yield from next_track.find_all_descending_tracks()
 
-    def positions(self) -> Iterable[Position]:
-        """Returns all positions in this track, in order."""
+    def positions(self, connect_to_previous_track: bool = False) -> Iterable[Position]:
+        """Returns all positions in this track, in order.
+
+        If connect_to_previous_track is True, then it also returns the last position of the previous track, if that exists. This is useful if you
+        are drawing lines in between positions."""
+        if connect_to_previous_track:
+            if len(self._previous_tracks) == 1:
+                yield next(iter(self._previous_tracks)).find_last_position()
+
         yield from self._positions_by_time_point
 
     def _update_link_to_previous(self, was: "LinkingTrack", will_be: "LinkingTrack"):
