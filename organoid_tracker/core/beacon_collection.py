@@ -147,6 +147,13 @@ class BeaconCollection:
         """Gets all used time points."""
         return set(self._beacons.keys())
 
+    def count_beacons_at_time_point(self, time_point: TimePoint) -> int:
+        """Gets the number of beacons at the given time point."""
+        beacons = self._beacons.get(time_point)
+        if beacons is None:
+            return 0
+        return len(beacons)
+
     def has_beacons(self) -> bool:
         """Checks whether there are any beacons stored."""
         return len(self._beacons) > 0

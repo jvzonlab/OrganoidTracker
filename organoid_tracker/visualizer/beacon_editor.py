@@ -1,13 +1,15 @@
 from typing import Optional, Dict, Any
 
-from matplotlib.backend_bases import KeyEvent
+from matplotlib.backend_bases import KeyEvent, MouseEvent
 
 from organoid_tracker import core
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.position import Position
 from organoid_tracker.gui.undo_redo import UndoableAction, ReversedAction
+from organoid_tracker.gui.window import Window
 from organoid_tracker.linking import nearby_position_finder
 from organoid_tracker.visualizer.abstract_editor import AbstractEditor
+from organoid_tracker.visualizer.link_and_position_editor import LinkAndPositionEditor
 
 
 class _InsertBeaconAction(UndoableAction):
@@ -49,6 +51,9 @@ class BeaconEditor(AbstractEditor):
     _selected_index: Optional[int] = None
     _draw_beacon_distances: bool = False
 
+    def __init__(self, window: Window):
+        super().__init__(window, parent_viewer=LinkAndPositionEditor)
+
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
             **super().get_extra_menu_options(),
@@ -76,11 +81,34 @@ class BeaconEditor(AbstractEditor):
         background_color = (1, 1, 1, 0.8) if is_selected else (0, 1, 0, 0.8)
         self._draw_annotation(position, f"{beacon.distance_um:.1f} μm", background_color=background_color)
 
+    def _on_mouse_click(self, event: MouseEvent):
+        if not event.dblclick or event.xdata is None or event.ydata is None:
+            super()._on_mouse_click(event)
+            return
+
+        clicked_position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
+        resolution = self._experiment.images.resolution()
+        closest_beacon = self._experiment.beacons.find_closest_beacon(clicked_position, resolution)
+        if closest_beacon is None:
+            self._selected_index = None
+        elif closest_beacon.distance_um > 3:
+            self._selected_index = None
+            self.draw_view()
+            self.update_status("Deselected the beacon.")
+        else:
+            self._selected_index = closest_beacon.beacon_index
+            self.draw_view()
+            self.update_status("Selected a beacon.")
+
     def _draw_extra(self):
         """Draws the selection box."""
         selected = self._selected_beacon()
         if selected is not None:
             self._draw_selection(selected, core.COLOR_CELL_CURRENT)
+            if self._experiment.beacons.count_beacons_at_time_point(self._time_point) > 1:
+                dz = int(abs(selected.z - self._z))
+                self._ax.annotate(str(self._selected_index), (selected.x, selected.y), fontsize=8 - abs(dz / 2),
+                                  fontweight="bold", color="black", backgroundcolor=(1, 1, 1, 0.8))
 
     def _selected_beacon(self) -> Optional[Position]:
         """Gets the currently selected beacon."""
