@@ -318,6 +318,8 @@ def _my_decoder(json_object):
 def _links_to_d3_data(links: Links, positions: Iterable[Position], position_data: PositionData, link_data: LinkData) -> Dict:
     """Return data in D3.js node-link format that is suitable for JSON serialization
     and use in Javascript documents."""
+    links.sort_tracks_by_x()  # Make sure tracks are always saved in the correct order
+
     nodes = list()
 
     # Save nodes and store extra data
