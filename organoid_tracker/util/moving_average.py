@@ -155,7 +155,7 @@ class LinesAverage(PlotAverage):
         y_error_values_min = list()
         y_error_values_mean = list()
         y_error_values_max = list()
-        for x in numpy.arange(min_x, max_x, self._x_step_size):
+        for x in numpy.arange(min_x + 0.01, max_x - 0.01, self._x_step_size):
             y_values = self._get_y_values_at(x)
             if len(y_values) <= 1:
                 continue
