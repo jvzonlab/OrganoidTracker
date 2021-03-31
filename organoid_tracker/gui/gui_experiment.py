@@ -35,16 +35,24 @@ class _EventListeners:
                 listener(*args)
 
 
-class _SingleGuiExperiment:
-    experiment: Experiment
-    undo_redo: UndoRedo
+class SingleGuiTab:
+    _experiment: Experiment
+    _undo_redo: UndoRedo
 
     def __init__(self, experiment: Experiment):
-        self.experiment = experiment
-        self.undo_redo = UndoRedo()
+        self._experiment = experiment
+        self._undo_redo = UndoRedo()
+
+    @property
+    def experiment(self) -> Experiment:
+        return self._experiment
+
+    @property
+    def undo_redo(self) -> UndoRedo:
+        return self._undo_redo
 
     def __repr__(self) -> str:
-        return "<Experiment " + self.experiment.name.get_save_name() + ">"
+        return "<Experiment " + self._experiment.name.get_save_name() + ">"
 
 
 class GuiExperiment:
@@ -53,7 +61,7 @@ class GuiExperiment:
 
     KNOWN_EVENTS = {"data_updated_event", "any_updated_event", "command_event"}
 
-    _experiments: List[_SingleGuiExperiment]
+    _tabs: List[SingleGuiTab]
     _selected_experiment: int  # Index in self._experiments, or equal to len(self._experiments) if all are open.
     _data_updated_handlers: _EventListeners
     _any_updated_event: _EventListeners
@@ -61,7 +69,7 @@ class GuiExperiment:
     _registered_markers: Dict[str, Marker]
 
     def __init__(self, experiment: Experiment):
-        self._experiments = [_SingleGuiExperiment(experiment)]
+        self._tabs = [SingleGuiTab(experiment)]
         self._selected_experiment = 0
 
         self._data_updated_handlers = _EventListeners()
@@ -71,7 +79,7 @@ class GuiExperiment:
 
     @property  # read-only
     def undo_redo(self) -> UndoRedo:
-        return self._experiments[-1].undo_redo
+        return self._tabs[-1].undo_redo
 
     def register_event_handler(self, event: str, source: str, action: Callable):
         """Registers an event handler. Supported events:
@@ -119,49 +127,45 @@ class GuiExperiment:
             self._remove_experiment_without_update(self.get_experiment())
 
         # Add new experiment
-        self._experiments.append(_SingleGuiExperiment(experiment))
-        self._selected_experiment = len(self._experiments) - 1
+        self._tabs.append(SingleGuiTab(experiment))
+        self._selected_experiment = len(self._tabs) - 1
         self._any_updated_event.call_all()
 
     def replace_selected_experiment(self, experiment: Experiment):
         """Discards the currently selected experiment, and replaces it with a new one"""
-        self._experiments[self._selected_experiment] = _SingleGuiExperiment(experiment)
+        self._tabs[self._selected_experiment] = SingleGuiTab(experiment)
         self._any_updated_event.call_all()
 
     def get_experiment(self) -> Experiment:
         """Gets the currently selected experiment. Raises UserError if no particular experiment has been selected."""
-        if self._selected_experiment == len(self._experiments):
-            # Not available when all experiments are open
-            raise UserError("No experiment selected", "This function only works on a single experiment. Please select"
-                                                      " one in the upper-right corner of the window.")
-        return self._experiments[self._selected_experiment].experiment
+        return self.get_open_tab().experiment
 
     def get_active_experiments(self) -> Iterable[Experiment]:
         """Gets all currently active experiments. This will usually be one experiment,
         but the user has the option to open all experiments."""
-        if self._selected_experiment == len(self._experiments):
+        if self._selected_experiment == len(self._tabs):
             # All are open
-            for gui_experiment in self._experiments:
+            for gui_experiment in self._tabs:
                 yield gui_experiment.experiment
         else:
             # One experiment is open
-            yield self._experiments[self._selected_experiment].experiment
+            yield self._tabs[self._selected_experiment].experiment
 
     def _remove_experiment_without_update(self, experiment: Experiment):
         """Removes an experiment. Does not add a new experiment in case the list becomes empty."""
-        for i in range(len(self._experiments)):
-            if self._experiments[i].experiment is experiment:
-                del self._experiments[i]
+        for i in range(len(self._tabs)):
+            if self._tabs[i].experiment is experiment:
+                del self._tabs[i]
                 return
 
     def remove_experiment(self, experiment: Experiment):
         """Removes the given experiment from the list of loaded experiments. If no experiments are remaining, an empty
         one will be initialized."""
         self._remove_experiment_without_update(experiment)
-        if len(self._experiments) == 0:  # Prevent list from being empty
-            self._experiments.append(_SingleGuiExperiment(Experiment()))
-        if self._selected_experiment >= len(self._experiments):
-            self._selected_experiment = len(self._experiments) - 1
+        if len(self._tabs) == 0:  # Prevent list from being empty
+            self._tabs.append(SingleGuiTab(Experiment()))
+        if self._selected_experiment >= len(self._tabs):
+            self._selected_experiment = len(self._tabs) - 1
         self._any_updated_event.call_all()
 
     def redraw_data(self):
@@ -184,10 +188,10 @@ class GuiExperiment:
 
     def get_selectable_experiments(self) -> Iterable[Tuple[int, str]]:
         """Gets all selectable experiment names, along with an index for self.select_experiment()"""
-        for i, gui_experiment in enumerate(self._experiments):
+        for i, gui_experiment in enumerate(self._tabs):
             yield i, str(gui_experiment.experiment.name)
-        if len(self._experiments) > 1:
-            yield len(self._experiments), "<all experiments>"
+        if len(self._tabs) > 1:
+            yield len(self._tabs), "<all experiments>"
 
     def is_selected(self, select_index: int) -> bool:
         """Checks if the select_index is of the currently selected experiment."""
@@ -198,9 +202,21 @@ class GuiExperiment:
         experiment."""
         if self._selected_experiment == index:
             return  # Nothing changed
-        if index < 0 or index > len(self._experiments):
+        if index < 0 or index > len(self._tabs):
             raise ValueError(f"Out of range: {index}")
 
         self._selected_experiment = index
         self._any_updated_event.call_all()
+
+    def get_all_tabs(self) -> List[SingleGuiTab]:
+        """Gets all currently open tabs."""
+        return list(self._tabs)
+
+    def get_open_tab(self) -> SingleGuiTab:
+        """Gets the currently selected tab. Raises UserError if no particular tab has been selected."""
+        if self._selected_experiment == len(self._tabs):
+            # Not available when all experiments are open
+            raise UserError("No experiment selected", "This function only works on a single experiment. Please select"
+                                                      " one in the upper-right corner of the window.")
+        return self._tabs[self._selected_experiment]
 

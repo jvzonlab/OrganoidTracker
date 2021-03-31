@@ -113,7 +113,8 @@ class MainWindow(Window):
             "File//New-New project... [Ctrl+N]": lambda: action.new(self),
             "File//SaveLoad-Load images... [Ctrl+I]": lambda: action.load_images(self),
             "File//SaveLoad-Load tracking data... [Ctrl+O]": lambda: action.load_tracking_data(self),
-            "File//SaveLoad-Save tracking data... [Ctrl+S]": lambda: action.save_tracking_data(self.get_gui_experiment()),
+            "File//SaveLoad-Save tracking data [Ctrl+S]": lambda: action.save_tracking_data(self),
+            "File//SaveLoad-Save tracking data as... [Ctrl+Shift+S]": lambda: action.save_tracking_data(self, force_save_as=True),
             "File//Export-Export positions//JSON, as pixel coordinates...": lambda: action.export_positions(self.get_experiment()),
             "File//Export-Export links//Guizela's file format...": lambda: action.export_links_guizela(self.get_experiment()),
             "File//Export-Export links//Cell Tracking Challenge format...": lambda: action.export_links_ctc(self.get_experiment()),
@@ -212,7 +213,7 @@ def _connect_toolbar_actions(toolbar: Toolbar, window: Window):
         window.get_gui_experiment().execute_command("exit")
     def save(*args):
         from organoid_tracker.gui import action
-        action.save_tracking_data(window.get_gui_experiment())
+        action.save_tracking_data(window)
     def load(*args):
         from organoid_tracker.gui import action
         action.load_tracking_data(window)

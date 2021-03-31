@@ -97,6 +97,10 @@ def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point:
             raise ValueError("Unknown data version", "This program is not able to load data of version "
                              + str(data["version"]) + ".")
 
+        # We have a valid data file
+        # Let the experiment overwrite this file upon the next save
+        experiment.last_save_file = file_name
+
         if "name" in data:
             experiment.name.set_name(data["name"])
 
@@ -448,6 +452,9 @@ def _encode_connections_to_json(connections: Connections) -> Dict[str, List[List
 def save_data_to_json(experiment: Experiment, json_file_name: str):
     """Saves positions, shapes, scores and links to a JSON file. The file should end with the extension FILE_EXTENSION.
     """
+    # Record where file has been saved to
+    experiment.last_save_file = json_file_name
+
     save_data = {"version": "v1"}
 
     if experiment.positions.has_positions():

@@ -34,6 +34,7 @@ class Experiment:
     splines: SplineCollection  # Splines, can be used to track progress of a cell across a trajectory.
     _warning_limits: WarningLimits
     _color: Color
+    last_save_file: Optional[str] = None  # Location where the "Save" button will save again.
 
     def __init__(self):
         self._name = Name()

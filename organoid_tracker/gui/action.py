@@ -1,5 +1,5 @@
 from os import path
-from typing import Optional
+from typing import Optional, Union
 
 from PySide2.QtWidgets import QApplication
 from matplotlib.figure import Figure
@@ -8,7 +8,7 @@ from organoid_tracker.core import UserError
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.gui import dialog, image_resolution_dialog, option_choose_dialog
 from organoid_tracker.gui.dialog import popup_message_cancellable
-from organoid_tracker.gui.gui_experiment import GuiExperiment
+from organoid_tracker.gui.gui_experiment import GuiExperiment, SingleGuiTab
 from organoid_tracker.gui.undo_redo import UndoableAction
 from organoid_tracker.gui.window import Window
 from organoid_tracker.imaging import io
@@ -20,17 +20,23 @@ from organoid_tracker.visualizer.empty_visualizer import EmptyVisualizer
 def ask_save_unsaved_changes(gui_experiment: GuiExperiment) -> bool:
     """If there are any unsaved changes, this method will prompt the user to save them. Returns True if the user either
     successfully saved the data, or if the user doesn't want to save. Returns False if the action must be aborted."""
-    if not gui_experiment.undo_redo.has_unsaved_changes():
-        return True
+    for single_tab in gui_experiment.get_all_tabs():
+        if not single_tab.undo_redo.has_unsaved_changes():
+            continue
 
-    answer = dialog.prompt_yes_no_cancel("Confirmation", "There are unsaved changes to the tracking data. Do you want"
-                                                         " to save those first?")
-    if answer.is_yes():
-        if save_tracking_data(gui_experiment):
-            return True
-    elif answer.is_no():
-        return True
-    return False
+        answer = dialog.prompt_yes_no_cancel("Confirmation",
+                    f"There are unsaved changes to the tracking data of experiment \"{single_tab.experiment.name}\"."
+                    f" Do you want to save those first?")
+        if answer.is_yes():
+            if _save_tracking_data_of_tab(single_tab):
+                continue
+            else:
+                return False
+        elif answer.is_no():
+            continue
+        else:
+            return False  # Cancelled.
+    return True
 
 
 def toggle_axis(figure: Figure):
@@ -129,14 +135,23 @@ def export_links_ctc(experiment: Experiment):
     ctc_io.save_data_files(experiment, tracks_folder)
 
 
-def save_tracking_data(gui_experiment: GuiExperiment) -> bool:
-    data_file = dialog.prompt_save_file("Save data as...", [
-        (io.FILE_EXTENSION.upper() + " file", "*." + io.FILE_EXTENSION)])
-    if not data_file:
-        return False # Cancelled
+def save_tracking_data(window: Window, force_save_as: bool = False) -> bool:
+    saved = _save_tracking_data_of_tab(window.get_gui_experiment().get_open_tab(), force_save_as)
+    if saved:
+        window.set_status("Saved to " + window.get_experiment().last_save_file + ".")
+    return saved
 
-    io.save_data_to_json(gui_experiment.get_experiment(), data_file)
-    gui_experiment.undo_redo.mark_everything_saved()
+
+def _save_tracking_data_of_tab(tab: SingleGuiTab, force_save_as: bool = False):
+    data_file = tab.experiment.last_save_file
+    if data_file is None or force_save_as:
+        data_file = dialog.prompt_save_file("Save data as...", [
+            (io.FILE_EXTENSION.upper() + " file", "*." + io.FILE_EXTENSION)])
+    if not data_file:
+        return False  # Cancelled
+
+    io.save_data_to_json(tab.experiment, data_file)
+    tab.undo_redo.mark_everything_saved()
     return True
 
 
