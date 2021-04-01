@@ -110,7 +110,7 @@ class MainWindow(Window):
         from organoid_tracker.gui import action
 
         menu_items = {
-            "File//New-New project... [Ctrl+N]": lambda: action.new(self),
+            "File//Project-New project... [Ctrl+N]": lambda: action.new(self),
             "File//SaveLoad-Load images... [Ctrl+I]": lambda: action.load_images(self),
             "File//SaveLoad-Load tracking data... [Ctrl+O]": lambda: action.load_tracking_data(self),
             "File//SaveLoad-Save tracking data [Ctrl+S]": lambda: action.save_tracking_data(self),

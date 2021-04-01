@@ -28,7 +28,7 @@ def ask_save_unsaved_changes(gui_experiment: GuiExperiment) -> bool:
                     f"There are unsaved changes to the tracking data of experiment \"{single_tab.experiment.name}\"."
                     f" Do you want to save those first?")
         if answer.is_yes():
-            if _save_tracking_data_of_tab(single_tab):
+            if save_tracking_data_of_tab(single_tab):
                 continue
             else:
                 return False
@@ -136,13 +136,17 @@ def export_links_ctc(experiment: Experiment):
 
 
 def save_tracking_data(window: Window, force_save_as: bool = False) -> bool:
-    saved = _save_tracking_data_of_tab(window.get_gui_experiment().get_open_tab(), force_save_as)
+    """Saves the tracking data of the currently open tab. Prompts the user if no previous file name is known, or if
+    force_save_as is True. Updates the status bar afterwards. Returns whether saving was successful."""
+    saved = save_tracking_data_of_tab(window.get_gui_experiment().get_open_tab(), force_save_as)
     if saved:
         window.set_status("Saved to " + window.get_experiment().last_save_file + ".")
     return saved
 
 
-def _save_tracking_data_of_tab(tab: SingleGuiTab, force_save_as: bool = False):
+def save_tracking_data_of_tab(tab: SingleGuiTab, force_save_as: bool = False):
+    """Saves the tracking data of the given tab. Prompts the user if no previous file name is known, or if
+    force_save_as is True. Returns whether saving was successful."""
     data_file = tab.experiment.last_save_file
     if data_file is None or force_save_as:
         data_file = dialog.prompt_save_file("Save data as...", [
