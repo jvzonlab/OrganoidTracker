@@ -5,13 +5,13 @@ import numpy
 from matplotlib.axes import Axes
 from numpy import ndarray
 
-from organoid_tracker.core import min_none, max_none
+from organoid_tracker.core import min_none, max_none, Color
 
 
 class PlotAverage(ABC):
 
     @abstractmethod
-    def plot(self, axes: Axes, *, color="blue", linewidth=2, error_opacity=0.8, standard_error: bool = False, label="Moving average"):
+    def plot(self, axes: Axes, *, color: Color = Color(0, 0, 255), linewidth=2, error_opacity=0.8, standard_error: bool = False, label="Moving average"):
         """Plots the moving average to the given axis. For example:
 
                     plot(plt.gca(), label="My moving average")
@@ -85,15 +85,15 @@ class MovingAverage(PlotAverage):
         self.standard_deviation_values = numpy.array(y_moving_average_standard_deviation, dtype=numpy.float32)
         self.counts_in_standard_deviation_values = numpy.array(y_moving_average_counts, dtype=numpy.uint16)
 
-    def plot(self, axes: Axes, *, color="blue", linewidth=2, error_opacity=0.8, standard_error: bool = False, label="Moving average"):
-        axes.plot(self.x_values, self.mean_values, color=color, linewidth=linewidth, label=label)
+    def plot(self, axes: Axes, *, color: Color = Color(0, 0, 255), linewidth=2, error_opacity=0.8, standard_error: bool = False, label="Moving average"):
+        axes.plot(self.x_values, self.mean_values, color=color.to_rgb_floats(), linewidth=linewidth, label=label)
 
         error_bar_size = self.standard_deviation_values
         if standard_error:
             error_bar_size /= numpy.sqrt(self.counts_in_standard_deviation_values)
 
         axes.fill_between(self.x_values, self.mean_values - error_bar_size,
-                          self.mean_values + error_bar_size, color=color, alpha=1 - error_opacity)
+                          self.mean_values + error_bar_size, color=color.to_rgb_floats(), alpha=1 - error_opacity)
 
 
 class LinesAverage(PlotAverage):
@@ -147,7 +147,7 @@ class LinesAverage(PlotAverage):
                     break
         return y_values
 
-    def plot(self, axes: Axes, *, color="blue", linewidth=2, error_opacity=0.8, standard_error: bool = False, label="Moving average"):
+    def plot(self, axes: Axes, *, color: Color = Color(0, 0, 255), linewidth=2, error_opacity=0.8, standard_error: bool = False, label="Average"):
         min_x, max_x = self._get_min_max_x()
 
         # Calculate error bounds
@@ -172,6 +172,6 @@ class LinesAverage(PlotAverage):
 
         # Plot
         if len(x_error_values) > 0:
-            axes.plot(x_error_values, y_error_values_mean, color=color, linewidth=linewidth, label=label)
+            axes.plot(x_error_values, y_error_values_mean, color=color.to_rgb_floats(), linewidth=linewidth, label=label)
             axes.fill_between(x_error_values, y_error_values_min,
-                          y_error_values_max, color=color, alpha=1 - error_opacity)
+                          y_error_values_max, color=color.to_rgb_floats(), alpha=1 - error_opacity)
