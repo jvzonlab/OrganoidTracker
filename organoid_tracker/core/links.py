@@ -137,6 +137,15 @@ class LinkingTrack:
             return False
         return other._positions_by_time_point[0] == self._positions_by_time_point[0]
 
+    def find_all_previous_and_descending_tracks(self, *, include_self: bool = False) -> Iterable["LinkingTrack"]:
+        """Finds all tracks in the lineage of this track, including siblings, cousins, etc."""
+        previous_track = self
+        while len(previous_track._previous_tracks) == 1:
+            previous_track = next(iter(previous_track._previous_tracks))
+            yield previous_track
+        yield from self.find_all_descending_tracks(include_self=include_self)
+
+
 class Links:
     """Represents all links between positions at different time points. This is used to follow particles over time. If a
     position is linked to two positions in the next time step, than that is a cell division. If a position is linked to
