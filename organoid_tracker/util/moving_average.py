@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from typing import List, Union, Tuple
+from typing import List, Union, Tuple, Callable, Optional
 
 import numpy
 from matplotlib.axes import Axes
@@ -85,15 +85,45 @@ class MovingAverage(PlotAverage):
         self.standard_deviation_values = numpy.array(y_moving_average_standard_deviation, dtype=numpy.float32)
         self.counts_in_standard_deviation_values = numpy.array(y_moving_average_counts, dtype=numpy.uint16)
 
-    def plot(self, axes: Axes, *, color: Color = Color(0, 0, 255), linewidth=2, error_opacity=0.8, standard_error: bool = False, label="Moving average"):
-        axes.plot(self.x_values, self.mean_values, color=color.to_rgb_floats(), linewidth=linewidth, label=label)
+    def plot(self, axes: Axes, *, color: Color = Color(0, 0, 255),
+             color_function: Optional[Callable[[float], Color]] = None, linewidth=2, error_opacity=0.8,
+             standard_error: bool = False, label="Moving average"):
+        """Color_function is a function x -> color, used to give the line different colors for different x."""
+        if len(self.x_values) == 0:
+            return
 
         error_bar_size = self.standard_deviation_values
         if standard_error:
             error_bar_size /= numpy.sqrt(self.counts_in_standard_deviation_values)
 
-        axes.fill_between(self.x_values, self.mean_values - error_bar_size,
-                          self.mean_values + error_bar_size, color=color.to_rgb_floats(), alpha=1 - error_opacity)
+        if color_function is not None:
+            colors = [color_function(x) for x in self.x_values]
+        else:
+            colors = [color] * len(self.x_values)
+        previous_color = colors[0]
+        starting_index = 0
+        for i in range(len(self.x_values)):
+            if colors[i] != previous_color:
+                # Start new line segment
+                end = i + 1
+                axes.plot(self.x_values[starting_index:end], self.mean_values[starting_index:end],
+                          color=previous_color.to_rgb_floats(), linewidth=linewidth, label=label)
+                axes.fill_between(self.x_values[starting_index:end],
+                                  self.mean_values[starting_index:end] - error_bar_size[starting_index:end],
+                                  self.mean_values[starting_index:end] + error_bar_size[starting_index:end],
+                                  color=previous_color.to_rgb_floats(), alpha=1 - error_opacity)
+                starting_index = i
+
+            previous_color = colors[i]
+        if starting_index < len(self.x_values) - 1:
+            # Need to finish a line segment
+            end = len(self.x_values)
+            axes.plot(self.x_values[starting_index:end], self.mean_values[starting_index:end],
+                      color=previous_color.to_rgb_floats(), linewidth=linewidth, label=label)
+            axes.fill_between(self.x_values[starting_index:end],
+                              self.mean_values[starting_index:end] - error_bar_size[starting_index:end],
+                              self.mean_values[starting_index:end] + error_bar_size[starting_index:end],
+                              color=previous_color.to_rgb_floats(), alpha=1 - error_opacity)
 
 
 class LinesAverage(PlotAverage):
