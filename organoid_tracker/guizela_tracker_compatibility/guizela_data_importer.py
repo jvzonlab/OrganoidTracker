@@ -5,22 +5,22 @@ import os
 import pickle
 import re
 import sys
-from typing import List, Optional, Dict
+from typing import Optional, Dict
 
 import numpy
 
 from organoid_tracker.core import TimePoint
-from organoid_tracker.core.position_data import PositionData
-from organoid_tracker.core.spline import SplineCollection, Spline
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import Links
-from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position import Position
-from organoid_tracker.core.resolution import ImageResolution
+from organoid_tracker.core.position_collection import PositionCollection
+from organoid_tracker.core.position_data import PositionData
+from organoid_tracker.core.spline import SplineCollection, Spline
 from organoid_tracker.guizela_tracker_compatibility import cell_type_converter
+from organoid_tracker.guizela_tracker_compatibility.track_lib import Track
+from organoid_tracker.imaging import position_markers
 from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.linking_analysis.linking_markers import EndMarker
-from organoid_tracker.guizela_tracker_compatibility.track_lib import Track
 
 
 def _load_links(experiment: Experiment, tracks_dir: str, min_time_point: int = 0, max_time_point: int = 5000):
@@ -184,7 +184,7 @@ def _read_cell_type_file(tracks_dir: str, position_data: PositionData, tracks_by
             track = tracks_by_id[typed_cell_number]
             for i in range(len(track.x)):
                 position = Position(*track.x[i], time_point_number=track.t[i])
-                linking_markers.set_position_type(position_data, position, cell_type.upper())
+                position_markers.set_position_type(position_data, position, cell_type.upper())
 
 
 def _get_cell_in_time_point(track: Track, time_point_number: int) -> Optional[Position]:

@@ -7,7 +7,8 @@ from organoid_tracker.core import Color
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.window import Window
-from organoid_tracker.linking_analysis import cell_fate_finder, linking_markers
+from organoid_tracker.imaging import position_markers
+from organoid_tracker.linking_analysis import cell_fate_finder
 from organoid_tracker.linking_analysis.cell_fate_finder import CellFateType
 
 
@@ -63,7 +64,7 @@ class _DividingCells:
                 elif fate.type == CellFateType.UNKNOWN:
                     dividing_count_max += 1  # Could be dividing, but we're not sure
 
-                cell_type = linking_markers.get_position_type(experiment.position_data, position)
+                cell_type = position_markers.get_position_type(experiment.position_data, position)
                 if cell_type == "PANETH":
                     paneth_count += 1
 

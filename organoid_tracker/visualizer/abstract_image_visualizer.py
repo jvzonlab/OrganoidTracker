@@ -17,6 +17,7 @@ from organoid_tracker.core.typing import MPLColor
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.dialog import prompt_int
 from organoid_tracker.gui.window import Window, DisplaySettings
+from organoid_tracker.imaging import position_markers
 from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.util.mpl_helper import line_infinite
 from organoid_tracker.visualizer import Visualizer, activate
@@ -267,7 +268,7 @@ class AbstractImageVisualizer(Visualizer):
 
             # Add marker
             position_type = self.get_window().get_gui_experiment().get_marker_by_save_name(
-                linking_markers.get_position_type(position_data, position))
+                position_markers.get_position_type(position_data, position))
             edge_color = (0, 0, 0) if position_type is None else position_type.mpl_color
             edge_width = 1 if position_type is None else 3
 

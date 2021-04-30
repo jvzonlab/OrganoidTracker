@@ -12,6 +12,7 @@ from organoid_tracker.core.images import ImageOffsets
 from organoid_tracker.core.links import Links, LinkingTrack
 from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.guizela_tracker_compatibility import cell_type_converter
+from organoid_tracker.imaging import position_markers
 from organoid_tracker.linking_analysis import linking_markers
 
 
@@ -74,7 +75,7 @@ class _TrackExporter:
                                         t=position.time_point_number())
 
         # Register cell type
-        position_type = linking_markers.get_position_type(self._position_data, track.find_last_position())
+        position_type = position_markers.get_position_type(self._position_data, track.find_last_position())
         if position_type is not None:
             track_ids_of_cell_type = self._typed_track_ids.get(position_type)
             if track_ids_of_cell_type is None:

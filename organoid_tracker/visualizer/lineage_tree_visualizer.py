@@ -15,6 +15,7 @@ from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.gui import dialog, option_choose_dialog
 from organoid_tracker.gui.location_map import LocationMap
 from organoid_tracker.gui.window import Window
+from organoid_tracker.imaging import position_markers
 from organoid_tracker.linking_analysis import linking_markers, lineage_markers
 from organoid_tracker.linking_analysis.lineage_division_counter import get_min_division_count_in_lineage
 from organoid_tracker.linking_analysis.lineage_drawing import LineageDrawing
@@ -29,7 +30,7 @@ def _includes_cell_type(position_data: PositionData, linking_track: LinkingTrack
     """Checks if the given lineage (starting at linking_track) includes the given cell type. Only checks the last
     position of each track."""
     for track_in_lineage in linking_track.find_all_descending_tracks(include_self=True):
-        if linking_markers.get_position_type(position_data, track_in_lineage.find_last_position()) == cell_type:
+        if position_markers.get_position_type(position_data, track_in_lineage.find_last_position()) == cell_type:
             return True
     return False
 

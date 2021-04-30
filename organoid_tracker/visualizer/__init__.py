@@ -15,7 +15,7 @@ from organoid_tracker.core.typing import MPLColor
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.threading import Task
 from organoid_tracker.gui.window import Window, DisplaySettings
-from organoid_tracker.imaging import cropper
+from organoid_tracker.imaging import cropper, position_markers
 from organoid_tracker.linking.nearby_position_finder import find_closest_position
 from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.util import mpl_helper
@@ -245,7 +245,7 @@ class Visualizer:
         """Gets the color that the given position should be annotated with, based on the type of the position. Usually
         this color is used to decorate the edge of the position marker."""
         position_type = self.get_window().get_gui_experiment().get_marker_by_save_name(
-            linking_markers.get_position_type(self._experiment.position_data, position))
+            position_markers.get_position_type(self._experiment.position_data, position))
         if position_type is None:
             return None
         return position_type.mpl_color

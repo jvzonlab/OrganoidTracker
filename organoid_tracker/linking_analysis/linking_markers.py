@@ -159,25 +159,11 @@ def set_error_marker(position_data: PositionData, position: Position, error: Opt
 
 
 def get_position_type(position_data: PositionData, position: Position) -> Optional[str]:
-    """Gets the type of the cell in UPPERCASE, interpreted as the intestinal organoid cell type."""
+    """Deprecated - use position_markers.get_position_type"""
     type = position_data.get_position_data(position, "type")
     if type is None:
         return None
     return type.upper()
-
-
-def set_position_type(position_data: PositionData, position: Position, type: Optional[str]):
-    """Sets the type of the cell. Set to None to delete the cell type."""
-    type_str = type.upper() if type is not None else None
-    position_data.set_position_data(position, "type", type_str)
-
-
-def get_position_types(position_data: PositionData, positions: Set[Position]) -> Dict[Position, Optional[str]]:
-    """Gets all known cell types of the given positions, with the names in UPPERCASE."""
-    types = dict()
-    for position in positions:
-        types[position] = get_position_type(position_data, position)
-    return types
 
 
 def get_shape(position_data: PositionData, position: Position) -> ParticleShape:

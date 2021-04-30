@@ -1,4 +1,4 @@
-from typing import Optional, List, Set, Dict, Iterable
+from typing import Optional, List, Dict, Iterable
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent, LocationEvent
 
@@ -7,17 +7,19 @@ from organoid_tracker.core import Color, UserError
 from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import LinkingTrack
+from organoid_tracker.core.marker import Marker
 from organoid_tracker.core.particle import Particle
 from organoid_tracker.core.position import Position
-from organoid_tracker.core.marker import Marker
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.gui import dialog
+from organoid_tracker.gui.undo_redo import UndoableAction, ReversedAction
 from organoid_tracker.gui.window import Window
-from organoid_tracker.linking_analysis import cell_error_finder, linking_markers, track_positions_finder, lineage_markers
+from organoid_tracker.imaging import position_markers
+from organoid_tracker.linking_analysis import cell_error_finder, linking_markers, track_positions_finder, \
+    lineage_markers
 from organoid_tracker.linking_analysis.linking_markers import EndMarker
 from organoid_tracker.visualizer import activate
 from organoid_tracker.visualizer.abstract_editor import AbstractEditor
-from organoid_tracker.gui.undo_redo import UndoableAction, ReversedAction
 
 
 class _InsertLinkAction(UndoableAction):
@@ -201,7 +203,7 @@ class _SetAllAsType(UndoableAction):
         position_data = experiment.position_data
         save_name = self._type.save_name if self._type is not None else None
         for position in self._previous_position_types.keys():
-            linking_markers.set_position_type(position_data, position, save_name)
+            position_markers.set_position_type(position_data, position, save_name)
         position_count = len(self._previous_position_types.keys())
         if self._type is None:
             return f"Removed the type of {position_count} position(s)"
@@ -212,7 +214,7 @@ class _SetAllAsType(UndoableAction):
     def undo(self, experiment: Experiment) -> str:
         position_data = experiment.position_data
         for position in self._previous_position_types.keys():
-            linking_markers.set_position_type(position_data, position, self._previous_position_types.get(position))
+            position_markers.set_position_type(position_data, position, self._previous_position_types.get(position))
         return f"Reset all positions to their previous type"
 
 
@@ -645,7 +647,7 @@ class LinkAndPositionEditor(AbstractEditor):
             return
 
         positions = track_positions_finder.find_all_positions_in_track_of(self._experiment.links, self._selected1)
-        old_position_types = linking_markers.get_position_types(self._experiment.position_data, set(positions))
+        old_position_types = position_markers.get_position_types(self._experiment.position_data, set(positions))
         self._perform_action(_SetAllAsType(old_position_types, position_type))
 
     def _set_position_to_type(self, position_type: Optional[Marker]):
@@ -658,7 +660,7 @@ class LinkAndPositionEditor(AbstractEditor):
             return
 
         positions = {self._selected1}
-        old_position_types = linking_markers.get_position_types(self._experiment.position_data, positions)
+        old_position_types = position_markers.get_position_types(self._experiment.position_data, positions)
         self._perform_action(_SetAllAsType(old_position_types, position_type))
 
     def _set_color_of_lineage(self):
