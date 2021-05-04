@@ -470,6 +470,41 @@ class AbstractImageVisualizer(Visualizer):
         self._fig.canvas.draw()
 
     def _on_command(self, command: str) -> bool:
+        if command.startswith("track "):
+            split = command.split(" ")
+            if len(split) != 2:
+                self.update_status("Syntax: /track <track_id>")
+                return True
+            try:
+                track_id = int(split[1])
+            except ValueError:
+                self.update_status(f"Invalid number in \"{command}\". Syntax: /track <track_id>")
+            else:
+                track = self._experiment.links.get_track_by_id(track_id)
+                if track is None:
+                    self.update_status(f"Track with id {track_id} not found.")
+                if not self._move_to_position(track.find_first_position()):
+                    self.update_status("Cannot go to point at time point " + str(t))
+            return True
+        if command.startswith("goto "):
+            split = command.split(" ")
+            if len(split) != 5:
+                self.update_status("Syntax: /goto <x> <y> <z> <t>")
+                return True
+            try:
+                x, y, z, t = float(split[1]), float(split[2]), float(split[3]), int(split[4])
+            except ValueError:
+                self.update_status(f"Invalid number in \"{command}\". Syntax: /goto <x> <y> <z> <t>")
+            else:
+                if not self._move_to_position(Position(x, y, z, time_point_number=t)):
+                    self.update_status("Cannot go to point at time point " + str(t))
+            return True
+        if command == "help":
+            self.update_status("/t20: Jump to time point 20 (also works for other time points)"
+                               "\n/z10: Jump to z position 10 (also works for other z-positions)"
+                               "\n/track <track_id>: Jump to the start of that track"
+                               "\n/goto <x> <y> <z> <t>: Directly jump to that point")
+            return True
         if len(command) > 0 and command[0] == "t":
             time_point_str = command[1:]
             try:
@@ -491,23 +526,6 @@ class AbstractImageVisualizer(Visualizer):
                     self.update_status(f"Z layer {new_z} does not exist.")
             except ValueError:
                 self.update_status("Cannot read number: " + z_str)
-            return True
-        if command.startswith("goto "):
-            split = command.split(" ")
-            if len(split) != 5:
-                self.update_status("Syntax: /goto <x> <y> <z> <t>")
-                return True
-            try:
-                x, y, z, t = float(split[1]), float(split[2]), float(split[3]), int(split[4])
-            except ValueError:
-                self.update_status(f"Invalid number in \"{command}\". Syntax: /goto <x> <y> <z> <t>")
-            else:
-                if not self._move_to_position(Position(x, y, z, time_point_number=t)):
-                    self.update_status("Cannot go to point at time point " + str(t))
-            return True
-        if command == "help":
-            self.update_status("/t20: Jump to time point 20 (also works for other time points)"
-                               "\n/goto <x> <y> <z> <t>: Directly jump to that point")
             return True
         if command == "exit":
             self._display_settings.show_images = True

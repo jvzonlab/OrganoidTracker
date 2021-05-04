@@ -630,6 +630,12 @@ class Links:
             if not track._previous_tracks:
                 yield track
 
+    def get_track_by_id(self, track_id: int) -> Optional[LinkingTrack]:
+        """Gets the track with the given id, or None if no such track exists."""
+        if track_id < 0 or track_id >= len(self._tracks):
+            return None
+        return self._tracks[track_id]
+
     def get_track(self, position: Position) -> Optional[LinkingTrack]:
         """Gets the track the given position belong in."""
         return self._position_to_track.get(position)
