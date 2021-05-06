@@ -32,7 +32,7 @@ def set_intensities(position_data: PositionData, intensities: Dict[Position, int
     if intensities.keys() != volumes.keys():
         raise ValueError("Need to supply intensities and volumes for the same cells")
     position_data.add_positions_data("intensity", intensities)
-    position_data.add_positions_data("intensity_volume", intensities)
+    position_data.add_positions_data("intensity_volume", volumes)
 
 
 def get_intensity_per_pixel(position_data: PositionData, position: Position) -> Optional[float]:
