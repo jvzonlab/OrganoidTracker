@@ -40,6 +40,11 @@ class MovingAverage(PlotAverage):
     standard_deviation_values: ndarray  # Standard deviation in the mean. Useful for plt.fill_between.
     counts_in_standard_deviation_values: ndarray  # Counts used for calculating the standard deviation
 
+    _raw_x_values: ndarray
+    _raw_y_values: ndarray
+    _x_step_size: float
+    _window_width: float
+
     def __init__(self, x_values: Union[List[float], ndarray], y_values: Union[List[float], ndarray], *,
                  window_width: float, x_step_size: float = 1):
         """Calculates the moving average with the given width. The resolution determines the step size in which the
@@ -48,17 +53,23 @@ class MovingAverage(PlotAverage):
             raise ValueError(f"resolution must be positive, but was {x_step_size}")
         if window_width <= 0:
             raise ValueError(f"window_width must be positive, but was {window_width}")
+        self._x_step_size = x_step_size
+        self._window_width = window_width
 
         extend = window_width / 2
 
         # Convert to numpy arrays if some other kind of array/list was given
-        if not isinstance(x_values, ndarray):
-            x_values = numpy.array(x_values)
-        if not isinstance(y_values, ndarray):
-            y_values = numpy.array(y_values)
+        if isinstance(x_values, ndarray):
+            self._raw_x_values = x_values
+        else:
+            self._raw_x_values = numpy.array(x_values)
+        if isinstance(y_values, ndarray):
+            self._raw_y_values = y_values
+        else:
+            self._raw_y_values = numpy.array(y_values)
 
-        x_min = x_values.min()
-        x_max = x_values.max()
+        x_min = self._raw_x_values.min()
+        x_max = self._raw_x_values.max()
 
         # Setup output lists
         x_moving_average = list()
@@ -70,7 +81,7 @@ class MovingAverage(PlotAverage):
         x = x_min
         while x <= x_max:
             # Construct a boolean area on which x values to use
-            used_y_values = y_values[(x_values >= x - extend) & (x_values <= x + extend)]
+            used_y_values = self._raw_y_values[(self._raw_x_values >= x - extend) & (self._raw_x_values <= x + extend)]
 
             if len(used_y_values) >= 2:
                 x_moving_average.append(x)
@@ -124,6 +135,16 @@ class MovingAverage(PlotAverage):
                               self.mean_values[starting_index:end] - error_bar_size[starting_index:end],
                               self.mean_values[starting_index:end] + error_bar_size[starting_index:end],
                               color=previous_color.to_rgb_floats(), alpha=1 - error_opacity)
+
+    def get_mean_at(self, x: float) -> Optional[float]:
+        """Gets the mean at the given x. Ignores the step size that was supplied for this object, so the mean is
+        calculated exactly at the given point. Returns None if there is no data withing the averaging window."""
+        extend = self._window_width / 2
+        used_y_values = self._raw_y_values[(self._raw_x_values >= x - extend) & (self._raw_x_values <= x + extend)]
+
+        if len(used_y_values) >= 1:
+            return used_y_values.mean()
+        return None
 
 
 class LinesAverage(PlotAverage):
