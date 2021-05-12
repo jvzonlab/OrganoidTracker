@@ -68,6 +68,8 @@ def _dimensions_to_resolution(dimensions: List[Element]) -> ImageResolution:
             if dimension.getAttribute("Unit") != "s":
                 raise ValueError("Unknown unit: " + dimension.getAttribute("Unit"))
             time_point_interval_m = unit_length / 60
+        elif axis_name == "unknown":
+            continue
         else:
             raise ValueError("Unknown DimID: " + axis_name)
 
