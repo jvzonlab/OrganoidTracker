@@ -313,7 +313,7 @@ class Images:
         offset_z = self._offsets.of_time_point(time_point).z
         image_z = int(z - offset_z)
         array = self._image_loader.get_2d_image_array(time_point, image_channel, image_z)
-        if len(self._filters) > 0:
+        if len(self._filters) > 0 and array is not None:
             # Apply all filters
             image_8bit = bits.image_to_8bit(array)
             for image_filter in self._filters:
