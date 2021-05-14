@@ -94,5 +94,5 @@ def _read_resolution(experiment: Experiment, settings: Element):
         x_res = float(image_data.attrib["pixelwidth"])
         y_res = float(image_data.attrib["pixelheight"])
         z_res = float(image_data.attrib["voxeldepth"])
-        t_res = float(image_data.attrib["timeinterval"])
+        t_res = float(image_data.attrib["timeinterval"]) if "timeinterval" in image_data.attrib else 0
         experiment.images.set_resolution(ImageResolution(x_res, y_res, z_res, t_res))
