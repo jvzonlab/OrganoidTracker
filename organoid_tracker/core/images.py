@@ -224,12 +224,13 @@ class Images:
 
     _image_loader: ImageLoader
     _offsets: ImageOffsets
-    _resolution: Optional[ImageResolution] = None
+    _resolution: ImageResolution
     _filters: List[ImageFilter]
 
     def __init__(self):
         self._image_loader = NullImageLoader()
         self._offsets = ImageOffsets()
+        self._resolution = ImageResolution(0, 0, 0, 0)
         self._filters = []
 
     @property
@@ -246,9 +247,9 @@ class Images:
             raise TypeError()
         self._offsets = offsets
 
-    def resolution(self):
+    def resolution(self, allow_incomplete: bool = False) -> ImageResolution:
         """Gets the image resolution. Raises UserError if you try to get the resolution when none has been set."""
-        if self._resolution is None:
+        if not allow_incomplete and self._resolution.is_incomplete():
             raise UserError("No image resolution set", "No image resolution was set. Please set a resolution first."
                                                        " This can be done in the Edit menu of the program.")
         return self._resolution
@@ -323,6 +324,8 @@ class Images:
 
     def set_resolution(self, resolution: Optional[ImageResolution]):
         """Sets the image resolution."""
+        if resolution is None:
+            resolution = ImageResolution(0, 0, 0, 0)
         self._resolution = resolution
 
     def copy(self) -> "Images":

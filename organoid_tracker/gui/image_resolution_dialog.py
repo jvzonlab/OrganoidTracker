@@ -22,7 +22,7 @@ class _ResolutionEditorWindow(QDialog):
     t_res: QDoubleSpinBox
     ok_button: QPushButton
 
-    def __init__(self, image_resolution: Optional[ImageResolution]):
+    def __init__(self, image_resolution: ImageResolution):
         super().__init__()
 
         self.setWindowTitle("Image resolution")
@@ -31,22 +31,22 @@ class _ResolutionEditorWindow(QDialog):
         form = QFormLayout()
         self.x_res = QDoubleSpinBox(parent=form_box)
         self.x_res.setSuffix("   μm/px")
-        self.x_res.setValue(0 if image_resolution is None else image_resolution.pixel_size_x_um)
+        self.x_res.setValue(image_resolution.pixel_size_x_um)
         self.x_res.valueChanged.connect(self._on_field_change)
         form.addRow(QLabel("Horizontal resolution:", parent=form_box), self.x_res)
         self.y_res = QDoubleSpinBox(parent=form_box)
         self.y_res.setSuffix("   μm/px")
-        self.y_res.setValue(0 if image_resolution is None else image_resolution.pixel_size_x_um)
+        self.y_res.setValue(image_resolution.pixel_size_x_um)
         self.y_res.setEnabled(False)
         form.addRow(QLabel("Vertical resolution: (equal to horizontal)", parent=form_box), self.y_res)
         self.z_res = QDoubleSpinBox(parent=form_box)
         self.z_res.setSuffix("   μm/px")
-        self.z_res.setValue(0 if image_resolution is None else image_resolution.pixel_size_z_um)
+        self.z_res.setValue(image_resolution.pixel_size_z_um)
         self.z_res.valueChanged.connect(self._on_field_change)
         form.addRow(QLabel("Z-resolution:", parent=form_box), self.z_res)
         self.t_res = QDoubleSpinBox(parent=form_box)
         self.t_res.setSuffix("   min/tp")
-        self.t_res.setValue(0 if image_resolution is None else image_resolution.time_point_interval_m)
+        self.t_res.setValue(image_resolution.time_point_interval_m)
         self.t_res.valueChanged.connect(self._on_field_change)
         form.addRow(QLabel("Time resolution:", parent=form_box), self.t_res)
         form_box.setLayout(form)
@@ -102,10 +102,7 @@ class _UpdateImageResolutionAction(UndoableAction):
 def popup_resolution_setter(window: Window):
     """Shows a popup to change the image resolution."""
     experiment = window.get_experiment()
-    try:
-        image_resolution = experiment.images.resolution()
-    except UserError:
-        image_resolution = None
+    image_resolution = experiment.images.resolution(allow_incomplete=True)
     popup = _ResolutionEditorWindow(image_resolution)
     result = popup.exec_()
     if result != QDialog.Accepted:
