@@ -118,6 +118,7 @@ class MainWindow(Window):
             "File//Export-Export positions//JSON, as pixel coordinates...": lambda: action.export_positions(self.get_experiment()),
             "File//Export-Export links//Guizela's file format...": lambda: action.export_links_guizela(self.get_experiment()),
             "File//Export-Export links//Cell Tracking Challenge format...": lambda: action.export_links_ctc(self.get_experiment()),
+            "File//Export-Export links//TrackMate format...": lambda: action.export_links_trackmate(self.get_experiment()),
             "File//Plugins-Reload all plugins... [Alt+F5]": lambda: action.reload_plugins(self),
             "File//Exit-Close experiment": lambda: action.close_experiment(self),
             "File//Exit-Exit [Alt+F4]": lambda: action.ask_exit(self.get_gui_experiment()),

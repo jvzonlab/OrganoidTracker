@@ -1,5 +1,4 @@
-from os import path
-from typing import Optional, Union
+from typing import Optional
 
 from PySide2.QtWidgets import QApplication
 from matplotlib.figure import Figure
@@ -133,6 +132,16 @@ def export_links_ctc(experiment: Experiment):
 
     from organoid_tracker.imaging import ctc_io
     ctc_io.save_data_files(experiment, tracks_folder)
+
+
+def export_links_trackmate(experiment: Experiment):
+    tracks_file = dialog.prompt_save_file("Save tracks as...",
+                                            [("TrackMate file", "*.xml")])
+    if tracks_file is None:
+        return
+
+    from organoid_tracker.imaging import trackmate_io
+    trackmate_io.save_tracking_data(experiment, tracks_file)
 
 
 def save_tracking_data(window: Window, force_save_as: bool = False) -> bool:
