@@ -27,25 +27,35 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
 
 def _restore_open_files_list(open_files_list_file: str) -> List[Experiment]:
     """Returns a list of experiments, extracted from the given file."""
+    os.chdir(os.path.dirname(open_files_list_file))
     with open(open_files_list_file, "r") as handle:
         experiments_json = json.load(handle)
 
     experiments = list()
     for experiment_json in experiments_json:
         experiment = Experiment()
+        min_time_point = 0
+        max_time_point = 100000000
+
+        if "min_time_point" in experiment_json:
+            min_time_point = int(experiment_json["min_time_point"])
+        if "max_time_point" in experiment_json:
+            max_time_point = int(experiment_json["max_time_point"])
 
         loaded_anything = False
         if "experiment_file" in experiment_json:
             experiment_file = experiment_json["experiment_file"]
             if not os.path.exists(experiment_file):
                 raise ValueError("File \"" + experiment_file + "\" does not exist.")
-            io.load_data_file(experiment_file, experiment=experiment)
+            io.load_data_file(experiment_file, experiment=experiment,
+                              min_time_point=min_time_point, max_time_point=max_time_point)
             loaded_anything = True
 
         if "images_container" in experiment_json and "images_pattern" in experiment_json:
             images_container = experiment_json["images_container"]
             images_pattern = experiment_json["images_pattern"]
-            general_image_loader.load_images(experiment, images_container, images_pattern)
+            general_image_loader.load_images(experiment, images_container, images_pattern,
+                                             min_time_point=min_time_point, max_time_point=max_time_point)
             loaded_anything = True
 
         if not loaded_anything:
@@ -87,6 +97,11 @@ def _save_open_file_list(tabs: Iterable[SingleGuiTab]) -> Optional[List[Dict[str
         if len(images_container) > 0 or len(images_pattern) > 0:
             experiment_json["images_container"] = images_container
             experiment_json["images_pattern"] = images_pattern
+
+        if experiment.first_time_point_number() is not None:
+            experiment_json["min_time_point"] = experiment.first_time_point_number()
+        if experiment.last_time_point_number() is not None:
+            experiment_json["max_time_point"] = experiment.last_time_point_number()
 
         if len(experiment_json) > 0:
             # Only add if images, positions or both were stored
