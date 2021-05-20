@@ -87,5 +87,47 @@ After saving the file and reloading the plugins, you should now end up with a gr
 
 Congratulations, you now know the basics of plugin writing!OrganoidTracker contains a large number of functions that help you writing a plugin. See the [API](API.md) page for a short introduction. The main code of OrganoidTracker is also contains a lot of comments, which should help you understanding what the code is doing. A "smart" code editor that automatically displays documentation (such as Pycharm or Visual Studio Code) also helps a lot. Try and see if you can understand how the plugin `plugin_count_dividng_cells.py` works.
 
-## Plugins in a folder instead of a file
+## Advanced techniques
+
+### Plugins in a folder instead of a file
 For larger plugins, placing all code in a single file becomes unwieldy. Instead, you can also put your code in multiple files placed in a single directory. The directory must have a name that starts with `plugin_`, for example `plugin_this_is_an_example`. In that folder, you must place an `__init__.py` file. This file should contain the hooks described above, such as the `get_menu_items` function. You can import other files using relative imports: use for example `from . import another_file`. This will import the file `another_file.py` that is placed next to the `__init__.py` file.
+
+### Adding cell types
+Create a plugin with these contents to implement support for stem and goblet cells:
+
+```python
+from organoid_tracker.core.marker import Marker
+from organoid_tracker.core.position import Position
+
+def get_markers():
+    return [Marker([Position], "STEM", "stem cell", (182, 1, 1)),
+            Marker([Position], "GOBLET", "goblet cell", (126, 255, 64))]
+```
+
+The `get_markers` method must return a list of `Marker`s. Each marker provides what it is targeting (`Position`), the name under which it is saved to the data files, a display name and a display color. The color is used for the border of the position markers and for the lineage trees.
+
+### Adding command-line scripts
+
+Adding an additional organoid_tracker script (like `organoid_tracker_compare_positions.py`) is not possible from a plugin. Instead, you can use a subcommand of `organoid_tracker.py`. Say you want to add a command named "my_command", then you could call it like:
+
+`python organoid_tracker.py my_command`
+
+To implement this, add the following code to your plugin:
+
+```python
+from typing import List
+
+
+# This method is called by the plugin system
+def get_commands():
+    return {
+        "my_command": _my_command_handler
+    }
+
+
+def _my_command_handler(args: List[str]) -> int:
+    print("Hello world!", args)
+    return 0
+```
+
+This will only call your command, and not show the graphical program. The last line of the command handler, `return 0`, means that the command executed succesfully. If it returns any other number, then this is seen as an error code. The error code is passed on to the operating system (Windows, Linux, etc.).

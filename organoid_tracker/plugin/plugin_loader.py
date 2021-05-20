@@ -1,9 +1,10 @@
 import os
 import sys
-from typing import Any, List, Dict, Tuple
+from typing import Any, List, Dict, Tuple, Callable
 import importlib
 
-from organoid_tracker.gui.application import Plugin
+from organoid_tracker.core.marker import Marker
+from organoid_tracker.plugin.instance import Plugin
 from organoid_tracker.gui.window import Window
 
 
@@ -16,11 +17,12 @@ class _ModulePlugin(Plugin):
         self._loaded_module_name = _to_module_name(file_name)
         self._loaded_script = importlib.import_module(self._loaded_module_name)
 
-    def init(self, window: Window):
-        if hasattr(self._loaded_script, 'init'):
-            self._loaded_script.init(window)
+    def get_markers(self) -> List[Marker]:
+        if hasattr(self._loaded_script, 'get_markers'):
+            return self._loaded_script.get_markers()
+        return []
 
-    def get_menu_items(self, window: Window):
+    def get_menu_items(self, window: "Window") -> Dict[str, Callable[[], None]]:
         if hasattr(self._loaded_script, 'get_menu_items'):
             return self._loaded_script.get_menu_items(window)
         return {}
@@ -33,6 +35,11 @@ class _ModulePlugin(Plugin):
             # Reload submodules
             if module_name.startswith(to_unload_prefix):
                 importlib.reload(sys.modules[module_name])
+
+    def get_commands(self) -> Dict[str, Callable[[str], int]]:
+        if hasattr(self._loaded_script, 'get_commands'):
+            return self._loaded_script.get_commands()
+        return {}
 
 
 def _to_module_name(file: str) -> str:

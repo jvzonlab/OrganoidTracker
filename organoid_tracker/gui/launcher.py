@@ -1,6 +1,5 @@
 import sys
 from functools import partial
-from os import path
 from typing import Callable, List, Iterable, Optional
 from typing import Dict, Any
 
@@ -15,7 +14,7 @@ from matplotlib.figure import Figure
 
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.gui import APP_NAME
-from organoid_tracker.gui.application import Plugin
+from organoid_tracker.plugin.instance import Plugin
 from organoid_tracker.gui.gui_experiment import GuiExperiment
 from organoid_tracker.gui.icon_getter import get_icon
 from organoid_tracker.gui.toolbar import Toolbar
@@ -146,15 +145,26 @@ class MainWindow(Window):
 
     def install_plugins(self, plugins: Iterable[Plugin]):
         """Adds the given list of plugins to the list of active plugins."""
+        gui_experiment = self.get_gui_experiment()
+
         for plugin in plugins:
             self.__plugins.append(plugin)
-            plugin.init(self)
+            for marker in plugin.get_markers():
+                gui_experiment.register_marker(marker)
 
     def reload_plugins(self) -> int:
         """Reloads all plugins from disk. You should update the window after calling this. Returns the number of
         reloaded plugins."""
+        gui_experiment = self.get_gui_experiment()
+
         for plugin in self.__plugins:
+            # We need to take care of any markers registered by the plugin
+            # - first unload the old ones, then load the new ones
+            for marker in plugin.get_markers():
+                gui_experiment.unregister_marker(marker)
             plugin.reload()
+            for marker in plugin.get_markers():
+                gui_experiment.register_marker(marker)
         return len(self.__plugins)
 
     def get_plugins(self) -> Iterable[Plugin]:

@@ -220,3 +220,7 @@ class GuiExperiment:
                                                       " one in the upper-right corner of the window.")
         return self._tabs[self._selected_experiment]
 
+    def unregister_marker(self, marker: Marker):
+        """Unregisters a marker, so that it is no longer included in get_registered_markers ."""
+        if marker.save_name in self._registered_markers:
+            del self._registered_markers[marker.save_name]
