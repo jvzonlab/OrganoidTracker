@@ -18,7 +18,7 @@ plugins = plugin_loader.load_plugins(plugin_directory)
 
 # Load extra plugins (we don't save the config, otherwise you would end up with a configuration file in every directory
 # where you run the visualizer)
-config = ConfigFile("visualizer")
+config = ConfigFile("scripts")
 extra_plugin_directory = config.get_or_default("extra_plugin_directory", "")
 if extra_plugin_directory != "":
     plugins += plugin_loader.load_plugins(extra_plugin_directory)
@@ -30,6 +30,7 @@ if len(sys.argv) > 1:
         registered_commands = plugin.get_commands()
         if command in registered_commands:
             exit(registered_commands[command](sys.argv[2:]))
+    raise ValueError("Invalid command: " + command)
 
 # Open window
 experiment = Experiment()
