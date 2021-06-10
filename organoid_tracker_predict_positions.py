@@ -1,7 +1,10 @@
 """Predictions particle positions using an already-trained convolutional neural network."""
+import gc
 import json
 import math
 import os
+import sys
+import time
 
 from organoid_tracker.config import ConfigFile, config_type_int
 from organoid_tracker.core.experiment import Experiment
@@ -15,7 +18,7 @@ from skimage.feature import peak_local_max
 from tifffile import tifffile
 
 from organoid_tracker.position_detection_cnn.loss_functions import custom_loss_with_blur, \
-    position_loss, position_precision, overcount
+    position_loss, position_precision, overcount, misses, dist_loss
 from organoid_tracker.position_detection_cnn.peak_calling import create_prediction_mask, reconstruct_volume
 from organoid_tracker.position_detection_cnn.prediction_dataset import predicting_data_creator
 from organoid_tracker.position_detection_cnn.split_images import corners_split, reconstruction
@@ -99,11 +102,18 @@ for i in range(len(image_list)):
 corners = corners_split(max_image_shape, patch_shape)
 
 # due to memory constraints only ~10 images can be processed at a given time (depending on patch shape)
-set_size = 10
+set_size = 1
 
 # load models
 print("Loading model...")
-model = tf.keras.models.load_model(_model_folder, custom_objects={"new_loss2": new_loss2, "custom_loss_with_blur": custom_loss_with_blur})
+model = tf.keras.models.load_model(_model_folder, custom_objects={"position_loss": position_loss,
+                                                                  "dist_loss": dist_loss,
+                                                                  "custom_loss_with_blur": custom_loss_with_blur,
+                                                                  "position_precision": position_precision,
+                                                                  "position_recall": position_precision,
+                                                                  "overcount": overcount,
+                                                                  "misses": misses})
+
 if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
     print("Error: no settings.json found in model folder.")
     exit(1)
@@ -117,6 +127,10 @@ print("Starting predictions...")
 all_positions = PositionCollection()
 
 image_set_count = int(math.ceil(len(image_list) / set_size))
+
+prediction_dataset_all = predicting_data_creator(image_list, time_window, corners,
+                                             patch_shape, buffer, max_image_shape)
+
 for image_set_index in range(image_set_count):
 
     # pick part of the image_list
@@ -127,16 +141,23 @@ for image_set_index in range(image_set_count):
 
     print(f"Predicting set of images {image_set_index + 1}/{image_set_count}")
 
-    # create dataset and predict
-    prediction_dataset = predicting_data_creator(image_list_subset, time_window, corners,
-                                                      patch_shape, buffer, max_image_shape)
+    # set current set size
+    current_set_size = min(len(image_list)-image_set_index*set_size, set_size)
 
+    # take relevant part of the tf.Dataset
+    prediction_dataset = prediction_dataset_all.\
+        skip(image_set_index*len(corners)*set_size)\
+        .take(current_set_size*len(corners))
+
+    # create prediction mask for peak_finding
     prediction_mask_shape = 2*tf.floor(np.sqrt(_peak_min_distance_px ** 2 / 3)) + 1
     prediction_mask = np.ones([int(prediction_mask_shape),]*3)
+
+    # make predictions
     predictions = model.predict(prediction_dataset)
 
     # split set in batches of patches belonging to single figure
-    predictions = np.split(predictions, len(image_list_subset))
+    predictions = np.split(predictions, current_set_size)
 
     for image, prediction_batch in zip(image_list_subset, predictions):
         # register image information
@@ -150,18 +171,21 @@ for image_set_index in range(image_set_count):
         prediction = np.squeeze(prediction, axis=-1)
 
         if _debug_folder is not None:
+        #if _debug_folder is None:
             image_name = "image_" + str(time_point.time_point_number())
             tifffile.imsave(os.path.join(_debug_folder, '{}.tif'.format(image_name)), prediction)
+
+        del prediction_batch
 
         # peak detection
         print(f"Detecting peaks at time point {time_point.time_point_number()}...")
         im, z_divisor = reconstruct_volume(prediction, _mid_layers)  # interpolate between layers for peak detection
 
         # Comparison between image_max and im to find the coordinates of local maxima
-        coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=0.1, exclude_border=False, footprint=prediction_mask, p_norm=2)
+        coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=0.1,  exclude_border=False) #, footprint=prediction_mask)
 
         for coordinate in coordinates:
-            pos = Position(coordinate[2], coordinate[1], coordinate[0] / z_divisor,
+            pos = Position(coordinate[2], coordinate[1], coordinate[0] / z_divisor - 1,
                            time_point=time_point) + image_offset
             all_positions.add(pos)
 

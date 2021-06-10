@@ -13,7 +13,7 @@ def predicting_data_creator(image_with_positions_list: List[_ImageWithPositions]
     # load data
     dataset = tf.data.Dataset.range(len(image_with_positions_list))
     dataset = dataset.map(partial(tf_load_images, image_with_positions_list=image_with_positions_list,
-                                  time_window=time_window), num_parallel_calls=8)
+                                  time_window=time_window))#, num_parallel_calls=1)
 
     # Normalize images
     dataset = dataset.map(normalize)
@@ -22,7 +22,7 @@ def predicting_data_creator(image_with_positions_list: List[_ImageWithPositions]
     dataset = dataset.flat_map(partial(split, corners=corners, patch_shape=patch_shape, buffer=buffer, image_shape=image_shape))
 
     dataset = dataset.batch(1)
-    dataset.prefetch(20)
+    #dataset.prefetch(2)
 
     return dataset
 
@@ -41,6 +41,7 @@ def split(image, corners, patch_shape, buffer, image_shape):
                    patch_shape[1] + buffer[1, 0] + buffer[1, 1],
                    patch_shape[2] + buffer[2, 0] + buffer[2, 1],
                    image._shape_as_list()[3]]
+
     images = []
 
     for corner in corners:
@@ -58,3 +59,4 @@ def split(image, corners, patch_shape, buffer, image_shape):
 def normalize(image,):
     image = tf.divide(tf.subtract(image, tf.reduce_min(image)), tf.subtract(tf.reduce_max(image), tf.reduce_min(image)))
     return (image,)
+
