@@ -184,7 +184,7 @@ def _window_close(window: Window, event: QCloseEvent):
     """Asks if the user wants to save before closing the program."""
     event.ignore()
     from organoid_tracker.gui import action
-    if action.ask_save_unsaved_changes(window.get_gui_experiment()):
+    if action.ask_save_unsaved_changes(window.get_gui_experiment().get_all_tabs()):
         event.setAccepted(True)
 
 
@@ -193,6 +193,8 @@ def launch_window(experiment: Experiment) -> MainWindow:
     some interactiveness."""
     pyplot.rcParams['svg.fonttype'] = 'none'
     pyplot.rcParams["font.family"] = "Arial, Helvetica, sans-serif"
+    pyplot.rcParams["xtick.direction"] = "in"
+    pyplot.rcParams["ytick.direction"] = "in"
 
     # Create matplotlib figure
     fig = Figure(figsize=(12, 12), dpi=95)
