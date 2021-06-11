@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Iterable
 
 from PySide2.QtWidgets import QApplication
 from matplotlib.figure import Figure
@@ -16,10 +16,10 @@ from organoid_tracker.visualizer import activate
 from organoid_tracker.visualizer.empty_visualizer import EmptyVisualizer
 
 
-def ask_save_unsaved_changes(gui_experiment: GuiExperiment) -> bool:
+def ask_save_unsaved_changes(tabs: Iterable[SingleGuiTab]) -> bool:
     """If there are any unsaved changes, this method will prompt the user to save them. Returns True if the user either
     successfully saved the data, or if the user doesn't want to save. Returns False if the action must be aborted."""
-    for single_tab in gui_experiment.get_all_tabs():
+    for single_tab in tabs:
         if not single_tab.undo_redo.has_unsaved_changes():
             continue
 
@@ -58,7 +58,7 @@ def new(window: Window):
 
 def close_experiment(window: Window):
     """Closes the current experiment."""
-    if not ask_save_unsaved_changes(window.get_gui_experiment()):
+    if not ask_save_unsaved_changes([window.get_gui_experiment().get_open_tab()]):
         return  # Cancelled
     window.get_gui_experiment().remove_experiment(window.get_experiment())
 
@@ -71,7 +71,7 @@ def load_images(window: Window):
 
 
 def load_tracking_data(window: Window):
-    if not ask_save_unsaved_changes(window.get_gui_experiment()):
+    if not ask_save_unsaved_changes([window.get_gui_experiment().get_open_tab()]):
         return  # Cancelled
 
     file_name = dialog.prompt_load_file("Select data file", io.SUPPORTED_IMPORT_FILES)
@@ -243,5 +243,5 @@ def view_statistics(window: Window):
 
 def ask_exit(gui_experiment: GuiExperiment):
     """Asks to save unsaved changes, then exits."""
-    if ask_save_unsaved_changes(gui_experiment):
+    if ask_save_unsaved_changes(gui_experiment.get_all_tabs()):
         QApplication.quit()
