@@ -18,7 +18,7 @@ from skimage.feature import peak_local_max
 from tifffile import tifffile
 
 from organoid_tracker.position_detection_cnn.loss_functions import custom_loss_with_blur, \
-    position_loss, position_precision, overcount, misses, dist_loss
+    position_loss, position_precision, overcount, misses, position_recall
 from organoid_tracker.position_detection_cnn.peak_calling import create_prediction_mask, reconstruct_volume
 from organoid_tracker.position_detection_cnn.prediction_dataset import predicting_data_creator
 from organoid_tracker.position_detection_cnn.split_images import corners_split, reconstruction
@@ -106,11 +106,10 @@ set_size = 1
 
 # load models
 print("Loading model...")
-model = tf.keras.models.load_model(_model_folder, custom_objects={"position_loss": position_loss,
-                                                                  "dist_loss": dist_loss,
+model = tf.keras.models.load_model(_model_folder, custom_objects={"loss": position_loss,
                                                                   "custom_loss_with_blur": custom_loss_with_blur,
                                                                   "position_precision": position_precision,
-                                                                  "position_recall": position_precision,
+                                                                  "position_recall": position_recall,
                                                                   "overcount": overcount,
                                                                   "misses": misses})
 
