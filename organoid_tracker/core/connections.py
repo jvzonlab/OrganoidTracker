@@ -1,10 +1,16 @@
 """Connections are used to indicate connections between particles at the same time point, for example because the
 particles are close by, or they are part of some subsystem. This is different from links, which indicates that two
 observations made at different time points refer to the same particle."""
+import typing
 from typing import Dict, List, Set, Tuple, Iterable
 
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.position import Position
+
+if typing.TYPE_CHECKING:
+    # NetworkX is quite slow to import. Therefore, we normally only import it when there
+    # actually are connections. (In the _ConnectionsByTimePoint constructor.)
+    import networkx
 
 
 def _lowest_first(position1: Position, position2: Position) -> Tuple[Position, Position]:
@@ -25,108 +31,77 @@ def _lowest_first(position1: Position, position2: Position) -> Tuple[Position, P
 
 class _ConnectionsByTimePoint:
 
-    _connections: Dict[Position, Set[Position]]
+    _graph: "networkx.Graph"
 
     def __init__(self):
-        self._connections = dict()
+        import networkx
+        self._graph = networkx.Graph()
 
     def add(self, position1: Position, position2: Position):
         """Adds a connection between position 1 and position 2. Does nothing if that connection already exists."""
-        position1, position2 = _lowest_first(position1, position2)
-        connections_position1 = self._connections.get(position1)
-        if connections_position1 is None:
-            self._connections[position1] = {position2}
-        else:
-            connections_position1.add(position2)
+        self._graph.add_edge(position1, position2)
 
     def exists(self, position1: Position, position2: Position):
         """Checks if a connection exists between position1 and position2."""
-        position1, position2 = _lowest_first(position1, position2)
-        connections_position1 = self._connections.get(position1)
-        if connections_position1 is None:
-            return False
-
-        return position2 in connections_position1
+        return self._graph.has_edge(position1, position2)
 
     def replace_position(self, position_old: Position, position_new: Position):
         """Reroutes all connections from position_old to position_new. Does nothing if position_old has no
          connections."""
+        if not self._graph.has_node(position_old):
+            return False
 
-        # Replace as key
-        old_connections = self._connections.get(position_old)
-        if old_connections is not None:
-            del self._connections[position_old]
-            self._connections[position_new] = old_connections
+        # Remove old edges and node
+        old_connections = list(self._graph.neighbors(position_old))
+        self._graph.remove_node(position_old)
 
-        # Replace as value
-        for position1, positions2 in self._connections.items():
-            if position_old in positions2:
-                positions2.remove(position_old)
-                positions2.add(position_new)
+        # Add new edge and nodes
+        self._graph.add_node(position_new)
+        for old_connection in old_connections:
+            self._graph.add_edge(position_new, old_connection)
 
     def remove(self, position1: Position, position2: Position) -> bool:
         """Removes a connection between two positions. Does nothing if that connection doesn't exist. Returns True if
         a connection was removed."""
-        position1, position2 = _lowest_first(position1, position2)
-        connections_position1 = self._connections.get(position1)
-        if connections_position1 is None or position2 not in connections_position1:
-            return False  # This connection doesn't exist
-        if len(connections_position1) == 1:
-            del self._connections[position1]  # Removed the last connection of this position
-        else:
-            connections_position1.remove(position2)  # Remove this connection, but more remain
+        if not self._graph.has_edge(position1, position2):
+            return False
+        self._graph.remove_edge(position1, position2)
         return True
 
     def remove_connections_of_position(self, position: Position):
-        # Delete as key
-        try:
-            del self._connections[position]
-        except KeyError:
-            pass
-
-        # Delete as value
-        for position1, positions2 in self._connections.items():
-            positions2.discard(position)
+        if self._graph.has_node(position):
+            self._graph.remove_node(position)
 
     def get_all(self) -> Iterable[Tuple[Position, Position]]:
         """Gets all connections of this time point."""
-        for position1, positions2 in self._connections.items():
-            for position2 in positions2:
-                yield position1, position2
-
-    def find_connections_starting_at(self, position: Position) -> List[Position]:
-        """Returns connections starting from the given position. Note: connections are stored internally as going from
-        the lowest position (x, then y, then z) to the highest position. This method only returns connections going from
-        a position, not connections going to a position."""
-        if position in self._connections:
-            return list(self._connections[position])
-        return []
+        return self._graph.edges
 
     def find_connections(self, position: Position) -> Iterable[Position]:
         """Finds all connections starting and going to the given position."""
-        for start, ends in self._connections.items():
-            if start == position:
-                yield from ends
-            if position in ends:
-                yield start
+        if not self._graph.has_node(position):
+            return []
+        return self._graph.neighbors(position)
 
     def __len__(self) -> int:
         """Returns the total number of connections (lines)."""
-        sum = 0
-        for value in self._connections.values():
-            sum += len(value)
-        return sum
+        return len(self._graph.edges)
 
     def is_empty(self) -> bool:
         """Returns True if there are no connections stored for this time point."""
-        return len(self._connections) == 0
+        return len(self._graph.edges) == 0
 
     def copy(self) -> "_ConnectionsByTimePoint":
         """Gets a deep copy of this object. Changes to the returned object will not affect this object, and vice versa.
         """
         copy = _ConnectionsByTimePoint()
-        copy._connections = self._connections.copy()
+        copy._graph = self._graph.copy()
         return copy
+
+    def calculate_distances(self, sources: Iterable[Position]) -> Dict[Position, int]:
+        """Gets the distances of all positions to the nearest position in [sources]."""
+        import networkx
+        sources = [source for source in sources if self._graph.has_node(source)]
+        return networkx.multi_source_dijkstra_path_length(self._graph, sources)
 
 
 class Connections:
@@ -219,15 +194,11 @@ class Connections:
         """Returns True if there is at least one connection stored."""
         return len(self._by_time_point) > 0
 
-    def find_connections_starting_at(self, position: Position) -> List[Position]:
-        """Returns connections starting from the given position. Note: connections are stored internally as going from
-        the lowest position (x, then y, then z) to the highest position. This method only returns connections going from
-        a position, not connections going to a position."""
-        time_point_number = position.time_point_number()
-        connections = self._by_time_point.get(time_point_number)
-        if connections is None:
-            return []
-        return connections.find_connections_starting_at(position)
+    def is_connected(self, position: Position) -> bool:
+        """Checks if the given position has a connection to anywhere."""
+        for _ in self.find_connections(position):
+            return True
+        return False
 
     def find_connections(self, position: Position) -> Iterable[Position]:
         """Finds connections starting from and going to the given position. See find_connections_starting_at for
@@ -264,3 +235,26 @@ class Connections:
         if connections is None:
             return
         connections.remove_connections_of_position(position)
+
+    def calculate_distances(self, sources: List[Position]) -> Dict[Position, int]:
+        """Gets the distances of all positions to the nearest position in [sources].
+        All sources must be in the same time point, otherwise ValueError is raised.
+        Returns an empty dictionary if sources is empty, or if there are no connections."""
+        if len(sources) == 0:
+            return dict()
+
+        time_point = None
+        for source in sources:
+            if time_point is None:
+                time_point = source.time_point()
+            elif time_point.time_point_number() != source.time_point_number():
+                raise ValueError("All positions must be in the same time point; " + str(sources))
+
+        if time_point.time_point_number() in self._by_time_point:
+            return self._by_time_point[time_point.time_point_number()].calculate_distances(sources)
+        return dict()
+
+    def contains_time_point(self, time_point: TimePoint) -> bool:
+        """Returns whether there are connections for the given time point."""
+        return time_point.time_point_number() in self._by_time_point
+
