@@ -145,6 +145,10 @@ class LinkingTrack:
             yield previous_track
         yield from self.find_all_descending_tracks(include_self=include_self)
 
+    def get_duration_in_time_points(self) -> int:
+        """Gets the time this track takes in time points. This is simply the number of recorded positions."""
+        return len(self._positions_by_time_point)
+
 
 class Links:
     """Represents all links between positions at different time points. This is used to follow particles over time. If a
