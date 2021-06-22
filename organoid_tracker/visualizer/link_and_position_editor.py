@@ -345,6 +345,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Batch-Batch deletion//Delete all positions in a rectangle...": self._show_positions_in_rectangle_deleter,
             "Edit//Batch-Batch deletion//Delete all positions without links...": self._delete_positions_without_links,
             "Edit//Batch-Batch connection//Connect positions by distance...": self._connect_positions_by_distance,
+            "Edit//Batch-Batch connection//Connect positions by distance and number...": self._connect_positions_by_distance_and_number,
             "Edit//LineageEnd-Mark as cell death [D]": lambda: self._try_set_end_marker(EndMarker.DEAD),
             "Edit//LineageEnd-Mark as cell shedding into lumen [S]": lambda: self._try_set_end_marker(EndMarker.SHED),
             "Edit//LineageEnd-Mark as cell shedding to outside": lambda: self._try_set_end_marker(EndMarker.SHED_OUTSIDE),
@@ -565,12 +566,28 @@ class LinkAndPositionEditor(AbstractEditor):
 
     def _connect_positions_by_distance(self):
         distance_um = dialog.prompt_float("Maximum distance", "Up to what distance (μm) should all positions be"
-                                                              " connected?", minimum=0)
+                                                              " connected?", minimum=0, default=15)
         if distance_um is None:
             return
 
         from organoid_tracker.connecting.connector_by_distance import ConnectorByDistance
         connector = ConnectorByDistance(distance_um)
+        connections = connector.create_connections(self._experiment)
+        self._perform_action(_ReplaceConnectionsAction(self._experiment.connections, connections))
+
+    def _connect_positions_by_distance_and_number(self):
+        distance_um = dialog.prompt_float("Maximum distance", "Up to what distance (μm) should all positions be"
+                                                              " connected?", minimum=0, default=15)
+        if distance_um is None:
+            return
+        max_number = dialog.prompt_int("Maximum distance", "What is the maximum number of connections that a\n"
+                                                           "cell can make? (A cell can still end up receiving\n"
+                                                           "more.)", minimum=0, default=5)
+        if max_number is None:
+            return
+
+        from organoid_tracker.connecting.connector_by_distance import ConnectorByDistance
+        connector = ConnectorByDistance(distance_um, max_number)
         connections = connector.create_connections(self._experiment)
         self._perform_action(_ReplaceConnectionsAction(self._experiment.connections, connections))
 
