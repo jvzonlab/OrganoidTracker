@@ -1,5 +1,5 @@
 """Additional metadata of a position, like the cell type or the fluorescent intensity."""
-from typing import Set, Dict, Optional
+from typing import Set, Dict, Optional, Iterable
 
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
@@ -25,6 +25,13 @@ def get_position_types(position_data: PositionData, positions: Set[Position]) ->
     for position in positions:
         types[position] = get_position_type(position_data, position)
     return types
+
+
+def get_positions_of_type(position_data: PositionData, requested_type: str) -> Iterable[Position]:
+    """Gets all positions of the requested cell type."""
+    requested_type = requested_type.upper()
+    return (position for position, position_type in position_data.find_all_positions_with_data("type")
+            if position_type.upper() == requested_type)
 
 
 def set_intensities(position_data: PositionData, intensities: Dict[Position, int], volumes: Dict[Position, int]):

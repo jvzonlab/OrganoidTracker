@@ -254,7 +254,23 @@ class Connections:
             return self._by_time_point[time_point.time_point_number()].calculate_distances(sources)
         return dict()
 
+    def calculate_distances_over_time(self, sources: Iterable[Position]) -> Dict[Position, int]:
+        """Like calculate_distances, but supports sources for multiple time points. Note: connection distances are still
+        only calculated within a time point. So if you're 10 connections from a Paneth cell, but in the next time point
+        1, then for the original time point the distance is still 10."""
+        by_time_point = dict()
+        for position in sources:
+            time_point = position.time_point()
+            if time_point in by_time_point:
+                by_time_point[time_point].append(position)
+            else:
+                by_time_point[time_point] = [position]
+
+        results = dict()
+        for time_point, positions in by_time_point.items():
+            results.update(self.calculate_distances(positions))
+        return results
+
     def contains_time_point(self, time_point: TimePoint) -> bool:
         """Returns whether there are connections for the given time point."""
         return time_point.time_point_number() in self._by_time_point
-
