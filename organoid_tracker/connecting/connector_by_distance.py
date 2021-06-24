@@ -1,10 +1,17 @@
-from typing import Optional
+from typing import Optional, Iterable
 
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.resolution import ImageResolution
+
+
+def _count(iterable: Iterable):
+    count = 0
+    for _ in iterable:
+        count += 1
+    return count
 
 
 class ConnectorByDistance:
@@ -51,7 +58,8 @@ class ConnectorByDistance:
             return  # No need to remove anything
         all_distances_squared = [connection.distance_squared(position, resolution) for connection in all_connections]
 
-        # Remove largest distances
-        srt = sorted(zip(all_distances_squared, all_connections),key=lambda item: item[0])
+        # Remove largest distances when not supported by other positions
+        srt = sorted(zip(all_distances_squared, all_connections), key=lambda item: item[0])
         for distance_squared, connection in srt[self._max_number:]:
-            connections.remove_connection(connection, position)
+            if _count(connections.find_connections(connection)) > self._max_number:
+                connections.remove_connection(connection, position)
