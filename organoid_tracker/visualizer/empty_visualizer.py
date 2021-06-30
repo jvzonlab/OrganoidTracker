@@ -1,7 +1,6 @@
-from organoid_tracker.core import UserError
 from organoid_tracker.gui.window import Window
-from organoid_tracker.visualizer.standard_image_visualizer import StandardImageVisualizer
 from organoid_tracker.visualizer import Visualizer, activate
+from organoid_tracker.visualizer.standard_image_visualizer import StandardImageVisualizer
 
 
 class EmptyVisualizer(Visualizer):
@@ -30,6 +29,9 @@ class EmptyVisualizer(Visualizer):
         # Switch to more appropriate viewer
         visualizer = StandardImageVisualizer(self._window)
         activate(visualizer)
+
+    def _get_must_show_plugin_menus(self) -> bool:
+        return True
 
     def draw_view(self):
         self._clear_axis()
