@@ -1,17 +1,15 @@
 from typing import Any
 
 from matplotlib import pyplot
-from matplotlib.backend_bases import KeyEvent, MouseEvent
+from matplotlib.backend_bases import MouseEvent
 from tifffile import tifffile
 
 from organoid_tracker.core import UserError
 from organoid_tracker.core.experiment import Experiment
-from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.launcher import launch_window
 from organoid_tracker.gui.threading import Task
 from organoid_tracker.imaging import io
-from organoid_tracker.linking_analysis import particle_flow_calculator
 from organoid_tracker.visualizer import activate
 from organoid_tracker.visualizer.abstract_image_visualizer import AbstractImageVisualizer
 
