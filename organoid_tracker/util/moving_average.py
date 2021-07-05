@@ -68,8 +68,11 @@ class MovingAverage(PlotAverage):
         else:
             self._raw_y_values = numpy.array(y_values)
 
-        x_min = self._raw_x_values.min()
-        x_max = self._raw_x_values.max()
+        if len(self._raw_x_values) > 0:
+            x_min = self._raw_x_values.min()
+            x_max = self._raw_x_values.max()
+        else:
+            x_min, x_max = 0, 0
 
         # Setup output lists
         x_moving_average = list()
