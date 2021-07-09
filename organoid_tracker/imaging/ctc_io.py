@@ -13,6 +13,7 @@ from tifffile import tifffile
 
 from organoid_tracker.core import UserError, bounding_box
 from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.core.images import Image
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.mask import Mask
 from organoid_tracker.core.position import Position
@@ -184,22 +185,20 @@ def _save_track_images(experiment: Experiment, image_prefix: str, mask: Mask):
     offsets = experiment.images.offsets
 
     for time_point in positions.time_points():
-        image_file_name = f"{image_prefix}{time_point.time_point_number():03}.tif"
-        image_fill_array = numpy.zeros(image_size_zyx, dtype=numpy.uint16)
         image_offset = offsets.of_time_point(time_point)
+        image_file_name = f"{image_prefix}{time_point.time_point_number():03}.tif"
+        image_fill_array = Image(numpy.zeros(image_size_zyx, dtype=numpy.uint16), offset=image_offset)
 
         for position in positions.of_time_point(time_point):
-            moved_position = position - image_offset
-
             track = links.get_track(position)
             if track is None:
                 continue  # No links, so we cannot save the position
 
             track_id = links.get_track_id(track)
-            mask.center_around(moved_position)
+            mask.center_around(position)
             mask.stamp_image(image_fill_array, track_id + 1)  # Track id is offset by 1 to avoid track id 0
 
-        tifffile.imsave(image_file_name, image_fill_array, compress=9)
+        tifffile.imsave(image_file_name, image_fill_array.array, compress=9)
 
 
 def _save_track_images_watershed(experiment: Experiment, image_prefix: str, mask: Mask, resolution: ImageResolution):
@@ -212,9 +211,9 @@ def _save_track_images_watershed(experiment: Experiment, image_prefix: str, mask
 
     for time_point in positions.time_points():
         image_file_name = f"{image_prefix}{time_point.time_point_number():03}.tif"
-        image_mask_array = numpy.zeros(image_size_zyx, dtype=numpy.uint8)
-        image_seed_array = numpy.zeros(image_size_zyx, dtype=numpy.uint16)
         image_offset = offsets.of_time_point(time_point)
+        image_mask_array = Image(numpy.zeros(image_size_zyx, dtype=numpy.uint8), offset=image_offset)
+        image_seed_array = numpy.zeros(image_size_zyx, dtype=numpy.uint16)
 
         for position in positions.of_time_point(time_point):
             moved_position = position - image_offset
@@ -224,17 +223,17 @@ def _save_track_images_watershed(experiment: Experiment, image_prefix: str, mask
                 continue  # No links, so we cannot save the position
 
             track_id = links.get_track_id(track)
-            mask.center_around(moved_position)
+            mask.center_around(position)
             mask.stamp_image(image_mask_array, 1)
             image_seed_array[int(moved_position.z), int(moved_position.y), int(moved_position.x)] = track_id + 1
             # ^ Track id is offset by 1 to avoid track id 0
 
         distance_map = distance_transform_edt(image_seed_array == 0, sampling=resolution.pixel_size_zyx_um)
         background_color = distance_map.max() + 1
-        distance_map[image_mask_array == 0] = background_color
+        distance_map[image_mask_array.array == 0] = background_color
 
         regions = mahotas.cwatershed(distance_map, image_seed_array).astype(numpy.uint16)
-        regions[image_mask_array == 0] = 0  # Remove background
+        regions[image_mask_array.array == 0] = 0  # Remove background
         tifffile.imsave(image_file_name, regions, compress=9)
 
 

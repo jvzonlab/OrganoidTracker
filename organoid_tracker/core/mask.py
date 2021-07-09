@@ -147,12 +147,12 @@ class Mask:
         image_for_masking[self._mask == 0] = 0
         return image_for_masking
 
-    def stamp_image(self, image: ndarray, stamp_value: Union[int, float]):
+    def stamp_image(self, image: Image, stamp_value: Union[int, float]):
         """Stamps (part of) this mask on the given image. Takes offset of this mask into account."""
-        image_start_x = self.offset_x
-        image_start_y = self.offset_y
-        image_start_z = self.offset_z
-        image_max_z, image_max_y, image_max_x = image.shape
+        image_start_x = self.offset_x - image.min_x
+        image_start_y = self.offset_y - image.min_y
+        image_start_z = self.offset_z - image.min_z
+        image_max_z, image_max_y, image_max_x = image.array.shape
 
         mask = self.get_mask_array()
         mask_start_x, mask_start_y, mask_start_z = 0, 0, 0
@@ -177,7 +177,7 @@ class Mask:
         mask_length_y = min(image_max_y - image_start_y, mask_length_y)
         mask_length_x = min(image_max_x - image_start_x, mask_length_x)
 
-        cropped_image = image[image_start_z:image_start_z+mask_length_z,
+        cropped_image = image.array[image_start_z:image_start_z+mask_length_z,
                         image_start_y:image_start_y+mask_length_y,
                         image_start_x:image_start_x+mask_length_x]
         cropped_mask = mask[mask_start_z:mask_start_z+mask_length_z,
