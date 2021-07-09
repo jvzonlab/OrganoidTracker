@@ -51,3 +51,8 @@ def get_intensity_per_pixel(position_data: PositionData, position: Position) -> 
     if volume is None:
         return None
     return intensity / volume
+
+
+def get_total_intensity(position_data: PositionData, position: Position) -> Optional[float]:
+    """Gets the total intensity of the position."""
+    return position_data.get_position_data(position, "intensity")
