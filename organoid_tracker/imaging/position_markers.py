@@ -56,3 +56,16 @@ def get_intensity_per_pixel(position_data: PositionData, position: Position) -> 
 def get_total_intensity(position_data: PositionData, position: Position) -> Optional[float]:
     """Gets the total intensity of the position."""
     return position_data.get_position_data(position, "intensity")
+
+
+def get_average_intensity_of_experiment(position_data: PositionData) -> Optional[float]:
+    """Gets the average intensity of all positions in the experiment.
+    Returns None if there are no intensity recorded."""
+    total_intensity = 0
+    position_count = 0
+    for position, intensity in position_data.find_all_positions_with_data("intensity"):
+        total_intensity += intensity
+        position_count += 1
+    if position_count == 0:
+        return None
+    return total_intensity / position_count
