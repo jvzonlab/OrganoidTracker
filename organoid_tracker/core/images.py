@@ -1,4 +1,4 @@
-from typing import Dict, Optional, List, Tuple, Iterable
+from typing import Dict, Optional, List, Tuple, Iterable, Union
 
 import numpy
 from numpy import ndarray
@@ -143,6 +143,12 @@ class ImageOffsets:
 class Image:
     """Represents a single 3D image"""
 
+    @staticmethod
+    def zeros_like(image: "Image", *, dtype: Optional = None) -> "Image":
+        """Returns a new image consisting of only zeros with the same shape and offset as the existing image."""
+        return Image(numpy.zeros_like(image.array, dtype=dtype), offset=image.offset)
+
+
     _offset: Position
     _array: ndarray
 
@@ -217,6 +223,12 @@ class Image:
         if position.z < 0 or position.z >= self._array.shape[0]:
             return None
         return self._array[int(position.z), int(position.y), int(position.x)]
+
+    def set_pixel(self, position: Position, value: Union[float, int]):
+        """Sets a single pixel, taking the offset of this image into account. Warning: doesn't do bounds checking."""
+        self._array[int(position.z - self.offset.z),
+                    int(position.y - self.offset.y),
+                    int(position.x - self.offset.x)] = value
 
 
 class Images:
