@@ -291,6 +291,9 @@ class AbstractImageVisualizer(Visualizer):
 
     def _draw_connections(self):
         """Draws all connections. A connection indicates that two positions are not the same, but are related."""
+        if not self._display_settings.show_positions:
+            return
+
         lines = []
         for position1, position2 in self._experiment.connections.of_time_point(self._time_point):
             min_display_z = min(position1.z, position2.z) - self.MAX_Z_DISTANCE
