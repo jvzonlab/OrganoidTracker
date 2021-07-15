@@ -1,6 +1,9 @@
 """Additional metadata of a position, like the cell type or the fluorescent intensity."""
-from typing import Set, Dict, Optional, Iterable
+from typing import Set, Dict, Optional, Iterable, Union, List, Tuple
 
+from numpy import ndarray
+
+from organoid_tracker.core import min_none
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
 
@@ -58,14 +61,42 @@ def get_total_intensity(position_data: PositionData, position: Position) -> Opti
     return position_data.get_position_data(position, "intensity")
 
 
-def get_average_intensity_of_experiment(position_data: PositionData) -> Optional[float]:
+class IntensityNormalizer:
+    """Used to normalize intensities."""
+
+    factor: float
+    offset: float
+
+    def __init__(self, factor: float, offset: float):
+        self.factor = factor
+        self.offset = offset
+
+    def normalized(self, intensity: Union[float, ndarray]) -> Union[float, ndarray]:
+        return intensity * self.factor + self.offset
+
+    def normalize_list(self, intensities: List[float]):
+        """Normalizes a Python list in-place."""
+        for i in range(len(intensities)):
+            intensities[i] = intensities[i] * self.factor + self.offset
+
+
+def get_intensity_normalization(position_data: PositionData) -> IntensityNormalizer:
     """Gets the average intensity of all positions in the experiment.
     Returns None if there are no intensity recorded."""
     total_intensity = 0
+    lowest_intensity = None
+
     position_count = 0
     for position, intensity in position_data.find_all_positions_with_data("intensity"):
         total_intensity += intensity
         position_count += 1
+        lowest_intensity = min_none(intensity, lowest_intensity)
+
     if position_count == 0:
-        return None
-    return total_intensity / position_count
+        return IntensityNormalizer(1, 0)
+
+    average_intensity = total_intensity / position_count
+    average_intensity -= lowest_intensity
+    normalization_factor = 100 / average_intensity
+    offset = -1 * normalization_factor * lowest_intensity
+    return IntensityNormalizer(normalization_factor, offset)
