@@ -12,7 +12,7 @@ from organoid_tracker.core.images import ImageOffsets
 from organoid_tracker.core.links import Links, LinkingTrack
 from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.guizela_tracker_compatibility import cell_type_converter
-from organoid_tracker.imaging import position_markers
+from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking_analysis import linking_markers
 
 

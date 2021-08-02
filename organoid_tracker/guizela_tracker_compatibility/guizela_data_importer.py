@@ -18,7 +18,7 @@ from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.spline import SplineCollection, Spline
 from organoid_tracker.guizela_tracker_compatibility import cell_type_converter
 from organoid_tracker.guizela_tracker_compatibility.track_lib import Track
-from organoid_tracker.imaging import position_markers
+from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.linking_analysis.linking_markers import EndMarker
 
