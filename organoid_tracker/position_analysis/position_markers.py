@@ -1,6 +1,8 @@
 """Additional metadata of a position, like the cell type or the fluorescent intensity."""
 from typing import Set, Dict, Optional, Iterable, Union, List, Tuple
 
+import numpy
+import scipy.stats
 from numpy import ndarray
 
 from organoid_tracker.core import min_none
@@ -83,20 +85,25 @@ class IntensityNormalizer:
 def get_intensity_normalization(position_data: PositionData) -> IntensityNormalizer:
     """Gets the average intensity of all positions in the experiment.
     Returns None if there are no intensity recorded."""
-    total_intensity = 0
-    lowest_intensity = None
-
-    position_count = 0
+    intensities = list()
     for position, intensity in position_data.find_all_positions_with_data("intensity"):
-        total_intensity += intensity
-        position_count += 1
-        lowest_intensity = min_none(intensity, lowest_intensity)
+        intensities.append(intensity)
 
-    if position_count == 0:
+    if len(intensities) < 3:
         return IntensityNormalizer(1, 0)
 
-    average_intensity = total_intensity / position_count
-    average_intensity -= lowest_intensity
-    normalization_factor = 100 / average_intensity
-    offset = -1 * normalization_factor * lowest_intensity
+    intensities = numpy.array(intensities, dtype=numpy.float32)
+    median = numpy.median(intensities)
+    mad = scipy.stats.median_abs_deviation(intensities)
+
+    # First subtract by the median, to center around 0
+    # Then divide by the MAD
+    # Then multiply by 25
+    # Then add 100
+    # Now we have a distribution around 100 +- 25
+    # So     In = (I - M) / MAD * 25 + 100
+    # Equals In = I/MAD * 25  -  M/MAD * 25 + 100
+
+    normalization_factor = 1 / mad * 25
+    offset = -median / mad * 25 + 100
     return IntensityNormalizer(normalization_factor, offset)
