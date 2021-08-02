@@ -13,7 +13,7 @@ from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.threading import Task
 from organoid_tracker.gui.window import Window
-from organoid_tracker.imaging import position_markers
+from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking_analysis import lineage_markers
 from organoid_tracker.linking_analysis.cell_fate_finder import CellFateType
 
@@ -255,7 +255,8 @@ def _write_positions_and_metadata_to_csv(positions: PositionCollection, position
             for position in positions_of_time_point:
                 lineage_id = lineage_id_creator.get_lineage_id(links, position)
                 original_track_id = lineage_id_creator.get_original_track_id(links, position)
-                cell_type_id = cell_types_to_id.get_or_add_id(position_markers.get_position_type(position_data, position))
+                cell_type_id = cell_types_to_id.get_or_add_id(
+                    position_markers.get_position_type(position_data, position))
                 density = cell_density_calculator.get_density_mm1(positions_of_time_point, position, resolution)
                 times_divided = cell_division_counter.find_times_divided(links, position, first_time_point_number)
                 times_neighbor_died = deaths_nearby_tracks.count_nearby_deaths_in_past(links, position)

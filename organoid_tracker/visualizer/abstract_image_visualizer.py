@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict, Any, Tuple
+from typing import Optional, Dict, Any
 
 import cv2
 import numpy
@@ -17,7 +17,7 @@ from organoid_tracker.core.typing import MPLColor
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.dialog import prompt_int
 from organoid_tracker.gui.window import Window, DisplaySettings
-from organoid_tracker.imaging import position_markers
+from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.util.mpl_helper import line_infinite
 from organoid_tracker.visualizer import Visualizer, activate

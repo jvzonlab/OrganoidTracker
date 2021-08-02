@@ -2,7 +2,7 @@ import unittest
 
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
-from organoid_tracker.imaging import position_markers
+from organoid_tracker.position_analysis import position_markers
 
 
 class TestPositionData(unittest.TestCase):

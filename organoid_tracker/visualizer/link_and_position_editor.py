@@ -14,7 +14,7 @@ from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.undo_redo import UndoableAction, ReversedAction
 from organoid_tracker.gui.window import Window
-from organoid_tracker.imaging import position_markers
+from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking_analysis import cell_error_finder, linking_markers, track_positions_finder, \
     lineage_markers
 from organoid_tracker.linking_analysis.linking_markers import EndMarker

@@ -15,7 +15,8 @@ from organoid_tracker.core.typing import MPLColor
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.threading import Task
 from organoid_tracker.gui.window import Window, DisplaySettings
-from organoid_tracker.imaging import cropper, position_markers
+from organoid_tracker.imaging import cropper
+from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking.nearby_position_finder import find_closest_position
 from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.util import mpl_helper

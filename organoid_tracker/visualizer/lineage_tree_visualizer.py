@@ -1,13 +1,12 @@
 """Lineage tree visualizer with a lot of options for showing colors, showing hiding certain trees, etc."""
 
-from typing import Dict, Any, Tuple, Optional, Callable
+from typing import Dict, Any, Tuple, Optional
 
 import matplotlib.cm
 import matplotlib.colors
 from matplotlib.backend_bases import MouseEvent
 
 from organoid_tracker.core import Color
-from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import LinkingTrack
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
@@ -15,7 +14,7 @@ from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.gui import dialog, option_choose_dialog
 from organoid_tracker.gui.location_map import LocationMap
 from organoid_tracker.gui.window import Window
-from organoid_tracker.imaging import position_markers
+from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking_analysis import linking_markers, lineage_markers
 from organoid_tracker.linking_analysis.lineage_division_counter import get_min_division_count_in_lineage
 from organoid_tracker.linking_analysis.lineage_drawing import LineageDrawing

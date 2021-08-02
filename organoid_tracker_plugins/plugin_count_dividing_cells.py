@@ -7,7 +7,7 @@ from organoid_tracker.core import Color
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.window import Window
-from organoid_tracker.imaging import position_markers
+from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking_analysis import cell_fate_finder
 from organoid_tracker.linking_analysis.cell_fate_finder import CellFateType
 
