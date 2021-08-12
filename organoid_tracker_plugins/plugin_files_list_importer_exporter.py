@@ -27,7 +27,7 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
 
 def _restore_open_files_list(open_files_list_file: str) -> List[Experiment]:
     """Returns a list of experiments, extracted from the given file."""
-    os.chdir(os.path.dirname(open_files_list_file))
+    start_dir = os.path.dirname(open_files_list_file)
     with open(open_files_list_file, "r") as handle:
         experiments_json = json.load(handle)
 
@@ -45,6 +45,8 @@ def _restore_open_files_list(open_files_list_file: str) -> List[Experiment]:
         loaded_anything = False
         if "experiment_file" in experiment_json:
             experiment_file = experiment_json["experiment_file"]
+            if not os.path.isabs(experiment_file):
+                experiment_file = os.path.join(start_dir, experiment_file)
             if not os.path.exists(experiment_file):
                 raise ValueError("File \"" + experiment_file + "\" does not exist.")
             io.load_data_file(experiment_file, experiment=experiment,
@@ -53,6 +55,8 @@ def _restore_open_files_list(open_files_list_file: str) -> List[Experiment]:
 
         if "images_container" in experiment_json and "images_pattern" in experiment_json:
             images_container = experiment_json["images_container"]
+            if not os.path.isabs(images_container):
+                images_container = os.path.join(start_dir, images_container)
             images_pattern = experiment_json["images_pattern"]
             general_image_loader.load_images(experiment, images_container, images_pattern,
                                              min_time_point=min_time_point, max_time_point=max_time_point)
