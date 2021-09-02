@@ -38,12 +38,15 @@ def get_positions_of_type(position_data: PositionData, requested_type: str) -> I
             if position_type.upper() == requested_type)
 
 
-def set_intensities(position_data: PositionData, raw_intensities: Dict[Position, int], volumes: Dict[Position, int]):
-    """Registers the given intensities for the given positions. Both dicts must have the same keys."""
+def set_raw_intensities(experiment: Experiment, raw_intensities: Dict[Position, int], volumes: Dict[Position, int]):
+    """Registers the given intensities for the given positions. Both dicts must have the same keys.
+
+    Also removes any previously set intensity normalization."""
     if raw_intensities.keys() != volumes.keys():
         raise ValueError("Need to supply intensities and volumes for the same cells")
-    position_data.add_positions_data("intensity", raw_intensities)
-    position_data.add_positions_data("intensity_volume", volumes)
+    experiment.position_data.add_positions_data("intensity", raw_intensities)
+    experiment.position_data.add_positions_data("intensity_volume", volumes)
+    remove_intensity_normalization(experiment)
 
 
 def get_raw_intensity(position_data: PositionData, position: Position) -> Optional[float]:
@@ -103,3 +106,8 @@ def perform_intensity_normalization(experiment: Experiment, *, background_correc
 
     experiment.global_data.set_data("intensity_multiplier", normalization_factor)
 
+
+def remove_intensity_normalization(experiment: Experiment):
+    """Removes the normalization set by perform_intensity_normalization."""
+    experiment.global_data.set_data("intensity_background_per_pixel", None)
+    experiment.global_data.set_data("intensity_multiplier", None)
