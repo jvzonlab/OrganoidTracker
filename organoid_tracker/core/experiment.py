@@ -5,6 +5,7 @@ from numpy import ndarray
 from organoid_tracker.core import TimePoint, Name, UserError, min_none, max_none, Color
 from organoid_tracker.core.beacon_collection import BeaconCollection
 from organoid_tracker.core.connections import Connections
+from organoid_tracker.core.global_data import GlobalData
 from organoid_tracker.core.images import Images
 from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.links import Links
@@ -35,6 +36,7 @@ class Experiment:
     _warning_limits: WarningLimits
     _color: Color
     last_save_file: Optional[str] = None  # Location where the "Save" button will save again.
+    _global_data: GlobalData
 
     def __init__(self):
         self._name = Name()
@@ -49,6 +51,7 @@ class Experiment:
         self._connections = Connections()
         self._warning_limits = WarningLimits()
         self._color = Color.black()
+        self._global_data = GlobalData()
 
     def remove_position(self, position: Position, *, update_splines: bool = True):
         """Removes a position and its links and other data from the experiment.
@@ -303,6 +306,17 @@ class Experiment:
          the cell did not divide."""
         return 80
 
+    @property
+    def global_data(self) -> GlobalData:
+        return self._global_data
+
+    @global_data.setter
+    def global_data(self, global_data: GlobalData):
+        """Sets the global data, after checking the object type"""
+        if not isinstance(global_data, GlobalData):
+            raise ValueError(f"global_data must be a {GlobalData.__name__} object, was " + repr(global_data))
+        self._global_data = global_data
+
     def merge(self, other: "Experiment"):
         """Merges the position, linking and connections data of two experiments. Images, resolution and scores are not
         yet merged."""
@@ -321,9 +335,10 @@ class Experiment:
         self.position_data.merge_data(other.position_data)
         self.link_data.merge_data(other.link_data)
         self.connections.add_connections(other.connections)
+        self.global_data.merge_data(other.global_data)
 
     def copy_selected(self, images: bool = False, positions: bool = False, position_data: bool = False,
-                      links: bool = False, link_data: bool = False) -> "Experiment":
+                      links: bool = False, link_data: bool = False, global_data: bool = False) -> "Experiment":
         """Copies the selected attributes over to a new experiment. Note that position_data and links can only be copied
         if the positions are copied."""
         copy = Experiment()
@@ -337,4 +352,6 @@ class Experiment:
                 copy.links = self._links.copy()
                 if link_data:
                     copy.link_data = self._link_data.copy()
+        if global_data:
+            copy.global_data = self._global_data.copy()
         return copy

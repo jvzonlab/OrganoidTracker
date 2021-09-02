@@ -11,6 +11,7 @@ from organoid_tracker.core import shape, TimePoint, UserError, Color
 from organoid_tracker.core.beacon_collection import BeaconCollection
 from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.core.global_data import GlobalData
 from organoid_tracker.core.images import ImageOffsets
 from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.links import Links
@@ -147,6 +148,9 @@ def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point:
         if "color" in data:
             color = data["color"]
             experiment.color = Color.from_rgb_floats(color[0], color[1], color[2])
+
+        if "other_data" in data:
+            experiment.global_data = GlobalData(data["other_data"])
 
 
 def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List], min_time_point: int, max_time_point: int):
@@ -508,6 +512,10 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
 
     # Save color
     save_data["color"] = list(experiment.color.to_rgb_floats())
+
+    # Save other global data
+    if experiment.global_data.has_global_data():
+        save_data["other_data"] = experiment.global_data.get_all_data()
 
     _create_parent_directories(json_file_name)
     json_file_name_old = json_file_name + ".OLD"

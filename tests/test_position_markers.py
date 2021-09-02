@@ -1,5 +1,6 @@
 import unittest
 
+from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.position_analysis import position_markers
@@ -9,12 +10,26 @@ class TestPositionData(unittest.TestCase):
 
 
     def test_normalization(self):
-        position_data = PositionData()
-        position_data.set_position_data(Position(0, 0, 0, time_point_number=0), "intensity", 8)
-        position_data.set_position_data(Position(1, 0, 0, time_point_number=0), "intensity", 10)
-        position_data.set_position_data(Position(2, 0, 0, time_point_number=0), "intensity", 12)
+        position_1 = Position(1, 0, 0, time_point_number=0)
+        position_2 = Position(2, 0, 0, time_point_number=0)
+        position_3 = Position(3, 0, 0, time_point_number=0)
 
-        normalizer = position_markers.get_intensity_normalization(position_data)
-        self.assertEqual(50, normalizer.factor)
-        self.assertEqual(-400, normalizer.offset)
+        experiment = Experiment()
+        position_data = experiment.position_data
+        position_data.set_position_data(position_1, "intensity", 8)
+        position_data.set_position_data(position_2, "intensity", 10)
+        position_data.set_position_data(position_3, "intensity", 12)
+        position_data.set_position_data(position_1, "intensity_volume", 100)
+        position_data.set_position_data(position_2, "intensity_volume", 100)
+        position_data.set_position_data(position_3, "intensity_volume", 200)
 
+        position_markers.perform_intensity_normalization(experiment)
+        intensity1 = position_markers.get_normalized_intensity(experiment, position_1)
+        intensity2 = position_markers.get_normalized_intensity(experiment, position_2)
+        intensity3 = position_markers.get_normalized_intensity(experiment, position_3)
+
+        # check if median is indeed 100
+        self.assertAlmostEqual(100, sorted([intensity1, intensity2,intensity3])[1], delta=0.0001)
+
+        # check if lowest is indeed 0 (background correction)
+        self.assertAlmostEqual(0, intensity1, delta=0.0001)
