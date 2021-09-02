@@ -85,4 +85,8 @@ class UndoRedo:
         """
         self._undo_queue.clear()
         self._redo_queue.clear()
+        self.mark_unsaved_changes()
+
+    def mark_unsaved_changes(self):
+        """Forces a resave. Useful if you changed some data in the experiment that cannot be undone."""
         self._unsaved_changes_count = 1000000  # This makes sure that the save prompt will be triggered
