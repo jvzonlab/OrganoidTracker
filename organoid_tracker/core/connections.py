@@ -4,6 +4,8 @@ observations made at different time points refer to the same particle."""
 import typing
 from typing import Dict, List, Set, Tuple, Iterable
 
+import numpy
+
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.position import Position
 
@@ -102,6 +104,28 @@ class _ConnectionsByTimePoint:
         import networkx
         sources = [source for source in sources if self._graph.has_node(source)]
         return networkx.multi_source_dijkstra_path_length(self._graph, sources)
+
+    def has_full_neighbors(self) -> Dict[Position, bool]:
+        """
+        Returns
+        -------
+        An array that, for each cell in the graph, indicates
+        whether the neighbors of that cell connect into a
+        cycle graph (True) or not (False).
+        """
+        import networkx
+
+        num_nodes = self._graph.number_of_nodes()
+        decisions = dict()
+        for position in self._graph.nodes:
+            neighbors = self._graph.subgraph(self._graph.neighbors(position))
+            num_nbs = neighbors.number_of_nodes()
+            if num_nbs < 3:
+                decisions[position] = False
+            else:
+                Gcyc = networkx.cycle_graph(num_nbs, create_using=None)
+                decisions[position] = networkx.is_isomorphic(neighbors, Gcyc)
+        return decisions
 
 
 class Connections:
@@ -274,3 +298,19 @@ class Connections:
     def contains_time_point(self, time_point: TimePoint) -> bool:
         """Returns whether there are connections for the given time point."""
         return time_point.time_point_number() in self._by_time_point
+
+    def has_full_neighbors(self, time_point: TimePoint) -> Dict[Position, bool]:
+        """
+        Parameters
+        ----------
+        time_point: The time point to check the neighbors for.
+
+        Returns
+        -------
+        An dictionary that, for each cell in the graph, indicates
+        whether the neighbors of that cell connect into a
+        cycle graph (True) or not (False).
+        """
+        if time_point.time_point_number() in self._by_time_point:
+            return self._by_time_point[time_point.time_point_number()].has_full_neighbors()
+        return dict()
