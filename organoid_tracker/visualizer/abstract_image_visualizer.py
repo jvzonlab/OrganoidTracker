@@ -205,7 +205,7 @@ class AbstractImageVisualizer(Visualizer):
         pass  # Subclasses can override this
 
     def _must_show_other_time_points(self) -> bool:
-        return True
+        return self._display_settings.show_links_and_connections
 
     def _must_draw_positions_of_previous_time_point(self) -> bool:
         """Returns whether the positions of the previous time point are drawn based on the current display settings."""
@@ -291,7 +291,7 @@ class AbstractImageVisualizer(Visualizer):
 
     def _draw_connections(self):
         """Draws all connections. A connection indicates that two positions are not the same, but are related."""
-        if not self._display_settings.show_positions:
+        if not self._display_settings.show_links_and_connections:
             return
 
         lines = []
@@ -310,7 +310,7 @@ class AbstractImageVisualizer(Visualizer):
 
     def _draw_links(self):
         """Draws all links. A link indicates that one position is the same a another position in another time point."""
-        if not self._display_settings.show_positions:
+        if not self._display_settings.show_links_and_connections:
             return
 
         lines = []
@@ -404,6 +404,7 @@ class AbstractImageVisualizer(Visualizer):
                 self._toggle_showing_reconstruction,
             "View//Toggle-Toggle showing splines": self._toggle_showing_splines,
             "View//Toggle-Toggle showing position markers [P]": self._toggle_showing_position_markers,
+            "View//Toggle-Toggle showing link and connection markers": self._toggle_showing_links_and_connections,
             "View//Toggle-Toggle showing error markers": self._toggle_showing_error_markers,
             "View//Image-View image slices [\]": self._show_slices,
             "Navigate//Layer-Above layer [Up]": lambda: self._move_in_z(1),
@@ -583,6 +584,10 @@ class AbstractImageVisualizer(Visualizer):
 
     def _toggle_showing_position_markers(self):
         self._display_settings.show_positions = not self._display_settings.show_positions
+        self.draw_view()
+
+    def _toggle_showing_links_and_connections(self):
+        self._display_settings.show_links_and_connections = not self._display_settings.show_links_and_connections
         self.draw_view()
 
     def _toggle_showing_error_markers(self):
