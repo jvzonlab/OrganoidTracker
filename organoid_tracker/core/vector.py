@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Iterable
 
 import math
 
@@ -69,6 +69,14 @@ class Vector3:
     y: float
     z: float
 
+    @staticmethod
+    def sum(vectors: Iterable["Vector3"]) -> "Vector3":
+        """Gets the sum of the given vectors. Returns zero if the iterable is empty."""
+        the_sum = Vector3(0, 0, 0)
+        for vector in vectors:
+            the_sum += vector
+        return the_sum
+
     def __init__(self, x: float, y: float, z: float):
         self.x = float(x)
         self.y = float(y)
@@ -101,6 +109,10 @@ class Vector3:
         if not isinstance(other, Vector3):
             return NotImplemented
         return Vector3(self.x - other.x, self.y - other.y, self.z - other.z)
+
+    def divide(self, amount: float) -> "Vector3":
+        """Scalar division."""
+        return Vector3(self.x / amount, self.y / amount, self.z / amount)
 
     def distance(self, other: "Vector3") -> float:
         """Gets the distance to the other point."""
