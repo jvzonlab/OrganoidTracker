@@ -105,25 +105,28 @@ class _ConnectionsByTimePoint:
         sources = [source for source in sources if self._graph.has_node(source)]
         return networkx.multi_source_dijkstra_path_length(self._graph, sources)
 
-    def has_full_neighbors(self) -> Set[Position]:
+    def has_full_neighbors(self, position: Position) -> bool:
         """
+        Parameters
+        ----------
+        position: The position to check the neighbors for.
+
         Returns
         -------
-        A set that contains all positions for which we think they have full neighbors annotated. This is the case
+        True if we think they have full neighbors annotated for that position. This is the case
         if the neighbor graph is cyclic, or if the neighbor graph contains cycles.
         """
         import networkx
+        if not self._graph.has_node(position):
+            return False
+        neighbors = self._graph.subgraph(self._graph.neighbors(position))
+        number_of_neighbors = neighbors.number_of_nodes()
+        cyclic_graph = networkx.cycle_graph(number_of_neighbors, create_using=None)
+        if number_of_neighbors > 2 and \
+                (len(networkx.cycle_basis(neighbors)) > 0 or networkx.is_isomorphic(neighbors, cyclic_graph)):
+            return True
 
-        has_full_neighbors = set()
-        for position in self._graph.nodes:
-            neighbors = self._graph.subgraph(self._graph.neighbors(position))
-            number_of_neighbors = neighbors.number_of_nodes()
-            cyclic_graph = networkx.cycle_graph(number_of_neighbors, create_using=None)
-            if number_of_neighbors > 2 and \
-                    (len(networkx.cycle_basis(neighbors)) > 0 or networkx.is_isomorphic(neighbors, cyclic_graph)):
-                has_full_neighbors.add(position)
-
-        return has_full_neighbors
+        return False
 
 
 class Connections:
@@ -297,17 +300,17 @@ class Connections:
         """Returns whether there are connections for the given time point."""
         return time_point.time_point_number() in self._by_time_point
 
-    def has_full_neighbors(self, time_point: TimePoint) -> Set[Position]:
+    def has_full_neighbors(self, position: Position) -> bool:
         """
         Parameters
         ----------
-        time_point: The time point to check the neighbors for.
+        position: The position to check the neighbors for.
 
         Returns
         -------
-        A set that contains all positions for which we think they have full neighbors annotated. This is the case
+        True if we think they have full neighbors annotated for that position. This is the case
         if the neighbor graph is cyclic, or if the neighbor graph contains cycles.
         """
-        if time_point.time_point_number() in self._by_time_point:
-            return self._by_time_point[time_point.time_point_number()].has_full_neighbors()
-        return set()
+        if position.time_point_number() in self._by_time_point:
+            return self._by_time_point[position.time_point_number()].has_full_neighbors(position)
+        return False
