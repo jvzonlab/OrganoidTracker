@@ -3,9 +3,9 @@ from typing import List, Tuple
 import tensorflow as tf
 from tensorflow import keras
 
-from organoid_tracker.position_detection_cnn.custom_filters import local_softmax
-from organoid_tracker.position_detection_cnn.loss_functions import custom_loss_with_blur, \
-    position_loss, position_recall, position_precision, overcount
+from organoid_tracker.position_detection_cnn.custom_filters import blur_labels
+from organoid_tracker.position_detection_cnn.loss_functions import position_recall, position_precision, \
+    overcount, loss
 
 
 def build_model(shape: Tuple, batch_size):
@@ -13,54 +13,62 @@ def build_model(shape: Tuple, batch_size):
     input = keras.Input(shape=shape, batch_size=batch_size)
 
     # Add coordinates
-    layer = add_3d_coord(input)
+    layer = input #add_3d_coord(input, only_z = True)
 
     # convolutions
     to_concat = []
 
     filter_sizes = [3, 16, 64, 128, 256]
-    layer, to_concat_layer = conv_block(2, layer, filters=filter_sizes[1], kernel=(1, 3, 3), pool_size=(1, 2, 2),
+    n=2
+    layer, to_concat_layer = conv_block(n, layer, filters=filter_sizes[1], kernel=(1, 3, 3), pool_size=(1, 2, 2),
                                         pool_strides=(1, 2, 2), name="down1")
     to_concat.append(to_concat_layer)
-    layer, to_concat_layer = conv_block(2, layer, filters=filter_sizes[2], name="down2")
+    layer, to_concat_layer = conv_block(n, layer, filters=filter_sizes[2], name="down2")
     to_concat.append(to_concat_layer)
-    layer, to_concat_layer = conv_block(2, layer, filters=filter_sizes[3], name="down3")
+    layer, to_concat_layer = conv_block(n, layer, filters=filter_sizes[3], name="down3")
     to_concat.append(to_concat_layer)
-    layer, to_concat_layer = conv_block(2, layer, filters=filter_sizes[4], name="down4")
+    layer, to_concat_layer = conv_block(n, layer, filters=filter_sizes[4], name="down4")
     to_concat.append(to_concat_layer)
 
-    layer = deconv_block(2, layer, to_concat.pop(), filters=filter_sizes[4], name="up1")
-    layer = deconv_block(2, layer, to_concat.pop(), filters=filter_sizes[3], name="up2")
-    layer = deconv_block(2, layer, to_concat.pop(), filters=filter_sizes[2], name="up3")
-    layer = deconv_block(2, layer, to_concat.pop(), filters=filter_sizes[1], kernel=(1, 3, 3), strides=(1, 2, 2), name="up4")
+    layer = deconv_block(n, layer, to_concat.pop(), filters=filter_sizes[4], name="up1")
+    layer = deconv_block(n, layer, to_concat.pop(), filters=filter_sizes[3], name="up2")
+    layer = deconv_block(n, layer, to_concat.pop(), filters=filter_sizes[2], name="up3")
+    layer = deconv_block(2, layer, to_concat.pop(), filters=filter_sizes[1], kernel=(1, 3, 3), strides=(1, 2, 2), dropout=False, name="up4")
 
     # apply final batch_normalization
     layer = tf.keras.layers.BatchNormalization()(layer)
 
-    output = tf.keras.layers.Conv3D(filters=1, kernel_size=3, padding="same", activation='linear', name='out_conv')(layer)
+    output = tf.keras.layers.Conv3D(filters=1, kernel_size=3, padding="same", activation='relu', name='out_conv')(layer)
 
-    output = local_softmax(output, exponentiate=True, blur=True)
+    # blur predictions (leads to less noise-induced peaks) This helps sometimes (?)
+    output = blur_labels(output, sigma=1.5, kernel_size=4,  depth=1, normalize=False)
 
     model = keras.Model(inputs=input, outputs=output, name="YOLO")
-    model.compile(optimizer='Adam', loss=position_loss, metrics=[custom_loss_with_blur, position_recall, position_precision, overcount])
+
+    model.compile(optimizer='Adam', loss=loss, metrics=[position_recall, position_precision, overcount])
 
     return model
 
 
-def conv_block(n_conv, layer, filters, kernel=3, pool_size=2, pool_strides=2, name=None):
+def conv_block(n_conv, layer, filters, kernel=3, pool_size=2, pool_strides=2, dropout=False, name=None):
     for index in range(n_conv):
         layer = tf.keras.layers.Conv3D(filters=filters, kernel_size=kernel, padding='same', activation='relu',
                                        name=name + '/conv{0}'.format(index + 1))(
             layer)  # To test : is coordconv needed in all layers or just first?
 
+        if dropout:
+            layer = tf.keras.layers.SpatialDropout3D(rate=0.5)(layer)
+
     to_concat = layer
     layer = tf.keras.layers.MaxPooling3D(pool_size=pool_size, strides=pool_strides, padding='same',
                                          name=name + '/pool')(layer)
 
+    # layer = tf.keras.layers.BatchNormalization()(layer)
+
     return layer, to_concat
 
 
-def deconv_block(n_conv, layer, to_concat, filters, kernel=3, strides=2, name=None):
+def deconv_block(n_conv, layer, to_concat, filters, kernel=3, strides=2, dropout=False, name=None):
     layer = tf.keras.layers.Conv3DTranspose(filters=filters, kernel_size=kernel, strides=strides, padding='same',
                                             name=name + '/upconv')(layer)
 
@@ -68,12 +76,17 @@ def deconv_block(n_conv, layer, to_concat, filters, kernel=3, strides=2, name=No
         layer = tf.keras.layers.Conv3D(filters=filters, kernel_size=kernel, padding='same', activation='relu',
                                        name=name + '/conv{0}'.format(index + 1))(layer)
 
+        if dropout:
+            layer = tf.keras.layers.SpatialDropout3D(rate=0.5)(layer)
+
     layer = tf.concat([layer, to_concat], axis=-1)
+
+    #layer = tf.keras.layers.BatchNormalization()(layer)
 
     return layer
 
 
-def add_3d_coord(layer):
+def add_3d_coord(layer, only_z=False):
     # FIXME can we make this using a loop?
     im_shape = tf.shape(layer)[1:4]
     batch_size_tensor = tf.shape(layer)[0]
@@ -114,7 +127,12 @@ def add_3d_coord(layer):
     # add batch channel dim
     zval_range = tf.expand_dims(zval_range, axis=-1)
 
-    layer = tf.concat([layer, xval_range, yval_range, zval_range], axis=-1)
+    print(tf.shape(layer))
+    if only_z:
+        layer = tf.concat([layer, zval_range], axis=-1)
+    else:
+        layer = tf.concat([layer, zval_range, yval_range, xval_range], axis=-1)
+
     return layer
 
 

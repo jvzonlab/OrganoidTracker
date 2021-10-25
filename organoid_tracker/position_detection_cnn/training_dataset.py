@@ -28,6 +28,7 @@ import tensorflow_addons as tfa
 from functools import partial
 import numpy as np
 
+from organoid_tracker.position_detection_cnn.custom_filters import blur_labels
 from organoid_tracker.position_detection_cnn.image_with_positions_to_tensor_loader import tf_load_images_with_positions
 from organoid_tracker.position_detection_cnn.training_data_creator import _ImageWithPositions
 
@@ -59,13 +60,10 @@ def training_data_creator_from_raw(image_with_positions_list: List[_ImageWithPos
         dataset = dataset.shuffle(buffer_size=10*batch_size)
         dataset = dataset.batch(batch_size)
 
-
     elif mode == 'validation':
-        dataset = dataset.map(partial(generate_patch, patch_shape=patch_shape, batch=False))
-        dataset = dataset.batch(batch_size)
+        dataset = dataset.flat_map(partial(generate_patches, patch_shape=patch_shape, multiplier=2, perturb=False))
 
-    #dataset = dataset.map(blur_labels_batch)
-    # dataset = dataset.map(custom_weights)
+        dataset = dataset.batch(batch_size)
 
     dataset.prefetch(2)
 
@@ -102,11 +100,8 @@ def training_data_creator_from_TFR(images_file, labels_file, patch_shape: List[i
         dataset = dataset.batch(batch_size)
 
     elif mode == 'validation':
-        dataset = dataset.map(partial(generate_patch, patch_shape=patch_shape, batch=False))
+        dataset = dataset.map(partial(generate_patch, patch_shape=patch_shape, batch=False, perturb=False))
         dataset = dataset.batch(batch_size)
-
-    #dataset = dataset.map(blur_labels_batch)
-    #dataset = dataset.map(custom_weights)
 
     dataset = dataset.prefetch(5)
 
@@ -115,8 +110,23 @@ def training_data_creator_from_TFR(images_file, labels_file, patch_shape: List[i
 
 # Normalizes image data
 def normalize(image, label):
+
     image = tf.divide(tf.subtract(image, tf.reduce_min(image)), tf.subtract(tf.reduce_max(image), tf.reduce_min(image)))
+
     return image, label
+
+
+def z_shift(stacked, max_shift = 1):
+
+    shift = tf.random.uniform(shape=[], minval= -max_shift,  maxval=max_shift, dtype=tf.int32)
+
+    padding = [[max_shift, max_shift+1], [0, 0], [0, 0], [0, 0]]
+
+    stacked = tf.pad(stacked, padding, constant_values=0, mode='CONSTANT')
+
+    stacked = stacked[(max_shift+shift): -(1+max_shift-shift), :, :, :]
+
+    return stacked
 
 
 def pad_to_patch(stacked, patch_shape):
@@ -128,13 +138,14 @@ def pad_to_patch(stacked, patch_shape):
                     lambda: 0)
     pad_x = tf.cond(tf.less(stacked_shape[2], patch_shape[2]), lambda: patch_shape[2] - stacked_shape[2],
                     lambda: 0)
-    padding = [[pad_z, 0], [pad_y, 0], [pad_x, 0], [0, 0]]
 
-    return tf.pad(stacked, padding)
+    padding = [[pad_z, 0], [0, pad_y], [0, pad_x], [0, 0]]
+
+    return tf.pad(stacked, padding, mode='CONSTANT', constant_values=0)
 
 
 # generates single patch without pertubations for validation set
-def generate_patch(image, label, patch_shape, batch=False):
+def generate_patch(image, label, patch_shape, batch=False, perturb=True):
     # concat in channel dimension
     stacked = tf.concat([image, label], axis=-1)
 
@@ -154,7 +165,7 @@ def generate_patch(image, label, patch_shape, batch=False):
     return image, label
 
 # generates multiple perturbed patches
-def generate_patches(image, label, patch_shape, multiplier=20):
+def generate_patches(image, label, patch_shape, multiplier=20, perturb=True):
     # concat image and labels in channel dimension
     stacked = tf.concat([image, label], axis=-1)
 
@@ -166,6 +177,10 @@ def generate_patches(image, label, patch_shape, multiplier=20):
     # if the image is smaller that the patch region then pad
     stacked = pad_to_patch(stacked, patch_shape_init)
 
+    # add buffer region
+    padding = [[0, 0], [patch_shape[1], patch_shape[1]], [patch_shape[2], patch_shape[2]], [0, 0]]
+    stacked = tf.pad(stacked, padding, mode='CONSTANT', constant_values=0)
+
     # add channel dimensions
     patch_shape_init = patch_shape_init + [tf.shape(stacked)[-1]]
 
@@ -176,7 +191,9 @@ def generate_patches(image, label, patch_shape, multiplier=20):
         stacked_crop = tf.image.random_crop(stacked, size=patch_shape_init)
 
         # apply perturbations
-        stacked_crop = apply_random_perturbations_stacked(stacked_crop)
+        if perturb:
+            stacked_crop = apply_random_perturbations_stacked(stacked_crop)
+            #stacked_crop = z_shift(stacked_crop)
 
         # second crop of the center region
         stacked_crop = stacked_crop[:, tf.cast(patch_shape[1]/2, tf.int32): tf.cast(patch_shape[1]/2, tf.int32) + patch_shape[1],
@@ -219,8 +236,28 @@ def apply_random_perturbations_stacked(stacked):
 
 
 def apply_noise(image, label):
-    image = image + tf.random.uniform(tf.shape(image), maxval=0.1)
-    image = tf.divide(tf.subtract(image, tf.reduce_min(image)), tf.subtract(tf.reduce_max(image), tf.reduce_min(image)))
+    # add noise
+    #image = image + tf.random.uniform(tf.shape(image), maxval=0.1)
+    #image = tf.divide(tf.subtract(image, tf.reduce_min(image)), tf.subtract(tf.reduce_max(image), tf.reduce_min(image)))
+
+    # add multiplicative noise
+    #image = image * tf.random.uniform(tf.shape(image), minval=0.9, maxval=1)
+
+    # mix image with blurred version (to approximate light-sheet data)
+    #mix = tf.where(tf.random.uniform((1,))> 0.3, tf.random.uniform((1,), maxval=0.8), 0.)
+    #image = tf.expand_dims(image, axis=0)
+    #image = (1-mix) * image + mix * blur_labels(image, sigma=2.5, normalize=False, depth=1)
+    #image = tf.squeeze(image, axis=0)
+
+    # take power of image to increase or reduce contrast
+    image = tf.pow(image, tf.random.uniform((1,), minval=0.5, maxval=1.5))
+
+    # take a random decay constant (biased to 1 by taking the root)
+    decay = tf.sqrt(tf.random.uniform((1,), minval=0.04, maxval=1))
+
+    # let image intensity decay differently
+    scale = decay + (1-decay) * (1 - tf.range(tf.shape(image)[0], dtype=tf.float32) / tf.cast(tf.shape(image)[0], tf.float32))
+    image = tf.reshape(scale, shape=(tf.shape(image)[0], 1, 1, 1)) * image
 
     return image, label
 
@@ -235,7 +272,7 @@ def apply_random_perturbations(image, label):
         tf.random.uniform([], -np.pi, np.pi), image_shape[1], image_shape[2])
     transforms.append(transform)
     # random scale 80% to 120% size
-    scale = tf.random.uniform([], 0.8, 1.2, dtype=tf.float32)
+    scale = tf.random.uniform([], 0.8, 1.6, dtype=tf.float32)
     transform = tf.convert_to_tensor([[scale, 0., image_shape[1] / 2 * (1 - scale),
                                        0., scale, image_shape[2] / 2 * (1 - scale), 0.,
                                        0.]], dtype=tf.float32)
@@ -248,64 +285,10 @@ def apply_random_perturbations(image, label):
 
     return image, label
 
-## This is now moved into the loss function for perfromance reasons
-
-def custom_weights(image, label):
-    # non_zero = tf.cast(tf.math.count_nonzero(label), tf.float32)
-    blur = _gaussian_kernel(8, 2, 1, label.dtype)
-    expand_label = tf.nn.conv3d(label, blur, [1, 1, 1, 1, 1], 'SAME')
-
-    size = tf.cast(tf.size(expand_label), tf.float32)
-    # weight the loss by the amount of non zeroes values in label
-    # fraction_non_zero = tf.divide(non_zero, full_size)
-    # fraction_zero = tf.subtract(1., fraction_non_zero)
-
-    # weights = tf.where(tf.equal(label, 0),
-    # tf.fill(tf.shape(label), fraction_non_zero),
-    # tf.multiply(label, fraction_zero))
-
-    n_zero = tf.subtract(tf.cast(tf.size(expand_label), tf.float32), tf.cast(tf.math.count_nonzero(expand_label), tf.float32))
-    n_cells = tf.reduce_sum(expand_label)
-    weights = tf.where(tf.equal(expand_label, 0),
-                       tf.fill(tf.shape(expand_label), tf.divide(0.5 * size, n_zero)),
-                       tf.multiply(expand_label, tf.divide(0.5 * size, n_cells)))
-
-    return image, label, weights
 
 
-def _gaussian_kernel(kernel_size, sigma, n_channels, dtype):
-    # creates kernel in the XY plane
-    x = tf.range(-kernel_size // 2 + 1, kernel_size // 2 + 1, dtype=dtype)
-    g = tf.math.exp(-(tf.pow(x, 2) / (2 * tf.pow(tf.cast(sigma, dtype), 2))))
-    #g_norm2d = tf.pow(tf.reduce_sum(g), 2)
-    g_kernel = tf.tensordot(g, g, axes=0) #/ g_norm2d
-
-    #x = tf.range(-kernel_size[0] // 2 + 1, kernel_size[0] // 2 + 1, dtype=dtype)
-    #g = tf.math.exp(-(tf.pow(x, 2) / (2 * tf.pow(tf.cast(sigma, dtype), 2))))
-    #g_kernel = tf.tensordot(g, g, axes=0)  # / g_norm2d
-    # duplicate kernel in z direction
-    g_kernel = tf.stack([0.25 * g_kernel, 0.5 * g_kernel, 0.25 * g_kernel])
-
-    # scale so maximum is at 1.
-    g_kernel = g_kernel / tf.reduce_max(g_kernel)
-
-    # add channel dimension and later batch dimension
-    g_kernel = tf.expand_dims(g_kernel, axis=-1)
-    return tf.expand_dims(tf.tile(g_kernel, (1, 1, 1, n_channels)), axis=-1)
 
 
-def blur_labels(image, label):
-    blur = _gaussian_kernel(kernel_size=16, sigma=4, n_channels=1, dtype=label.dtype)
-
-    label = tf.expand_dims(label, axis=0)
-    label = tf.nn.conv3d(label, blur, [1, 1, 1, 1, 1], 'SAME')
-    label = tf.squeeze(label, axis=0)
-
-    return image, label
 
 
-def blur_labels_batch(image, label):
-    blur = _gaussian_kernel(8, 2, 1, label.dtype)
-    label = tf.nn.conv3d(label, blur, [1, 1, 1, 1, 1], 'SAME')
 
-    return image, label

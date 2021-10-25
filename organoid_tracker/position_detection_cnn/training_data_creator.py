@@ -139,7 +139,7 @@ class _ImageWithPositions:
 
         x = sub_data_xyz[:, 0]
         y = sub_data_xyz[:, 1]
-        z = sub_data_xyz[:, 2]-1
+        z = sub_data_xyz[:, 2]
 
         in_range = numpy.where((x >= max_x) + (y >= max_y) + (z >= max_z) == 0)
 
@@ -167,6 +167,7 @@ def create_image_with_positions_list(experiments: Iterable[Experiment]):
             positions_xyz = list()
             for position in positions:
                 positions_xyz.append([position.x - offset.x, position.y - offset.y, position.z - offset.z])
+
             positions_xyz = numpy.array(positions_xyz, dtype=numpy.int32)
 
             image_with_positions_list.append(

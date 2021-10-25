@@ -7,6 +7,7 @@ def local_softmax(y_pred: tf.Tensor, volume_zyx_px: Tuple[int, int, int] = (3, 1
     """Calculates the softmax for the given preditions. Softmax shows soft peaks on the
      locations of the maxima. Either radius or volume_zyx_px is used."""
     if exponentiate:
+        y_pred = tf.where(y_pred > 10, 10., y_pred)
         y_pred = tf.math.exp(y_pred)
 
     local_sum = volume_zyx_px[0] * volume_zyx_px[1] * volume_zyx_px[2] * tf.nn.avg_pool3d(y_pred, ksize=volume_zyx_px, strides=1, padding='SAME')
@@ -38,6 +39,8 @@ def _gaussian_kernel(kernel_size: int, sigma: float, depth: int, n_channels: int
     # scale so maximum is at 1.
     if normalize:
         g_kernel = g_kernel / tf.reduce_max(g_kernel)
+    else:
+        g_kernel = g_kernel / tf.reduce_sum(g_kernel)
 
     # add channel dimension and later batch dimension
     g_kernel = tf.expand_dims(g_kernel, axis=-1)
@@ -51,7 +54,6 @@ def blur_labels(label: tf.Tensor, kernel_size: int = 8, sigma: float = 2.0, dept
     label_blur = tf.nn.conv3d(label, blur, [1, 1, 1, 1, 1], 'SAME')
 
     return label_blur
-
 
 def _disk(range_zyx: Tuple[float, float, float] = (2.5, 11., 11.), n_channels: int = 1):
     range_int = tf.floor(range_zyx)
@@ -79,4 +81,117 @@ def disk_labels(label, range_zyx: Tuple[float, float, float] = (2.5, 11., 11.)):
     label_disk = tf.nn.conv3d(label, disk, [1, 1, 1, 1, 1], 'SAME')
 
     return label_disk
+
+def _disk_res(radius=5.0, resolution =[2, 0.4, 0.4], n_channels=1):
+    z_range = tf.floor(radius/resolution[0])
+    z = tf.range(-z_range, z_range+1)*resolution[0]
+
+    y_range = tf.floor(radius/resolution[1])
+    y = tf.range(-y_range, y_range+1)*resolution[1]
+
+    x_range = tf.floor(radius/resolution[2])
+    x = tf.range(-x_range, x_range+1)*resolution[2]
+
+    Z, Y, X = tf.meshgrid(z, x, y, indexing='ij')
+
+    distance = tf.square(Z) + tf.square(Y) + tf.square(X)
+
+    disk = tf.where(distance < tf.square(radius), 1., 0.)
+
+    disk = tf.expand_dims(disk, axis=-1)
+    return tf.expand_dims(tf.tile(disk, (1, 1, 1, n_channels)), axis=-1)
+
+
+def peak_finding_radius(y_pred, radius = 4.5, tolerance = 0.01, threshold = 0.01):
+
+    n=tf.cast(tf.reduce_sum(_disk(radius=radius)), tf.float32)
+    range = tf.reduce_max(y_pred) - tf.reduce_min(y_pred)
+    alpha = tf.math.log(n) / (range * tolerance)
+
+    y_pred_exp = tf.math.exp(alpha * y_pred)
+    local_logexpsum = 1/alpha * tf.math.log(disk_labels(y_pred_exp, radius=radius))
+
+    peaks = tf.where(local_logexpsum - tolerance * range <= y_pred, y_pred, 0)
+
+    peaks = tf.where(peaks > threshold * range + tf.reduce_min(y_pred), 1, 0)
+
+    return peaks
+
+
+def _distance(range = [3., 13., 13.],  n_channels=1, squared=True):
+
+    range_int = tf.round(range)
+
+    z = tf.range(-range_int[0], range_int[0] + 1) / range[0]
+
+    y = tf.range(-range_int[1], range_int[1] + 1) / range[1]
+
+    x = tf.range(-range_int[2], range_int[2] + 1) / range[2]
+
+    Z, Y, X = tf.meshgrid(z, x, y, indexing='ij')
+
+    distance = tf.square(Z) + tf.square(Y) + tf.square(X)
+
+    distance = tf.where(distance > 1, 1., distance)
+
+    if not squared:
+        distance = tf.sqrt(distance)
+
+    distance = tf.expand_dims(distance, axis=-1)
+
+    return tf.expand_dims(tf.tile(distance, (1, 1, 1, n_channels)), axis=-1)
+
+
+def distance_map(y_true, range=[3., 10., 10.]):
+
+    # exponent used to take pseudo_maximum
+    k = 20.
+
+    # invert distances
+    distance = 1 - _distance(range = range, squared=False)
+
+    # take pseudo maximum of the inverted distance to center points
+    # d* = sum(exp(d*k)-1))
+    distances_min = tf.nn.conv3d(y_true, tf.exp(distance*k)-1, [1, 1, 1, 1, 1], 'SAME') + 1
+    # d* = log(sum(exp(d*k)-1)))/k
+    distances_min = tf.math.log(distances_min) / k
+    distances_min = tf.where(tf.math.is_inf(distances_min), 1., distances_min)
+
+    # sum of the inverted distance to center points
+    distance_sum = tf.nn.conv3d(y_true, distance, [1, 1, 1, 1, 1], 'SAME')
+
+    # create distance map
+    distances = 1 - 2 * distances_min + distance_sum
+    distances = tf.where(distances > 1, 1. , distances)
+
+    # take gaussian on the distance map
+    distances = tf.exp(-distances ** 2 / 0.25)
+
+    # normalize
+    distances = (distances - tf.exp(- 1/ 0.25)) / (1- tf.exp(- 1/ 0.25))
+
+    # define weights based on inverted distance sum
+    weights = 1 - distance_sum
+    weights = tf.exp(-weights ** 2 / 0.25)
+
+    weights = tf.where(weights > 1, 1. , weights)
+    weights = tf.where(weights < 0, 0., weights)
+
+    weights = (weights - tf.exp(- 1/ 0.25)) / (1- tf.exp(- 1/ 0.25))
+
+    # define background as zero
+    weights = tf.where(weights < 0.05, 0., weights)
+
+    # give background equal weight to foreground
+    non_zero_count = tf.cast(tf.math.count_nonzero(weights), tf.float32)
+
+    full_size = tf.cast(tf.size(weights), tf.float32)
+    zero_count = full_size - non_zero_count
+
+    # weight the loss by the amount of non zeroes values in label
+    weights = tf.where(tf.equal(weights, 0),
+                        0.5 * full_size / zero_count,
+                       tf.divide(weights * 0.5, tf.reduce_mean(weights)))
+
+    return distances, weights
 

@@ -15,10 +15,10 @@ from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position import Position
 from skimage.feature import peak_local_max
+from skimage.morphology import erosion
 from tifffile import tifffile
 
-from organoid_tracker.position_detection_cnn.loss_functions import custom_loss_with_blur, \
-    position_loss, position_precision, overcount, misses, position_recall
+from organoid_tracker.position_detection_cnn.loss_functions import loss, position_precision, overcount, position_recall
 from organoid_tracker.position_detection_cnn.peak_calling import create_prediction_mask, reconstruct_volume
 from organoid_tracker.position_detection_cnn.prediction_dataset import predicting_data_creator
 from organoid_tracker.position_detection_cnn.split_images import corners_split, reconstruction
@@ -106,12 +106,10 @@ set_size = 1
 
 # load models
 print("Loading model...")
-model = tf.keras.models.load_model(_model_folder, custom_objects={"loss": position_loss,
-                                                                  "custom_loss_with_blur": custom_loss_with_blur,
+model = tf.keras.models.load_model(_model_folder, custom_objects={"loss": loss,
                                                                   "position_precision": position_precision,
                                                                   "position_recall": position_recall,
                                                                   "overcount": overcount,
-                                                                  "misses": misses})
 
 if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
     print("Error: no settings.json found in model folder.")
@@ -181,6 +179,7 @@ for image_set_index in range(image_set_count):
         im, z_divisor = reconstruct_volume(prediction, _mid_layers)  # interpolate between layers for peak detection
 
         # Comparison between image_max and im to find the coordinates of local maxima
+        #im = erosion(im, np.ones((7,7,7)))
         coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=0.1,  exclude_border=False) #, footprint=prediction_mask)
 
         for coordinate in coordinates:

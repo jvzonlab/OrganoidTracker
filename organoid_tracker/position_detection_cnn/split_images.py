@@ -13,7 +13,7 @@ def corners_split(image_shape: Union[np.ndarray, List[int]], patch_shape: Union[
 
         if image_shape[dim] > patch_shape[dim]:
             # minimum of patches needed
-            num_corners = (image_shape[dim] - patch_shape[dim]) // patch_shape[dim] + 2
+            num_corners = (image_shape[dim] - patch_shape[dim] - 1) // patch_shape[dim] + 2
 
             # equal spacing between corners
             spacing = round((image_shape[dim] - patch_shape[dim]) / (num_corners - 1))
@@ -37,7 +37,7 @@ def corners_split(image_shape: Union[np.ndarray, List[int]], patch_shape: Union[
 
 def reconstruction(image_batch, corners, buffer, image_shape, patch_shape):
     # add channel dimension and create empty volume
-    final_image = np.zeros(image_shape + [image_batch.shape[4]], dtype=np.float32)
+    final_image = np.zeros(image_shape + [image_batch.shape[4]], dtype=image_batch[0].dtype)
     # records if volume is filled by a patch
     filled = np.zeros(image_shape + [image_batch.shape[4]], dtype=np.uint8)
 
@@ -53,8 +53,8 @@ def reconstruction(image_batch, corners, buffer, image_shape, patch_shape):
                        corner[1]: corner[1] + patch_shape[1],
                        corner[2]: corner[2] + patch_shape[2], :]
 
-        # ensure proper size
-        input_data = input_data[:replace_data.shape[0],
+        # ensure proper size (assumes z-axis is padded at the bottom)
+        input_data = input_data[(input_data.shape[0]-replace_data.shape[0]):,
                                 :replace_data.shape[1],
                                 :replace_data.shape[2], :]
 
