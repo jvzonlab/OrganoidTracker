@@ -56,9 +56,9 @@ def _box_to_position(position_box: ndarray, time_point_number: int) -> Optional[
         # Only zeroes
         return None
 
-    x = (position_box[4] + position_box[5]) / 2
-    y = (position_box[2] + position_box[3]) / 2
-    z = (position_box[0] + position_box[1]) / 2
+    x = (position_box[4] + position_box[5] - 1) / 2
+    y = (position_box[2] + position_box[3] - 1) / 2
+    z = (position_box[0] + position_box[1] - 1) / 2
 
     return Position(x, y, z, time_point_number=time_point_number)
 
