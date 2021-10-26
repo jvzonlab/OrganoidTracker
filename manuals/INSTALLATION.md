@@ -23,7 +23,6 @@ Once you're in the right directory, run the following two commands.
 
     conda create --name organoid_tracker --file spec-file-win64.txt
     activate organoid_tracker
-    pip install tensorflow==2.4 tensorflow-addons==0.12.0
 
 The last command is necessary because Tensorflow 2 is not available in Anaconda. If you need to remove (the previous version of) OrganoidTracker, execute this command:
 
@@ -38,9 +37,8 @@ Unfortunately, OrganoidTracker has not been tested on any other OSes. If you're 
 
 Download and install Anaconda/Miniconda and open the Anaconda Prompt. Use the `cd` command to navigate to the directory of OrganoidTracker. Run the following commands:
 
-    conda create -n organoid_tracker -c ilastik-forge -c conda-forge python=3.7 dpct matplotlib-base mahotas tifffile scikit-image scipy nd2reader opencv pyside2
+    conda create -n organoid_tracker -c ilastik-forge -c esri -c conda-forge  python=3.7 dpct matplotlib-base mahotas tifffile scikit-image scipy nd2reader opencv pyside2 tensorflow-gpu tensorflow-addons
     source activate organoid_tracker
-    pip install tensorflow==2.4 tensorflow-addons==0.12.0
 
 The first command creates an Anaconda environment named "organoid_tracker" with all dependencies installed. The second command activates this environment. The third command installs Tensorflow, which only has a PIP package.
 
