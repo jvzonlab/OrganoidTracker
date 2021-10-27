@@ -6,7 +6,6 @@ import numpy
 import tifffile
 from numpy.core.multiarray import ndarray
 from tifffile import TiffFile, TiffPageSeries
-from tifffile.tifffile import TiffTags
 
 from organoid_tracker.core import TimePoint, max_none, min_none, UserError
 from organoid_tracker.core.experiment import Experiment
