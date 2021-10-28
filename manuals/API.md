@@ -5,9 +5,9 @@ OrganoidTracker contains many functions for working with experimental data. Thos
 
 Note: any method, function and field that has a name starting with an underscore (`_`) should not be used by external code. Ask if there is an alternative way to do it.
 
-## Working with existing data
+Note: to view a (daunting) overview of all classes and methods, run `pydoc -b` from the command line, while you are in the OrganoidTracker folder and in the OrganoidTracker conda environment. You can best start reading at the `organoid_tracker.core.experiment` package.
 
-### Saving and loading
+### How do I save and load tracking data?
 
 Saving and loading should be straightforward. The function `io.load_data_file` can load any [supported tracking format](TRACKING_FORMATS.md). The function `io.save_data_to_json` can just save to the standard data format.
 
@@ -25,7 +25,7 @@ experiment = io.load_data_file("my_file_name.aut")
 io.save_data_to_json(experiment, "my_file_name.aut")
 ```
 
-### Finding positions
+### How do I iterate over all positions of a particular time point?
 
 If you want to get the detected positions on a certain time point, you can do it like this:
 
@@ -40,6 +40,24 @@ positions = experiment.positions.of_time_point(time_point)
 print("Found positions:", positions)
 ```
 
+### How do I find the first/last time point?
+
+Do you mean the first/last time point with images, the first/last with positions, or the first/last in general? Here's how you would get the last time point number:
+
+```python
+from organoid_tracker.core.experiment import Experiment
+
+experiment = Experiment()
+last_number = experiment.positions.last_time_point_number()  # Last time point for which we have positions
+last_number = experiment.images.last_time_point_number()  # Last time point number for which we have images
+last_number = experiment.last_time_point_number()  # Highest of the above
+```
+
+For getting the first, write `first` instead of `last`. If no data exists, then these functions return `None`.
+
+Note: these functions return `int`. To convert that to a `TimePoint` instance, use `time_point = TimePoint(number)`
+
+### How do I iterate over all positions in all time points?
 Or if you want to loop through all time points in an experiment:
 
 ```python
@@ -51,6 +69,8 @@ for time_point in experiment.time_points():
     print("In time point", time_point.time_point_number(), "there are",
           len(positions_of_time_point), "time points.")
 ```
+
+### How do I find the nearest position?
 
 If you want to find the nearest detected position from a set of positions, there are a few pre-made functions for that. For example, this is how to get the nearest four positions around a position at (x, y, z) =  (15, 201, 3):
 
@@ -80,7 +100,7 @@ N = 2
 nearby_position_finder.find_close_positions(..., around=..., tolerance=N)
 ```
 
-### Working with links
+### How do I check whether a link exists between two positions?
 The connections between positions at different time points are called links. This is how you can check if two positions have a link between each other:
 
 ```python
@@ -97,6 +117,7 @@ else:
 
 Note: this method only returns True if there is a *direct* link between the two positions, so if they are in consecutive time points.
 
+### How do I get the position of the same cell in the next/previous time point?
 You can get find out to which position a position is connected using the `find_pasts` and `find_futures` methods.
 
 ```python
@@ -111,7 +132,38 @@ The resulting set will usually have a size of 1, as it just returns the position
 
 The set of past positions will usually have a size of 1. A size of 0 occurs if the position just went into the view in this time point, or if the time point is the first time point of the experiment.
 
-### Working with biological lineage trees
+### How do I measure some property of a cell over time?
+It's easiest to run backwards in time. If you would run forwards, then it's not clear what should happen when a cell divides. What daughter should then be followed?
+
+See above for how to get positions for a particular time point, and how to get the last time point of an experiment.
+
+```python
+from organoid_tracker.core.experiment import Experiment
+experiment = Experiment()
+last_position = ...
+
+for position in experiment.links.iterate_to_past(last_position):
+    # Record some state of the position, like
+    x_location = position.x
+    time_point_number = position.time_point_number()
+```
+
+### How do I find all dead cells?
+Cell death can be annotated as a general death or as cell shedding (a live cell is extruded). Here's how you find them:
+
+```python
+from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.linking_analysis import linking_markers
+
+experiment = Experiment()
+shed_cells = linking_markers.find_shed_positions(experiment.links, experiment.position_data)
+dead_cells = linking_markers.find_death_positions(experiment.links, experiment.position_data)
+dead_and_shed_cells = linking_markers.find_death_and_shed_positions(experiment.links, experiment.position_data)
+```
+
+You can then iterate over those using a loop: `for position in dead_cells:`.
+
+### How do I work with lineage trees?
 Imagine a lineage tree like this:
 
 ```
@@ -165,14 +217,51 @@ else:
     ...
 ```
 
-## Displaying data graphically
+### How do I know how much time a time point takes?
+The time between two time points is defined by the time resultion:
+
+```python
+from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.core.resolution import ImageResolution
+
+# Normally, you would load an experiment that has the resultion already stored.
+# Here, we just set a resolution: (x in um, y, z, t in minutes)
+experiment = Experiment()
+experiment.images.set_resolution(ImageResolution(0.32, 0.32, 2, 12))
+
+# Here's how to get the time between time points:
+minutes_between_time_points = experiment.images.resolution().time_point_interval_m
+hours_between_time_points = experiment.images.resolution().time_point_interval_h
+```
+
+### How do I get/set the image resolution?
+The images resolution is accessed as follows:
+
+```python
+from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.core.resolution import ImageResolution
+
+experiment = Experiment()
+
+# This is how you define the resolution (x in um, y, z, t in minutes)
+experiment.images.set_resolution(ImageResolution(0.32, 0.32, 2, 12))
+# (if you load an expeirment from an AUT file, the resolution will
+# likely be defined already, and you don't need the above line)
+
+# Here's how to get the size of a pixel in micrometers (um)
+minutes_between_time_points = experiment.images.resolution().pixel_size_x_um
+hours_between_time_points = experiment.images.resolution().pixel_size_z_um
+```
+
+
+### How do I automatically open OrganoidTracker from a standalone script?
 You can of course save data files and then manually open them. However, you can also directly open the visualizer from a script, with your data already loaded. Say, you have an image that you want to display:
 
 ```python
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.images import Images
 from organoid_tracker.gui import launcher
-from organoid_tracker.imaging.single_image_loader import SingleImageLoader
+from organoid_tracker.image_loading.array_image_loader import SingleImageLoader
 from organoid_tracker.visualizer import standard_image_visualizer
 
 array = ... # Some single color 3D numpy array, representing an image

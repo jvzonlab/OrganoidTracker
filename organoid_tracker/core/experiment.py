@@ -20,7 +20,20 @@ from organoid_tracker.core.warning_limits import WarningLimits
 
 class Experiment:
     """A complete experiment, with many stacks of images collected over time. This class ultimately collects all
-    details of the experiment."""
+    details of the experiment.
+
+    An experiment contains `Position` objects. They represent a cell detection at a particular time point. The object
+    itself just stores an x, y, z and time point. The objects can be found in `experiment.positions`. For example, to
+    get a list of all positions at time point 7, use `list(experiment.positions.of_time_point(TimePoint(7))`.
+
+    Cell detections from different time points can be marked as belonging to the same biological cell. These links over
+    time are stored in `experiment.links`. Using for example `experiment.links.find_futures(position)`, you'll know what
+    position in the next time point represents locates same cell. This will usually be one position, but in the case of
+    a division, it will be two positions. In the case of a cell death, it will be 0 positions.
+
+    Cells can also have neighbors, and those are defined in `experiment.connections`. Metadata of cell positions, like
+    the cell type or fluorescent intensity, is stored in `experiment.position_data`.
+    """
 
     # Note: none of the fields may be None after __init__ is called
     _positions: PositionCollection  # Used to mark cell positions
@@ -168,6 +181,8 @@ class Experiment:
         return self.get_time_point(time_point.time_point_number() + 1)
 
     def time_points(self) -> Iterable[TimePoint]:
+        """Returns an iterable over all time points, so that you can do `for time_point in experiment.time_points():`.
+        """
         first_number = self.first_time_point_number()
         last_number = self.last_time_point_number()
         if first_number is None or last_number is None:
@@ -184,12 +199,14 @@ class Experiment:
 
     @property
     def color(self) -> Color:
-        """Returns the color of this experiment, used in various plots."""
+        """Returns the color of this experiment. This color is used in various plots where multiple experiments are
+        summarized."""
         return self._color
 
     @color.setter
     def color(self, color: Color):
-        """Sets the cell positions."""
+        """Sets the color of this experiment. This color is used in various plots where multiple experiments are
+        summarized."""
         if not isinstance(color, Color):
             raise TypeError(f"color must be a {Color.__name__} object, was " + repr(color))
         self._color = color
@@ -201,28 +218,28 @@ class Experiment:
 
     @positions.setter
     def positions(self, positions: PositionCollection):
-        """Sets the cell positions."""
+        """Replaced all the cell positions by a new set."""
         if not isinstance(positions, PositionCollection):
             raise TypeError(f"positions must be a {PositionCollection.__name__} object, was " + repr(positions))
         self._positions = positions
 
     @property
     def beacons(self) -> BeaconCollection:
-        """Gets all beacon positions. You can use beaconds to measure the movement of cells towards or around these
-        beacon positions."""
+        """Gets all beacon positions. Beacons are used to measure the movement of cells towards or around some static
+        position."""
         return self._beacons
 
     @beacons.setter
     def beacons(self, beacons: BeaconCollection):
-        """Sets the beacon positions. You can use beaconds to measure the movement of cells towards or around these
-        beacon positions."""
+        """Sets the beacon positions. Beacons are used to measure the movement of cells towards or around some static
+        position."""
         if not isinstance(beacons, BeaconCollection):
             raise TypeError(f"beacons must be a {BeaconCollection.__name__} object, was " + repr(beacons))
         self._beacons = beacons
 
     @property
     def position_data(self) -> PositionData:
-        """Gets the metadata associated with cell positions."""
+        """Gets the metadata associated with cell positions, like cell type, intensity, etc."""
         return self._position_data
 
     @position_data.setter
@@ -234,17 +251,19 @@ class Experiment:
 
     @property
     def name(self) -> Name:
+        """Gets the name of the experiment."""
         # Don't allow to replace the Name object
         return self._name
 
     @property
     def warning_limits(self) -> WarningLimits:
-        """Gets the limits used by the error checker."""
+        """Gets the limits used by the error checker. For example: what movement is so fast that it should raise an
+        error?"""
         return self._warning_limits
 
     @warning_limits.setter
     def warning_limits(self, warning_limits: WarningLimits):
-        """Sets the limits used by the error checker."""
+        """Sets the limits used by the error checker. For example: what movement is too fast?"""
         if not isinstance(warning_limits, WarningLimits):
             raise TypeError(f"warnings_limits must be a {WarningLimits.__name__} object, was " + repr(warning_limits))
         self._warning_limits = warning_limits
