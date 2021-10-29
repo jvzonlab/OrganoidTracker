@@ -53,12 +53,12 @@ last_number = experiment.images.last_time_point_number()  # Last time point numb
 last_number = experiment.last_time_point_number()  # Highest of the above
 ```
 
-For getting the first, write `first` instead of `last`. If no data exists, then these functions return `None`.
+For getting the first time point instead of the last, write `first` instead of `last`. If no data exists in the entire experiment, then these functions simply return `None`.
 
-Note: these functions return `int`. To convert that to a `TimePoint` instance, use `time_point = TimePoint(number)`
+Note: these functions return an `int`. To convert that to a `TimePoint` instance, use `time_point = TimePoint(number)`
 
 ### How do I iterate over all positions in all time points?
-Or if you want to loop through all time points in an experiment:
+If you want to loop through all positions of all time points in an experiment, you can do that as follows:
 
 ```python
 from organoid_tracker.core.experiment import Experiment
@@ -107,7 +107,7 @@ The connections between positions at different time points are called links. Thi
 from organoid_tracker.core.experiment import Experiment
 experiment = Experiment()
 position_a = ...
-position_b = ..
+position_b = ...
 
 if experiment.links.contains_link(position_a, position_b):
     ... # There is a link
@@ -128,14 +128,14 @@ position = ...
 future_positions = experiment.links.find_futures(position)
 ```
 
-The resulting set will usually have a size of 1, as it just returns the position of the position one time point later. However, if a cell dies or goes out of view, the set of future positions will be empty. If the position was in the last time point of an experiment then the position will also have no future positions connected. If a cell divides, the set will have two elements.
+The resulting set will usually have a size of 1, as it just returns the position of the position one time point later. However, if a cell dies or goes out of view, the set of future positions will be empty. If the position was in the last time point of an experiment then the set of future positions will be empty as well. In contrast, if a cell divides, the set will have two elements.
 
-The set of past positions will usually have a size of 1. A size of 0 occurs if the position just went into the view in this time point, or if the time point is the first time point of the experiment.
+The set of past positions will usually have a size of 1. A size of 0 occurs if the position just went into the view in this time point, or if the time point is the first time point of the experiment. A size of 2 would indicate that two cells merged into one cell. (However, please note that the lineage tree scripts in OrganoidTracker cannot correctly draw this.)
 
 ### How do I measure some property of a cell over time?
 It's easiest to run backwards in time. If you would run forwards, then it's not clear what should happen when a cell divides. What daughter should then be followed?
 
-See above for how to get positions for a particular time point, and how to get the last time point of an experiment.
+See above for how to get positions for a particular time point, and how to get the last time point of an experiment. Once you have somehow obtained the last position, you can run back in time as follows:
 
 ```python
 from organoid_tracker.core.experiment import Experiment
@@ -149,7 +149,7 @@ for position in experiment.links.iterate_to_past(last_position):
 ```
 
 ### How do I find all dead cells?
-Cell death can be annotated as a general death or as cell shedding (a live cell is extruded). Here's how you find them:
+A cell can die within the organoid epithelium, but it is also possible that a live cell was extruded. Although both events will cause the demise of the cell, OrganoidTracker still makes a difference between the two.
 
 ```python
 from organoid_tracker.core.experiment import Experiment
