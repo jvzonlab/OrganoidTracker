@@ -57,7 +57,6 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             "View//Analyze-Lists//Cell divisions... [M]": self._show_mother_cells,
             "View//Analyze-Lists//Cell shedding and deaths... [S]": self._show_dead_cells,
             "View//Analyze-Cell properties//Cell density...": self._show_cell_density,
-            "View//Analyze-Cell properties//Cell curvature...": self._show_cell_curvature,
             "View//Tracks-Track follower... [T]": self._show_track_follower,
             "View//Analyze-Analyze fate of cells//Movement arrows...": self._show_movement_arrows,
             "View//Analyze-Analyze fate of cells//Cell fates...": self._show_cell_fates,
@@ -155,10 +154,6 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     def _show_cell_density(self):
         from organoid_tracker.visualizer.cell_density_visualizer import CellDensityVisualizer
         activate(CellDensityVisualizer(self._window))
-
-    def _show_cell_curvature(self):
-        from organoid_tracker.visualizer.cell_curvature_visualizer import CellCurvatureVisualizer
-        activate(CellCurvatureVisualizer(self._window))
 
     def _ask_merge_experiments(self):
         link_files = dialog.prompt_load_multiple_files("Select data file", io.SUPPORTED_IMPORT_FILES)
