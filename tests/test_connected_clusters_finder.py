@@ -1,6 +1,6 @@
 import unittest
 
-from organoid_tracker.connecting import cluster_finder
+from organoid_tracker.connection_analysis import cluster_finder
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.position import Position
