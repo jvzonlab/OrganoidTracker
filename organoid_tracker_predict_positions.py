@@ -109,7 +109,7 @@ print("Loading model...")
 model = tf.keras.models.load_model(_model_folder, custom_objects={"loss": loss,
                                                                   "position_precision": position_precision,
                                                                   "position_recall": position_recall,
-                                                                  "overcount": overcount,
+                                                                  "overcount": overcount})
 
 if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
     print("Error: no settings.json found in model folder.")
