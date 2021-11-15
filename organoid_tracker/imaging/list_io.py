@@ -3,7 +3,7 @@ experiments are stored in an autlist file. This module contains functions to sav
 
 import json
 import os
-from typing import List
+from typing import List, Iterable
 
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.image_loading import general_image_loader
@@ -12,13 +12,12 @@ from organoid_tracker.imaging import io
 FILES_LIST_EXTENSION = ".autlist"
 
 
-def load_experiment_list_file(open_files_list_file: str) -> List[Experiment]:
+def load_experiment_list_file(open_files_list_file: str) -> Iterable[Experiment]:
     """Loads all the listed files in the given file.."""
     start_dir = os.path.dirname(open_files_list_file)
     with open(open_files_list_file, "r") as handle:
         experiments_json = json.load(handle)
 
-    experiments = list()
     for experiment_json in experiments_json:
         experiment = Experiment()
         min_time_point = 0
@@ -52,5 +51,4 @@ def load_experiment_list_file(open_files_list_file: str) -> List[Experiment]:
         if not loaded_anything:
             raise ValueError("No experiment defined in " + json.dumps(experiment_json) + ".")
 
-        experiments.append(experiment)
-    return experiments
+        yield experiment
