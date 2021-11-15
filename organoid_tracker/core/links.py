@@ -246,7 +246,9 @@ class Links:
         return len(self._position_to_track) > 0
 
     def find_futures(self, position: Position) -> Set[Position]:
-        """Returns all connections to the future."""
+        """Returns the positions linked to this position in the next time point. Normally, this will be one position.
+        However, if the cell divides between now and the next time point, two positions are returned. And if the cell
+        track ends, zero positions are returned."""
         track = self._position_to_track.get(position)
         if track is None:
             return set()
@@ -260,7 +262,9 @@ class Links:
         return None
 
     def find_pasts(self, position: Position) -> Set[Position]:
-        """Returns all connections to the past."""
+        """Returns the positions linked to this position in the previous time point. Normally, this will be one
+        position. However, the cell track just started, zero positions are returned. In the case of a cell merge,
+        multiple positions are returned."""
         track = self._position_to_track.get(position)
         if track is None:
             return set()
