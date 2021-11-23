@@ -61,18 +61,24 @@ def get_normalized_intensity(experiment: Experiment, position: Position) -> Opti
 
     intensity = position_data.get_position_data(position, "intensity")
     background = global_data.get_data("intensity_background_per_pixel")
-    multiplier = global_data.get_data("intensity_multiplier")
+    multiplier = global_data.get_data("intensity_multiplier_z" + str(round(position.z)))
+    if multiplier is None:
+        # Try global multiplier
+        multiplier = global_data.get_data("intensity_multiplier")
     volume = position_data.get_position_data(position, "intensity_volume")
-    if volume is None or multiplier is None:
+    if volume is None or multiplier is None or background is None:
         return intensity
     return (intensity - background * volume) * multiplier
 
 
-def perform_intensity_normalization(experiment: Experiment, *, background_correction: bool = True):
+def perform_intensity_normalization(experiment: Experiment, *, background_correction: bool = True, z_correction: bool = True):
     """Gets the average intensity of all positions in the experiment.
     Returns None if there are no intensity recorded."""
+    remove_intensity_normalization(experiment)
+
     intensities = list()
     volumes = list()
+    zs = list()
 
     position_data = experiment.position_data
     for position, intensity in position_data.find_all_positions_with_data("intensity"):
@@ -82,12 +88,14 @@ def perform_intensity_normalization(experiment: Experiment, *, background_correc
 
         intensities.append(intensity)
         volumes.append(volume)
+        zs.append(round(position.z))
 
     if len(intensities) == 0:
         return
 
     intensities = numpy.array(intensities, dtype=numpy.float32)
     volumes = numpy.array(volumes, dtype=numpy.float32)
+    zs = numpy.array(zs, dtype=numpy.int32)
 
     if background_correction:
         # Assume the lowest signal consists of only background
@@ -101,13 +109,21 @@ def perform_intensity_normalization(experiment: Experiment, *, background_correc
         experiment.global_data.set_data("intensity_background_per_pixel", 0)
 
     # Now normalize the mean to 100
-    median = numpy.median(intensities)
-    normalization_factor = float(100 / median)
-
-    experiment.global_data.set_data("intensity_multiplier", normalization_factor)
+    if z_correction:
+        for z in range(int(numpy.min(zs)), int(numpy.max(zs)) + 1):
+            median = numpy.median(intensities[zs == z])
+            normalization_factor = float(100 / median)
+            experiment.global_data.set_data("intensity_multiplier_z" + str(z), normalization_factor)
+    else:
+        median = numpy.median(intensities)
+        normalization_factor = float(100 / median)
+        experiment.global_data.set_data("intensity_multiplier", normalization_factor)
 
 
 def remove_intensity_normalization(experiment: Experiment):
     """Removes the normalization set by perform_intensity_normalization."""
     experiment.global_data.set_data("intensity_background_per_pixel", None)
     experiment.global_data.set_data("intensity_multiplier", None)
+    for key in list(experiment.global_data.get_all_data().keys()):
+        if key.startswith("intensity_multiplier_z"):
+            experiment.global_data.set_data(key, None)
