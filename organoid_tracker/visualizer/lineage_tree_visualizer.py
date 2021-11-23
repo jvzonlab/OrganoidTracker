@@ -153,7 +153,7 @@ class LineageTreeVisualizer(Visualizer):
             self._display_custom_colors = True
             self.update_status(f"Now coloring by {self._get_custom_color_label()}; turned off other lineage coloring")
         else:
-            self.update_status("No longer coloring by {self._get_custom_color_label()}")
+            self.update_status(f"No longer coloring by {self._get_custom_color_label()}")
         self.draw_view()
 
     def _toggle_track_id(self):
