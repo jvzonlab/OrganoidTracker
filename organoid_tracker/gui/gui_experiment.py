@@ -220,6 +220,14 @@ class GuiExperiment:
                                                       " one in the upper-right corner of the window.")
         return self._tabs[self._selected_experiment]
 
+    def get_active_tabs(self) -> List[SingleGuiTab]:
+        """Gets the currently active tabs. Either this is a single tab, or if the "All tabs" option has
+        been selected, this returns all tabs."""
+        if self._selected_experiment == len(self._tabs):
+            # All tabs are open
+            return self.get_all_tabs()
+        return [self.get_open_tab()]
+
     def unregister_marker(self, marker: Marker):
         """Unregisters a marker, so that it is no longer included in get_registered_markers ."""
         if marker.save_name in self._registered_markers:
