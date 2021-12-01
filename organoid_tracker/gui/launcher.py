@@ -195,6 +195,7 @@ def launch_window(experiment: Experiment) -> MainWindow:
     pyplot.rcParams["font.family"] = "Arial, Helvetica, sans-serif"
     pyplot.rcParams["xtick.direction"] = "in"
     pyplot.rcParams["ytick.direction"] = "in"
+    pyplot.rcParams["figure.autolayout"] = True
 
     # Create matplotlib figure
     fig = Figure(figsize=(12, 12), dpi=95)
