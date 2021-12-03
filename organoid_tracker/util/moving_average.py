@@ -19,6 +19,10 @@ class PlotAverage(ABC):
                 The error bar is either the standard deviation (if standard_error is False) or the standard error (if standard_error is True).
                 """
 
+    @abstractmethod
+    def get_x_positions_and_means(self) -> Tuple[ndarray, ndarray]:
+        """Gets the x positions and the means at those x positions."""
+
 
 class MovingAverage(PlotAverage):
     """A moving average calculation for a point cloud. Usage example:
@@ -149,6 +153,9 @@ class MovingAverage(PlotAverage):
             return used_y_values.mean()
         return None
 
+    def get_x_positions_and_means(self) -> Tuple[ndarray, ndarray]:
+        return self.x_values, self.mean_values
+
 
 class LinesAverage(PlotAverage):
     """A moving average for a bunch of lines."""
@@ -229,3 +236,21 @@ class LinesAverage(PlotAverage):
             axes.plot(x_error_values, y_error_values_mean, color=color.to_rgb_floats(), linewidth=linewidth, label=label)
             axes.fill_between(x_error_values, y_error_values_min,
                           y_error_values_max, color=color.to_rgb_floats(), alpha=1 - error_opacity)
+
+    def get_x_positions_and_means(self) -> Tuple[ndarray, ndarray]:
+        min_x, max_x = self._get_min_max_x()
+
+        x_error_values = list()
+        y_error_values_mean = list()
+        for x in numpy.arange(min_x + 0.01, max_x - 0.01, self._x_step_size):
+            y_values = self._get_y_values_at(x)
+            if len(y_values) <= 1:
+                continue
+
+            y_mean = numpy.mean(y_values)
+            y_error = numpy.std(y_values, ddof=1)
+
+            x_error_values.append(x)
+            y_error_values_mean.append(y_mean)
+
+        return numpy.array(x_error_values, dtype=numpy.float32), numpy.array(y_error_values_mean, dtype=numpy.float32)
