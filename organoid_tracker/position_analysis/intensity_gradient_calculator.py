@@ -8,7 +8,7 @@ from organoid_tracker.position_analysis import position_markers
 
 def get_intensity_gradient(experiment: Experiment, position: Position, is_included: Callable[[Position], bool]
                            ) -> Optional[Vector3]:
-    """Calculates the intensity gradient for a position. Note: doesn't check whether all neighbors are present."""
+    """Calculates the spatial intensity gradient for a position. Note: doesn't check whether all neighbors are present."""
     resolution = experiment.images.resolution()
     position_intensity = position_markers.get_normalized_intensity(experiment, position)
 
