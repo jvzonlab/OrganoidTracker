@@ -251,8 +251,9 @@ experiment.images.set_resolution(ImageResolution(0.32, 0.32, 2, 12))
 # likely be defined already, and you don't need the above line)
 
 # Here's how to get the size of a pixel in micrometers (um)
-minutes_between_time_points = experiment.images.resolution().time_point_interval_m
-hours_between_time_points = experiment.images.resolution().time_point_interval_h
+pixel_size_x_in_um = experiment.images.resolution().pixel_size_x_um
+pixel_size_y_in_um = experiment.images.resolution().pixel_size_y_um  # Should be equal to x resolution
+pixel_size_z_in_um = experiment.images.resolution().pixel_size_z_um  # Z resolution is often lower
 ```
 
 
