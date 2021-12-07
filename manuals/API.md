@@ -5,7 +5,7 @@ OrganoidTracker contains many functions for working with experimental data. Thos
 
 Note: any method, function and field that has a name starting with an underscore (`_`) should not be used by external code. Ask if there is an alternative way to do it.
 
-Note: to view a (daunting) overview of all classes and methods, run `pydoc -b` from the command line, while you are in the OrganoidTracker folder and in the OrganoidTracker conda environment. You can best start reading at the `organoid_tracker.core.experiment` package.
+Note: for a complete overview of all methods and properties in the `Experiment` object, use the `Help -> Show data inspector...` menu option. To view a (daunting) overview of all classes and methods in OrganoidTracker, run `pydoc -b` from the command line, while you are in the OrganoidTracker folder and in the OrganoidTracker conda environment.
 
 ### How do I save and load tracking data?
 
@@ -24,6 +24,8 @@ experiment = io.load_data_file("my_file_name.aut")
 # Saving
 io.save_data_to_json(experiment, "my_file_name.aut")
 ```
+
+For other file formats, you need to write a script yourself. See the [custom tracking formats](CUSTOM_TRACKING_FORMATS.md) page for an example.
 
 ### How do I iterate over all positions of a particular time point?
 
