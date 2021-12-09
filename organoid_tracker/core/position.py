@@ -91,7 +91,7 @@ class Position:
         except AttributeError:
             return False
 
-    def time_point(self):
+    def time_point(self) -> TimePoint:
         """Gets the time point of this position. Note: getting the time point number is slightly more efficient, as
         this method requires allocating a new TimePoint instance."""
         return TimePoint(self._time_point_number)

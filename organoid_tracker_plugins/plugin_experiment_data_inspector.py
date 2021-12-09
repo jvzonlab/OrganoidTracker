@@ -3,6 +3,9 @@ import html
 import inspect
 import types
 from typing import Optional, Dict, Any, Iterable, NamedTuple, List
+from urllib.parse import unquote
+
+from numpy import ndarray
 
 from organoid_tracker.core import TimePoint, UserError
 from organoid_tracker.core.position import Position
@@ -100,7 +103,7 @@ class _Element(NamedTuple):
 
     def to_html(self) -> str:
         if self.is_clickable():
-            text = "<code><a href=\"" + self.link + "\">" + self.element_name + "</a>"
+            text = "<code><a href=\"" + html.escape(self.link) + "\">" + self.element_name + "</a>"
         else:
             text = "<code><b>" + self.element_name + "</b>"
         text += self.signature
@@ -171,17 +174,21 @@ class _DataInspectorPopup(RichTextPopup):
         return "Inspector"
 
     def _get_inspector(self, parent_element_name: str) -> Optional[str]:
-        if not parent_element_name.startswith("experiment"):
+        if not parent_element_name.startswith("experiment") and not parent_element_name.startswith("list("):
+            dialog.popup_error("Cannot open link", "The text " + parent_element_name + " is not meant to be evaluated.")
             return None  # Cannot handle this
 
+        # Evaluate the element that we want to display
         experiment = self._window.get_experiment()
         parent_element_name = self._fill_in_parameters(parent_element_name)
         if parent_element_name is None:
             return None
         parent_element = eval(parent_element_name, globals(), {"experiment": experiment})
 
+        # Add it to the back button
         self._navigation_stack.append(parent_element_name)
 
+        # Show the element
         output = f"<h2>Contents of <code>{html.escape(parent_element_name)}</code>:</h2>"
         output += self._get_back_link()
         output += _get_summary(parent_element)
@@ -198,7 +205,7 @@ class _DataInspectorPopup(RichTextPopup):
             self._navigation_stack.pop()  # Removes current page
             return self._get_inspector(self._navigation_stack.pop())  # Goes to previous
         if url.startswith("goto:"):
-            parent_element_name = url[len("goto:"):]
+            parent_element_name = unquote(url[len("goto:"):])
             return self._get_inspector(parent_element_name)
         return None
 
@@ -261,18 +268,43 @@ def _get_detailed_contents(parent_name: str, obj: Any) -> str:
             # Was not fully displayed in summary, so display here
             return "<h2>Full value:</h2><p><code><small>" + html.escape(obj) + "</small></code></p>"
         return ""
+    elif isinstance(obj, dict):
+        return _get_detailed_contents_of_dictionary(obj)
     elif isinstance(obj, collections.abc.Iterable):
-        return _get_detailed_contents_of_iterable(obj)
+        return _get_detailed_contents_of_iterable(parent_name, obj)
     else:
         return ""
 
 
-def _get_detailed_contents_of_iterable(obj: Iterable[Any]):
+def _get_detailed_contents_of_dictionary(obj: Dict[Any, Any]):
     element_count = 0
     collection_type = _format_type(str(type(obj)))
     output = "<ul>"
-    for element in obj:
-        output += "<li><code>" + html.escape(str(element)) + "</code></li>"
+    for key, element in obj:
+        output += "<li><code>" + html.escape(str(element)) + "</code>:"
+        output += " <code>" + html.escape(str(element)) + "</code></li>"
+        element_count += 1
+    if element_count == 0:
+        return "<p>Empty " + html.escape(collection_type) + ".</p>"
+    output += "</ul>"
+    output = "<p>" + html.escape(collection_type.title()) + " with <b>" \
+             + str(element_count) + "</b> elements.</p>" + output
+    return output
+
+
+def _supports_indexing(obj: Any) -> bool:
+    """Returns true if we can do obj[i], with i an integer."""
+    return isinstance(obj, list) or isinstance(obj, ndarray) or isinstance(obj, tuple)
+
+
+def _get_detailed_contents_of_iterable(parent_name: str, obj: Iterable[Any]):
+    element_count = 0
+    collection_type = _format_type(str(type(obj)))
+    output = "<ul>"
+    for i, element in enumerate(obj):
+        url = "goto:" + parent_name + "[" + str(i) + "]" if _supports_indexing(obj)\
+            else "goto:list(" + parent_name + ")[" + str(i) + "]"
+        output += "<li><a href=\"" + html.escape(url) + "\"><code>" + html.escape(str(element)) + "</code></a></li>"
         element_count += 1
     if element_count == 0:
         return "<p>Empty " + html.escape(collection_type) + ".</p>"
