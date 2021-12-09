@@ -56,6 +56,8 @@ def training_data_creator_from_raw(image_with_positions_list: List[_ImageWithPos
     if mode == 'train':
         # generate multiple patches from image
         dataset = dataset.flat_map(partial(generate_patches, patch_shape=patch_shape, multiplier=batch_size))
+        dataset = dataset.map(apply_noise)
+
         # create random batches
         dataset = dataset.shuffle(buffer_size=10*batch_size)
         dataset = dataset.batch(batch_size)

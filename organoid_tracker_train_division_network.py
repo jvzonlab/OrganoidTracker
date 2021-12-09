@@ -1,28 +1,30 @@
 #!/usr/bin/env python3
 
 """Script used to train the convolutional neural network, so that it can recognize nuclei in 3D images."""
-import json
 import os
 import random
 from functools import partial
 from os import path
-from typing import Set, Tuple
+from typing import Set
 
 import tensorflow as tf
+import numpy as np
 import tifffile
-from tensorflow.python.data import Dataset
+from PIL import Image as Img
 
-from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int, config_type_bool
+from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int
 from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.division_detection_cnn.training_data_creator import create_image_with_divisions_list
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.channel_merging_image_loader import ChannelMergingImageLoader
 from organoid_tracker.imaging import io
+# from organoid_tracker.position_detection_cnn import training_data_creator, trainer
 
-from organoid_tracker.position_detection_cnn.image_with_positions_to_tensor_loader import dataset_writer
-from organoid_tracker.position_detection_cnn.convolutional_neural_network import build_model, tensorboard_callback
+from organoid_tracker.division_detection_cnn.ImageWithDivisions_to_tensor_loader import dataset_writer
+from organoid_tracker.division_detection_cnn.convolutional_neural_network import build_model, tensorboard_callback
 from organoid_tracker.position_detection_cnn.training_data_creator import create_image_with_positions_list
 
-from organoid_tracker.position_detection_cnn.training_dataset import training_data_creator_from_TFR, training_data_creator_from_raw
+from organoid_tracker.division_detection_cnn.training_dataset import training_data_creator_from_TFR, training_data_creator_from_raw
 
 
 # PARAMETERS
@@ -84,10 +86,11 @@ while True:
     per_experiment_params.append(params)
     i += 1
 
-time_window = (int(config.get_or_default(f"time_window_before", str(-1))),
-               int(config.get_or_default(f"time_window_after", str(1))))
+time_window = [int(config.get_or_default(f"time_window_before", str(-1))),
+               int(config.get_or_default(f"time_window_after", str(1)))]
 
-use_tfrecords = config.get_or_default(f"use_tfrecords", str(True), type=config_type_bool)
+use_TFR = config.get_or_default(f"use_TFRecords", str(True))
+use_TFR = bool(use_TFR == "True")
 
 patch_shape = list(
     config.get_or_default("patch_shape", "64, 64, 32", comment="Size in pixels (x, y, z) of the patches used"
@@ -102,7 +105,7 @@ batch_size = config.get_or_default("batch_size", "64", comment="How many patches
 epochs = config.get_or_default("epochs", "50", comment="For how many epochs the network is trained. Larger is not"
                                                        " always better; at some point the network might get overfitted"
                                                        " to your training data.",
-                                type=config_type_int)
+                                           type=config_type_int)
 config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
@@ -110,77 +113,49 @@ config.save_and_exit_if_changed()
 experiment_provider = (params.to_experiment() for params in per_experiment_params)
 
 # Create a list of images and annotated positions
-image_with_positions_list = create_image_with_positions_list(experiment_provider)
+image_with_divisions_list = create_image_with_divisions_list(experiment_provider)
 
 # shuffle training/validation data
 random.seed("using a fixed seed to ensure reproducibility")
-random.shuffle(image_with_positions_list)
+random.shuffle(image_with_divisions_list)
 
 # create tf.datasets that generate the data
-if use_tfrecords:
+if use_TFR:
     print("creating_TFRecords...")
-    image_files, label_files = dataset_writer(image_with_positions_list, time_window, shards=10)
+    image_files, label_files, dividing_files = dataset_writer(image_with_divisions_list, time_window, shards=10)
 
-    training_dataset = training_data_creator_from_TFR(image_files, label_files,
+    training_dataset = training_data_creator_from_TFR(image_files, label_files, dividing_files,
                                                       patch_shape=patch_shape, batch_size=batch_size, mode='train',
-                                                      split_proportion=0.8, n_images=len(image_with_positions_list))
-    validation_dataset = training_data_creator_from_TFR(image_files, label_files,
+                                                      split_proportion=0.8, n_images=len(image_with_divisions_list))
+    validation_dataset = training_data_creator_from_TFR(image_files, label_files, dividing_files,
                                                         patch_shape=patch_shape, batch_size=batch_size,
-                                                        mode='validation', split_proportion=0.8, n_images=len(image_with_positions_list))
+                                                        mode='validation', split_proportion=0.8, n_images=len(image_with_divisions_list))
 
 else:
-    training_dataset = training_data_creator_from_raw(image_with_positions_list, time_window=time_window,
+    training_dataset = training_data_creator_from_raw(image_with_divisions_list, time_window=time_window,
                                              patch_shape=patch_shape, batch_size=batch_size, mode='train',
                                              split_proportion=0.8)
-    validation_dataset = training_data_creator_from_raw(image_with_positions_list, time_window=time_window,
+    validation_dataset = training_data_creator_from_raw(image_with_divisions_list, time_window=time_window,
                                                patch_shape=patch_shape, batch_size=batch_size,
                                                mode='validation', split_proportion=0.8)
 
-print("Defining model...")
-model = build_model(shape=(patch_shape[0], None, None, time_window[1] - time_window[0] + 1), batch_size=None)
+
+# build model
+model = build_model(shape=(patch_shape[0], patch_shape[1], patch_shape[2], time_window[1] - time_window[0] + 1), batch_size=None)
 model.summary()
 
+# train model
 print("Training...")
-os.makedirs(output_folder, exist_ok=True)
-tensorboard_folder = os.path.join(output_folder, "tensorboard")
 history = model.fit(training_dataset,
                     epochs=epochs,
-                    steps_per_epoch=round(0.8*len(image_with_positions_list)),
+                    steps_per_epoch=round(0.8*len(image_with_divisions_list)*100/batch_size),
                     validation_data=validation_dataset,
-                    validation_steps=10,
-                    callbacks=[tensorboard_callback(tensorboard_folder)])
+                    validation_steps=1000,
+                    callbacks=[tensorboard_callback , tf.keras.callbacks.EarlyStopping(patience=2, restore_best_weights=True)])
 
+# save model
 print("Saving model...")
-trained_model_folder = os.path.join(output_folder, "trained_model")
-tf.keras.models.save_model(model, trained_model_folder)
-with open(os.path.join(trained_model_folder, "settings.json"), "w") as file_handle:
-    json.dump({"time_window": time_window}, file_handle, indent=4)
+tf.keras.models.save_model(model, "model_test")
 
-
-# Sanity check, do predictions on 10 samples of the validation set
-print("Sanity check...")
-os.makedirs(os.path.join(output_folder, "examples"), exist_ok=True)
-
-
-def predict(image: tf.Tensor, label: tf.Tensor, model: tf.keras.Model) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
-    return image, model(image, training=False), label
-
-
-quick_dataset: Dataset = validation_dataset.unbatch().take(10).batch(1)
-predictions = quick_dataset.map(partial(predict, model=model))
-
-for i, element in enumerate(predictions):
-
-    array = element[0].numpy()
-    array = array[0, :, :, :, 0]
-    tifffile.imwrite(os.path.join(output_folder, "examples", "example_input" + str(i) + ".tiff"), array)
-
-    array = element[1].numpy()
-    array = array[0, :, :, :, 0]
-    tifffile.imwrite(os.path.join(output_folder, "examples", "example_prediction" + str(i) + ".tiff"), array)
-
-    array = element[2].numpy()
-    array = array[0, :, :, :, 0]
-    tifffile.imwrite(os.path.join(output_folder, "examples", "example_labels" + str(i) + ".tiff"), array)
 
 
