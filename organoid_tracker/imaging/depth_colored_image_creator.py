@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from numpy import ndarray
 import numpy
 import matplotlib.cm
@@ -7,13 +9,18 @@ from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.core.images import Images
 
 
-def create_image(image: ndarray, color_map_name: str = "Spectral") -> ndarray:
-    """Creates a 2D image (float32, [y, x, RGBA]) by giving each xy later in the 3D image another color."""
+def create_image(image: ndarray, *, background_rgba: Tuple[int, int, int, int] = (0, 0, 0, 255),
+                 color_map_name: str = "Spectral") -> ndarray:
+    """Creates a 2D image (float32, [y, x, RGBA]) by giving each xy later in the 3D image another color.
+
+    background_rgba is the background RGBA color, for example (255, 0, 0, 255) for bright red.
+    color_map_name is the Matplotlib colormap used for drawing."""
     color_map = matplotlib.cm.get_cmap(color_map_name)
 
-    black_image = numpy.zeros((image.shape[1], image.shape[2], 4), dtype=numpy.uint8)
-    black_image[:, :, 3] = 255  # Set alpha to opaque
-    color_image_pil = Image.fromarray(black_image)
+    background_image = numpy.zeros((image.shape[1], image.shape[2], 4), dtype=numpy.uint8)
+    for i in range(4):
+        background_image[:, :, i] = background_rgba[i]
+    color_image_pil = Image.fromarray(background_image)
 
     max_z = image.shape[0] - 1
     max_intensity = image.max()
