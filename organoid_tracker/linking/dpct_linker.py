@@ -6,9 +6,11 @@ Targets. ECCV 2016 Proceedings.
 """
 
 import dpct
+import numpy as np
 import math
 from typing import Dict, List, Iterable, Tuple
 
+from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position import Position
@@ -52,10 +54,9 @@ def _to_links(position_ids: _PositionToId, results: Dict) -> Links:
 
     return links
 
-
-def run(positions: PositionCollection, position_data: PositionData, starting_links: Links, scores: ScoreCollection,
-        resolution: ImageResolution, *, link_weight: int, detection_weight: int, division_weight: int, appearance_weight: int,
-        dissappearance_weight: int) -> Links:
+def run(positions: PositionCollection, position_data: PositionData, starting_links: Links, link_data: LinkData,
+            *, link_weight: int, detection_weight: int, division_weight: int, appearance_weight: int,
+            dissappearance_weight: int) -> Tuple[Links, Links]:
     """
     Calculates the optimal links, based on the given starting points and weights.
     :param positions: The positions.
@@ -71,7 +72,7 @@ def run(positions: PositionCollection, position_data: PositionData, starting_lin
     :return:
     """
     position_ids = _PositionToId()
-    input, has_possible_divisions = _create_dpct_graph(position_ids, starting_links, scores, position_data, resolution,
+    input, has_possible_divisions, naive_links = _create_dpct_graph(position_ids, starting_links, position_data, link_data,
                                         positions.first_time_point_number(), positions.last_time_point_number())
 
     if has_possible_divisions:
@@ -79,89 +80,146 @@ def run(positions: PositionCollection, position_data: PositionData, starting_lin
     else:
         weights = {"weights": [link_weight, detection_weight, appearance_weight, dissappearance_weight]}
     results = dpct.trackFlowBased(input, weights)
-    return _to_links(position_ids, results)
+    return _to_links(position_ids, results), naive_links
 
 
-def _scores_involving(daughter: Position, scores: Iterable[ScoredFamily]) -> Iterable[ScoredFamily]:
-    """Gets all scores where the given position plays the role as a daughter in the given score."""
-    for score in scores:
-        if daughter in score.family.daughters:
-            yield score
-
-
-def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links, scores: ScoreCollection,
-                       position_data: PositionData, resolution: ImageResolution,
-                       min_time_point: int, max_time_point: int) -> Tuple[Dict, bool]:
+def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links,
+                       position_data: PositionData, link_data: LinkData,
+                       min_time_point: int, max_time_point: int, division_penalty_cut_off = 1, ignore_penalty = 2.0, penalty_difference_cut_off = 4.0) -> Tuple[Dict, bool, Links]:
     """Creates the linking network. Returns the network and whether there are possible divisions."""
     created_possible_division = False
 
+    naive_links = Links()
     segmentation_hypotheses = []
+
     for position in starting_links.find_all_positions():
-        appearance_penalty = 1 if position.time_point_number() > min_time_point else 0
-        disappearance_penalty = 1 if position.time_point_number() < max_time_point else 0
+        position_data.set_position_data(position, data_name='min_in_link_penalty', value=10)
+        position_data.set_position_data(position, data_name='min_out_link_penalty', value=10)
 
-        map = {
-            "id": position_ids.id(position),
-            "features": [[1.0], [0.0]],  # Assigning a detection to zero cells costs 1, using it is free
-            "appearanceFeatures": [[0], [appearance_penalty]],  # Using an appearance is expensive
-            "disappearanceFeatures": [[0], [disappearance_penalty]],  # Using a dissappearance is expensive
-            "timestep": [position.time_point_number(), position.time_point_number()]
-        }
+        # find (dis)appearance penalty
+        appearance_penalty = position_data.get_position_data(position, data_name='appearance_penalty') if position.time_point_number() > min_time_point else 0
+        disappearance_penalty = position_data.get_position_data(position, data_name='disappearance_penalty') if position.time_point_number() < max_time_point else 0
 
-        # Add division score
-        division_score = _max_score(scores.of_mother(position))
-        if not division_score.is_unlikely_mother():
-            map["divisionFeatures"] = [[0], [-division_score.total()]]
+        # find division penalty
+        division_penalty = position_data.get_position_data(position, data_name='division_penalty')
+
+        # check if all the scores are there!
+        if disappearance_penalty is None:
+            print('alarm')
+        if division_penalty is None:
+            print('missing')
+
+        if division_penalty < division_penalty_cut_off:
+            map = {
+                "id": position_ids.id(position),
+                "features": [[ignore_penalty], [0]],  # Assigning a detection to zero cells costs, using it is free
+                "appearanceFeatures": [[0], [appearance_penalty]],  # Using an appearance is expensive
+                "disappearanceFeatures": [[0], [disappearance_penalty]],  # Using a dissappearance is expensive
+                "divisionFeatures": [[0], [division_penalty]],
+                "timestep": [position.time_point_number(), position.time_point_number()]
+            }
             created_possible_division = True
+        else:
+            map = {
+                "id": position_ids.id(position),
+                "features": [[ignore_penalty], [0]],  # Assigning a detection to zero cells costs, using it is free
+                "appearanceFeatures": [[0], [appearance_penalty]],  # Using an appearance is expensive
+                "disappearanceFeatures": [[0], [disappearance_penalty]],  # Using a dissappearance is expensive
+                "timestep": [position.time_point_number(), position.time_point_number()]
+            }
         segmentation_hypotheses.append(map)
 
     linking_hypotheses = []
+
+    # first cycle over all the links
     for position1, position2 in starting_links.find_all_links():
         # Make sure position1 is earlier in time
         if position1.time_point_number() > position2.time_point_number():
+            print('happens?')
             position1, position2 = position2, position1
 
-        volume1, volume2 = linking_markers.get_shape(position_data, position1).volume(),\
-                           linking_markers.get_shape(position_data, position2).volume()
-        link_penalty = position1.distance_um(position2, resolution)
-        link_penalty += (abs(volume1 - volume2) ** (1 / 3)) * resolution.pixel_size_x_um
+        # get link penalty
+        link_penalty = link_data.get_link_data(position1, position2, data_name="link_penalty")
+        # is it there?
+        if link_penalty is None:
+            print("link data missing")
+            link_penalty = 2
 
-        mother_score = _max_score(_scores_involving(position2, scores.of_mother(position1)))
+        # determine the lowest in and out going link penalty for every cell
+        if link_penalty < position_data.get_position_data(position2, 'min_in_link_penalty'):
+            position_data.set_position_data(position2, 'min_in_link_penalty', link_penalty)
 
-        if not mother_score.is_unlikely_mother():
-            link_penalty /= 2
-        linking_hypotheses.append({
-            "src": position_ids.id(position1),
-            "dest": position_ids.id(position2),
-            "features": [[0],  # Sending zero cells through the link costs nothing
+        if link_penalty < position_data.get_position_data(position1, 'min_out_link_penalty'):
+            position_data.set_position_data(position1, 'min_out_link_penalty', link_penalty)
+
+    j= 0
+    # second cycle over all links
+    for position1, position2 in starting_links.find_all_links():
+        # Make sure position1 is earlier in time
+        if position1.time_point_number() > position2.time_point_number():
+            print('happens?')
+            position1, position2 = position2, position1
+
+        link_penalty = link_data.get_link_data(position1, position2, data_name="link_penalty")
+        if link_penalty is None:
+            print("link data missing" + str(j))
+            j = j + 1
+            link_penalty = 2
+
+        # if the link penalty is much smaller then other options we can ignore it
+        if (link_penalty < position_data.get_position_data(position2, 'min_in_link_penalty') + penalty_difference_cut_off): # and \
+                #(link_penalty < position_data.get_position_data(position1, 'min_out_link_penalty') + penalty_difference_cut_off):
+
+            naive_links.add_link(position1, position2)
+            linking_hypotheses.append({
+                "src": position_ids.id(position1),
+                "dest": position_ids.id(position2),
+                "features": [[0],  # Sending zero cells through the link costs nothing
                          [link_penalty]  # Sending one cell through the link costs this
                          ]
-        })
+            })
+        else:
+            print('ignored unlikely link')
+            print(link_penalty)
 
     return {
         "settings": {
             "statesShareWeights": True
         },
-
         "segmentationHypotheses": segmentation_hypotheses,
         "linkingHypotheses": linking_hypotheses,
-    }, created_possible_division
+    }, created_possible_division, naive_links
 
 
-class _ZeroScore(Score):
-    def __setattr__(self, key, value):
-        raise RuntimeError("Cannot change the zero score")
+def calculate_appearance_penalty(experiment, min_appearance_probability, name='appearance_penalty', buffer_distance = 5.0):
+    # go over all timepoints
+    for time_point in experiment.positions.time_points():
+        positions = experiment.positions.of_time_point(time_point)
+        offset = experiment.images.offsets.of_time_point(time_point)
+        image_shape = experiment._images.get_image_stack(time_point).shape
+        resolution = experiment.images.resolution()
 
+        # and all positions
+        for position in positions:
+            # get distances to the image edges in x, y and z
+            distances = [(image_shape[2] - position.x + offset.x) * resolution.pixel_size_x_um,
+                         (image_shape[1] - position.y + offset.y) * resolution.pixel_size_y_um,
+                         (image_shape[0] - position.z + offset.z) * resolution.pixel_size_z_um,
+                         (position.x - offset.x) * resolution.pixel_size_x_um,
+                         (position.y - offset.y) * resolution.pixel_size_y_um,
+                         (position.z - offset.z) * resolution.pixel_size_z_um]
+            # get minimum distance
+            min_distance = min(distances)
 
-_ZERO_SCORE = _ZeroScore()
+            # calculate (dis)appearance probability
+            if min_distance < buffer_distance:
+                appearance_probability = 0.5 * (1 - min_distance/buffer_distance) + min_appearance_probability
+            else:
+                appearance_probability = min_appearance_probability
 
+            appearance_penalty = - np.log10(appearance_probability) + np.log10(1-appearance_probability)
 
-def _max_score(scored_family: Iterable[ScoredFamily]) -> Score:
-    """Returns the highest score from the collection, or zero if the collection is empty."""
-    max_score = None
-    for family in scored_family:
-        if max_score is None or family.score.total() > max_score.total():
-            max_score = family.score
-    if max_score is None:
-        return _ZERO_SCORE
-    return max_score
+            experiment.position_data.set_position_data(position, data_name=name, value=appearance_penalty)
+
+    return experiment
+
