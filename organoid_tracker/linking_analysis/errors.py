@@ -22,6 +22,7 @@ class Error(Enum):
     MOVED_TOO_FAST = 11
     FAILED_SHAPE = 12
     UNCERTAIN_POSITION = 13
+    LOW_LINK_SCORE = 14
 
     def get_severity(self) -> Severity:
         """Gets the severity."""
@@ -47,7 +48,8 @@ __info = {
                                              " wrong."),
     Error.FAILED_SHAPE: (Severity.WARNING, "This cell has an irregular shape. Maybe it was a misdetection, or it should be"
                                        " a mother cell."),
-    Error.UNCERTAIN_POSITION: (Severity.WARNING, "Uncertain if there actually is a cell here.")
+    Error.UNCERTAIN_POSITION: (Severity.WARNING, "Uncertain if there actually is a cell here."),
+    Error.LOW_LINK_SCORE: (Severity.WARNING, "This is probably not a correct link.")
 }
 
 

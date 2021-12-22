@@ -1,5 +1,6 @@
 from typing import Optional, Iterable, Callable, Tuple
 
+from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
@@ -32,6 +33,7 @@ def find_errors_in_experiment(experiment: Experiment) -> Tuple[int, int]:
 def get_error(experiment: Experiment, position: Position) -> Optional[Error]:
     links = experiment.links
     position_data = experiment.position_data
+    link_data = experiment.link_data
     positions = experiment.positions
     resolution = experiment.images.resolution()
     warning_limits = experiment.warning_limits
@@ -51,15 +53,11 @@ def get_error(experiment: Experiment, position: Position) -> Optional[Error]:
         return Error.NO_FUTURE_POSITION
     elif len(future_positions) == 2:
         # Found a putative mother
-        scores = experiment.scores
-        if scores.has_family_scores():  # Use family scores
-            score = scores.of_family(Family(position, *future_positions))
-            if score is None or score.is_unlikely_mother():
-                return Error.LOW_MOTHER_SCORE
-        else:  # Use mother scores
-            score = linking_markers.get_mother_score(position_data, position)
-            if score <= 0:
-                return Error.LOW_MOTHER_SCORE
+        if position_data.get_position_data(position, 'division_probability') is None:
+            return Error.LOW_MOTHER_SCORE
+        elif position_data.get_position_data(position, 'division_probability') < warning_limits.min_probability:
+            return Error.LOW_MOTHER_SCORE
+
         age = particle_age_finder.get_age(links, position)
         if age is not None and age * resolution.time_point_interval_h < warning_limits.min_time_between_divisions_h:
             return Error.YOUNG_MOTHER
@@ -72,29 +70,17 @@ def get_error(experiment: Experiment, position: Position) -> Optional[Error]:
     elif len(past_positions) >= 2:
         return Error.CELL_MERGE
     else:  # len(past_positions) == 1
-        # Check cell size
         past_position = past_positions.pop()
-        future_positions_of_past_position = links.find_futures(past_position)
-        shape = linking_markers.get_shape(position_data, position)
-        past_shape = linking_markers.get_shape(position_data, past_position)
-        if shape.is_failed() and len(future_positions) != 2:
-            return Error.FAILED_SHAPE  # Gaussian fit failed, can happen for dividing cells, but should not happen otherwise
-        elif not shape.is_unknown() and len(future_positions_of_past_position) == 1:
-            if not past_shape.is_unknown() and past_shape.volume() / (shape.volume() + 0.0001) > 2:
-                # Found a sudden decrease in volume. Check averages to see if it is an outlier, or something real
-
-                # Compare volumes of last 5 and next 5 positions
-                volume_last_five = _get_volumes(past_position, position_data, links.find_single_past, 5)
-                volume_next_five = _get_volumes(position, position_data, links.find_single_future, 5)
-                if volume_last_five is not None and volume_next_five is not None \
-                        and volume_last_five / (volume_next_five + 0.0001) > 2:
-                    return Error.SHRUNK_A_LOT
-
         # Check movement distance (fast movement is only allowed when a cell is launched into its death)
         distance_moved_um_per_m = past_position.distance_um(position, resolution) / resolution.time_point_interval_m
         if distance_moved_um_per_m > warning_limits.max_distance_moved_um_per_min:
             if linking_markers.is_live(position_data, position):
                 return Error.MOVED_TOO_FAST
+
+    for future_position in future_positions:
+        if link_data.get_link_data(position, future_position, data_name="link_probability") < warning_limits.min_probability:
+            return Error.LOW_LINK_SCORE
+
     return None
 
 
