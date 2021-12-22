@@ -145,52 +145,6 @@ else:
                                                mode='validation', split_proportion=0.8)
 
 
-#iterable = iter(training_dataset)
-
-
-if False:
-    iterator = iter(validation_dataset)
-
-    for i in range(10):
-        element = iterator.get_next()
-
-        linked = element[1]['out'][0]
-        print(element[0]['input_distance'][0])
-
-        array = element[0]['input_1']
-        print(array.shape)
-        array = array[0, :, :, :, :]
-        array = np.swapaxes(array, axis1=-3, axis2=-1)
-        tiff.imwrite("val_example_input_1_" + str(i) + str(linked)+".tiff", array, imagej=True, metadata={'axes': 'ZCYX'})
-
-
-        array = element[0]['input_2']
-        array = array[0, :, :, :, :]
-        array = np.swapaxes(array, axis1=-3, axis2=-1)
-        tiff.imwrite("val_example_input_2_" + str(i) + ".tiff", array, imagej=True, metadata={'axes': 'ZCYX'})
-
-
-    iterator = iter(training_dataset)
-
-    for i in range(10):
-        element = iterator.get_next()
-
-        linked = element[1]['out'][0]
-        print(element[0]['input_distance'][0])
-
-        array = element[0]['input_1']
-        print(array.shape)
-        array = array[0, :, :, :, :]
-        array = np.swapaxes(array, axis1=-3, axis2=-1)
-        tiff.imwrite("example_input_1_" + str(i) + str(linked)+".tiff", array, imagej=True, metadata={'axes': 'ZCYX'})
-
-
-        array = element[0]['input_2']
-        array = array[0, :, :, :, :]
-        array = np.swapaxes(array, axis1=-3, axis2=-1)
-        tiff.imwrite("example_input_2_" + str(i) + ".tiff", array, imagej=True, metadata={'axes': 'ZCYX'})
-
-
 model = build_model(shape=(patch_shape[0], patch_shape[1], patch_shape[2], time_window[1] - time_window[0] + 1), batch_size=None)
 model.summary()
 

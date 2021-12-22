@@ -73,8 +73,8 @@ def conv_block(n_conv, filters, kernel=3, pool_size=2, pool_strides=2, name=None
 
 # calculates pixel-wise correlation between images without mixing batches (first dimension)
 def correlate(tensor_1, tensor_2):
-    mu_1 = tf.reduce_mean(tensor_1 , axis=[1, 2, 3, 4])
-    mu_2 = tf.reduce_mean(tensor_2 , axis=[1, 2, 3, 4])
+    mu_1 = tf.reduce_mean(tensor_1 , axis=[1, 2, 3, 4], keepdims=True)
+    mu_2 = tf.reduce_mean(tensor_2 , axis=[1, 2, 3, 4], keepdims=True)
     se_1 = tf.sqrt(tf.reduce_sum(tf.square(tensor_1 - mu_1), axis=[1, 2, 3, 4]))
     se_2 = tf.sqrt(tf.reduce_sum(tf.square(tensor_2 - mu_2), axis=[1, 2, 3, 4]))
     correlation = tf.reduce_sum(tf.multiply(tensor_1 - mu_1, tensor_2 - mu_2), axis=[1, 2, 3, 4])
