@@ -25,7 +25,7 @@ class IntensityOverTime:
         self._times_h = times_h
         self._intensities = intensities
 
-    def multiply_intensities(self, factor: float):
+    def multiply(self, factor: float):
         """Multiplies all intensities with a factor."""
         # First reset the statistics
         self._mean = None
