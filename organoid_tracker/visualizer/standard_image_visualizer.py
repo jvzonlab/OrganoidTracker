@@ -58,6 +58,8 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             "View//Analyze-Lists//Cell shedding and deaths... [S]": self._show_dead_cells,
             "View//Analyze-Cell properties//Cell density...": self._show_cell_density,
             "View//Tracks-Track follower... [T]": self._show_track_follower,
+            "View//Analyze-Division scores...": self._show_division_scores,
+            "View//Analyze-Link scores...": self._show_link_scores,
             "View//Analyze-Analyze fate of cells//Movement arrows...": self._show_movement_arrows,
             "View//Analyze-Analyze fate of cells//Cell fates...": self._show_cell_fates,
             "View//Analyze-Analyze fate of cells//Cell compartments...": self._show_cell_compartments,
@@ -164,3 +166,13 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             new_experiment = io.load_data_file(link_file)
             self._experiment.merge(new_experiment)
         self.get_window().redraw_data()
+
+    def _show_division_scores(self):
+        from organoid_tracker.visualizer.division_score_visualizer import DivisionScoreVisualizer
+        link_score_visualizer = DivisionScoreVisualizer(self._window)
+        activate(link_score_visualizer)
+
+    def _show_link_scores(self):
+        from organoid_tracker.visualizer.link_score_visualizer import LinkScoreVisualizer
+        link_score_visualizer = LinkScoreVisualizer(self._window)
+        activate(link_score_visualizer)
