@@ -60,11 +60,11 @@ class _ImageWithPositions:
             return self.load_image(dt).shape
         return size
 
-    def load_image_time_stack(self, time_window: Tuple[int, int] = (0, 0)) -> Optional[ndarray]:
+    def load_image_time_stack(self, time_window: Tuple[int, int] = (0, 0), delay=0) -> Optional[ndarray]:
         """Loads images in a time window. Returns a 4D array, [z, y, x, t]."""
 
-        center_image = self.load_image()
-        offset_ref = self._images.offsets.of_time_point(self._time_point)
+        center_image = self.load_image(delay)
+        offset_ref = self._images.offsets.of_time_point(TimePoint(self._time_point.time_point_number()+delay))
         image_shape_ref = center_image.shape
 
         def aligner(image: ndarray, image_ref: ndarray, offset: Position, offset_ref: Position):
@@ -99,7 +99,7 @@ class _ImageWithPositions:
         # records at which timepoints images were available
         image_dt = list()
 
-        frames = range(time_window[0], time_window[1]+1)
+        frames = range(time_window[0] + delay, time_window[1]+1+delay)
 
         for dt in frames:
             image = self.load_image(dt)
