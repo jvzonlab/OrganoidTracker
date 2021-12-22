@@ -80,19 +80,22 @@ print("start predicting...")
 # create PositionCollection to store positions with division scores
 all_positions = PositionCollection()
 
+prediction_dataset_all = prediction_data_creator(image_with_positions_list, time_window, patch_shape)
+predictions_all = model.predict(prediction_dataset_all)
+
+number_of_positions_done = 0
+
 # predict for every time point
 for i in range(len(image_with_positions_list)):
     image_with_positions = image_with_positions_list[i]
-    print(image_with_positions.xyz_positions.shape)
+
     print("predict image {}/{}".format(i, len(image_with_positions_list)))
 
-    # register image information
-    time_point = image_with_positions._time_point
-    image_offset = image_with_positions._images.offsets.of_time_point(time_point)
+    set_size = len(positions_list[i])
 
-    # create tf.dataset and predict
-    prediction_dataset = prediction_data_creator([image_with_positions], time_window, patch_shape)
-    predictions = model.predict(prediction_dataset)
+    # Extract relevant data
+    predictions = predictions_all[number_of_positions_done : (number_of_positions_done+set_size)]
+    number_of_positions_done = number_of_positions_done + set_size
 
     # get positions
     positions = positions_list[i]
