@@ -18,14 +18,14 @@ _TRAINING_PATCH_SHAPE_ZYX_LINKING: Tuple[int, int, int] = (8, 32, 32)
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Tools//Process-Train the neural network...": lambda: _generate_training_config(window),
-        "Tools//Process-Detect cells in images...": lambda: _generate_detection_config(window),
-        "Tools//Process-Train network for dividing cells...": lambda: _generate_division_training_config(window),
-        "Tools//Process-Detect dividing cells...": lambda: _generate_division_detection_config(window),
-        "Tools//Process-Train network for linking...": lambda: _generate_link_training_config(window),
-        "Tools//Process-Detect links...": lambda: _generate_link_detection_config(window),
+        "Tools//Train-Train network for cell detection...": lambda: _generate_training_config(window),
+        "Tools//Train-Train network for dividing cells...": lambda: _generate_division_training_config(window),
+        "Tools//Train-Train network for linking...": lambda: _generate_link_training_config(window),
+        "Tools//Use-Detect cells in images...": lambda: _generate_detection_config(window),
+        "Tools//Use-Detect dividing cells...": lambda: _generate_division_detection_config(window),
+        "Tools//Use-Detect link likelihoods...": lambda: _generate_link_detection_config(window),
+        "Tools//Use-Create links between time points...": lambda: _generate_linking_config(window),
         "Tools//Process-Detect shapes using Gaussian fit...": lambda: _generate_gaussian_fit_configs(window),
-        "Tools//Process-Create links between time points...": lambda: _generate_linking_config(window)
     }
 
 
