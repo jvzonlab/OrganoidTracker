@@ -389,11 +389,11 @@ def _generate_link_detection_config(window: Window):
     config.get_or_default("predictions_output_folder", "out")
 
     config.get_or_default("patch_shape_z", str(8))
-    config.get_or_default("patch_shape_y", str(32))
-    config.get_or_default("patch_shape_x", str(32))
+    config.get_or_default("patch_shape_y", str(48))
+    config.get_or_default("patch_shape_x", str(48))
 
-    config.get_or_default(f"time_window_before", str(-1))
-    config.get_or_default(f"time_window_after", str(1))
+    config.get_or_default(f"time_window_before", str(0))
+    config.get_or_default(f"time_window_after", str(0))
 
     config.get_or_default("save_video_ram", "true")
     config.get_or_default("save_video_ram", "true")
