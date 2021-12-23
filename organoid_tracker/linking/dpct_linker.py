@@ -178,9 +178,6 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links,
                          [link_penalty]  # Sending one cell through the link costs this
                          ]
             })
-        else:
-            print('ignored unlikely link')
-            print(link_penalty)
 
     return {
         "settings": {
