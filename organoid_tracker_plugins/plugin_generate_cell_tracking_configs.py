@@ -114,8 +114,8 @@ def _generate_training_config(window: Window):
                                                               f" project {experiment.name}. Cannot use the project for training.")
 
         i = index + 1
-        positions_file = f"ground_truth_positions/positions_{i}.json"
-        io.save_positions_to_json(experiment, os.path.join(save_directory, positions_file))
+        positions_file = f"ground_truth_positions/positions_{i}.aut"
+        io.save_data_to_json(experiment, os.path.join(save_directory, positions_file))
 
         config.get_or_default(f"images_container_{i}", image_loader.serialize_to_config()[0])
         config.get_or_default(f"images_pattern_{i}", image_loader.serialize_to_config()[1])
@@ -222,7 +222,7 @@ def _generate_division_training_config(window: Window):
                                                               f" project {experiment.name}. Cannot use the project for training.")
 
         i = index + 1
-        positions_file = f"ground_truth_positions/positions_{i}.json"
+        positions_file = f"ground_truth_positions/positions_{i}.aut"
         io.save_data_to_json(experiment, os.path.join(save_directory, positions_file))
 
         config.get_or_default(f"images_container_{i}", image_loader.serialize_to_config()[0])
@@ -260,7 +260,7 @@ def _generate_division_detection_config(window: Window):
     if save_directory is None:
         return
 
-    positions_file = "ground_truth_positions/positions.json"
+    positions_file = "Input positions.aut"
     io.save_data_to_json(experiment, os.path.join(save_directory, positions_file))
 
     config = ConfigFile("predict_divisions", folder_name=save_directory)
@@ -280,11 +280,10 @@ def _generate_division_detection_config(window: Window):
     config.get_or_default(f"time_window_after", str(1))
 
     config.get_or_default("save_video_ram", "true")
-    config.get_or_default("save_video_ram", "true")
 
     config.save()
-    _create_run_script(save_directory, "organoid_tracker_predict_positions")
-    _popup_confirmation(save_directory, "organoid_tracker_predict_positions")
+    _create_run_script(save_directory, "organoid_tracker_predict_divisions")
+    _popup_confirmation(save_directory, "organoid_tracker_predict_divisions")
 
 
 def _generate_link_training_config(window: Window):
@@ -338,7 +337,7 @@ def _generate_link_training_config(window: Window):
                                                               f" project {experiment.name}. Cannot use the project for training.")
 
         i = index + 1
-        positions_file = f"ground_truth_positions/positions_{i}.json"
+        positions_file = f"ground_truth_positions/positions_{i}.aut"
         io.save_data_to_json(experiment, os.path.join(save_directory, positions_file))
 
         config.get_or_default(f"images_container_{i}", image_loader.serialize_to_config()[0])
@@ -376,7 +375,7 @@ def _generate_link_detection_config(window: Window):
     if save_directory is None:
         return
 
-    positions_file = "ground_truth_positions/positions.json"
+    positions_file = "Input positions.aut"
     io.save_data_to_json(experiment, os.path.join(save_directory, positions_file))
 
     config = ConfigFile("predict_links", folder_name=save_directory)
