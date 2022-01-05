@@ -101,9 +101,5 @@ for i in range(len(image_with_links_list)):
         experiment.link_data.set_link_data(predicted_link[0], predicted_link[1], data_name="link_penalty", value=float(-np.log10(prediction+eps)+np.log10(1-prediction+eps)))
 
 print("Saving file...")
-io.save_data_to_json(experiment, "old"+_output_file)
 experiment.links = possible_links
 io.save_data_to_json(experiment, _output_file)
-
-#experiment2 = io.load_data_file("old"+_output_file)
-#print(experiment2.link_data._link_data)
