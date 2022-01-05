@@ -358,12 +358,15 @@ def _generate_link_training_config(window: Window):
 def _generate_link_detection_config(window: Window):
     """For applying an already trained network on new images."""
     experiment = window.get_experiment()
+
+    # Make sure that a resolution is stored
+    experiment.images.resolution()
+
     image_loader = experiment.images.image_loader()
     if not image_loader.has_images():
         raise UserError("No images", "No images were loaded, so no cells can be detected. Please load some images"
                                      " first.")
 
-    #checkpoint_directory = _get_checkpoints_folder()
     checkpoint_directory = _get_model_folder()
     if checkpoint_directory is None:
         return
