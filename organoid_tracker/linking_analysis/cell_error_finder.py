@@ -71,14 +71,15 @@ def get_error(experiment: Experiment, position: Position) -> Optional[Error]:
         return Error.CELL_MERGE
     else:  # len(past_positions) == 1
         past_position = past_positions.pop()
+
         # Check movement distance (fast movement is only allowed when a cell is launched into its death)
         distance_moved_um_per_m = past_position.distance_um(position, resolution) / resolution.time_point_interval_m
         if distance_moved_um_per_m > warning_limits.max_distance_moved_um_per_min:
             if linking_markers.is_live(position_data, position):
                 return Error.MOVED_TOO_FAST
 
-    for future_position in future_positions:
-        if link_data.get_link_data(position, future_position, data_name="link_probability") < warning_limits.min_probability:
+        # Check link probability
+        if link_data.get_link_data(position, past_position, data_name="link_probability") < warning_limits.min_probability:
             return Error.LOW_LINK_SCORE
 
     return None
