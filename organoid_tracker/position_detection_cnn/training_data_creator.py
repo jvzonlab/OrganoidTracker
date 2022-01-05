@@ -34,7 +34,7 @@ from organoid_tracker.core.position import Position
 
 
 class _ImageWithPositions:
-    _time_point: TimePoint
+    time_point: TimePoint
     _images: Images
     xyz_positions: ndarray
     experiment_name: str
@@ -42,15 +42,15 @@ class _ImageWithPositions:
     def __init__(self, experiment_name: str, images: Images, time_point: TimePoint, xyz_positions: ndarray):
         # xyz positions: 2D numpy integer array of cell nucleus positions: [ [x,y,z], [x,y,z], ...]
         self.experiment_name = experiment_name
-        self._time_point = time_point
+        self.time_point = time_point
         self._images = images
         self.xyz_positions = xyz_positions
 
     def __str__(self) -> str:
-        return f"{self.experiment_name} t{self._time_point.time_point_number()}"
+        return f"{self.experiment_name} t{self.time_point.time_point_number()}"
 
     def load_image(self, dt: int = 0) -> Optional[ndarray]:
-        time_point = TimePoint(self._time_point.time_point_number() + dt)
+        time_point = TimePoint(self.time_point.time_point_number() + dt)
         return self._images.get_image_stack(time_point)
 
     def get_image_size_zyx(self, dt: int = 0) -> Tuple[int, int, int]:
@@ -64,7 +64,7 @@ class _ImageWithPositions:
         """Loads images in a time window. Returns a 4D array, [z, y, x, t]."""
 
         center_image = self.load_image(delay)
-        offset_ref = self._images.offsets.of_time_point(TimePoint(self._time_point.time_point_number()+delay))
+        offset_ref = self._images.offsets.of_time_point(TimePoint(self.time_point.time_point_number() + delay))
         image_shape_ref = center_image.shape
 
         def aligner(image: ndarray, image_ref: ndarray, offset: Position, offset_ref: Position):
@@ -105,7 +105,7 @@ class _ImageWithPositions:
             image = self.load_image(dt)
 
             if image is not None and image.shape == image_shape_ref:
-                time_point = TimePoint(self._time_point.time_point_number() + dt)
+                time_point = TimePoint(self.time_point.time_point_number() + dt)
                 offset = self._images.offsets.of_time_point(time_point)
 
                 image = aligner(image, center_image, offset, offset_ref)
@@ -152,6 +152,10 @@ class _ImageWithPositions:
 
         return markers
 
+    def get_image_offset(self) -> Position:
+        """Gets the offset of the image."""
+        return self._images.offsets.of_time_point(self.time_point)
+
 
 def create_image_with_positions_list(experiments: Iterable[Experiment]):
     image_with_positions_list = []
@@ -176,7 +180,7 @@ def create_image_with_positions_list(experiments: Iterable[Experiment]):
     return image_with_positions_list
 
 
-def create_image_list_without_positions(experiment: Experiment):
+def create_image_list_without_positions(experiment: Experiment) -> List[_ImageWithPositions]:
     image_list = []
 
     for time_point in experiment.time_points():

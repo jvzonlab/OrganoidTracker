@@ -1,33 +1,25 @@
-"""Predictions particle positions using an already-trained convolutional neural network."""
-import gc
+"""Predicts cell positions using an already-trained convolutional neural network."""
 import json
 import math
 import os
-import sys
-import time
+
+import numpy as np
+import tensorflow as tf
+from skimage.feature import peak_local_max
+from tifffile import tifffile
 
 from organoid_tracker.config import ConfigFile, config_type_int
 from organoid_tracker.core.experiment import Experiment
-from organoid_tracker.core.resolution import ImageResolution
+from organoid_tracker.core.position import Position
+from organoid_tracker.core.position_collection import PositionCollection
+from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.channel_merging_image_loader import ChannelMergingImageLoader
 from organoid_tracker.imaging import io
-from organoid_tracker.image_loading import general_image_loader
-from organoid_tracker.core.position_collection import PositionCollection
-from organoid_tracker.core.position import Position
-from skimage.feature import peak_local_max
-from skimage.morphology import erosion
-from tifffile import tifffile
-
 from organoid_tracker.position_detection_cnn.loss_functions import loss, position_precision, overcount, position_recall
-from organoid_tracker.position_detection_cnn.peak_calling import create_prediction_mask, reconstruct_volume
+from organoid_tracker.position_detection_cnn.peak_calling import reconstruct_volume
 from organoid_tracker.position_detection_cnn.prediction_dataset import predicting_data_creator
 from organoid_tracker.position_detection_cnn.split_images import corners_split, reconstruction
 from organoid_tracker.position_detection_cnn.training_data_creator import create_image_list_without_positions
-
-import tensorflow as tf
-import numpy as np
-
-from organoid_tracker.util import bits
 
 experiment = Experiment()
 
@@ -158,8 +150,8 @@ for image_set_index in range(image_set_count):
 
     for image, prediction_batch in zip(image_list_subset, predictions):
         # register image information
-        time_point = image._time_point
-        image_offset = image._images.offsets.of_time_point(time_point)
+        time_point = image.time_point
+        image_offset = image.get_image_offset()
         image_shape = list(image.get_image_size_zyx())
 
         # reconstruct image from patches
