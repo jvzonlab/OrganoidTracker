@@ -79,7 +79,9 @@ def get_error(experiment: Experiment, position: Position) -> Optional[Error]:
                 return Error.MOVED_TOO_FAST
 
         # Check link probability
-        if link_data.get_link_data(position, past_position, data_name="link_probability") < warning_limits.min_probability:
+        link_probability = link_data.get_link_data(position, past_position, data_name="link_probability")
+        if link_probability is not None and link_probability < warning_limits.min_probability\
+                and linking_markers.is_live(position_data, position):
             return Error.LOW_LINK_SCORE
 
     return None
