@@ -160,7 +160,7 @@ history = model.fit(training_dataset,
 
 
 print("Saving model...")
-trained_model_folder = os.path.join(output_folder, "trained_model")
+trained_model_folder = os.path.join(output_folder, "model_positions")
 tf.keras.models.save_model(model, trained_model_folder)
 with open(os.path.join(trained_model_folder, "settings.json"), "w") as file_handle:
     json.dump({"time_window": time_window}, file_handle, indent=4)

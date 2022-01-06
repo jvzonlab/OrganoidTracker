@@ -18,10 +18,10 @@ _TRAINING_PATCH_SHAPE_ZYX_LINKING: Tuple[int, int, int] = (8, 32, 32)
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Tools//Train-Train network for cell detection...": lambda: _generate_training_config(window),
+        "Tools//Train-Train network for cell detection...": lambda: _generate_position_training_config(window),
         "Tools//Train-Train network for dividing cells...": lambda: _generate_division_training_config(window),
         "Tools//Train-Train network for linking...": lambda: _generate_link_training_config(window),
-        "Tools//Use-Detect cells in images...": lambda: _generate_detection_config(window),
+        "Tools//Use-Detect cells in images...": lambda: _generate_position_detection_config(window),
         "Tools//Use-Detect dividing cells...": lambda: _generate_division_detection_config(window),
         "Tools//Use-Detect link likelihoods...": lambda: _generate_link_detection_config(window),
         "Tools//Use-Create links between time points...": lambda: _generate_linking_config(window),
@@ -62,7 +62,7 @@ def _popup_confirmation(output_folder: str, script_name: str, ):
         dialog.open_file(output_folder)
 
 
-def _generate_training_config(window: Window):
+def _generate_position_training_config(window: Window):
     """For training the neural network."""
     experiments = list(window.get_active_experiments())
     if len(experiments) == 0:
@@ -132,7 +132,7 @@ def _generate_training_config(window: Window):
     _popup_confirmation(save_directory, "organoid_tracker_train_network")
 
 
-def _generate_detection_config(window: Window):
+def _generate_position_detection_config(window: Window):
     """For applying an already trained network on new images."""
     experiment = window.get_experiment()
     image_loader = experiment.images.image_loader()
