@@ -1,4 +1,5 @@
 """Predictions particle positions using an already-trained convolutional neural network."""
+import json
 import os
 from typing import Tuple
 
@@ -38,10 +39,7 @@ _patch_shape_z = int(config.get_or_default("patch_shape_z", str(30), store_in_de
 _patch_shape_y = int(config.get_or_default("patch_shape_y", str(240), store_in_defaults=True))
 _patch_shape_x = int(config.get_or_default("patch_shape_x", str(240), store_in_defaults=True))
 
-_time_window_before = int(config.get_or_default("time_window_before", str(-1), store_in_defaults=True))
-_time_window_after = int(config.get_or_default("time_window_after", str(1), store_in_defaults=True))
-
-_checkpoint_folder = config.get_or_prompt("checkpoint_folder", "Please paste the path here to the \"checkpoints\" folder containing the trained model.")
+_model_folder = config.get_or_prompt("checkpoint_folder", "Please paste the path here to the \"checkpoints\" folder containing the trained model.")
 _output_file = config.get_or_default("positions_output_file", "Automatic positions.aut", comment="Output file for the positions, can be viewed using the visualizer program.")
 _channels_str = config.get_or_default("images_channels", str(1), comment="Index(es) of the channels to use. Use \"3\" to use the third channel for predictions. Use \"1,3,4\" to use the sum of the first, third and fourth channel for predictions.")
 _images_channels = {int(part) for part in _channels_str.split(",")}
@@ -68,12 +66,16 @@ if _images_channels != {1}:
 image_with_positions_list, positions_list = create_image_with_positions_list(experiment)
 
 # set relevant parameters
-time_window = [_time_window_before, _time_window_after]
 patch_shape = [_patch_shape_z, _patch_shape_y, _patch_shape_x]
 
 # load model
-print("load model...")
-model = tf.keras.models.load_model(_checkpoint_folder) #, custom_objects={"new_loss2": new_loss2, "custom_loss_with_blur": custom_loss_with_blur})
+print("Loading model...")
+model = tf.keras.models.load_model(_model_folder)
+if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
+    print("Error: no settings.json found in model folder.")
+    exit(1)
+with open(os.path.join(_model_folder, "settings.json")) as file_handle:
+    time_window = json.load(file_handle)["time_window"]
 
 print("start predicting...")
 

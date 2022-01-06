@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 """Script used to train the convolutional neural network, so that it can recognize nuclei in 3D images."""
+import json
 import os
 import random
 from functools import partial
@@ -155,7 +156,7 @@ history = model.fit(training_dataset,
 
 # save model
 print("Saving model...")
-tf.keras.models.save_model(model, "model_test")
-
-
-
+trained_model_folder = os.path.join(output_folder, "model_divisions")
+tf.keras.models.save_model(model, trained_model_folder)
+with open(os.path.join(trained_model_folder, "settings.json"), "w") as file_handle:
+    json.dump({"time_window": time_window}, file_handle, indent=4)
