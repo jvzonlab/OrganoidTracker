@@ -98,7 +98,7 @@ def repeat(image, target_image, label, target_label, distances, linked, repeats=
 
 
 def format(image, target_image, distances, linked):
-    return ({'input_1': image, 'input_2': target_image, 'input_distance': distances}, {'out':linked})
+    return ({'input_1': image, 'input_2': target_image, 'input_distances': distances}, {'out':linked})
 
 
 def pad_to_patch(stacked, patch_shape):

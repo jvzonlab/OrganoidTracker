@@ -128,8 +128,8 @@ def _generate_position_training_config(window: Window):
 
     config.get_or_default(f"images_container_{i + 1}", "<stop>")
     config.save()
-    _create_run_script(save_directory, "organoid_tracker_train_network")
-    _popup_confirmation(save_directory, "organoid_tracker_train_network")
+    _create_run_script(save_directory, "organoid_tracker_train_position_network")
+    _popup_confirmation(save_directory, "organoid_tracker_train_position_network")
 
 
 def _generate_position_detection_config(window: Window):
@@ -286,6 +286,8 @@ def _generate_division_detection_config(window: Window):
 def _generate_link_training_config(window: Window):
     """For training the neural network."""
     experiments = list(window.get_active_experiments())
+    for experiment in experiments:
+        experiment.images.resolution()  # Forces all experiments to have a resolution set
     if len(experiments) == 0:
         raise UserError("No experimental data loaded", "No projects are open. Please load all data (images and"
                                                        " tracking data) that you want to use for training.")

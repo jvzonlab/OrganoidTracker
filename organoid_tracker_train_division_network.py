@@ -4,28 +4,20 @@
 import json
 import os
 import random
-from functools import partial
-from os import path
 from typing import Set
 
 import tensorflow as tf
-import numpy as np
-import tifffile
-from PIL import Image as Img
 
 from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int
 from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.division_detection_cnn.convolutional_neural_network import build_model, tensorboard_callback
+from organoid_tracker.division_detection_cnn.image_with_divisions_to_tensor_loader import dataset_writer
 from organoid_tracker.division_detection_cnn.training_data_creator import create_image_with_divisions_list
+from organoid_tracker.division_detection_cnn.training_dataset import training_data_creator_from_TFR, \
+    training_data_creator_from_raw
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.channel_merging_image_loader import ChannelMergingImageLoader
 from organoid_tracker.imaging import io
-# from organoid_tracker.position_detection_cnn import training_data_creator, trainer
-
-from organoid_tracker.division_detection_cnn.ImageWithDivisions_to_tensor_loader import dataset_writer
-from organoid_tracker.division_detection_cnn.convolutional_neural_network import build_model, tensorboard_callback
-from organoid_tracker.position_detection_cnn.training_data_creator import create_image_with_positions_list
-
-from organoid_tracker.division_detection_cnn.training_dataset import training_data_creator_from_TFR, training_data_creator_from_raw
 
 
 # PARAMETERS

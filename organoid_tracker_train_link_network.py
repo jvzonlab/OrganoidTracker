@@ -5,23 +5,20 @@ import json
 import os
 import random
 from functools import partial
-from os import path
-from typing import Set
+from typing import Set, Tuple
 
-import tensorflow as tf
 import numpy as np
-import tifffile as tiff
-from PIL import Image as Img
+import tensorflow as tf
+import tifffile
+from tensorflow.python.data import Dataset
 
 from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.channel_merging_image_loader import ChannelMergingImageLoader
 from organoid_tracker.imaging import io
-
 from organoid_tracker.link_detection_cnn.convolutional_neural_network import build_model, tensorboard_callback
 from organoid_tracker.link_detection_cnn.training_data_creator import create_image_with_links_list
-
 from organoid_tracker.link_detection_cnn.training_dataset import training_data_creator_from_raw
 
 
@@ -103,7 +100,7 @@ batch_size = config.get_or_default("batch_size", "64", comment="How many patches
 epochs = config.get_or_default("epochs", "50", comment="For how many epochs the network is trained. Larger is not"
                                                        " always better; at some point the network might get overfitted"
                                                        " to your training data.",
-                                           type=config_type_int)
+                               type=config_type_int)
 
 config.save_and_exit_if_changed()
 # END OF PARAMETERS
@@ -127,37 +124,37 @@ number_of_postions = np.mean(number_of_postions)
 
 # create tf.datasets that generate the data
 if use_TFR:
-    print("TFR not implemented...")
-    #image_files, label_files, target_label_files, linked_files = dataset_writer(image_with_links_list, time_window, shards=10)
+    raise ValueError("TFR not implemented...")
+    # image_files, label_files, target_label_files, linked_files = dataset_writer(image_with_links_list, time_window, shards=10)
 
-    #training_dataset = training_data_creator_from_TFR(image_files, label_files, target_label_files, linked_files,
-                                                      #patch_shape=patch_shape, batch_size=batch_size, mode='train',
-                                                      #split_proportion=0.8, n_images=len(image_with_links_list))
-    #validation_dataset = training_data_creator_from_TFR(image_files, label_files, target_label_files, linked_files,
-                                                        #patch_shape=patch_shape, batch_size=batch_size,
-                                                        #mode='validation', split_proportion=0.8, n_images=len(image_with_links_list))
+    # training_dataset = training_data_creator_from_TFR(image_files, label_files, target_label_files, linked_files,
+    # patch_shape=patch_shape, batch_size=batch_size, mode='train',
+    # split_proportion=0.8, n_images=len(image_with_links_list))
+    # validation_dataset = training_data_creator_from_TFR(image_files, label_files, target_label_files, linked_files,
+    # patch_shape=patch_shape, batch_size=batch_size,
+    # mode='validation', split_proportion=0.8, n_images=len(image_with_links_list))
 
 else:
     training_dataset = training_data_creator_from_raw(image_with_links_list, time_window=time_window,
-                                             patch_shape=patch_shape, batch_size=batch_size, mode='train',
-                                             split_proportion=0.8)
+                                                      patch_shape=patch_shape, batch_size=batch_size, mode='train',
+                                                      split_proportion=0.8)
     validation_dataset = training_data_creator_from_raw(image_with_links_list, time_window=time_window,
-                                               patch_shape=patch_shape, batch_size=batch_size,
-                                               mode='validation', split_proportion=0.8)
+                                                        patch_shape=patch_shape, batch_size=batch_size,
+                                                        mode='validation', split_proportion=0.8)
 
-
-model = build_model(shape=(patch_shape[0], patch_shape[1], patch_shape[2], time_window[1] - time_window[0] + 1), batch_size=None)
+model = build_model(shape=(patch_shape[0], patch_shape[1], patch_shape[2], time_window[1] - time_window[0] + 1),
+                    batch_size=None)
 model.summary()
 
 print("Training...")
 print(training_dataset)
 history = model.fit(training_dataset,
                     epochs=50,
-                    steps_per_epoch=round(0.8*len(image_with_links_list)*10*number_of_postions/batch_size),
+                    steps_per_epoch=round(0.8 * len(image_with_links_list) * 10 * number_of_postions / batch_size),
                     validation_data=validation_dataset,
-                    validation_steps=round(0.2*len(image_with_links_list)*number_of_postions/batch_size),
-                    callbacks=[tensorboard_callback , tf.keras.callbacks.EarlyStopping(patience=5, restore_best_weights=True)])
-
+                    validation_steps=round(0.2 * len(image_with_links_list) * number_of_postions / batch_size),
+                    callbacks=[tensorboard_callback,
+                               tf.keras.callbacks.EarlyStopping(patience=5, restore_best_weights=True)])
 
 print("Saving model...")
 trained_model_folder = os.path.join(output_folder, "model_links")
@@ -165,9 +162,9 @@ tf.keras.models.save_model(model, trained_model_folder)
 with open(os.path.join(trained_model_folder, "settings.json"), "w") as file_handle:
     json.dump({"time_window": time_window}, file_handle, indent=4)
 
-# generate examples for reality check
-def predict(data, model: tf.keras.Model) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
 
+# generate examples for reality check
+def predict(data, model: tf.keras.Model) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
     inputs = data[0]
 
     image = inputs['input_1']
@@ -175,6 +172,7 @@ def predict(data, model: tf.keras.Model) -> Tuple[tf.Tensor, tf.Tensor, tf.Tenso
     linked = data[1]
 
     return model(inputs, training=False), linked, image, target_image
+
 
 quick_dataset: Dataset = validation_dataset.unbatch().take(1000).batch(1)
 
@@ -187,9 +185,9 @@ for i, element in enumerate(predictions):
 
     eps = 10 ** -10
     prediction = element[0]
-    score = -np.log10(prediction+eps)+np.log10(1-prediction+eps)
+    score = -np.log10(prediction + eps) + np.log10(1 - prediction + eps)
 
-    linked = 2*element[1] -1
+    linked = 2 * element[1] - 1
 
     image = element[2].numpy()
     image = image[0, :, :, :, :]
@@ -201,58 +199,20 @@ for i, element in enumerate(predictions):
     target_image = np.swapaxes(target_image, 2, -1)
     target_image = np.swapaxes(target_image, -2, -1)
 
-    if ((linked*score) < 0) and (correct_examples <10):
+    if ((linked * score) < 0) and (correct_examples < 10):
         tifffile.imwrite(os.path.join(output_folder, "examples",
                                       "CORRECT_example_input" + str(i) + '_score_' +
-                                      "{:.2f}".format(a_float) +  ".tiff"), image)
+                                      "{:.2f}".format(score) + ".tiff"), image)
         tifffile.imwrite(os.path.join(output_folder, "examples",
                                       "CORRECT_example_target_input" + str(i) + '_score_' +
-                                      "{:.2f}".format(a_float) + ".tiff"), target_image)
+                                      "{:.2f}".format(score) + ".tiff"), target_image)
         correct_examples = correct_examples + 1
 
-    if ((linked*score) > 0) and (incorrect_examples <10):
+    if ((linked * score) > 0) and (incorrect_examples < 10):
         tifffile.imwrite(os.path.join(output_folder, "examples",
                                       "CORRECT_example_input" + str(i) + '_score_' +
-                                      "{:.2f}".format(a_float) +  ".tiff"), image)
+                                      "{:.2f}".format(score) + ".tiff"), image)
         tifffile.imwrite(os.path.join(output_folder, "examples",
                                       "CORRECT_example_target_input" + str(i) + '_score_' +
-                                      "{:.2f}".format(a_float) + ".tiff"), target_image)
+                                      "{:.2f}".format(score) + ".tiff"), target_image)
         incorrect_examples = incorrect_examples + 1
-
-
-
-
-#
-# if True:
-#     for i in range(10):
-#         tensor = iterable.get_next()
-#
-#         print(tf.shape(tensor[0]))
-#         print(tf.shape(tensor[1]))
-#
-#         linked = tensor[1].numpy()
-#         print(linked)
-#         image_div = tensor[0].numpy()[np.argmax(linked), :, :, :, :]
-#         image_div = np.swapaxes(image_div, -1, 1)
-#         print(image_div.shape)
-#         image_name = "image_div"+str(i)
-#         tifffile.imsave('{}.tif'.format(image_name), image_div, metadata={'axes': 'ZYXC'}, compress=9)
-#
-
-# for i in range(10):
-#     tensors = iterable.get_next()
-#
-#     image_1 = tensors[0].numpy()[i, :, :, :, :]
-#     image_1 = np.swapaxes(image_1, -1, 1)
-#
-#     image_2 = tensors[1].numpy()[i, :, :, :, :]
-#     image_2 = np.swapaxes(image_2, -1, 1)
-#
-#     linked = tensors[3].numpy()[i]
-#
-#     print(tensors[2])
-#     image_name = "image" + "_" + str(i) + str(linked)
-#     tifffile.imsave('{}.tif'.format(image_name), image_1, metadata={'axes': 'ZYXC'}, compress=9)
-#
-#     image_name = "image_target" + "_" + str(i) + str(linked)
-#     tifffile.imsave('{}.tif'.format(image_name), image_2, metadata={'axes': 'ZYXC'}, compress=9)

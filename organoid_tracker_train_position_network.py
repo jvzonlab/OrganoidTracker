@@ -89,7 +89,7 @@ while True:
 time_window = (int(config.get_or_default(f"time_window_before", str(-1))),
                int(config.get_or_default(f"time_window_after", str(1))))
 
-use_tfrecords = config.get_or_default(f"use_tfrecords", str(True), type=config_type_bool)
+use_tfrecords = config.get_or_default(f"use_tfrecords", str(False), type=config_type_bool)
 
 patch_shape = list(
     config.get_or_default("patch_shape", "64, 64, 32", comment="Size in pixels (x, y, z) of the patches used"
