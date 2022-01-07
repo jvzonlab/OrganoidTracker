@@ -66,8 +66,6 @@ def create_image_with_divisions_list(experiments: Iterable[Experiment], non_divi
             positions_xyz = list()
             positions_xyz_div = list()
 
-            print(time_point)
-
             # list dividing positions at the relevant time_points
             for div_time_point, div_position in zip(div_time_points, div_positions):
                 if div_time_point.__eq__(time_point):
@@ -124,7 +122,6 @@ def create_image_with_positions_list(experiment: Experiment):
 
     for time_point in experiment.positions.time_points():
         # read a single time point
-        print(time_point)
         positions = experiment.positions.of_time_point(time_point)
         offset = experiment.images.offsets.of_time_point(time_point)
         image_shape = experiment._images.get_image_stack(time_point).shape

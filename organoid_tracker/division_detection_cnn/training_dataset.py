@@ -72,7 +72,6 @@ def training_data_creator_from_raw(image_with_divisions_list: List[_ImageWithDiv
 def training_data_creator_from_TFR(images_file, labels_file, dividing_file, patch_shape: List[int],
                                    batch_size=1, mode=None, split_proportion: float = 0.8, n_images: int = 0):
 
-    print(dividing_file)
     dataset_images = tf.data.TFRecordDataset(images_file, num_parallel_reads=10)
     dataset_images = dataset_images.map(lambda x: tf.io.parse_tensor(x, tf.float32))
 
@@ -84,11 +83,8 @@ def training_data_creator_from_TFR(images_file, labels_file, dividing_file, patc
 
     dataset = tf.data.Dataset.zip((dataset_images, dataset_labels, dataset_dividing))
 
-    print(iter(dataset_dividing).get_next().numpy())
-
     if mode == 'train':
         dataset = dataset.take(round(split_proportion * n_images))
-        print(n_images)
         # dataset = dataset.shuffle(buffer_size=2)  # small shuffling so that each iteration is a little different
         dataset = dataset.repeat()
     elif mode == 'validation':
@@ -118,7 +114,6 @@ def training_data_creator_from_TFR(images_file, labels_file, dividing_file, patc
 
 # Normalizes image data
 def normalize(image, label, dividing):
-    tf.print(label)
     image = tf.divide(tf.subtract(image, tf.reduce_min(image)), tf.subtract(tf.reduce_max(image), tf.reduce_min(image)))
     return image, label, dividing
 
