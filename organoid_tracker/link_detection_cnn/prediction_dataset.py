@@ -34,7 +34,7 @@ from organoid_tracker.link_detection_cnn.training_data_creator import _ImageWith
 
 # Creates training and validation data from an image_with_positions_list
 
-def prediction_data_creator(tf_load_images_with_links_list: List[_ImageWithLinks], time_window, patch_shape):
+def prediction_data_creator(tf_load_images_with_links_list: List[_ImageWithLinks], time_window: List[int], patch_shape_zyx: List[int]):
     dataset = tf.data.Dataset.range(len(tf_load_images_with_links_list))
 
     # Load data
@@ -46,7 +46,7 @@ def prediction_data_creator(tf_load_images_with_links_list: List[_ImageWithLinks
     # Normalize images
     dataset = dataset.map(normalize)
 
-    dataset = dataset.flat_map(partial(generate_patches_links, patch_shape=patch_shape, perturb=False))
+    dataset = dataset.flat_map(partial(generate_patches_links, patch_shape=patch_shape_zyx, perturb=False))
     dataset = dataset.map(format)
 
     dataset = dataset.batch(1)
