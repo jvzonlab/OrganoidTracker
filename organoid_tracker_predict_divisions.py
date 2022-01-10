@@ -67,6 +67,12 @@ image_with_positions_list, positions_list = create_image_with_positions_list(exp
 
 # set relevant parameters
 patch_shape = [_patch_shape_z, _patch_shape_y, _patch_shape_x]
+with open(os.path.join(_model_folder, "settings.json")) as file_handle:
+    json_contents = json.load(file_handle)
+    if json_contents["type"] != "divisions":
+        print("Error: model at " + _model_folder + " is made for working with " + str(json_contents["type"]) + ", not divisions")
+        exit(1)
+    time_window = json_contents["time_window"]
 
 # load model
 print("Loading model...")
@@ -74,8 +80,6 @@ model = tf.keras.models.load_model(_model_folder)
 if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
     print("Error: no settings.json found in model folder.")
     exit(1)
-with open(os.path.join(_model_folder, "settings.json")) as file_handle:
-    time_window = json.load(file_handle)["time_window"]
 
 print("start predicting...")
 

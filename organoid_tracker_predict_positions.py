@@ -96,19 +96,23 @@ corners = corners_split(max_image_shape, patch_shape)
 # due to memory constraints only ~10 images can be processed at a given time (depending on patch shape)
 set_size = 1
 
+# set relevant parameters
+if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
+    print("Error: no settings.json found in model folder.")
+    exit(1)
+with open(os.path.join(_model_folder, "settings.json")) as file_handle:
+    json_contents = json.load(file_handle)
+    if json_contents["type"] != "positions":
+        print("Error: model is made for working with " + str(json_contents["type"]) + ", not positions")
+        exit(1)
+    time_window = json_contents["time_window"]
+
 # load models
 print("Loading model...")
 model = tf.keras.models.load_model(_model_folder, custom_objects={"loss": loss,
                                                                   "position_precision": position_precision,
                                                                   "position_recall": position_recall,
                                                                   "overcount": overcount})
-
-if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
-    print("Error: no settings.json found in model folder.")
-    exit(1)
-with open(os.path.join(_model_folder, "settings.json")) as file_handle:
-    time_window = json.load(file_handle)["time_window"]
-
 if _debug_folder is not None:
     os.makedirs(_debug_folder, exist_ok=True)
 

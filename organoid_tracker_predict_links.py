@@ -66,6 +66,9 @@ if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
     exit(1)
 with open(os.path.join(_model_folder, "settings.json")) as file_handle:
     json_contents = json.load(file_handle)
+    if json_contents["type"] != "links":
+        print("Error: model at " + _model_folder + " is made for working with " + str(json_contents["type"]) + ", not links")
+        exit(1)
     time_window = json_contents["time_window"]
     patch_shape_xyz = json_contents["patch_shape_xyz"]
     patch_shape_zyx = [patch_shape_xyz[2], patch_shape_xyz[1], patch_shape_xyz[0]]
@@ -76,13 +79,12 @@ model = tf.keras.models.load_model(_model_folder)
 if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
     print("Error: no settings.json found in model folder.")
     exit(1)
-with open(os.path.join(_model_folder, "settings.json")) as file_handle:
-    time_window = json.load(file_handle)["time_window"]
+
 
 print("start predicting...")
 all_positions = PositionCollection()
 
-prediction_dataset_all = prediction_data_creator(image_with_links_list, time_window, patch_shape)
+prediction_dataset_all = prediction_data_creator(image_with_links_list, time_window, patch_shape_zyx)
 predictions_all = model.predict(prediction_dataset_all)
 
 number_of_links_done = 0
