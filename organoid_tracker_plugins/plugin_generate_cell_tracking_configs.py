@@ -1,4 +1,5 @@
 """Generates config files for the cell tracker."""
+import json
 import os
 import sys
 import shlex
@@ -140,7 +141,7 @@ def _generate_position_detection_config(window: Window):
         raise UserError("No images", "No images were loaded, so no cells can be detected. Please load some images"
                                      " first.")
 
-    model_folder = _get_model_folder()
+    model_folder = _get_model_folder("positions")
     if model_folder is None:
         return
 
@@ -248,8 +249,7 @@ def _generate_division_detection_config(window: Window):
         raise UserError("No images", "No images were loaded, so no cells can be detected. Please load some images"
                                      " first.")
 
-    #checkpoint_directory = _get_checkpoints_folder()
-    checkpoint_directory = _get_model_folder()
+    checkpoint_directory = _get_model_folder("divisions")
     if checkpoint_directory is None:
         return
 
@@ -366,7 +366,7 @@ def _generate_link_detection_config(window: Window):
         raise UserError("No images", "No images were loaded, so no cells can be detected. Please load some images"
                                      " first.")
 
-    checkpoint_directory = _get_model_folder()
+    checkpoint_directory = _get_model_folder("links")
     if checkpoint_directory is None:
         return
 
@@ -476,19 +476,31 @@ def _generate_linking_config(window: Window):
     _popup_confirmation(save_directory, "organoid_tracker_create_links")
 
 
-def _get_model_folder() -> Optional[str]:
+def _get_model_folder(model_type: str) -> Optional[str]:
     if not dialog.popup_message_cancellable("Trained model folder",
-                                            "First, we will ask you where you have stored the model."):
+                                            "First, we will ask you where you have stored the " + model_type + " model."):
         return None
     while True:
         directory = dialog.prompt_directory("Please choose a model folder")
         if not directory:
             return None  # Cancelled, stop loop
         if os.path.isfile(os.path.join(directory, "saved_model.pb")):
-            return directory  # Successful, stop loop
 
-        # Unsuccessful
-        dialog.popup_error("Not a model containing folder",
-                           "The selected folder does not contain a trained model; it contains no 'saved_model.pb' file."
-                           " Please select another folder. Typically, this folder is named `trained_model`.")
+            if os.path.isfile(os.path.join(directory, "settings.json")):
+                with open(os.path.join(directory, "settings.json")) as file_handle:
+                    found_model_type = json.load(file_handle)["type"]
+                    if found_model_type == model_type:
+                        return directory  # Successful, stop loop
+                    else:
+                        dialog.popup_error("This is a " + found_model_type + " model",
+                                           "The selected folder contains a model for dealing with " + found_model_type + ". For this analysis step, we need a " + model_type + " model.")
+            else:
+                dialog.popup_error("Not an OrganoidTracker model",
+                                   "The selected folder does not contain a `settings.json` file."
+                                   "Therefore, this model is not compatible with OrganoidTracker.")
+        else:
+            # Unsuccessful
+            dialog.popup_error("Not a model containing folder",
+                               "The selected folder does not contain a trained model; it contains no 'saved_model.pb' file."
+                               " Please select another folder. Typically, this folder is named `trained_model`.")
 
