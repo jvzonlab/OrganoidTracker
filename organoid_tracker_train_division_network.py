@@ -8,7 +8,7 @@ from typing import Set
 
 import tensorflow as tf
 
-from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int
+from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int, config_type_bool
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.division_detection_cnn.convolutional_neural_network import build_model, tensorboard_callback
 from organoid_tracker.division_detection_cnn.image_with_divisions_to_tensor_loader import dataset_writer
@@ -82,8 +82,7 @@ while True:
 time_window = [int(config.get_or_default(f"time_window_before", str(-1))),
                int(config.get_or_default(f"time_window_after", str(1)))]
 
-use_TFR = config.get_or_default(f"use_TFRecords", str(True))
-use_TFR = bool(use_TFR == "True")
+use_TFR = config.get_or_default(f"use_tfrecords", str(False), type=config_type_bool)
 
 patch_shape = list(
     config.get_or_default("patch_shape", "64, 64, 32", comment="Size in pixels (x, y, z) of the patches used"
