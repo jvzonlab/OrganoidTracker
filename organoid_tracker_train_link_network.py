@@ -53,7 +53,7 @@ if " " in os.getcwd():
     exit()
 
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
-config = ConfigFile("train_network")
+config = ConfigFile("train_link_network")
 
 per_experiment_params = []
 i = 1

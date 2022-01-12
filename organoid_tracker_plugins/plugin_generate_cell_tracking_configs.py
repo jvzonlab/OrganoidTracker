@@ -84,7 +84,7 @@ def _generate_position_training_config(window: Window):
     if save_directory is None:
         return
 
-    config = ConfigFile("train_network", folder_name=save_directory)
+    config = ConfigFile("train_position_network", folder_name=save_directory)
 
     config.get_or_default("epochs", "50")
     config.get_or_default("patch_shape",
@@ -187,7 +187,7 @@ def _generate_division_training_config(window: Window):
     if save_directory is None:
         return
 
-    config = ConfigFile("train_network", folder_name=save_directory)
+    config = ConfigFile("train_link_network", folder_name=save_directory)
     if len(experiments) == 1:
         if not dialog.prompt_yes_no("Experiments", "Only one project is open. Training on a single data set is not"
                                                    " recommended. For a quick test it's fine, but ideally you should have a more"
@@ -300,7 +300,7 @@ def _generate_link_training_config(window: Window):
     if save_directory is None:
         return
 
-    config = ConfigFile("train_network", folder_name=save_directory)
+    config = ConfigFile("train_division_network", folder_name=save_directory)
     if len(experiments) == 1:
         if not dialog.prompt_yes_no("Experiments", "Only one project is open. Training on a single data set is not"
                                                    " recommended. For a quick test it's fine, but ideally you should have a more"
