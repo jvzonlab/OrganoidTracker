@@ -52,7 +52,6 @@ class _ImageWithLinks(_ImageWithPositions):
 
 def create_image_with_links_list(experiments: Iterable[Experiment], division_multiplier=10):
     image_with_links_list = list()
-    print('analyzing links...')
     for experiment in experiments:
         # read a complete experiment
         div_positions = cell_division_finder.find_mothers(experiment.links)
@@ -93,7 +92,6 @@ def create_image_with_links_list(experiments: Iterable[Experiment], division_mul
                     # is the cell dividing
                     if position in div_positions:
                         repeats = division_multiplier
-                        print('division_found')
                     else:
                         repeats=1
 
@@ -116,14 +114,11 @@ def create_image_with_links_list(experiments: Iterable[Experiment], division_mul
                                 else:
                                     linked.append(False)
 
-            print(time_point)
-
             # read positions to numpy array
             if len(positions_xyz) > 0:
                 positions_xyz = numpy.array(positions_xyz, dtype=numpy.int32)
                 target_positions_xyz = numpy.array(target_positions_xyz, dtype=numpy.int32)
                 distances = numpy.array(distances, dtype=numpy.int32)
-                print(positions_xyz.shape)
                 image_with_links_list.append(
                     _ImageWithLinks(str(experiment.name), experiment.images, time_point, positions_xyz, target_positions_xyz, distances, linked))
 
@@ -173,8 +168,6 @@ def create_image_with_possible_links_list(experiment: Experiment):
                         linked.append(False)
 
                         predicted_links.append((position, future_possibility))
-
-        print(time_point)
 
         # read positions to numpy array
         if len(positions_xyz) > 0:
