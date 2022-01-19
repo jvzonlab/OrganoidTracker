@@ -30,7 +30,8 @@ def load_images_with_links(i, image_with_positions_list: List[_ImageWithLinks], 
     return image, target_image, label, target_label, distances, linked
 
 
-def tf_load_images_with_links(i, image_with_positions_list: List[_ImageWithLinks], time_window=[0, 0]):
+def tf_load_images_with_links(i: int, image_with_positions_list: List[_ImageWithLinks], time_window: List[int]
+                              ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
 
     image, target_image, label, target_label, distances, linked = tf.py_function(
         partial(load_images_with_links, image_with_positions_list=image_with_positions_list,
@@ -40,7 +41,7 @@ def tf_load_images_with_links(i, image_with_positions_list: List[_ImageWithLinks
     return image, target_image, label, target_label, distances, linked
 
 
-def dataset_writer(image_with_positions_list: List[_ImageWithPositions], time_window, shards=10):
+def dataset_writer(image_with_positions_list: List[_ImageWithPositions], time_window: List[int], shards: int = 10):
     dataset = tf.data.Dataset.range(len(image_with_positions_list))
 
     # load and serialize data

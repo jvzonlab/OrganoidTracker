@@ -37,6 +37,7 @@ from organoid_tracker.position_detection_cnn.training_data_creator import _Image
 
 
 class _ImageWithLinks(_ImageWithPositions):
+    """Extension of _ImageWithPositions that also includes the linked (target) position."""
     target_xyz_positions = ndarray
     distances = ndarray
     _linked = List[bool]

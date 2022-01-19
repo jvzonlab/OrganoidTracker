@@ -22,7 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import List, Optional, Iterable, Tuple
+from typing import List, Optional, Iterable, Tuple, Union
 
 import numpy
 from numpy import ndarray
@@ -60,7 +60,7 @@ class _ImageWithPositions:
             return self.load_image(dt).shape
         return size
 
-    def load_image_time_stack(self, time_window: Tuple[int, int] = (0, 0), delay=0) -> Optional[ndarray]:
+    def load_image_time_stack(self, time_window: Union[List[int], Tuple[int, int]] = (0, 0), delay=0) -> Optional[ndarray]:
         """Loads images in a time window. Returns a 4D array, [z, y, x, t]."""
 
         center_image = self.load_image(delay)
