@@ -33,10 +33,10 @@ def build_model(shape: Tuple, batch_size):
     encoder_both = encoder()
 
     # does a simple correlation computation on both images
-    correlation = tf.keras.layers.Reshape((1,))(correlate(input_1, input_2))
+    #correlation = tf.keras.layers.Reshape((1,))(correlate(input_1, input_2))
 
     # concatenates encoders with correlation, distance as vector and absolute distances
-    layer = tf.keras.layers.concatenate([encoder_single(input_1), encoder_single(input_2), encoder_both(both_inputs), correlation, input_distance, tf.abs(input_distance)])
+    layer = tf.keras.layers.concatenate([encoder_single(input_1), encoder_single(input_2), encoder_both(both_inputs),  input_distance, tf.abs(input_distance)])
 
     # two dense layers
     layer = tf.keras.layers.Dense(128, activation='relu', name='dense1')(layer)
@@ -70,7 +70,6 @@ def conv_block(n_conv, filters, kernel=3, pool_size=2, pool_strides=2, name=None
 
     return layers
 
-
 # calculates pixel-wise correlation between images without mixing batches (first dimension)
 def correlate(tensor_1, tensor_2):
     mu_1 = tf.reduce_mean(tensor_1 , axis=[1, 2, 3, 4], keepdims=True)
@@ -80,7 +79,6 @@ def correlate(tensor_1, tensor_2):
     correlation = tf.reduce_sum(tf.multiply(tensor_1 - mu_1, tensor_2 - mu_2), axis=[1, 2, 3, 4])
     correlation = tf.divide(correlation, tf.multiply(se_1, se_2))
     return correlation
-
 
 tensorboard_callback = tf.keras.callbacks.TensorBoard(
     log_dir="logs",
