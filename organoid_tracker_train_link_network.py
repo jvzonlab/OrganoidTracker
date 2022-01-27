@@ -148,7 +148,7 @@ model.summary()
 print("Training...")
 print(training_dataset)
 history = model.fit(training_dataset,
-                    epochs=50,
+                    epochs=epochs,
                     steps_per_epoch=round(0.8 * len(image_with_links_list) * 10 * number_of_postions / batch_size),
                     validation_data=validation_dataset,
                     validation_steps=round(0.2 * len(image_with_links_list) * number_of_postions / batch_size),
