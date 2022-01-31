@@ -41,6 +41,7 @@ def training_data_creator_from_raw(image_with_positions_list: List[_ImageWithPos
     # split dataset in validation and training part
     if mode == 'train':
         dataset = dataset.take(round(split_proportion * len(dataset)))
+        dataset = dataset.shuffle(len(dataset))
         dataset = dataset.repeat()
     elif mode == 'validation':
         dataset = dataset.skip(round(split_proportion * len(dataset)))
