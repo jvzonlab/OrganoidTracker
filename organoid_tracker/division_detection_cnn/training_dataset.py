@@ -31,6 +31,7 @@ import numpy as np
 from organoid_tracker.division_detection_cnn.image_with_divisions_to_tensor_loader import tf_load_images_with_divisions
 from organoid_tracker.division_detection_cnn.training_data_creator import _ImageWithDivisions
 
+
 # Creates training and validation data from an image_with_positions_list
 def training_data_creator_from_raw(image_with_divisions_list: List[_ImageWithDivisions], time_window, patch_shape,
                                    batch_size: int, mode, split_proportion: float = 0.8):
@@ -39,6 +40,7 @@ def training_data_creator_from_raw(image_with_divisions_list: List[_ImageWithDiv
     # split dataset in validation and training part
     if mode == 'train':
         dataset = dataset.take(round(split_proportion * len(dataset)))
+        dataset = dataset.shuffle(round(split_proportion * len(dataset)))
         dataset = dataset.repeat()
     elif mode == 'validation':
         dataset = dataset.skip(round(split_proportion * len(dataset)))
@@ -51,16 +53,19 @@ def training_data_creator_from_raw(image_with_divisions_list: List[_ImageWithDiv
     # Normalize images
     dataset = dataset.map(normalize)
 
+    # Repeat images (as perturbations will be made)
+    dataset = dataset.flat_map(partial(repeat, repeats=10))
+
     if mode == 'train':
         # generate multiple patches from image
         dataset = dataset.flat_map(partial(generate_patches_division, patch_shape=patch_shape, perturb=True))
         # create random batches
-        dataset = dataset.shuffle(buffer_size=5000)
+        dataset = dataset.shuffle(buffer_size=20000)
         dataset = dataset.batch(batch_size)
 
     elif mode == 'validation':
         dataset = dataset.flat_map(partial(generate_patches_division, patch_shape=patch_shape, perturb=False))
-        dataset = dataset.shuffle(buffer_size=500)
+        dataset = dataset.shuffle(buffer_size=10000)
         dataset = dataset.batch(batch_size)
 
     dataset.prefetch(2)
@@ -98,7 +103,7 @@ def training_data_creator_from_TFR(images_file, labels_file, dividing_file, patc
         # generate multiple patches from image
         dataset = dataset.flat_map(partial(generate_patches_division, patch_shape=patch_shape, perturb=True))
         # create random batches
-        dataset = dataset.shuffle(buffer_size=5000)
+        dataset = dataset.shuffle(buffer_size=10000)
         dataset = dataset.batch(batch_size)
 
 
@@ -130,6 +135,14 @@ def pad_to_patch(stacked, patch_shape):
     padding = [[pad_z, 0], [pad_y, 0], [pad_x, 0], [0, 0]]
 
     return tf.pad(stacked, padding)
+
+
+# Repeats
+def repeat(image, label, dividing, repeats=5):
+    dataset = tf.data.Dataset.from_tensors((image, label, dividing))
+    dataset = dataset.repeat(repeats)
+
+    return dataset
 
 # generates multiple perturbed patches
 def generate_patches_division(image, label, dividing, patch_shape, perturb):
