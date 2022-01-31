@@ -107,6 +107,13 @@ experiment_provider = (params.to_experiment() for params in per_experiment_param
 # Create a list of images and annotated positions
 image_with_divisions_list = create_image_with_divisions_list(experiment_provider)
 
+# get mean number of positions per timepoint
+number_of_postions = []
+for image_with_divisions in image_with_divisions_list:
+    number_of_postions.append(image_with_divisions.xyz_positions.shape[0])
+number_of_postions = np.mean(number_of_postions)
+print(number_of_postions)
+
 # shuffle training/validation data
 random.seed("using a fixed seed to ensure reproducibility")
 random.shuffle(image_with_divisions_list)
@@ -140,9 +147,9 @@ model.summary()
 print("Training...")
 history = model.fit(training_dataset,
                     epochs=epochs,
-                    steps_per_epoch=round(0.8*len(image_with_divisions_list)*100/batch_size),
+                    steps_per_epoch=round(0.8*len(image_with_divisions_list)*number_of_postions*10/batch_size),
                     validation_data=validation_dataset,
-                    validation_steps=1000,
+                    validation_steps=round(0.2*len(image_with_divisions_list)*number_of_postions/batch_size),
                     callbacks=[tensorboard_callback , tf.keras.callbacks.EarlyStopping(patience=2, restore_best_weights=True)])
 
 # save model
