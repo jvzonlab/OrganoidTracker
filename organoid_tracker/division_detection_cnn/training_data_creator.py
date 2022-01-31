@@ -22,7 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import List, Iterable
+from typing import List, Iterable, Tuple
 
 import numpy
 from numpy import ndarray
@@ -31,8 +31,10 @@ import random
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.images import Images
+from organoid_tracker.core.position import Position
 from organoid_tracker.linking import cell_division_finder
 from organoid_tracker.position_detection_cnn.training_data_creator import _ImageWithPositions
+
 
 # ImageWithDivisions extends ImageWithositions to include division data
 class _ImageWithDivisions(_ImageWithPositions):
@@ -44,12 +46,25 @@ class _ImageWithDivisions(_ImageWithPositions):
         super().__init__(experiment_name, images, time_point, xyz_positions)
         self._dividing = dividing
 
+
 # Creates list of ImagesWithDivisions from experiments
-def create_image_with_divisions_list(experiments: Iterable[Experiment], non_divisions_per_frame=50, division_multiplier = 10):
+def create_image_with_divisions_list(experiments: Iterable[Experiment], division_multiplier = 10):
     image_with_divisions_list = []
     for experiment in experiments:
+
         # read a complete experiment and identify the positions where a division takes place
-        div_positions = list(cell_division_finder.find_mothers(experiment.links))
+        links = experiment.links
+        div_positions = cell_division_finder.find_mothers(links)
+
+        div_child_positions = div_positions.copy()
+
+        for div_pos in div_positions:
+            children = links.find_futures(div_pos)
+            div_child_positions = div_child_positions.union(children)
+
+            mothers_before = links.find_pasts(div_pos)
+            if mothers_before:
+                div_child_positions = div_child_positions.union(mothers_before)
 
         # get the time points where divisions happen
         div_time_points = []
@@ -63,53 +78,42 @@ def create_image_with_divisions_list(experiments: Iterable[Experiment], non_divi
             image_shape = experiment._images.get_image_stack(time_point).shape
 
             # read positions to numpy array
-            positions_xyz = list()
-            positions_xyz_div = list()
+            positions_xyz = []
+            dividing = []
 
-            # list dividing positions at the relevant time_points
-            for div_time_point, div_position in zip(div_time_points, div_positions):
-                if div_time_point.__eq__(time_point):
-                    positions_xyz_div.append(
-                        [div_position.x - offset.x, div_position.y - offset.y, div_position.z - offset.z])
+            print(time_point)
 
             for position in positions:
                 divide = False
-                inside = False
+                repeat = 1
 
                 # check if the cell divides
-                for position_div in positions_xyz_div:
-                    if position.__eq__(position_div):
-                        divide = True
+                if position in div_positions:
+                    divide = True
+                    # dividing cells are represented 3:1 vs children and the non-dividing cell in the earlier timepoint
+                    # (so 1:1 in the end)
+                    repeat = 3
+                    print('division found')
+
+                if position in div_child_positions:
+                    repeat = division_multiplier * repeat
 
                 # check if position is inside the frame
-                if position.x - offset.x < image_shape[2] and position.y - offset.y < image_shape[
-                    1] and position.z - offset.z < image_shape[0]:
-                    inside = True
+                if inside_image(position, offset, image_shape):
+                    for i in range(repeat):
+                        positions_xyz.append([position.x - offset.x, position.y - offset.y, position.z - offset.z])
+                        dividing.append(divide)
 
-                if position.x - offset.x >= 0 and position.y - offset.y >= 0 and position.z - offset.z >= 0:
-                    inside = inside
-
-                # add only non-dividing cells to this list
-                if not divide and inside:
-                    if not inside:
-                        print('position out of frame')
-
-                    positions_xyz.append([position.x - offset.x, position.y - offset.y, position.z - offset.z])
-
-            # Add (multiple copies of) dividing cells and sample of non-dividing cells together
-            if len(positions_xyz) > non_divisions_per_frame:
-                positions_xyz = random.sample(positions_xyz, non_divisions_per_frame) + positions_xyz_div*division_multiplier
-            else:
-                positions_xyz = positions_xyz + positions_xyz_div * division_multiplier
+                else:
+                    print('position out of frame')
+                    print(offset.z)
+                    print(position.z)
 
             # make list into array
             positions_xyz = numpy.array(positions_xyz, dtype=numpy.int32)
 
-            # make list with division info
-            dividing = [False] * non_divisions_per_frame + [True] * len(positions_xyz_div*division_multiplier)
-
-            # if there are divisions in the frame add it to the list
-            if len(positions_xyz_div) > 0:
+            # if there are positions in the frame add it to the list
+            if len(positions_xyz) > 0:
                 image_with_divisions_list.append(
                     _ImageWithDivisions(str(experiment.name), experiment.images, time_point, positions_xyz, dividing))
 
@@ -160,3 +164,17 @@ def create_image_with_positions_list(experiment: Experiment):
         positions_per_frame_list.append(positions_list)
 
     return image_with_positions_list, positions_per_frame_list
+
+
+def inside_image(position: Position, offset: Images.offsets, image_shape: Tuple[int]):
+    inside = False
+    if position.x - offset.x < image_shape[2] and position.y - offset.y < image_shape[1]\
+            and position.z - offset.z < image_shape[0]:
+        inside = True
+
+    if position.x - offset.x >= 0 and position.y - offset.y >= 0 and position.z - offset.z >= 0:
+        inside = inside
+    else:
+        inside = False
+
+    return inside
