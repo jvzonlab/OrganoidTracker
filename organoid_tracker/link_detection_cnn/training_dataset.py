@@ -50,7 +50,6 @@ def training_data_creator_from_raw(tf_load_images_with_links_list: List[_ImageWi
         dataset = dataset.repeat()
 
 
-
     # Load data
     dataset = dataset.map(partial(tf_load_images_with_links, image_with_positions_list=tf_load_images_with_links_list,
                                   time_window=time_window), num_parallel_calls=12)
@@ -191,11 +190,12 @@ def apply_random_perturbations_stacked(stacked, distance):
     stacked = tfa.image.transform(stacked, compose_transforms, interpolation='BILINEAR')
 
     # transform displacement vector
+
     distance = tf.cast(distance, tf.float32)
     new_angle = tf.math.atan2(distance[1], distance[2]) + angle
     xy_length = tf.sqrt(tf.square(distance[1])+tf.square(distance[2]))
-    y_dist = xy_length*tf.math.cos(new_angle)*scale
-    x_dist = xy_length*tf.math.sin(new_angle)*scale
+    y_dist = xy_length*tf.math.sin(new_angle)*scale
+    x_dist = xy_length*tf.math.cos(new_angle)*scale
     distance_new = tf.concat([distance[0], y_dist, x_dist], axis=0)
     #tf.print(distance_new)
 
