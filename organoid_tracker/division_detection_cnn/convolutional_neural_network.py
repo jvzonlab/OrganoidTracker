@@ -26,10 +26,15 @@ def build_model(shape: Tuple, batch_size):
     layer = tf.keras.layers.Dense(128, activation='relu', name='dense')(layer)
 
     # drop-out layer, does this help?
-    layer = tf.keras.layers.Dropout(0.5)(layer)
+    #layer = tf.keras.layers.Dropout(0.5)(layer)
 
     # sigmoid output for binary decisions
     output = tf.keras.layers.Dense(1, activation='sigmoid', name='out')(layer)
+
+    # minimum and maximum
+    #eps = 10**-10
+    #output = tf.maximum(output, eps)
+    #output = tf.minimum(output, 1-eps)
 
     # construct model
     model = keras.Model(inputs=input, outputs=output, name="YOLO_division")
