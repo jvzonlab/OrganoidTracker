@@ -7,6 +7,7 @@ import random
 from typing import Set
 
 import tensorflow as tf
+import numpy as np
 
 from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int, config_type_bool
 from organoid_tracker.core.experiment import Experiment
