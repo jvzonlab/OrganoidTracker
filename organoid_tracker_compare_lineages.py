@@ -12,10 +12,10 @@ config = ConfigFile("compare_lineages")
 _min_time_point = int(config.get_or_default("min_time_point", str(1), store_in_defaults=True))
 _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_in_defaults=True))
 
-_automatic_links_file = config.get_or_prompt("automatic_links_file", "In what file are the new links stored?")
-_baseline_links_file = config.get_or_prompt("baseline_links_file", "In what file are the original links stored?")
+_automatic_links_file = config.get_or_prompt("automatic_file", "In what file are the new links stored?")
+_baseline_links_file = config.get_or_prompt("ground_truth_file", "In what file are the original links stored?")
 _max_distance_um = float(config.get_or_default("max_distance_um", str(5)))
-_output_file = config.get_or_default("output_file", "", type=config_type_json_file)
+_output_file = config.get_or_default("output_file", "lineages_comparison.json", type=config_type_json_file)
 config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
