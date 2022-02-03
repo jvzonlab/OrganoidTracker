@@ -14,7 +14,7 @@ def _division_score_to_color(division_score: float):
     if division_score is None or division_score > 0:
         return "black"
     else:
-        return "red"
+        return "lime"
 
 
 class DivisionScoreVisualizer(ExitableImageVisualizer):
@@ -35,7 +35,7 @@ class DivisionScoreVisualizer(ExitableImageVisualizer):
 
         if dt == 0 and abs(dz) <= 3:
             color = _division_score_to_color(division_score)
-            self._ax.annotate(_division_score_to_text(division_score), (position.x, position.y), fontsize=8 - abs(dz / 2),
-                              fontweight="bold", color=color, backgroundcolor=(1,1,1,0.2))
+            self._ax.annotate(_division_score_to_text(division_score), (position.x, position.y), fontsize=10 - abs(dz / 2),
+                              fontweight="bold", color=color, backgroundcolor=(1,1,1,0.4))
         return True
 
