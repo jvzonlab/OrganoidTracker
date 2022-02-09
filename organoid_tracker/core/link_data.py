@@ -123,3 +123,11 @@ class LinkData:
         for data_name, data_of_links in self._link_data.items():
             if link_tuple in data_of_links:
                 yield data_name, data_of_links[link_tuple]
+
+    def find_all_links_with_data(self, data_name: str) -> Iterable[Tuple[Position, Position, DataType]]:
+        """Finds all links that have a value for the given data_name. Returns as an iteratble with
+        entries (position1, position2, value). The first position is always earliest in time."""
+        if data_name not in self._link_data:
+            return
+        for (position1, position2), data_value in  self._link_data[data_name].items():
+            yield position1, position2, data_value
