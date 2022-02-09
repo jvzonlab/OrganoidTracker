@@ -148,9 +148,9 @@ model.summary()
 print("Training...")
 history = model.fit(training_dataset,
                     epochs=epochs,
-                    steps_per_epoch=round(0.8*len(image_with_divisions_list)*number_of_postions*10/batch_size),
+                    steps_per_epoch=round(0.8*len(image_with_divisions_list)*number_of_postions*1/batch_size),
                     validation_data=validation_dataset,
-                    validation_steps=round(0.2*len(image_with_divisions_list)*number_of_postions/batch_size),
+                    validation_steps=round(0.2*len(image_with_divisions_list)*number_of_postions*1/batch_size),
                     callbacks=[tensorboard_callback , tf.keras.callbacks.EarlyStopping(patience=2, restore_best_weights=True)])
 
 # save model
