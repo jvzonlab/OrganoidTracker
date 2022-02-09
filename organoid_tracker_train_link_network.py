@@ -149,11 +149,11 @@ print("Training...")
 print(training_dataset)
 history = model.fit(training_dataset,
                     epochs=epochs,
-                    steps_per_epoch=round(0.8 * len(image_with_links_list) * 10 * number_of_postions / batch_size),
+                    steps_per_epoch=round(0.8 * len(image_with_links_list) * 1 * number_of_postions / batch_size),
                     validation_data=validation_dataset,
-                    validation_steps=round(0.2 * len(image_with_links_list) * number_of_postions / batch_size),
+                    validation_steps=round(0.2 * len(image_with_links_list) * 1 * number_of_postions / batch_size),
                     callbacks=[tensorboard_callback,
-                               tf.keras.callbacks.EarlyStopping(patience=5, restore_best_weights=True)])
+                               tf.keras.callbacks.EarlyStopping(patience=3, restore_best_weights=True)])
 
 print("Saving model...")
 trained_model_folder = os.path.join(output_folder, "model_links")

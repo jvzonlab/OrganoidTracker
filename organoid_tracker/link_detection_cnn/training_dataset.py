@@ -58,7 +58,7 @@ def training_data_creator_from_raw(tf_load_images_with_links_list: List[_ImageWi
     dataset = dataset.map(normalize)
 
     # Repeat images (as perturbations will be made)
-    dataset = dataset.flat_map(partial(repeat, repeats=10))
+    dataset = dataset.flat_map(partial(repeat, repeats=1))
 
     if mode == 'train':
         # generate multiple patches from image
@@ -71,7 +71,7 @@ def training_data_creator_from_raw(tf_load_images_with_links_list: List[_ImageWi
     elif mode == 'validation':
         dataset = dataset.flat_map(partial(generate_patches_links, patch_shape=patch_shape, perturb=False))
         #dataset = dataset.shuffle(buffer_size=1000)
-        dataset = dataset.shuffle(buffer_size=25000)
+        dataset = dataset.shuffle(buffer_size=200)
         dataset = dataset.batch(batch_size)
 
     #dataset = dataset.map(apply_noise)

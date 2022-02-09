@@ -37,7 +37,6 @@ from organoid_tracker.position_detection_cnn.training_data_creator import _Image
 
 
 class _ImageWithLinks(_ImageWithPositions):
-    """Extension of _ImageWithPositions that also includes the linked (target) position."""
     target_xyz_positions = ndarray
     distances = ndarray
     _linked = List[bool]
@@ -51,18 +50,27 @@ class _ImageWithLinks(_ImageWithPositions):
         self.distances = distances
 
 
-def create_image_with_links_list(experiments: Iterable[Experiment], division_multiplier=10):
+def create_image_with_links_list(experiments: Iterable[Experiment], division_multiplier=5):
     image_with_links_list = list()
+    print('analyzing links...')
     for experiment in experiments:
         # read a complete experiment
         div_positions = cell_division_finder.find_mothers(experiment.links)
         links = experiment.links
         possible_links = nearest_neighbor_linker.nearest_neighbor(experiment, tolerance=2)
 
-        div_positions_mothers = div_positions.copy()
-        for div_pos in div_positions_mothers:
+        div_positions_plus_window = set()
+        window = 3
+
+        for div_pos in div_positions:
             children = links.find_futures(div_pos)
-            div_positions = div_positions.union(children)
+
+            for child in children:
+                futures = list(links.iterate_to_future(child))
+                div_positions_plus_window = div_positions_plus_window.union(set(futures[:window]))
+
+            pasts = list(links.iterate_to_past(div_pos))
+            div_positions_plus_window = div_positions_plus_window.union(set(pasts[:window + 1]))
 
         for time_point in experiment.positions.time_points():
             # if there is no next timepoint available end the routine
@@ -91,7 +99,7 @@ def create_image_with_links_list(experiments: Iterable[Experiment], division_mul
                 if inside_image(position, offset, image_shape):
 
                     # is the cell dividing
-                    if position in div_positions:
+                    if position in div_positions_plus_window:
                         repeats = division_multiplier
                     else:
                         repeats=1
@@ -169,6 +177,8 @@ def create_image_with_possible_links_list(experiment: Experiment):
                         linked.append(False)
 
                         predicted_links.append((position, future_possibility))
+
+        print(time_point)
 
         # read positions to numpy array
         if len(positions_xyz) > 0:
