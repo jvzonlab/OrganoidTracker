@@ -9,7 +9,7 @@ from organoid_tracker.position_detection_cnn.training_dataset import pad_to_patc
 
 
 def predicting_data_creator(image_with_positions_list: List[_ImageWithPositions], time_window, corners,
-                            patch_shape, buffer, image_shape):
+                            patch_shape, buffer, image_shape, batch_size):
     # load data
     dataset = tf.data.Dataset.range(len(image_with_positions_list))
     dataset = dataset.map(partial(tf_load_images, image_with_positions_list=image_with_positions_list,
@@ -21,7 +21,7 @@ def predicting_data_creator(image_with_positions_list: List[_ImageWithPositions]
     # Split images in smaller parts to reduce memory load
     dataset = dataset.flat_map(partial(split, corners=corners, patch_shape=patch_shape, buffer=buffer, image_shape=image_shape))
 
-    dataset = dataset.batch(1)
+    dataset = dataset.batch(batch_size)
     #dataset.prefetch(2)
 
     return dataset

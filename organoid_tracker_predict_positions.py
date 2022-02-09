@@ -94,7 +94,7 @@ for i in range(len(image_list)):
 corners = corners_split(max_image_shape, patch_shape)
 
 # due to memory constraints only ~10 images can be processed at a given time (depending on patch shape)
-set_size = 1
+set_size = 2
 
 # set relevant parameters
 if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
@@ -119,10 +119,13 @@ if _debug_folder is not None:
 print("Starting predictions...")
 all_positions = PositionCollection()
 
-image_set_count = int(math.ceil(len(image_list) / set_size))
-
+# Create iterator over complete dataset
 prediction_dataset_all = predicting_data_creator(image_list, time_window, corners,
-                                             patch_shape, buffer, max_image_shape)
+                                             patch_shape, buffer, max_image_shape, batch_size = set_size * len(corners))
+prediction_dataset_all_iter = iter(prediction_dataset_all)
+
+# Go over all images
+image_set_count = int(math.ceil(len(image_list) / set_size))
 
 for image_set_index in range(image_set_count):
 
@@ -138,9 +141,8 @@ for image_set_index in range(image_set_count):
     current_set_size = min(len(image_list)-image_set_index*set_size, set_size)
 
     # take relevant part of the tf.Dataset
-    prediction_dataset = prediction_dataset_all.\
-        skip(image_set_index*len(corners)*set_size)\
-        .take(current_set_size*len(corners))
+    prediction_dataset = prediction_dataset_all_iter.get_next()
+    prediction_dataset = tf.data.Dataset.from_tensor_slices(prediction_dataset).batch(1)
 
     # create prediction mask for peak_finding
     prediction_mask_shape = 2*tf.floor(np.sqrt(_peak_min_distance_px ** 2 / 3)) + 1
