@@ -751,3 +751,22 @@ class Links:
 
             yield track.find_position_at_time_point_number(time_point_number)
             time_point_number -= 1
+
+    def iterate_to_future(self, position: Position) -> Iterable[Position]:
+        """Iterates towards the future, yielding this position, the next position, the position before that, ect.
+         Stops at cell divisions or at the last detection."""
+        track = self.get_track(position)
+        if track is None:
+            return
+
+        time_point_number = position.time_point_number()
+        while True:
+            if time_point_number > track.max_time_point_number():
+                next_tracks = track.get_next_tracks()
+                if len(next_tracks) == 1:
+                    track = next_tracks.pop()
+                else:
+                    return  # No more or multiple next positions, stop
+
+            yield track.find_position_at_time_point_number(time_point_number)
+            time_point_number += 1

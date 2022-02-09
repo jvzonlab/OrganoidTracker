@@ -48,7 +48,7 @@ class _ImageWithDivisions(_ImageWithPositions):
 
 
 # Creates list of ImagesWithDivisions from experiments
-def create_image_with_divisions_list(experiments: Iterable[Experiment], division_multiplier = 10):
+def create_image_with_divisions_list(experiments: Iterable[Experiment], division_multiplier = 5):
     image_with_divisions_list = []
     for experiment in experiments:
 
@@ -56,15 +56,18 @@ def create_image_with_divisions_list(experiments: Iterable[Experiment], division
         links = experiment.links
         div_positions = cell_division_finder.find_mothers(links)
 
-        div_child_positions = div_positions.copy()
+        div_positions_plus_window = set()
+        window = 3
 
         for div_pos in div_positions:
             children = links.find_futures(div_pos)
-            div_child_positions = div_child_positions.union(children)
 
-            mothers_before = links.find_pasts(div_pos)
-            if mothers_before:
-                div_child_positions = div_child_positions.union(mothers_before)
+            for child in children:
+                futures = list(links.iterate_to_future(child))
+                div_positions_plus_window = div_positions_plus_window.union(set(futures[:window]))
+
+            pasts = list(links.iterate_to_past(div_pos))
+            div_positions_plus_window = div_positions_plus_window.union(set(pasts[:window + 1]))
 
         # get the time points where divisions happen
         div_time_points = []
@@ -82,6 +85,8 @@ def create_image_with_divisions_list(experiments: Iterable[Experiment], division
             dividing = []
 
             print(time_point)
+            non_division_counter = 0
+            division_counter = 0
 
             for position in positions:
                 divide = False
@@ -95,8 +100,13 @@ def create_image_with_divisions_list(experiments: Iterable[Experiment], division
                     repeat = 3
                     print('division found')
 
-                if position in div_child_positions:
+                if position in div_positions_plus_window:
                     repeat = division_multiplier * repeat
+                    division_counter = division_counter + 1
+                else:
+                    non_division_counter = non_division_counter+1
+                    if non_division_counter > (division_multiplier * division_counter + 2):
+                        repeat = 0
 
                 # check if position is inside the frame
                 if inside_image(position, offset, image_shape):

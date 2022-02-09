@@ -54,18 +54,18 @@ def training_data_creator_from_raw(image_with_divisions_list: List[_ImageWithDiv
     dataset = dataset.map(normalize)
 
     # Repeat images (as perturbations will be made)
-    dataset = dataset.flat_map(partial(repeat, repeats=10))
+    dataset = dataset.flat_map(partial(repeat, repeats=1))
 
     if mode == 'train':
         # generate multiple patches from image
         dataset = dataset.flat_map(partial(generate_patches_division, patch_shape=patch_shape, perturb=True))
         # create random batches
-        dataset = dataset.shuffle(buffer_size=20000)
+        dataset = dataset.shuffle(buffer_size=7500)
         dataset = dataset.batch(batch_size)
 
     elif mode == 'validation':
         dataset = dataset.flat_map(partial(generate_patches_division, patch_shape=patch_shape, perturb=False))
-        dataset = dataset.shuffle(buffer_size=10000)
+        dataset = dataset.shuffle(buffer_size=1000)
         dataset = dataset.batch(batch_size)
 
     dataset.prefetch(2)
@@ -103,17 +103,17 @@ def training_data_creator_from_TFR(images_file, labels_file, dividing_file, patc
         # generate multiple patches from image
         dataset = dataset.flat_map(partial(generate_patches_division, patch_shape=patch_shape, perturb=True))
         # create random batches
-        dataset = dataset.shuffle(buffer_size=10000)
+        dataset = dataset.shuffle(buffer_size=200000)
         dataset = dataset.batch(batch_size)
 
 
     elif mode == 'validation':
         #dataset = dataset.map(partial(generate_patch, patch_shape=patch_shape, batch=False))
         dataset = dataset.flat_map(partial(generate_patches_division, patch_shape=patch_shape, perturb=False))
-        dataset = dataset.shuffle(buffer_size=500)
+        dataset = dataset.shuffle(buffer_size=200000)
         dataset = dataset.batch(batch_size)
 
-    dataset = dataset.prefetch(5)
+    #dataset = dataset.prefetch(5)
 
     return dataset
 
