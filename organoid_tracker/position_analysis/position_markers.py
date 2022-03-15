@@ -28,6 +28,14 @@ def get_position_types(position_data: PositionData, positions: Set[Position]) ->
     return types
 
 
+def get_all_position_types(position_data: PositionData) -> Set[str]:
+    """Gets a set of all position types that were used in the experiment."""
+    found_types = set()
+    for position, position_type in position_data.find_all_positions_with_data("type"):
+        found_types.add(position_type.upper())
+    return found_types
+
+
 def get_positions_of_type(position_data: PositionData, requested_type: str) -> Iterable[Position]:
     """Gets all positions of the requested cell type."""
     requested_type = requested_type.upper()
