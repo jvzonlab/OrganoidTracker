@@ -161,6 +161,8 @@ def perform_intensity_normalization(experiment: Experiment, *, background_correc
         volume = position_data.get_position_data(position, "intensity_volume")
         if volume is None and background_correction:
             continue
+        if intensity == 0:
+            continue
 
         intensities.append(intensity)
         volumes.append(volume)
