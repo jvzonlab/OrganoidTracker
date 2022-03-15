@@ -109,7 +109,7 @@ config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
 # Create a generator that will load the experiments on demand
-experiment_provider = (params.to_experiment() for params in per_experiment_params[:-1])
+experiment_provider = (params.to_experiment() for params in per_experiment_params)
 
 # Create a list of images and annotated positions
 image_with_positions_list = create_image_with_positions_list(experiment_provider)
@@ -117,12 +117,6 @@ image_with_positions_list = create_image_with_positions_list(experiment_provider
 # shuffle training/validation data
 random.seed("using a fixed seed to ensure reproducibility")
 random.shuffle(image_with_positions_list)
-
-experiment_provider = (params.to_experiment() for params in per_experiment_params[-1:])
-image_with_positions_list_val = create_image_with_positions_list(experiment_provider)
-random.seed("using a fixed seed to ensure reproducibility")
-random.shuffle(image_with_positions_list_val)
-
 
 # create tf.datasets that generate the data
 if use_tfrecords:
@@ -139,10 +133,10 @@ if use_tfrecords:
 else:
     training_dataset = training_data_creator_from_raw(image_with_positions_list, time_window=time_window,
                                              patch_shape=patch_shape, batch_size=batch_size, mode='train',
-                                             split_proportion=1.0)
-    validation_dataset = training_data_creator_from_raw(image_with_positions_list_val, time_window=time_window,
+                                             split_proportion=0.8)
+    validation_dataset = training_data_creator_from_raw(image_with_positions_list, time_window=time_window,
                                                patch_shape=patch_shape, batch_size=batch_size,
-                                               mode='validation', split_proportion=0.0)
+                                               mode='validation', split_proportion=0.8)
 
 print("Defining model...")
 model = build_model(shape=(patch_shape[0], None, None, time_window[1] - time_window[0] + 1), batch_size=None)
