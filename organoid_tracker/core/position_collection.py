@@ -215,13 +215,14 @@ class PositionCollection:
         self._recalculate_min_max_time_points()
 
     def time_points(self) -> Iterable[TimePoint]:
-        """Returns all time points from the first time point with positions present to the last."""
+        """Returns all time points that have at least one position."""
         first_time_point_number = self.first_time_point_number()
         last_time_point_number = self.last_time_point_number()
         if first_time_point_number is None or last_time_point_number is None:
             return
         for i in range(first_time_point_number, last_time_point_number + 1):
-            yield TimePoint(i)
+            if i in self._all_positions:
+                yield TimePoint(i)
 
     def copy(self) -> "PositionCollection":
         """Creates a copy of this positions collection. Changes made to the copy will not affect this instance and vice
