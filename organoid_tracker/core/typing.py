@@ -1,4 +1,4 @@
-from typing import Union, Tuple
+from typing import Union, Tuple, List
 
 MPLColor = Union[
     Tuple[float, float, float],
@@ -12,5 +12,7 @@ DataType = Union[
     float,
     int,
     str,
-    bool
+    bool,
+    List[float],
+    List[str]
 ]
