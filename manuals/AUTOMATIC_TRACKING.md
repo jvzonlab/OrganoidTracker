@@ -4,9 +4,10 @@
 The intended workflow is as follows:
 
 1. Obtain nucleus positions (for now this is done using an external program)
-2. Obtain nucleus shapes from positions
-3. Link the cells of different time points together
-4. Manually correct all warnings
+2. Obtain division scores.
+3. Obtain linking scores.
+4. Link the cells of different time points together
+5. Manually correct all warnings
 
 The steps are described below.
 
@@ -19,33 +20,31 @@ Open the OrganoidTracker GUI, load your images and select `Tools` -> `Detect cel
 
 If you want to debug what the program is doing, open the `organoid_tracker.ini` file and give the `predictions_output_folder` setting a value, for example `test`. If you run the script again, it will create a folder with that name (`test` in this example) and place images there indicating how likely it is to find a cell there.
 
-Step 2: Obtaining nucleus shapes
---------------------------------
+Step 2: Obtaining division scores
+---------------------------------
 
-Open the OrganoidTracker GUI again and load the images and the positions from the previous step. Select `Tools` -> `Detect shapes using Gaussian fit...` and follow the steps. Run the `organoid_tracker_detect_gaussian_shapes` script. Note: this script takes a few minutes to run per time point, so please be patient.
+Open the OrganoidTracker GUI again and load the images and the positions from the previous step. Select `Tools` -> `Detect dividiing cells...` and follow the steps. Run the `organoid_tracker_predict_divisions` script.After the script is finished, which should be after a few minutes, you can load the resulting data in OrganoidTracker.
 
-The script works by fitting 3D Gaussian functions to a blurred version of the original image, starting from the positions from step 1 and a default covariance matrix. To restrict the fitting algorithm, separate clusters of cells are fitted separately. In this way, the fitting algorithm will ignore debris elsewhere in the image. Clusters are found using a quick segmentation: every pixel that has an intensity lower than the local average is background, the rest is foreground (see figure 1). To improve the segmentation, some erosion can be applied, which makes the white areas in the figure 1 smaller. If your cells are already well separated, you can set it to 0, and if your cells form one big structure (like in figure 1) then a value of 3 will be necessary.
+If you double-click on a cell in the main window, you can view its data. Among that data, you should now see the division probability. Verify that this probability is what you would expect: high for cells that are about to divide, low otherwise.
 
-You can view the resulting Gaussians by loading the output file in the OrganoidTracker GUI and pressing `R`. This will draw the Gaussian functions.
+Step 3: Obtaining link scores
+-----------------------------
 
-![Thresholding](images/thresholding.png)  
-Figure 1: Thresholding, used to separate foreground and background. Gaussian fits are carried out within clumps.
+This step works the same as the above script, except that you now run `Detect link likelihoods...`. This script will predict the scores for all links that OrganoidTracker considers to be possible. (That are links to the nearest position, plus links to positions at most two times as far as the nearest position.)
 
-Step 3: Obtaining links
+
+Step 4: Obtaining links
 -----------------------
 
 Open the OrganoidTracker GUI again and load the images and the output file from the previous step. Use `Tools` -> `Create links between time points...` and run the resulting `organoid_tracker_create_links` script.
 
-First, the script will create some very basic initial links. Then it will calculate the likeliness (a score) of each cell being a dividing cell. Then it will create the actual links.
-
-If you're not satisfied with the results, try changing the input parameters in the `organoid_tracker.ini` file. There are comments in there to explain each setting. You can make cell divisions more/less likely, allow more or less cellular movement and make cell deaths more likely. If you don't see (m)any links anymore, then you have made link creation too expensive, and you should make events like cellular movement cheaper.
 
 ### Correcting for changed image offsets
 When taking longer time lapse movies, the organoid can slowly slide out of the view. For this reason, the microscope user can move the imaged area so that the organoid stays in the view. In the time lapse movie, this makes the organoid appear to "teleport": from the edges of the image it jumps back to the center.
 
 To create links over this "jump", the program would need to create a lot of large-distance links. The program will likely refuse to do this. To correct for this, *before running the linking process*, open the OrganoidTracker GUI and load the images and positions (`File` menu). Then edit the data (`Edit -> Manually change data...`) and edit the image offsets (`Edit -> Edit image offsets...`) of the correct time point. Instructions are on the bottom of the window.
 
-Step 4: Manually correct warnings
+Step 5: Manually correct warnings
 ---------------------------------
 
 This step is not automated. 😉 Open the OrganoidTracker GUI and load the images and data (`File` menu). Then go to `Edit -> Manually change data...`. A cross will appear over all locations where the program has detected some inconsistency in the tracking data:
