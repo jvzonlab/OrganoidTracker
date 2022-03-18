@@ -286,7 +286,8 @@ class LineageTreeVisualizer(Visualizer):
                                                             resolution=resolution,
                                                             location_map=self._location_map,
                                                             lineage_filter=self._lineage_filter,
-                                                            label_getter=self._get_track_label)
+                                                            label_getter=self._get_track_label,
+                                                            line_width=self._get_lineage_line_width())
 
         self._ax.set_ylabel("Time (time points)")
         if self._ax.get_xlim() == (0, 1):
@@ -308,6 +309,10 @@ class LineageTreeVisualizer(Visualizer):
             return
         self.get_window().get_gui_experiment().goto_position(position)
         self.update_status("Focused main window on " + str(position))
+
+    def _get_lineage_line_width(self) -> float:
+        """Can be overridden to change the line width of the lineage tree."""
+        return 1.5
 
 
 def _has_error_close_in_time(position_data: PositionData, time_point_number: int, track: LinkingTrack, time_window: int = 5):

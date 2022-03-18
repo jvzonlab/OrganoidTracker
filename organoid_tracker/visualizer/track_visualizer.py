@@ -24,13 +24,6 @@ from organoid_tracker.visualizer.exitable_image_visualizer import ExitableImageV
 from organoid_tracker.visualizer.lineage_tree_visualizer import LineageTreeVisualizer
 
 
-def _get_lineage(links: Links, position: Position) -> Links:
-    single_lineage_links = Links()
-    _add_past_positions(links, position, single_lineage_links)
-    _add_future_positions(links, position, single_lineage_links)
-    return single_lineage_links
-
-
 def _add_past_positions(links: Links, position: Position, single_lineage_links: Links):
     """Finds all positions in earlier time points connected to this position."""
     while True:
@@ -135,28 +128,68 @@ def _plot_data_axes_locations(axes: Axes, experiment: Experiment, track: Linking
     axes.plot(time_point_numbers, data_axis_locations_um, color=matplotlib.cm.Set1(lineage_id), label=label)
 
 
+def _is_in_same_sublineage(links: Links, position1: Position, position2: Position) -> bool:
+    """Checks whether two cells are in the same lineage, i.e. they are the same cell, or one is a predecessor of
+    the other."""
+    if position1 == position2:
+        return True  # Same position
+    if position1.time_point_number() == position2.time_point_number():
+        # From above, we know they're not the same position.
+        # Since they are at the same time point, they cannot be the same cell
+        return False
+
+    if position1.time_point_number() < position2.time_point_number():
+        # Position1 is older, check history of position2
+        return links.get_position_near_time_point(position2, position1.time_point()) == position1
+    else:
+        # position2 is older, check history of position1
+        return links.get_position_near_time_point(position1, position2.time_point()) == position2
+
+
+def _find_full_lineage_tracks(experiment: Experiment, selected_position: List[Position]) -> Set[LinkingTrack]:
+    """Finds all linking tracks in the same lineage, including sisters, daughters, etc."""
+    links = experiment.links
+    result = set()
+
+    for position in selected_position:
+        track = links.get_track(position)
+        track = _find_earliest_predecessor_track(track)
+        result |= set(track.find_all_descending_tracks(include_self=True))
+    return result
+
+
+def _find_earliest_predecessor_track(track: LinkingTrack) -> LinkingTrack:
+    """Goes back in time, finding the earliest predecessor of this track."""
+    parent_tracks = track.get_previous_tracks()
+    while len(parent_tracks) == 1:
+        track = parent_tracks.pop()
+        parent_tracks = track.get_previous_tracks()
+    return track
+
+
 class TrackVisualizer(ExitableImageVisualizer):
     """Shows the trajectory of one or multiple particles. Double-click a particle to select it. Double click it again to
     deselect it. Double-click on an empty area to deselect all particles."""
 
-    _selected_lineages: List[Links]
+    _selected_positions: List[Position]
 
     def __init__(self, window: Window):
         super().__init__(window)
-        self._selected_lineages = list()
+        self._selected_positions = list()
 
     def _on_position_draw(self, position: Position, color: str, dz: int, dt: int) -> bool:
-        if abs(dz) > 3 or len(self._selected_lineages) == 0:
+        if abs(dz) > 3 or len(self._selected_positions) == 0:
             # Draw normally
             super()._on_position_draw(position, color, dz, dt)
             return True
 
-        for i, lineage in enumerate(self._selected_lineages):
-            if not lineage.contains_position(position):
+        links = self._experiment.links
+        for i, selected_position in enumerate(self._selected_positions):
+            if not _is_in_same_sublineage(links, selected_position, position):
                 continue  # Part of another lineage
 
             # Draw marker or a number
-            if dt == 0 and len(self._selected_lineages) > 1:
+            if dt == 0 and len(self._selected_positions) > 1:
                 # There are multiple tracks show
                 self._draw_annotation(position, str(i + 1))
             else:
@@ -177,7 +210,6 @@ class TrackVisualizer(ExitableImageVisualizer):
             **super().get_extra_menu_options(),
             "Graph//Over time-Displacement over time...": self._show_displacement,
             "Graph//Over time-Axes positions over time...": self._show_data_axes_locations,
-            "Graph//Over time-Volume over time...": self._show_volumes,
             "Graph//Visualization-Lineage tree...": self._show_lineage_tree,
             "Graph//Visualization-Projection on sphere...": self._show_sphere,
             "Graph//Visualization-Projection on world map...": self._show_world_map
@@ -186,7 +218,7 @@ class TrackVisualizer(ExitableImageVisualizer):
     def _show_displacement(self):
         resolution = self._experiment.images.resolution()
 
-        if len(self._selected_lineages) == 0:
+        if len(self._selected_positions) == 0:
             raise UserError("No cell track selected", "No cell track selected, so we cannot plot anything. Double-click"
                                                       " on a cell to select a track.")
 
@@ -195,16 +227,16 @@ class TrackVisualizer(ExitableImageVisualizer):
             axes.set_xlabel("Time (time points)")
             axes.set_ylabel("Displacement between time points (μm)")
             axes.set_title("Cellular displacement")
-            for i, lineage in enumerate(self._selected_lineages):
-                for track in lineage.find_all_tracks():
+            for i, selected_position in enumerate(self._selected_positions):
+                for track in self._get_sublineage_tracks(selected_position):
                     _plot_displacements(axes, resolution, track, i + 1)
-            if len(self._selected_lineages) > 1:
+            if len(self._selected_positions) > 1:
                 axes.legend()
 
         dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
 
     def _show_data_axes_locations(self):
-        if len(self._selected_lineages) == 0:
+        if len(self._selected_positions) == 0:
             raise UserError("No cell track selected", "No cell track selected, so we cannot plot anything. Double-click"
                                                       " on a cell to select a track.")
 
@@ -213,42 +245,29 @@ class TrackVisualizer(ExitableImageVisualizer):
             axes.set_xlabel("Time (time points)")
             axes.set_ylabel("Position on axis (μm)")
             axes.set_title("Movement of cells on axis")
-            for i, lineage in enumerate(self._selected_lineages):
-                for track in lineage.find_all_tracks():
+            for i, selected_position in enumerate(self._selected_positions):
+                selected_track = self._experiment.links.get_track(selected_position)
+                if selected_track is None:
+                    all_tracks = []
+                else:
+                    all_tracks = selected_track.find_all_previous_and_descending_tracks(include_self=True)
+                for track in all_tracks:
                     _plot_data_axes_locations(axes, self._experiment, track, i + 1)
-            if len(self._selected_lineages) > 1:
-                axes.legend()
-
-        dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
-
-    def _show_volumes(self):
-        if len(self._selected_lineages) == 0:
-            raise UserError("No cell track selected", "No cell track selected, so we cannot plot anything. Double-click"
-                                                      " on a cell to select a track.")
-
-        def draw_function(figure: Figure):
-            axes = figure.gca()
-            axes.set_xlabel("Time (time points)")
-            axes.set_ylabel("Volume (px$^3$)")
-            axes.set_title("Volume of the cells")
-            for i, lineage in enumerate(self._selected_lineages):
-                for track in lineage.find_all_tracks():
-                    _plot_volume(axes, self._experiment.position_data, track, i + 1)
-            if len(self._selected_lineages) > 1:
+            if len(self._selected_positions) > 1:
                 axes.legend()
 
         dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
 
     def _show_lineage_tree(self):
         dialog.popup_visualizer(self.get_window().get_gui_experiment(),
-                                lambda w: _SelectedTracksTreeVisualizer(w, self._selected_lineages))
+                                lambda w: _SelectedTracksTreeVisualizer(w, self._selected_positions))
 
     def _show_sphere(self):
         experiment = self._experiment
         sphere_representation = SphereRepresentation(experiment.beacons, 1, experiment.images.resolution())
         orientation_spline_adder.add_all_splines(sphere_representation, experiment.splines)
-        for i, lineage in enumerate(self._selected_lineages):
-            for track in lineage.find_all_tracks():
+        for i, selected_position in enumerate(self._selected_positions):
+            for track in self._get_sublineage_tracks(selected_position):
                 track_color = SANDER_APPROVED_COLORS[i % len(SANDER_APPROVED_COLORS)]
                 sphere_representation.add_track(track.positions(), color=track_color, highlight_first=False,
                                                 highlight_last=True)
@@ -262,8 +281,8 @@ class TrackVisualizer(ExitableImageVisualizer):
         experiment = self._experiment
         sphere_representation = SphereRepresentation(experiment.beacons, 1, experiment.images.resolution())
         orientation_spline_adder.add_all_splines(sphere_representation, experiment.splines)
-        for i, lineage in enumerate(self._selected_lineages):
-            for track in lineage.find_all_tracks():
+        for i, selected_position in enumerate(self._selected_positions):
+            for track in self._get_sublineage_tracks(selected_position):
                 track_color = SANDER_APPROVED_COLORS[i % len(SANDER_APPROVED_COLORS)]
                 sphere_representation.add_track(track.positions(), color=track_color, highlight_first=False,
                                                 highlight_last=True)
@@ -276,15 +295,16 @@ class TrackVisualizer(ExitableImageVisualizer):
 
     def _is_selected(self, position: Position) -> bool:
         """Checks if the given position is currently part of a selected track."""
-        for i, lineage in enumerate(self._selected_lineages):
-            if lineage.contains_position(position):
+        links = self._experiment.links
+        for selected_position in self._selected_positions:
+            if _is_in_same_sublineage(links, position, selected_position):
                 return True
         return False
 
     def _move_to_position(self, position: Position) -> bool:
         # Select that lineage
         if not self._is_selected(position):
-            self._selected_lineages.append(_get_lineage(self._experiment.links, position))
+            self._selected_positions.append(position)
         return super()._move_to_position(position)
 
     def _on_key_press(self, event: KeyEvent):
@@ -306,55 +326,54 @@ class TrackVisualizer(ExitableImageVisualizer):
         position = self._get_position_at(event.xdata, event.ydata)
         if position is None:
             # Deselect everything if we didn't click on a cell
-            self._selected_lineages.clear()
+            self._selected_positions.clear()
             self.draw_view()
             self.update_status("Couldn't find a position here, deselecting all lineages.")
             return
 
-        for i in range(len(self._selected_lineages)):
-            lineage = self._selected_lineages[i]
-            if lineage.contains_position(position):
-                del self._selected_lineages[i]  # Deselect lineage
+        for i in range(len(self._selected_positions)):
+            earlier_selected = self._selected_positions[i]
+            if _is_in_same_sublineage(links, position, earlier_selected):
+                del self._selected_positions[i]  # Deselect lineage
                 self.draw_view()
                 self.update_status("Deselected " + str(position))
                 return
 
-        self._selected_lineages.append(_get_lineage(links, position))
+        self._selected_positions.append(position)
         self.draw_view()
         self.update_status("Selected " + str(position))
 
-
-def _find_lineage_tracks(experiment: Experiment, selected_lineages: List[Links]) -> Set[LinkingTrack]:
-    """Finds all linking tracks in the same lineage, including sisters, daughters, etc."""
-    links = experiment.links
-    result = set()
-
-    for lineage in selected_lineages:
-        for starting_track in lineage.find_starting_tracks():
-            starting_position = starting_track.find_first_position()
-            track = links.get_track(starting_position)
-            if track is not None:
-                result |= set(track.find_all_descending_tracks(include_self=True))
-    return result
+    def _get_sublineage_tracks(self, selected_position: Position):
+        selected_track = self._experiment.links.get_track(selected_position)
+        if selected_track is None:
+            all_tracks = []
+        else:
+            all_tracks = selected_track.find_all_previous_and_descending_tracks(include_self=True)
+        return all_tracks
 
 
 # Lineage tree that only shows the selected tracks
 class _SelectedTracksTreeVisualizer(LineageTreeVisualizer):
+    """Live-updating lineage tree of the positions selected in the track visualizer."""
 
     # List of colors for the lineages.
     _LINEAGE_COLORS = [Color.from_rgb_floats(color[0], color[1], color[2]) for color in SANDER_APPROVED_COLORS]
 
-    _selected_lineages: List[Links]
+    _selected_positions: List[Position]  # Must remain the same instance as the one in the cell track visualizer
     _tracks: Set[LinkingTrack]
 
-    def __init__(self, window: Window, selected_lineages: List[Links]):
+    def __init__(self, window: Window, selected_positions: List[Position]):
         super().__init__(window)
-        self._selected_lineages = selected_lineages
-        self._tracks = _find_lineage_tracks(window.get_experiment(), selected_lineages)
-        self._display_track_id = len(selected_lineages) > 1
+        self._selected_positions = selected_positions
+        self._tracks = _find_full_lineage_tracks(window.get_experiment(), selected_positions)
+        self._display_track_id = len(selected_positions) > 1
 
         self._uncolor_lineages()
         self._display_custom_colors = True
+
+    def refresh_data(self):
+        self._tracks = _find_full_lineage_tracks(self._experiment, self._selected_positions)
+        super().refresh_data()
 
     def _lineage_filter(self, linking_track: LinkingTrack) -> bool:
         return linking_track in self._tracks
@@ -363,8 +382,9 @@ class _SelectedTracksTreeVisualizer(LineageTreeVisualizer):
         return False  # We filter by selected tracks
 
     def _get_custom_color(self, position: Position) -> Optional[Color]:
-        for i, lineage in enumerate(self._selected_lineages):
-            if lineage.contains_position(position):
+        links = self._experiment.links
+        for i, selected_position in enumerate(self._selected_positions):
+            if _is_in_same_sublineage(links, position, selected_position):
                 return self._LINEAGE_COLORS[i % len(SANDER_APPROVED_COLORS)]
         return None
 
@@ -377,7 +397,11 @@ class _SelectedTracksTreeVisualizer(LineageTreeVisualizer):
         if self._display_track_id:
             # Find the lineage id within the selected lineages
             position = track.find_first_position()
-            for i, lineage in enumerate(self._selected_lineages):
-                if lineage.contains_position(position):
+            links = self._experiment.links
+            for i, selected_position in enumerate(self._selected_positions):
+                if _is_in_same_sublineage(links, selected_position, position):
                     return str(i + 1)
         return None
+
+    def _get_lineage_line_width(self) -> float:
+        return 4

@@ -97,7 +97,8 @@ class LineageDrawing:
                               resolution: ImageResolution = ImageResolution(1, 1, 1, 60),
                               location_map: LocationMap = LocationMap(),
                               label_getter: Callable[[LinkingTrack], Optional[str]] = _no_labels,
-                              lineage_filter: Callable[[LinkingTrack], bool] = _no_filter):
+                              lineage_filter: Callable[[LinkingTrack], bool] = _no_filter,
+                              line_width: float = 1.5):
         """Draws lineage trees that are color coded. You can for example color cells by z position, by track
         length, etc. Returns the width of the lineage tree in Matplotlib pixels."""
 
@@ -106,13 +107,13 @@ class LineageDrawing:
             if not lineage_filter(lineage):
                 continue
             width = self._draw_single_lineage_colored(axes, lineage, x_offset, color_getter, label_getter, resolution,
-                                                      location_map)
+                                                      location_map, line_width)
             x_offset += width
         return x_offset
 
     def _draw_single_lineage_colored(self, ax: Axes, lineage: LinkingTrack, x_offset: int, color_getter: _ColorGetter,
                                      label_getter: _LabelGetter, image_resolution: ImageResolution,
-                                     location_map: LocationMap) -> int:
+                                     location_map: LocationMap, line_width: float) -> int:
         """Draw lineage with given function used for color. You can for example color cells by z position, by track
         length, etc. Returns the width of the lineage tree in Matplotlib pixels."""
         (diagram_width, line_list) = self._get_lineage_draw_data(lineage)
@@ -174,7 +175,7 @@ class LineageDrawing:
                 location_map.set_area(int(x_offset + X[0]), int(time), int(x_offset + X[1]), int(time),
                                       linking_track.find_position_at_time_point_number(time_point_of_line))
 
-        line_segments = LineCollection(lines_XY, colors=lines_col, lw=1.5)
+        line_segments = LineCollection(lines_XY, colors=lines_col, lw=line_width)
         ax.add_collection(line_segments)
 
         return diagram_width
