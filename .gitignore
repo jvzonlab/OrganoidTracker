@@ -12,3 +12,4 @@ __pycache__/
 organoid_tracker.ini
 /out/
 /output/
+/training_output/
