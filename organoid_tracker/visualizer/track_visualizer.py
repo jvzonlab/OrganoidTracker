@@ -153,6 +153,8 @@ def _find_full_lineage_tracks(experiment: Experiment, selected_position: List[Po
 
     for position in selected_position:
         track = links.get_track(position)
+        if track is None:
+            continue
         track = _find_earliest_predecessor_track(track)
         result |= set(track.find_all_descending_tracks(include_self=True))
     return result
