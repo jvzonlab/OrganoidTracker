@@ -3,7 +3,7 @@ division.."""
 
 from typing import Optional
 
-from organoid_tracker.core.links import Links
+from organoid_tracker.core.links import Links, LinkingTrack
 from organoid_tracker.core.position import Position
 
 
@@ -15,3 +15,10 @@ def get_age(links: Links, position: Position) -> Optional[int]:
     if len(track.get_previous_tracks()) != 1:
         return None  # Don't know what happened before, so return None
     return track.get_age(position)
+
+
+def get_age_at_end_of_track(track: LinkingTrack) -> Optional[int]:
+    """Gets the length of the cell cycle."""
+    if len(track.get_previous_tracks()) != 1:
+        return None  # Don't know what happened before, so return None
+    return len(track) - 1

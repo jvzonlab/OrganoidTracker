@@ -131,23 +131,23 @@ def find_errors_in_positions_links_and_all_dividing_cells(experiment: Experiment
         positions.add(position)
         positions |= experiment.links.find_links_of(position)
 
-    # Add mother and daughter cells
-    for family in cell_division_finder.find_families(experiment.links):
-        positions.add(family.mother)
-        positions |= family.daughters
-
     _find_errors_in_just_the_iterable(experiment, positions)
+    find_errors_in_all_dividing_cells(experiment)
 
 
 def find_errors_in_all_dividing_cells(experiment: Experiment):
-    """Rechecks all mother and daughter cells for logical errors. Rechecking this is useful, because the errors in those
-    positions can be influenced by changes far away."""
-    positions = set()
-    for family in cell_division_finder.find_families(experiment.links):
-        positions.add(family.mother)
-        positions |= family.daughters
+    """Rechecks all mother and daughter cells to verify that the mothers aren't too young. Checking this accross the
+    entire experiment is useful, as changes in links far away might affect the measured cell cycle length."""
+    resolution = experiment.images.resolution()
+    warning_limits = experiment.warning_limits
 
-    _find_errors_in_just_the_iterable(experiment, positions)
+    for track in experiment.links.find_all_tracks():
+        if len(track.get_next_tracks()) != 2:
+            continue
+        # Found a mother track!
+        age = particle_age_finder.get_age_at_end_of_track(track)
+        if age is not None and age * resolution.time_point_interval_h < warning_limits.min_time_between_divisions_h:
+            return Error.YOUNG_MOTHER
 
 
 def _find_errors_in_just_the_iterable(experiment: Experiment, iterable: Iterable[Position]):
