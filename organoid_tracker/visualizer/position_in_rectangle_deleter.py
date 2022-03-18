@@ -6,7 +6,7 @@ from matplotlib.patches import Rectangle
 from organoid_tracker import core
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.experiment import Experiment
-from organoid_tracker.core.particle import Particle
+from organoid_tracker.core.full_position_snapshot import FullPositionSnapshot
 from organoid_tracker.core.position import Position
 from organoid_tracker.gui.undo_redo import UndoableAction
 from organoid_tracker.gui.window import Window
@@ -16,9 +16,9 @@ from organoid_tracker.visualizer.abstract_editor import AbstractEditor
 
 
 class _DeletePositionsAction(UndoableAction):
-    _particles: List[Particle]
+    _particles: List[FullPositionSnapshot]
 
-    def __init__(self, particles: Iterable[Particle]):
+    def __init__(self, particles: Iterable[FullPositionSnapshot]):
         self._particles = list(particles)
 
     def do(self, experiment: Experiment):
@@ -159,7 +159,7 @@ class PositionsInRectangleDeleter(AbstractEditor):
             return
 
         experiment = self._experiment
-        positions = [Particle.from_position(experiment, position)
+        positions = [FullPositionSnapshot.from_position(experiment, position)
                      for position in self._get_selected_positions(inside)]
         if len(positions) == 0:
             self.update_status(

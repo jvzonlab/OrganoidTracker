@@ -8,7 +8,7 @@ from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import LinkingTrack
 from organoid_tracker.core.marker import Marker
-from organoid_tracker.core.particle import Particle
+from organoid_tracker.core.full_position_snapshot import FullPositionSnapshot
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.gui import dialog
@@ -61,9 +61,9 @@ class _InsertLinkAction(UndoableAction):
 class _InsertPositionAction(UndoableAction):
     """Used to insert a position."""
 
-    particle: Particle
+    particle: FullPositionSnapshot
 
-    def __init__(self, particle: Particle):
+    def __init__(self, particle: FullPositionSnapshot):
         self.particle = particle
 
     def do(self, experiment: Experiment) -> str:
@@ -86,9 +86,9 @@ class _InsertPositionAction(UndoableAction):
 
 class _DeletePositionsAction(UndoableAction):
 
-    _particles: List[Particle]
+    _particles: List[FullPositionSnapshot]
 
-    def __init__(self, particles: Iterable[Particle]):
+    def __init__(self, particles: Iterable[FullPositionSnapshot]):
         self._particles = list(particles)
 
     def do(self, experiment: Experiment):
@@ -243,10 +243,10 @@ class _SetLineageColor(UndoableAction):
 
 class _OverwritePositionAction(UndoableAction):
 
-    _new_particle: Particle
-    _old_particle: Particle
+    _new_particle: FullPositionSnapshot
+    _old_particle: FullPositionSnapshot
 
-    def __init__(self, new_particle: Particle, old_particle: Particle):
+    def __init__(self, new_particle: FullPositionSnapshot, old_particle: FullPositionSnapshot):
         self._new_particle = new_particle
         self._old_particle = old_particle
 
@@ -419,7 +419,7 @@ class LinkAndPositionEditor(AbstractEditor):
         if self._selected1 is None:
             self.update_status("You need to select a cell first")
         elif self._selected2 is None:  # Delete cell and its links
-            particle_to_delete = Particle.from_position(self._experiment, self._selected1)
+            particle_to_delete = FullPositionSnapshot.from_position(self._experiment, self._selected1)
             self._perform_action(ReversedAction(_InsertPositionAction(particle_to_delete)))
         elif self._experiment.connections.contains_connection(self._selected1, self._selected2):  # Delete a connection
             position1, position2 = self._selected1, self._selected2
@@ -499,7 +499,7 @@ class LinkAndPositionEditor(AbstractEditor):
     def _delete_data_of_time_point(self):
         """Deletes all annotations of a given time point."""
         positions = self._experiment.positions.of_time_point(self._time_point)
-        particles = (Particle.from_position(self._experiment, position) for position in positions)
+        particles = (FullPositionSnapshot.from_position(self._experiment, position) for position in positions)
         self._perform_action(_DeletePositionsAction(particles))
 
     def _delete_positions_without_links(self):
@@ -508,7 +508,7 @@ class LinkAndPositionEditor(AbstractEditor):
         links = self._experiment.links
         for position in self._experiment.positions:
             if not links.contains_position(position):
-                particles_without_links.append(Particle.from_position(self._experiment, position))
+                particles_without_links.append(FullPositionSnapshot.from_position(self._experiment, position))
         self._perform_action(_DeletePositionsAction(particles_without_links))
 
     def _delete_tracks_with_errors(self):
@@ -536,7 +536,7 @@ class LinkAndPositionEditor(AbstractEditor):
         # Find all positions in the track (and descending tracks)
         track = experiment.links.get_track(self._selected1)
         if track is None:
-            particles_in_track.append(Particle.from_position(experiment, self._selected1))
+            particles_in_track.append(FullPositionSnapshot.from_position(experiment, self._selected1))
         else:
             # Find starter of lineage tree
             previous_tracks = track.get_previous_tracks()
@@ -547,7 +547,7 @@ class LinkAndPositionEditor(AbstractEditor):
             # Find all positions in lineage tree
             for some_track in track.find_all_descending_tracks(include_self=True):
                 for position in some_track.positions():
-                    particles_in_track.append(Particle.from_position(experiment, position))
+                    particles_in_track.append(FullPositionSnapshot.from_position(experiment, position))
 
         self._perform_action(_DeletePositionsAction(particles_in_track))
 
@@ -596,7 +596,7 @@ class LinkAndPositionEditor(AbstractEditor):
             # Add new position without links
             self._selected1 = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
             mouse_position = self._get_position_at(event.xdata, event.ydata)
-            self._perform_action(_InsertPositionAction(Particle.just_position(self._selected1)))
+            self._perform_action(_InsertPositionAction(FullPositionSnapshot.just_position(self._selected1)))
         elif self._selected2 is None:
             # Insert new position with link to self._selected1
             # Find at which position the mouse is pointing
@@ -618,15 +618,15 @@ class LinkAndPositionEditor(AbstractEditor):
                 # Insert link from selected point to new point
                 if is_new_position:
                     self._selected1 = mouse_position
-                    new_particle = Particle.position_with_links(mouse_position, links=[connection])
+                    new_particle = FullPositionSnapshot.position_with_links(mouse_position, links=[connection])
                     self._perform_action(_InsertPositionAction(new_particle))
                 else:
                     # New point already exists, overwrite that point
-                    old_particle = Particle.from_position(self._experiment, mouse_position)
+                    old_particle = FullPositionSnapshot.from_position(self._experiment, mouse_position)
                     mouse_position = Position(event.xdata, event.ydata, self._z, time_point=mouse_position.time_point())
                     self._selected1 = mouse_position
-                    new_particle = Particle.position_with_links(mouse_position, links=[connection,
-                                             *(link for link in old_particle.links
+                    new_particle = FullPositionSnapshot.position_with_links(mouse_position, links=[connection,
+                                                                                                   *(link for link in old_particle.links
                                                if link.time_point() != connection.time_point())])
                     self._perform_action(_OverwritePositionAction(new_particle, old_particle))
             else:
@@ -636,7 +636,7 @@ class LinkAndPositionEditor(AbstractEditor):
                     self.update_status("Cannot insert a position here - too close to already selected position.")
                     return
                 self._selected1 = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
-                self._perform_action(_InsertPositionAction(Particle.just_position(self._selected1)))
+                self._perform_action(_InsertPositionAction(FullPositionSnapshot.just_position(self._selected1)))
         elif self._selected1.time_point_number() == self._selected2.time_point_number():
             # Insert connection between two positions
             if self._experiment.connections.contains_connection(self._selected1, self._selected2):
