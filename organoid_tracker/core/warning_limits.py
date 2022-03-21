@@ -26,5 +26,6 @@ class WarningLimits:
         values."""
         return {
             "min_time_between_divisions_h": self.min_time_between_divisions_h,
-            "max_distance_moved_um_per_min": self.max_distance_moved_um_per_min
+            "max_distance_moved_um_per_min": self.max_distance_moved_um_per_min,
+            "min_probability": self.min_probability,
         }
