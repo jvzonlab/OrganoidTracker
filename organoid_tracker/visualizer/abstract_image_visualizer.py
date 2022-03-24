@@ -414,6 +414,7 @@ class AbstractImageVisualizer(Visualizer):
             "Navigate//Time-Next time point [Right]": lambda: self._move_in_time(1),
             "Navigate//Time-Previous time point [Left]": lambda: self._move_in_time(-1),
             "Navigate//Time-First time point [F]": self._move_to_first_time_point,
+            "Navigate//Time-Last time point [L]": self._move_to_last_time_point,
             "Navigate//Time-Other time point... (/t*)": time_point_prompt
         }
 
@@ -670,15 +671,25 @@ class AbstractImageVisualizer(Visualizer):
             self.update_status("Moved to time point " + str(new_time_point_number) + "!")
             return True
 
-    def _move_to_first_time_point(self) -> bool:
-        first_Time_point_number = self._experiment.first_time_point_number()
-        if first_Time_point_number is None:
+    def _move_to_first_time_point(self):
+        first_time_point_number = self._experiment.first_time_point_number()
+        if first_time_point_number is None:
             self.update_status("Cannot move to the first time point. There are no time points loaded.")
-            return False
-        if first_Time_point_number == self._time_point.time_point_number():
+            return
+        if first_time_point_number == self._time_point.time_point_number():
             self.update_status("You are already in the first time point.")
-            return False
-        self._move_to_time(first_Time_point_number)
+            return
+        self._move_to_time(first_time_point_number)
+
+    def _move_to_last_time_point(self):
+        last_time_point_number = self._experiment.last_time_point_number()
+        if last_time_point_number is None:
+            self.update_status("Cannot move to the last time point. There are no time points loaded.")
+            return
+        if last_time_point_number == self._time_point.time_point_number():
+            self.update_status("You are already in the last time point.")
+            return
+        self._move_to_time(last_time_point_number)
 
     def _move_to_position(self, position: Position) -> bool:
         try:

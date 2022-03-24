@@ -356,7 +356,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Marker-Set color of lineage...": self._set_color_of_lineage,
             "Edit//Marker-Delete entire lineage": self._delete_selected_lineage,
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
-            "View//Linking-Lineage errors and warnings [L]": self._show_lineage_errors,
+            "View//Linking-Lineage errors and warnings [T]": self._show_lineage_errors,
             "Navigate//Layer-Layer of selected position [Space]": self._move_to_z_of_selected_position,
         }
 

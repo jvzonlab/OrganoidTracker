@@ -17,7 +17,7 @@ class LineageErrorsVisualizer(ExitableImageVisualizer):
     _verified_lineages: Set[Position] = set()
 
     def _on_key_press(self, event: KeyEvent):
-        if event.key == "l":
+        if event.key == "t":
             self._exit_view()
         elif event.key == "e":
             position = self._get_position_at(event.xdata, event.ydata)
