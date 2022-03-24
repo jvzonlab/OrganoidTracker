@@ -1,5 +1,7 @@
 from typing import Set, Type, Tuple, Iterable, Dict, Any, Optional
 
+from organoid_tracker.core import Color
+
 
 class Marker:
     """Used to represent the type of a position, crypt axis or something else. So does this position represent a
@@ -8,7 +10,7 @@ class Marker:
     _applies_to: Set[Type]
     _save_name: str
     _display_name: str
-    _color: Tuple[int, int, int]  # RGB color, values from 0 to 255 (inclusive)
+    _color: Color
     _mpl_color: Tuple[float, float, float]  # RGB color, values from 0.0 to 1.0 (inclusive). Suitable for Matplotlib.
     _extra_data: Dict[str, Any]
 
@@ -17,12 +19,12 @@ class Marker:
         self._applies_to = set(applies_to)
         self._save_name = save_name.upper()
         self._display_name = display_name
-        self._color = color
+        self._color = Color(color[0], color[1], color[2])
         self._mpl_color = (color[0] / 255, color[1] / 255, color[2] / 255)
         self._extra_data = extra_data
 
     @property
-    def color(self) -> Tuple[int, int, int]:
+    def color(self) -> Color:
         """Gets the color used to mark positions of this type."""
         return self._color
 
