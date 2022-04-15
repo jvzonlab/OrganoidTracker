@@ -21,6 +21,7 @@ class ImageChannel(ABC):
     def __eq__(self, other: Any) -> bool:
         pass
 
+
 class ImageLoader(ABC):
     """Responsible for loading all images in an experiment."""
 

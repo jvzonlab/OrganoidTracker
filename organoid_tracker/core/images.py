@@ -293,7 +293,7 @@ class Images:
         return Image(array, self._offsets.of_time_point(time_point))
 
     def image_loader(self, image_loader: Optional[ImageLoader] = None) -> ImageLoader:
-        """Gets/sets the image loader."""
+        """Gets/sets the image loader. Note: images loaded directly from this image loader will be uncached."""
         if image_loader is not None:
             self._image_loader = _CachedImageLoader(image_loader)
             return image_loader

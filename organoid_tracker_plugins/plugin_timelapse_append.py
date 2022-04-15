@@ -11,7 +11,7 @@ from organoid_tracker.gui.window import Window
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Edit//Batch-Append image series...": lambda: _append_timelapse(window)
+        "Edit//Batch-Append image series at end...": lambda: _append_timelapse(window)
     }
 
 
@@ -53,7 +53,6 @@ class _AppendingImageLoader(ImageLoader):
     def __init__(self, image_loaders: List[ImageLoader]):
         self._internal = list()
         for image_loader in image_loaders:
-            image_loader = image_loader.uncached()
             if not image_loader.has_images():
                 continue
 
