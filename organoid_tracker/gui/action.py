@@ -1,4 +1,4 @@
-from typing import Optional, Iterable
+from typing import Optional, Iterable, List, Any, Dict
 
 from PySide2.QtWidgets import QApplication
 from matplotlib.figure import Figure
@@ -245,3 +245,50 @@ def ask_exit(gui_experiment: GuiExperiment):
     """Asks to save unsaved changes, then exits."""
     if ask_save_unsaved_changes(gui_experiment.get_all_tabs()):
         QApplication.quit()
+
+
+def to_experiment_list_file_structure(tabs: Iterable[SingleGuiTab]) -> Optional[List[Dict[str, Any]]]:
+    """Prompts the user to save an unsaved changes, and then exports the currently open tabs to a data structure
+    suitable for JSON. If the user cancels the operation, then None is returned."""
+    experiments_json = list()
+
+    for tab in tabs:
+        experiment_json = dict()
+        experiment = tab.experiment
+
+        if tab.undo_redo.has_unsaved_changes() or\
+                (experiment.last_save_file is None and experiment.positions.has_positions()):
+            # Force a save if there are unsaved changes or if no file location is known to store the positions
+            option = dialog.prompt_options(f"Save experiment \"{experiment.name}\"",
+                                             f"You have unsaved changes in the experiment \"{experiment.name}\"."
+                                             f"\nDo you want to save them first?",
+                                  option_1="Save", option_2="Save As...", option_3="Skip experiment")
+            if option == 1:
+                if not action.save_tracking_data_of_tab(tab):
+                    return None  # Save failed
+            elif option == 2:
+                if not action.save_tracking_data_of_tab(tab, force_save_as=True):
+                    return None  # Save failed
+            elif option == 3:
+                continue  # Skip this experiment
+            else:
+                return None
+
+        if experiment.last_save_file is not None:
+            experiment_json["experiment_file"] = experiment.last_save_file
+
+        images_container, images_pattern = experiment.images.image_loader().serialize_to_config()
+        if len(images_container) > 0 or len(images_pattern) > 0:
+            experiment_json["images_container"] = images_container
+            experiment_json["images_pattern"] = images_pattern
+
+        if experiment.first_time_point_number() is not None:
+            experiment_json["min_time_point"] = experiment.first_time_point_number()
+        if experiment.last_time_point_number() is not None:
+            experiment_json["max_time_point"] = experiment.last_time_point_number()
+
+        if len(experiment_json) > 0:
+            # Only add if images, positions or both were stored
+            experiments_json.append(experiment_json)
+    return experiments_json
+
