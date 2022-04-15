@@ -41,7 +41,8 @@ def get_previous_division(links: Links, position: Position) -> Optional[Family]:
     if len(previous_tracks) == 0:
         return None  # No previous track, cell appeared out of nothing
     if len(previous_tracks) > 1:
-        raise ValueError(f"Cell {track.find_first_position()} has multiple links to the past")
+        print(f"Cell {track.find_first_position()} has multiple links to the past")
+        return None
 
     previous_track = previous_tracks.pop()
     sibling_tracks = previous_track.get_next_tracks()
