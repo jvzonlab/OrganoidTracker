@@ -565,6 +565,12 @@ class AbstractImageVisualizer(Visualizer):
             # other transformations are necessary
             pass
 
+        # If the three color channels are the same, just use one channel
+        # This happens if self._color_map is a grayscale color map
+        if images.shape[3] == 3 and (images[:, :, :, 0] == images[:, :, :, 1]).all()\
+                and (images[:, :, :, 0] == images[:, :, :, 2]).all():
+            images = images[:, :, :, 0]
+
         tifffile.imsave(file, images, compress=9)
 
     def _toggle_showing_next_time_point(self):
