@@ -27,8 +27,10 @@ class TestIntensityCalculator(unittest.TestCase):
         intensity2 = intensity_calculator.get_normalized_intensity(experiment, position_2)
         intensity3 = intensity_calculator.get_normalized_intensity(experiment, position_3)
 
-        # check if median is indeed 100
-        self.assertAlmostEqual(100, sorted([intensity1, intensity2,intensity3])[1], delta=0.0001)
+        print(intensity1, intensity2, intensity3)
 
-        # check if lowest is indeed 0 (background correction)
-        self.assertAlmostEqual(0, intensity1, delta=0.0001)
+        # check if median is indeed 1
+        self.assertAlmostEqual(1, sorted([intensity1, intensity2,intensity3])[1], delta=0.0001)
+
+        # check if lowest per volume is indeed 0 (background correction)
+        self.assertAlmostEqual(0, intensity3, delta=0.0001)
