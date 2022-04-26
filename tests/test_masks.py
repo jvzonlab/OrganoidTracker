@@ -33,7 +33,7 @@ class TestMasks(unittest.TestCase):
         ellipse.draw_mask(mask, 15.01, 15, 2)
         masked_image = mask.create_masked_and_normalized_image(image)
 
-        self.assertEquals((1, 23, 21), masked_image.shape)  # Masked image must be cropped
+        self.assertEqual((1, 23, 21), masked_image.shape)  # Masked image must be cropped
         self.assertTrue(numpy.isnan(masked_image[0, 0, 0]))  # NaN values are used in corners
 
         # This point (at the center of the ellipse) must not be masked out

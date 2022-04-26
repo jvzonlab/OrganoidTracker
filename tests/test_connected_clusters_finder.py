@@ -32,7 +32,7 @@ class TestAngles(unittest.TestCase):
 
         # Test if there are two clusters found
         clusters = cluster_finder.find_clusters(positions, connections, TimePoint(1))
-        self.assertEquals(2, len(clusters))
+        self.assertEqual(2, len(clusters))
 
         # Find the ABC and XYZ cluster
         cluster_abc, cluster_xyz = clusters  # Assumes that cluster ABC is the first cluster
@@ -40,8 +40,8 @@ class TestAngles(unittest.TestCase):
             cluster_abc, cluster_xyz = cluster_xyz, cluster_abc
 
         # Check cluster contents
-        self.assertEquals({position_a, position_b, position_c}, cluster_abc.positions)
-        self.assertEquals({position_x, position_y, position_z}, cluster_xyz.positions)
+        self.assertEqual({position_a, position_b, position_c}, cluster_abc.positions)
+        self.assertEqual({position_x, position_y, position_z}, cluster_xyz.positions)
 
     def test_lone_cluster(self):
         """Test whether positions without a connection get put in their own cluster."""
@@ -50,5 +50,5 @@ class TestAngles(unittest.TestCase):
         positions = PositionCollection((position,))
 
         clusters = cluster_finder.find_clusters(positions, connections, TimePoint(1))
-        self.assertEquals(1, len(clusters))
-        self.assertEquals({position}, clusters[0].positions)
+        self.assertEqual(1, len(clusters))
+        self.assertEqual({position}, clusters[0].positions)

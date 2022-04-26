@@ -12,16 +12,16 @@ class TestLinkingMarkers(unittest.TestCase):
     def test_error_marker(self):
         position_data = PositionData()
 
-        self.assertEquals(None, linking_markers.get_error_marker(position_data, Position(0, 0, 0, time_point_number=0)),
+        self.assertEqual(None, linking_markers.get_error_marker(position_data, Position(0, 0, 0, time_point_number=0)),
                           "non-existing position must have no error marker")
 
         position = Position(2, 2, 2, time_point_number=2)
-        self.assertEquals(None, linking_markers.get_error_marker(position_data, position), "no error marker was set")
+        self.assertEqual(None, linking_markers.get_error_marker(position_data, position), "no error marker was set")
 
         linking_markers.set_error_marker(position_data, position, Error.MOVED_TOO_FAST)
-        self.assertEquals(Error.MOVED_TOO_FAST, linking_markers.get_error_marker(position_data, position))
+        self.assertEqual(Error.MOVED_TOO_FAST, linking_markers.get_error_marker(position_data, position))
         self.assertFalse(linking_markers.is_error_suppressed(position_data, position, Error.MOVED_TOO_FAST))
 
         linking_markers.suppress_error_marker(position_data, position, Error.MOVED_TOO_FAST)
-        self.assertEquals(None, linking_markers.get_error_marker(position_data, position), "error must be suppressed")
+        self.assertEqual(None, linking_markers.get_error_marker(position_data, position), "error must be suppressed")
         self.assertTrue(linking_markers.is_error_suppressed(position_data, position, Error.MOVED_TOO_FAST))

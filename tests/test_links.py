@@ -12,8 +12,8 @@ class TestLinks(unittest.TestCase):
         links = Links()
         links.add_link(position, future_position)
 
-        self.assertEquals({future_position}, links.find_futures(position))
-        self.assertEquals(set(), links.find_futures(future_position))
+        self.assertEqual({future_position}, links.find_futures(position))
+        self.assertEqual(set(), links.find_futures(future_position))
 
     def test_pasts(self):
         position = Position(0, 0, 0, time_point_number=1)
@@ -21,5 +21,5 @@ class TestLinks(unittest.TestCase):
         links = Links()
         links.add_link(position, past_position)
 
-        self.assertEquals({past_position}, links.find_pasts(position))
-        self.assertEquals(set(), links.find_pasts(past_position))
+        self.assertEqual({past_position}, links.find_pasts(position))
+        self.assertEqual(set(), links.find_pasts(past_position))

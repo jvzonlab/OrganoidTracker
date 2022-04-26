@@ -11,7 +11,7 @@ class TestPositionData(unittest.TestCase):
         position_data = PositionData()
         position_data.set_position_data(position, "name", "AA")
 
-        self.assertEquals("AA", position_data.get_position_data(position, "name"))
+        self.assertEqual("AA", position_data.get_position_data(position, "name"))
 
     def test_has_position_data(self):
         position_data = PositionData()

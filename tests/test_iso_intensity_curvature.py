@@ -34,8 +34,8 @@ class TestIsoIntensityCurvature(unittest.TestCase):
         get_negative_gaussian_curvatures(array, ImageDerivatives(), out, blur_radius=3)
 
         # Check a few pixel intensities (remember, order is z, y, x)
-        self.assertEquals(255, out[7, 12, 6])
-        self.assertEquals(0, out[7, 11, 11])
-        self.assertEquals(255, out[7, 12, 18])
+        self.assertEqual(255, out[7, 12, 6])
+        self.assertEqual(0, out[7, 11, 11])
+        self.assertEqual(255, out[7, 12, 18])
         # If tests fail, use tifffile.imsave to inspect
 
