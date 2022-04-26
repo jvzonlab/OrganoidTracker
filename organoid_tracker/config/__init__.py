@@ -1,6 +1,7 @@
 from configparser import RawConfigParser
 import os.path
-from typing import Tuple, Callable, Any, Dict
+from enum import Enum
+from typing import Tuple, Callable, Any, Dict, Type
 
 from organoid_tracker.core import typing
 

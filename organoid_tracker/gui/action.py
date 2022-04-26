@@ -264,10 +264,10 @@ def to_experiment_list_file_structure(tabs: Iterable[SingleGuiTab]) -> Optional[
                                              f"\nDo you want to save them first?",
                                   option_1="Save", option_2="Save As...", option_3="Skip experiment")
             if option == 1:
-                if not action.save_tracking_data_of_tab(tab):
+                if not save_tracking_data_of_tab(tab):
                     return None  # Save failed
             elif option == 2:
-                if not action.save_tracking_data_of_tab(tab, force_save_as=True):
+                if not save_tracking_data_of_tab(tab, force_save_as=True):
                     return None  # Save failed
             elif option == 3:
                 continue  # Skip this experiment
