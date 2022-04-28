@@ -57,13 +57,13 @@ class Gaussian:
     def get_bounds(self) -> BoundingBox:
         """Gets the bounding box of this Gaussian function as min_x,min_y,min_z, max_x,max_y,max_z."""
         return BoundingBox(
-            int(self.mu_x - 3 * math.sqrt(self.cov_xx)),
-            int(self.mu_y - 3 * math.sqrt(self.cov_yy)),
-            int(self.mu_z - 3 * math.sqrt(self.cov_zz)),
+            int(round(self.mu_x) - 3 * math.sqrt(self.cov_xx)),
+            int(round(self.mu_y) - 3 * math.sqrt(self.cov_yy)),
+            int(round(self.mu_z) - 3 * math.sqrt(self.cov_zz)),
 
-            int(self.mu_x + 3 * math.sqrt(self.cov_xx)),
-            int(self.mu_y + 3 * math.sqrt(self.cov_yy)),
-            int(self.mu_z + 3 * math.sqrt(self.cov_zz))
+            int(round(self.mu_x) + 3 * math.sqrt(self.cov_xx)),
+            int(round(self.mu_y) + 3 * math.sqrt(self.cov_yy)),
+            int(round(self.mu_z) + 3 * math.sqrt(self.cov_zz))
         )
 
     def draw_colored(self, image: ndarray, color: Tuple[float, float, float]) -> Optional[ndarray]:
@@ -114,9 +114,9 @@ class Gaussian:
         max_y = min(image.shape[1], bounds.max_y)
         max_z = min(image.shape[0], bounds.max_z)
 
-        if cached_result is None:
+        size_x, size_y, size_z = max_x - offset_x, max_y - offset_y, max_z - offset_z
+        if cached_result is None or cached_result.shape != (size_z, size_y, size_x):
             # Need to calculate
-            size_x, size_y, size_z = max_x - offset_x, max_y - offset_y, max_z - offset_z
             pos = _get_positions(size_x, size_y, size_z)
             cached_result = draw_function(pos, self.a, self.mu_x - offset_x, self.mu_y - offset_y, self.mu_z - offset_z,
                                           self.cov_xx, self.cov_yy, self.cov_zz, self.cov_xy, self.cov_xz, self.cov_yz)

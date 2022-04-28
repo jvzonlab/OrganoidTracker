@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from numpy import ndarray
 
 
@@ -33,6 +35,10 @@ class BoundingBox:
 
     def __repr__(self):
         return f"BoundingBox({self.min_x}, {self.min_y}, {self.min_z}, {self.max_x}, {self.max_y}, {self.max_z})"
+
+    def get_size_zyx(self) -> Tuple[int, int, int]:
+        """Gets the size of this bounding box."""
+        return self.max_z - self.min_z, self.max_y - self.min_y, self.max_x - self.min_x
 
 
 def bounding_box_from_mahotas(coords: ndarray) -> BoundingBox:
