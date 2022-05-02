@@ -36,3 +36,15 @@ class TestNameClass(unittest.TestCase):
         name = Name()
         name.set_name("My/Test")
         self.assertEqual("My_Test", name.get_save_name())
+
+    def test_unnamed_equals(self):
+        # These two are equal, otherwise things would just get confusing for the end user
+        unnamed = Name()
+        named_unnamed = Name("Unnamed")
+        self.assertEqual(unnamed, named_unnamed)
+
+    def test_equals_ignores_set_automatically(self):
+        # These two are equal, otherwise things would just get confusing for the end user
+        automatic = Name("Example name", is_automatic=True)
+        manual = Name("Example name", is_automatic=False)
+        self.assertEqual(automatic, manual)

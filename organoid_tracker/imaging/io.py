@@ -103,9 +103,11 @@ def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point:
         experiment.last_save_file = file_name
 
         if "name" in data:
-            experiment.name.set_name(data["name"])
+            is_automatic = bool(data.get("name_is_automatic"))
+            experiment.name.set_name(data["name"], is_automatic=is_automatic)
 
         if "shapes" in data:
+            # Deprecated, nowadays stored in "positions"
             _parse_shape_format(experiment, data["shapes"], min_time_point, max_time_point)
         elif "positions" in data:
             _parse_shape_format(experiment, data["positions"], min_time_point, max_time_point)
@@ -469,6 +471,7 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
     # Save name
     if experiment.name.has_name():
         save_data["name"] = str(experiment.name)
+        save_data["name_is_automatic"] = experiment.name.is_automatic()
 
     # Save links
     if experiment.links.has_links() or experiment.position_data.has_position_data():
