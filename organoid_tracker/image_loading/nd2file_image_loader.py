@@ -6,6 +6,7 @@ from nd2reader.parser import Parser
 from numpy.core.multiarray import ndarray
 
 from organoid_tracker.core import TimePoint, max_none, min_none
+from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.image_loader import ImageLoader, ImageChannel
 from organoid_tracker.core.images import Images
 
@@ -27,18 +28,24 @@ class Nd2File:
         return len(self._nd2_parser.metadata["fields_of_view"])
 
 
-def load_image_series(file: Nd2File, field_of_view: int, min_time_point: Optional[int] = None,
-                      max_time_point: Optional[int] = None) -> ImageLoader:
+def load_image_series(experiment: Experiment, file: Nd2File, field_of_view: int, min_time_point: Optional[int] = None,
+                      max_time_point: Optional[int] = None):
     """Gets the image loader for the given series inside the given file. Raises ValueError if that series doesn't
     exist."""
-    return _Nd2ImageLoader(file._file_name, file._nd2_parser, field_of_view, min_time_point, max_time_point)
+    image_loader = _Nd2ImageLoader(file._file_name, file._nd2_parser, field_of_view, min_time_point, max_time_point)
+    experiment.images.image_loader(image_loader)
+
+    # Generate an automatic name for the experiment
+    file_name = os.path.basename(file._file_name)
+    if file_name.lower().endswith(".nd2"):
+        file_name = file_name[:-4]
+    experiment.name.provide_automatic_name(file_name + f"xy{field_of_view:02}")
 
 
-def load_image_series_from_config(images: Images, file_name: str, pattern: str, min_time_point: int, max_time_point: int):
+def load_image_series_from_config(experiment: Experiment, file_name: str, pattern: str, min_time_point: int, max_time_point: int):
     """Loads the image seriers into the images object using the file_name and pattern settings."""
     field_of_view = int(pattern)
-    image_loader = load_image_series(Nd2File(file_name), field_of_view, min_time_point, max_time_point)
-    images.image_loader(image_loader)
+    load_image_series(experiment, Nd2File(file_name), field_of_view, min_time_point, max_time_point)
 
 
 class _NamedImageChannel(ImageChannel):
@@ -140,5 +147,5 @@ class _Nd2ImageLoader(ImageLoader):
         return self._file_name, str(self._location)
 
     def copy(self) -> "ImageLoader":
-        return load_image_series(Nd2File(self._file_name), self._location, self._min_time_point,
-                                 self._max_time_point)
+        return _Nd2ImageLoader(self._file_name, Nd2File(self._file_name)._nd2_parser, self._location,
+                               self._min_time_point, self._max_time_point)

@@ -22,7 +22,7 @@ def prompt_image_series(experiment: Experiment) -> bool:
         series = [header.getName() for header in reader.getSeriesHeaders()]
         series_index = option_choose_dialog.prompt_list("Choose an image serie", "Choose an image serie", "Image serie:", series)
         if series_index is not None:
-            liffile_image_loader.load_from_lif_reader(experiment.images, full_path, reader, series_index)
+            liffile_image_loader.load_from_lif_reader(experiment, full_path, reader, series_index)
             return True
         return False
 
@@ -34,8 +34,7 @@ def prompt_image_series(experiment: Experiment) -> bool:
         location = dialog.prompt_int("Image series", f"Which image series do you want load? (1-"
                                      f"{max_location}, inclusive)", minimum=1, maximum=max_location)
         if location is not None:
-            loader = nd2file_image_loader.load_image_series(reader, location)
-            experiment.images.image_loader(loader)
+            nd2file_image_loader.load_image_series(experiment, reader, location)
             return True
         return False
 

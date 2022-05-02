@@ -13,11 +13,11 @@ def load_images(experiment: Experiment, container: str, pattern: str,
     of the experiment within that file. Etc."""
     if container.endswith(".lif"):  # Try as LIF file
         from organoid_tracker.image_loading import liffile_image_loader
-        liffile_image_loader.load_from_lif_file(experiment.images, container, pattern, min_time_point, max_time_point)
+        liffile_image_loader.load_from_lif_file(experiment, container, pattern, min_time_point, max_time_point)
         return
     if container.endswith(".nd2"):
         from organoid_tracker.image_loading import nd2file_image_loader
-        nd2file_image_loader.load_image_series_from_config(experiment.images, container, pattern, min_time_point, max_time_point)
+        nd2file_image_loader.load_image_series_from_config(experiment, container, pattern, min_time_point, max_time_point)
         return
     if container.endswith(".tif"):
         from organoid_tracker.image_loading import merged_tiff_image_loader

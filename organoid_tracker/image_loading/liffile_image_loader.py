@@ -1,4 +1,5 @@
 """Image loader for LIF files."""
+import os.path
 from typing import Optional, Tuple, List, Any
 from xml.dom.minidom import Element
 
@@ -6,6 +7,7 @@ import numpy
 from numpy import ndarray
 
 from organoid_tracker.core import TimePoint
+from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.image_loader import ImageLoader, ImageChannel
 from organoid_tracker.core.images import Images
 from organoid_tracker.core.resolution import ImageResolution
@@ -13,7 +15,7 @@ from organoid_tracker.image_loading import _lif
 from organoid_tracker.util import bits
 
 
-def load_from_lif_file(images: Images, file: str, series_name: str, min_time_point: int = 0,
+def load_from_lif_file(experiment: Experiment, file: str, series_name: str, min_time_point: int = 0,
                        max_time_point: int = 1000000000):
     """Sets up the experimental images for a LIF file that is not yet opened."""
     reader = _lif.Reader(file)
@@ -27,16 +29,22 @@ def load_from_lif_file(images: Images, file: str, series_name: str, min_time_poi
         raise ValueError("No series matched the given name. Available names: "
                          + str([header.getName() for header in reader.getSeriesHeaders()]))
 
-    load_from_lif_reader(images, file, reader, series_index, min_time_point, max_time_point)
+    load_from_lif_reader(experiment, file, reader, series_index, min_time_point, max_time_point)
 
 
-def load_from_lif_reader(images: Images, file: str, reader: _lif.Reader, serie_index: int, min_time_point: int = 0,
+def load_from_lif_reader(experiment: Experiment, file: str, reader: _lif.Reader, serie_index: int, min_time_point: int = 0,
                          max_time_point: int = 1000000000):
     """Sets up the experimental images for an already opened LIF file."""
-    images.image_loader(_LifImageLoader(file, reader, serie_index, min_time_point, max_time_point))
+    experiment.images.image_loader(_LifImageLoader(file, reader, serie_index, min_time_point, max_time_point))
     serie_header = reader.getSeriesHeaders()[serie_index]
     dimensions = serie_header.getDimensions()
-    images.set_resolution(_dimensions_to_resolution(dimensions))
+    experiment.images.set_resolution(_dimensions_to_resolution(dimensions))
+
+    # Generate an automatic name for the experiment
+    file_name = os.path.basename(file)
+    if file_name.lower().endswith(".lif"):
+        file_name = file_name[:-4]
+    experiment.name.provide_automatic_name(file_name + "_" + serie_header.getName())
 
 
 def _dimensions_to_resolution(dimensions: List[Element]) -> ImageResolution:

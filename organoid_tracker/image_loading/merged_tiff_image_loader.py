@@ -29,8 +29,7 @@ def load_from_tif_file(experiment: Experiment, file: str, min_time_point: Option
             experiment.images.set_resolution(resolution)
 
     # Update experiment name
-    if not experiment.name.has_name():
-        experiment.name.set_name(image_loader.get_suggested_experiment_name())
+    experiment.name.provide_automatic_name(image_loader.get_suggested_experiment_name())
 
 
 class _IndexedImageChannel(ImageChannel):

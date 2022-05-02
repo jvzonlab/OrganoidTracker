@@ -87,8 +87,7 @@ def load_images_from_folder(experiment: Experiment, folder: str, file_name_forma
             break  # Channel doesn't exist
         max_found_channel += 1
 
-    if not experiment.name.has_name():
-        experiment.name.set_name(path.basename(folder).replace("-stacks", ""))
+    experiment.name.provide_automatic_name(path.basename(folder).replace("-stacks", ""))
     experiment.images.image_loader(FolderImageLoader(folder, file_name_format, min_time_point, max_time_point,
                                                      min_channel, max_found_channel))
 
