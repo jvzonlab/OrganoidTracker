@@ -9,6 +9,7 @@ Tutorials
 * [Tutorial for writing a plugin for OrganoidTracker](PLUGIN_TUTORIAL.md)
 * [Tutorial for training a neural network](TRAINING_THE_NETWORK.md)
 * [Tutorial for using Jupyter Notebooks with OrganoidTracker](JUPYTER_NOTEBOOK.md)
+* [Tutorial for working with custom metadata](WORKING_WITH_CUSTOM_METADATA.md)
 
 
 For reference
