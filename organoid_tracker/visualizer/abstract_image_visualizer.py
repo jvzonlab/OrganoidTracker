@@ -378,7 +378,7 @@ class AbstractImageVisualizer(Visualizer):
                     selectable_positions.add(position)
 
         # Find nearest position
-        return self.get_closest_position(selectable_positions, x, y, None, self._time_point, max_distance=5)
+        return Visualizer.get_closest_position(selectable_positions, x, y, None, self._time_point, max_distance=5)
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
         def time_point_prompt():
