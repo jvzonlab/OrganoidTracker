@@ -14,5 +14,7 @@ DataType = Union[
     str,
     bool,
     List[float],
-    List[str]
+    List[int],
+    List[str],
+    List[bool]
 ]
