@@ -30,7 +30,7 @@ The last command is necessary because Tensorflow 2 is not available in Anaconda.
 
 To test if the software is working, run `python organoid_tracker.py`. A window should pop up, from which you can load images and tracking data. See the Help menu for more information and tutorials.
 
-However, you're not done yet. To use the neural network, you'll also need to install CUDA 11.0 ([developer.nvidia.com/cuda-11.0-update1-download-archive](https://developer.nvidia.com/cuda-11.0-update1-download-archive)) and cuDNN ([developer.nvidia.com/rdp/cudnn-download](https://developer.nvidia.com/rdp/cudnn-download)). While the installation of CUDA is straightforward, the installation of cuDNN is not. You'll first need to register for a (free) Nvidia account. Then, you'll need to download the right version of cuDNN: download the version for CUDA 11.0. Then, you'll need to very carefully follow the installation instructions. cuDNN does not have an installation wizard, so you have to move all downloaded files yourself to the right location.
+Note: in previous versions of OrganoidTracker you would need to install CUDA and cuDNN. Because those programs are now installed via Anaconda, you no longer need to do this.
 
 ## macOS and Linux
 Unfortunately, OrganoidTracker has not been tested on any other OSes. If you're in for a challenge, here are some instructions. Feel free to ask the authors if you run into any problems, we're interested in getting OrganoidTracker to work on other OSes.
@@ -47,5 +47,3 @@ If you need to remove (the previous version of) OrganoidTracker, execute this co
     conda env remove -n organoid_tracker
 
 To test if the software is working, run `python organoid_tracker.py`. A window should pop up, from which you can load images and tracking data.
-
-You'll also need to install CUDA 11.0 and cuDNN in order to use the neural network.
