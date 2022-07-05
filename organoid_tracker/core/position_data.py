@@ -110,3 +110,8 @@ class PositionData:
             self._position_data[data_name] = data_set
         else:
             existing_data_set.update(data_set)
+
+    def delete_data_with_name(self, data_name: str):
+        """Deletes the data with the given key, for all positions in the experiment."""
+        if data_name in self._position_data:
+            del self._position_data[data_name]
