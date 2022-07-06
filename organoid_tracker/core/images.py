@@ -314,7 +314,7 @@ class Images:
 
         array = self._image_loader.get_3d_image_array(time_point, image_channel)
         if len(self._filters) > 0:
-            # Apply all filters
+            # Apply all filters (we need to make a copy of the array, otherwise we modify cached arrays)
             image_8bit = bits.image_to_8bit(array)
             for image_filter in self._filters:
                 image_filter.filter(image_8bit)
@@ -327,7 +327,7 @@ class Images:
         image_z = int(z - offset_z)
         array = self._image_loader.get_2d_image_array(time_point, image_channel, image_z)
         if len(self._filters) > 0 and array is not None:
-            # Apply all filters
+            # Apply all filters (we need to make a copy of the array, otherwise we modify cached arrays)
             image_8bit = bits.image_to_8bit(array)
             for image_filter in self._filters:
                 image_filter.filter(image_8bit)
