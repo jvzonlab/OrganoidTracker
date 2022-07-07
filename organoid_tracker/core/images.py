@@ -315,10 +315,10 @@ class Images:
         array = self._image_loader.get_3d_image_array(time_point, image_channel)
         if len(self._filters) > 0:
             # Apply all filters (we need to make a copy of the array, otherwise we modify cached arrays)
-            image_8bit = bits.image_to_8bit(array)
+            copied_array = array.copy()
             for image_filter in self._filters:
-                image_filter.filter(image_8bit)
-            array = image_8bit
+                image_filter.filter(time_point, None, copied_array)
+            array = copied_array
         return array
 
     def get_image_slice_2d(self, time_point: TimePoint, image_channel: ImageChannel, z: int) -> Optional[ndarray]:
@@ -328,10 +328,10 @@ class Images:
         array = self._image_loader.get_2d_image_array(time_point, image_channel, image_z)
         if len(self._filters) > 0 and array is not None:
             # Apply all filters (we need to make a copy of the array, otherwise we modify cached arrays)
-            image_8bit = bits.image_to_8bit(array)
+            copied_array = array.copy()
             for image_filter in self._filters:
-                image_filter.filter(image_8bit)
-            array = image_8bit
+                image_filter.filter(time_point, image_z, copied_array)
+            array = copied_array
         return array
 
     def set_resolution(self, resolution: Optional[ImageResolution]):

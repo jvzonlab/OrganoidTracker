@@ -112,8 +112,10 @@ class ImageFilter:
     """Filter for images, for example to enhance the contrast."""
 
     @abstractmethod
-    def filter(self, image_8bit: ndarray):
-        """Filters the given input array, which is a grayscale array with values from 0 to 255 of 2 or 3 dimensions.
+    def filter(self, time_point: TimePoint, image_z: Optional[int], image: ndarray):
+        """Filters the given input array, which is a grayscale array of 2 or 3 dimensions. If it is three dimensions,
+        then image_z is None. Note that the image_z does not include any image offsets, so z=0 will always be the
+        lowest image plane.
         The input array will be modified."""
         raise NotImplementedError()
 

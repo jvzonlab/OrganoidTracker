@@ -115,22 +115,24 @@ class _IncreaseBrightnessFilter(ImageFilter):
             raise ValueError("factor may not be negative, but was " + str(factor))
         self._factor = factor
 
-    def filter(self, image_8bit: ndarray):
+    def filter(self, time_point, image_z, image: ndarray):
+        max_value = image.max()
+
         if int(self._factor) == self._factor:
             # Easy, apply cheap integer multiplication - costs almost no RAM
 
             # First get rid of things that will overflow
-            new_max = int(255 / self._factor)
-            image_8bit[image_8bit > new_max] = new_max
+            new_max = int(max_value / self._factor)
+            image[image > new_max] = new_max
 
             # Then do integer multiplication
-            image_8bit *= int(self._factor)
+            image *= int(self._factor)
             return
 
         # Copying required
-        scaled = image_8bit * self._factor
-        scaled[scaled > 255] = 255  # Prevent overflow
-        image_8bit[...] = scaled.astype(numpy.uint8)
+        scaled = image * self._factor
+        scaled[scaled > max_value] = max_value  # Prevent overflow
+        image[...] = scaled.astype(numpy.uint8)
 
     def copy(self):
         return _IncreaseBrightnessFilter(self._factor)
