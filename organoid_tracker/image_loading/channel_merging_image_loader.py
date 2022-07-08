@@ -10,9 +10,8 @@ For summing multiple image channels. Example usage:
 
 """
 
-from typing import Tuple, List, Optional, Dict, Any, Iterable, Collection
+from typing import Tuple, List, Optional, Iterable, Collection
 
-import numpy
 from numpy import ndarray
 
 from organoid_tracker.core import TimePoint
@@ -20,41 +19,24 @@ from organoid_tracker.core.image_loader import ImageLoader, ImageChannel
 from organoid_tracker.util import bits
 
 
-class _MergedImageChannel(ImageChannel):
-    _channels: List[ImageChannel]
-
-    def __init__(self, channels: Collection[ImageChannel]):
-        self._channels = list(channels)
-
-    def __repr__(self) -> str:
-        return "_MergedImageChannel(" + repr(self._channels) + ")"
-
-    def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, _MergedImageChannel):
-            return False
-        return other._channels == self._channels
-
-    def __hash__(self) -> int:
-        return hash(self._channels)
-
-
 class ChannelMergingImageLoader(ImageLoader):
     """Sums multiple channels, which is useful to enhance an image."""
     _image_loader: ImageLoader
-    _channels: List[_MergedImageChannel]
+    _channels: List[List[ImageChannel]]
 
     def __init__(self, original: ImageLoader, channels: Iterable[Collection[ImageChannel]]):
         self._image_loader = original
         self._channels = list()
         for channel_group in channels:
-            self._channels.append(_MergedImageChannel(channel_group))
+            self._channels.append(list(channel_group))
 
     def get_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
-        if not isinstance(image_channel, _MergedImageChannel):
+        if image_channel.index_zero >= len(self._channels):
             return None  # Don't know this channel
 
         image = None
-        for original_channel in image_channel._channels:
+        original_channels = self._channels[image_channel.index_zero]
+        for original_channel in original_channels:
             returned_image = self._image_loader.get_3d_image_array(time_point, original_channel)
             if returned_image is None:
                 # Easy, no image to merge
@@ -68,11 +50,12 @@ class ChannelMergingImageLoader(ImageLoader):
         return image
 
     def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
-        if not isinstance(image_channel, _MergedImageChannel):
+        if image_channel.index_zero >= len(self._channels):
             return None  # Don't know this channel
 
         image = None
-        for original_channel in image_channel._channels:
+        original_channels = self._channels[image_channel.index_zero]
+        for original_channel in original_channels:
             returned_image = self._image_loader.get_2d_image_array(time_point, original_channel, image_z)
             if returned_image is None:
                 # Easy, no image to merge
@@ -94,8 +77,8 @@ class ChannelMergingImageLoader(ImageLoader):
     def last_time_point_number(self) -> Optional[int]:
         return self._image_loader.last_time_point_number()
 
-    def get_channels(self) -> List[ImageChannel]:
-        return self._channels
+    def get_channel_count(self) -> int:
+        return len(self._channels)
 
     def serialize_to_config(self) -> Tuple[str, str]:
         return self._image_loader.serialize_to_config()
@@ -104,5 +87,4 @@ class ChannelMergingImageLoader(ImageLoader):
         return self._image_loader
 
     def copy(self) -> "ImageLoader":
-        return ChannelMergingImageLoader(self._image_loader.copy(),
-                                         (channel._channels for channel in self._channels))
+        return ChannelMergingImageLoader(self._image_loader.copy(), self._channels.copy())

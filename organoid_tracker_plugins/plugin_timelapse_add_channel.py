@@ -1,5 +1,4 @@
-import collections
-from typing import Tuple, List, Optional, Dict, Any, OrderedDict
+from typing import Tuple, List, Optional, Dict, Any
 
 from numpy import ndarray
 
@@ -46,51 +45,15 @@ class _ChannelAppendAction(UndoableAction):
         return f"Removed the appended channels again"
 
 
-class _UniqueImageChannel(ImageChannel):
-    """If you append two image loaders, you cannot simply put the channels of both into a single dictionary.
-    This is because the first channel of the first image loader is considered equal to the first channel of the second
-    image loader.  So then it's not clear which channel refers to which image loader. For that reason, we use this
-    wrapper object, which uses another number to determine equality. For example:
-
-    >>> some_channel = ...
-    >>> instance_a = _UniqueImageChannel(1, some_channel)
-    >>> _UniqueImageChannel(1, some_channel) == _UniqueImageChannel(1, some_channel)  # This still holds
-    >>> _UniqueImageChannel(1, some_channel) != _UniqueImageChannel(2, some_channel)  # These are different
-    """
-
-    _unique_number: int
-    forwarding_to: ImageChannel
-
-    def __init__(self, unique_number: int, forwarding_to: ImageChannel):
-        self._unique_number = unique_number
-        self.forwarding_to = forwarding_to
-
-    def __repr__(self) -> str:
-        return f"_UniqueImageChannel({self._unique_number}, " + repr(self.forwarding_to) + ")"
-
-    def __hash__(self) -> int:
-        return self._unique_number
-
-    def __eq__(self, other: Any) -> bool:
-        if isinstance(other, _UniqueImageChannel):
-            return other._unique_number == self._unique_number
-        return False
-
-
 class _ChannelAppendingImageLoader(ImageLoader):
     """Combines to image loaders, showing images after each other."""
-
-    # Note: image loaders with N channels will appear N times in this map
-    _channel_to_loader: OrderedDict[_UniqueImageChannel, ImageLoader]
 
     # A list of all image loaders, where every loader appears once in the list
     _unique_loaders: List[ImageLoader]
 
     def __init__(self, image_loaders: List[ImageLoader]):
-        self._channel_to_loader = collections.OrderedDict()
         self._unique_loaders = list()
 
-        channel_index = 0
         for image_loader in image_loaders:
             if not image_loader.has_images():
                 continue
@@ -98,30 +61,28 @@ class _ChannelAppendingImageLoader(ImageLoader):
             if isinstance(image_loader, _ChannelAppendingImageLoader):
                 # Avoid double-wrapping, could hurt performance
                 self._unique_loaders += image_loader._unique_loaders
-                for channel in image_loader._channel_to_loader.keys():
-                    self._channel_to_loader[_UniqueImageChannel(channel_index, channel.forwarding_to)] = image_loader
-                    channel_index += 1
             else:
                 self._unique_loaders.append(image_loader)
-                for channel in image_loader.get_channels():
-                    self._channel_to_loader[_UniqueImageChannel(channel_index, channel)] = image_loader
-                    channel_index += 1
 
     def get_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
-        if not isinstance(image_channel, _UniqueImageChannel):
-            return None  # We don't support channels created by other image loaders
-        image_loader = self._channel_to_loader.get(image_channel)
-        if image_loader is None:
-            return None
-        return image_loader.get_3d_image_array(time_point, image_channel.forwarding_to)
+        # Iterate over all image loaders
+        image_channel_index = image_channel.index_zero
+        for image_loader in self._unique_loaders:
+            if image_channel_index < image_loader.get_channel_count():
+                return image_loader.get_3d_image_array(time_point, ImageChannel(index_zero=image_channel_index))
+            image_channel_index -= image_loader.get_channel_count()
+
+        return None
 
     def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
-        if not isinstance(image_channel, _UniqueImageChannel):
-            return None  # We don't support channels created by other image loaders
-        image_loader = self._channel_to_loader.get(image_channel)
-        if image_loader is None:
-            return None
-        return image_loader.get_2d_image_array(time_point, image_channel.forwarding_to, image_z)
+        # Iterate over all image loaders
+        image_channel_index = image_channel.index_zero
+        for image_loader in self._unique_loaders:
+            if image_channel_index < image_loader.get_channel_count():
+                return image_loader.get_2d_image_array(time_point, ImageChannel(index_zero=image_channel_index), image_z)
+            image_channel_index -= image_loader.get_channel_count()
+
+        return None
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
         # Returns the size only if all image loaders have the same image size
@@ -147,8 +108,11 @@ class _ChannelAppendingImageLoader(ImageLoader):
         last_time_point_numbers = [image_loader.last_time_point_number() for image_loader in self._unique_loaders]
         return max_none(last_time_point_numbers)
 
-    def get_channels(self) -> List[ImageChannel]:
-        return list(self._channel_to_loader.keys())  # Making use of the fact that this dict is ordered
+    def get_channel_count(self) -> int:
+        count = 0
+        for image_loader in self._unique_loaders:
+            count += image_loader.get_channel_count()
+        return count
 
     def serialize_to_config(self) -> Tuple[str, str]:
         for image_loader in self._unique_loaders:

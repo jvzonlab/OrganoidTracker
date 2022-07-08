@@ -40,8 +40,8 @@ class BackgroundSupressingImageLoader(ImageLoader):
     def last_time_point_number(self) -> Optional[int]:
         return self._internal.last_time_point_number()
 
-    def get_channels(self) -> List[ImageChannel]:
-        return self._internal.get_channels()
+    def get_channel_count(self) -> int:
+        return self._internal.get_channel_count()
 
     def serialize_to_config(self) -> Tuple[str, str]:
         return self._internal.serialize_to_config()

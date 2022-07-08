@@ -32,22 +32,6 @@ def load_from_tif_file(experiment: Experiment, file: str, min_time_point: Option
     experiment.name.provide_automatic_name(image_loader.get_suggested_experiment_name())
 
 
-class _IndexedImageChannel(ImageChannel):
-    index: int
-
-    def __init__(self, index: int):
-        self.index = index
-
-    def __repr__(self) -> str:
-        return f"_IndexedImageChannel({self.index})"
-
-    def __hash__(self) -> int:
-        return self.index
-
-    def __eq__(self, other: Any) -> bool:
-        return isinstance(other, _IndexedImageChannel) and self.index == other.index
-
-
 class _MergedTiffImageLoader(ImageLoader):
     """Reader for huge TIF files, where an entire time series has been stored in a single file."""
 
@@ -61,7 +45,7 @@ class _MergedTiffImageLoader(ImageLoader):
         except ValueError:
             pass  # No channel axis
 
-        return [_IndexedImageChannel(i) for i in range(channel_count)]
+        return [ImageChannel(index_zero=i) for i in range(channel_count)]
 
     @staticmethod
     def _init_image_size_zyx(axes: str, shape: Tuple[int, ...]) -> Tuple[int, int, int]:
@@ -147,8 +131,8 @@ class _MergedTiffImageLoader(ImageLoader):
         if time_point.time_point_number() < self.first_time_point_number() \
                 or time_point.time_point_number() > self.last_time_point_number():
             return None
-        if not isinstance(image_channel, _IndexedImageChannel) or image_channel not in self._channels:
-            return None
+        if image_channel.index_zero >= len(self._channels):
+            return None  # Invalid channel
 
         with self._tiff_lock:
             out = tifffile.create_output(None, self._image_size_zyx, self._tiff_series.dtype)
@@ -160,7 +144,7 @@ class _MergedTiffImageLoader(ImageLoader):
         if time_point.time_point_number() < self.first_time_point_number() \
                 or time_point.time_point_number() > self.last_time_point_number():
             return None  # Time out of range
-        if not isinstance(image_channel, _IndexedImageChannel) or image_channel not in self._channels:
+        if image_channel.index_zero >= len(self._channels):
             return None  # Invalid channel
         if image_z < 0 or image_z >= self._image_size_zyx[0]:
             return None  # Z out of range
@@ -179,8 +163,8 @@ class _MergedTiffImageLoader(ImageLoader):
     def last_time_point_number(self) -> Optional[int]:
         return self._max_time_point_number
 
-    def get_channels(self) -> List[ImageChannel]:
-        return self._channels
+    def get_channel_count(self) -> int:
+        return len(self._channels)
 
     def serialize_to_config(self) -> Tuple[str, str]:
         return self._file_name, ""

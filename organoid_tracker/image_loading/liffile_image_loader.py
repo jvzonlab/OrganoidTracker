@@ -1,6 +1,6 @@
 """Image loader for LIF files."""
 import os.path
-from typing import Optional, Tuple, List, Any
+from typing import Optional, Tuple, List
 from xml.dom.minidom import Element
 
 import numpy
@@ -9,7 +9,6 @@ from numpy import ndarray
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.image_loader import ImageLoader, ImageChannel
-from organoid_tracker.core.images import Images
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.image_loading import _lif
 from organoid_tracker.util import bits
@@ -84,25 +83,6 @@ def _dimensions_to_resolution(dimensions: List[Element]) -> ImageResolution:
     return ImageResolution(pixel_size_x_um, pixel_size_y_um, abs(pixel_size_z_um), time_point_interval_m)
 
 
-class _IndexedChannel(ImageChannel):
-
-    index: int
-
-    def __init__(self, index: int):
-        self.index = index
-
-    def __repr__(self) -> str:
-        return f"_IndexedChannel({self.index})"
-
-    def __hash__(self) -> int:
-        return self.index
-
-    def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, _IndexedChannel):
-            return False
-        return other.index == self.index
-
-
 class _LifImageLoader(ImageLoader):
 
     _file: str
@@ -113,12 +93,9 @@ class _LifImageLoader(ImageLoader):
     _max_time_point_number: int
     _inverted_z: bool = False
 
-    _channels: List[_IndexedChannel]
-
     def __init__(self, file: str, reader: _lif.Reader, serie_index: int, min_time_point: int, max_time_point: int):
         self._file = file
         self._serie = reader.getSeries()[serie_index]
-        self._channels = [_IndexedChannel(i) for i, channel in enumerate(self._serie.getChannels())]
         self._serie_index = serie_index
 
         # Check if z axis needs to be inverted
@@ -145,18 +122,18 @@ class _LifImageLoader(ImageLoader):
         """Gets the last time point (inclusive) for which images are available."""
         return self._max_time_point_number
 
-    def get_channels(self) -> List[ImageChannel]:
-        return self._channels
+    def get_channel_count(self) -> int:
+        return len(self._serie.getChannels())
 
     def get_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
         """Loads an image, usually from disk. Returns None if there is no image for this time point."""
         if time_point.time_point_number() < self._min_time_point_number\
                 or time_point.time_point_number() > self._max_time_point_number:
             return None
-        if not isinstance(image_channel, _IndexedChannel):
+        if image_channel.index_zero >= self.get_channel_count():
             return None
 
-        array = self._serie.getFrame(channel=image_channel.index, T=time_point.time_point_number())
+        array = self._serie.getFrame(channel=image_channel.index_zero, T=time_point.time_point_number())
         if array.dtype != numpy.uint8:  # Saves memory
             array = bits.image_to_8bit(array)
         if self._inverted_z:
@@ -168,13 +145,13 @@ class _LifImageLoader(ImageLoader):
         if time_point.time_point_number() < self._min_time_point_number\
                 or time_point.time_point_number() > self._max_time_point_number:
             return None
-        if not isinstance(image_channel, _IndexedChannel):
+        if image_channel.index_zero >= self.get_channel_count():
             return None
         if self._inverted_z:
             z_size = self.get_image_size_zyx()[0]
             image_z = z_size - image_z
         try:
-            array = self._serie.get2DSlice(channel=image_channel.index, T=time_point.time_point_number(), Z=image_z)
+            array = self._serie.get2DSlice(channel=image_channel.index_zero, T=time_point.time_point_number(), Z=image_z)
         except IndexError:
             # This particular slice doesn't exist  (seems like the last time point isn't always a full z stack)
             return None

@@ -147,15 +147,13 @@ class _AppendingImageLoader(ImageLoader):
             image_count += new_last - new_first + 1
         return image_count + self._internal[0].first_time_point_number() - 1
 
-    def get_channels(self) -> List[ImageChannel]:
-        # Return the longest list for selecting channels, in case multiple time lapses have different numbers of
+    def get_channel_count(self) -> int:
+        # Return the highest count for selecting channels, in case multiple time lapses have different numbers of
         # channels
-        longest_list = list()
+        highest_number = 0
         for internal in self._internal:
-            channels = internal.get_channels()
-            if len(channels) > len(longest_list):
-                longest_list = channels
-        return longest_list
+            highest_number = max(internal.get_channel_count(), highest_number)
+        return highest_number
 
     def serialize_to_config(self) -> Tuple[str, str]:
         if len(self._internal) == 0:

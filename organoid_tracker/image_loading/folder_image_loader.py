@@ -9,29 +9,6 @@ from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.image_loading._simple_image_file_reader import read_image_3d, read_image_2d
 
 
-class _IndexedChannel(ImageChannel):
-    """A simple channel system with numbers."""
-    _index: int
-
-    def __init__(self, index: int):
-        self._index = index
-
-    @property
-    def index(self) -> int:
-        return self._index
-
-    def __repr__(self) -> str:
-        return f"_IndexedChannel({self._index})"
-
-    def __hash__(self) -> int:
-        return self._index
-
-    def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, _IndexedChannel):
-            return False
-        return other._index == self._index
-
-
 def _discover_min_time_point_and_channel(folder: str, file_name_format: str, guess_time_point: int) -> Tuple[Optional[int], Optional[int]]:
     for test_time_point in [0, 1, guess_time_point]:
         for test_channel in [0, 1]:
@@ -98,7 +75,8 @@ class FolderImageLoader(ImageLoader):
     _file_name_format: str
     _min_time_point: int
     _max_time_point: int
-    _channels: List[_IndexedChannel]
+    _channel_offset: int
+    _channel_count: int
     _image_size_zyx: Optional[Tuple[int, int, int]]
 
     def __init__(self, folder: str, file_name_format: str, min_time_point: int, max_time_point: int, min_channel: int,
@@ -110,12 +88,13 @@ class FolderImageLoader(ImageLoader):
         self._min_time_point = min_time_point
         self._max_time_point = max_time_point
         self._image_size_zyx = None
-        self._channels = [_IndexedChannel(i) for i in range(min_channel, max_channel + 1)]
+        self._channel_offset = min_channel
+        self._channel_count = max_channel - min_channel + 1
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
         """Just get the size of the image at the first time point, and cache it."""
         if self._image_size_zyx is None:
-            first_image_stack = self.get_3d_image_array(TimePoint(self._min_time_point), self._channels[0])
+            first_image_stack = self.get_3d_image_array(TimePoint(self._min_time_point), ImageChannel(index_zero=0))
             if first_image_stack is not None:
                 self._image_size_zyx = first_image_stack.shape
         return self._image_size_zyx
@@ -124,12 +103,12 @@ class FolderImageLoader(ImageLoader):
         if time_point.time_point_number() < self._min_time_point or\
                 time_point.time_point_number() > self._max_time_point:
             return None
-        if not isinstance(image_channel, _IndexedChannel):
+        if image_channel.index_zero >= self._channel_count:
             return None  # Asking for an image channel that doesn't exist
 
         file_name = path.join(self._folder, self._file_name_format.format(
                 time=time_point.time_point_number(),
-                channel=image_channel.index))
+                channel=image_channel.index_zero + self._channel_offset))
 
         return read_image_3d(file_name)
 
@@ -137,16 +116,16 @@ class FolderImageLoader(ImageLoader):
         if time_point.time_point_number() < self._min_time_point or\
                 time_point.time_point_number() > self._max_time_point:
             return None
-        if not isinstance(image_channel, _IndexedChannel):
+        if image_channel.index_zero >= self._channel_count:
             return None  # Asking for an image channel that doesn't exist
 
         file_name = path.join(self._folder, self._file_name_format.format(
             time=time_point.time_point_number(),
-            channel=image_channel.index))
+            channel=image_channel.index_zero + self._channel_offset))
         return read_image_2d(file_name, image_z)
 
-    def get_channels(self) -> List[ImageChannel]:
-        return self._channels
+    def get_channel_count(self) -> int:
+        return self._channel_count
 
     def first_time_point_number(self) -> Optional[int]:
         return self._min_time_point
@@ -155,10 +134,8 @@ class FolderImageLoader(ImageLoader):
         return self._max_time_point
 
     def copy(self) -> ImageLoader:
-        channel_indices = [channel.index for channel in self._channels]
-
         return FolderImageLoader(self._folder, self._file_name_format, self._min_time_point, self._max_time_point,
-                                 min(channel_indices), max(channel_indices))
+                                 self._channel_offset, self._channel_offset + self._channel_count - 1)
 
     def serialize_to_config(self) -> Tuple[str, str]:
         return self._folder, self._file_name_format

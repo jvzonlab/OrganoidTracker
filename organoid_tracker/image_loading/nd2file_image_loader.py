@@ -48,29 +48,11 @@ def load_image_series_from_config(experiment: Experiment, file_name: str, patter
     load_image_series(experiment, Nd2File(file_name), field_of_view, min_time_point, max_time_point)
 
 
-class _NamedImageChannel(ImageChannel):
-    name: str
-
-    def __init__(self, name: str):
-        self.name = name
-
-    def __repr__(self) -> str:
-        return f"_NamedImageChannel({self.name})"
-
-    def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, _NamedImageChannel):
-            return False
-        return other.name == self.name
-
-    def __hash__(self) -> int:
-        return hash(self.name)
-
-
 
 class _Nd2ImageLoader(ImageLoader):
     _file_name: str
     _nd2_parser: Parser
-    _channels: List[_NamedImageChannel]
+    _channels: List[ImageChannel]
     _min_time_point: int
     _max_time_point: int
     _location: int
@@ -83,26 +65,25 @@ class _Nd2ImageLoader(ImageLoader):
 
         self._file_name = file_name
         self._nd2_parser = nd2_parser
-        self._channels = [_NamedImageChannel(name) for name in self._nd2_parser.metadata["channels"]]
+        self._channels = [ImageChannel(index_zero=i) for i, name in enumerate(self._nd2_parser.metadata["channels"])]
         time_points = self._nd2_parser.metadata["frames"]
         self._min_time_point = max_none(min(time_points), min_time_point)
         self._max_time_point = min_none(max(time_points), max_time_point)
         self._location = location
 
     def get_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
-        if not isinstance(image_channel, _NamedImageChannel) or image_channel not in self._channels:
+        if image_channel.index_zero >= len(self._channels):
             return None
         if time_point.time_point_number() < self._min_time_point\
                 or time_point.time_point_number() > self._max_time_point:
             return None
 
         frame_number = time_point.time_point_number()
-        channel_index = self._channels.index(image_channel)
         depth, height, width = self.get_image_size_zyx()
         image = None
         for z in self._nd2_parser.metadata["z_levels"]:
             # Using "location - 1": Nikon NIS-Elements GUI is one-indexed, but save format is zero-indexed
-            frame = self._nd2_parser.get_image_by_attributes(frame_number, self._location - 1, channel_index, z, height, width)
+            frame = self._nd2_parser.get_image_by_attributes(frame_number, self._location - 1, image_channel.index_zero, z, height, width)
             if image is None:
                 image = numpy.zeros((depth, height, width), dtype=frame.dtype)
             if len(frame) > 0:
@@ -110,7 +91,7 @@ class _Nd2ImageLoader(ImageLoader):
         return image
 
     def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
-        if not isinstance(image_channel, _NamedImageChannel) or image_channel not in self._channels:
+        if image_channel.index_zero >= len(self._channels):
             return None
         if time_point.time_point_number() < self._min_time_point\
                 or time_point.time_point_number() > self._max_time_point:
@@ -140,8 +121,8 @@ class _Nd2ImageLoader(ImageLoader):
     def last_time_point_number(self) -> Optional[int]:
         return self._max_time_point
 
-    def get_channels(self) -> List[ImageChannel]:
-        return self._channels
+    def get_channel_count(self) -> int:
+        return len(self._channels)
 
     def serialize_to_config(self) -> Tuple[str, str]:
         return self._file_name, str(self._location)

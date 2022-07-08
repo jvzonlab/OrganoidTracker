@@ -74,8 +74,8 @@ class _CachedImageLoader(ImageLoader):
         self._add_to_cache(time_point.time_point_number(), image_z, image_channel, array)
         return array
 
-    def get_channels(self) -> List[ImageChannel]:
-        return self._internal.get_channels()
+    def get_channel_count(self) -> int:
+        return self._internal.get_channel_count()
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
         return self._internal.get_image_size_zyx()
