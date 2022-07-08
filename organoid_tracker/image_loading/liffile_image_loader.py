@@ -149,12 +149,8 @@ class _LifImageLoader(ImageLoader):
             return None
         if self._inverted_z:
             z_size = self.get_image_size_zyx()[0]
-            image_z = z_size - image_z
-        try:
-            array = self._serie.get2DSlice(channel=image_channel.index_zero, T=time_point.time_point_number(), Z=image_z)
-        except IndexError:
-            # This particular slice doesn't exist  (seems like the last time point isn't always a full z stack)
-            return None
+            image_z = z_size - image_z - 1
+        array = self._serie.get2DSlice(channel=image_channel.index_zero, T=time_point.time_point_number(), Z=image_z)
         if array.dtype != numpy.uint8:  # Saves memory
             array = bits.image_to_8bit(array)
         return array
