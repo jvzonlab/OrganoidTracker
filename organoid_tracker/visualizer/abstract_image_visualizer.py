@@ -11,6 +11,7 @@ from tifffile import tifffile
 
 from organoid_tracker import core
 from organoid_tracker.core import TimePoint, UserError, COLOR_CELL_CURRENT
+from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.spline import Spline
 from organoid_tracker.core.typing import MPLColor
@@ -651,7 +652,7 @@ class AbstractImageVisualizer(Visualizer):
             self._display_settings.image_channel = available_channels[0]
             return
         if len(available_channels) == 0:
-            self._display_settings.image_channel = None
+            self._display_settings.image_channel = ImageChannel(index_zero=0)
             return
 
         # Handle two or more channels
@@ -734,7 +735,7 @@ class AbstractImageVisualizer(Visualizer):
         channels = self._experiment.images.image_loader().get_channels()
         if len(channels) < 2:
             # Nothing to choose, just use the default
-            self._display_settings.image_channel = None
+            self._display_settings.image_channel = ImageChannel(index_zero=0)
             self.update_status("There is only one image channel available, so we cannot switch channels.")
             return
 

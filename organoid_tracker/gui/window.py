@@ -23,7 +23,7 @@ class DisplaySettings:
     show_errors: bool
     time_point: TimePoint
     z: int
-    image_channel: Optional[ImageChannel]  # Set to None to use the default image channel
+    image_channel: ImageChannel
     error_correction_min_time_point: Optional[TimePoint] = None
     error_correction_max_time_point: Optional[TimePoint] = None
 
@@ -36,7 +36,7 @@ class DisplaySettings:
         self.show_positions = show_positions
         self.show_errors = True
         self.show_links_and_connections = True
-        self.image_channel = None
+        self.image_channel = ImageChannel(index_zero=0)
         self.time_point = TimePoint(0)
         self.z = 14
 
