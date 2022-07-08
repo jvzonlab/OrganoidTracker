@@ -237,13 +237,13 @@ class Images:
     _image_loader: ImageLoader
     _offsets: ImageOffsets
     _resolution: ImageResolution
-    _filters: List[ImageFilter]
+    _filters: Dict[ImageChannel, List[ImageFilter]]
 
     def __init__(self):
         self._image_loader = NullImageLoader()
         self._offsets = ImageOffsets()
         self._resolution = ImageResolution(0, 0, 0, 0)
-        self._filters = []
+        self._filters = dict()
 
     @property
     def offsets(self):
@@ -285,7 +285,7 @@ class Images:
             return False
         return True
 
-    def get_image(self, time_point: TimePoint, image_channel: Optional[ImageChannel] = None) -> Optional[Image]:
+    def get_image(self, time_point: TimePoint, image_channel: ImageChannel = ImageChannel(index_zero=0)) -> Optional[Image]:
         """Gets an image along with offset information, or None if there is no image available for that time point."""
         array = self.get_image_stack(time_point, image_channel)
         if array is None:
@@ -303,20 +303,13 @@ class Images:
         """Transfers the image loader from another Images instance, sharing the image cache."""
         self._image_loader = images._image_loader
 
-    def get_image_stack(self, time_point: TimePoint, image_channel: Optional[ImageChannel] = None) -> Optional[ndarray]:
+    def get_image_stack(self, time_point: TimePoint, image_channel: ImageChannel = ImageChannel(index_zero=0)) -> Optional[ndarray]:
         """Loads an image using the current image loader. Returns None if there is no image for this time point."""
-        if image_channel is None:
-            # Find the default image channel
-            channels = self._image_loader.get_channels()
-            if len(channels) == 0:
-                return None
-            image_channel = channels[0]
-
         array = self._image_loader.get_3d_image_array(time_point, image_channel)
-        if len(self._filters) > 0:
+        if image_channel in self._filters and array is not None:
             # Apply all filters (we need to make a copy of the array, otherwise we modify cached arrays)
             copied_array = array.copy()
-            for image_filter in self._filters:
+            for image_filter in self._filters[image_channel]:
                 image_filter.filter(time_point, None, copied_array)
             array = copied_array
         return array
@@ -326,10 +319,10 @@ class Images:
         offset_z = self._offsets.of_time_point(time_point).z
         image_z = int(z - offset_z)
         array = self._image_loader.get_2d_image_array(time_point, image_channel, image_z)
-        if len(self._filters) > 0 and array is not None:
+        if image_channel in self._filters and array is not None:
             # Apply all filters (we need to make a copy of the array, otherwise we modify cached arrays)
             copied_array = array.copy()
-            for image_filter in self._filters:
+            for image_filter in self._filters[image_channel]:
                 image_filter.filter(time_point, image_z, copied_array)
             array = copied_array
         return array
@@ -346,7 +339,7 @@ class Images:
         copy._image_loader = self._image_loader.copy()
         copy._resolution = self._resolution  # No copy, as this object is immutable
         copy._offsets = self._offsets.copy()
-        copy._filters = [filter.copy() for filter in self._filters]
+        copy._filters = self._filters.copy()
         return copy
 
     def first_time_point_number(self) -> Optional[int]:
@@ -366,10 +359,11 @@ class Images:
         for time_point_number in range(min_time_point_number, max_time_point_number + 1):
             yield TimePoint(time_point_number)
 
-    @property
-    def filters(self) -> List[ImageFilter]:
-        """Gets a mutable list of all filters applied to the images."""
-        return self._filters
+    def get_filters(self, channel: ImageChannel):
+        """Gets a mutable list of all image filters for the given image channel."""
+        if channel not in self._filters:
+            self._filters[channel] = []
+        return self._filters[channel]
 
     def get_channels(self) -> List[ImageChannel]:
         """Gets all available image channels. These are determined by the image_loader."""

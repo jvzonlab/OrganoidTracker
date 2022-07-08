@@ -29,7 +29,8 @@ def _threshold(window: Window):
     if min_value is None:
         return
 
-    window.get_experiment().images.filters.append(ThresholdFilter(min_value / 100))
+    image_channel = window.display_settings.image_channel
+    window.get_experiment().images.get_filters(image_channel).append(ThresholdFilter(min_value / 100))
     window.get_gui_experiment().redraw_image_and_data()
 
 
@@ -41,7 +42,8 @@ def _gaussian_blur(window: Window):
     if value % 2 == 0:
         raise UserError("Even number", f"Cannot use the even number {value} - the blur radius must be an odd number.")
 
-    window.get_experiment().images.filters.append(GaussianBlurFilter(value))
+    image_channel = window.display_settings.image_channel
+    window.get_experiment().images.get_filters(image_channel).append(GaussianBlurFilter(value))
     window.get_gui_experiment().redraw_image_and_data()
 
 
@@ -51,7 +53,8 @@ def _enhance_brightness(window: Window):
     if multiplier is None:
         return
 
-    window.get_experiment().images.filters.append(_IncreaseBrightnessFilter(multiplier))
+    image_channel = window.display_settings.image_channel
+    window.get_experiment().images.get_filters(image_channel).append(_IncreaseBrightnessFilter(multiplier))
     window.get_gui_experiment().redraw_image_and_data()
 
 
@@ -95,14 +98,15 @@ def _remove_filters(window: Window):
         removed_count += 1
 
     # Undo filters
-    filters = images.filters
+    image_channel = window.display_settings.image_channel
+    filters = images.get_filters(image_channel)
     removed_count += len(filters)
     filters.clear()
 
     if removed_count == 1:
-        window.set_status("Removed 1 filter.")
+        window.set_status(f"Removed 1 filter for channel {image_channel.index_one}.")
     else:
-        window.set_status(f"Removed {removed_count} filters.")
+        window.set_status(f"Removed {removed_count} filters for channel {image_channel.index_one}.")
 
     window.get_gui_experiment().redraw_image_and_data()
 
