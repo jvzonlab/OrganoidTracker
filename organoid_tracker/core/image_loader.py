@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Tuple, List, Any, NamedTuple
+from typing import Optional, Tuple, List
+
 from numpy import ndarray
 
-from organoid_tracker.core import TimePoint, Color
+from organoid_tracker.core import TimePoint
 
 
 class ImageChannel:
@@ -120,24 +121,3 @@ class NullImageLoader(ImageLoader):
     def serialize_to_config(self) -> Tuple[str, str]:
         return "", ""
 
-
-class ImageFilter:
-    """Filter for images, for example to enhance the contrast."""
-
-    @abstractmethod
-    def filter(self, time_point: TimePoint, image_z: Optional[int], image: ndarray):
-        """Filters the given input array, which is a grayscale array of 2 or 3 dimensions. If it is three dimensions,
-        then image_z is None. Note that the image_z does not include any image offsets, so z=0 will always be the
-        lowest image plane.
-        The input array will be modified."""
-        raise NotImplementedError()
-
-    @abstractmethod
-    def copy(self):
-        """Copies the filter, such that changes to this filter have no effect on the copy, and vice versa."""
-        raise NotImplementedError()
-
-    @abstractmethod
-    def get_name(self) -> str:
-        """Returns a user-friendly name, like "Enhance contrast" or "Suppress noise"."""
-        raise NotImplementedError()

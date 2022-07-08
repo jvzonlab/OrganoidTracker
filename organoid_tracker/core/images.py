@@ -5,10 +5,10 @@ from numpy import ndarray
 
 from organoid_tracker.core import TimePoint, UserError
 from organoid_tracker.core.bounding_box import BoundingBox
-from organoid_tracker.core.image_loader import ImageLoader, ImageChannel, NullImageLoader, ImageFilter
+from organoid_tracker.core.image_filters import ImageFilter, ImageFilters
+from organoid_tracker.core.image_loader import ImageLoader, ImageChannel, NullImageLoader
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.resolution import ImageResolution
-from organoid_tracker.util import bits
 
 _ZERO = Position(0, 0, 0)
 
@@ -237,13 +237,13 @@ class Images:
     _image_loader: ImageLoader
     _offsets: ImageOffsets
     _resolution: ImageResolution
-    _filters: Dict[ImageChannel, List[ImageFilter]]
+    filters: ImageFilters
 
     def __init__(self):
         self._image_loader = NullImageLoader()
         self._offsets = ImageOffsets()
         self._resolution = ImageResolution(0, 0, 0, 0)
-        self._filters = dict()
+        self.filters = ImageFilters()
 
     @property
     def offsets(self):
@@ -306,26 +306,14 @@ class Images:
     def get_image_stack(self, time_point: TimePoint, image_channel: ImageChannel = ImageChannel(index_zero=0)) -> Optional[ndarray]:
         """Loads an image using the current image loader. Returns None if there is no image for this time point."""
         array = self._image_loader.get_3d_image_array(time_point, image_channel)
-        if image_channel in self._filters and array is not None:
-            # Apply all filters (we need to make a copy of the array, otherwise we modify cached arrays)
-            copied_array = array.copy()
-            for image_filter in self._filters[image_channel]:
-                image_filter.filter(time_point, None, copied_array)
-            array = copied_array
-        return array
+        return self.filters.filter(time_point, image_channel, None, array)
 
     def get_image_slice_2d(self, time_point: TimePoint, image_channel: ImageChannel, z: int) -> Optional[ndarray]:
         """Gets a 2D grayscale image for the given time point, image channel and z."""
         offset_z = self._offsets.of_time_point(time_point).z
         image_z = int(z - offset_z)
         array = self._image_loader.get_2d_image_array(time_point, image_channel, image_z)
-        if image_channel in self._filters and array is not None:
-            # Apply all filters (we need to make a copy of the array, otherwise we modify cached arrays)
-            copied_array = array.copy()
-            for image_filter in self._filters[image_channel]:
-                image_filter.filter(time_point, image_z, copied_array)
-            array = copied_array
-        return array
+        return self.filters.filter(time_point, image_channel, image_z, array)
 
     def set_resolution(self, resolution: Optional[ImageResolution]):
         """Sets the image resolution."""
@@ -339,7 +327,7 @@ class Images:
         copy._image_loader = self._image_loader.copy()
         copy._resolution = self._resolution  # No copy, as this object is immutable
         copy._offsets = self._offsets.copy()
-        copy._filters = self._filters.copy()
+        copy.filters = self.filters.copy()
         return copy
 
     def first_time_point_number(self) -> Optional[int]:
@@ -358,12 +346,6 @@ class Images:
             return
         for time_point_number in range(min_time_point_number, max_time_point_number + 1):
             yield TimePoint(time_point_number)
-
-    def get_filters(self, channel: ImageChannel):
-        """Gets a mutable list of all image filters for the given image channel."""
-        if channel not in self._filters:
-            self._filters[channel] = []
-        return self._filters[channel]
 
     def get_channels(self) -> List[ImageChannel]:
         """Gets all available image channels. These are determined by the image_loader."""
