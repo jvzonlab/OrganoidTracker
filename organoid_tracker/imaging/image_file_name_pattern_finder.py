@@ -54,6 +54,13 @@ def _find_time_pattern(file_name: str) -> Optional[str]:
         start, end = counting_part.start(0), counting_part.end(0)
         return _fixup_pattern("time", file_name[0:start] + "({time:0" + str(end - start - 4) + "})." + file_name[end-1:])
 
+    # Support z001_ (worm microscope of Zon lab)
+    counting_part = re.search('^z(0*[01])_', file_name)
+    if counting_part is not None:
+        start, end = counting_part.start(1), counting_part.end(1)
+        return _fixup_pattern("time",
+                              file_name[0:start] + "{time:0" + str(end - start) + "}" + file_name[end:])
+
     # Fail
     return None
 
