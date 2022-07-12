@@ -149,8 +149,16 @@ class InterpolatedMinMaxFilter(ImageFilter):
         max_intensity = closest_max_intensity * second_closest_distance / sum_distance + second_closest_max_intensity * closest_distance / sum_distance
         return min_intensity, max_intensity
 
-    def filter(self, time_point: TimePoint, image_z: int, image: ndarray):
-        interpolation_result = self.interpolate_point(IntensityPoint(time_point=time_point, z=image_z))
+    def filter(self, time_point: TimePoint, image_z: Optional[int], image: ndarray):
+        if len(image.shape) == 3:
+            # 3D image, work layer by layer
+            for z in range(image.shape[0]):
+                self._filter_2d(time_point, z, image[z])
+            return
+        self._filter_2d(time_point, image_z, image)
+
+    def _filter_2d(self, time_point: TimePoint, image_z: int, image: ndarray):
+        interpolation_result = self.interpolate_point(IntensityPoint(time_point=time_point, z=int(image_z)))
         if interpolation_result is None:
             return
         min_value, max_value = interpolation_result
@@ -185,4 +193,4 @@ class InterpolatedMinMaxFilter(ImageFilter):
             if point in self.points:
                 del self.points[point]
         else:
-            self.points[point] = value
+            self.points[point] = float(value[0]), float(value[1])
