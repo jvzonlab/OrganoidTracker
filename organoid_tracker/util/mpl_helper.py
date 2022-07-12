@@ -1,12 +1,15 @@
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Union, List
 
 import numpy
 from matplotlib import colors, cm
 from matplotlib.axes import Axes
-from matplotlib.colors import ListedColormap
+from matplotlib.collections import LineCollection
+from matplotlib.colors import ListedColormap, Normalize
 
 # Colors Sander Tans likes in his figures - these are all bright colors
 # Source: flatuicolors.com - US palette
+from numpy import ndarray
+
 from organoid_tracker.core.typing import MPLColor
 
 SANDER_APPROVED_COLORS = colors.to_rgba_array({"#55efc4", "#fdcb6e", "#636e72", "#74b9ff", "#e84393",
@@ -74,3 +77,22 @@ def restore_axes_limits(axes: Axes, limits: Optional[AxesLimits]):
     x_lim, y_lim = limits
     axes.set_xlim(*x_lim)
     axes.set_ylim(*y_lim)
+
+
+def plot_multicolor(ax: Axes, x: Union[List[float], ndarray], y: Union[List[float], ndarray],
+                    *, colors: ndarray, linewidth: float = 2) -> LineCollection:
+    """Plots a multicolored line. The array named c must contain numbers between 0 and 1."""
+
+    # Based on https://matplotlib.org/stable/gallery/lines_bars_and_markers/multicolored_line.html
+
+    # Create a set of line segments so that we can color them individually
+    # This creates the points as a N x 1 x 2 array so that we can stack points
+    # together easily to get the segments. The segments array for line collection
+    # needs to be (numlines) x (points per line) x 2 (for x and y)
+    points = numpy.array([x, y]).T.reshape(-1, 1, 2)
+    segments = numpy.concatenate([points[:-1], points[1:]], axis=1)
+
+    # Create a continuous norm to map from data points to colors
+    lc = LineCollection(segments, colors=colors)
+    lc.set_linewidth(linewidth)
+    return ax.add_collection(lc)

@@ -633,9 +633,15 @@ class Links:
                                  f" a single track")
 
     def find_starting_tracks(self) -> Iterable[LinkingTrack]:
-        """Gets all starting tracks, so all tracks that have no links to the past."""
+        """Gets all starting tracks, which are all tracks that have no links to the past."""
         for track in self._tracks:
             if not track._previous_tracks:
+                yield track
+
+    def find_ending_tracks(self) -> Iterable[LinkingTrack]:
+        """Gets all ending tracks, which are all tracks that have no links to the future."""
+        for track in self._tracks:
+            if not track._next_tracks:
                 yield track
 
     def get_track_by_id(self, track_id: int) -> Optional[LinkingTrack]:
