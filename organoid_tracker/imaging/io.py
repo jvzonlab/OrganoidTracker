@@ -506,8 +506,8 @@ def _encode_image_filters_to_json(filters: ImageFilters) -> Dict[str, Any]:
                 })
             elif isinstance(filter, MultiplyPixelsFilter):
                 filter_dicts.append({
-                    "type": "multipy",
-                    "radius_px": filter.factor
+                    "type": "multiply",
+                    "factor": filter.factor
                 })
             elif isinstance(filter, InterpolatedMinMaxFilter):
                 filter_dicts.append({
