@@ -6,6 +6,11 @@ from organoid_tracker.core.experiment import Experiment
 
 class UndoableAction:
 
+    # Normally this is set to True, which means the user will be warned that there are unsaved changes if such an
+    # action is on the undo stack.
+    # But you can set this to False for your action if you don't want the user to get prompted to save their changes.
+    needs_saving: bool = True
+
     def do(self, experiment: Experiment) -> str:
         """Performs the action. The scratch links in the experiment will be initialized. Returns an user-friendly
         message of what just happened."""
@@ -57,7 +62,8 @@ class UndoRedo:
         result_string = action.do(experiment)
         self._undo_queue.append(action)
         self._redo_queue.clear()
-        self._unsaved_changes_count += 1
+        if action.needs_saving:
+            self._unsaved_changes_count += 1
         return result_string
 
     def undo(self, experiment: Experiment) -> str:
@@ -65,7 +71,8 @@ class UndoRedo:
             action = self._undo_queue.pop()
             result_string = action.undo(experiment)
             self._redo_queue.append(action)
-            self._unsaved_changes_count -= 1
+            if action.needs_saving:
+                self._unsaved_changes_count -= 1
             return result_string
         except IndexError:
             return "No more actions to undo."
@@ -75,7 +82,8 @@ class UndoRedo:
             action = self._redo_queue.pop()
             result_string = action.do(experiment)
             self._undo_queue.append(action)
-            self._unsaved_changes_count += 1
+            if action.needs_saving:
+                self._unsaved_changes_count += 1
             return result_string
         except IndexError:
             return "No more actions to redo."

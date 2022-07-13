@@ -6,7 +6,7 @@ from organoid_tracker.gui import dialog, option_choose_dialog
 from organoid_tracker.gui.window import Window
 from organoid_tracker.image_loading.builtin_image_filters import GaussianBlurFilter, MultiplyPixelsFilter, \
     ThresholdFilter
-from organoid_tracker.image_loading.channel_merging_image_loader import ChannelMergingImageLoader
+from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -78,7 +78,7 @@ def _merge_channels(window: Window):
         # Keep these separate
         channel_groups.append([channels[remaining_channel_id]])
 
-    channel_merger = ChannelMergingImageLoader(images.image_loader(), channel_groups)
+    channel_merger = ChannelSummingImageLoader(images.image_loader(), channel_groups)
     images.image_loader(channel_merger)
     window.get_gui_experiment().redraw_image_and_data()
 
@@ -90,7 +90,7 @@ def _remove_filters(window: Window):
 
     # Undo channel merging
     image_loader = images.image_loader()
-    if isinstance(image_loader, ChannelMergingImageLoader):
+    if isinstance(image_loader, ChannelSummingImageLoader):
         images.image_loader(image_loader.get_unmerged_image_loader())
         removed_count += 1
 

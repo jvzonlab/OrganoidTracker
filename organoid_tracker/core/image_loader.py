@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Dict, Any
 
 from numpy import ndarray
 
@@ -72,8 +72,22 @@ class ImageLoader(ABC):
 
     @abstractmethod
     def serialize_to_config(self) -> Tuple[str, str]:
-        """Serializes this image loader into a path and a file/series name. This can be stored in configuration files."""
+        """Serializes this image loader into a path and a file/series name. This can be stored in configuration files.
+
+        Note: not every image loader can be serialized fully using just two strings. There is also a newer method,
+        self.serialize_to_dictionary(), which does contain all information."""
         pass
+
+    def serialize_to_dictionary(self) -> Dict[str, Any]:
+        """Serializes this image loader into a dictionary. The default implementation just uses the output of
+        self.serialize_to_config()."""
+        container, pattern = self.serialize_to_config()
+        if len(container) == 0 and len(pattern) == 0:
+            return dict()
+        return {
+            "images_container": container,
+            "images_pattern": pattern
+        }
 
     @abstractmethod
     def copy(self) -> "ImageLoader":

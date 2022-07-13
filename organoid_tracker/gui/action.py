@@ -277,10 +277,7 @@ def to_experiment_list_file_structure(tabs: Iterable[SingleGuiTab]) -> Optional[
         if experiment.last_save_file is not None:
             experiment_json["experiment_file"] = experiment.last_save_file
 
-        images_container, images_pattern = experiment.images.image_loader().serialize_to_config()
-        if len(images_container) > 0 or len(images_pattern) > 0:
-            experiment_json["images_container"] = images_container
-            experiment_json["images_pattern"] = images_pattern
+        experiment_json.update(experiment.images.image_loader().serialize_to_dictionary())
 
         if experiment.first_time_point_number() is not None:
             experiment_json["min_time_point"] = experiment.first_time_point_number()

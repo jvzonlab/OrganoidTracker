@@ -17,7 +17,7 @@ from organoid_tracker.division_detection_cnn.training_data_creator import create
 from organoid_tracker.division_detection_cnn.training_dataset import training_data_creator_from_TFR, \
     training_data_creator_from_raw
 from organoid_tracker.image_loading import general_image_loader
-from organoid_tracker.image_loading.channel_merging_image_loader import ChannelMergingImageLoader
+from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 from organoid_tracker.imaging import io
 
 
@@ -41,7 +41,7 @@ class _PerExperimentParameters:
             # Replace the first channel
             old_channels = experiment.images.get_channels()
             new_channels = [old_channels[index - 1] for index in self.images_channels]
-            channel_merging_image_loader = ChannelMergingImageLoader(experiment.images.image_loader(), [new_channels])
+            channel_merging_image_loader = ChannelSummingImageLoader(experiment.images.image_loader(), [new_channels])
             experiment.images.image_loader(channel_merging_image_loader)
         return experiment
 

@@ -16,7 +16,7 @@ from tensorflow.python.data import Dataset
 from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int, config_type_bool
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.image_loading import general_image_loader
-from organoid_tracker.image_loading.channel_merging_image_loader import ChannelMergingImageLoader
+from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 from organoid_tracker.imaging import io
 from organoid_tracker.position_detection_cnn.custom_filters import distance_map
 
@@ -47,7 +47,7 @@ class _PerExperimentParameters:
             # Replace the first channel
             old_channels = experiment.images.get_channels()
             new_channels = [old_channels[index - 1] for index in self.images_channels]
-            channel_merging_image_loader = ChannelMergingImageLoader(experiment.images.image_loader(), [new_channels])
+            channel_merging_image_loader = ChannelSummingImageLoader(experiment.images.image_loader(), [new_channels])
             experiment.images.image_loader(channel_merging_image_loader)
         return experiment
 

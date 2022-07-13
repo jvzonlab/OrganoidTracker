@@ -1,4 +1,4 @@
-from typing import Dict, Optional, List, Tuple, Iterable, Union
+from typing import Dict, Optional, List, Tuple, Iterable, Union, Any
 
 import numpy
 from numpy import ndarray
@@ -94,6 +94,9 @@ class _CachedImageLoader(ImageLoader):
 
     def serialize_to_config(self) -> Tuple[str, str]:
         return self._internal.serialize_to_config()
+
+    def serialize_to_dictionary(self) -> Dict[str, Any]:
+        return self._internal.serialize_to_dictionary()
 
 
 class ImageOffsets:
