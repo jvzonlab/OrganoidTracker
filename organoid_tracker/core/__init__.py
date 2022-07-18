@@ -3,6 +3,8 @@ the `experiment` package introduces the overall structure."""
 import re
 from typing import Optional, Iterable, Union, Tuple, Any
 
+import numpy
+
 COLOR_CELL_NEXT = "#d63031"
 COLOR_CELL_PREVIOUS = "#74b9ff"
 COLOR_CELL_CURRENT = "#00ff77"
@@ -189,7 +191,7 @@ def min_none(numbers: Union[Optional[float], Iterable[Optional[float]]], *args: 
     """
     min_value = None
 
-    if numbers is None or isinstance(numbers, float) or isinstance(numbers, int):
+    if numbers is None or not numpy.iterable(numbers):
         numbers = [numbers] + list(args)
 
     for number in numbers:
@@ -210,7 +212,7 @@ def max_none(numbers: Union[Optional[float], Iterable[Optional[float]]], *args: 
     """
     max_value = None
 
-    if numbers is None or isinstance(numbers, float) or isinstance(numbers, int):
+    if numbers is None or not numpy.iterable(numbers):
         numbers = [numbers] + list(args)
 
     for number in numbers:
