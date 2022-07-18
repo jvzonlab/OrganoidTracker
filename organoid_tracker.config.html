@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>organoid_tracker.config package &mdash; OrganoidTracker 2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> OrganoidTracker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">organoid_tracker.config package</a><ul>
+<li><a class="reference internal" href="#module-organoid_tracker.config">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OrganoidTracker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>organoid_tracker.config package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/organoid_tracker.config.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="organoid-tracker-config-package">
+<h1>organoid_tracker.config package<a class="headerlink" href="#organoid-tracker-config-package" title="Permalink to this heading"></a></h1>
+<section id="module-organoid_tracker.config">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-organoid_tracker.config" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.config.ConfigFile">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.config.</span></span><span class="sig-name descname"><span class="pre">ConfigFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'./'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.config.ConfigFile" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Simple wrapper around ConfigParser</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.config.ConfigFile.FILE_NAME">
+<span class="sig-name descname"><span class="pre">FILE_NAME</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'organoid_tracker.ini'</span></em><a class="headerlink" href="#organoid_tracker.config.ConfigFile.FILE_NAME" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.config.ConfigFile.get_or_default">
+<span class="sig-name descname"><span class="pre">get_or_default</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">key:</span> <span class="pre">str,</span> <span class="pre">default_value:</span> <span class="pre">str,</span> <span class="pre">*,</span> <span class="pre">comment:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'',</span> <span class="pre">store_in_defaults:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">type:</span> <span class="pre">~typing.Callable[[str],</span> <span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">config_type_str&gt;</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#organoid_tracker.config.ConfigFile.get_or_default" title="Permalink to this definition"></a></dt>
+<dd><p>Gets a string from the config file for the given key. If no such string exists, the default value is
+stored in the config first. If store_in_defaults is True, then the default value is stored in the DEFAULTS
+section, otherwise the default value is stored in the section given to __init__.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.config.ConfigFile.get_or_prompt">
+<span class="sig-name descname"><span class="pre">get_or_prompt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">key:</span> <span class="pre">str,</span> <span class="pre">question:</span> <span class="pre">str,</span> <span class="pre">store_in_defaults:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">*,</span> <span class="pre">type:</span> <span class="pre">~typing.Callable[[str],</span> <span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">config_type_str&gt;</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#organoid_tracker.config.ConfigFile.get_or_prompt" title="Permalink to this definition"></a></dt>
+<dd><p>Gets a string from the config file for the given key. If no such string exists, the user is asked for a
+default value, which is then stored in the configuration file. If store_in_defaults is True, then the default
+value is stored in the DEFAULTS section, otherwise the default value is stored in the section given to __init__.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.config.ConfigFile.made_value_changes">
+<span class="sig-name descname"><span class="pre">made_value_changes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#organoid_tracker.config.ConfigFile.made_value_changes" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.config.ConfigFile.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#organoid_tracker.config.ConfigFile.save" title="Permalink to this definition"></a></dt>
+<dd><p>Saves the configuration file if there are any changes made. Returns True if the config file was saved,
+False if no save was necessary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.config.ConfigFile.save_and_exit_if_changed">
+<span class="sig-name descname"><span class="pre">save_and_exit_if_changed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.config.ConfigFile.save_and_exit_if_changed" title="Permalink to this definition"></a></dt>
+<dd><p>If the configuration file was changed, the changes are stored an then the program is exited. This allows the
+user to see what changes were made, and then restart the program.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.config.config_type_bool">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.config.</span></span><span class="sig-name descname"><span class="pre">config_type_bool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#organoid_tracker.config.config_type_bool" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.config.config_type_csv_file">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.config.</span></span><span class="sig-name descname"><span class="pre">config_type_csv_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#organoid_tracker.config.config_type_csv_file" title="Permalink to this definition"></a></dt>
+<dd><p>A string that will automatically have “.csv” appended to it if it hasn’t already (except for empty strings).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.config.config_type_float">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.config.</span></span><span class="sig-name descname"><span class="pre">config_type_float</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#organoid_tracker.config.config_type_float" title="Permalink to this definition"></a></dt>
+<dd><p>Parses values as floats.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.config.config_type_image_shape">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.config.</span></span><span class="sig-name descname"><span class="pre">config_type_image_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.config.config_type_image_shape" title="Permalink to this definition"></a></dt>
+<dd><p>Parses a string like “512, 512, 32” as the tuple (32, 512, 512). Note the inversion of order.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.config.config_type_int">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.config.</span></span><span class="sig-name descname"><span class="pre">config_type_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#organoid_tracker.config.config_type_int" title="Permalink to this definition"></a></dt>
+<dd><p>Parses values as integers.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.config.config_type_json_file">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.config.</span></span><span class="sig-name descname"><span class="pre">config_type_json_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#organoid_tracker.config.config_type_json_file" title="Permalink to this definition"></a></dt>
+<dd><p>A string that will automatically have “.json” appended to it if it hasn’t already (except for empty strings).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.config.config_type_str">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.config.</span></span><span class="sig-name descname"><span class="pre">config_type_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#organoid_tracker.config.config_type_str" title="Permalink to this definition"></a></dt>
+<dd><p>Default type of settings in a configuration file.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Jeroen van Zon Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

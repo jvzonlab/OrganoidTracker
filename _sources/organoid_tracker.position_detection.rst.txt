@@ -1,0 +1,77 @@
+organoid\_tracker.position\_detection package
+=============================================
+
+Submodules
+----------
+
+organoid\_tracker.position\_detection.clusterer module
+------------------------------------------------------
+
+.. automodule:: organoid_tracker.position_detection.clusterer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.position\_detection.gaussian\_detector\_for\_experiment module
+--------------------------------------------------------------------------------
+
+.. automodule:: organoid_tracker.position_detection.gaussian_detector_for_experiment
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.position\_detection.gaussian\_fit module
+----------------------------------------------------------
+
+.. automodule:: organoid_tracker.position_detection.gaussian_fit
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.position\_detection.iso\_intensity\_curvature module
+----------------------------------------------------------------------
+
+.. automodule:: organoid_tracker.position_detection.iso_intensity_curvature
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.position\_detection.position\_mover module
+------------------------------------------------------------
+
+.. automodule:: organoid_tracker.position_detection.position_mover
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.position\_detection.smoothing module
+------------------------------------------------------
+
+.. automodule:: organoid_tracker.position_detection.smoothing
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.position\_detection.thresholding module
+---------------------------------------------------------
+
+.. automodule:: organoid_tracker.position_detection.thresholding
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.position\_detection.watershedding module
+----------------------------------------------------------
+
+.. automodule:: organoid_tracker.position_detection.watershedding
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: organoid_tracker.position_detection
+   :members:
+   :undoc-members:
+   :show-inheritance:

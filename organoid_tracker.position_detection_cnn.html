@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>organoid_tracker.position_detection_cnn package &mdash; OrganoidTracker 2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> OrganoidTracker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">organoid_tracker.position_detection_cnn package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#organoid-tracker-position-detection-cnn-convolutional-neural-network-module">organoid_tracker.position_detection_cnn.convolutional_neural_network module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-position-detection-cnn-custom-filters-module">organoid_tracker.position_detection_cnn.custom_filters module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-position-detection-cnn-image-with-positions-to-tensor-loader-module">organoid_tracker.position_detection_cnn.image_with_positions_to_tensor_loader module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-position-detection-cnn-loss-functions-module">organoid_tracker.position_detection_cnn.loss_functions module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-position-detection-cnn-peak-calling-module">organoid_tracker.position_detection_cnn.peak_calling module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-position-detection-cnn-prediction-dataset-module">organoid_tracker.position_detection_cnn.prediction_dataset module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.position_detection_cnn.split_images">organoid_tracker.position_detection_cnn.split_images module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-position-detection-cnn-training-data-creator-module">organoid_tracker.position_detection_cnn.training_data_creator module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-position-detection-cnn-training-dataset-module">organoid_tracker.position_detection_cnn.training_dataset module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.position_detection_cnn">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OrganoidTracker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>organoid_tracker.position_detection_cnn package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/organoid_tracker.position_detection_cnn.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="organoid-tracker-position-detection-cnn-package">
+<h1>organoid_tracker.position_detection_cnn package<a class="headerlink" href="#organoid-tracker-position-detection-cnn-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-position-detection-cnn-convolutional-neural-network-module">
+<h2>organoid_tracker.position_detection_cnn.convolutional_neural_network module<a class="headerlink" href="#organoid-tracker-position-detection-cnn-convolutional-neural-network-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-position-detection-cnn-custom-filters-module">
+<h2>organoid_tracker.position_detection_cnn.custom_filters module<a class="headerlink" href="#organoid-tracker-position-detection-cnn-custom-filters-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-position-detection-cnn-image-with-positions-to-tensor-loader-module">
+<h2>organoid_tracker.position_detection_cnn.image_with_positions_to_tensor_loader module<a class="headerlink" href="#organoid-tracker-position-detection-cnn-image-with-positions-to-tensor-loader-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-position-detection-cnn-loss-functions-module">
+<h2>organoid_tracker.position_detection_cnn.loss_functions module<a class="headerlink" href="#organoid-tracker-position-detection-cnn-loss-functions-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-position-detection-cnn-peak-calling-module">
+<h2>organoid_tracker.position_detection_cnn.peak_calling module<a class="headerlink" href="#organoid-tracker-position-detection-cnn-peak-calling-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-position-detection-cnn-prediction-dataset-module">
+<h2>organoid_tracker.position_detection_cnn.prediction_dataset module<a class="headerlink" href="#organoid-tracker-position-detection-cnn-prediction-dataset-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-organoid_tracker.position_detection_cnn.split_images">
+<span id="organoid-tracker-position-detection-cnn-split-images-module"></span><h2>organoid_tracker.position_detection_cnn.split_images module<a class="headerlink" href="#module-organoid_tracker.position_detection_cnn.split_images" title="Permalink to this heading"></a></h2>
+<p>“Helps to split images in smaller parts and the reconstructs them</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.position_detection_cnn.split_images.corners_split">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection_cnn.split_images.</span></span><span class="sig-name descname"><span class="pre">corners_split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patch_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.position_detection_cnn.split_images.corners_split" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.position_detection_cnn.split_images.reconstruction">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection_cnn.split_images.</span></span><span class="sig-name descname"><span class="pre">reconstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">corners</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patch_shape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.position_detection_cnn.split_images.reconstruction" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="organoid-tracker-position-detection-cnn-training-data-creator-module">
+<h2>organoid_tracker.position_detection_cnn.training_data_creator module<a class="headerlink" href="#organoid-tracker-position-detection-cnn-training-data-creator-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-position-detection-cnn-training-dataset-module">
+<h2>organoid_tracker.position_detection_cnn.training_dataset module<a class="headerlink" href="#organoid-tracker-position-detection-cnn-training-dataset-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-organoid_tracker.position_detection_cnn">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-organoid_tracker.position_detection_cnn" title="Permalink to this heading"></a></h2>
+<p>Predicts where the particles are in an image using a convolutional neural network.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Jeroen van Zon Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

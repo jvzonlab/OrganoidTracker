@@ -1,0 +1,117 @@
+organoid\_tracker.gui package
+=============================
+
+Submodules
+----------
+
+organoid\_tracker.gui.action module
+-----------------------------------
+
+.. automodule:: organoid_tracker.gui.action
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.gui.dialog module
+-----------------------------------
+
+.. automodule:: organoid_tracker.gui.dialog
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.gui.gui\_experiment module
+--------------------------------------------
+
+.. automodule:: organoid_tracker.gui.gui_experiment
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.gui.icon\_getter module
+-----------------------------------------
+
+.. automodule:: organoid_tracker.gui.icon_getter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.gui.image\_resolution\_dialog module
+------------------------------------------------------
+
+.. automodule:: organoid_tracker.gui.image_resolution_dialog
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.gui.image\_series\_loader\_dialog module
+----------------------------------------------------------
+
+.. automodule:: organoid_tracker.gui.image_series_loader_dialog
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.gui.launcher module
+-------------------------------------
+
+.. automodule:: organoid_tracker.gui.launcher
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.gui.location\_map module
+------------------------------------------
+
+.. automodule:: organoid_tracker.gui.location_map
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.gui.option\_choose\_dialog module
+---------------------------------------------------
+
+.. automodule:: organoid_tracker.gui.option_choose_dialog
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.gui.threading module
+--------------------------------------
+
+.. automodule:: organoid_tracker.gui.threading
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.gui.toolbar module
+------------------------------------
+
+.. automodule:: organoid_tracker.gui.toolbar
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.gui.undo\_redo module
+---------------------------------------
+
+.. automodule:: organoid_tracker.gui.undo_redo
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.gui.window module
+-----------------------------------
+
+.. automodule:: organoid_tracker.gui.window
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: organoid_tracker.gui
+   :members:
+   :undoc-members:
+   :show-inheritance:

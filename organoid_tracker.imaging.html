@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>organoid_tracker.imaging package &mdash; OrganoidTracker 2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> OrganoidTracker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">organoid_tracker.imaging package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.imaging.angles">organoid_tracker.imaging.angles module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.imaging.cropper">organoid_tracker.imaging.cropper module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-imaging-ctc-io-module">organoid_tracker.imaging.ctc_io module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.imaging.depth_colored_image_creator">organoid_tracker.imaging.depth_colored_image_creator module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.imaging.image_adder">organoid_tracker.imaging.image_adder module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.imaging.image_file_name_pattern_finder">organoid_tracker.imaging.image_file_name_pattern_finder module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-imaging-io-module">organoid_tracker.imaging.io module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.imaging.lines">organoid_tracker.imaging.lines module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-imaging-list-io-module">organoid_tracker.imaging.list_io module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-imaging-trackmate-io-module">organoid_tracker.imaging.trackmate_io module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.imaging">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OrganoidTracker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>organoid_tracker.imaging package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/organoid_tracker.imaging.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="organoid-tracker-imaging-package">
+<h1>organoid_tracker.imaging package<a class="headerlink" href="#organoid-tracker-imaging-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-organoid_tracker.imaging.angles">
+<span id="organoid-tracker-imaging-angles-module"></span><h2>organoid_tracker.imaging.angles module<a class="headerlink" href="#module-organoid_tracker.imaging.angles" title="Permalink to this heading"></a></h2>
+<p>Some helper function for calculations with angles.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.angles.angle_between_vectors">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.angles.</span></span><span class="sig-name descname"><span class="pre">angle_between_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vector1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.vector.Vector3" title="organoid_tracker.core.vector.Vector3"><span class="pre">Vector3</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.vector.Vector3" title="organoid_tracker.core.vector.Vector3"><span class="pre">Vector3</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#organoid_tracker.imaging.angles.angle_between_vectors" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the angle between the two vectors. Will be between 0 and 180.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.angles.difference">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.angles.</span></span><span class="sig-name descname"><span class="pre">difference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#organoid_tracker.imaging.angles.difference" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the difference between two angles. The number returned is always between 0 inclusive and 180 exclusive.</p>
+<p>See also <cite>direction_change</cite>, which goes from -180 to 180 degrees, and <cite>direction_change_of_line</cite>, from 0 to 90
+degrees.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.angles.direction_2d">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.angles.</span></span><span class="sig-name descname"><span class="pre">direction_2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.vector.Vector3" title="organoid_tracker.core.vector.Vector3"><span class="pre">Vector3</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.vector.Vector3" title="organoid_tracker.core.vector.Vector3"><span class="pre">Vector3</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#organoid_tracker.imaging.angles.direction_2d" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the direction from the given position to the given position, with 0* pointing upwards.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.angles.direction_change">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.angles.</span></span><span class="sig-name descname"><span class="pre">direction_change</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#organoid_tracker.imaging.angles.direction_change" title="Permalink to this definition"></a></dt>
+<dd><p>Gets how many degrees you need to turn to reach angle2, starting from angle1. The result will be from -180 to
++180.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.angles.direction_change_of_line">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.angles.</span></span><span class="sig-name descname"><span class="pre">direction_change_of_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#organoid_tracker.imaging.angles.direction_change_of_line" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a value from 0 to 90 to how much the direction needs to change to go from angle1 to angle2. Flipped
+angles are considered equal, so 10 degrees is equal to 190 degrees. To go from 5 degrees to 190 degrees, you
+therefore need to turn only 5 degrees.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.angles.flipped">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.angles.</span></span><span class="sig-name descname"><span class="pre">flipped</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#organoid_tracker.imaging.angles.flipped" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the direction flipped 180*, so exactly in the opposite direction. The returned direction is from 0
+(inclusive) to 360 (exclusive).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.angles.mirrored">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.angles.</span></span><span class="sig-name descname"><span class="pre">mirrored</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mirror_angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#organoid_tracker.imaging.angles.mirrored" title="Permalink to this definition"></a></dt>
+<dd><p>Mirrors the angle against the given plane. See the example for a 0* mirror plane:</p>
+<blockquote>
+<div><p>Old     New
+^   |   ^</p>
+<blockquote>
+<div><dl class="simple">
+<dt> |  /</dt><dd><dl class="simple">
+<dt>| /</dt><dd><p>|/</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+</div></blockquote>
+<p>A 0* mirror is equivalent to a 180* mirror. (Same for any other angle.) The returned direction is from 0 (inclusive)
+to 360 (exclusive).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.angles.right_hand_rule">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.angles.</span></span><span class="sig-name descname"><span class="pre">right_hand_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.vector.Vector3" title="organoid_tracker.core.vector.Vector3"><span class="pre">Vector3</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.vector.Vector3" title="organoid_tracker.core.vector.Vector3"><span class="pre">Vector3</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.vector.Vector3" title="organoid_tracker.core.vector.Vector3"><span class="pre">Vector3</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#organoid_tracker.imaging.angles.right_hand_rule" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the angle formed by A -&gt; B -&gt; C using the ‘right-hand rule’ from B. Based on
+<a class="reference external" href="https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points">https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points</a> . The result is
+equal to angle_between_vectors(b - a, c - b).</p>
+</dd></dl>
+
+</section>
+<section id="module-organoid_tracker.imaging.cropper">
+<span id="organoid-tracker-imaging-cropper-module"></span><h2>organoid_tracker.imaging.cropper module<a class="headerlink" href="#module-organoid_tracker.imaging.cropper" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.cropper.crop_2d">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.cropper.</span></span><span class="sig-name descname"><span class="pre">crop_2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.imaging.cropper.crop_2d" title="Permalink to this definition"></a></dt>
+<dd><p>Takes a 2D crop out of the given image, and places it in the output array. The output array is the size of the
+cropped area. x_start and y_start define the upper left corner in the original image, and may be negative.</p>
+<p>If the area to crop falls partly outside the original image, then those pixels are ignored and the original pixels
+in output will remain. Therefore, the output array must be an array of only zeros.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.cropper.crop_3d">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.cropper.</span></span><span class="sig-name descname"><span class="pre">crop_3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.imaging.cropper.crop_3d" title="Permalink to this definition"></a></dt>
+<dd><p>Crops part of the image (from x/y/z_start with a size equal to output) and places it in
+output. Parts outside the original image are ignored.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.cropper.crop_3d_to_2d">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.cropper.</span></span><span class="sig-name descname"><span class="pre">crop_3d_to_2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.images.Image" title="organoid_tracker.core.images.Image"><span class="pre">Image</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.imaging.cropper.crop_3d_to_2d" title="Permalink to this definition"></a></dt>
+<dd><p>Gets a cropped 2d image from the original 3d image. The start of the cropped image is defined by (x_start,
+y_start) and the size by the size of the output image. If the area to crop falls partly outside the original image,
+then those pixels are ignored and the original pixels in output will remain. Therefore, the output array must be an
+array of only zeros.</p>
+</dd></dl>
+
+</section>
+<section id="organoid-tracker-imaging-ctc-io-module">
+<h2>organoid_tracker.imaging.ctc_io module<a class="headerlink" href="#organoid-tracker-imaging-ctc-io-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-organoid_tracker.imaging.depth_colored_image_creator">
+<span id="organoid-tracker-imaging-depth-colored-image-creator-module"></span><h2>organoid_tracker.imaging.depth_colored_image_creator module<a class="headerlink" href="#module-organoid_tracker.imaging.depth_colored_image_creator" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.depth_colored_image_creator.create_image">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.depth_colored_image_creator.</span></span><span class="sig-name descname"><span class="pre">create_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">background_rgba</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">255)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_map_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Spectral'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#organoid_tracker.imaging.depth_colored_image_creator.create_image" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a 2D image (float32, [y, x, RGBA]) by giving each xy later in the 3D image another color.</p>
+<p>background_rgba is the background RGBA color, for example (255, 0, 0, 255) for bright red.
+color_map_name is the Matplotlib colormap used for drawing.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.depth_colored_image_creator.create_movie">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.depth_colored_image_creator.</span></span><span class="sig-name descname"><span class="pre">create_movie</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.images.Images" title="organoid_tracker.core.images.Images"><span class="pre">Images</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageChannel" title="organoid_tracker.core.image_loader.ImageChannel"><span class="pre">ImageChannel</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#organoid_tracker.imaging.depth_colored_image_creator.create_movie" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a movie of 2D images (float32, [time, y, x, RGB]) similar to create_image, but for every time point.</p>
+</dd></dl>
+
+</section>
+<section id="module-organoid_tracker.imaging.image_adder">
+<span id="organoid-tracker-imaging-image-adder-module"></span><h2>organoid_tracker.imaging.image_adder module<a class="headerlink" href="#module-organoid_tracker.imaging.image_adder" title="Permalink to this heading"></a></h2>
+<p>Used to add the pixels of two images to each other, with various offsets.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.image_adder.add_images">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.image_adder.</span></span><span class="sig-name descname"><span class="pre">add_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">drawing_board</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.images.Image" title="organoid_tracker.core.images.Image"><span class="pre">Image</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">stamp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.images.Image" title="organoid_tracker.core.images.Image"><span class="pre">Image</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.imaging.image_adder.add_images" title="Permalink to this definition"></a></dt>
+<dd><p>Adds the contents of the second image to the first.</p>
+</dd></dl>
+
+</section>
+<section id="module-organoid_tracker.imaging.image_file_name_pattern_finder">
+<span id="organoid-tracker-imaging-image-file-name-pattern-finder-module"></span><h2>organoid_tracker.imaging.image_file_name_pattern_finder module<a class="headerlink" href="#module-organoid_tracker.imaging.image_file_name_pattern_finder" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.image_file_name_pattern_finder.find_time_and_channel_pattern">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.image_file_name_pattern_finder.</span></span><span class="sig-name descname"><span class="pre">find_time_and_channel_pattern</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.imaging.image_file_name_pattern_finder.find_time_and_channel_pattern" title="Permalink to this definition"></a></dt>
+<dd><p>Given a file name like “image_t1_c1.png”, returns “image_t{time}_c{channel}.png”. Returns None if no pattern
+(time or channel) was found.</p>
+</dd></dl>
+
+</section>
+<section id="organoid-tracker-imaging-io-module">
+<h2>organoid_tracker.imaging.io module<a class="headerlink" href="#organoid-tracker-imaging-io-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-organoid_tracker.imaging.lines">
+<span id="organoid-tracker-imaging-lines-module"></span><h2>organoid_tracker.imaging.lines module<a class="headerlink" href="#module-organoid_tracker.imaging.lines" title="Permalink to this heading"></a></h2>
+<p>Oper</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.lines.Line3">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.lines.</span></span><span class="sig-name descname"><span class="pre">Line3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.vector.Vector3" title="organoid_tracker.core.vector.Vector3"><span class="pre">Vector3</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">point2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.vector.Vector3" title="organoid_tracker.core.vector.Vector3"><span class="pre">Vector3</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.imaging.lines.Line3" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Defines a line in a three dimensional space.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.lines.Line3.direction">
+<span class="sig-name descname"><span class="pre">direction</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.vector.Vector3" title="organoid_tracker.core.vector.Vector3"><span class="pre">Vector3</span></a></em><a class="headerlink" href="#organoid_tracker.imaging.lines.Line3.direction" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.lines.Line3.from_points">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.vector.Vector3" title="organoid_tracker.core.vector.Vector3"><span class="pre">Vector3</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">point2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.vector.Vector3" title="organoid_tracker.core.vector.Vector3"><span class="pre">Vector3</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.imaging.lines.Line3.from_points" title="Permalink to this definition"></a></dt>
+<dd><p>Defines a line using two points.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.lines.Line3.point">
+<span class="sig-name descname"><span class="pre">point</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.vector.Vector3" title="organoid_tracker.core.vector.Vector3"><span class="pre">Vector3</span></a></em><a class="headerlink" href="#organoid_tracker.imaging.lines.Line3.point" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.lines.Line3.translate">
+<span class="sig-name descname"><span class="pre">translate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">translation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.vector.Vector3" title="organoid_tracker.core.vector.Vector3"><span class="pre">Vector3</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.imaging.lines.Line3" title="organoid_tracker.imaging.lines.Line3"><span class="pre">Line3</span></a></span></span><a class="headerlink" href="#organoid_tracker.imaging.lines.Line3.translate" title="Permalink to this definition"></a></dt>
+<dd><p>Gets a translated copy of the line.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.lines.direction_to_point">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.lines.</span></span><span class="sig-name descname"><span class="pre">direction_to_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.imaging.lines.Line3" title="organoid_tracker.imaging.lines.Line3"><span class="pre">Line3</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.vector.Vector3" title="organoid_tracker.core.vector.Vector3"><span class="pre">Vector3</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#organoid_tracker.imaging.lines.direction_to_point" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the 1D direction of a point towards a line. If the line is pointing upwards (read: parallel with the
+-axis), then this simply returns the same value as angles.direction_2d(vector, point_on_line). Returns a number
+from 0 to 360.</p>
+<p>Note that is doesn’t matter in which direction the line is defined.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.lines.distance_to_point">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.lines.</span></span><span class="sig-name descname"><span class="pre">distance_to_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.imaging.lines.Line3" title="organoid_tracker.imaging.lines.Line3"><span class="pre">Line3</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.vector.Vector3" title="organoid_tracker.core.vector.Vector3"><span class="pre">Vector3</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#organoid_tracker.imaging.lines.distance_to_point" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the distnace from the line to the given point. Note that we’re calculating the distance to an infinite line,
+which is different from calculating the distance to a line segment.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.lines.point_on_line_2_nearest_to_line_1">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.lines.</span></span><span class="sig-name descname"><span class="pre">point_on_line_2_nearest_to_line_1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.imaging.lines.Line3" title="organoid_tracker.imaging.lines.Line3"><span class="pre">Line3</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.imaging.lines.Line3" title="organoid_tracker.imaging.lines.Line3"><span class="pre">Line3</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.imaging.lines.point_on_line_2_nearest_to_line_1" title="Permalink to this definition"></a></dt>
+<dd><p>Finds the point on line 2 that is the nearest point towards line 1. See Wikipedia on skew lines for the formula.</p>
+</dd></dl>
+
+</section>
+<section id="organoid-tracker-imaging-list-io-module">
+<h2>organoid_tracker.imaging.list_io module<a class="headerlink" href="#organoid-tracker-imaging-list-io-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-imaging-trackmate-io-module">
+<h2>organoid_tracker.imaging.trackmate_io module<a class="headerlink" href="#organoid-tracker-imaging-trackmate-io-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-organoid_tracker.imaging">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-organoid_tracker.imaging" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Jeroen van Zon Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

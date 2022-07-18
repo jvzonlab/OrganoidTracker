@@ -1,0 +1,35 @@
+organoid\_tracker package
+=========================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   organoid_tracker.comparison
+   organoid_tracker.config
+   organoid_tracker.connecting
+   organoid_tracker.connection_analysis
+   organoid_tracker.coordinate_system
+   organoid_tracker.core
+   organoid_tracker.gui
+   organoid_tracker.guizela_tracker_compatibility
+   organoid_tracker.image_loading
+   organoid_tracker.imaging
+   organoid_tracker.linking
+   organoid_tracker.linking_analysis
+   organoid_tracker.position_analysis
+   organoid_tracker.position_detection
+   organoid_tracker.position_detection_cnn
+   organoid_tracker.text_popup
+   organoid_tracker.util
+   organoid_tracker.visualizer
+
+Module contents
+---------------
+
+.. automodule:: organoid_tracker
+   :members:
+   :undoc-members:
+   :show-inheritance:

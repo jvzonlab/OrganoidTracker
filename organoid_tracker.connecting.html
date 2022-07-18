@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to OrganoidTracker’s documentation! &mdash; OrganoidTracker 2.0 documentation</title>
+  <title>organoid_tracker.connecting package &mdash; OrganoidTracker 2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -26,7 +26,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="#" class="icon icon-home"> OrganoidTracker
+            <a href="index.html" class="icon icon-home"> OrganoidTracker
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -38,8 +38,12 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <!-- Local TOC -->
               <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">Welcome to OrganoidTracker’s documentation!</a></li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+<li><a class="reference internal" href="#">organoid_tracker.connecting package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#organoid-tracker-connecting-connector-by-distance-module">organoid_tracker.connecting.connector_by_distance module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.connecting">Module contents</a></li>
+</ul>
+</li>
 </ul>
 </div>
         </div>
@@ -48,17 +52,17 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">OrganoidTracker</a>
+          <a href="index.html">OrganoidTracker</a>
       </nav>
 
       <div class="wy-nav-content">
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
-      <li>Welcome to OrganoidTracker’s documentation!</li>
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>organoid_tracker.connecting package</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/organoid_tracker.connecting.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -66,25 +70,21 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="welcome-to-organoidtracker-s-documentation">
-<h1>Welcome to OrganoidTracker’s documentation!<a class="headerlink" href="#welcome-to-organoidtracker-s-documentation" title="Permalink to this heading"></a></h1>
-<div class="toctree-wrapper compound">
-</div>
+  <section id="organoid-tracker-connecting-package">
+<h1>organoid_tracker.connecting package<a class="headerlink" href="#organoid-tracker-connecting-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
 </section>
-<section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading"></a></h1>
-<ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
-</ul>
-<span class="target" id="module-organoid_tracker"></span><p>OrganoidTracker is a program to automatically (or manually) track cell nuclei.</p>
-<p>To load an experiment, use:</p>
-<blockquote>
-<div><p>from organoid_tracker.imaging import io
-experiment = io.load_data_file(file_name)</p>
-</div></blockquote>
-<p>Head over to the <cite>core.experiment.Experiment</cite> class to see how the experimental data is structured.</p>
+<section id="organoid-tracker-connecting-connector-by-distance-module">
+<h2>organoid_tracker.connecting.connector_by_distance module<a class="headerlink" href="#organoid-tracker-connecting-connector-by-distance-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-organoid_tracker.connecting">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-organoid_tracker.connecting" title="Permalink to this heading"></a></h2>
+<p>This module is all about connections, which are used to group (nearby) positions in a time point. The positions must
+be in the same time point.</p>
+<p>Note that connections indicate some kind of bond between different objects, while links indicate that an object
+at one time point is the same object as another observed object at a different time point.</p>
+</section>
 </section>
 
 

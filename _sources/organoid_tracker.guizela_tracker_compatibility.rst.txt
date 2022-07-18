@@ -1,0 +1,85 @@
+organoid\_tracker.guizela\_tracker\_compatibility package
+=========================================================
+
+Submodules
+----------
+
+organoid\_tracker.guizela\_tracker\_compatibility.axis\_lib module
+------------------------------------------------------------------
+
+.. automodule:: organoid_tracker.guizela_tracker_compatibility.axis_lib
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.guizela\_tracker\_compatibility.axis\_lib\_v2 module
+----------------------------------------------------------------------
+
+.. automodule:: organoid_tracker.guizela_tracker_compatibility.axis_lib_v2
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.guizela\_tracker\_compatibility.cell\_type\_converter module
+------------------------------------------------------------------------------
+
+.. automodule:: organoid_tracker.guizela_tracker_compatibility.cell_type_converter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.guizela\_tracker\_compatibility.guizela\_data\_exporter module
+--------------------------------------------------------------------------------
+
+.. automodule:: organoid_tracker.guizela_tracker_compatibility.guizela_data_exporter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.guizela\_tracker\_compatibility.guizela\_data\_importer module
+--------------------------------------------------------------------------------
+
+.. automodule:: organoid_tracker.guizela_tracker_compatibility.guizela_data_importer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.guizela\_tracker\_compatibility.track\_lib module
+-------------------------------------------------------------------
+
+.. automodule:: organoid_tracker.guizela_tracker_compatibility.track_lib
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.guizela\_tracker\_compatibility.track\_lib\_v2 module
+-----------------------------------------------------------------------
+
+.. automodule:: organoid_tracker.guizela_tracker_compatibility.track_lib_v2
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.guizela\_tracker\_compatibility.track\_lib\_v3 module
+-----------------------------------------------------------------------
+
+.. automodule:: organoid_tracker.guizela_tracker_compatibility.track_lib_v3
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.guizela\_tracker\_compatibility.track\_lib\_v4 module
+-----------------------------------------------------------------------
+
+.. automodule:: organoid_tracker.guizela_tracker_compatibility.track_lib_v4
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: organoid_tracker.guizela_tracker_compatibility
+   :members:
+   :undoc-members:
+   :show-inheritance:

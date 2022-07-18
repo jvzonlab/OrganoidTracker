@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>organoid_tracker.util package &mdash; OrganoidTracker 2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> OrganoidTracker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">organoid_tracker.util package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#organoid-tracker-util-bits-module">organoid_tracker.util.bits module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.util.moving_average">organoid_tracker.util.moving_average module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.util.mpl_helper">organoid_tracker.util.mpl_helper module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.util.mpl_helper_3d">organoid_tracker.util.mpl_helper_3d module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.util.run_script_creator">organoid_tracker.util.run_script_creator module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.util">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OrganoidTracker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>organoid_tracker.util package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/organoid_tracker.util.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="organoid-tracker-util-package">
+<h1>organoid_tracker.util package<a class="headerlink" href="#organoid-tracker-util-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-util-bits-module">
+<h2>organoid_tracker.util.bits module<a class="headerlink" href="#organoid-tracker-util-bits-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-organoid_tracker.util.moving_average">
+<span id="organoid-tracker-util-moving-average-module"></span><h2>organoid_tracker.util.moving_average module<a class="headerlink" href="#module-organoid_tracker.util.moving_average" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.util.moving_average.LinesAverage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.util.moving_average.</span></span><span class="sig-name descname"><span class="pre">LinesAverage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">lines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.util.moving_average.LinesAverage" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#organoid_tracker.util.moving_average.PlotAverage" title="organoid_tracker.util.moving_average.PlotAverage"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlotAverage</span></code></a></p>
+<p>A moving average for a bunch of lines.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.util.moving_average.LinesAverage.count_values_at_min_max_x">
+<span class="sig-name descname"><span class="pre">count_values_at_min_max_x</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.util.moving_average.LinesAverage.count_values_at_min_max_x" title="Permalink to this definition"></a></dt>
+<dd><p>Gets how many y values we have at the lowest and highest x positions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.util.moving_average.LinesAverage.get_x_positions_and_means">
+<span class="sig-name descname"><span class="pre">get_x_positions_and_means</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.util.moving_average.LinesAverage.get_x_positions_and_means" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the x positions and the means at those x positions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.util.moving_average.LinesAverage.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axes:</span> <span class="pre">~matplotlib.axes._axes.Axes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color:</span> <span class="pre">~organoid_tracker.core.Color</span> <span class="pre">=</span> <span class="pre">&lt;organoid_tracker.core.Color</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth=2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error_opacity=0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">standard_error:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label='Average'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.util.moving_average.LinesAverage.plot" title="Permalink to this definition"></a></dt>
+<dd><p>Plots the moving average to the given axis. For example:</p>
+<blockquote>
+<div><p>plot(plt.gca(), label=”My moving average”)</p>
+</div></blockquote>
+<p>The error bar is either the standard deviation (if standard_error is False) or the standard error (if standard_error is True).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.util.moving_average.MovingAverage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.util.moving_average.</span></span><span class="sig-name descname"><span class="pre">MovingAverage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.util.moving_average.MovingAverage" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#organoid_tracker.util.moving_average.PlotAverage" title="organoid_tracker.util.moving_average.PlotAverage"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlotAverage</span></code></a></p>
+<p>A moving average calculation for a point cloud. Usage example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create and plot some sample data</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_values</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_values</span> <span class="o">=</span> <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_values</span><span class="p">,</span> <span class="n">y_values</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Calculate and plot the moving average</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">average</span> <span class="o">=</span> <span class="n">MovingAverage</span><span class="p">(</span><span class="n">x_values</span><span class="p">,</span> <span class="n">y_values</span><span class="p">,</span> <span class="n">window_width</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># Calculate with this window width</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">average</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">())</span>  <span class="c1"># Plot to the current axis (gca = get current axis)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.util.moving_average.MovingAverage.counts_in_standard_deviation_values">
+<span class="sig-name descname"><span class="pre">counts_in_standard_deviation_values</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#organoid_tracker.util.moving_average.MovingAverage.counts_in_standard_deviation_values" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.util.moving_average.MovingAverage.get_mean_at">
+<span class="sig-name descname"><span class="pre">get_mean_at</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.util.moving_average.MovingAverage.get_mean_at" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the mean at the given x. Ignores the step size that was supplied for this object, so the mean is
+calculated exactly at the given point. Returns None if there is no data withing the averaging window.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.util.moving_average.MovingAverage.get_x_positions_and_means">
+<span class="sig-name descname"><span class="pre">get_x_positions_and_means</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.util.moving_average.MovingAverage.get_x_positions_and_means" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the x positions and the means at those x positions.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.util.moving_average.MovingAverage.mean_values">
+<span class="sig-name descname"><span class="pre">mean_values</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#organoid_tracker.util.moving_average.MovingAverage.mean_values" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.util.moving_average.MovingAverage.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">axes:</span> <span class="pre">~matplotlib.axes._axes.Axes,</span> <span class="pre">*,</span> <span class="pre">color:</span> <span class="pre">~organoid_tracker.core.Color</span> <span class="pre">=</span> <span class="pre">&lt;organoid_tracker.core.Color</span> <span class="pre">object&gt;,</span> <span class="pre">color_function:</span> <span class="pre">~typing.Optional[~typing.Callable[[float],</span> <span class="pre">~organoid_tracker.core.Color]]</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">linewidth=2,</span> <span class="pre">error_opacity=0.8,</span> <span class="pre">standard_error:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">label='Moving</span> <span class="pre">average'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.util.moving_average.MovingAverage.plot" title="Permalink to this definition"></a></dt>
+<dd><p>Color_function is a function x -&gt; color, used to give the line different colors for different x.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.util.moving_average.MovingAverage.standard_deviation_values">
+<span class="sig-name descname"><span class="pre">standard_deviation_values</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#organoid_tracker.util.moving_average.MovingAverage.standard_deviation_values" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.util.moving_average.MovingAverage.x_values">
+<span class="sig-name descname"><span class="pre">x_values</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#organoid_tracker.util.moving_average.MovingAverage.x_values" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.util.moving_average.PlotAverage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.util.moving_average.</span></span><span class="sig-name descname"><span class="pre">PlotAverage</span></span><a class="headerlink" href="#organoid_tracker.util.moving_average.PlotAverage" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.util.moving_average.PlotAverage.get_x_positions_and_means">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_x_positions_and_means</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.util.moving_average.PlotAverage.get_x_positions_and_means" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the x positions and the means at those x positions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.util.moving_average.PlotAverage.plot">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axes:</span> <span class="pre">~matplotlib.axes._axes.Axes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color:</span> <span class="pre">~organoid_tracker.core.Color</span> <span class="pre">=</span> <span class="pre">&lt;organoid_tracker.core.Color</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth=2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error_opacity=0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">standard_error:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label='Moving</span> <span class="pre">average'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.util.moving_average.PlotAverage.plot" title="Permalink to this definition"></a></dt>
+<dd><p>Plots the moving average to the given axis. For example:</p>
+<blockquote>
+<div><p>plot(plt.gca(), label=”My moving average”)</p>
+</div></blockquote>
+<p>The error bar is either the standard deviation (if standard_error is False) or the standard error (if standard_error is True).</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-organoid_tracker.util.mpl_helper">
+<span id="organoid-tracker-util-mpl-helper-module"></span><h2>organoid_tracker.util.mpl_helper module<a class="headerlink" href="#module-organoid_tracker.util.mpl_helper" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.util.mpl_helper.line_infinite">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.util.mpl_helper.</span></span><span class="sig-name descname"><span class="pre">line_infinite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Axes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'red'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.util.mpl_helper.line_infinite" title="Permalink to this definition"></a></dt>
+<dd><p>Draws a 2D line that extends a long while across the current view.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.util.mpl_helper.plot_multicolor">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.util.mpl_helper.</span></span><span class="sig-name descname"><span class="pre">plot_multicolor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Axes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">LineCollection</span></span></span><a class="headerlink" href="#organoid_tracker.util.mpl_helper.plot_multicolor" title="Permalink to this definition"></a></dt>
+<dd><p>Plots a multicolored line. The array named c must contain numbers between 0 and 1.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.util.mpl_helper.restore_axes_limits">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.util.mpl_helper.</span></span><span class="sig-name descname"><span class="pre">restore_axes_limits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Axes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.util.mpl_helper.restore_axes_limits" title="Permalink to this definition"></a></dt>
+<dd><p>Restores the current limits of the axis. Does nothing if limits is None.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.util.mpl_helper.store_axes_limits">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.util.mpl_helper.</span></span><span class="sig-name descname"><span class="pre">store_axes_limits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Axes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.util.mpl_helper.store_axes_limits" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the current limits of the axes. Returns None if they have their default value.</p>
+</dd></dl>
+
+</section>
+<section id="module-organoid_tracker.util.mpl_helper_3d">
+<span id="organoid-tracker-util-mpl-helper-3d-module"></span><h2>organoid_tracker.util.mpl_helper_3d module<a class="headerlink" href="#module-organoid_tracker.util.mpl_helper_3d" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.util.mpl_helper_3d.draw_sphere">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.util.mpl_helper_3d.</span></span><span class="sig-name descname"><span class="pre">draw_sphere</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Axes3D</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.vector.Vector3" title="organoid_tracker.core.vector.Vector3"><span class="pre">Vector3</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'red'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.util.mpl_helper_3d.draw_sphere" title="Permalink to this definition"></a></dt>
+<dd><p>Draws a sphere.</p>
+</dd></dl>
+
+</section>
+<section id="module-organoid_tracker.util.run_script_creator">
+<span id="organoid-tracker-util-run-script-creator-module"></span><h2>organoid_tracker.util.run_script_creator module<a class="headerlink" href="#module-organoid_tracker.util.run_script_creator" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.util.run_script_creator.create_run_script">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.util.run_script_creator.</span></span><span class="sig-name descname"><span class="pre">create_run_script</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.util.run_script_creator.create_run_script" title="Permalink to this definition"></a></dt>
+<dd><p>If you have a plugin that uses get_commands to register commands, then you can call this method to create a
+BAT or SH file that calls that command. This will create those files, along with a config file pointing to the
+current plugin directory.</p>
+</dd></dl>
+
+</section>
+<section id="module-organoid_tracker.util">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-organoid_tracker.util" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Jeroen van Zon Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

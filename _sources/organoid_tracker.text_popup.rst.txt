@@ -1,0 +1,37 @@
+organoid\_tracker.text\_popup package
+=====================================
+
+Submodules
+----------
+
+organoid\_tracker.text\_popup.help\_popup module
+------------------------------------------------
+
+.. automodule:: organoid_tracker.text_popup.help_popup
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.text\_popup.position\_list\_popup module
+----------------------------------------------------------
+
+.. automodule:: organoid_tracker.text_popup.position_list_popup
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+organoid\_tracker.text\_popup.text\_popup module
+------------------------------------------------
+
+.. automodule:: organoid_tracker.text_popup.text_popup
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: organoid_tracker.text_popup
+   :members:
+   :undoc-members:
+   :show-inheritance:

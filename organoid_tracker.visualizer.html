@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>organoid_tracker.visualizer package &mdash; OrganoidTracker 2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> OrganoidTracker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">organoid_tracker.visualizer package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-abstract-editor-module">organoid_tracker.visualizer.abstract_editor module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-abstract-image-visualizer-module">organoid_tracker.visualizer.abstract_image_visualizer module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-beacon-editor-module">organoid_tracker.visualizer.beacon_editor module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-cell-compartment-visualizer-module">organoid_tracker.visualizer.cell_compartment_visualizer module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-cell-death-visualizer-module">organoid_tracker.visualizer.cell_death_visualizer module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-cell-density-visualizer-module">organoid_tracker.visualizer.cell_density_visualizer module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-cell-division-visualizer-module">organoid_tracker.visualizer.cell_division_visualizer module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-cell-fate-visualizer-module">organoid_tracker.visualizer.cell_fate_visualizer module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-cell-movement-visualizer-module">organoid_tracker.visualizer.cell_movement_visualizer module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-debug-image-visualizer-module">organoid_tracker.visualizer.debug_image_visualizer module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-division-score-visualizer-module">organoid_tracker.visualizer.division_score_visualizer module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-empty-visualizer-module">organoid_tracker.visualizer.empty_visualizer module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-errors-visualizer-module">organoid_tracker.visualizer.errors_visualizer module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-exitable-image-visualizer-module">organoid_tracker.visualizer.exitable_image_visualizer module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-image-offset-editor-module">organoid_tracker.visualizer.image_offset_editor module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-image-slice-visualizer-module">organoid_tracker.visualizer.image_slice_visualizer module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-lineage-errors-visualizer-module">organoid_tracker.visualizer.lineage_errors_visualizer module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-lineage-fate-visualizer-module">organoid_tracker.visualizer.lineage_fate_visualizer module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-lineage-tree-visualizer-module">organoid_tracker.visualizer.lineage_tree_visualizer module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-link-and-position-editor-module">organoid_tracker.visualizer.link_and_position_editor module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-link-score-visualizer-module">organoid_tracker.visualizer.link_score_visualizer module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-position-in-rectangle-deleter-module">organoid_tracker.visualizer.position_in_rectangle_deleter module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-position-list-visualizer-module">organoid_tracker.visualizer.position_list_visualizer module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-spline-editor-module">organoid_tracker.visualizer.spline_editor module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-standard-image-visualizer-module">organoid_tracker.visualizer.standard_image_visualizer module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-visualizer-track-visualizer-module">organoid_tracker.visualizer.track_visualizer module</a></li>
+<li><a class="reference internal" href="#module-contents">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OrganoidTracker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>organoid_tracker.visualizer package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/organoid_tracker.visualizer.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="organoid-tracker-visualizer-package">
+<h1>organoid_tracker.visualizer package<a class="headerlink" href="#organoid-tracker-visualizer-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-abstract-editor-module">
+<h2>organoid_tracker.visualizer.abstract_editor module<a class="headerlink" href="#organoid-tracker-visualizer-abstract-editor-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-abstract-image-visualizer-module">
+<h2>organoid_tracker.visualizer.abstract_image_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-abstract-image-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-beacon-editor-module">
+<h2>organoid_tracker.visualizer.beacon_editor module<a class="headerlink" href="#organoid-tracker-visualizer-beacon-editor-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-cell-compartment-visualizer-module">
+<h2>organoid_tracker.visualizer.cell_compartment_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-cell-compartment-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-cell-death-visualizer-module">
+<h2>organoid_tracker.visualizer.cell_death_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-cell-death-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-cell-density-visualizer-module">
+<h2>organoid_tracker.visualizer.cell_density_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-cell-density-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-cell-division-visualizer-module">
+<h2>organoid_tracker.visualizer.cell_division_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-cell-division-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-cell-fate-visualizer-module">
+<h2>organoid_tracker.visualizer.cell_fate_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-cell-fate-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-cell-movement-visualizer-module">
+<h2>organoid_tracker.visualizer.cell_movement_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-cell-movement-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-debug-image-visualizer-module">
+<h2>organoid_tracker.visualizer.debug_image_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-debug-image-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-division-score-visualizer-module">
+<h2>organoid_tracker.visualizer.division_score_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-division-score-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-empty-visualizer-module">
+<h2>organoid_tracker.visualizer.empty_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-empty-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-errors-visualizer-module">
+<h2>organoid_tracker.visualizer.errors_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-errors-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-exitable-image-visualizer-module">
+<h2>organoid_tracker.visualizer.exitable_image_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-exitable-image-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-image-offset-editor-module">
+<h2>organoid_tracker.visualizer.image_offset_editor module<a class="headerlink" href="#organoid-tracker-visualizer-image-offset-editor-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-image-slice-visualizer-module">
+<h2>organoid_tracker.visualizer.image_slice_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-image-slice-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-lineage-errors-visualizer-module">
+<h2>organoid_tracker.visualizer.lineage_errors_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-lineage-errors-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-lineage-fate-visualizer-module">
+<h2>organoid_tracker.visualizer.lineage_fate_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-lineage-fate-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-lineage-tree-visualizer-module">
+<h2>organoid_tracker.visualizer.lineage_tree_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-lineage-tree-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-link-and-position-editor-module">
+<h2>organoid_tracker.visualizer.link_and_position_editor module<a class="headerlink" href="#organoid-tracker-visualizer-link-and-position-editor-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-link-score-visualizer-module">
+<h2>organoid_tracker.visualizer.link_score_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-link-score-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-position-in-rectangle-deleter-module">
+<h2>organoid_tracker.visualizer.position_in_rectangle_deleter module<a class="headerlink" href="#organoid-tracker-visualizer-position-in-rectangle-deleter-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-position-list-visualizer-module">
+<h2>organoid_tracker.visualizer.position_list_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-position-list-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-spline-editor-module">
+<h2>organoid_tracker.visualizer.spline_editor module<a class="headerlink" href="#organoid-tracker-visualizer-spline-editor-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-standard-image-visualizer-module">
+<h2>organoid_tracker.visualizer.standard_image_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-standard-image-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="organoid-tracker-visualizer-track-visualizer-module">
+<h2>organoid_tracker.visualizer.track_visualizer module<a class="headerlink" href="#organoid-tracker-visualizer-track-visualizer-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Jeroen van Zon Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
