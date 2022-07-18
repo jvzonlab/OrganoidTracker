@@ -40,7 +40,7 @@
               <div class="local-toc"><ul>
 <li><a class="reference internal" href="#">organoid_tracker.coordinate_system package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#organoid-tracker-coordinate-system-orientation-spline-adder-module">organoid_tracker.coordinate_system.orientation_spline_adder module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.coordinate_system.orientation_spline_adder">organoid_tracker.coordinate_system.orientation_spline_adder module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.coordinate_system.sphere_representer">organoid_tracker.coordinate_system.sphere_representer module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.coordinate_system.spherical_coordinates">organoid_tracker.coordinate_system.spherical_coordinates module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.coordinate_system">Module contents</a></li>
@@ -77,8 +77,34 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
 </section>
-<section id="organoid-tracker-coordinate-system-orientation-spline-adder-module">
-<h2>organoid_tracker.coordinate_system.orientation_spline_adder module<a class="headerlink" href="#organoid-tracker-coordinate-system-orientation-spline-adder-module" title="Permalink to this heading"></a></h2>
+<section id="module-organoid_tracker.coordinate_system.orientation_spline_adder">
+<span id="organoid-tracker-coordinate-system-orientation-spline-adder-module"></span><h2>organoid_tracker.coordinate_system.orientation_spline_adder module<a class="headerlink" href="#module-organoid_tracker.coordinate_system.orientation_spline_adder" title="Permalink to this heading"></a></h2>
+<p>Methods for working with projecting splines on the sphere.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.coordinate_system.orientation_spline_adder.ColoredTrackAdder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.coordinate_system.orientation_spline_adder.</span></span><span class="sig-name descname"><span class="pre">ColoredTrackAdder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.coordinate_system.orientation_spline_adder.ColoredTrackAdder" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Adds linking tracks to the sphere. Tracks will be colored by their position along the closest spline.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.coordinate_system.orientation_spline_adder.ColoredTrackAdder.add_track_colored_by_spline_position">
+<span class="sig-name descname"><span class="pre">add_track_colored_by_spline_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sphere_representation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.coordinate_system.sphere_representer.SphereRepresentation" title="organoid_tracker.coordinate_system.sphere_representer.SphereRepresentation"><span class="pre">SphereRepresentation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">linking_track</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">highlight_first</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">highlight_last</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.coordinate_system.orientation_spline_adder.ColoredTrackAdder.add_track_colored_by_spline_position" title="Permalink to this definition"></a></dt>
+<dd><p>Adds the given track to the sphere. The track will be colored by the position along the splines that were
+drawn.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.coordinate_system.orientation_spline_adder.ColoredTrackAdder.color_map">
+<span class="sig-name descname"><span class="pre">color_map</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Colormap</span></em><a class="headerlink" href="#organoid_tracker.coordinate_system.orientation_spline_adder.ColoredTrackAdder.color_map" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.coordinate_system.orientation_spline_adder.add_all_splines">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.coordinate_system.orientation_spline_adder.</span></span><span class="sig-name descname"><span class="pre">add_all_splines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sphere_representation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.coordinate_system.sphere_representer.SphereRepresentation" title="organoid_tracker.coordinate_system.sphere_representer.SphereRepresentation"><span class="pre">SphereRepresentation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">splines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.spline.SplineCollection" title="organoid_tracker.core.spline.SplineCollection"><span class="pre">SplineCollection</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.coordinate_system.orientation_spline_adder.add_all_splines" title="Permalink to this definition"></a></dt>
+<dd><p>Adds all splines in the given collection to the sphere as orientation markers.</p>
+</dd></dl>
+
 </section>
 <section id="module-organoid_tracker.coordinate_system.sphere_representer">
 <span id="organoid-tracker-coordinate-system-sphere-representer-module"></span><h2>organoid_tracker.coordinate_system.sphere_representer module<a class="headerlink" href="#module-organoid_tracker.coordinate_system.sphere_representer" title="Permalink to this heading"></a></h2>

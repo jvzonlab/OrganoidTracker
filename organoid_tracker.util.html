@@ -40,7 +40,7 @@
               <div class="local-toc"><ul>
 <li><a class="reference internal" href="#">organoid_tracker.util package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#organoid-tracker-util-bits-module">organoid_tracker.util.bits module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.util.bits">organoid_tracker.util.bits module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.util.moving_average">organoid_tracker.util.moving_average module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.util.mpl_helper">organoid_tracker.util.mpl_helper module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.util.mpl_helper_3d">organoid_tracker.util.mpl_helper_3d module</a></li>
@@ -79,8 +79,29 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
 </section>
-<section id="organoid-tracker-util-bits-module">
-<h2>organoid_tracker.util.bits module<a class="headerlink" href="#organoid-tracker-util-bits-module" title="Permalink to this heading"></a></h2>
+<section id="module-organoid_tracker.util.bits">
+<span id="organoid-tracker-util-bits-module"></span><h2>organoid_tracker.util.bits module<a class="headerlink" href="#module-organoid_tracker.util.bits" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.util.bits.add_and_return_8bit">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.util.bits.</span></span><span class="sig-name descname"><span class="pre">add_and_return_8bit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#organoid_tracker.util.bits.add_and_return_8bit" title="Permalink to this definition"></a></dt>
+<dd><p>Adds the two arrays. First, the arrays are scaled to 8bit if they aren’t already, and then they are added without
+overflow issues: 240 + 80 is capped at 255.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.util.bits.ensure_8bit">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.util.bits.</span></span><span class="sig-name descname"><span class="pre">ensure_8bit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.util.bits.ensure_8bit" title="Permalink to this definition"></a></dt>
+<dd><p>Converts an image to uint8 if it isn’t already.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.util.bits.image_to_8bit">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.util.bits.</span></span><span class="sig-name descname"><span class="pre">image_to_8bit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.util.bits.image_to_8bit" title="Permalink to this definition"></a></dt>
+<dd><p>Converts and scales the image to an 8-bit image, such that the highest value in the image becomes 255. So even if the image
+is already an 8-bit image, it can still get rescaled.</p>
+<p>Note that this method returns a copy and does not modify the original image.</p>
+</dd></dl>
+
 </section>
 <section id="module-organoid_tracker.util.moving_average">
 <span id="organoid-tracker-util-moving-average-module"></span><h2>organoid_tracker.util.moving_average module<a class="headerlink" href="#module-organoid_tracker.util.moving_average" title="Permalink to this heading"></a></h2>

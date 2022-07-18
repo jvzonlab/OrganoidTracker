@@ -41,10 +41,10 @@
 <li><a class="reference internal" href="#">organoid_tracker.guizela_tracker_compatibility package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.guizela_tracker_compatibility.axis_lib">organoid_tracker.guizela_tracker_compatibility.axis_lib module</a></li>
-<li><a class="reference internal" href="#organoid-tracker-guizela-tracker-compatibility-axis-lib-v2-module">organoid_tracker.guizela_tracker_compatibility.axis_lib_v2 module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.guizela_tracker_compatibility.axis_lib_v2">organoid_tracker.guizela_tracker_compatibility.axis_lib_v2 module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.guizela_tracker_compatibility.cell_type_converter">organoid_tracker.guizela_tracker_compatibility.cell_type_converter module</a></li>
-<li><a class="reference internal" href="#organoid-tracker-guizela-tracker-compatibility-guizela-data-exporter-module">organoid_tracker.guizela_tracker_compatibility.guizela_data_exporter module</a></li>
-<li><a class="reference internal" href="#organoid-tracker-guizela-tracker-compatibility-guizela-data-importer-module">organoid_tracker.guizela_tracker_compatibility.guizela_data_importer module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.guizela_tracker_compatibility.guizela_data_exporter">organoid_tracker.guizela_tracker_compatibility.guizela_data_exporter module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.guizela_tracker_compatibility.guizela_data_importer">organoid_tracker.guizela_tracker_compatibility.guizela_data_importer module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.guizela_tracker_compatibility.track_lib">organoid_tracker.guizela_tracker_compatibility.track_lib module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.guizela_tracker_compatibility.track_lib_v2">organoid_tracker.guizela_tracker_compatibility.track_lib_v2 module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.guizela_tracker_compatibility.track_lib_v3">organoid_tracker.guizela_tracker_compatibility.track_lib_v3 module</a></li>
@@ -107,17 +107,87 @@
 <dd></dd></dl>
 
 </section>
-<section id="organoid-tracker-guizela-tracker-compatibility-axis-lib-v2-module">
-<h2>organoid_tracker.guizela_tracker_compatibility.axis_lib_v2 module<a class="headerlink" href="#organoid-tracker-guizela-tracker-compatibility-axis-lib-v2-module" title="Permalink to this heading"></a></h2>
+<section id="module-organoid_tracker.guizela_tracker_compatibility.axis_lib_v2">
+<span id="organoid-tracker-guizela-tracker-compatibility-axis-lib-v2-module"></span><h2>organoid_tracker.guizela_tracker_compatibility.axis_lib_v2 module<a class="headerlink" href="#module-organoid_tracker.guizela_tracker_compatibility.axis_lib_v2" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.Axis">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.</span></span><span class="sig-name descname"><span class="pre">Axis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.Axis" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.Axis.add_point">
+<span class="sig-name descname"><span class="pre">add_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.Axis.add_point" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.Axis.delete_point">
+<span class="sig-name descname"><span class="pre">delete_point</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.Axis.delete_point" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.Axis.interpolate">
+<span class="sig-name descname"><span class="pre">interpolate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.Axis.interpolate" title="Permalink to this definition"></a></dt>
+<dd><p>Adds an interpolation of 1001 points.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.Axis.interpolated">
+<span class="sig-name descname"><span class="pre">interpolated</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.Axis.interpolated" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.Axis.t">
+<span class="sig-name descname"><span class="pre">t</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.Axis.t" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.Axis.x">
+<span class="sig-name descname"><span class="pre">x</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.Axis.x" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.add_axis_to_axes_list">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.</span></span><span class="sig-name descname"><span class="pre">add_axis_to_axes_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.add_axis_to_axes_list" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.load_axes_list">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.</span></span><span class="sig-name descname"><span class="pre">load_axes_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.load_axes_list" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.remove_axis_from_axes_list">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.</span></span><span class="sig-name descname"><span class="pre">remove_axis_from_axes_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.remove_axis_from_axes_list" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.save_axes_list">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.</span></span><span class="sig-name descname"><span class="pre">save_axes_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axes_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.save_axes_list" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 </section>
 <section id="module-organoid_tracker.guizela_tracker_compatibility.cell_type_converter">
 <span id="organoid-tracker-guizela-tracker-compatibility-cell-type-converter-module"></span><h2>organoid_tracker.guizela_tracker_compatibility.cell_type_converter module<a class="headerlink" href="#module-organoid_tracker.guizela_tracker_compatibility.cell_type_converter" title="Permalink to this heading"></a></h2>
 </section>
-<section id="organoid-tracker-guizela-tracker-compatibility-guizela-data-exporter-module">
-<h2>organoid_tracker.guizela_tracker_compatibility.guizela_data_exporter module<a class="headerlink" href="#organoid-tracker-guizela-tracker-compatibility-guizela-data-exporter-module" title="Permalink to this heading"></a></h2>
+<section id="module-organoid_tracker.guizela_tracker_compatibility.guizela_data_exporter">
+<span id="organoid-tracker-guizela-tracker-compatibility-guizela-data-exporter-module"></span><h2>organoid_tracker.guizela_tracker_compatibility.guizela_data_exporter module<a class="headerlink" href="#module-organoid_tracker.guizela_tracker_compatibility.guizela_data_exporter" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.guizela_tracker_compatibility.guizela_data_exporter.export_links">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.guizela_tracker_compatibility.guizela_data_exporter.</span></span><span class="sig-name descname"><span class="pre">export_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comparison_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.guizela_tracker_compatibility.guizela_data_exporter.export_links" title="Permalink to this definition"></a></dt>
+<dd><p>Exports the links of the experiment in Guizela’s file format.</p>
+</dd></dl>
+
 </section>
-<section id="organoid-tracker-guizela-tracker-compatibility-guizela-data-importer-module">
-<h2>organoid_tracker.guizela_tracker_compatibility.guizela_data_importer module<a class="headerlink" href="#organoid-tracker-guizela-tracker-compatibility-guizela-data-importer-module" title="Permalink to this heading"></a></h2>
+<section id="module-organoid_tracker.guizela_tracker_compatibility.guizela_data_importer">
+<span id="organoid-tracker-guizela-tracker-compatibility-guizela-data-importer-module"></span><h2>organoid_tracker.guizela_tracker_compatibility.guizela_data_importer module<a class="headerlink" href="#module-organoid_tracker.guizela_tracker_compatibility.guizela_data_importer" title="Permalink to this heading"></a></h2>
+<p>Extracting the tracks as measured by Guizela to a Graph object</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.guizela_tracker_compatibility.guizela_data_importer.add_data_to_experiment">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.guizela_tracker_compatibility.guizela_data_importer.</span></span><span class="sig-name descname"><span class="pre">add_data_to_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tracks_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.guizela_tracker_compatibility.guizela_data_importer.add_data_to_experiment" title="Permalink to this definition"></a></dt>
+<dd><p>Adds all positions and links from the given folder to the experiment.</p>
+</dd></dl>
+
 </section>
 <section id="module-organoid_tracker.guizela_tracker_compatibility.track_lib">
 <span id="organoid-tracker-guizela-tracker-compatibility-track-lib-module"></span><h2>organoid_tracker.guizela_tracker_compatibility.track_lib module<a class="headerlink" href="#module-organoid_tracker.guizela_tracker_compatibility.track_lib" title="Permalink to this heading"></a></h2>

@@ -42,14 +42,14 @@
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.imaging.angles">organoid_tracker.imaging.angles module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.imaging.cropper">organoid_tracker.imaging.cropper module</a></li>
-<li><a class="reference internal" href="#organoid-tracker-imaging-ctc-io-module">organoid_tracker.imaging.ctc_io module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.imaging.ctc_io">organoid_tracker.imaging.ctc_io module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.imaging.depth_colored_image_creator">organoid_tracker.imaging.depth_colored_image_creator module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.imaging.image_adder">organoid_tracker.imaging.image_adder module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.imaging.image_file_name_pattern_finder">organoid_tracker.imaging.image_file_name_pattern_finder module</a></li>
-<li><a class="reference internal" href="#organoid-tracker-imaging-io-module">organoid_tracker.imaging.io module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.imaging.io">organoid_tracker.imaging.io module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.imaging.lines">organoid_tracker.imaging.lines module</a></li>
-<li><a class="reference internal" href="#organoid-tracker-imaging-list-io-module">organoid_tracker.imaging.list_io module</a></li>
-<li><a class="reference internal" href="#organoid-tracker-imaging-trackmate-io-module">organoid_tracker.imaging.trackmate_io module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.imaging.list_io">organoid_tracker.imaging.list_io module</a></li>
+<li><a class="reference internal" href="#module-organoid_tracker.imaging.trackmate_io">organoid_tracker.imaging.trackmate_io module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.imaging">Module contents</a></li>
 </ul>
 </li>
@@ -187,8 +187,23 @@ array of only zeros.</p>
 </dd></dl>
 
 </section>
-<section id="organoid-tracker-imaging-ctc-io-module">
-<h2>organoid_tracker.imaging.ctc_io module<a class="headerlink" href="#organoid-tracker-imaging-ctc-io-module" title="Permalink to this heading"></a></h2>
+<section id="module-organoid_tracker.imaging.ctc_io">
+<span id="organoid-tracker-imaging-ctc-io-module"></span><h2>organoid_tracker.imaging.ctc_io module<a class="headerlink" href="#module-organoid_tracker.imaging.ctc_io" title="Permalink to this heading"></a></h2>
+<p>IO functions for the Cell Tracking Challenge data format, following the specification at
+<a class="reference external" href="https://public.celltrackingchallenge.net/documents/Naming%20and%20file%20content%20conventions.pdf">https://public.celltrackingchallenge.net/documents/Naming%20and%20file%20content%20conventions.pdf</a></p>
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.ctc_io.load_data_file">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.ctc_io.</span></span><span class="sig-name descname"><span class="pre">load_data_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5000</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></span><a class="headerlink" href="#organoid_tracker.imaging.ctc_io.load_data_file" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.ctc_io.save_data_files">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.ctc_io.</span></span><span class="sig-name descname"><span class="pre">save_data_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.imaging.ctc_io.save_data_files" title="Permalink to this definition"></a></dt>
+<dd><p>Saves all cell tracks in the data format of the Cell Tracking Challenge. Requires the presence of links and
+images. Also requires an image size to be known, as well as the file name ending with .txt (case insensitive).
+Throws ValueError if any of these conditions are violated.</p>
+</dd></dl>
+
 </section>
 <section id="module-organoid_tracker.imaging.depth_colored_image_creator">
 <span id="organoid-tracker-imaging-depth-colored-image-creator-module"></span><h2>organoid_tracker.imaging.depth_colored_image_creator module<a class="headerlink" href="#module-organoid_tracker.imaging.depth_colored_image_creator" title="Permalink to this heading"></a></h2>
@@ -227,8 +242,36 @@ color_map_name is the Matplotlib colormap used for drawing.</p>
 </dd></dl>
 
 </section>
-<section id="organoid-tracker-imaging-io-module">
-<h2>organoid_tracker.imaging.io module<a class="headerlink" href="#organoid-tracker-imaging-io-module" title="Permalink to this heading"></a></h2>
+<section id="module-organoid_tracker.imaging.io">
+<span id="organoid-tracker-imaging-io-module"></span><h2>organoid_tracker.imaging.io module<a class="headerlink" href="#module-organoid_tracker.imaging.io" title="Permalink to this heading"></a></h2>
+<p>Classes for expressing the positions of positions</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.io.load_data_file">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.io.</span></span><span class="sig-name descname"><span class="pre">load_data_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5000</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></span><a class="headerlink" href="#organoid_tracker.imaging.io.load_data_file" title="Permalink to this definition"></a></dt>
+<dd><p>Loads some kind of data file. This should support all data formats of our research group. Raises ValueError if
+the file fails to load. All data is dumped into the given experiment object.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.io.load_positions_and_shapes_from_json">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.io.</span></span><span class="sig-name descname"><span class="pre">load_positions_and_shapes_from_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.imaging.io.load_positions_and_shapes_from_json" title="Permalink to this definition"></a></dt>
+<dd><p>Loads a JSON file that contains position positions, with or without shape information.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.io.save_data_to_json">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.io.</span></span><span class="sig-name descname"><span class="pre">save_data_to_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.imaging.io.save_data_to_json" title="Permalink to this definition"></a></dt>
+<dd><p>Saves positions, shapes, scores and links to a JSON file. The file should end with the extension FILE_EXTENSION.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.io.save_positions_to_json">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.io.</span></span><span class="sig-name descname"><span class="pre">save_positions_to_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.imaging.io.save_positions_to_json" title="Permalink to this definition"></a></dt>
+<dd><p>Saves a list of positions (pixel coordinate) to disk. Because the offset of the images is not saved, the offset
+is added to all positions. This method is mainly intended to export training data for neural networks, so it will
+ignore dead cells.</p>
+</dd></dl>
+
 </section>
 <section id="module-organoid_tracker.imaging.lines">
 <span id="organoid-tracker-imaging-lines-module"></span><h2>organoid_tracker.imaging.lines module<a class="headerlink" href="#module-organoid_tracker.imaging.lines" title="Permalink to this heading"></a></h2>
@@ -285,11 +328,120 @@ which is different from calculating the distance to a line segment.</p>
 </dd></dl>
 
 </section>
-<section id="organoid-tracker-imaging-list-io-module">
-<h2>organoid_tracker.imaging.list_io module<a class="headerlink" href="#organoid-tracker-imaging-list-io-module" title="Permalink to this heading"></a></h2>
+<section id="module-organoid_tracker.imaging.list_io">
+<span id="organoid-tracker-imaging-list-io-module"></span><h2>organoid_tracker.imaging.list_io module<a class="headerlink" href="#module-organoid_tracker.imaging.list_io" title="Permalink to this heading"></a></h2>
+<p>Often, multiple experiments are used together for a certain analysis. You can save the path to where these
+experiments are stored in an autlist file. This module contains functions to save and load Used to load multiple experiments (with images) at once.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.list_io.load_experiment_list_file">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.list_io.</span></span><span class="sig-name descname"><span class="pre">load_experiment_list_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">open_files_list_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.imaging.list_io.load_experiment_list_file" title="Permalink to this definition"></a></dt>
+<dd><p>Loads all the listed files in the given file..</p>
+</dd></dl>
+
 </section>
-<section id="organoid-tracker-imaging-trackmate-io-module">
-<h2>organoid_tracker.imaging.trackmate_io module<a class="headerlink" href="#organoid-tracker-imaging-trackmate-io-module" title="Permalink to this heading"></a></h2>
+<section id="module-organoid_tracker.imaging.trackmate_io">
+<span id="organoid-tracker-imaging-trackmate-io-module"></span><h2>organoid_tracker.imaging.trackmate_io module<a class="headerlink" href="#module-organoid_tracker.imaging.trackmate_io" title="Permalink to this heading"></a></h2>
+<p>The TrackMate file format works as follows:</p>
+<ul>
+<li><p>XML file with a root tag “TrackMate”  &lt;TrackMate version=”3.6.0”&gt;
+- Subtag “Model”: &lt;Model spatialunits=”µm” timeunits=”frame”&gt;</p>
+<blockquote>
+<div><ul>
+<li><dl>
+<dt>Some default tags:</dt><dd><dl class="simple">
+<dt>&lt;FeatureDeclarations&gt;</dt><dd><p>&lt;SpotFeatures /&gt;
+&lt;EdgeFeatures /&gt;
+&lt;TrackFeatures /&gt;</p>
+</dd>
+</dl>
+<p>&lt;/FeatureDeclarations&gt;</p>
+</dd>
+</dl>
+</li>
+<li><p>The positions:
+&lt;AllSpots nspots=”1234”&gt;</p>
+<blockquote>
+<div><dl>
+<dt>&lt;SpotsInFrame frame=”1”&gt;</dt><dd><dl class="simple">
+<dt>&lt;Spot FRAME=”1” ID=”1668” POSITION_T=”1.0” POSITION_X=”49.24473640416” POSITION_Y=”51.907814350324756”</dt><dd><p>POSITION_Z=”64.18574949599984” QUALITY=”-1.0” RADIUS=”3” VISIBILITY=”1” name=”1668” /&gt;</p>
+</dd>
+</dl>
+<p>etc.</p>
+</dd>
+</dl>
+<p>&lt;/SpotsInFrame&gt;</p>
+</div></blockquote>
+<p>&lt;/AllSpots&gt;</p>
+</li>
+<li><p>The links:
+&lt;AllTracks&gt;</p>
+<blockquote>
+<div><dl class="simple">
+<dt>&lt;Track TRACK_ID=”1” name=”1”&gt;</dt><dd><p>&lt;Edge SPOT_SOURCE_ID=”1668” SPOT_TARGET_ID=”1693” /&gt;
+…</p>
+</dd>
+</dl>
+<p>&lt;/Track&gt;
+..</p>
+</div></blockquote>
+<p>&lt;/AllTracks&gt;
+&lt;FilteredTracks&gt;</p>
+<blockquote>
+<div><p>&lt;TrackID TRACK_ID=”1” /&gt;</p>
+</div></blockquote>
+<p>&lt;/FilteredTracks&gt;</p>
+</li>
+</ul>
+</div></blockquote>
+<ul>
+<li><p>Subtag “Settings”
+- Subtag &lt;ImageData filename=”a.xml” folder=”” height=”512” nframes=”326” nslices=”32” pixelheight=”0.32”</p>
+<blockquote>
+<div><p>pixelwidth=”0.32” voxeldepth=”2.0” timeinterval=”12” width=”512” /&gt;</p>
+</div></blockquote>
+<ul>
+<li><dl>
+<dt>Other tags to keep Trackmate happy:</dt><dd><p>&lt;InitialSpotFilter feature=”QUALITY” isabove=”true” value=”0.0” /&gt;
+&lt;SpotFilterCollection /&gt;
+&lt;TrackFilterCollection /&gt;
+&lt;AnalyzerCollection&gt;</p>
+<blockquote>
+<div><p>&lt;SpotAnalyzers /&gt;
+&lt;EdgeAnalyzers&gt;</p>
+<blockquote>
+<div><p>&lt;Analyzer key=”Edge target” /&gt;</p>
+</div></blockquote>
+<p>&lt;/EdgeAnalyzers&gt;
+&lt;TrackAnalyzers /&gt;</p>
+</div></blockquote>
+<p>&lt;/AnalyzerCollection&gt;</p>
+</dd>
+</dl>
+</li>
+<li><p>Subtag “GUIState”
+&lt;GUIState state=”ConfigureViews”&gt;</p>
+<blockquote>
+<div><p>&lt;View key=”HYPERSTACKDISPLAYER” /&gt;</p>
+</div></blockquote>
+<p>&lt;/GUIState&gt;</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.trackmate_io.load_data_file">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.trackmate_io.</span></span><span class="sig-name descname"><span class="pre">load_data_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></span><a class="headerlink" href="#organoid_tracker.imaging.trackmate_io.load_data_file" title="Permalink to this definition"></a></dt>
+<dd><p>Loads an XML file in the TrackMate format.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.trackmate_io.save_tracking_data">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.trackmate_io.</span></span><span class="sig-name descname"><span class="pre">save_tracking_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.imaging.trackmate_io.save_tracking_data" title="Permalink to this definition"></a></dt>
+<dd><p>Saves the tracking data to the TrackMate format, used by TrackMate, MaMut, Mastodon, LFTree and others.</p>
+</dd></dl>
+
 </section>
 <section id="module-organoid_tracker.imaging">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-organoid_tracker.imaging" title="Permalink to this heading"></a></h2>
