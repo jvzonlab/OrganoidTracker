@@ -208,6 +208,11 @@ class LinesAverage(PlotAverage):
                     break
         return y_values
 
+    def count_values_at_min_max_x(self) -> Tuple[int, int]:
+        """Gets how many y values we have at the lowest and highest x positions."""
+        min_x, max_x = self._get_min_max_x()
+        return len(self._get_y_values_at(min_x)), len(self._get_y_values_at(max_x))
+
     def plot(self, axes: Axes, *, color: Color = Color(0, 0, 255), linewidth=2, error_opacity=0.8, standard_error: bool = False, label="Average"):
         min_x, max_x = self._get_min_max_x()
 
