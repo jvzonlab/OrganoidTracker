@@ -42,7 +42,7 @@
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.linking.cell_division_finder">organoid_tracker.linking.cell_division_finder module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.linking.cheating_score_system">organoid_tracker.linking.cheating_score_system module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking.dpct_linker">organoid_tracker.linking.dpct_linker module</a></li>
+<li><a class="reference internal" href="#organoid-tracker-linking-dpct-linker-module">organoid_tracker.linking.dpct_linker module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.linking.nearby_position_finder">organoid_tracker.linking.nearby_position_finder module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.linking.nearest_neighbor_linker">organoid_tracker.linking.nearest_neighbor_linker module</a></li>
 <li><a class="reference internal" href="#module-organoid_tracker.linking.rational_scoring_system">organoid_tracker.linking.rational_scoring_system module</a></li>
@@ -145,33 +145,8 @@ This scoring system is useful for testing how an ideal scoring system would beha
 </dd></dl>
 
 </section>
-<section id="module-organoid_tracker.linking.dpct_linker">
-<span id="organoid-tracker-linking-dpct-linker-module"></span><h2>organoid_tracker.linking.dpct_linker module<a class="headerlink" href="#module-organoid_tracker.linking.dpct_linker" title="Permalink to this heading"></a></h2>
-<p>Used to create links between positions at different time points. Supports cell divisions. Based on</p>
-<p>C. Haubold, J. Ales, S. Wolf, F. A. Hamprecht. A Generalized Successive Shortest Paths Solver for Tracking Dividing
-Targets. ECCV 2016 Proceedings.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking.dpct_linker.calculate_appearance_penalty">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking.dpct_linker.</span></span><span class="sig-name descname"><span class="pre">calculate_appearance_penalty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_appearance_probability</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'appearance_penalty'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking.dpct_linker.calculate_appearance_penalty" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking.dpct_linker.run">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking.dpct_linker.</span></span><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_collection.PositionCollection" title="organoid_tracker.core.position_collection.PositionCollection"><span class="pre">PositionCollection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">starting_links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">link_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.link_data.LinkData" title="organoid_tracker.core.link_data.LinkData"><span class="pre">LinkData</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">link_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detection_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">division_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">appearance_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dissappearance_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking.dpct_linker.run" title="Permalink to this definition"></a></dt>
-<dd><p>Calculates the optimal links, based on the given starting points and weights.
-:param positions: The positions.
-:param position_data: Metadata for the positions.
-:param starting_links: Basic linking network that includes all possible links.
-:param scores: Scores, for deciding whether something is a cell division.
-:param resolution: Resolution.
-:param link_weight: multiplier for linking features - the higher, the more expensive to create a link.
-:param detection_weight: multiplier for detection of a cell - the higher, the more expensive to omit a cell
-:param division_weight: multiplier for division features - the higher, the cheaper it is to create a cell division
-:param appearance_weight: multiplier for appearance features - the higher, the more expensive it is to create a cell out of nothing
-:param dissappearance_weight: multiplier for disappearance - the higher, the more expensive an end-of-lineage is
-:return:</p>
-</dd></dl>
-
+<section id="organoid-tracker-linking-dpct-linker-module">
+<h2>organoid_tracker.linking.dpct_linker module<a class="headerlink" href="#organoid-tracker-linking-dpct-linker-module" title="Permalink to this heading"></a></h2>
 </section>
 <section id="module-organoid_tracker.linking.nearby_position_finder">
 <span id="organoid-tracker-linking-nearby-position-finder-module"></span><h2>organoid_tracker.linking.nearby_position_finder module<a class="headerlink" href="#module-organoid_tracker.linking.nearby_position_finder" title="Permalink to this heading"></a></h2>
