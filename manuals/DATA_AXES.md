@@ -1,5 +1,5 @@
 # The data axes editor
-[← Back to main page](INDEX.md)
+[← Back to main page](index.md)
 
 Say you want to know how far along a particle is along an axis. This custom axis does not align with the x, y or z axis. For example, you are looking at cell migration from the intestinal crypt to the intestinal villus. Then you want to draw an axis from the crypt to the villus, and see how far along the cells are over time.
 

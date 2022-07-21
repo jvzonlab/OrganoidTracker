@@ -1,5 +1,5 @@
 # Plugin tutorial
-[← Back to main page](INDEX.md)
+[← Back to main page](index.md)
 
 ## Introduction
 Plugins (like the rest of OrganoidTracker) are programmed in Python, a "friendly" programming language used from beginners to experts. Every Python file that you place in the `organoid_tracker_plugins` that starts with `plugin_` is automatically loaded when the program starts. Plugins can be reloaded while the program is running, making very quick development possible.

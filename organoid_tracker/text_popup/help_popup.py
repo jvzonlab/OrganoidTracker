@@ -7,7 +7,7 @@ from organoid_tracker.text_popup.text_popup import RichTextPopup
 
 _MANUALS_FOLDER = "manuals"
 _MANUALS_FOLDER_ABSOLUTE = path.join(path.dirname(path.dirname(path.dirname(path.abspath(__file__)))), _MANUALS_FOLDER)
-_MAIN_MANUAL = "INDEX.md"
+_MAIN_MANUAL = "index.md"
 
 
 def _file_get_contents(file_name: str):
@@ -38,4 +38,13 @@ class HelpPopup(RichTextPopup):
         file = path.join(_MANUALS_FOLDER_ABSOLUTE, url)
         if not path.isfile(file):
             raise UserError("File not found", url + " does not exist")
-        return _file_get_contents(file)
+        markdown_str =  _file_get_contents(file)
+
+        # Cut off everything after :::{eval-rst}  (that is metadata for the Sphinx documentation builder)
+        try:
+            remove_start_index = markdown_str.index(":::{eval-rst}")
+            markdown_str = markdown_str[0:remove_start_index]
+        except IndexError:
+            pass  # There's not metadata
+
+        return markdown_str

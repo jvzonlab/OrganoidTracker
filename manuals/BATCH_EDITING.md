@@ -1,5 +1,5 @@
 # Batch operations
-[← Back to main page](INDEX.md)
+[← Back to main page](index.md)
 
 This page describes the batch editing options available from the GUI. The positions and links editor, described on the [manual tracking page](MANUAL_TRACKING.md), is mainly intended to make one change at a time. However, there are a few options for large-scale data editing.
 
@@ -18,7 +18,7 @@ One way would be to drawn a rectangle over all points (see above). However, ther
 ## Deleting all positions of multiple time points
 The best way to do this is to draw a single volume that goes over all time points and z layers. Select one corner of the image at the first time point, and the opposite corner at the last time point.
 
-# Deleting some positions over multple time points
+## Deleting some positions over multple time points
 If there are already links established between time points, you can use `Edit` -> `Delete entire lineage`. This only works for one lineage at a time.
 
 If your data set is without any warnings, there is one trick to delete multiple lineages at once. At one (arbitrary) time point, delete the positions of all lineages that you want to remove. This will cause warnings to appear at other time points, as you have just removed one time point from a lineage tree. You can then use `Edit` -> `Batch deletion` -> `Delete all tracks with errors` to get rid of those lineages.

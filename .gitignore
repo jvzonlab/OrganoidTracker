@@ -13,3 +13,8 @@ organoid_tracker.ini
 /out/
 /output/
 /training_output/
+
+# Ignore auto-generated documentation files
+/manuals_build/
+/manuals/organoid_tracker*
+/manuals/modules.rst

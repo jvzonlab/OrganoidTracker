@@ -1,6 +1,6 @@
 ﻿Installation instructions
 =========================
-[← Back to main page](./INDEX.md)
+[← Back to main page](./index.md)
 
 ## Windows
 **System requirements:**

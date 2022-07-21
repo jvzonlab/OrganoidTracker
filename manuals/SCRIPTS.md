@@ -1,5 +1,5 @@
 # The scripts
-[← Back to main page](./INDEX.md)
+[← Back to main page](./index.md)
 
 The following scripts are available:
 

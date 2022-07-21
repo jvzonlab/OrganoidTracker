@@ -1,5 +1,5 @@
 # Automatic tracking
-[← Back to main page](INDEX.md)
+[← Back to main page](index.md)
 
 The intended workflow is as follows:
 

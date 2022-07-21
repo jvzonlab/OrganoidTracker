@@ -1,5 +1,5 @@
 # API reference
-[← Back to main page](INDEX.md)
+[← Back to main page](index.md)
 
 OrganoidTracker contains many functions for working with experimental data. Those functions should make it possible to plot useful information. You can use these functions from standalone Python scripts, from [plugins](PLUGIN_TUTORIAL.md) or from [Jupyter Notebooks](JUPYTER_NOTEBOOK.md).
 

@@ -1,5 +1,5 @@
 # Manual tracking and error correction
-[← Back to main page](INDEX.md)
+[← Back to main page](index.md)
 
 You cannot edit tracking data from the main screen. Instead, you need to use `Edit` -> `Manually change data...` to open the data editor (or just press `C`). In this editor, you can select up to two cells at once by double-clicking them. Using the Insert, Shift and Delete keys, you can insert, shift or delete cells or links. Press `C` again to exit the view.
 

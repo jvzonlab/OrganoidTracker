@@ -1,5 +1,5 @@
 # Custom tracking formats
-[← Back to main page](INDEX.md)
+[← Back to main page](index.md)
 
 Sometimes you need to import a file format for which OrganoidTracker has no support. In that case, you'll need to write a script yourself that converts the file format.
 

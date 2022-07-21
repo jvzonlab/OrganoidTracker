@@ -1,5 +1,5 @@
 # Training the neural network
-[← Back to main page](INDEX.md)
+[← Back to main page](index.md)
 
 If you want to train your own neural network, read on. Training your own neural network is a good idea if you're not satisfied with how the cell detection in your images is done. However, training requires a graphics card with at least 10 GB of VRAM. I'm using a NVIDIA GeForce RTX 2080 Ti card, which has enough video RAM for a batch size of 48 with images of 512x512x32 px.
 

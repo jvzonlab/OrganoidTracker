@@ -1,5 +1,5 @@
 # Working with custom metadata
-[← Back to main page](INDEX.md)
+[← Back to main page](index.md)
 
 In OrganoidTracker, you can apply custom metadata to individual positions, links or even experiments as a whole. For example, you could store the moment in time where you added a certain drug to your experiment.
 

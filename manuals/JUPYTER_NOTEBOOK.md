@@ -1,5 +1,5 @@
 # Jupyter notebook
-[← Back to main page](INDEX.md)
+[← Back to main page](index.md)
 
 Instead of [writing a plugin](PLUGIN_TUTORIAL.md), it's also possible to work with Jupyter Notebooks. Jupyter Notebooks offer a way to mix code and data visualization. While there are [good arguments against doing this](https://datapastry.com/blog/why-i-dont-use-jupyter-notebooks-and-you-shouldnt-either/), for sure it can offer a rapid way to analyze data.
 

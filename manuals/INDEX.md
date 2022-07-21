@@ -1,6 +1,6 @@
 # OrganoidTracker manual
 
-Welcome to the OrganoidTracker manual! This document will tell you how to use the "visualizer", the program that displays all the images and the annotations.
+Welcome to the OrganoidTracker manual! This manual will tell you how to do manual and automated tracking, and also give you an overview of the code of OrganoidTracker.
 
 Tutorials
 ---------
@@ -40,3 +40,40 @@ For data analysis, you can write your own Python scripts that make use of the [O
 
 Want to measure the migration of a cell? You can of course track the x, y and z position of a cell, but you can also [draw a (curved) axis yourself](DATA_AXES.md) and measure the position of a cell along that axis.
 
+
+:::{eval-rst}
+.. Hidden TOCs
+
+.. toctree::
+   :caption: Tutorials
+   :maxdepth: 2
+   :hidden:
+
+   MANUAL_TRACKING
+   AUTOMATIC_TRACKING
+   PLUGIN_TUTORIAL
+   TRAINING_THE_NETWORK
+   JUPYTER_NOTEBOOK
+   WORKING_WITH_CUSTOM_METADATA
+
+.. toctree::
+   :caption: For reference
+   :maxdepth: 2
+   :hidden:
+
+   API
+   BATCH_EDITING
+   CUSTOM_TRACKING_FORMATS
+   DATA_AXES
+   IMAGE_FORMATS
+   INSTALLATION
+   SCRIPTS
+   TRACKING_FORMATS
+
+.. toctree::
+   :caption: Browse the code
+   :maxdepth: 5
+   :hidden:
+
+   organoid_tracker
+:::

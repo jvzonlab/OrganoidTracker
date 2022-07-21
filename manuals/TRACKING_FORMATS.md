@@ -1,5 +1,5 @@
 # Supported tracking formats
-[← Back to main page](INDEX.md)
+[← Back to main page](index.md)
 
 *See also: [Supported image formats](IMAGE_FORMATS.md)*
 
