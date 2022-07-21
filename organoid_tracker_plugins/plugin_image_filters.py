@@ -98,7 +98,7 @@ def _remove_filters(window: Window):
     image_channel = window.display_settings.image_channel
     filters = list(images.filters.of_channel(image_channel))
     removed_count += len(filters)
-    filters.clear()
+    images.filters.clear_channel(image_channel)
 
     if removed_count == 1:
         window.set_status(f"Removed 1 filter for channel {image_channel.index_one}.")
