@@ -1,0 +1,7 @@
+organoid\_tracker.position\_detection.position\_mover module
+============================================================
+
+.. automodule:: organoid_tracker.position_detection.position_mover
+   :members:
+   :undoc-members:
+   :show-inheritance:

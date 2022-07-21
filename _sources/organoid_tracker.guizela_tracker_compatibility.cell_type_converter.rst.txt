@@ -1,0 +1,7 @@
+organoid\_tracker.guizela\_tracker\_compatibility.cell\_type\_converter module
+==============================================================================
+
+.. automodule:: organoid_tracker.guizela_tracker_compatibility.cell_type_converter
+   :members:
+   :undoc-members:
+   :show-inheritance:

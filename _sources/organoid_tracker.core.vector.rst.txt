@@ -1,0 +1,7 @@
+organoid\_tracker.core.vector module
+====================================
+
+.. automodule:: organoid_tracker.core.vector
+   :members:
+   :undoc-members:
+   :show-inheritance:

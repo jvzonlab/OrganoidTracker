@@ -4,45 +4,14 @@ organoid\_tracker.util package
 Submodules
 ----------
 
-organoid\_tracker.util.bits module
-----------------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: organoid_tracker.util.bits
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.util.moving\_average module
----------------------------------------------
-
-.. automodule:: organoid_tracker.util.moving_average
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.util.mpl\_helper module
------------------------------------------
-
-.. automodule:: organoid_tracker.util.mpl_helper
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.util.mpl\_helper\_3d module
----------------------------------------------
-
-.. automodule:: organoid_tracker.util.mpl_helper_3d
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.util.run\_script\_creator module
---------------------------------------------------
-
-.. automodule:: organoid_tracker.util.run_script_creator
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   organoid_tracker.util.bits
+   organoid_tracker.util.moving_average
+   organoid_tracker.util.mpl_helper
+   organoid_tracker.util.mpl_helper_3d
+   organoid_tracker.util.run_script_creator
 
 Module contents
 ---------------

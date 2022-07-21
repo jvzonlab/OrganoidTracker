@@ -1,0 +1,7 @@
+organoid\_tracker.position\_detection.watershedding module
+==========================================================
+
+.. automodule:: organoid_tracker.position_detection.watershedding
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -4,37 +4,13 @@ organoid\_tracker.position\_analysis package
 Submodules
 ----------
 
-organoid\_tracker.position\_analysis.cell\_density\_calculator module
----------------------------------------------------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: organoid_tracker.position_analysis.cell_density_calculator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.position\_analysis.intensity\_calculator module
------------------------------------------------------------------
-
-.. automodule:: organoid_tracker.position_analysis.intensity_calculator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.position\_analysis.intensity\_gradient\_calculator module
----------------------------------------------------------------------------
-
-.. automodule:: organoid_tracker.position_analysis.intensity_gradient_calculator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.position\_analysis.position\_markers module
--------------------------------------------------------------
-
-.. automodule:: organoid_tracker.position_analysis.position_markers
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   organoid_tracker.position_analysis.cell_density_calculator
+   organoid_tracker.position_analysis.intensity_calculator
+   organoid_tracker.position_analysis.intensity_gradient_calculator
+   organoid_tracker.position_analysis.position_markers
 
 Module contents
 ---------------

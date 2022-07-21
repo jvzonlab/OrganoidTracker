@@ -1,0 +1,7 @@
+organoid\_tracker.core.ellipse module
+=====================================
+
+.. automodule:: organoid_tracker.core.ellipse
+   :members:
+   :undoc-members:
+   :show-inheritance:

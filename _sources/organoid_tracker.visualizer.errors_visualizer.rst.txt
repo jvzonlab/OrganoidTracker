@@ -1,0 +1,7 @@
+organoid\_tracker.visualizer.errors\_visualizer module
+======================================================
+
+.. automodule:: organoid_tracker.visualizer.errors_visualizer
+   :members:
+   :undoc-members:
+   :show-inheritance:

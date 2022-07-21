@@ -18,7 +18,9 @@
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="organoid_tracker package" href="organoid_tracker.html" />
+    <link rel="prev" title="Supported tracking formats" href="TRACKING_FORMATS.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -36,11 +38,34 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">organoid_tracker</a></li>
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
 </ul>
-</div>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">organoid_tracker</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a></li>
+</ul>
+</li>
+</ul>
+
         </div>
       </div>
     </nav>
@@ -73,12 +98,6 @@
 <li class="toctree-l2"><a class="reference internal" href="organoid_tracker.html#subpackages">Subpackages</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.comparison.html">organoid_tracker.comparison package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.comparison.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.comparison.html#module-organoid_tracker.comparison.lineage_comparison">organoid_tracker.comparison.lineage_comparison module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.comparison.html#module-organoid_tracker.comparison.links_comparison">organoid_tracker.comparison.links_comparison module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.comparison.html#module-organoid_tracker.comparison.positions_comparison">organoid_tracker.comparison.positions_comparison module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.comparison.html#module-organoid_tracker.comparison.report">organoid_tracker.comparison.report module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.comparison.html#module-organoid_tracker.comparison.report_csv_io">organoid_tracker.comparison.report_csv_io module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.comparison.html#module-organoid_tracker.comparison.report_json_io">organoid_tracker.comparison.report_json_io module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.comparison.html#module-organoid_tracker.comparison">Module contents</a></li>
 </ul>
 </li>
@@ -88,239 +107,81 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.connecting.html">organoid_tracker.connecting package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.connecting.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.connecting.html#module-organoid_tracker.connecting.connector_by_distance">organoid_tracker.connecting.connector_by_distance module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.connecting.html#module-organoid_tracker.connecting">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.connection_analysis.html">organoid_tracker.connection_analysis package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.connection_analysis.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.connection_analysis.html#module-organoid_tracker.connection_analysis.cluster_finder">organoid_tracker.connection_analysis.cluster_finder module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.connection_analysis.html#module-organoid_tracker.connection_analysis.connected_position_finder">organoid_tracker.connection_analysis.connected_position_finder module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.connection_analysis.html#module-organoid_tracker.connection_analysis">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.coordinate_system.html">organoid_tracker.coordinate_system package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.coordinate_system.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.coordinate_system.html#module-organoid_tracker.coordinate_system.orientation_spline_adder">organoid_tracker.coordinate_system.orientation_spline_adder module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.coordinate_system.html#module-organoid_tracker.coordinate_system.sphere_representer">organoid_tracker.coordinate_system.sphere_representer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.coordinate_system.html#module-organoid_tracker.coordinate_system.spherical_coordinates">organoid_tracker.coordinate_system.spherical_coordinates module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.coordinate_system.html#module-organoid_tracker.coordinate_system">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.core.html">organoid_tracker.core package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.beacon_collection">organoid_tracker.core.beacon_collection module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.bounding_box">organoid_tracker.core.bounding_box module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.concurrent">organoid_tracker.core.concurrent module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.connections">organoid_tracker.core.connections module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.ellipse">organoid_tracker.core.ellipse module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.experiment">organoid_tracker.core.experiment module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.full_position_snapshot">organoid_tracker.core.full_position_snapshot module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.gaussian">organoid_tracker.core.gaussian module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.global_data">organoid_tracker.core.global_data module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.image_filters">organoid_tracker.core.image_filters module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.image_loader">organoid_tracker.core.image_loader module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.images">organoid_tracker.core.images module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.link_data">organoid_tracker.core.link_data module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.links">organoid_tracker.core.links module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.marker">organoid_tracker.core.marker module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.mask">organoid_tracker.core.mask module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.position">organoid_tracker.core.position module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.position_collection">organoid_tracker.core.position_collection module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.position_data">organoid_tracker.core.position_data module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.resolution">organoid_tracker.core.resolution module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.score">organoid_tracker.core.score module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.shape">organoid_tracker.core.shape module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.spline">organoid_tracker.core.spline module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.typing">organoid_tracker.core.typing module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.vector">organoid_tracker.core.vector module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core.warning_limits">organoid_tracker.core.warning_limits module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.gui.html">organoid_tracker.gui package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html#module-organoid_tracker.gui.action">organoid_tracker.gui.action module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html#module-organoid_tracker.gui.dialog">organoid_tracker.gui.dialog module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html#module-organoid_tracker.gui.gui_experiment">organoid_tracker.gui.gui_experiment module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html#module-organoid_tracker.gui.icon_getter">organoid_tracker.gui.icon_getter module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html#module-organoid_tracker.gui.image_resolution_dialog">organoid_tracker.gui.image_resolution_dialog module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html#module-organoid_tracker.gui.image_series_loader_dialog">organoid_tracker.gui.image_series_loader_dialog module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html#module-organoid_tracker.gui.launcher">organoid_tracker.gui.launcher module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html#module-organoid_tracker.gui.location_map">organoid_tracker.gui.location_map module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html#module-organoid_tracker.gui.option_choose_dialog">organoid_tracker.gui.option_choose_dialog module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html#module-organoid_tracker.gui.threading">organoid_tracker.gui.threading module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html#module-organoid_tracker.gui.toolbar">organoid_tracker.gui.toolbar module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html#module-organoid_tracker.gui.undo_redo">organoid_tracker.gui.undo_redo module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html#module-organoid_tracker.gui.window">organoid_tracker.gui.window module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html#module-organoid_tracker.gui">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html">organoid_tracker.guizela_tracker_compatibility package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html#module-organoid_tracker.guizela_tracker_compatibility.axis_lib">organoid_tracker.guizela_tracker_compatibility.axis_lib module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html#module-organoid_tracker.guizela_tracker_compatibility.axis_lib_v2">organoid_tracker.guizela_tracker_compatibility.axis_lib_v2 module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html#module-organoid_tracker.guizela_tracker_compatibility.cell_type_converter">organoid_tracker.guizela_tracker_compatibility.cell_type_converter module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html#module-organoid_tracker.guizela_tracker_compatibility.guizela_data_exporter">organoid_tracker.guizela_tracker_compatibility.guizela_data_exporter module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html#module-organoid_tracker.guizela_tracker_compatibility.guizela_data_importer">organoid_tracker.guizela_tracker_compatibility.guizela_data_importer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html#module-organoid_tracker.guizela_tracker_compatibility.track_lib">organoid_tracker.guizela_tracker_compatibility.track_lib module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html#module-organoid_tracker.guizela_tracker_compatibility.track_lib_v2">organoid_tracker.guizela_tracker_compatibility.track_lib_v2 module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html#module-organoid_tracker.guizela_tracker_compatibility.track_lib_v3">organoid_tracker.guizela_tracker_compatibility.track_lib_v3 module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html#module-organoid_tracker.guizela_tracker_compatibility.track_lib_v4">organoid_tracker.guizela_tracker_compatibility.track_lib_v4 module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html#module-organoid_tracker.guizela_tracker_compatibility">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.image_loading.html">organoid_tracker.image_loading package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.image_loading.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.image_loading.html#module-organoid_tracker.image_loading.array_image_loader">organoid_tracker.image_loading.array_image_loader module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.image_loading.html#module-organoid_tracker.image_loading.builtin_image_filters">organoid_tracker.image_loading.builtin_image_filters module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.image_loading.html#module-organoid_tracker.image_loading.builtin_merging_image_loaders">organoid_tracker.image_loading.builtin_merging_image_loaders module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.image_loading.html#module-organoid_tracker.image_loading.folder_image_loader">organoid_tracker.image_loading.folder_image_loader module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.image_loading.html#module-organoid_tracker.image_loading.general_image_loader">organoid_tracker.image_loading.general_image_loader module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.image_loading.html#module-organoid_tracker.image_loading.liffile_image_loader">organoid_tracker.image_loading.liffile_image_loader module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.image_loading.html#module-organoid_tracker.image_loading.merged_tiff_image_loader">organoid_tracker.image_loading.merged_tiff_image_loader module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.image_loading.html#module-organoid_tracker.image_loading.nd2file_image_loader">organoid_tracker.image_loading.nd2file_image_loader module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.image_loading.html#module-organoid_tracker.image_loading">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.imaging.html">organoid_tracker.imaging package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.imaging.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.imaging.html#module-organoid_tracker.imaging.angles">organoid_tracker.imaging.angles module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.imaging.html#module-organoid_tracker.imaging.cropper">organoid_tracker.imaging.cropper module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.imaging.html#module-organoid_tracker.imaging.ctc_io">organoid_tracker.imaging.ctc_io module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.imaging.html#module-organoid_tracker.imaging.depth_colored_image_creator">organoid_tracker.imaging.depth_colored_image_creator module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.imaging.html#module-organoid_tracker.imaging.image_adder">organoid_tracker.imaging.image_adder module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.imaging.html#module-organoid_tracker.imaging.image_file_name_pattern_finder">organoid_tracker.imaging.image_file_name_pattern_finder module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.imaging.html#module-organoid_tracker.imaging.io">organoid_tracker.imaging.io module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.imaging.html#module-organoid_tracker.imaging.lines">organoid_tracker.imaging.lines module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.imaging.html#module-organoid_tracker.imaging.list_io">organoid_tracker.imaging.list_io module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.imaging.html#module-organoid_tracker.imaging.trackmate_io">organoid_tracker.imaging.trackmate_io module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.imaging.html#module-organoid_tracker.imaging">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking.html">organoid_tracker.linking package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking.html#module-organoid_tracker.linking.cell_division_finder">organoid_tracker.linking.cell_division_finder module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking.html#module-organoid_tracker.linking.cheating_score_system">organoid_tracker.linking.cheating_score_system module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking.html#organoid-tracker-linking-dpct-linker-module">organoid_tracker.linking.dpct_linker module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking.html#module-organoid_tracker.linking.nearby_position_finder">organoid_tracker.linking.nearby_position_finder module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking.html#module-organoid_tracker.linking.nearest_neighbor_linker">organoid_tracker.linking.nearest_neighbor_linker module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking.html#module-organoid_tracker.linking.rational_scoring_system">organoid_tracker.linking.rational_scoring_system module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking.html#module-organoid_tracker.linking.scoring_system">organoid_tracker.linking.scoring_system module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking.html#module-organoid_tracker.linking">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking_analysis.html">organoid_tracker.linking_analysis package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.cell_compartment_finder">organoid_tracker.linking_analysis.cell_compartment_finder module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.cell_division_counter">organoid_tracker.linking_analysis.cell_division_counter module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.cell_error_finder">organoid_tracker.linking_analysis.cell_error_finder module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.cell_fate_finder">organoid_tracker.linking_analysis.cell_fate_finder module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.cell_nearby_death_counter">organoid_tracker.linking_analysis.cell_nearby_death_counter module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.errors">organoid_tracker.linking_analysis.errors module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.lineage_division_counter">organoid_tracker.linking_analysis.lineage_division_counter module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.lineage_drawing">organoid_tracker.linking_analysis.lineage_drawing module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.lineage_end_finder">organoid_tracker.linking_analysis.lineage_end_finder module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.lineage_error_finder">organoid_tracker.linking_analysis.lineage_error_finder module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.lineage_fate_finder">organoid_tracker.linking_analysis.lineage_fate_finder module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.lineage_finder">organoid_tracker.linking_analysis.lineage_finder module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.lineage_id_creator">organoid_tracker.linking_analysis.lineage_id_creator module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.lineage_markers">organoid_tracker.linking_analysis.lineage_markers module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.linking_markers">organoid_tracker.linking_analysis.linking_markers module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.links_filter">organoid_tracker.linking_analysis.links_filter module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.links_postprocessor">organoid_tracker.linking_analysis.links_postprocessor module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.particle_age_finder">organoid_tracker.linking_analysis.particle_age_finder module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.particle_flow_calculator">organoid_tracker.linking_analysis.particle_flow_calculator module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.particle_movement_finder">organoid_tracker.linking_analysis.particle_movement_finder module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.particle_rotation_calculator">organoid_tracker.linking_analysis.particle_rotation_calculator module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.position_connection_finder">organoid_tracker.linking_analysis.position_connection_finder module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#organoid-tracker-linking-analysis-scores-dataframe-module">organoid_tracker.linking_analysis.scores_dataframe module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis.track_positions_finder">organoid_tracker.linking_analysis.track_positions_finder module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_analysis.html">organoid_tracker.position_analysis package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_analysis.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_analysis.html#module-organoid_tracker.position_analysis.cell_density_calculator">organoid_tracker.position_analysis.cell_density_calculator module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_analysis.html#module-organoid_tracker.position_analysis.intensity_calculator">organoid_tracker.position_analysis.intensity_calculator module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_analysis.html#module-organoid_tracker.position_analysis.intensity_gradient_calculator">organoid_tracker.position_analysis.intensity_gradient_calculator module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_analysis.html#module-organoid_tracker.position_analysis.position_markers">organoid_tracker.position_analysis.position_markers module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_analysis.html#module-organoid_tracker.position_analysis">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection.html">organoid_tracker.position_detection package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection.html#module-organoid_tracker.position_detection.clusterer">organoid_tracker.position_detection.clusterer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection.html#module-organoid_tracker.position_detection.gaussian_detector_for_experiment">organoid_tracker.position_detection.gaussian_detector_for_experiment module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection.html#module-organoid_tracker.position_detection.gaussian_fit">organoid_tracker.position_detection.gaussian_fit module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection.html#module-organoid_tracker.position_detection.iso_intensity_curvature">organoid_tracker.position_detection.iso_intensity_curvature module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection.html#module-organoid_tracker.position_detection.position_mover">organoid_tracker.position_detection.position_mover module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection.html#module-organoid_tracker.position_detection.smoothing">organoid_tracker.position_detection.smoothing module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection.html#module-organoid_tracker.position_detection.thresholding">organoid_tracker.position_detection.thresholding module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection.html#module-organoid_tracker.position_detection.watershedding">organoid_tracker.position_detection.watershedding module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection.html#module-organoid_tracker.position_detection">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html">organoid_tracker.position_detection_cnn package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html#organoid-tracker-position-detection-cnn-convolutional-neural-network-module">organoid_tracker.position_detection_cnn.convolutional_neural_network module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html#organoid-tracker-position-detection-cnn-custom-filters-module">organoid_tracker.position_detection_cnn.custom_filters module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html#organoid-tracker-position-detection-cnn-image-with-positions-to-tensor-loader-module">organoid_tracker.position_detection_cnn.image_with_positions_to_tensor_loader module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html#organoid-tracker-position-detection-cnn-loss-functions-module">organoid_tracker.position_detection_cnn.loss_functions module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html#module-organoid_tracker.position_detection_cnn.peak_calling">organoid_tracker.position_detection_cnn.peak_calling module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html#organoid-tracker-position-detection-cnn-prediction-dataset-module">organoid_tracker.position_detection_cnn.prediction_dataset module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html#module-organoid_tracker.position_detection_cnn.split_images">organoid_tracker.position_detection_cnn.split_images module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html#module-organoid_tracker.position_detection_cnn.training_data_creator">organoid_tracker.position_detection_cnn.training_data_creator module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html#organoid-tracker-position-detection-cnn-training-dataset-module">organoid_tracker.position_detection_cnn.training_dataset module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html#module-organoid_tracker.position_detection_cnn">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.text_popup.html">organoid_tracker.text_popup package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.text_popup.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.text_popup.html#module-organoid_tracker.text_popup.help_popup">organoid_tracker.text_popup.help_popup module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.text_popup.html#module-organoid_tracker.text_popup.position_list_popup">organoid_tracker.text_popup.position_list_popup module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.text_popup.html#module-organoid_tracker.text_popup.text_popup">organoid_tracker.text_popup.text_popup module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.text_popup.html#module-organoid_tracker.text_popup">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.util.html">organoid_tracker.util package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.util.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.util.html#module-organoid_tracker.util.bits">organoid_tracker.util.bits module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.util.html#module-organoid_tracker.util.moving_average">organoid_tracker.util.moving_average module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.util.html#module-organoid_tracker.util.mpl_helper">organoid_tracker.util.mpl_helper module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.util.html#module-organoid_tracker.util.mpl_helper_3d">organoid_tracker.util.mpl_helper_3d module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.util.html#module-organoid_tracker.util.run_script_creator">organoid_tracker.util.run_script_creator module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.util.html#module-organoid_tracker.util">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.visualizer.html">organoid_tracker.visualizer package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.abstract_editor">organoid_tracker.visualizer.abstract_editor module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.abstract_image_visualizer">organoid_tracker.visualizer.abstract_image_visualizer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.beacon_editor">organoid_tracker.visualizer.beacon_editor module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.cell_compartment_visualizer">organoid_tracker.visualizer.cell_compartment_visualizer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.cell_death_visualizer">organoid_tracker.visualizer.cell_death_visualizer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.cell_density_visualizer">organoid_tracker.visualizer.cell_density_visualizer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.cell_division_visualizer">organoid_tracker.visualizer.cell_division_visualizer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.cell_fate_visualizer">organoid_tracker.visualizer.cell_fate_visualizer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.cell_movement_visualizer">organoid_tracker.visualizer.cell_movement_visualizer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.debug_image_visualizer">organoid_tracker.visualizer.debug_image_visualizer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.division_score_visualizer">organoid_tracker.visualizer.division_score_visualizer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.empty_visualizer">organoid_tracker.visualizer.empty_visualizer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.errors_visualizer">organoid_tracker.visualizer.errors_visualizer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.exitable_image_visualizer">organoid_tracker.visualizer.exitable_image_visualizer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.image_offset_editor">organoid_tracker.visualizer.image_offset_editor module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.image_slice_visualizer">organoid_tracker.visualizer.image_slice_visualizer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.lineage_errors_visualizer">organoid_tracker.visualizer.lineage_errors_visualizer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.lineage_fate_visualizer">organoid_tracker.visualizer.lineage_fate_visualizer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.lineage_tree_visualizer">organoid_tracker.visualizer.lineage_tree_visualizer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.link_and_position_editor">organoid_tracker.visualizer.link_and_position_editor module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.link_score_visualizer">organoid_tracker.visualizer.link_score_visualizer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.position_in_rectangle_deleter">organoid_tracker.visualizer.position_in_rectangle_deleter module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.position_list_visualizer">organoid_tracker.visualizer.position_list_visualizer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.spline_editor">organoid_tracker.visualizer.spline_editor module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.standard_image_visualizer">organoid_tracker.visualizer.standard_image_visualizer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer.track_visualizer">organoid_tracker.visualizer.track_visualizer module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html#module-organoid_tracker.visualizer">Module contents</a></li>
 </ul>
 </li>
@@ -336,7 +197,10 @@
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="TRACKING_FORMATS.html" class="btn btn-neutral float-left" title="Supported tracking formats" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="organoid_tracker.html" class="btn btn-neutral float-right" title="organoid_tracker package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

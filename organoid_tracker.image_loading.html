@@ -18,7 +18,9 @@
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="organoid_tracker.image_loading.array_image_loader module" href="organoid_tracker.image_loading.array_image_loader.html" />
+    <link rel="prev" title="organoid_tracker.guizela_tracker_compatibility.track_lib_v4 module" href="organoid_tracker.guizela_tracker_compatibility.track_lib_v4.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -36,23 +38,58 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">organoid_tracker.image_loading package</a><ul>
-<li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.image_loading.array_image_loader">organoid_tracker.image_loading.array_image_loader module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.image_loading.builtin_image_filters">organoid_tracker.image_loading.builtin_image_filters module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.image_loading.builtin_merging_image_loaders">organoid_tracker.image_loading.builtin_merging_image_loaders module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.image_loading.folder_image_loader">organoid_tracker.image_loading.folder_image_loader module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.image_loading.general_image_loader">organoid_tracker.image_loading.general_image_loader module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.image_loading.liffile_image_loader">organoid_tracker.image_loading.liffile_image_loader module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.image_loading.merged_tiff_image_loader">organoid_tracker.image_loading.merged_tiff_image_loader module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.image_loading.nd2file_image_loader">organoid_tracker.image_loading.nd2file_image_loader module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.image_loading">Module contents</a></li>
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">organoid_tracker</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="organoid_tracker.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.comparison.html">organoid_tracker.comparison package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.config.html">organoid_tracker.config package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.connecting.html">organoid_tracker.connecting package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.connection_analysis.html">organoid_tracker.connection_analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.coordinate_system.html">organoid_tracker.coordinate_system package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html">organoid_tracker.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html">organoid_tracker.gui package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html">organoid_tracker.guizela_tracker_compatibility package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">organoid_tracker.image_loading package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.imaging.html">organoid_tracker.imaging package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking.html">organoid_tracker.linking package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html">organoid_tracker.linking_analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_analysis.html">organoid_tracker.position_analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection.html">organoid_tracker.position_detection package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html">organoid_tracker.position_detection_cnn package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.text_popup.html">organoid_tracker.text_popup package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.util.html">organoid_tracker.util package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html">organoid_tracker.visualizer package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.html#module-organoid_tracker">Module contents</a></li>
 </ul>
 </li>
 </ul>
-</div>
+</li>
+</ul>
+
         </div>
       </div>
     </nav>
@@ -67,6 +104,8 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">organoid_tracker</a> &raquo;</li>
+          <li><a href="organoid_tracker.html">organoid_tracker package</a> &raquo;</li>
       <li>organoid_tracker.image_loading package</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/organoid_tracker.image_loading.rst.txt" rel="nofollow"> View page source</a>
@@ -81,618 +120,18 @@
 <h1>organoid_tracker.image_loading package<a class="headerlink" href="#organoid-tracker-image-loading-package" title="Permalink to this heading"></a></h1>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
-</section>
-<section id="module-organoid_tracker.image_loading.array_image_loader">
-<span id="organoid-tracker-image-loading-array-image-loader-module"></span><h2>organoid_tracker.image_loading.array_image_loader module<a class="headerlink" href="#module-organoid_tracker.image_loading.array_image_loader" title="Permalink to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.array_image_loader.SingleImageLoader">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.array_image_loader.</span></span><span class="sig-name descname"><span class="pre">SingleImageLoader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.array_image_loader.SingleImageLoader" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageLoader</span></code></a></p>
-<p>An image loader that just displays a single 3D array. Useful if you’re writing a quick script.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.array_image_loader.SingleImageLoader.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.array_image_loader.SingleImageLoader.copy" title="Permalink to this definition"></a></dt>
-<dd><p>Copies the image loader, so that you can use it on another thread.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.array_image_loader.SingleImageLoader.first_time_point_number">
-<span class="sig-name descname"><span class="pre">first_time_point_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.array_image_loader.SingleImageLoader.first_time_point_number" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the first time point for which images are available.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.array_image_loader.SingleImageLoader.get_2d_image_array">
-<span class="sig-name descname"><span class="pre">get_2d_image_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageChannel" title="organoid_tracker.core.image_loader.ImageChannel"><span class="pre">ImageChannel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.array_image_loader.SingleImageLoader.get_2d_image_array" title="Permalink to this definition"></a></dt>
-<dd><p>Loads one single 2d slice of an image. Returns None if there is no image for this z, time point or channel.
-Note: the image z always goes from 0 to image_size_z - 1.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.array_image_loader.SingleImageLoader.get_3d_image_array">
-<span class="sig-name descname"><span class="pre">get_3d_image_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageChannel" title="organoid_tracker.core.image_loader.ImageChannel"><span class="pre">ImageChannel</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.array_image_loader.SingleImageLoader.get_3d_image_array" title="Permalink to this definition"></a></dt>
-<dd><p>Loads an image, usually from disk. Returns None if there is no image for this time point or channel.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.array_image_loader.SingleImageLoader.get_channel_count">
-<span class="sig-name descname"><span class="pre">get_channel_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.array_image_loader.SingleImageLoader.get_channel_count" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the number of available channels.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.array_image_loader.SingleImageLoader.get_image_size_zyx">
-<span class="sig-name descname"><span class="pre">get_image_size_zyx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.array_image_loader.SingleImageLoader.get_image_size_zyx" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the image size. Returns None if there are no images.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.array_image_loader.SingleImageLoader.last_time_point_number">
-<span class="sig-name descname"><span class="pre">last_time_point_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.array_image_loader.SingleImageLoader.last_time_point_number" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the last time point (inclusive) for which images are available.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.array_image_loader.SingleImageLoader.serialize_to_config">
-<span class="sig-name descname"><span class="pre">serialize_to_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.array_image_loader.SingleImageLoader.serialize_to_config" title="Permalink to this definition"></a></dt>
-<dd><p>Serializes this image loader into a path and a file/series name. This can be stored in configuration files.</p>
-<p>Note: not every image loader can be serialized fully using just two strings. There is also a newer method,
-self.serialize_to_dictionary(), which does contain all information.</p>
-</dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.image_loading.builtin_image_filters">
-<span id="organoid-tracker-image-loading-builtin-image-filters-module"></span><h2>organoid_tracker.image_loading.builtin_image_filters module<a class="headerlink" href="#module-organoid_tracker.image_loading.builtin_image_filters" title="Permalink to this heading"></a></h2>
-<p>Some builtin image filters, so that they can be saved and loaded.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.GaussianBlurFilter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.builtin_image_filters.</span></span><span class="sig-name descname"><span class="pre">GaussianBlurFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blur_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.GaussianBlurFilter" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_filters.ImageFilter" title="organoid_tracker.core.image_filters.ImageFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageFilter</span></code></a></p>
-<p>Applies a Gaussian blur in 2D.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.GaussianBlurFilter.blur_radius">
-<span class="sig-name descname"><span class="pre">blur_radius</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.GaussianBlurFilter.blur_radius" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.GaussianBlurFilter.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_filters.ImageFilter" title="organoid_tracker.core.image_filters.ImageFilter"><span class="pre">ImageFilter</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.GaussianBlurFilter.copy" title="Permalink to this definition"></a></dt>
-<dd><p>Copies the filter, such that changes to this filter have no effect on the copy, and vice versa.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.GaussianBlurFilter.filter">
-<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.GaussianBlurFilter.filter" title="Permalink to this definition"></a></dt>
-<dd><p>Filters the given input array, which is a grayscale array of 2 or 3 dimensions. If it is three dimensions,
-then image_z is None. Note that the image_z does not include any image offsets, so z=0 will always be the
-lowest image plane.
-The input array will be modified.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.GaussianBlurFilter.get_name">
-<span class="sig-name descname"><span class="pre">get_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.GaussianBlurFilter.get_name" title="Permalink to this definition"></a></dt>
-<dd><p>Returns a user-friendly name, like “Enhance contrast” or “Suppress noise”.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.IntensityPoint">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.builtin_image_filters.</span></span><span class="sig-name descname"><span class="pre">IntensityPoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.IntensityPoint" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.IntensityPoint.distance_squared">
-<span class="sig-name descname"><span class="pre">distance_squared</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.image_loading.builtin_image_filters.IntensityPoint" title="organoid_tracker.image_loading.builtin_image_filters.IntensityPoint"><span class="pre">IntensityPoint</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.IntensityPoint.distance_squared" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.IntensityPoint.time_point">
-<span class="sig-name descname"><span class="pre">time_point</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></em><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.IntensityPoint.time_point" title="Permalink to this definition"></a></dt>
-<dd><p>Alias for field number 0</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.IntensityPoint.z">
-<span class="sig-name descname"><span class="pre">z</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.IntensityPoint.z" title="Permalink to this definition"></a></dt>
-<dd><p>Alias for field number 1</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.InterpolatedMinMaxFilter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.builtin_image_filters.</span></span><span class="sig-name descname"><span class="pre">InterpolatedMinMaxFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points_to_min_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#organoid_tracker.image_loading.builtin_image_filters.IntensityPoint" title="organoid_tracker.image_loading.builtin_image_filters.IntensityPoint"><span class="pre">IntensityPoint</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.InterpolatedMinMaxFilter" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_filters.ImageFilter" title="organoid_tracker.core.image_filters.ImageFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageFilter</span></code></a></p>
-<p>Allows you to set the min/max pixel values at different points during the time-lapse. For all other points,
-the min and max values are interpolated.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.InterpolatedMinMaxFilter.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.image_loading.builtin_image_filters.InterpolatedMinMaxFilter" title="organoid_tracker.image_loading.builtin_image_filters.InterpolatedMinMaxFilter"><span class="pre">InterpolatedMinMaxFilter</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.InterpolatedMinMaxFilter.copy" title="Permalink to this definition"></a></dt>
-<dd><p>Copies the filter, such that changes to this filter have no effect on the copy, and vice versa.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.InterpolatedMinMaxFilter.filter">
-<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.InterpolatedMinMaxFilter.filter" title="Permalink to this definition"></a></dt>
-<dd><p>Filters the given input array, which is a grayscale array of 2 or 3 dimensions. If it is three dimensions,
-then image_z is None. Note that the image_z does not include any image offsets, so z=0 will always be the
-lowest image plane.
-The input array will be modified.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.InterpolatedMinMaxFilter.get_name">
-<span class="sig-name descname"><span class="pre">get_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.InterpolatedMinMaxFilter.get_name" title="Permalink to this definition"></a></dt>
-<dd><p>Returns a user-friendly name, like “Enhance contrast” or “Suppress noise”.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.InterpolatedMinMaxFilter.get_point_exact">
-<span class="sig-name descname"><span class="pre">get_point_exact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.image_loading.builtin_image_filters.IntensityPoint" title="organoid_tracker.image_loading.builtin_image_filters.IntensityPoint"><span class="pre">IntensityPoint</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.InterpolatedMinMaxFilter.get_point_exact" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the min/max value that was stored for the given point. If there is no value stored for that point, then
-this method returns None. (So it won’t interpolate between points, unlike self.interpolate_point().</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.InterpolatedMinMaxFilter.interpolate_point">
-<span class="sig-name descname"><span class="pre">interpolate_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.image_loading.builtin_image_filters.IntensityPoint" title="organoid_tracker.image_loading.builtin_image_filters.IntensityPoint"><span class="pre">IntensityPoint</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.InterpolatedMinMaxFilter.interpolate_point" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.InterpolatedMinMaxFilter.points">
-<span class="sig-name descname"><span class="pre">points</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#organoid_tracker.image_loading.builtin_image_filters.IntensityPoint" title="organoid_tracker.image_loading.builtin_image_filters.IntensityPoint"><span class="pre">IntensityPoint</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.InterpolatedMinMaxFilter.points" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.InterpolatedMinMaxFilter.set_point">
-<span class="sig-name descname"><span class="pre">set_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.image_loading.builtin_image_filters.IntensityPoint" title="organoid_tracker.image_loading.builtin_image_filters.IntensityPoint"><span class="pre">IntensityPoint</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.InterpolatedMinMaxFilter.set_point" title="Permalink to this definition"></a></dt>
-<dd><p>Sets a point, or deletes it if the value is None.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.MultiplyPixelsFilter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.builtin_image_filters.</span></span><span class="sig-name descname"><span class="pre">MultiplyPixelsFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.MultiplyPixelsFilter" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_filters.ImageFilter" title="organoid_tracker.core.image_filters.ImageFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageFilter</span></code></a></p>
-<p>Increases the brightness of all pixels.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.MultiplyPixelsFilter.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.MultiplyPixelsFilter.copy" title="Permalink to this definition"></a></dt>
-<dd><p>Copies the filter, such that changes to this filter have no effect on the copy, and vice versa.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.MultiplyPixelsFilter.factor">
-<span class="sig-name descname"><span class="pre">factor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.MultiplyPixelsFilter.factor" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.MultiplyPixelsFilter.filter">
-<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.MultiplyPixelsFilter.filter" title="Permalink to this definition"></a></dt>
-<dd><p>Filters the given input array, which is a grayscale array of 2 or 3 dimensions. If it is three dimensions,
-then image_z is None. Note that the image_z does not include any image offsets, so z=0 will always be the
-lowest image plane.
-The input array will be modified.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.MultiplyPixelsFilter.get_name">
-<span class="sig-name descname"><span class="pre">get_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.MultiplyPixelsFilter.get_name" title="Permalink to this definition"></a></dt>
-<dd><p>Returns a user-friendly name, like “Enhance contrast” or “Suppress noise”.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.ThresholdFilter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.builtin_image_filters.</span></span><span class="sig-name descname"><span class="pre">ThresholdFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.08</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.ThresholdFilter" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_filters.ImageFilter" title="organoid_tracker.core.image_filters.ImageFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageFilter</span></code></a></p>
-<p>Sets all pixels below a relative threshold to zero.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.ThresholdFilter.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_filters.ImageFilter" title="organoid_tracker.core.image_filters.ImageFilter"><span class="pre">ImageFilter</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.ThresholdFilter.copy" title="Permalink to this definition"></a></dt>
-<dd><p>Copies the filter, such that changes to this filter have no effect on the copy, and vice versa.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.ThresholdFilter.filter">
-<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.ThresholdFilter.filter" title="Permalink to this definition"></a></dt>
-<dd><p>Filters the given input array, which is a grayscale array of 2 or 3 dimensions. If it is three dimensions,
-then image_z is None. Note that the image_z does not include any image offsets, so z=0 will always be the
-lowest image plane.
-The input array will be modified.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.ThresholdFilter.get_name">
-<span class="sig-name descname"><span class="pre">get_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.ThresholdFilter.get_name" title="Permalink to this definition"></a></dt>
-<dd><p>Returns a user-friendly name, like “Enhance contrast” or “Suppress noise”.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.ThresholdFilter.noise_limit">
-<span class="sig-name descname"><span class="pre">noise_limit</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.ThresholdFilter.noise_limit" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.image_loading.builtin_merging_image_loaders">
-<span id="organoid-tracker-image-loading-builtin-merging-image-loaders-module"></span><h2>organoid_tracker.image_loading.builtin_merging_image_loaders module<a class="headerlink" href="#module-organoid_tracker.image_loading.builtin_merging_image_loaders" title="Permalink to this heading"></a></h2>
-<p>Contains image loaders that merge several other image loaders. Examples:</p>
-<ul class="simple">
-<li><p>An image loader that appends one set of images after another.
-&gt;&gt;&gt; ChannelSummingImageLoader</p></li>
-<li><p>An image loader that takes channel 1 and 2 from one set of images, and channel 3 of another.
-&gt;&gt;&gt; ChannelAppendingImageLoader</p></li>
-<li><p>An image loader that appends multiple time lapses after each other
-&gt;&gt;&gt; TimeAppendingImageLoader</p></li>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.image_loading.array_image_loader.html">organoid_tracker.image_loading.array_image_loader module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.image_loading.builtin_image_filters.html">organoid_tracker.image_loading.builtin_image_filters module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.image_loading.builtin_merging_image_loaders.html">organoid_tracker.image_loading.builtin_merging_image_loaders module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.image_loading.folder_image_loader.html">organoid_tracker.image_loading.folder_image_loader module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.image_loading.general_image_loader.html">organoid_tracker.image_loading.general_image_loader module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.image_loading.liffile_image_loader.html">organoid_tracker.image_loading.liffile_image_loader module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.image_loading.merged_tiff_image_loader.html">organoid_tracker.image_loading.merged_tiff_image_loader module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.image_loading.nd2file_image_loader.html">organoid_tracker.image_loading.nd2file_image_loader module</a></li>
 </ul>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.builtin_merging_image_loaders.</span></span><span class="sig-name descname"><span class="pre">ChannelAppendingImageLoader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_loaders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageLoader</span></code></a></p>
-<p>Combines multiple image loaders, showing their channels after each other.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.copy" title="Permalink to this definition"></a></dt>
-<dd><p>Copies the image loader, so that you can use it on another thread.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.first_time_point_number">
-<span class="sig-name descname"><span class="pre">first_time_point_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.first_time_point_number" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the first time point for which images are available.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.get_2d_image_array">
-<span class="sig-name descname"><span class="pre">get_2d_image_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageChannel" title="organoid_tracker.core.image_loader.ImageChannel"><span class="pre">ImageChannel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.get_2d_image_array" title="Permalink to this definition"></a></dt>
-<dd><p>Loads one single 2d slice of an image. Returns None if there is no image for this z, time point or channel.
-Note: the image z always goes from 0 to image_size_z - 1.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.get_3d_image_array">
-<span class="sig-name descname"><span class="pre">get_3d_image_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageChannel" title="organoid_tracker.core.image_loader.ImageChannel"><span class="pre">ImageChannel</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.get_3d_image_array" title="Permalink to this definition"></a></dt>
-<dd><p>Loads an image, usually from disk. Returns None if there is no image for this time point or channel.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.get_channel_count">
-<span class="sig-name descname"><span class="pre">get_channel_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.get_channel_count" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the number of available channels.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.get_image_size_zyx">
-<span class="sig-name descname"><span class="pre">get_image_size_zyx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.get_image_size_zyx" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the image size. Returns None if there are no images.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.last_time_point_number">
-<span class="sig-name descname"><span class="pre">last_time_point_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.last_time_point_number" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the last time point (inclusive) for which images are available.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.serialize_to_config">
-<span class="sig-name descname"><span class="pre">serialize_to_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.serialize_to_config" title="Permalink to this definition"></a></dt>
-<dd><p>Serializes this image loader into a path and a file/series name. This can be stored in configuration files.</p>
-<p>Note: not every image loader can be serialized fully using just two strings. There is also a newer method,
-self.serialize_to_dictionary(), which does contain all information.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.serialize_to_dictionary">
-<span class="sig-name descname"><span class="pre">serialize_to_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.serialize_to_dictionary" title="Permalink to this definition"></a></dt>
-<dd><p>Serializes this image loader into a dictionary. The default implementation just uses the output of
-self.serialize_to_config().</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.uncached">
-<span class="sig-name descname"><span class="pre">uncached</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.uncached" title="Permalink to this definition"></a></dt>
-<dd><p>If this loader is a caching wrapper around another loader, this method returns one loader below. Otherwise,
-it returns self.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.builtin_merging_image_loaders.</span></span><span class="sig-name descname"><span class="pre">ChannelSummingImageLoader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">original</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Collection</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageChannel" title="organoid_tracker.core.image_loader.ImageChannel"><span class="pre">ImageChannel</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageLoader</span></code></a></p>
-<p>For summing multiple image channels. Example usage:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">old_image_loader</span><span class="p">:</span> <span class="n">ImageLoader</span> <span class="o">=</span> <span class="o">...</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">old_channels</span> <span class="o">=</span> <span class="n">old_image_loader</span><span class="o">.</span><span class="n">get_channels</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">merged_image_loader</span> <span class="o">=</span> <span class="n">ChannelSummingImageLoader</span><span class="p">(</span><span class="n">old_image_loader</span><span class="p">,</span> <span class="p">[</span>
-<span class="gp">&gt;&gt;&gt; </span>   <span class="p">[</span><span class="n">old_channels</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">old_channels</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">old_channels</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
-<span class="gp">&gt;&gt;&gt; </span>   <span class="p">[</span><span class="n">old_channels</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="p">])</span>
-</pre></div>
 </div>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.copy" title="Permalink to this definition"></a></dt>
-<dd><p>Copies the image loader, so that you can use it on another thread.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.first_time_point_number">
-<span class="sig-name descname"><span class="pre">first_time_point_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.first_time_point_number" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the first time point for which images are available.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.get_2d_image_array">
-<span class="sig-name descname"><span class="pre">get_2d_image_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageChannel" title="organoid_tracker.core.image_loader.ImageChannel"><span class="pre">ImageChannel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.get_2d_image_array" title="Permalink to this definition"></a></dt>
-<dd><p>Loads one single 2d slice of an image. Returns None if there is no image for this z, time point or channel.
-Note: the image z always goes from 0 to image_size_z - 1.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.get_3d_image_array">
-<span class="sig-name descname"><span class="pre">get_3d_image_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageChannel" title="organoid_tracker.core.image_loader.ImageChannel"><span class="pre">ImageChannel</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.get_3d_image_array" title="Permalink to this definition"></a></dt>
-<dd><p>Loads an image, usually from disk. Returns None if there is no image for this time point or channel.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.get_channel_count">
-<span class="sig-name descname"><span class="pre">get_channel_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.get_channel_count" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the number of available channels.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.get_image_size_zyx">
-<span class="sig-name descname"><span class="pre">get_image_size_zyx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.get_image_size_zyx" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the image size. Returns None if there are no images.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.get_unmerged_image_loader">
-<span class="sig-name descname"><span class="pre">get_unmerged_image_loader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.get_unmerged_image_loader" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.last_time_point_number">
-<span class="sig-name descname"><span class="pre">last_time_point_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.last_time_point_number" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the last time point (inclusive) for which images are available.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.serialize_to_config">
-<span class="sig-name descname"><span class="pre">serialize_to_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.serialize_to_config" title="Permalink to this definition"></a></dt>
-<dd><p>Serializes this image loader into a path and a file/series name. This can be stored in configuration files.</p>
-<p>Note: not every image loader can be serialized fully using just two strings. There is also a newer method,
-self.serialize_to_dictionary(), which does contain all information.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.serialize_to_dictionary">
-<span class="sig-name descname"><span class="pre">serialize_to_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.serialize_to_dictionary" title="Permalink to this definition"></a></dt>
-<dd><p>Serializes this image loader into a dictionary. The default implementation just uses the output of
-self.serialize_to_config().</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.builtin_merging_image_loaders.</span></span><span class="sig-name descname"><span class="pre">TimeAppendingImageLoader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_loaders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageLoader</span></code></a></p>
-<p>Combines to image loaders, showing images after each other.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.copy" title="Permalink to this definition"></a></dt>
-<dd><p>Copies the image loader, so that you can use it on another thread.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.first_time_point_number">
-<span class="sig-name descname"><span class="pre">first_time_point_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.first_time_point_number" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the first time point for which images are available.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.get_2d_image_array">
-<span class="sig-name descname"><span class="pre">get_2d_image_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageChannel" title="organoid_tracker.core.image_loader.ImageChannel"><span class="pre">ImageChannel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.get_2d_image_array" title="Permalink to this definition"></a></dt>
-<dd><p>Loads one single 2d slice of an image. Returns None if there is no image for this z, time point or channel.
-Note: the image z always goes from 0 to image_size_z - 1.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.get_3d_image_array">
-<span class="sig-name descname"><span class="pre">get_3d_image_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageChannel" title="organoid_tracker.core.image_loader.ImageChannel"><span class="pre">ImageChannel</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.get_3d_image_array" title="Permalink to this definition"></a></dt>
-<dd><p>Loads an image, usually from disk. Returns None if there is no image for this time point or channel.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.get_channel_count">
-<span class="sig-name descname"><span class="pre">get_channel_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.get_channel_count" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the number of available channels.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.get_image_size_zyx">
-<span class="sig-name descname"><span class="pre">get_image_size_zyx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.get_image_size_zyx" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the image size. Returns None if there are no images.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.last_time_point_number">
-<span class="sig-name descname"><span class="pre">last_time_point_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.last_time_point_number" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the last time point (inclusive) for which images are available.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.serialize_to_config">
-<span class="sig-name descname"><span class="pre">serialize_to_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.serialize_to_config" title="Permalink to this definition"></a></dt>
-<dd><p>Serializes this image loader into a path and a file/series name. This can be stored in configuration files.</p>
-<p>Note: not every image loader can be serialized fully using just two strings. There is also a newer method,
-self.serialize_to_dictionary(), which does contain all information.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.serialize_to_dictionary">
-<span class="sig-name descname"><span class="pre">serialize_to_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.serialize_to_dictionary" title="Permalink to this definition"></a></dt>
-<dd><p>Serializes this image loader into a dictionary. The default implementation just uses the output of
-self.serialize_to_config().</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.uncached">
-<span class="sig-name descname"><span class="pre">uncached</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.uncached" title="Permalink to this definition"></a></dt>
-<dd><p>If this loader is a caching wrapper around another loader, this method returns one loader below. Otherwise,
-it returns self.</p>
-</dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.image_loading.folder_image_loader">
-<span id="organoid-tracker-image-loading-folder-image-loader-module"></span><h2>organoid_tracker.image_loading.folder_image_loader module<a class="headerlink" href="#module-organoid_tracker.image_loading.folder_image_loader" title="Permalink to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.folder_image_loader.FolderImageLoader">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.folder_image_loader.</span></span><span class="sig-name descname"><span class="pre">FolderImageLoader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.folder_image_loader.FolderImageLoader" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageLoader</span></code></a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.folder_image_loader.FolderImageLoader.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.folder_image_loader.FolderImageLoader.copy" title="Permalink to this definition"></a></dt>
-<dd><p>Copies the image loader, so that you can use it on another thread.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.folder_image_loader.FolderImageLoader.first_time_point_number">
-<span class="sig-name descname"><span class="pre">first_time_point_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.folder_image_loader.FolderImageLoader.first_time_point_number" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the first time point for which images are available.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.folder_image_loader.FolderImageLoader.get_2d_image_array">
-<span class="sig-name descname"><span class="pre">get_2d_image_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageChannel" title="organoid_tracker.core.image_loader.ImageChannel"><span class="pre">ImageChannel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.folder_image_loader.FolderImageLoader.get_2d_image_array" title="Permalink to this definition"></a></dt>
-<dd><p>Loads one single 2d slice of an image. Returns None if there is no image for this z, time point or channel.
-Note: the image z always goes from 0 to image_size_z - 1.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.folder_image_loader.FolderImageLoader.get_3d_image_array">
-<span class="sig-name descname"><span class="pre">get_3d_image_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.image_loader.ImageChannel" title="organoid_tracker.core.image_loader.ImageChannel"><span class="pre">ImageChannel</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.folder_image_loader.FolderImageLoader.get_3d_image_array" title="Permalink to this definition"></a></dt>
-<dd><p>Loads an image, usually from disk. Returns None if there is no image for this time point or channel.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.folder_image_loader.FolderImageLoader.get_channel_count">
-<span class="sig-name descname"><span class="pre">get_channel_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.folder_image_loader.FolderImageLoader.get_channel_count" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the number of available channels.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.folder_image_loader.FolderImageLoader.get_image_size_zyx">
-<span class="sig-name descname"><span class="pre">get_image_size_zyx</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.folder_image_loader.FolderImageLoader.get_image_size_zyx" title="Permalink to this definition"></a></dt>
-<dd><p>Just get the size of the image at the first time point, and cache it.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.folder_image_loader.FolderImageLoader.last_time_point_number">
-<span class="sig-name descname"><span class="pre">last_time_point_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.folder_image_loader.FolderImageLoader.last_time_point_number" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the last time point (inclusive) for which images are available.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.folder_image_loader.FolderImageLoader.serialize_to_config">
-<span class="sig-name descname"><span class="pre">serialize_to_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.folder_image_loader.FolderImageLoader.serialize_to_config" title="Permalink to this definition"></a></dt>
-<dd><p>Serializes this image loader into a path and a file/series name. This can be stored in configuration files.</p>
-<p>Note: not every image loader can be serialized fully using just two strings. There is also a newer method,
-self.serialize_to_dictionary(), which does contain all information.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.folder_image_loader.load_images_from_folder">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.folder_image_loader.</span></span><span class="sig-name descname"><span class="pre">load_images_from_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.folder_image_loader.load_images_from_folder" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</section>
-<section id="module-organoid_tracker.image_loading.general_image_loader">
-<span id="organoid-tracker-image-loading-general-image-loader-module"></span><h2>organoid_tracker.image_loading.general_image_loader module<a class="headerlink" href="#module-organoid_tracker.image_loading.general_image_loader" title="Permalink to this heading"></a></h2>
-<p>Tries to find out which image loader to use based on two settings, container and patter
-n.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.general_image_loader.load_images">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.general_image_loader.</span></span><span class="sig-name descname"><span class="pre">load_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">container</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000000000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.general_image_loader.load_images" title="Permalink to this definition"></a></dt>
-<dd><p>Loads images from any of the supported formats. The container is a file or a directory, pattern is the format
-used to search within that file or directory. For a sequence of TIFF files, container will be a directroy and
-pattern the pattern of files in that directory. For a LIF file, container will be the LIF file, and pattern the name
-of the experiment within that file. Etc.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.general_image_loader.load_images_from_dictionary">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.general_image_loader.</span></span><span class="sig-name descname"><span class="pre">load_images_from_dictionary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dictionary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000000000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.general_image_loader.load_images_from_dictionary" title="Permalink to this definition"></a></dt>
-<dd><p>For loading images that have been stored using image_loader.serialize_to_dictionary()</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.image_loading.liffile_image_loader">
-<span id="organoid-tracker-image-loading-liffile-image-loader-module"></span><h2>organoid_tracker.image_loading.liffile_image_loader module<a class="headerlink" href="#module-organoid_tracker.image_loading.liffile_image_loader" title="Permalink to this heading"></a></h2>
-<p>Image loader for LIF files.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.liffile_image_loader.load_from_lif_file">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.liffile_image_loader.</span></span><span class="sig-name descname"><span class="pre">load_from_lif_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">series_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000000000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.liffile_image_loader.load_from_lif_file" title="Permalink to this definition"></a></dt>
-<dd><p>Sets up the experimental images for a LIF file that is not yet opened.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.liffile_image_loader.load_from_lif_reader">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.liffile_image_loader.</span></span><span class="sig-name descname"><span class="pre">load_from_lif_reader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Reader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">serie_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000000000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.liffile_image_loader.load_from_lif_reader" title="Permalink to this definition"></a></dt>
-<dd><p>Sets up the experimental images for an already opened LIF file.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.image_loading.merged_tiff_image_loader">
-<span id="organoid-tracker-image-loading-merged-tiff-image-loader-module"></span><h2>organoid_tracker.image_loading.merged_tiff_image_loader module<a class="headerlink" href="#module-organoid_tracker.image_loading.merged_tiff_image_loader" title="Permalink to this heading"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.merged_tiff_image_loader.load_from_tif_file">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.merged_tiff_image_loader.</span></span><span class="sig-name descname"><span class="pre">load_from_tif_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.merged_tiff_image_loader.load_from_tif_file" title="Permalink to this definition"></a></dt>
-<dd><p>Creates an image loader for the individual images in the TIF file.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.image_loading.nd2file_image_loader">
-<span id="organoid-tracker-image-loading-nd2file-image-loader-module"></span><h2>organoid_tracker.image_loading.nd2file_image_loader module<a class="headerlink" href="#module-organoid_tracker.image_loading.nd2file_image_loader" title="Permalink to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.nd2file_image_loader.Nd2File">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.nd2file_image_loader.</span></span><span class="sig-name descname"><span class="pre">Nd2File</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.nd2file_image_loader.Nd2File" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>A ND2 file with searchable image series. Use load_image_series to load the actual images.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.nd2file_image_loader.Nd2File.get_location_counts">
-<span class="sig-name descname"><span class="pre">get_location_counts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.nd2file_image_loader.Nd2File.get_location_counts" title="Permalink to this definition"></a></dt>
-<dd><p>Gets all available loctions, from 1 to the returned count.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.nd2file_image_loader.load_image_series">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.nd2file_image_loader.</span></span><span class="sig-name descname"><span class="pre">load_image_series</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.image_loading.nd2file_image_loader.Nd2File" title="organoid_tracker.image_loading.nd2file_image_loader.Nd2File"><span class="pre">Nd2File</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">field_of_view</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.nd2file_image_loader.load_image_series" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the image loader for the given series inside the given file. Raises ValueError if that series doesn’t
-exist.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.nd2file_image_loader.load_image_series_from_config">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.nd2file_image_loader.</span></span><span class="sig-name descname"><span class="pre">load_image_series_from_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.nd2file_image_loader.load_image_series_from_config" title="Permalink to this definition"></a></dt>
-<dd><p>Loads the image seriers into the images object using the file_name and pattern settings.</p>
-</dd></dl>
-
 </section>
 <section id="module-organoid_tracker.image_loading">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-organoid_tracker.image_loading" title="Permalink to this heading"></a></h2>
@@ -703,7 +142,10 @@ exist.</p>
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="organoid_tracker.guizela_tracker_compatibility.track_lib_v4.html" class="btn btn-neutral float-left" title="organoid_tracker.guizela_tracker_compatibility.track_lib_v4 module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="organoid_tracker.image_loading.array_image_loader.html" class="btn btn-neutral float-right" title="organoid_tracker.image_loading.array_image_loader module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

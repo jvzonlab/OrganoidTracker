@@ -1,0 +1,7 @@
+organoid\_tracker.imaging.image\_adder module
+=============================================
+
+.. automodule:: organoid_tracker.imaging.image_adder
+   :members:
+   :undoc-members:
+   :show-inheritance:

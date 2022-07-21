@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supported tracking formats &mdash; OrganoidTracker 2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="organoid_tracker" href="modules.html" />
+    <link rel="prev" title="The scripts" href="SCRIPTS.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> OrganoidTracker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Supported tracking formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">organoid_tracker</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OrganoidTracker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Supported tracking formats</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/TRACKING_FORMATS.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="supported-tracking-formats">
+<h1>Supported tracking formats<a class="headerlink" href="#supported-tracking-formats" title="Permalink to this heading"></a></h1>
+<p><a class="reference internal" href="index.html"><span class="doc std std-doc">← Back to main page</span></a></p>
+<p><em>See also: <a class="reference internal" href="IMAGE_FORMATS.html"><span class="doc std std-doc">Supported image formats</span></a></em></p>
+<p>The program itself uses <code class="docutils literal notranslate"><span class="pre">.aut</span></code> files. This is the only file format that saves all data, including positions, position shape, errors and warnings, data axes, etc. You can also import/export from other formats, but beware that data will be lost in the conversion process.</p>
+<ul class="simple">
+<li><p>The TrackMate format saves positions, links and the resolution. Other data is lost. Cell merges are included. Importing works by opening a TrackMate XML file, exporting can be done in the <code class="docutils literal notranslate"><span class="pre">File</span> <span class="pre">-&gt;</span> <span class="pre">Export</span> <span class="pre">links</span></code> menu.</p></li>
+<li><p>The Cell Tracking Challenge track format is described at <a class="reference external" href="https://celltrackingchallenge.net">https://celltrackingchallenge.net/</a>. You can export your data using the <code class="docutils literal notranslate"><span class="pre">File</span> <span class="pre">-&gt;</span> <span class="pre">Export</span> <span class="pre">links</span></code> menu option, and you can import your data simply by loading the <code class="docutils literal notranslate"><span class="pre">man_track.txt</span></code> file. OrganoidTracker only exports the positions and links. Cell merges (like in the skin) are not supported, as this file format only allows one single parent for each cell track.</p></li>
+<li><p>The Paraview CSV format just consists of a bunch of CSV files. Use <code class="docutils literal notranslate"><span class="pre">File</span> <span class="pre">-&gt;</span> <span class="pre">Export</span> <span class="pre">positions</span></code> to export the positions with or without extra data like cell density and track id. You’ll be asked to select a folder to export everything to. After exporting you’ll find a help file in that folder with instructions on how to import your files in Paraview. If you choose to export the positions with metadata, you’ll also get a JSON file with a colormap, so that you can color the cells by lineage in Paraview.</p></li>
+<li><p>For other formats you will need to write an importer yourself. Instructions can be found at the <a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html"><span class="doc std std-doc">custom tracking formats</span></a> page.</p></li>
+</ul>
+<p>If you’re writing a Python script for data analysis, I recommend looking at the <a class="reference internal" href="API.html"><span class="doc std std-doc">API</span></a> to see how you can interact with the data files. If you’re using another programming language, you can load the <code class="docutils literal notranslate"><span class="pre">.aut</span></code> file as a JSON file.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="SCRIPTS.html" class="btn btn-neutral float-left" title="The scripts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="modules.html" class="btn btn-neutral float-right" title="organoid_tracker" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Jeroen van Zon Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

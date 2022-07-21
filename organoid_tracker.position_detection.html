@@ -18,7 +18,9 @@
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="organoid_tracker.position_detection.clusterer module" href="organoid_tracker.position_detection.clusterer.html" />
+    <link rel="prev" title="organoid_tracker.position_analysis.position_markers module" href="organoid_tracker.position_analysis.position_markers.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -36,23 +38,58 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">organoid_tracker.position_detection package</a><ul>
-<li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.position_detection.clusterer">organoid_tracker.position_detection.clusterer module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.position_detection.gaussian_detector_for_experiment">organoid_tracker.position_detection.gaussian_detector_for_experiment module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.position_detection.gaussian_fit">organoid_tracker.position_detection.gaussian_fit module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.position_detection.iso_intensity_curvature">organoid_tracker.position_detection.iso_intensity_curvature module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.position_detection.position_mover">organoid_tracker.position_detection.position_mover module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.position_detection.smoothing">organoid_tracker.position_detection.smoothing module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.position_detection.thresholding">organoid_tracker.position_detection.thresholding module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.position_detection.watershedding">organoid_tracker.position_detection.watershedding module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.position_detection">Module contents</a></li>
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">organoid_tracker</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="organoid_tracker.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.comparison.html">organoid_tracker.comparison package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.config.html">organoid_tracker.config package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.connecting.html">organoid_tracker.connecting package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.connection_analysis.html">organoid_tracker.connection_analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.coordinate_system.html">organoid_tracker.coordinate_system package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html">organoid_tracker.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html">organoid_tracker.gui package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html">organoid_tracker.guizela_tracker_compatibility package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.image_loading.html">organoid_tracker.image_loading package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.imaging.html">organoid_tracker.imaging package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking.html">organoid_tracker.linking package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html">organoid_tracker.linking_analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_analysis.html">organoid_tracker.position_analysis package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">organoid_tracker.position_detection package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html">organoid_tracker.position_detection_cnn package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.text_popup.html">organoid_tracker.text_popup package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.util.html">organoid_tracker.util package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html">organoid_tracker.visualizer package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.html#module-organoid_tracker">Module contents</a></li>
 </ul>
 </li>
 </ul>
-</div>
+</li>
+</ul>
+
         </div>
       </div>
     </nav>
@@ -67,6 +104,8 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">organoid_tracker</a> &raquo;</li>
+          <li><a href="organoid_tracker.html">organoid_tracker package</a> &raquo;</li>
       <li>organoid_tracker.position_detection package</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/organoid_tracker.position_detection.rst.txt" rel="nofollow"> View page source</a>
@@ -81,246 +120,18 @@
 <h1>organoid_tracker.position_detection package<a class="headerlink" href="#organoid-tracker-position-detection-package" title="Permalink to this heading"></a></h1>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
-</section>
-<section id="module-organoid_tracker.position_detection.clusterer">
-<span id="organoid-tracker-position-detection-clusterer-module"></span><h2>organoid_tracker.position_detection.clusterer module<a class="headerlink" href="#module-organoid_tracker.position_detection.clusterer" title="Permalink to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.clusterer.LabeledCluster">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.clusterer.</span></span><span class="sig-name descname"><span class="pre">LabeledCluster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cluster_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.position_detection.clusterer.LabeledCluster" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Multiple stacks of ellipses that are so close to each other that a Gaussian mixture model is necessary.</p>
-<dl class="py property">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.clusterer.LabeledCluster.cluster_index">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cluster_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#organoid_tracker.position_detection.clusterer.LabeledCluster.cluster_index" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.clusterer.LabeledCluster.get_tags">
-<span class="sig-name descname"><span class="pre">get_tags</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.position_detection.clusterer.LabeledCluster.get_tags" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the tags of all stacks. The returned order matches the order of self.guess_gaussians(…)</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.clusterer.get_clusters_from_labeled_image">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.clusterer.</span></span><span class="sig-name descname"><span class="pre">get_clusters_from_labeled_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">watershed_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">erode_passes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#organoid_tracker.position_detection.clusterer.LabeledCluster" title="organoid_tracker.position_detection.clusterer.LabeledCluster"><span class="pre">LabeledCluster</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.position_detection.clusterer.get_clusters_from_labeled_image" title="Permalink to this definition"></a></dt>
-<dd><p>Gets positions clusters from a watershed image. The tags from all returned clusters are the indices in the
-positions_zyx_list. Returns the clusters and the image used for clustering. Note that that image is eroded
-erode_passes times.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.position_detection.gaussian_detector_for_experiment">
-<span id="organoid-tracker-position-detection-gaussian-detector-for-experiment-module"></span><h2>organoid_tracker.position_detection.gaussian_detector_for_experiment module<a class="headerlink" href="#module-organoid_tracker.position_detection.gaussian_detector_for_experiment" title="Permalink to this heading"></a></h2>
-<p>Starting point for the Gaussian detector: from simple cell positions to full cell shapes.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.gaussian_detector_for_experiment.perform_for_experiment">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.gaussian_detector_for_experiment.</span></span><span class="sig-name descname"><span class="pre">perform_for_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">experiment:</span> <span class="pre">~organoid_tracker.core.experiment.Experiment,</span> <span class="pre">*,</span> <span class="pre">threshold_block_size:</span> <span class="pre">int,</span> <span class="pre">gaussian_fit_smooth_size:</span> <span class="pre">int,</span> <span class="pre">cluster_detection_erosion_rounds:</span> <span class="pre">int,</span> <span class="pre">call_after_time_point:</span> <span class="pre">~typing.Callable[[~organoid_tracker.core.TimePoint],</span> <span class="pre">None]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">&lt;lambda&gt;&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.position_detection.gaussian_detector_for_experiment.perform_for_experiment" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</section>
-<section id="module-organoid_tracker.position_detection.gaussian_fit">
-<span id="organoid-tracker-position-detection-gaussian-fit-module"></span><h2>organoid_tracker.position_detection.gaussian_fit module<a class="headerlink" href="#module-organoid_tracker.position_detection.gaussian_fit" title="Permalink to this heading"></a></h2>
-<p>Code for fitting cells to Gaussian functions.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.gaussian_fit.add_noise">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.gaussian_fit.</span></span><span class="sig-name descname"><span class="pre">add_noise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.position_detection.gaussian_fit.add_noise" title="Permalink to this definition"></a></dt>
-<dd><p>Adds noise to the given data. Useful for construction of artificial testing data.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.gaussian_fit.perform_gaussian_fit">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.gaussian_fit.</span></span><span class="sig-name descname"><span class="pre">perform_gaussian_fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">original_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">guess</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.gaussian.Gaussian" title="organoid_tracker.core.gaussian.Gaussian"><span class="pre">Gaussian</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.gaussian.Gaussian" title="organoid_tracker.core.gaussian.Gaussian"><span class="pre">Gaussian</span></a></span></span><a class="headerlink" href="#organoid_tracker.position_detection.gaussian_fit.perform_gaussian_fit" title="Permalink to this definition"></a></dt>
-<dd><p>Fits a gaussian function to an image. original_image is a zyx-indexed image, guess is an initial starting point
-for the fit.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.gaussian_fit.perform_gaussian_mixture_fit">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.gaussian_fit.</span></span><span class="sig-name descname"><span class="pre">perform_gaussian_mixture_fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">original_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">guesses</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.gaussian.Gaussian" title="organoid_tracker.core.gaussian.Gaussian"><span class="pre">Gaussian</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.gaussian.Gaussian" title="organoid_tracker.core.gaussian.Gaussian"><span class="pre">Gaussian</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.position_detection.gaussian_fit.perform_gaussian_mixture_fit" title="Permalink to this definition"></a></dt>
-<dd><p>Fits multiple Gaussians to the image (a Gaussian Mixture Model). Initial seeds must be given.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.gaussian_fit.perform_gaussian_mixture_fit_from_watershed">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.gaussian_fit.</span></span><span class="sig-name descname"><span class="pre">perform_gaussian_mixture_fit_from_watershed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">watershed_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blur_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">erode_passes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.gaussian.Gaussian" title="organoid_tracker.core.gaussian.Gaussian"><span class="pre">Gaussian</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.position_detection.gaussian_fit.perform_gaussian_mixture_fit_from_watershed" title="Permalink to this definition"></a></dt>
-<dd><p>GMM using watershed as seeds. The watershed is used to fit as few Gaussians at the same time as possible: if two
-colors in the watershed have only a small connection (defined by erode_passes) they will be fit separately. The
-positions are used as starting positions for the Gaussian fit; the index in the list must match the index in the
-watershed image.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.position_detection.iso_intensity_curvature">
-<span id="organoid-tracker-position-detection-iso-intensity-curvature-module"></span><h2>organoid_tracker.position_detection.iso_intensity_curvature module<a class="headerlink" href="#module-organoid_tracker.position_detection.iso_intensity_curvature" title="Permalink to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.iso_intensity_curvature.</span></span><span class="sig-name descname"><span class="pre">ImageDerivatives</span></span><a class="headerlink" href="#organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Stores various image derivatives. This object is intended to be reused to conserve memory. Call calculate() to
-populate all the fields in this class.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.calculate">
-<span class="sig-name descname"><span class="pre">calculate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blur_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.calculate" title="Permalink to this definition"></a></dt>
-<dd><p>Calculates a variety of Sobel derivatives.
-image_stack: 3D image
-blur_radius: extended kernel size for Sobel derivative. Larger is more smoothing. Must be 1, 3, 5, or 7.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.d2image_dxdx">
-<span class="sig-name descname"><span class="pre">d2image_dxdx</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.d2image_dxdx" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.d2image_dxdy">
-<span class="sig-name descname"><span class="pre">d2image_dxdy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.d2image_dxdy" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.d2image_dxdz">
-<span class="sig-name descname"><span class="pre">d2image_dxdz</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.d2image_dxdz" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.d2image_dydy">
-<span class="sig-name descname"><span class="pre">d2image_dydy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.d2image_dydy" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.d2image_dydz">
-<span class="sig-name descname"><span class="pre">d2image_dydz</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.d2image_dydz" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.d2image_dzdz">
-<span class="sig-name descname"><span class="pre">d2image_dzdz</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.d2image_dzdz" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.dimage_dx">
-<span class="sig-name descname"><span class="pre">dimage_dx</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.dimage_dx" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.dimage_dy">
-<span class="sig-name descname"><span class="pre">dimage_dy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.dimage_dy" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.dimage_dz">
-<span class="sig-name descname"><span class="pre">dimage_dz</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives.dimage_dz" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.iso_intensity_curvature.get_negative_gaussian_curvatures">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.iso_intensity_curvature.</span></span><span class="sig-name descname"><span class="pre">get_negative_gaussian_curvatures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derivatives</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives" title="organoid_tracker.position_detection.iso_intensity_curvature.ImageDerivatives"><span class="pre">ImageDerivatives</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blur_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.position_detection.iso_intensity_curvature.get_negative_gaussian_curvatures" title="Permalink to this definition"></a></dt>
-<dd><p>Sets all positions with negative iso-intensity curvature to zero in the out array.
-out: a threshold array (uint8), 0 is outside threshold, 255 inside. May just be an array filled with 255 if you
-don’t have a threshold.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.position_detection.position_mover">
-<span id="organoid-tracker-position-detection-position-mover-module"></span><h2>organoid_tracker.position_detection.position_mover module<a class="headerlink" href="#module-organoid_tracker.position_detection.position_mover" title="Permalink to this heading"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.position_mover.update_positions_for_changed_offsets">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.position_mover.</span></span><span class="sig-name descname"><span class="pre">update_positions_for_changed_offsets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_offsets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.images.ImageOffsets" title="organoid_tracker.core.images.ImageOffsets"><span class="pre">ImageOffsets</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.position_detection.position_mover.update_positions_for_changed_offsets" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</section>
-<section id="module-organoid_tracker.position_detection.smoothing">
-<span id="organoid-tracker-position-detection-smoothing-module"></span><h2>organoid_tracker.position_detection.smoothing module<a class="headerlink" href="#module-organoid_tracker.position_detection.smoothing" title="Permalink to this heading"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.smoothing.get_smoothed">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.smoothing.</span></span><span class="sig-name descname"><span class="pre">get_smoothed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#organoid_tracker.position_detection.smoothing.get_smoothed" title="Permalink to this definition"></a></dt>
-<dd><p>SSmooths the image, z-plane for z-plane, using a Gaussian kernel of <cite>smooth_size * smooth_size</cite> pixels. The
-result is returned, the input image is left untouched.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.smoothing.smooth">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.smoothing.</span></span><span class="sig-name descname"><span class="pre">smooth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_stack</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.position_detection.smoothing.smooth" title="Permalink to this definition"></a></dt>
-<dd><p>Smooths the image, z-plane for z-plane, using a Gaussian kernel of <cite>smooth_size * smooth_size</cite> pixels. THe
-input image is overwritten.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.position_detection.thresholding">
-<span id="organoid-tracker-position-detection-thresholding-module"></span><h2>organoid_tracker.position_detection.thresholding module<a class="headerlink" href="#module-organoid_tracker.position_detection.thresholding" title="Permalink to this heading"></a></h2>
-<p>Attempt at edge detection. Doesn’t work so well.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.thresholding.adaptive_threshold">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.thresholding.</span></span><span class="sig-name descname"><span class="pre">adaptive_threshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_8bit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.position_detection.thresholding.adaptive_threshold" title="Permalink to this definition"></a></dt>
-<dd><p>A simple, adaptive threshold. Intensities below 10% are removed, as well as intensities that fall below an
-adaptive Gaussian threshold.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.thresholding.advanced_threshold">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.thresholding.</span></span><span class="sig-name descname"><span class="pre">advanced_threshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_8bit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.position_detection.thresholding.advanced_threshold" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.thresholding.background_removal">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.thresholding.</span></span><span class="sig-name descname"><span class="pre">background_removal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orignal_image_8bit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.position_detection.thresholding.background_removal" title="Permalink to this definition"></a></dt>
-<dd><p>A simple background removal using two algoritms</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.thresholding.fill_threshold">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.thresholding.</span></span><span class="sig-name descname"><span class="pre">fill_threshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.position_detection.thresholding.fill_threshold" title="Permalink to this definition"></a></dt>
-<dd><p>Filling of all holes.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.position_detection.watershedding">
-<span id="organoid-tracker-position-detection-watershedding-module"></span><h2>organoid_tracker.position_detection.watershedding module<a class="headerlink" href="#module-organoid_tracker.position_detection.watershedding" title="Permalink to this heading"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.watershedding.create_labels">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.watershedding.</span></span><span class="sig-name descname"><span class="pre">create_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.position_detection.watershedding.create_labels" title="Permalink to this definition"></a></dt>
-<dd><p>Creates a label image using the given labels. This image can be used for a watershed transform, for example.
-positions: list of positions, must have x/y/z in range of the output image. The first element in the list must be
-None, as that index is used for the background of the output image.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.watershedding.distance_transform">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.watershedding.</span></span><span class="sig-name descname"><span class="pre">distance_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.position_detection.watershedding.distance_transform" title="Permalink to this definition"></a></dt>
-<dd><p>Performs a 3D distance transform: all white pixels in the threshold are replaced by intensities representing the
-distance from black pixels.
-threshold: binary uint8 image
-out: float64 image of same size
-sampling: resolution of the image in arbitrary units in the z,y,x axis.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.watershedding.distance_transform_to_labels">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.watershedding.</span></span><span class="sig-name descname"><span class="pre">distance_transform_to_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.position_detection.watershedding.distance_transform_to_labels" title="Permalink to this definition"></a></dt>
-<dd><p>Returns an image where pixels closer to the labels are brighter.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.watershedding.watershed_labels">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.watershedding.</span></span><span class="sig-name descname"><span class="pre">watershed_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.position_detection.watershedding.watershed_labels" title="Permalink to this definition"></a></dt>
-<dd><p>Performs a watershed on the given surface, using the labels in label_image. The watershed will respect the
-threshold: Black (0) is background, rest is foreground. Black pixels in threshold are not watershedded.
-surface: float image, watershed goes from lower values to higher values
-label_image: 0 is unlabeled, 1, 2 etc are labels
-label_count: the amount of labels (excluding the background)
-return: Two images, one being a label image, the other being the watershed boundaries.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.position_detection.watershedding.watershed_maxima">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_detection.watershedding.</span></span><span class="sig-name descname"><span class="pre">watershed_maxima</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intensities</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimal_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.position_detection.watershedding.watershed_maxima" title="Permalink to this definition"></a></dt>
-<dd><p>Performs a watershed transformation on the intensity image, using its regional maxima as seeds and flowing
-towards lower intensities.</p>
-</dd></dl>
-
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.position_detection.clusterer.html">organoid_tracker.position_detection.clusterer module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.position_detection.gaussian_detector_for_experiment.html">organoid_tracker.position_detection.gaussian_detector_for_experiment module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.position_detection.gaussian_fit.html">organoid_tracker.position_detection.gaussian_fit module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.position_detection.iso_intensity_curvature.html">organoid_tracker.position_detection.iso_intensity_curvature module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.position_detection.position_mover.html">organoid_tracker.position_detection.position_mover module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.position_detection.smoothing.html">organoid_tracker.position_detection.smoothing module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.position_detection.thresholding.html">organoid_tracker.position_detection.thresholding module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.position_detection.watershedding.html">organoid_tracker.position_detection.watershedding module</a></li>
+</ul>
+</div>
 </section>
 <section id="module-organoid_tracker.position_detection">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-organoid_tracker.position_detection" title="Permalink to this heading"></a></h2>
@@ -330,7 +141,10 @@ towards lower intensities.</p>
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="organoid_tracker.position_analysis.position_markers.html" class="btn btn-neutral float-left" title="organoid_tracker.position_analysis.position_markers module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="organoid_tracker.position_detection.clusterer.html" class="btn btn-neutral float-right" title="organoid_tracker.position_detection.clusterer module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

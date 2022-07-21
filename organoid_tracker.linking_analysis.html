@@ -18,7 +18,9 @@
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="organoid_tracker.linking_analysis.cell_compartment_finder module" href="organoid_tracker.linking_analysis.cell_compartment_finder.html" />
+    <link rel="prev" title="organoid_tracker.linking.scoring_system module" href="organoid_tracker.linking.scoring_system.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -36,39 +38,58 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">organoid_tracker.linking_analysis package</a><ul>
-<li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.cell_compartment_finder">organoid_tracker.linking_analysis.cell_compartment_finder module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.cell_division_counter">organoid_tracker.linking_analysis.cell_division_counter module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.cell_error_finder">organoid_tracker.linking_analysis.cell_error_finder module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.cell_fate_finder">organoid_tracker.linking_analysis.cell_fate_finder module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.cell_nearby_death_counter">organoid_tracker.linking_analysis.cell_nearby_death_counter module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.errors">organoid_tracker.linking_analysis.errors module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.lineage_division_counter">organoid_tracker.linking_analysis.lineage_division_counter module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.lineage_drawing">organoid_tracker.linking_analysis.lineage_drawing module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.lineage_end_finder">organoid_tracker.linking_analysis.lineage_end_finder module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.lineage_error_finder">organoid_tracker.linking_analysis.lineage_error_finder module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.lineage_fate_finder">organoid_tracker.linking_analysis.lineage_fate_finder module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.lineage_finder">organoid_tracker.linking_analysis.lineage_finder module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.lineage_id_creator">organoid_tracker.linking_analysis.lineage_id_creator module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.lineage_markers">organoid_tracker.linking_analysis.lineage_markers module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.linking_markers">organoid_tracker.linking_analysis.linking_markers module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.links_filter">organoid_tracker.linking_analysis.links_filter module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.links_postprocessor">organoid_tracker.linking_analysis.links_postprocessor module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.particle_age_finder">organoid_tracker.linking_analysis.particle_age_finder module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.particle_flow_calculator">organoid_tracker.linking_analysis.particle_flow_calculator module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.particle_movement_finder">organoid_tracker.linking_analysis.particle_movement_finder module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.particle_rotation_calculator">organoid_tracker.linking_analysis.particle_rotation_calculator module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.position_connection_finder">organoid_tracker.linking_analysis.position_connection_finder module</a></li>
-<li><a class="reference internal" href="#organoid-tracker-linking-analysis-scores-dataframe-module">organoid_tracker.linking_analysis.scores_dataframe module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis.track_positions_finder">organoid_tracker.linking_analysis.track_positions_finder module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.linking_analysis">Module contents</a></li>
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">organoid_tracker</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="organoid_tracker.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.comparison.html">organoid_tracker.comparison package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.config.html">organoid_tracker.config package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.connecting.html">organoid_tracker.connecting package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.connection_analysis.html">organoid_tracker.connection_analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.coordinate_system.html">organoid_tracker.coordinate_system package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html">organoid_tracker.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html">organoid_tracker.gui package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html">organoid_tracker.guizela_tracker_compatibility package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.image_loading.html">organoid_tracker.image_loading package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.imaging.html">organoid_tracker.imaging package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking.html">organoid_tracker.linking package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">organoid_tracker.linking_analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_analysis.html">organoid_tracker.position_analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection.html">organoid_tracker.position_detection package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html">organoid_tracker.position_detection_cnn package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.text_popup.html">organoid_tracker.text_popup package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.util.html">organoid_tracker.util package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html">organoid_tracker.visualizer package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.html#module-organoid_tracker">Module contents</a></li>
 </ul>
 </li>
 </ul>
-</div>
+</li>
+</ul>
+
         </div>
       </div>
     </nav>
@@ -83,6 +104,8 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">organoid_tracker</a> &raquo;</li>
+          <li><a href="organoid_tracker.html">organoid_tracker package</a> &raquo;</li>
       <li>organoid_tracker.linking_analysis package</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/organoid_tracker.linking_analysis.rst.txt" rel="nofollow"> View page source</a>
@@ -97,821 +120,34 @@
 <h1>organoid_tracker.linking_analysis package<a class="headerlink" href="#organoid-tracker-linking-analysis-package" title="Permalink to this heading"></a></h1>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
-</section>
-<section id="module-organoid_tracker.linking_analysis.cell_compartment_finder">
-<span id="organoid-tracker-linking-analysis-cell-compartment-finder-module"></span><h2>organoid_tracker.linking_analysis.cell_compartment_finder module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.cell_compartment_finder" title="Permalink to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_compartment_finder.CellCompartment">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.cell_compartment_finder.</span></span><span class="sig-name descname"><span class="pre">CellCompartment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_compartment_finder.CellCompartment" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
-<p>An enumeration.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_compartment_finder.CellCompartment.DIVIDING">
-<span class="sig-name descname"><span class="pre">DIVIDING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_compartment_finder.CellCompartment.DIVIDING" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_compartment_finder.CellCompartment.NON_DIVIDING">
-<span class="sig-name descname"><span class="pre">NON_DIVIDING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_compartment_finder.CellCompartment.NON_DIVIDING" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_compartment_finder.CellCompartment.UNKNOWN">
-<span class="sig-name descname"><span class="pre">UNKNOWN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_compartment_finder.CellCompartment.UNKNOWN" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_compartment_finder.find_compartment">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.cell_compartment_finder.</span></span><span class="sig-name descname"><span class="pre">find_compartment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.linking_analysis.cell_compartment_finder.CellCompartment" title="organoid_tracker.linking_analysis.cell_compartment_finder.CellCompartment"><span class="pre">CellCompartment</span></a></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_compartment_finder.find_compartment" title="Permalink to this definition"></a></dt>
-<dd><p>Finds the compartment of the cell. If a cell is non-dividing, but a cell close by is dividing, then the cell is
-considered to be in a dividing compartment.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_compartment_finder.find_compartment_ext">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.cell_compartment_finder.</span></span><span class="sig-name descname"><span class="pre">find_compartment_ext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_collection.PositionCollection" title="organoid_tracker.core.position_collection.PositionCollection"><span class="pre">PositionCollection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.resolution.ImageResolution" title="organoid_tracker.core.resolution.ImageResolution"><span class="pre">ImageResolution</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">division_lookahead_time_points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.linking_analysis.cell_compartment_finder.CellCompartment" title="organoid_tracker.linking_analysis.cell_compartment_finder.CellCompartment"><span class="pre">CellCompartment</span></a></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_compartment_finder.find_compartment_ext" title="Permalink to this definition"></a></dt>
-<dd><p>Finds the compartment of the cell. If a cell is non-dividing, but a cell close by is dividing, then the cell is
-considered to be in a dividing compartment.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.cell_division_counter">
-<span id="organoid-tracker-linking-analysis-cell-division-counter-module"></span><h2>organoid_tracker.linking_analysis.cell_division_counter module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.cell_division_counter" title="Permalink to this heading"></a></h2>
-<p>For calculating how many times a cell has divided.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_division_counter.find_times_divided">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.cell_division_counter.</span></span><span class="sig-name descname"><span class="pre">find_times_divided</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_time_point_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_division_counter.find_times_divided" title="Permalink to this definition"></a></dt>
-<dd><p>Calculates the number of times this position has divided in the past (since the first time point number). Returns
-None if we don’t have the full lineage until that time point.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.cell_error_finder">
-<span id="organoid-tracker-linking-analysis-cell-error-finder-module"></span><h2>organoid_tracker.linking_analysis.cell_error_finder module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.cell_error_finder" title="Permalink to this heading"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_error_finder.find_errors_in_all_dividing_cells">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.cell_error_finder.</span></span><span class="sig-name descname"><span class="pre">find_errors_in_all_dividing_cells</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_error_finder.find_errors_in_all_dividing_cells" title="Permalink to this definition"></a></dt>
-<dd><p>Rechecks all mother and daughter cells to verify that the mothers aren’t too young. Checking this accross the
-entire experiment is useful, as changes in links far away might affect the measured cell cycle length.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_error_finder.find_errors_in_experiment">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.cell_error_finder.</span></span><span class="sig-name descname"><span class="pre">find_errors_in_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_error_finder.find_errors_in_experiment" title="Permalink to this definition"></a></dt>
-<dd><p>Adds errors for all logical inconsistencies in the graph, like cells that spawn out of nowhere, cells that
-merge together and cells that have three or more daughters.
-Returns the amount of errors (excluding positions without links) and the number of positions without links.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_error_finder.find_errors_in_just_these_positions">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.cell_error_finder.</span></span><span class="sig-name descname"><span class="pre">find_errors_in_just_these_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">iterable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_error_finder.find_errors_in_just_these_positions" title="Permalink to this definition"></a></dt>
-<dd><p>Checks all positions in the given iterable for logical errors, like cell merges, cell dividing into three
-daughters, cells moving too fast, ect.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.cell_error_finder.</span></span><span class="sig-name descname"><span class="pre">find_errors_in_positions_links_and_all_dividing_cells</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">iterable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells" title="Permalink to this definition"></a></dt>
-<dd><p>Checks all of the given positions and all dividing cells in the experiment for logical errors, like cell merges,
-cell dividing into three daughters, cells moving too fast, ect. The reason dividing cells are also checked is that
-otherwise it’s not possible to detect when a young mother cell is no longer a young mother cell because far away in
-time some link changed.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_error_finder.get_error">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.cell_error_finder.</span></span><span class="sig-name descname"><span class="pre">get_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#organoid_tracker.linking_analysis.errors.Error" title="organoid_tracker.linking_analysis.errors.Error"><span class="pre">Error</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_error_finder.get_error" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.cell_fate_finder">
-<span id="organoid-tracker-linking-analysis-cell-fate-finder-module"></span><h2>organoid_tracker.linking_analysis.cell_fate_finder module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.cell_fate_finder" title="Permalink to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_fate_finder.CellFate">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.cell_fate_finder.</span></span><span class="sig-name descname"><span class="pre">CellFate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.linking_analysis.cell_fate_finder.CellFateType" title="organoid_tracker.linking_analysis.cell_fate_finder.CellFateType"><span class="pre">CellFateType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_points_remaining</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_fate_finder.CellFate" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_fate_finder.CellFate.time_points_remaining">
-<span class="sig-name descname"><span class="pre">time_points_remaining</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_fate_finder.CellFate.time_points_remaining" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_fate_finder.CellFate.type">
-<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#organoid_tracker.linking_analysis.cell_fate_finder.CellFateType" title="organoid_tracker.linking_analysis.cell_fate_finder.CellFateType"><span class="pre">CellFateType</span></a></em><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_fate_finder.CellFate.type" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_fate_finder.CellFateType">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.cell_fate_finder.</span></span><span class="sig-name descname"><span class="pre">CellFateType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_fate_finder.CellFateType" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
-<p>Cells with either divide another time, will continue moving for a long time, or will die.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_fate_finder.CellFateType.JUST_MOVING">
-<span class="sig-name descname"><span class="pre">JUST_MOVING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_fate_finder.CellFateType.JUST_MOVING" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_fate_finder.CellFateType.UNKNOWN">
-<span class="sig-name descname"><span class="pre">UNKNOWN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_fate_finder.CellFateType.UNKNOWN" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_fate_finder.CellFateType.WILL_DIE">
-<span class="sig-name descname"><span class="pre">WILL_DIE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_fate_finder.CellFateType.WILL_DIE" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_fate_finder.CellFateType.WILL_DIVIDE">
-<span class="sig-name descname"><span class="pre">WILL_DIVIDE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_fate_finder.CellFateType.WILL_DIVIDE" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_fate_finder.CellFateType.WILL_SHED">
-<span class="sig-name descname"><span class="pre">WILL_SHED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_fate_finder.CellFateType.WILL_SHED" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_fate_finder.get_fate">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.cell_fate_finder.</span></span><span class="sig-name descname"><span class="pre">get_fate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.linking_analysis.cell_fate_finder.CellFate" title="organoid_tracker.linking_analysis.cell_fate_finder.CellFate"><span class="pre">CellFate</span></a></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_fate_finder.get_fate" title="Permalink to this definition"></a></dt>
-<dd><p>Checks if a cell will undergo a division later in the experiment. Returns None if not sure, because we are near
-the end of the experiment. max_time_point_number is the number of the last time point in the experiment.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_fate_finder.get_fate_ext">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.cell_fate_finder.</span></span><span class="sig-name descname"><span class="pre">get_fate_ext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">division_lookahead_time_points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.linking_analysis.cell_fate_finder.CellFate" title="organoid_tracker.linking_analysis.cell_fate_finder.CellFate"><span class="pre">CellFate</span></a></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_fate_finder.get_fate_ext" title="Permalink to this definition"></a></dt>
-<dd><p>Checks if a cell will undergo a division later in the experiment. Returns None if not sure, because we are near
-the end of the experiment. max_time_point_number is the number of the last time point in the experiment.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.cell_nearby_death_counter">
-<span id="organoid-tracker-linking-analysis-cell-nearby-death-counter-module"></span><h2>organoid_tracker.linking_analysis.cell_nearby_death_counter module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.cell_nearby_death_counter" title="Permalink to this heading"></a></h2>
-<p>Goes back in time, and records how many times a nearby cell has died. For create an instance of NearbyDeaths (which
-sets up an index to speed up later calculations), then call its method count_nearby_deaths_in_past.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_nearby_death_counter.NearbyDeaths">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.cell_nearby_death_counter.</span></span><span class="sig-name descname"><span class="pre">NearbyDeaths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.resolution.ImageResolution" title="organoid_tracker.core.resolution.ImageResolution"><span class="pre">ImageResolution</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_distance_um</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">18</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_nearby_death_counter.NearbyDeaths" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Goes back in time, and records how many times a nearby (within max_distance_um) cell has died.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_nearby_death_counter.NearbyDeaths.count_nearby_deaths_in_past">
-<span class="sig-name descname"><span class="pre">count_nearby_deaths_in_past</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_nearby_death_counter.NearbyDeaths.count_nearby_deaths_in_past" title="Permalink to this definition"></a></dt>
-<dd><p>Calculates the number of deaths in the past.</p>
-</dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.errors">
-<span id="organoid-tracker-linking-analysis-errors-module"></span><h2>organoid_tracker.linking_analysis.errors module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.errors" title="Permalink to this heading"></a></h2>
-<p>Definition of all available errors. See linking_markers for how to apply these errors.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Error">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.errors.</span></span><span class="sig-name descname"><span class="pre">Error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Error" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
-<p>An enumeration.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Error.CELL_MERGE">
-<span class="sig-name descname"><span class="pre">CELL_MERGE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Error.CELL_MERGE" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Error.FAILED_SHAPE">
-<span class="sig-name descname"><span class="pre">FAILED_SHAPE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">12</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Error.FAILED_SHAPE" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Error.LOW_LINK_SCORE">
-<span class="sig-name descname"><span class="pre">LOW_LINK_SCORE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">14</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Error.LOW_LINK_SCORE" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Error.LOW_MOTHER_SCORE">
-<span class="sig-name descname"><span class="pre">LOW_MOTHER_SCORE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">9</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Error.LOW_MOTHER_SCORE" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Error.MOVED_TOO_FAST">
-<span class="sig-name descname"><span class="pre">MOVED_TOO_FAST</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">11</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Error.MOVED_TOO_FAST" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Error.NO_FUTURE_POSITION">
-<span class="sig-name descname"><span class="pre">NO_FUTURE_POSITION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Error.NO_FUTURE_POSITION" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Error.NO_PAST_POSITION">
-<span class="sig-name descname"><span class="pre">NO_PAST_POSITION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Error.NO_PAST_POSITION" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Error.POTENTIALLY_NOT_A_MOTHER">
-<span class="sig-name descname"><span class="pre">POTENTIALLY_NOT_A_MOTHER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Error.POTENTIALLY_NOT_A_MOTHER" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Error.POTENTIALLY_SHOULD_BE_A_MOTHER">
-<span class="sig-name descname"><span class="pre">POTENTIALLY_SHOULD_BE_A_MOTHER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Error.POTENTIALLY_SHOULD_BE_A_MOTHER" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Error.POTENTIALLY_WRONG_DAUGHTERS">
-<span class="sig-name descname"><span class="pre">POTENTIALLY_WRONG_DAUGHTERS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">7</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Error.POTENTIALLY_WRONG_DAUGHTERS" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Error.SHRUNK_A_LOT">
-<span class="sig-name descname"><span class="pre">SHRUNK_A_LOT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Error.SHRUNK_A_LOT" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Error.TOO_MANY_DAUGHTER_CELLS">
-<span class="sig-name descname"><span class="pre">TOO_MANY_DAUGHTER_CELLS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Error.TOO_MANY_DAUGHTER_CELLS" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Error.UNCERTAIN_POSITION">
-<span class="sig-name descname"><span class="pre">UNCERTAIN_POSITION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">13</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Error.UNCERTAIN_POSITION" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Error.YOUNG_MOTHER">
-<span class="sig-name descname"><span class="pre">YOUNG_MOTHER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">8</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Error.YOUNG_MOTHER" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Error.get_message">
-<span class="sig-name descname"><span class="pre">get_message</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Error.get_message" title="Permalink to this definition"></a></dt>
-<dd><p>Gets an user-friendly error message.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Error.get_severity">
-<span class="sig-name descname"><span class="pre">get_severity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.linking_analysis.errors.Severity" title="organoid_tracker.linking_analysis.errors.Severity"><span class="pre">Severity</span></a></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Error.get_severity" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the severity.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Severity">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.errors.</span></span><span class="sig-name descname"><span class="pre">Severity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Severity" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
-<p>An enumeration.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Severity.ERROR">
-<span class="sig-name descname"><span class="pre">ERROR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Severity.ERROR" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.errors.Severity.WARNING">
-<span class="sig-name descname"><span class="pre">WARNING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.errors.Severity.WARNING" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.lineage_division_counter">
-<span id="organoid-tracker-linking-analysis-lineage-division-counter-module"></span><h2>organoid_tracker.linking_analysis.lineage_division_counter module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.lineage_division_counter" title="Permalink to this heading"></a></h2>
-<p>For counting how many times a cell (and its offspring) will divide.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_division_counter.get_division_count_in_lineage">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.lineage_division_counter.</span></span><span class="sig-name descname"><span class="pre">get_division_count_in_lineage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">starting_track</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.LinkingTrack" title="organoid_tracker.core.links.LinkingTrack"><span class="pre">LinkingTrack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_time_point_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_division_counter.get_division_count_in_lineage" title="Permalink to this definition"></a></dt>
-<dd><p>Gets how many divisions there are in the lineage starting at the given cell. If the cell does not divide, then
-this method will return 0. If a lineage ended before the end of the experiment (as defined by
-last_time_point_number) and it was not because of an actual death, then it is assumed that the cell went out of
-view, and that no reliable clonal size can be calculated. In that case, this function returns None.</p>
-<p>Any divisions occurring after last_time_point_number are ignored. This is useful if you want to look at only a
-limited time point window.</p>
-<p>If a single cell goes out of the view, we don’t know if it would have divided. If this happens, and require_accurate
-is set to True, then this method returns None. Otherwise, it is assumed the cell doesn’t divide.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_division_counter.get_min_division_count_in_lineage">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.lineage_division_counter.</span></span><span class="sig-name descname"><span class="pre">get_min_division_count_in_lineage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">starting_track</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.LinkingTrack" title="organoid_tracker.core.links.LinkingTrack"><span class="pre">LinkingTrack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_time_point_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">999999999</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_division_counter.get_min_division_count_in_lineage" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the number of divisions we could see up until last_time_point_number. This method returns a result even
-for lineages that are not fully tracked. In that case, the actual number of divisions may be higher, as we might be
-ignoring divisions that were happening outside the view.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.lineage_drawing">
-<span id="organoid-tracker-linking-analysis-lineage-drawing-module"></span><h2>organoid_tracker.linking_analysis.lineage_drawing module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.lineage_drawing" title="Permalink to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_drawing.LineageDrawing">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.lineage_drawing.</span></span><span class="sig-name descname"><span class="pre">LineageDrawing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_drawing.LineageDrawing" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_drawing.LineageDrawing.draw_lineages_colored">
-<span class="sig-name descname"><span class="pre">draw_lineages_colored</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">axes:</span> <span class="pre">~matplotlib.axes._axes.Axes,</span> <span class="pre">*,</span> <span class="pre">color_getter:</span> <span class="pre">~typing.Callable[[int,</span> <span class="pre">~organoid_tracker.core.links.LinkingTrack],</span> <span class="pre">~typing.Union[~typing.Tuple[float,</span> <span class="pre">float,</span> <span class="pre">float],</span> <span class="pre">~typing.Tuple[float,</span> <span class="pre">float,</span> <span class="pre">float,</span> <span class="pre">float],</span> <span class="pre">str,</span> <span class="pre">float]]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_black&gt;,</span> <span class="pre">resolution:</span> <span class="pre">~organoid_tracker.core.resolution.ImageResolution</span> <span class="pre">=</span> <span class="pre">ImageResolution(1,</span> <span class="pre">1,</span> <span class="pre">1,</span> <span class="pre">60),</span> <span class="pre">location_map:</span> <span class="pre">~organoid_tracker.gui.location_map.LocationMap</span> <span class="pre">=</span> <span class="pre">&lt;organoid_tracker.gui.location_map.LocationMap</span> <span class="pre">object&gt;,</span> <span class="pre">label_getter:</span> <span class="pre">~typing.Callable[[~organoid_tracker.core.links.LinkingTrack],</span> <span class="pre">~typing.Optional[str]]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_no_labels&gt;,</span> <span class="pre">lineage_filter:</span> <span class="pre">~typing.Callable[[~organoid_tracker.core.links.LinkingTrack],</span> <span class="pre">bool]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">_no_filter&gt;,</span> <span class="pre">line_width:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1.5</span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_drawing.LineageDrawing.draw_lineages_colored" title="Permalink to this definition"></a></dt>
-<dd><p>Draws lineage trees that are color coded. You can for example color cells by z position, by track
-length, etc. Returns the width of the lineage tree in Matplotlib pixels.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_drawing.LineageDrawing.links">
-<span class="sig-name descname"><span class="pre">links</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></em><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_drawing.LineageDrawing.links" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.lineage_end_finder">
-<span id="organoid-tracker-linking-analysis-lineage-end-finder-module"></span><h2>organoid_tracker.linking_analysis.lineage_end_finder module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.lineage_end_finder" title="Permalink to this heading"></a></h2>
-<p>Finds positions which have no link to the future.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_end_finder.find_ended_tracks">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.lineage_end_finder.</span></span><span class="sig-name descname"><span class="pre">find_ended_tracks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_time_point_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_end_finder.find_ended_tracks" title="Permalink to this definition"></a></dt>
-<dd><p>Returns a set of all cells that have no links to the future.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.lineage_error_finder">
-<span id="organoid-tracker-linking-analysis-lineage-error-finder-module"></span><h2>organoid_tracker.linking_analysis.lineage_error_finder module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.lineage_error_finder" title="Permalink to this heading"></a></h2>
-<p>Used to find lineage trees with (potential) errors.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_error_finder.LineageWithErrors">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.lineage_error_finder.</span></span><span class="sig-name descname"><span class="pre">LineageWithErrors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.LinkingTrack" title="organoid_tracker.core.links.LinkingTrack"><span class="pre">LinkingTrack</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_error_finder.LineageWithErrors" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Represents all (potential) errors in a  complete lineage tree.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_error_finder.LineageWithErrors.crumbs">
-<span class="sig-name descname"><span class="pre">crumbs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_error_finder.LineageWithErrors.crumbs" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_error_finder.LineageWithErrors.errored_positions">
-<span class="sig-name descname"><span class="pre">errored_positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_error_finder.LineageWithErrors.errored_positions" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_error_finder.LineageWithErrors.start">
-<span class="sig-name descname"><span class="pre">start</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.LinkingTrack" title="organoid_tracker.core.links.LinkingTrack"><span class="pre">LinkingTrack</span></a></em><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_error_finder.LineageWithErrors.start" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_error_finder.delete_problematic_lineages">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.lineage_error_finder.</span></span><span class="sig-name descname"><span class="pre">delete_problematic_lineages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_error_finder.delete_problematic_lineages" title="Permalink to this definition"></a></dt>
-<dd><p>This deletes all positions in a lineage with errors. What remains should be a clean experiment with just the
-corrected data.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_error_finder.find_lineage_index_with_crumb">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.lineage_error_finder.</span></span><span class="sig-name descname"><span class="pre">find_lineage_index_with_crumb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lineages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#organoid_tracker.linking_analysis.lineage_error_finder.LineageWithErrors" title="organoid_tracker.linking_analysis.lineage_error_finder.LineageWithErrors"><span class="pre">LineageWithErrors</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crumb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_error_finder.find_lineage_index_with_crumb" title="Permalink to this definition"></a></dt>
-<dd><p>Attempts to find the given position in the lineages. Returns None if the position is None or if the position is
-in none of the lineages.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_error_finder.get_problematic_lineages">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.lineage_error_finder.</span></span><span class="sig-name descname"><span class="pre">get_problematic_lineages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">crumbs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AbstractSet</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#organoid_tracker.linking_analysis.lineage_error_finder.LineageWithErrors" title="organoid_tracker.linking_analysis.lineage_error_finder.LineageWithErrors"><span class="pre">LineageWithErrors</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_error_finder.get_problematic_lineages" title="Permalink to this definition"></a></dt>
-<dd><p>Gets a list of all lineages with warnings in the experiment. The provided “crumbs” are placed in the right
-lineages, so that you can see to what lineages those cells belong.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.lineage_fate_finder">
-<span id="organoid-tracker-linking-analysis-lineage-fate-finder-module"></span><h2>organoid_tracker.linking_analysis.lineage_fate_finder module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.lineage_fate_finder" title="Permalink to this heading"></a></h2>
-<p>Used to get a summary of what happens to a single cell lineage. How many divisions, deaths, ends and errors are
-there?</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_fate_finder.LineageFate">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.lineage_fate_finder.</span></span><span class="sig-name descname"><span class="pre">LineageFate</span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_fate_finder.LineageFate" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Calculates the number of occurences of certain events in the lineage.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_fate_finder.LineageFate.deaths">
-<span class="sig-name descname"><span class="pre">deaths</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_fate_finder.LineageFate.deaths" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_fate_finder.LineageFate.divisions">
-<span class="sig-name descname"><span class="pre">divisions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_fate_finder.LineageFate.divisions" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_fate_finder.LineageFate.ends">
-<span class="sig-name descname"><span class="pre">ends</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_fate_finder.LineageFate.ends" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_fate_finder.LineageFate.sheds">
-<span class="sig-name descname"><span class="pre">sheds</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_fate_finder.LineageFate.sheds" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_fate_finder.LineageFate.tracks">
-<span class="sig-name descname"><span class="pre">tracks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_fate_finder.LineageFate.tracks" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_fate_finder.get_lineage_fate">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.lineage_fate_finder.</span></span><span class="sig-name descname"><span class="pre">get_lineage_fate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_time_point_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.linking_analysis.lineage_fate_finder.LineageFate" title="organoid_tracker.linking_analysis.lineage_fate_finder.LineageFate"><span class="pre">LineageFate</span></a></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_fate_finder.get_lineage_fate" title="Permalink to this definition"></a></dt>
-<dd><p>Calculates the fate of the lineage. The last time point number is used to ignore lineage ends that occur in that
-time point.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.lineage_finder">
-<span id="organoid-tracker-linking-analysis-lineage-finder-module"></span><h2>organoid_tracker.linking_analysis.lineage_finder module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.lineage_finder" title="Permalink to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_finder.LineageTree">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.lineage_finder.</span></span><span class="sig-name descname"><span class="pre">LineageTree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">starting_track</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.LinkingTrack" title="organoid_tracker.core.links.LinkingTrack"><span class="pre">LinkingTrack</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_finder.LineageTree" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Represents a lineage tree, starting from a single cell.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_finder.LineageTree.get_tracks_at_time_point">
-<span class="sig-name descname"><span class="pre">get_tracks_at_time_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.LinkingTrack" title="organoid_tracker.core.links.LinkingTrack"><span class="pre">LinkingTrack</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_finder.LineageTree.get_tracks_at_time_point" title="Permalink to this definition"></a></dt>
-<dd><p>Gets a list of all tracks in this lineage tree that reach the given time point.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_finder.LineageTree.get_tracks_at_time_point_number">
-<span class="sig-name descname"><span class="pre">get_tracks_at_time_point_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.LinkingTrack" title="organoid_tracker.core.links.LinkingTrack"><span class="pre">LinkingTrack</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_finder.LineageTree.get_tracks_at_time_point_number" title="Permalink to this definition"></a></dt>
-<dd><p>Gets a list of all tracks in this lineage tree that reach the given time point.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_finder.LineageTree.plotting_size">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plotting_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_finder.LineageTree.plotting_size" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the total width the lineage tree will end up with.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_finder.LineageTree.starting_track">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">starting_track</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.LinkingTrack" title="organoid_tracker.core.links.LinkingTrack"><span class="pre">LinkingTrack</span></a></em><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_finder.LineageTree.starting_track" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the first track that starts this lineage.</p>
-</dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.lineage_id_creator">
-<span id="organoid-tracker-linking-analysis-lineage-id-creator-module"></span><h2>organoid_tracker.linking_analysis.lineage_id_creator module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.lineage_id_creator" title="Permalink to this heading"></a></h2>
-<p>Assigns an id to an lineage tree. The ids are scrambled, so that cells next to each other don’t have a similar id.
-This makes it easier to color the cells using a color map.</p>
-<p>Note: the color depends on the id. The id depends on the sort order of the lineages. Call the sorting method on the
-links object beforehand to make the id better-defined.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_id_creator.generate_color_for_lineage_id">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.lineage_id_creator.</span></span><span class="sig-name descname"><span class="pre">generate_color_for_lineage_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">track_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.Color" title="organoid_tracker.core.Color"><span class="pre">Color</span></a></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_id_creator.generate_color_for_lineage_id" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the RGB color (three numbers from 0 to 1) that the given lineage tree should be drawn in. The id must be a track id or a
-lineage id.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_id_creator.get_lineage_id">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.lineage_id_creator.</span></span><span class="sig-name descname"><span class="pre">get_lineage_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_id_creator.get_lineage_id" title="Permalink to this definition"></a></dt>
-<dd><p>If the given cell is in a lineage tree (i.e. the cell has previously divided, or will divide during the
-experiment) this returns a scrambled id for that lineage tree. So for cells that do have tracks, but have never
-divided, this method returns -1.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_id_creator.get_original_track_id">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.lineage_id_creator.</span></span><span class="sig-name descname"><span class="pre">get_original_track_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_id_creator.get_original_track_id" title="Permalink to this definition"></a></dt>
-<dd><p>Gets a scrambled id for the original track the position was in. Unlike get_lineage_id, this function returns a
-value for cells that have never divided.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.lineage_markers">
-<span id="organoid-tracker-linking-analysis-lineage-markers-module"></span><h2>organoid_tracker.linking_analysis.lineage_markers module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.lineage_markers" title="Permalink to this heading"></a></h2>
-<p>High-level API for handling the lineage metadata.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_markers.get_color">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.lineage_markers.</span></span><span class="sig-name descname"><span class="pre">get_color</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">track</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.LinkingTrack" title="organoid_tracker.core.links.LinkingTrack"><span class="pre">LinkingTrack</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.Color" title="organoid_tracker.core.Color"><span class="pre">Color</span></a></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_markers.get_color" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the color of the given lineage.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.lineage_markers.set_color">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.lineage_markers.</span></span><span class="sig-name descname"><span class="pre">set_color</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">track</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.LinkingTrack" title="organoid_tracker.core.links.LinkingTrack"><span class="pre">LinkingTrack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.Color" title="organoid_tracker.core.Color"><span class="pre">Color</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.lineage_markers.set_color" title="Permalink to this definition"></a></dt>
-<dd><p>Sets the given lineage to the given color.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.linking_markers">
-<span id="organoid-tracker-linking-analysis-linking-markers-module"></span><h2>organoid_tracker.linking_analysis.linking_markers module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.linking_markers" title="Permalink to this heading"></a></h2>
-<p>Extra markers used to describe the linking data. For example, you can mark the end of a lineage as a cell death.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.EndMarker">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">EndMarker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.EndMarker" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
-<p>An enumeration.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.EndMarker.DEAD">
-<span class="sig-name descname"><span class="pre">DEAD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.EndMarker.DEAD" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.EndMarker.OUT_OF_VIEW">
-<span class="sig-name descname"><span class="pre">OUT_OF_VIEW</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.EndMarker.OUT_OF_VIEW" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.EndMarker.SHED">
-<span class="sig-name descname"><span class="pre">SHED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.EndMarker.SHED" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.EndMarker.SHED_OUTSIDE">
-<span class="sig-name descname"><span class="pre">SHED_OUTSIDE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.EndMarker.SHED_OUTSIDE" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.EndMarker.get_display_name">
-<span class="sig-name descname"><span class="pre">get_display_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.EndMarker.get_display_name" title="Permalink to this definition"></a></dt>
-<dd><p>Gets a user-friendly display name.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.EndMarker.is_shed">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_shed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">marker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#organoid_tracker.linking_analysis.linking_markers.EndMarker" title="organoid_tracker.linking_analysis.linking_markers.EndMarker"><span class="pre">EndMarker</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.EndMarker.is_shed" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.StartMarker">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">StartMarker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.StartMarker" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
-<p>An enumeration.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.StartMarker.GOES_INTO_VIEW">
-<span class="sig-name descname"><span class="pre">GOES_INTO_VIEW</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.StartMarker.GOES_INTO_VIEW" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.StartMarker.UNSURE">
-<span class="sig-name descname"><span class="pre">UNSURE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.StartMarker.UNSURE" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.StartMarker.get_display_name">
-<span class="sig-name descname"><span class="pre">get_display_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.StartMarker.get_display_name" title="Permalink to this definition"></a></dt>
-<dd><p>Gets a user-friendly display name.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.find_death_and_shed_positions">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">find_death_and_shed_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.find_death_and_shed_positions" title="Permalink to this definition"></a></dt>
-<dd><p>Gets all positions that were marked as a cell death or a cell shedding event.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.find_death_positions">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">find_death_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.find_death_positions" title="Permalink to this definition"></a></dt>
-<dd><p>Gets all positions that were marked as a cell death event.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.find_errored_positions">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">find_errored_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.find_errored_positions" title="Permalink to this definition"></a></dt>
-<dd><p>Gets all positions that have a (non suppressed) error in the given time point range.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.find_shed_positions">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">find_shed_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.find_shed_positions" title="Permalink to this definition"></a></dt>
-<dd><p>Gets all positions that were marked as a cell shedding event.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.get_error_marker">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">get_error_marker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#organoid_tracker.linking_analysis.errors.Error" title="organoid_tracker.linking_analysis.errors.Error"><span class="pre">Error</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.get_error_marker" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the error marker for the given link, if any. Returns None if the error has been suppressed using
-suppress_error_marker.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.get_mother_score">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">get_mother_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.get_mother_score" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the mother score of the given position, or 0 if absent.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.get_position_type">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">get_position_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.get_position_type" title="Permalink to this definition"></a></dt>
-<dd><p>Deprecated - use position_markers.get_position_type</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.get_shape">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">get_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.shape.ParticleShape" title="organoid_tracker.core.shape.ParticleShape"><span class="pre">ParticleShape</span></a></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.get_shape" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the shape of the given position, or UNKNOWN_SHAPE if not known.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.get_track_end_marker">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">get_track_end_marker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#organoid_tracker.linking_analysis.linking_markers.EndMarker" title="organoid_tracker.linking_analysis.linking_markers.EndMarker"><span class="pre">EndMarker</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.get_track_end_marker" title="Permalink to this definition"></a></dt>
-<dd><p>Gets a death marker, which provides a reason why the cell lineage ended.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.get_track_start_marker">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">get_track_start_marker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#organoid_tracker.linking_analysis.linking_markers.StartMarker" title="organoid_tracker.linking_analysis.linking_markers.StartMarker"><span class="pre">StartMarker</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.get_track_start_marker" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the appearance marker. This is used to explain why a cell appeared out of thin air.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.has_mother_scores">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">has_mother_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.has_mother_scores" title="Permalink to this definition"></a></dt>
-<dd><p>Gets if there is at least a single mother score recorded.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.has_shapes">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">has_shapes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.has_shapes" title="Permalink to this definition"></a></dt>
-<dd><p>Gets whether there is shape information stored for at least one position in the experiment.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.is_error_suppressed">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">is_error_suppressed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.linking_analysis.errors.Error" title="organoid_tracker.linking_analysis.errors.Error"><span class="pre">Error</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.is_error_suppressed" title="Permalink to this definition"></a></dt>
-<dd><p>Returns True if the given error is suppressed. If another type of error is suppressed, this method returns
-False.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.is_live">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">is_live</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.is_live" title="Permalink to this definition"></a></dt>
-<dd><p>Returns true if the position is a live cell, i.e. it does not have a shed or death marker.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.is_uncertain">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">is_uncertain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.is_uncertain" title="Permalink to this definition"></a></dt>
-<dd><p>Returns True if the given position is marked as uncertain. A person can mark a position as uncertain if it is not
-clear whether there is actually a position marker there. The error checker will warm for such cases.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.set_error_marker">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">set_error_marker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#organoid_tracker.linking_analysis.errors.Error" title="organoid_tracker.linking_analysis.errors.Error"><span class="pre">Error</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.set_error_marker" title="Permalink to this definition"></a></dt>
-<dd><p>Sets an error marker for the given position.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.set_mother_score">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">set_mother_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.set_mother_score" title="Permalink to this definition"></a></dt>
-<dd><p>Sets the mother score to the given value.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.set_shape">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">set_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.shape.ParticleShape" title="organoid_tracker.core.shape.ParticleShape"><span class="pre">ParticleShape</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.set_shape" title="Permalink to this definition"></a></dt>
-<dd><p>Sets the shape information of the position. Set to UNKNOWN_SHAPE to delete the shape.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.set_track_end_marker">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">set_track_end_marker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_marker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#organoid_tracker.linking_analysis.linking_markers.EndMarker" title="organoid_tracker.linking_analysis.linking_markers.EndMarker"><span class="pre">EndMarker</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.set_track_end_marker" title="Permalink to this definition"></a></dt>
-<dd><p>Sets a reason why the track ended at the given point.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.set_track_start_marker">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">set_track_start_marker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_marker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#organoid_tracker.linking_analysis.linking_markers.StartMarker" title="organoid_tracker.linking_analysis.linking_markers.StartMarker"><span class="pre">StartMarker</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.set_track_start_marker" title="Permalink to this definition"></a></dt>
-<dd><p>Sets a reason why the track ended at the given point.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.set_uncertain">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">set_uncertain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncertain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.set_uncertain" title="Permalink to this definition"></a></dt>
-<dd><p>Marks the given position as certain/uncertain. See is_uncertain for more info.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.linking_markers.suppress_error_marker">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.linking_markers.</span></span><span class="sig-name descname"><span class="pre">suppress_error_marker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.linking_analysis.errors.Error" title="organoid_tracker.linking_analysis.errors.Error"><span class="pre">Error</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.linking_markers.suppress_error_marker" title="Permalink to this definition"></a></dt>
-<dd><p>Suppresses an error. Even if set_error_marker is called afterwards, the error will not show up in
-get_error_marker.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.links_filter">
-<span id="organoid-tracker-linking-analysis-links-filter-module"></span><h2>organoid_tracker.linking_analysis.links_filter module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.links_filter" title="Permalink to this heading"></a></h2>
-<p>Used to remove links that you don’t want to analyze for some reason.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.links_filter.delete_lineages_not_in_first_time_point">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.links_filter.</span></span><span class="sig-name descname"><span class="pre">delete_lineages_not_in_first_time_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.links_filter.delete_lineages_not_in_first_time_point" title="Permalink to this definition"></a></dt>
-<dd><p>Used to delete lineages that did not reach the first time point.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.links_filter.delete_positions_without_links">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.links_filter.</span></span><span class="sig-name descname"><span class="pre">delete_positions_without_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.links_filter.delete_positions_without_links" title="Permalink to this definition"></a></dt>
-<dd><p>Deletes all positions without any links.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.links_postprocessor">
-<span id="organoid-tracker-linking-analysis-links-postprocessor-module"></span><h2>organoid_tracker.linking_analysis.links_postprocessor module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.links_postprocessor" title="Permalink to this heading"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.links_postprocessor.postprocess">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.links_postprocessor.</span></span><span class="sig-name descname"><span class="pre">postprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin_xy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.links_postprocessor.postprocess" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.particle_age_finder">
-<span id="organoid-tracker-linking-analysis-particle-age-finder-module"></span><h2>organoid_tracker.linking_analysis.particle_age_finder module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.particle_age_finder" title="Permalink to this heading"></a></h2>
-<p>Small wrapper method to get the age of a position. The age is the time since appearance or (only for cells) the last
-division..</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.particle_age_finder.get_age">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.particle_age_finder.</span></span><span class="sig-name descname"><span class="pre">get_age</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.particle_age_finder.get_age" title="Permalink to this definition"></a></dt>
-<dd><p>Gets how many time steps ago this cell was born</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.particle_age_finder.get_age_at_end_of_track">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.particle_age_finder.</span></span><span class="sig-name descname"><span class="pre">get_age_at_end_of_track</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">track</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.LinkingTrack" title="organoid_tracker.core.links.LinkingTrack"><span class="pre">LinkingTrack</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.particle_age_finder.get_age_at_end_of_track" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the length of the cell cycle.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.particle_flow_calculator">
-<span id="organoid-tracker-linking-analysis-particle-flow-calculator-module"></span><h2>organoid_tracker.linking_analysis.particle_flow_calculator module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.particle_flow_calculator" title="Permalink to this heading"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.particle_flow_calculator.get_flow_to_next">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.particle_flow_calculator.</span></span><span class="sig-name descname"><span class="pre">get_flow_to_next</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.resolution.ImageResolution" title="organoid_tracker.core.resolution.ImageResolution"><span class="pre">ImageResolution</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_distance_um</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">16</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.particle_flow_calculator.get_flow_to_next" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the average flow of the positions within the specified radius towards the next time point. Returns
-(0,0,0) if there are no positions. The given center position must be in the given time point. Ignores cell
-divisions and dead cells.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.particle_flow_calculator.get_flow_to_previous">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.particle_flow_calculator.</span></span><span class="sig-name descname"><span class="pre">get_flow_to_previous</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_resolution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.resolution.ImageResolution" title="organoid_tracker.core.resolution.ImageResolution"><span class="pre">ImageResolution</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dx_and_dy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.particle_flow_calculator.get_flow_to_previous" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the average flow of the positions within the specified radius towards the previous time point. Returns
-(0,0,0) if there are no positions. The given center position must be in the givne time point.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.particle_movement_finder">
-<span id="organoid-tracker-linking-analysis-particle-movement-finder-module"></span><h2>organoid_tracker.linking_analysis.particle_movement_finder module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.particle_movement_finder" title="Permalink to this heading"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.particle_movement_finder.find_future_positions_at">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.particle_movement_finder.</span></span><span class="sig-name descname"><span class="pre">find_future_positions_at</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.particle_movement_finder.find_future_positions_at" title="Permalink to this definition"></a></dt>
-<dd><p>Finds the positions the given particle will have in the given time point, which must be in the future. (Or in the
-present, but then you’ll get the original position back.) Returns an empty array if time_point is in the past.
-Returns multiple positions if the position is a cell and it divided.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.particle_rotation_calculator">
-<span id="organoid-tracker-linking-analysis-particle-rotation-calculator-module"></span><h2>organoid_tracker.linking_analysis.particle_rotation_calculator module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.particle_rotation_calculator" title="Permalink to this heading"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.particle_rotation_calculator.calculate_rotation_of_track">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.particle_rotation_calculator.</span></span><span class="sig-name descname"><span class="pre">calculate_rotation_of_track</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.resolution.ImageResolution" title="organoid_tracker.core.resolution.ImageResolution"><span class="pre">ImageResolution</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">starting_position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">starting_center_p1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">starting_center_p2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ending_center_p1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.particle_rotation_calculator.calculate_rotation_of_track" title="Permalink to this definition"></a></dt>
-<dd><p>Calculates the cumulative rotation of the position relative to the center. Also returns the final position. Both
-the position and the center must have links towards the future. The rotation is calculated for as long as the center
-has links to the future, or until the max_time_point_number has been reached. This method returns multiple values,
-to support dividing cells. If a cell divides, and both daughters also divide, then you end up with four values.
-Particles that disappear before the max time point is reached, are not included in the result.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.linking_analysis.position_connection_finder">
-<span id="organoid-tracker-linking-analysis-position-connection-finder-module"></span><h2>organoid_tracker.linking_analysis.position_connection_finder module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.position_connection_finder" title="Permalink to this heading"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.position_connection_finder.find_previous_positions">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.position_connection_finder.</span></span><span class="sig-name descname"><span class="pre">find_previous_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_back</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.position_connection_finder.find_previous_positions" title="Permalink to this definition"></a></dt>
-<dd><p>Gets a list consisting of the given position and steps_back positions in previous time points. Returns None if
-we can’t get back that many time points. Index 0 will be the given position, index 1 the position one time step back,
-etc.</p>
-</dd></dl>
-
-</section>
-<section id="organoid-tracker-linking-analysis-scores-dataframe-module">
-<h2>organoid_tracker.linking_analysis.scores_dataframe module<a class="headerlink" href="#organoid-tracker-linking-analysis-scores-dataframe-module" title="Permalink to this heading"></a></h2>
-</section>
-<section id="module-organoid_tracker.linking_analysis.track_positions_finder">
-<span id="organoid-tracker-linking-analysis-track-positions-finder-module"></span><h2>organoid_tracker.linking_analysis.track_positions_finder module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.track_positions_finder" title="Permalink to this heading"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.track_positions_finder.find_all_positions_in_track_of">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.track_positions_finder.</span></span><span class="sig-name descname"><span class="pre">find_all_positions_in_track_of</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.track_positions_finder.find_all_positions_in_track_of" title="Permalink to this definition"></a></dt>
-<dd><p>Gets all positions in the track of the given position, and all tracks after it.</p>
-</dd></dl>
-
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.cell_compartment_finder.html">organoid_tracker.linking_analysis.cell_compartment_finder module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.cell_division_counter.html">organoid_tracker.linking_analysis.cell_division_counter module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.cell_error_finder.html">organoid_tracker.linking_analysis.cell_error_finder module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.cell_fate_finder.html">organoid_tracker.linking_analysis.cell_fate_finder module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.cell_nearby_death_counter.html">organoid_tracker.linking_analysis.cell_nearby_death_counter module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.errors.html">organoid_tracker.linking_analysis.errors module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.lineage_division_counter.html">organoid_tracker.linking_analysis.lineage_division_counter module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.lineage_drawing.html">organoid_tracker.linking_analysis.lineage_drawing module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.lineage_end_finder.html">organoid_tracker.linking_analysis.lineage_end_finder module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.lineage_error_finder.html">organoid_tracker.linking_analysis.lineage_error_finder module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.lineage_fate_finder.html">organoid_tracker.linking_analysis.lineage_fate_finder module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.lineage_finder.html">organoid_tracker.linking_analysis.lineage_finder module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.lineage_id_creator.html">organoid_tracker.linking_analysis.lineage_id_creator module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.lineage_markers.html">organoid_tracker.linking_analysis.lineage_markers module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.linking_markers.html">organoid_tracker.linking_analysis.linking_markers module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.links_filter.html">organoid_tracker.linking_analysis.links_filter module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.links_postprocessor.html">organoid_tracker.linking_analysis.links_postprocessor module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.particle_age_finder.html">organoid_tracker.linking_analysis.particle_age_finder module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.particle_flow_calculator.html">organoid_tracker.linking_analysis.particle_flow_calculator module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.particle_movement_finder.html">organoid_tracker.linking_analysis.particle_movement_finder module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.particle_rotation_calculator.html">organoid_tracker.linking_analysis.particle_rotation_calculator module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.position_connection_finder.html">organoid_tracker.linking_analysis.position_connection_finder module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.scores_dataframe.html">organoid_tracker.linking_analysis.scores_dataframe module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.linking_analysis.track_positions_finder.html">organoid_tracker.linking_analysis.track_positions_finder module</a></li>
+</ul>
+</div>
 </section>
 <section id="module-organoid_tracker.linking_analysis">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-organoid_tracker.linking_analysis" title="Permalink to this heading"></a></h2>
@@ -921,7 +157,10 @@ etc.</p>
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="organoid_tracker.linking.scoring_system.html" class="btn btn-neutral float-left" title="organoid_tracker.linking.scoring_system module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="organoid_tracker.linking_analysis.cell_compartment_finder.html" class="btn btn-neutral float-right" title="organoid_tracker.linking_analysis.cell_compartment_finder module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

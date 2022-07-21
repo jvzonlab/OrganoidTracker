@@ -1,0 +1,7 @@
+organoid\_tracker.visualizer.division\_score\_visualizer module
+===============================================================
+
+.. automodule:: organoid_tracker.visualizer.division_score_visualizer
+   :members:
+   :undoc-members:
+   :show-inheritance:

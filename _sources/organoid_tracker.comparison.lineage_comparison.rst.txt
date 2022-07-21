@@ -1,0 +1,7 @@
+organoid\_tracker.comparison.lineage\_comparison module
+=======================================================
+
+.. automodule:: organoid_tracker.comparison.lineage_comparison
+   :members:
+   :undoc-members:
+   :show-inheritance:

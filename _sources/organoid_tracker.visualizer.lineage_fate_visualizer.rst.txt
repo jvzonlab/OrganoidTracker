@@ -1,0 +1,7 @@
+organoid\_tracker.visualizer.lineage\_fate\_visualizer module
+=============================================================
+
+.. automodule:: organoid_tracker.visualizer.lineage_fate_visualizer
+   :members:
+   :undoc-members:
+   :show-inheritance:

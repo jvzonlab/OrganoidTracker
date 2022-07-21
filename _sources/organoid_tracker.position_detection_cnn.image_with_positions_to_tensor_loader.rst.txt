@@ -1,0 +1,7 @@
+organoid\_tracker.position\_detection\_cnn.image\_with\_positions\_to\_tensor\_loader module
+============================================================================================
+
+.. automodule:: organoid_tracker.position_detection_cnn.image_with_positions_to_tensor_loader
+   :members:
+   :undoc-members:
+   :show-inheritance:

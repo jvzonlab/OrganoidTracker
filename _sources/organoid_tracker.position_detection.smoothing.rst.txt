@@ -1,0 +1,7 @@
+organoid\_tracker.position\_detection.smoothing module
+======================================================
+
+.. automodule:: organoid_tracker.position_detection.smoothing
+   :members:
+   :undoc-members:
+   :show-inheritance:

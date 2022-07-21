@@ -1,0 +1,7 @@
+organoid\_tracker.core.global\_data module
+==========================================
+
+.. automodule:: organoid_tracker.core.global_data
+   :members:
+   :undoc-members:
+   :show-inheritance:

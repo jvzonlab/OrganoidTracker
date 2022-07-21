@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Training the neural network &mdash; OrganoidTracker 2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Jupyter notebook" href="JUPYTER_NOTEBOOK.html" />
+    <link rel="prev" title="Plugin tutorial" href="PLUGIN_TUTORIAL.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> OrganoidTracker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Training the neural network</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#some-background-information">Some background information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acquiring-training-data">Acquiring training data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-training-process">The training process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-image-data-of-multiple-channels">Using image data of multiple channels</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">organoid_tracker</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OrganoidTracker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Training the neural network</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/TRAINING_THE_NETWORK.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="training-the-neural-network">
+<h1>Training the neural network<a class="headerlink" href="#training-the-neural-network" title="Permalink to this heading"></a></h1>
+<p><a class="reference internal" href="index.html"><span class="doc std std-doc">← Back to main page</span></a></p>
+<p>If you want to train your own neural network, read on. Training your own neural network is a good idea if you’re not satisfied with how the cell detection in your images is done. However, training requires a graphics card with at least 10 GB of VRAM. I’m using a NVIDIA GeForce RTX 2080 Ti card, which has enough video RAM for a batch size of 48 with images of 512x512x32 px.</p>
+<section id="some-background-information">
+<h2>Some background information<a class="headerlink" href="#some-background-information" title="Permalink to this heading"></a></h2>
+<p>The tracker uses three neural networks. The first one detects where cells are, the second detects how likely it is that a cell is currently dividing and the third detects how likely it is that two cells at subsequent time points are the same cell.</p>
+<p>The first network, the network that detects nucleus centers, is a so-called image to image network. Given a microscopy image, it outputs small dots that represent the nucleus centers. See Figure 1. This transformation is a large mathematical function with a huge number of parameters. During training, these parameters are optimized. You might be familiar with fitting the parameters <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code> in the function <code class="docutils literal notranslate"><span class="pre">f(x)</span> <span class="pre">=</span> <span class="pre">ax</span> <span class="pre">+</span> <span class="pre">b</span></code> to some point cloud; in essence a neural network is a more complex variant of this, where many simpler functions are stacked on top of each other.</p>
+<p><img alt="Network output" src="_images/network.png" /><br />
+Figure 1: The network goes from an input image to an image that shows where the nucleus centers are.</p>
+<p>By giving the neural network a lot of examples of “here is a nucleus center” and “here is not a nucleus center”, it “learns” to recognize cells on it’s own. For this, it fits the parameters of the neural network such that the network gets better and better in reproducing the images you trained it on.</p>
+<p>The other two networks are classification networks. They take one or two images as input, and output a single number (instead of another image, like the network above). Training still works in a similar way. For the division detection network, the network receives a lot of examples of cells, and optimizes all parameters such that it can decide whether a cell divides. For the linking network, it receives pairs of images centered around two nuclei, and learns to decide whether the images are displaying the same cell.</p>
+<p>If you’ve not already done so, you should definitely look up some information on how convolutional neural networks work; there a lot of great videos and books. Tip: try a book for Keras or PyTorch beginners. These books tend to provide a practical introduction, while still covering enough theory so that the networks don’t look like magical creatures anymore.</p>
+</section>
+<section id="acquiring-training-data">
+<h2>Acquiring training data<a class="headerlink" href="#acquiring-training-data" title="Permalink to this heading"></a></h2>
+<p>First, you’re going to need a lot of training data. The more and the more diverse the training data, the better. The training data should be a good sample of the data you eventually want to obtain. I’m using around 10000 data points (detected cells) from 10 different time lapses myself. In the OrganoidTracker GUI in the <code class="docutils literal notranslate"><span class="pre">View</span></code> menu there is an options to view how many detected positions you have in your experiment.</p>
+<p>If you have less data, there are several options. You can download a pre-trained networks at <a class="reference external" href="https://github.com/jvzonlab/OrganoidTracker">our Github page</a> and train it for more time steps on your data, for example up to step 125000 if the network was originally trained for 100000 steps. Compared to training a network for scratch, this allows you to get away with a lot less training data.</p>
+<p>You can also download one of the fully annotated 3D+time time lapses from the <a class="reference external" href="https://celltrackingchallenge.net/3d-datasets/">Cell Tracking Challenge</a> and add them to your dataset, provided those look similar enough.</p>
+<p>Make sure that the data is correct! Even a low percentage of errors (1%) can already weaken the training. You don’t need to annotate the entire image, OrganoidTracker will crop your image to the area where there are annotations. This cropping uses a simple cuboid (3D rectangle) shape. However, within the area you’re annotating you need to annotate each and every cell, otherwise you’re teaching the network that those things are not cells. See Figure 2.</p>
+<p><img alt="Annotations" src="_images/annotations.png" /><br />
+Figure 2: OrganoidTracker automatically sees that you have only annotated part of the image, so you don’t need to annotate the entire image. However, you do need to annotate each and every cell within that region.</p>
+</section>
+<section id="the-training-process">
+<h2>The training process<a class="headerlink" href="#the-training-process" title="Permalink to this heading"></a></h2>
+<p>Open the data of all the experiments you’re going to use in the OrganoidTracker GUI, and use <code class="docutils literal notranslate"><span class="pre">Process</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Train</span> <span class="pre">the</span> <span class="pre">neural</span> <span class="pre">network...</span></code>. Run the resulting script. It will first convert your images and training data to a format Tensorflow (the software library we’re using for the neural networks) can understand. Then, it will start training. The training process saves checkpoints. If you abort the training process, then it will resume from the most recent checkpoint when you start the program again.</p>
+<p>By default, the training lasts for 50 epochs, but you can modify this in the <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> file next to the script. Note that more steps is not always better. The more steps, the better the model will learn to recognize patterns in your data. However, if you train it for too long, then it will only recognize your training images, and not be able to do anything with any image that is even a little bit different. This is called overfitting. However, if you train the model for too few steps, then it will mark anything as a cell that looks even a bit like it.</p>
+<p>Neural networks work differently from our own brains. If you change some microscopy settings, which makes the noise in the images different, then if you’re unlucky the the neural network will suddenly not recognize your nuclei anymore. Additionally, if you give the network nuclei at a different resolution, it might no longer work.</p>
+<p>To combat both effects, OrganoidTracker generates artificial data based on your input images. It makes cells brighter or darker and rotates them. This makes the algorithm less specific to your images. The program also randomizes the order in which it sees your training data, so that it is not training on a single experiment for a long time.</p>
+<p>All in all, training a neural network is a difficult process. However, it has proven to be a very successful method, and for any complex image it will be worth it.</p>
+</section>
+<section id="using-image-data-of-multiple-channels">
+<h2>Using image data of multiple channels<a class="headerlink" href="#using-image-data-of-multiple-channels" title="Permalink to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">Process</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Train</span> <span class="pre">the</span> <span class="pre">neural</span> <span class="pre">network...</span></code> generates a folder with a configuration file <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> in it. If you open it, you can see where the neural network is getting its image data from.</p>
+<p>An interesting setting here is <code class="docutils literal notranslate"><span class="pre">image_channels_x</span></code>, which <code class="docutils literal notranslate"><span class="pre">x</span></code> the number of the image dataset. Normally, the network is trained on just the first channel. You can change this here to another channel. This is necessary if the first channel does not properly identify the nuclei, for example because it is a brightfield channel.</p>
+<p>You can also provide multiple channels, for example <code class="docutils literal notranslate"><span class="pre">image_channels_x</span> <span class="pre">=</span> <span class="pre">3,4</span></code> which will first sum the third and fourth channel, and then train the network on the sum of those channels.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="PLUGIN_TUTORIAL.html" class="btn btn-neutral float-left" title="Plugin tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="JUPYTER_NOTEBOOK.html" class="btn btn-neutral float-right" title="Jupyter notebook" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Jeroen van Zon Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+organoid\_tracker.gui.location\_map module
+==========================================
+
+.. automodule:: organoid_tracker.gui.location_map
+   :members:
+   :undoc-members:
+   :show-inheritance:

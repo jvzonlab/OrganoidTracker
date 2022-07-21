@@ -1,0 +1,7 @@
+organoid\_tracker.core.resolution module
+========================================
+
+.. automodule:: organoid_tracker.core.resolution
+   :members:
+   :undoc-members:
+   :show-inheritance:

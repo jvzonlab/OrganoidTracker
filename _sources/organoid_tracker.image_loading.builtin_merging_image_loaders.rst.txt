@@ -1,0 +1,7 @@
+organoid\_tracker.image\_loading.builtin\_merging\_image\_loaders module
+========================================================================
+
+.. automodule:: organoid_tracker.image_loading.builtin_merging_image_loaders
+   :members:
+   :undoc-members:
+   :show-inheritance:

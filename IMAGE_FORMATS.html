@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supported image formats &mdash; OrganoidTracker 2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation instructions" href="INSTALLATION.html" />
+    <link rel="prev" title="The data axes editor" href="DATA_AXES.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> OrganoidTracker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Supported image formats</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#lif-and-nd2-files">LIF and ND2 files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a-folder-containing-one-3d-image-for-every-time-point">A folder containing one 3D image for every time point</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a-multi-page-tiff-file">A multi-page TIFF file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a-single-image">A single image</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">organoid_tracker</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OrganoidTracker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Supported image formats</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/IMAGE_FORMATS.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="supported-image-formats">
+<h1>Supported image formats<a class="headerlink" href="#supported-image-formats" title="Permalink to this heading"></a></h1>
+<p><a class="reference internal" href="index.html"><span class="doc std std-doc">← Back to main page</span></a></p>
+<p><em>See also: <a class="reference internal" href="TRACKING_FORMATS.html"><span class="doc std std-doc">Supported tracking formats</span></a></em></p>
+<p>The program was made with movies of grayscale 3D images in mind. Multiple channels (for example captured at different wavelengths) are supported.</p>
+<ul class="simple">
+<li><p>There is some basic support for 2D images. They will be loaded as 3D images with only a single xy plane.</p></li>
+<li><p>If you try to load a colored image (like a PNG file), then the image will be converted to grayscale.</p></li>
+<li><p>The program is made for tracking cells. Loading a single image is therefore not useful. The program will, after displaying a warning, load the image as a “movie” with only one time point.</p></li>
+</ul>
+<section id="lif-and-nd2-files">
+<h2>LIF and ND2 files<a class="headerlink" href="#lif-and-nd2-files" title="Permalink to this heading"></a></h2>
+<p>LIF files are used by Leica microscopes while ND2 files are used by Nikon microscopes. Both file types contain images of all available time points in a single file. To load such a file, simply select <code class="docutils literal notranslate"><span class="pre">File</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Load</span> <span class="pre">images...</span></code> and select the file. If your file contains multiple time series, you will be prompted to pick one.</p>
+</section>
+<section id="a-folder-containing-one-3d-image-for-every-time-point">
+<h2>A folder containing one 3D image for every time point<a class="headerlink" href="#a-folder-containing-one-3d-image-for-every-time-point" title="Permalink to this heading"></a></h2>
+<p>Many biologists save images like <code class="docutils literal notranslate"><span class="pre">image_0.tif</span></code>, <code class="docutils literal notranslate"><span class="pre">image_1.tif</span></code>, <code class="docutils literal notranslate"><span class="pre">image_2.tif</span></code> etc., with each image representing a single channel of a single time point. If you load an image <strong>from time point 0 or 1</strong>, the program will automatically try to search for other images with a similar naming pattern. The program is able to recognize the following naming patterns:</p>
+<ul class="simple">
+<li><p>Images <strong>ending</strong> with a number, like <code class="docutils literal notranslate"><span class="pre">image0.png</span></code>, <code class="docutils literal notranslate"><span class="pre">image1.png</span></code>, <code class="docutils literal notranslate"><span class="pre">image2.png</span></code>. The number will be interpreted as a time point number. (Brackets) around the number are allowed.</p></li>
+<li><p>Images <strong>containing</strong> the letter <code class="docutils literal notranslate"><span class="pre">t</span></code> followed by a number, like <code class="docutils literal notranslate"><span class="pre">nd56t1.tif</span></code>, <code class="docutils literal notranslate"><span class="pre">nd56t2.tif</span></code>. The number will be interpreted as a time point number. A captial <code class="docutils literal notranslate"><span class="pre">T</span></code> instead of a <code class="docutils literal notranslate"><span class="pre">t</span></code> is also allowed.</p></li>
+<li><p>Images <strong>containing</strong> the letter <code class="docutils literal notranslate"><span class="pre">c</span></code> followed by a number, like <code class="docutils literal notranslate"><span class="pre">nd56t1c1.tif</span></code>, <code class="docutils literal notranslate"><span class="pre">nd56t1c2.tif</span></code>. The number will now be interpreted as a channel. A capital <code class="docutils literal notranslate"><span class="pre">C</span></code> instead of a <code class="docutils literal notranslate"><span class="pre">c</span></code> is also allowed.</p></li>
+</ul>
+<p>Leading zeroes (like in <code class="docutils literal notranslate"><span class="pre">image_0001.png</span></code>) are supported.</p>
+</section>
+<section id="a-multi-page-tiff-file">
+<h2>A multi-page TIFF file<a class="headerlink" href="#a-multi-page-tiff-file" title="Permalink to this heading"></a></h2>
+<p>If instead only a single TIFF file is found, OrganoidTracker assumes that an the entire time-series is saved to that file. OrganoidTracker uses the <code class="docutils literal notranslate"><span class="pre">tifffile</span></code> Python package to read the metadata of the file, to found our how the file is constructed. If OrganoidTracker doesn’t understand the file format, an error message is displayed.</p>
+</section>
+<section id="a-single-image">
+<h2>A single image<a class="headerlink" href="#a-single-image" title="Permalink to this heading"></a></h2>
+<p>If the program cannot find any pattern in the file name, and the file is not a multi-page TIFF file, it will display a warning and load only that image. You’ll end up with a “movie” of only one time point.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="DATA_AXES.html" class="btn btn-neutral float-left" title="The data axes editor" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="INSTALLATION.html" class="btn btn-neutral float-right" title="Installation instructions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Jeroen van Zon Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

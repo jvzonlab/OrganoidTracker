@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API reference &mdash; OrganoidTracker 2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Batch operations" href="BATCH_EDITING.html" />
+    <link rel="prev" title="Working with custom metadata" href="WORKING_WITH_CUSTOM_METADATA.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> OrganoidTracker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-save-and-load-tracking-data">How do I save and load tracking data?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-iterate-over-all-positions-of-a-particular-time-point">How do I iterate over all positions of a particular time point?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-find-the-first-last-time-point">How do I find the first/last time point?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-iterate-over-all-positions-in-all-time-points">How do I iterate over all positions in all time points?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-find-the-nearest-position">How do I find the nearest position?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-check-whether-a-link-exists-between-two-positions">How do I check whether a link exists between two positions?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-get-the-position-of-the-same-cell-in-the-next-previous-time-point">How do I get the position of the same cell in the next/previous time point?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-measure-some-property-of-a-cell-over-time">How do I measure some property of a cell over time?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-find-all-dead-cells">How do I find all dead cells?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-work-with-lineage-trees">How do I work with lineage trees?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-know-how-much-time-a-time-point-takes">How do I know how much time a time point takes?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-get-set-the-image-resolution">How do I get/set the image resolution?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-automatically-open-organoidtracker-from-a-standalone-script">How do I automatically open OrganoidTracker from a standalone script?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">organoid_tracker</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OrganoidTracker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>API reference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/API.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api-reference">
+<h1>API reference<a class="headerlink" href="#api-reference" title="Permalink to this heading"></a></h1>
+<p><a class="reference internal" href="index.html"><span class="doc std std-doc">← Back to main page</span></a></p>
+<p>OrganoidTracker contains many functions for working with experimental data. Those functions should make it possible to plot useful information. You can use these functions from standalone Python scripts, from <a class="reference internal" href="PLUGIN_TUTORIAL.html"><span class="doc std std-doc">plugins</span></a> or from <a class="reference internal" href="JUPYTER_NOTEBOOK.html"><span class="doc std std-doc">Jupyter Notebooks</span></a>.</p>
+<p>Note: any method, function and field that has a name starting with an underscore (<code class="docutils literal notranslate"><span class="pre">_</span></code>) should not be used by external code. Ask if there is an alternative way to do it.</p>
+<p>Note: for a complete overview of all methods and properties in the <code class="docutils literal notranslate"><span class="pre">Experiment</span></code> object, use the <code class="docutils literal notranslate"><span class="pre">Help</span> <span class="pre">-&gt;</span> <span class="pre">Show</span> <span class="pre">data</span> <span class="pre">inspector...</span></code> menu option. To view a (daunting) overview of all classes and methods in OrganoidTracker, run <code class="docutils literal notranslate"><span class="pre">pydoc</span> <span class="pre">-b</span></code> from the command line, while you are in the OrganoidTracker folder and in the OrganoidTracker conda environment.</p>
+<section id="how-do-i-save-and-load-tracking-data">
+<h2>How do I save and load tracking data?<a class="headerlink" href="#how-do-i-save-and-load-tracking-data" title="Permalink to this heading"></a></h2>
+<p>Saving and loading should be straightforward. The function <code class="docutils literal notranslate"><span class="pre">io.load_data_file</span></code> can load any <a class="reference internal" href="TRACKING_FORMATS.html"><span class="doc std std-doc">supported tracking format</span></a>. The function <code class="docutils literal notranslate"><span class="pre">io.save_data_to_json</span></code> can just save to the standard data format.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.imaging</span> <span class="kn">import</span> <span class="n">io</span>
+
+<span class="c1"># Creating a new experiment without any data</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+
+<span class="c1"># Loading a new experiment from existing data</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">load_data_file</span><span class="p">(</span><span class="s2">&quot;my_file_name.aut&quot;</span><span class="p">)</span>
+
+<span class="c1"># Saving</span>
+<span class="n">io</span><span class="o">.</span><span class="n">save_data_to_json</span><span class="p">(</span><span class="n">experiment</span><span class="p">,</span> <span class="s2">&quot;my_file_name.aut&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For other file formats, you need to write a script yourself. See the <a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html"><span class="doc std std-doc">custom tracking formats</span></a> page for an example.</p>
+</section>
+<section id="how-do-i-iterate-over-all-positions-of-a-particular-time-point">
+<h2>How do I iterate over all positions of a particular time point?<a class="headerlink" href="#how-do-i-iterate-over-all-positions-of-a-particular-time-point" title="Permalink to this heading"></a></h2>
+<p>If you want to get the detected positions on a certain time point, you can do it like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.core</span> <span class="kn">import</span> <span class="n">TimePoint</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+
+<span class="n">time_point</span> <span class="o">=</span> <span class="n">TimePoint</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># This represents the second time point of the experiment</span>
+<span class="n">positions</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">of_time_point</span><span class="p">(</span><span class="n">time_point</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found positions:&quot;</span><span class="p">,</span> <span class="n">positions</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="how-do-i-find-the-first-last-time-point">
+<h2>How do I find the first/last time point?<a class="headerlink" href="#how-do-i-find-the-first-last-time-point" title="Permalink to this heading"></a></h2>
+<p>Do you mean the first/last time point with images, the first/last with positions, or the first/last in general? Here’s how you would get the last time point number:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+<span class="n">last_number</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">last_time_point_number</span><span class="p">()</span>  <span class="c1"># Last time point for which we have positions</span>
+<span class="n">last_number</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">last_time_point_number</span><span class="p">()</span>  <span class="c1"># Last time point number for which we have images</span>
+<span class="n">last_number</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">last_time_point_number</span><span class="p">()</span>  <span class="c1"># Highest of the above</span>
+</pre></div>
+</div>
+<p>For getting the first time point instead of the last, write <code class="docutils literal notranslate"><span class="pre">first</span></code> instead of <code class="docutils literal notranslate"><span class="pre">last</span></code>. If no data exists in the entire experiment, then these functions simply return <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p>Note: these functions return an <code class="docutils literal notranslate"><span class="pre">int</span></code>. To convert that to a <code class="docutils literal notranslate"><span class="pre">TimePoint</span></code> instance, use <code class="docutils literal notranslate"><span class="pre">time_point</span> <span class="pre">=</span> <span class="pre">TimePoint(number)</span></code></p>
+</section>
+<section id="how-do-i-iterate-over-all-positions-in-all-time-points">
+<h2>How do I iterate over all positions in all time points?<a class="headerlink" href="#how-do-i-iterate-over-all-positions-in-all-time-points" title="Permalink to this heading"></a></h2>
+<p>If you want to loop through all positions of all time points in an experiment, you can do that as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">time_point</span> <span class="ow">in</span> <span class="n">experiment</span><span class="o">.</span><span class="n">time_points</span><span class="p">():</span>
+    <span class="n">positions_of_time_point</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">of_time_point</span><span class="p">(</span><span class="n">time_point</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In time point&quot;</span><span class="p">,</span> <span class="n">time_point</span><span class="o">.</span><span class="n">time_point_number</span><span class="p">(),</span> <span class="s2">&quot;there are&quot;</span><span class="p">,</span>
+          <span class="nb">len</span><span class="p">(</span><span class="n">positions_of_time_point</span><span class="p">),</span> <span class="s2">&quot;time points.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="how-do-i-find-the-nearest-position">
+<h2>How do I find the nearest position?<a class="headerlink" href="#how-do-i-find-the-nearest-position" title="Permalink to this heading"></a></h2>
+<p>If you want to find the nearest detected position from a set of positions, there are a few pre-made functions for that. For example, this is how to get the nearest four positions around a position at (x, y, z) =  (15, 201, 3):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.resolution</span> <span class="kn">import</span> <span class="n">ImageResolution</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.core.position</span> <span class="kn">import</span> <span class="n">Position</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.linking</span> <span class="kn">import</span> <span class="n">nearby_position_finder</span>
+
+<span class="n">positions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c1"># This should be list of positions, see above how to get them</span>
+<span class="n">image_resolution</span> <span class="o">=</span> <span class="n">ImageResolution</span><span class="p">(</span><span class="mf">0.32</span><span class="p">,</span> <span class="mf">0.32</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>  <span class="c1"># Translation of px to um</span>
+
+<span class="n">around_position</span> <span class="o">=</span> <span class="n">Position</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">201</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">nearby_position_finder</span><span class="o">.</span><span class="n">find_closest_n_positions</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">around</span><span class="o">=</span><span class="n">around_position</span><span class="p">,</span> <span class="n">max_amount</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="n">image_resolution</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>There are a few other functions:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.linking</span> <span class="kn">import</span> <span class="n">nearby_position_finder</span>
+
+<span class="c1"># Finds a single closest position</span>
+<span class="n">nearby_position_finder</span><span class="o">.</span><span class="n">find_closest_position</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">around</span><span class="o">=...</span><span class="p">)</span>
+
+<span class="c1"># Finds the closest position, as well as positions up to N times away as the</span>
+<span class="c1"># closest position</span>
+<span class="n">N</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">nearby_position_finder</span><span class="o">.</span><span class="n">find_close_positions</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">around</span><span class="o">=...</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">N</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="how-do-i-check-whether-a-link-exists-between-two-positions">
+<h2>How do I check whether a link exists between two positions?<a class="headerlink" href="#how-do-i-check-whether-a-link-exists-between-two-positions" title="Permalink to this heading"></a></h2>
+<p>The connections between positions at different time points are called links. This is how you can check if two positions have a link between each other:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+<span class="n">position_a</span> <span class="o">=</span> <span class="o">...</span>
+<span class="n">position_b</span> <span class="o">=</span> <span class="o">...</span>
+
+<span class="k">if</span> <span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">contains_link</span><span class="p">(</span><span class="n">position_a</span><span class="p">,</span> <span class="n">position_b</span><span class="p">):</span>
+    <span class="o">...</span> <span class="c1"># There is a link</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="o">...</span> <span class="c1"># There is no link</span>
+</pre></div>
+</div>
+<p>Note: this method only returns True if there is a <em>direct</em> link between the two positions, so if they are in consecutive time points.</p>
+</section>
+<section id="how-do-i-get-the-position-of-the-same-cell-in-the-next-previous-time-point">
+<h2>How do I get the position of the same cell in the next/previous time point?<a class="headerlink" href="#how-do-i-get-the-position-of-the-same-cell-in-the-next-previous-time-point" title="Permalink to this heading"></a></h2>
+<p>You can get find out to which position a position is connected using the <code class="docutils literal notranslate"><span class="pre">find_pasts</span></code> and <code class="docutils literal notranslate"><span class="pre">find_futures</span></code> methods.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+<span class="n">position</span> <span class="o">=</span> <span class="o">...</span>
+
+<span class="n">future_positions</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">find_futures</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The resulting set will usually have a size of 1, as it just returns the position of the position one time point later. However, if a cell dies or goes out of view, the set of future positions will be empty. If the position was in the last time point of an experiment then the set of future positions will be empty as well. In contrast, if a cell divides, the set will have two elements.</p>
+<p>The set of past positions will usually have a size of 1. A size of 0 occurs if the position just went into the view in this time point, or if the time point is the first time point of the experiment. A size of 2 would indicate that two cells merged into one cell. (However, please note that the lineage tree scripts in OrganoidTracker cannot correctly draw this.)</p>
+</section>
+<section id="how-do-i-measure-some-property-of-a-cell-over-time">
+<h2>How do I measure some property of a cell over time?<a class="headerlink" href="#how-do-i-measure-some-property-of-a-cell-over-time" title="Permalink to this heading"></a></h2>
+<p>It’s easiest to run backwards in time. If you would run forwards, then it’s not clear what should happen when a cell divides. What daughter should then be followed?</p>
+<p>See above for how to get positions for a particular time point, and how to get the last time point of an experiment. Once you have somehow obtained the last position, you can run back in time as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+<span class="n">last_position</span> <span class="o">=</span> <span class="o">...</span>
+
+<span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">iterate_to_past</span><span class="p">(</span><span class="n">last_position</span><span class="p">):</span>
+    <span class="c1"># Record some state of the position, like</span>
+    <span class="n">x_location</span> <span class="o">=</span> <span class="n">position</span><span class="o">.</span><span class="n">x</span>
+    <span class="n">time_point_number</span> <span class="o">=</span> <span class="n">position</span><span class="o">.</span><span class="n">time_point_number</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="how-do-i-find-all-dead-cells">
+<h2>How do I find all dead cells?<a class="headerlink" href="#how-do-i-find-all-dead-cells" title="Permalink to this heading"></a></h2>
+<p>A cell can die within the organoid epithelium, but it is also possible that a live cell was extruded. Although both events will cause the demise of the cell, OrganoidTracker still makes a difference between the two.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.linking_analysis</span> <span class="kn">import</span> <span class="n">linking_markers</span>
+
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+<span class="n">shed_cells</span> <span class="o">=</span> <span class="n">linking_markers</span><span class="o">.</span><span class="n">find_shed_positions</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="p">,</span> <span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="p">)</span>
+<span class="n">dead_cells</span> <span class="o">=</span> <span class="n">linking_markers</span><span class="o">.</span><span class="n">find_death_positions</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="p">,</span> <span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="p">)</span>
+<span class="n">dead_and_shed_cells</span> <span class="o">=</span> <span class="n">linking_markers</span><span class="o">.</span><span class="n">find_death_and_shed_positions</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="p">,</span> <span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can then iterate over those using a loop: <code class="docutils literal notranslate"><span class="pre">for</span> <span class="pre">position</span> <span class="pre">in</span> <span class="pre">dead_cells:</span></code>.</p>
+</section>
+<section id="how-do-i-work-with-lineage-trees">
+<h2>How do I work with lineage trees?<a class="headerlink" href="#how-do-i-work-with-lineage-trees" title="Permalink to this heading"></a></h2>
+<p>Imagine a lineage tree like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>   <span class="o">|</span>  <span class="p">(</span><span class="n">A</span><span class="p">)</span>            <span class="o">|</span>  <span class="p">(</span><span class="n">B</span><span class="p">)</span>
+   <span class="o">|</span>                 <span class="o">|</span>
+<span class="o">-------</span>              <span class="o">|</span>
+<span class="o">|</span>      <span class="o">|</span>             <span class="o">|</span>
+<span class="o">|</span>      <span class="o">|</span>           <span class="o">-----</span>
+<span class="o">|</span>    <span class="o">-----</span>         <span class="o">|</span>   <span class="o">|</span>
+<span class="o">|</span>    <span class="o">|</span>   <span class="o">|</span>         <span class="o">|</span>   <span class="o">|</span>
+<span class="o">|</span>    <span class="o">|</span>   <span class="o">|</span>         <span class="o">|</span>   <span class="o">|</span>
+</pre></div>
+</div>
+<p>In OrganoidTracker, this lineage tree would be represented by five so-called tracks. A track is a sequence of cell positions. Once a cell divides, two new tracks are started. Therefore, every biological cell cycle is represented by a single track. The above lineage trees contain 5 tracks in lineage A and 3 tracks in lineage B.</p>
+<p>You can of course extract all necessary information from the <code class="docutils literal notranslate"><span class="pre">find_next</span></code> and <code class="docutils literal notranslate"><span class="pre">find_futures</span></code> methods discussed above. But it is faster for the computer to quickly jump to the end of the track, than walking through all links time point for time point.</p>
+<p>You can get the track a position belongs to using the following method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+<span class="n">position</span> <span class="o">=</span> <span class="o">...</span>
+
+<span class="n">track</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">get_track</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Track goes from time point&quot;</span><span class="p">,</span> <span class="n">track</span><span class="o">.</span><span class="n">min_time_point_number</span><span class="p">(),</span> <span class="s2">&quot;to&quot;</span><span class="p">,</span>
+      <span class="n">track</span><span class="o">.</span><span class="n">max_time_point_number</span><span class="p">(),</span> <span class="s2">&quot;after which&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">track</span><span class="o">.</span><span class="n">get_next_tracks</span><span class="p">()),</span>
+      <span class="s2">&quot;directly follow&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">track.get_next_tracks()</span></code> method never returns only one track. It returns either zero tracks (if the lineage ended there) or two tracks (if the cell divided), representing the tracks of a daughter cell.</p>
+<p>If it returns zero tracks, then either the cell died, or it went out of the view. You can check for a cell death like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.linking_analysis</span> <span class="kn">import</span> <span class="n">linking_markers</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.linking_analysis.linking_markers</span> <span class="kn">import</span> <span class="n">EndMarker</span>
+
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+<span class="n">position</span> <span class="o">=</span> <span class="o">...</span>
+
+<span class="n">track</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">get_track</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
+<span class="n">end_marker</span> <span class="o">=</span> <span class="n">linking_markers</span><span class="o">.</span><span class="n">get_track_end_marker</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="p">,</span> <span class="n">track</span><span class="o">.</span><span class="n">find_last_position</span><span class="p">())</span>
+<span class="k">if</span> <span class="n">end_marker</span> <span class="o">==</span> <span class="n">EndMarker</span><span class="o">.</span><span class="n">DEAD</span><span class="p">:</span>
+    <span class="c1"># Cell died</span>
+    <span class="o">...</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># Cell went out of the view</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+<section id="how-do-i-know-how-much-time-a-time-point-takes">
+<h2>How do I know how much time a time point takes?<a class="headerlink" href="#how-do-i-know-how-much-time-a-time-point-takes" title="Permalink to this heading"></a></h2>
+<p>The time between two time points is defined by the time resultion:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.core.resolution</span> <span class="kn">import</span> <span class="n">ImageResolution</span>
+
+<span class="c1"># Normally, you would load an experiment that has the resultion already stored.</span>
+<span class="c1"># Here, we just set a resolution: (x in um, y, z, t in minutes)</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">set_resolution</span><span class="p">(</span><span class="n">ImageResolution</span><span class="p">(</span><span class="mf">0.32</span><span class="p">,</span> <span class="mf">0.32</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+
+<span class="c1"># Here&#39;s how to get the time between time points:</span>
+<span class="n">minutes_between_time_points</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">resolution</span><span class="p">()</span><span class="o">.</span><span class="n">time_point_interval_m</span>
+<span class="n">hours_between_time_points</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">resolution</span><span class="p">()</span><span class="o">.</span><span class="n">time_point_interval_h</span>
+</pre></div>
+</div>
+</section>
+<section id="how-do-i-get-set-the-image-resolution">
+<h2>How do I get/set the image resolution?<a class="headerlink" href="#how-do-i-get-set-the-image-resolution" title="Permalink to this heading"></a></h2>
+<p>The images resolution is accessed as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.core.resolution</span> <span class="kn">import</span> <span class="n">ImageResolution</span>
+
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+
+<span class="c1"># This is how you define the resolution (x in um, y, z, t in minutes)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">set_resolution</span><span class="p">(</span><span class="n">ImageResolution</span><span class="p">(</span><span class="mf">0.32</span><span class="p">,</span> <span class="mf">0.32</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+<span class="c1"># (if you load an expeirment from an AUT file, the resolution will</span>
+<span class="c1"># likely be defined already, and you don&#39;t need the above line)</span>
+
+<span class="c1"># Here&#39;s how to get the size of a pixel in micrometers (um)</span>
+<span class="n">pixel_size_x_in_um</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">resolution</span><span class="p">()</span><span class="o">.</span><span class="n">pixel_size_x_um</span>
+<span class="n">pixel_size_y_in_um</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">resolution</span><span class="p">()</span><span class="o">.</span><span class="n">pixel_size_y_um</span>  <span class="c1"># Should be equal to x resolution</span>
+<span class="n">pixel_size_z_in_um</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">resolution</span><span class="p">()</span><span class="o">.</span><span class="n">pixel_size_z_um</span>  <span class="c1"># Z resolution is often lower</span>
+</pre></div>
+</div>
+</section>
+<section id="how-do-i-automatically-open-organoidtracker-from-a-standalone-script">
+<h2>How do I automatically open OrganoidTracker from a standalone script?<a class="headerlink" href="#how-do-i-automatically-open-organoidtracker-from-a-standalone-script" title="Permalink to this heading"></a></h2>
+<p>You can of course save data files and then manually open them. However, you can also directly open the visualizer from a script, with your data already loaded. Say, you have an image that you want to display:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.core.images</span> <span class="kn">import</span> <span class="n">Images</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.gui</span> <span class="kn">import</span> <span class="n">launcher</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.image_loading.array_image_loader</span> <span class="kn">import</span> <span class="n">SingleImageLoader</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.visualizer</span> <span class="kn">import</span> <span class="n">standard_image_visualizer</span>
+
+<span class="n">array</span> <span class="o">=</span> <span class="o">...</span> <span class="c1"># Some single color 3D numpy array, representing an image</span>
+
+<span class="c1"># Set up Images object</span>
+<span class="n">images</span> <span class="o">=</span> <span class="n">Images</span><span class="p">()</span>
+<span class="n">images</span><span class="o">.</span><span class="n">image_loader</span><span class="p">(</span><span class="n">SingleImageLoader</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
+<span class="c1"># ... you could also load LIF files, TIFF files, set a resolution, etc.</span>
+
+<span class="c1"># Set up Experiment object, holding the given images</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">images</span> <span class="o">=</span> <span class="n">images</span>
+<span class="c1"># ... you can add any data you want to the experiment</span>
+
+<span class="c1"># Open the visualizer</span>
+<span class="n">standard_image_visualizer</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span>
+<span class="n">launcher</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>  <span class="c1"># Necessary! Google &quot;event loop&quot; for details</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="WORKING_WITH_CUSTOM_METADATA.html" class="btn btn-neutral float-left" title="Working with custom metadata" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="BATCH_EDITING.html" class="btn btn-neutral float-right" title="Batch operations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Jeroen van Zon Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

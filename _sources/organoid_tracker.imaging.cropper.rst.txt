@@ -1,0 +1,7 @@
+organoid\_tracker.imaging.cropper module
+========================================
+
+.. automodule:: organoid_tracker.imaging.cropper
+   :members:
+   :undoc-members:
+   :show-inheritance:

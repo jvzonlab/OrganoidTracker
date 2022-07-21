@@ -1,0 +1,7 @@
+organoid\_tracker.imaging.image\_file\_name\_pattern\_finder module
+===================================================================
+
+.. automodule:: organoid_tracker.imaging.image_file_name_pattern_finder
+   :members:
+   :undoc-members:
+   :show-inheritance:

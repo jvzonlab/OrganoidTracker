@@ -1,0 +1,7 @@
+organoid\_tracker.visualizer.spline\_editor module
+==================================================
+
+.. automodule:: organoid_tracker.visualizer.spline_editor
+   :members:
+   :undoc-members:
+   :show-inheritance:

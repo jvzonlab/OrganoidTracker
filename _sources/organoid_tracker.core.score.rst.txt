@@ -1,0 +1,7 @@
+organoid\_tracker.core.score module
+===================================
+
+.. automodule:: organoid_tracker.core.score
+   :members:
+   :undoc-members:
+   :show-inheritance:

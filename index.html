@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to OrganoidTracker’s documentation! &mdash; OrganoidTracker 2.0 documentation</title>
+  <title>OrganoidTracker manual &mdash; OrganoidTracker 2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -18,7 +18,8 @@
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Manual tracking and error correction" href="MANUAL_TRACKING.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -36,12 +37,31 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">Welcome to OrganoidTracker’s documentation!</a></li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
 </ul>
-</div>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">organoid_tracker</a></li>
+</ul>
+
         </div>
       </div>
     </nav>
@@ -56,9 +76,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="#" class="icon icon-home"></a> &raquo;</li>
-      <li>Welcome to OrganoidTracker’s documentation!</li>
+      <li>OrganoidTracker manual</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/index.md.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -66,31 +86,58 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="welcome-to-organoidtracker-s-documentation">
-<h1>Welcome to OrganoidTracker’s documentation!<a class="headerlink" href="#welcome-to-organoidtracker-s-documentation" title="Permalink to this heading"></a></h1>
+  <section id="organoidtracker-manual">
+<h1>OrganoidTracker manual<a class="headerlink" href="#organoidtracker-manual" title="Permalink to this heading"></a></h1>
+<p>Welcome to the OrganoidTracker manual! This manual will tell you how to do manual and automated tracking, and also give you an overview of the code of OrganoidTracker.</p>
+<section id="tutorials">
+<h2>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="MANUAL_TRACKING.html"><span class="doc std std-doc">Tutorial for manual tracking and error correction</span></a></p></li>
+<li><p><a class="reference internal" href="AUTOMATIC_TRACKING.html"><span class="doc std std-doc">Tutorial for semi-automated tracking</span></a></p></li>
+<li><p><a class="reference internal" href="PLUGIN_TUTORIAL.html"><span class="doc std std-doc">Tutorial for writing a plugin for OrganoidTracker</span></a></p></li>
+<li><p><a class="reference internal" href="TRAINING_THE_NETWORK.html"><span class="doc std std-doc">Tutorial for training a neural network</span></a></p></li>
+<li><p><a class="reference internal" href="JUPYTER_NOTEBOOK.html"><span class="doc std std-doc">Tutorial for using Jupyter Notebooks with OrganoidTracker</span></a></p></li>
+<li><p><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html"><span class="doc std std-doc">Tutorial for working with custom metadata</span></a></p></li>
+</ul>
+</section>
+<section id="for-reference">
+<h2>For reference<a class="headerlink" href="#for-reference" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="INSTALLATION.html"><span class="doc std std-doc">Installation instructions</span></a></p></li>
+<li><p><a class="reference internal" href="IMAGE_FORMATS.html"><span class="doc std std-doc">Supported image formats</span></a> / <a class="reference internal" href="TRACKING_FORMATS.html"><span class="doc std std-doc">Supported tracking formats</span></a></p></li>
+<li><p><a class="reference internal" href="SCRIPTS.html"><span class="doc std std-doc">Scripts reference</span></a></p></li>
+<li><p><a class="reference internal" href="API.html"><span class="doc std std-doc">Programming API</span></a></p></li>
+<li><p><a class="reference internal" href="BATCH_EDITING.html"><span class="doc std std-doc">Batch editing</span></a></p></li>
+</ul>
+</section>
+<section id="getting-started">
+<h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this heading"></a></h2>
+<p>The program always displays your images in the center. Using the button on the menu bar, or using <code class="docutils literal notranslate"><span class="pre">File</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Load</span> <span class="pre">images...</span></code> you can load some images. You can load tracking data on top of that, or alternatively you can manually track the cells. The graphical program <em>cannot</em> automatically track cells, for this you need to use the other scripts. However, the program can generate configuration files for you, so that you don’t need to spend too much time on the command line. 🙂</p>
+<p>To load the tracking data, use the button on the toolbar, or use <code class="docutils literal notranslate"><span class="pre">File</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Load</span> <span class="pre">tracking</span> <span class="pre">data...</span></code>. If your tracking data contains links between the time points, then <code class="docutils literal notranslate"><span class="pre">Graph</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Interactive</span> <span class="pre">lineage</span> <span class="pre">tree...</span></code> will show a lineage tree of your tracking data.</p>
+<p><img alt="Toolbar" src="_images/toolbar.png" /><br />
+The toolbar of the program.</p>
+<p>Now would be a good moment to verify that you can actually save the tracking data; do so using <code class="docutils literal notranslate"><span class="pre">File</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">tracking</span> <span class="pre">data...</span></code> or using the button on the toolbar.</p>
+</section>
+<section id="highlights">
+<h2>Highlights<a class="headerlink" href="#highlights" title="Permalink to this heading"></a></h2>
+<p>It’s best to start with <a class="reference internal" href="MANUAL_TRACKING.html"><span class="doc std std-doc">manual tracking</span></a>, to make sure that you understand the program. After tracking a few cells, you can start with <a class="reference internal" href="AUTOMATIC_TRACKING.html"><span class="doc std std-doc">automated tracking</span></a>.</p>
+<p>For data analysis, you can write your own Python scripts that make use of the <a class="reference internal" href="API.html"><span class="doc std std-doc">OrganoidTracker API</span></a>. This is useful, as then you don’t need to write your own functions to find dividing cells, dead cells, etc. You can use the API from standalone scripts or from <a class="reference internal" href="JUPYTER_NOTEBOOK.html"><span class="doc std std-doc">Jupyter Notebooks</span></a>. You can even extend the graphical user interface by <a class="reference internal" href="PLUGIN_TUTORIAL.html"><span class="doc std std-doc">writing plugins</span></a>. For that, you just need to place a Python file in the correct directory. You can use plugins to add additional cell types and menu options.</p>
+<p>Want to measure the migration of a cell? You can of course track the x, y and z position of a cell, but you can also <a class="reference internal" href="DATA_AXES.html"><span class="doc std std-doc">draw a (curved) axis yourself</span></a> and measure the position of a cell along that axis.</p>
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+</div>
 <div class="toctree-wrapper compound">
 </div>
 </section>
-<section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading"></a></h1>
-<ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
-</ul>
-<span class="target" id="module-organoid_tracker"></span><p>OrganoidTracker is a program to automatically (or manually) track cell nuclei.</p>
-<p>To load an experiment, use:</p>
-<blockquote>
-<div><p>from organoid_tracker.imaging import io
-experiment = io.load_data_file(file_name)</p>
-</div></blockquote>
-<p>Head over to the <cite>core.experiment.Experiment</cite> class to see how the experimental data is structured.</p>
 </section>
 
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="MANUAL_TRACKING.html" class="btn btn-neutral float-right" title="Manual tracking and error correction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

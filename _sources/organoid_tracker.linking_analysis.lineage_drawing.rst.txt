@@ -1,0 +1,7 @@
+organoid\_tracker.linking\_analysis.lineage\_drawing module
+===========================================================
+
+.. automodule:: organoid_tracker.linking_analysis.lineage_drawing
+   :members:
+   :undoc-members:
+   :show-inheritance:

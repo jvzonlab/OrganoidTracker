@@ -4,69 +4,17 @@ organoid\_tracker.image\_loading package
 Submodules
 ----------
 
-organoid\_tracker.image\_loading.array\_image\_loader module
-------------------------------------------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: organoid_tracker.image_loading.array_image_loader
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.image\_loading.builtin\_image\_filters module
----------------------------------------------------------------
-
-.. automodule:: organoid_tracker.image_loading.builtin_image_filters
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.image\_loading.builtin\_merging\_image\_loaders module
-------------------------------------------------------------------------
-
-.. automodule:: organoid_tracker.image_loading.builtin_merging_image_loaders
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.image\_loading.folder\_image\_loader module
--------------------------------------------------------------
-
-.. automodule:: organoid_tracker.image_loading.folder_image_loader
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.image\_loading.general\_image\_loader module
---------------------------------------------------------------
-
-.. automodule:: organoid_tracker.image_loading.general_image_loader
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.image\_loading.liffile\_image\_loader module
---------------------------------------------------------------
-
-.. automodule:: organoid_tracker.image_loading.liffile_image_loader
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.image\_loading.merged\_tiff\_image\_loader module
--------------------------------------------------------------------
-
-.. automodule:: organoid_tracker.image_loading.merged_tiff_image_loader
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.image\_loading.nd2file\_image\_loader module
---------------------------------------------------------------
-
-.. automodule:: organoid_tracker.image_loading.nd2file_image_loader
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   organoid_tracker.image_loading.array_image_loader
+   organoid_tracker.image_loading.builtin_image_filters
+   organoid_tracker.image_loading.builtin_merging_image_loaders
+   organoid_tracker.image_loading.folder_image_loader
+   organoid_tracker.image_loading.general_image_loader
+   organoid_tracker.image_loading.liffile_image_loader
+   organoid_tracker.image_loading.merged_tiff_image_loader
+   organoid_tracker.image_loading.nd2file_image_loader
 
 Module contents
 ---------------

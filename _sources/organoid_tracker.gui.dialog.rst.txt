@@ -1,0 +1,7 @@
+organoid\_tracker.gui.dialog module
+===================================
+
+.. automodule:: organoid_tracker.gui.dialog
+   :members:
+   :undoc-members:
+   :show-inheritance:

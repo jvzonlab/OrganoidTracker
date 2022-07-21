@@ -1,0 +1,7 @@
+organoid\_tracker.text\_popup.help\_popup module
+================================================
+
+.. automodule:: organoid_tracker.text_popup.help_popup
+   :members:
+   :undoc-members:
+   :show-inheritance:

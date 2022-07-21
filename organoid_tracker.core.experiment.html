@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>organoid_tracker.core.experiment module &mdash; OrganoidTracker 2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="organoid_tracker.core.full_position_snapshot module" href="organoid_tracker.core.full_position_snapshot.html" />
+    <link rel="prev" title="organoid_tracker.core.ellipse module" href="organoid_tracker.core.ellipse.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> OrganoidTracker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">organoid_tracker</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="organoid_tracker.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.comparison.html">organoid_tracker.comparison package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.config.html">organoid_tracker.config package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.connecting.html">organoid_tracker.connecting package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.connection_analysis.html">organoid_tracker.connection_analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.coordinate_system.html">organoid_tracker.coordinate_system package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="organoid_tracker.core.html">organoid_tracker.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html">organoid_tracker.gui package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html">organoid_tracker.guizela_tracker_compatibility package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.image_loading.html">organoid_tracker.image_loading package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.imaging.html">organoid_tracker.imaging package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking.html">organoid_tracker.linking package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html">organoid_tracker.linking_analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_analysis.html">organoid_tracker.position_analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection.html">organoid_tracker.position_detection package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html">organoid_tracker.position_detection_cnn package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.text_popup.html">organoid_tracker.text_popup package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.util.html">organoid_tracker.util package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html">organoid_tracker.visualizer package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.html#module-organoid_tracker">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OrganoidTracker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">organoid_tracker</a> &raquo;</li>
+          <li><a href="organoid_tracker.html">organoid_tracker package</a> &raquo;</li>
+          <li><a href="organoid_tracker.core.html">organoid_tracker.core package</a> &raquo;</li>
+      <li>organoid_tracker.core.experiment module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/organoid_tracker.core.experiment.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-organoid_tracker.core.experiment">
+<span id="organoid-tracker-core-experiment-module"></span><h1>organoid_tracker.core.experiment module<a class="headerlink" href="#module-organoid_tracker.core.experiment" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.core.experiment.</span></span><span class="sig-name descname"><span class="pre">Experiment</span></span><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A complete experiment, with many stacks of images collected over time. This class ultimately collects all
+details of the experiment.</p>
+<p>An experiment contains <cite>Position</cite> objects. They represent a cell detection at a particular time point. The object
+itself just stores an x, y, z and time point. The objects can be found in <cite>experiment.positions</cite>. For example, to
+get a list of all positions at time point 7, use <cite>list(experiment.positions.of_time_point(TimePoint(7))</cite>.</p>
+<p>Cell detections from different time points can be marked as belonging to the same biological cell. These links over
+time are stored in <cite>experiment.links</cite>. Using for example <cite>experiment.links.find_futures(position)</cite>, you’ll know what
+position in the next time point represents locates same cell. This will usually be one position, but in the case of
+a division, it will be two positions. In the case of a cell death, it will be 0 positions.</p>
+<p>Cells can also have neighbors, and those are defined in <cite>experiment.connections</cite>. Metadata of cell positions, like
+the cell type or fluorescent intensity, is stored in <cite>experiment.position_data</cite>.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.beacons">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">beacons</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.beacon_collection.html#organoid_tracker.core.beacon_collection.BeaconCollection" title="organoid_tracker.core.beacon_collection.BeaconCollection"><span class="pre">BeaconCollection</span></a></em><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.beacons" title="Permalink to this definition"></a></dt>
+<dd><p>Gets all beacon positions. Beacons are used to measure the movement of cells towards or around some static
+position.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.color">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">color</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.Color" title="organoid_tracker.core.Color"><span class="pre">Color</span></a></em><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.color" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the color of this experiment. This color is used in various plots where multiple experiments are
+summarized.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.connections">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connections</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.connections.html#organoid_tracker.core.connections.Connections" title="organoid_tracker.core.connections.Connections"><span class="pre">Connections</span></a></em><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.connections" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the connections, which are used to group positions at the same time point.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.copy_selected">
+<span class="sig-name descname"><span class="pre">copy_selected</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">link_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.copy_selected" title="Permalink to this definition"></a></dt>
+<dd><p>Copies the selected attributes over to a new experiment. Note that position_data and links can only be copied
+if the positions are copied.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.division_lookahead_time_points">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">division_lookahead_time_points</span></span><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.division_lookahead_time_points" title="Permalink to this definition"></a></dt>
+<dd><p>Where there no divisions found because a cell really didn’t divide, or did the experiment simply end before
+the cell divided? If the experiment continues for at least this many time points, then we can safely assume that</p>
+<blockquote>
+<div><p>the cell did not divide.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.first_time_point_number">
+<span class="sig-name descname"><span class="pre">first_time_point_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.first_time_point_number" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the first time point of the experiment where there is data (images and/or positions).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.get_image_stack">
+<span class="sig-name descname"><span class="pre">get_image_stack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.get_image_stack" title="Permalink to this definition"></a></dt>
+<dd><p>Gets a stack of all images for a time point, one for every z layer. Returns None if there is no image.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.get_next_time_point">
+<span class="sig-name descname"><span class="pre">get_next_time_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.get_next_time_point" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the time point directly after the given time point. Throws ValueError if the given time point is the
+last time point of the experiment.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.get_previous_time_point">
+<span class="sig-name descname"><span class="pre">get_previous_time_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.get_previous_time_point" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the time point directly before the given time point. Throws ValueError if the given time point is the
+first time point of the experiment.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.get_time_point">
+<span class="sig-name descname"><span class="pre">get_time_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.get_time_point" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the time point with the given number. Throws ValueError if no such time point exists. This method is
+essentially an alternative for <cite>TimePoint(time_point_number)</cite>, but with added bound checks.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.global_data">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">global_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.global_data.html#organoid_tracker.core.global_data.GlobalData" title="organoid_tracker.core.global_data.GlobalData"><span class="pre">GlobalData</span></a></em><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.global_data" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.images">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">images</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.images.html#organoid_tracker.core.images.Images" title="organoid_tracker.core.images.Images"><span class="pre">Images</span></a></em><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.images" title="Permalink to this definition"></a></dt>
+<dd><p>Gets all images stored in the experiment.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.last_save_file">
+<span class="sig-name descname"><span class="pre">last_save_file</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.last_save_file" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.last_time_point_number">
+<span class="sig-name descname"><span class="pre">last_time_point_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.last_time_point_number" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the last time point (inclusive) of the experiment where there is data (images and/or positions).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.link_data">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">link_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.link_data.html#organoid_tracker.core.link_data.LinkData" title="organoid_tracker.core.link_data.LinkData"><span class="pre">LinkData</span></a></em><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.link_data" title="Permalink to this definition"></a></dt>
+<dd><p>Gets all metadata of links.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.links">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">links</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.links.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></em><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.links" title="Permalink to this definition"></a></dt>
+<dd><p>Gets all links between the positions of different time points.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.merge">
+<span class="sig-name descname"><span class="pre">merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.merge" title="Permalink to this definition"></a></dt>
+<dd><p>Merges the position, linking and connections data of two experiments. Images, resolution and scores are not
+yet merged.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.move_position">
+<span class="sig-name descname"><span class="pre">move_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position_old</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_new</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_splines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.move_position" title="Permalink to this definition"></a></dt>
+<dd><p>Moves the position of a position, preserving any links. (So it’s different from remove-and-readd.) The shape
+of a position is not preserved, though. Throws ValueError when the position is moved to another time point. If
+the new position has not time point specified, it is set to the time point o the existing position.</p>
+<p>When update_splines is set to False, the zero point of all splines (if any) will not be updated. This makes
+moving the positions a lot faster. However, you should call splines.update_for_changed_positions yourself after
+moving all positions.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.Name" title="organoid_tracker.core.Name"><span class="pre">Name</span></a></em><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.name" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the name of the experiment.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.position_data">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.position_data.html#organoid_tracker.core.position_data.PositionData" title="organoid_tracker.core.position_data.PositionData"><span class="pre">PositionData</span></a></em><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.position_data" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the metadata associated with cell positions, like cell type, intensity, etc.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.positions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.position_collection.html#organoid_tracker.core.position_collection.PositionCollection" title="organoid_tracker.core.position_collection.PositionCollection"><span class="pre">PositionCollection</span></a></em><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.positions" title="Permalink to this definition"></a></dt>
+<dd><p>Gets all cell positions of all time points.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.remove_position">
+<span class="sig-name descname"><span class="pre">remove_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_splines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.remove_position" title="Permalink to this definition"></a></dt>
+<dd><p>Removes a position and its links and other data from the experiment.</p>
+<p>When update_splines is set to False, the zero point of all splines (if any) will not be updated. This makes
+moving the positions a lot faster. However, you should call splines.update_for_changed_positions yourself after
+moving all positions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.remove_positions">
+<span class="sig-name descname"><span class="pre">remove_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_splines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.remove_positions" title="Permalink to this definition"></a></dt>
+<dd><p>Removes multiple positions and their links and other data from the experiment. If you have multiple positions
+to delete, it is more efficient to call this method than to call remove_position many times.</p>
+<p>When update_splines is set to False, the zero point of all splines (if any) will not be updated. This makes
+moving the positions a lot faster. However, you should call splines.update_for_changed_positions yourself after
+moving all positions.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.scores">
+<span class="sig-name descname"><span class="pre">scores</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.score.html#organoid_tracker.core.score.ScoreCollection" title="organoid_tracker.core.score.ScoreCollection"><span class="pre">ScoreCollection</span></a></em><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.scores" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.splines">
+<span class="sig-name descname"><span class="pre">splines</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.SplineCollection" title="organoid_tracker.core.spline.SplineCollection"><span class="pre">SplineCollection</span></a></em><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.splines" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.time_points">
+<span class="sig-name descname"><span class="pre">time_points</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.time_points" title="Permalink to this definition"></a></dt>
+<dd><p>Returns an iterable over all time points, so that you can do <cite>for time_point in experiment.time_points():</cite>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.warning_limits">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">warning_limits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.warning_limits.html#organoid_tracker.core.warning_limits.WarningLimits" title="organoid_tracker.core.warning_limits.WarningLimits"><span class="pre">WarningLimits</span></a></em><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.warning_limits" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the limits used by the error checker. For example: what movement is so fast that it should raise an
+error?</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="organoid_tracker.core.ellipse.html" class="btn btn-neutral float-left" title="organoid_tracker.core.ellipse module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="organoid_tracker.core.full_position_snapshot.html" class="btn btn-neutral float-right" title="organoid_tracker.core.full_position_snapshot module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Jeroen van Zon Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

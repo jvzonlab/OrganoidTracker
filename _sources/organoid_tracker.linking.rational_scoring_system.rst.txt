@@ -1,0 +1,7 @@
+organoid\_tracker.linking.rational\_scoring\_system module
+==========================================================
+
+.. automodule:: organoid_tracker.linking.rational_scoring_system
+   :members:
+   :undoc-members:
+   :show-inheritance:

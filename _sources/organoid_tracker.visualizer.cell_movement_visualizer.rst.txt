@@ -1,0 +1,7 @@
+organoid\_tracker.visualizer.cell\_movement\_visualizer module
+==============================================================
+
+.. automodule:: organoid_tracker.visualizer.cell_movement_visualizer
+   :members:
+   :undoc-members:
+   :show-inheritance:

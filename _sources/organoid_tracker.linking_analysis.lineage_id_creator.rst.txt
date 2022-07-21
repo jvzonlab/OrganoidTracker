@@ -1,0 +1,7 @@
+organoid\_tracker.linking\_analysis.lineage\_id\_creator module
+===============================================================
+
+.. automodule:: organoid_tracker.linking_analysis.lineage_id_creator
+   :members:
+   :undoc-members:
+   :show-inheritance:

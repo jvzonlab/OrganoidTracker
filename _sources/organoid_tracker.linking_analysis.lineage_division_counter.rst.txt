@@ -1,0 +1,7 @@
+organoid\_tracker.linking\_analysis.lineage\_division\_counter module
+=====================================================================
+
+.. automodule:: organoid_tracker.linking_analysis.lineage_division_counter
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+organoid\_tracker.position\_detection\_cnn.split\_images module
+===============================================================
+
+.. automodule:: organoid_tracker.position_detection_cnn.split_images
+   :members:
+   :undoc-members:
+   :show-inheritance:

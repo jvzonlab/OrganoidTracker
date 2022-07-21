@@ -4,13 +4,10 @@ organoid\_tracker.connecting package
 Submodules
 ----------
 
-organoid\_tracker.connecting.connector\_by\_distance module
------------------------------------------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: organoid_tracker.connecting.connector_by_distance
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   organoid_tracker.connecting.connector_by_distance
 
 Module contents
 ---------------

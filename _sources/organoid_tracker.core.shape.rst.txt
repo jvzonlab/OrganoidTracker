@@ -1,0 +1,7 @@
+organoid\_tracker.core.shape module
+===================================
+
+.. automodule:: organoid_tracker.core.shape
+   :members:
+   :undoc-members:
+   :show-inheritance:

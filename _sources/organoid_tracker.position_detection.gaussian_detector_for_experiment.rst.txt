@@ -1,0 +1,7 @@
+organoid\_tracker.position\_detection.gaussian\_detector\_for\_experiment module
+================================================================================
+
+.. automodule:: organoid_tracker.position_detection.gaussian_detector_for_experiment
+   :members:
+   :undoc-members:
+   :show-inheritance:

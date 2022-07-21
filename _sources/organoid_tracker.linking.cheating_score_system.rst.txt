@@ -1,0 +1,7 @@
+organoid\_tracker.linking.cheating\_score\_system module
+========================================================
+
+.. automodule:: organoid_tracker.linking.cheating_score_system
+   :members:
+   :undoc-members:
+   :show-inheritance:

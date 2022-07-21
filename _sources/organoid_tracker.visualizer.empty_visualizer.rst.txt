@@ -1,0 +1,7 @@
+organoid\_tracker.visualizer.empty\_visualizer module
+=====================================================
+
+.. automodule:: organoid_tracker.visualizer.empty_visualizer
+   :members:
+   :undoc-members:
+   :show-inheritance:

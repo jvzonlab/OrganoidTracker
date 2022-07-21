@@ -18,7 +18,9 @@
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="organoid_tracker.comparison.lineage_comparison module" href="organoid_tracker.comparison.lineage_comparison.html" />
+    <link rel="prev" title="organoid_tracker package" href="organoid_tracker.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -36,21 +38,58 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">organoid_tracker.comparison package</a><ul>
-<li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.comparison.lineage_comparison">organoid_tracker.comparison.lineage_comparison module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.comparison.links_comparison">organoid_tracker.comparison.links_comparison module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.comparison.positions_comparison">organoid_tracker.comparison.positions_comparison module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.comparison.report">organoid_tracker.comparison.report module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.comparison.report_csv_io">organoid_tracker.comparison.report_csv_io module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.comparison.report_json_io">organoid_tracker.comparison.report_json_io module</a></li>
-<li><a class="reference internal" href="#module-organoid_tracker.comparison">Module contents</a></li>
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">organoid_tracker</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="organoid_tracker.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">organoid_tracker.comparison package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.config.html">organoid_tracker.config package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.connecting.html">organoid_tracker.connecting package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.connection_analysis.html">organoid_tracker.connection_analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.coordinate_system.html">organoid_tracker.coordinate_system package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html">organoid_tracker.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html">organoid_tracker.gui package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html">organoid_tracker.guizela_tracker_compatibility package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.image_loading.html">organoid_tracker.image_loading package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.imaging.html">organoid_tracker.imaging package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking.html">organoid_tracker.linking package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html">organoid_tracker.linking_analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_analysis.html">organoid_tracker.position_analysis package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection.html">organoid_tracker.position_detection package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html">organoid_tracker.position_detection_cnn package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.text_popup.html">organoid_tracker.text_popup package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.util.html">organoid_tracker.util package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.visualizer.html">organoid_tracker.visualizer package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.html#module-organoid_tracker">Module contents</a></li>
 </ul>
 </li>
 </ul>
-</div>
+</li>
+</ul>
+
         </div>
       </div>
     </nav>
@@ -65,6 +104,8 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">organoid_tracker</a> &raquo;</li>
+          <li><a href="organoid_tracker.html">organoid_tracker package</a> &raquo;</li>
       <li>organoid_tracker.comparison package</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/organoid_tracker.comparison.rst.txt" rel="nofollow"> View page source</a>
@@ -79,286 +120,16 @@
 <h1>organoid_tracker.comparison package<a class="headerlink" href="#organoid-tracker-comparison-package" title="Permalink to this heading"></a></h1>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
-</section>
-<section id="module-organoid_tracker.comparison.lineage_comparison">
-<span id="organoid-tracker-comparison-lineage-comparison-module"></span><h2>organoid_tracker.comparison.lineage_comparison module<a class="headerlink" href="#module-organoid_tracker.comparison.lineage_comparison" title="Permalink to this heading"></a></h2>
-<p>Compares two sets of links on the lineage level. Things like missed cell divisions and cell deaths will be
-reported.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.lineage_comparison.compare_links">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.comparison.lineage_comparison.</span></span><span class="sig-name descname"><span class="pre">compare_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ground_truth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">scratch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_distance_um</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.comparison.report.ComparisonReport" title="organoid_tracker.comparison.report.ComparisonReport"><span class="pre">ComparisonReport</span></a></span></span><a class="headerlink" href="#organoid_tracker.comparison.lineage_comparison.compare_links" title="Permalink to this definition"></a></dt>
-<dd><p>Compares two sets of links on the lineage level. Things like missed cell divisions and cell deaths will be
-reported.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.comparison.links_comparison">
-<span id="organoid-tracker-comparison-links-comparison-module"></span><h2>organoid_tracker.comparison.links_comparison module<a class="headerlink" href="#module-organoid_tracker.comparison.links_comparison" title="Permalink to this heading"></a></h2>
-<p>Compares two sets of links on the level of individual links. Missed cell divisions/deaths are not reported. Instead,
-for every link in the baseline data, it is checked if it is present in the automatic data, and vice versa.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.links_comparison.LinksReport">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.comparison.links_comparison.</span></span><span class="sig-name descname"><span class="pre">LinksReport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.comparison.links_comparison.LinksReport" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#organoid_tracker.comparison.report.ComparisonReport" title="organoid_tracker.comparison.report.ComparisonReport"><code class="xref py py-class docutils literal notranslate"><span class="pre">ComparisonReport</span></code></a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.links_comparison.LinksReport.calculate_time_correctness_statistics">
-<span class="sig-name descname"><span class="pre">calculate_time_correctness_statistics</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.comparison.report.Statistics" title="organoid_tracker.comparison.report.Statistics"><span class="pre">Statistics</span></a></span></span><a class="headerlink" href="#organoid_tracker.comparison.links_comparison.LinksReport.calculate_time_correctness_statistics" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.links_comparison.LinksReport.calculate_z_correctness_statistics">
-<span class="sig-name descname"><span class="pre">calculate_z_correctness_statistics</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.comparison.report.Statistics" title="organoid_tracker.comparison.report.Statistics"><span class="pre">Statistics</span></a></span></span><a class="headerlink" href="#organoid_tracker.comparison.links_comparison.LinksReport.calculate_z_correctness_statistics" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.links_comparison.compare_links">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.comparison.links_comparison.</span></span><span class="sig-name descname"><span class="pre">compare_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ground_truth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">scratch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_distance_um</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin_xy_px</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.comparison.links_comparison.LinksReport" title="organoid_tracker.comparison.links_comparison.LinksReport"><span class="pre">LinksReport</span></a></span></span><a class="headerlink" href="#organoid_tracker.comparison.links_comparison.compare_links" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</section>
-<section id="module-organoid_tracker.comparison.positions_comparison">
-<span id="organoid-tracker-comparison-positions-comparison-module"></span><h2>organoid_tracker.comparison.positions_comparison module<a class="headerlink" href="#module-organoid_tracker.comparison.positions_comparison" title="Permalink to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.positions_comparison.DetectionReport">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.comparison.positions_comparison.</span></span><span class="sig-name descname"><span class="pre">DetectionReport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.comparison.positions_comparison.DetectionReport" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#organoid_tracker.comparison.report.ComparisonReport" title="organoid_tracker.comparison.report.ComparisonReport"><code class="xref py py-class docutils literal notranslate"><span class="pre">ComparisonReport</span></code></a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.positions_comparison.DetectionReport.calculate_time_detection_statistics">
-<span class="sig-name descname"><span class="pre">calculate_time_detection_statistics</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.comparison.report.Statistics" title="organoid_tracker.comparison.report.Statistics"><span class="pre">Statistics</span></a></span></span><a class="headerlink" href="#organoid_tracker.comparison.positions_comparison.DetectionReport.calculate_time_detection_statistics" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.positions_comparison.DetectionReport.calculate_z_detection_statistics">
-<span class="sig-name descname"><span class="pre">calculate_z_detection_statistics</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.comparison.report.Statistics" title="organoid_tracker.comparison.report.Statistics"><span class="pre">Statistics</span></a></span></span><a class="headerlink" href="#organoid_tracker.comparison.positions_comparison.DetectionReport.calculate_z_detection_statistics" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.positions_comparison.compare_positions">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.comparison.positions_comparison.</span></span><span class="sig-name descname"><span class="pre">compare_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ground_truth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">scratch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_distance_um</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rejection_distance_um</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.comparison.positions_comparison.DetectionReport" title="organoid_tracker.comparison.positions_comparison.DetectionReport"><span class="pre">DetectionReport</span></a></span></span><a class="headerlink" href="#organoid_tracker.comparison.positions_comparison.compare_positions" title="Permalink to this definition"></a></dt>
-<dd><p>Checks how much the positions in the ground truth match with the given data.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.comparison.report">
-<span id="organoid-tracker-comparison-report-module"></span><h2>organoid_tracker.comparison.report module<a class="headerlink" href="#module-organoid_tracker.comparison.report" title="Permalink to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.Category">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.comparison.report.</span></span><span class="sig-name descname"><span class="pre">Category</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.comparison.report.Category" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py property">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.Category.name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#organoid_tracker.comparison.report.Category.name" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.ComparisonReport">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.comparison.report.</span></span><span class="sig-name descname"><span class="pre">ComparisonReport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.comparison.report.ComparisonReport" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.ComparisonReport.add_data">
-<span class="sig-name descname"><span class="pre">add_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.comparison.report.Category" title="organoid_tracker.comparison.report.Category"><span class="pre">Category</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">details</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.comparison.report.ComparisonReport.add_data" title="Permalink to this definition"></a></dt>
-<dd><p>Adds a data point. The</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.ComparisonReport.calculate_time_statistics">
-<span class="sig-name descname"><span class="pre">calculate_time_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">true_positives_cat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.comparison.report.Category" title="organoid_tracker.comparison.report.Category"><span class="pre">Category</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">false_positives_cat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.comparison.report.Category" title="organoid_tracker.comparison.report.Category"><span class="pre">Category</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">false_negatives_cat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.comparison.report.Category" title="organoid_tracker.comparison.report.Category"><span class="pre">Category</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.comparison.report.Statistics" title="organoid_tracker.comparison.report.Statistics"><span class="pre">Statistics</span></a></span></span><a class="headerlink" href="#organoid_tracker.comparison.report.ComparisonReport.calculate_time_statistics" title="Permalink to this definition"></a></dt>
-<dd><p>Calculate statistics using the given categories as false/true positives/negatives.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.ComparisonReport.calculate_z_statistics">
-<span class="sig-name descname"><span class="pre">calculate_z_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">true_positives_cat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.comparison.report.Category" title="organoid_tracker.comparison.report.Category"><span class="pre">Category</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">false_positives_cat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.comparison.report.Category" title="organoid_tracker.comparison.report.Category"><span class="pre">Category</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">false_negatives_cat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.comparison.report.Category" title="organoid_tracker.comparison.report.Category"><span class="pre">Category</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.comparison.report.Statistics" title="organoid_tracker.comparison.report.Statistics"><span class="pre">Statistics</span></a></span></span><a class="headerlink" href="#organoid_tracker.comparison.report.ComparisonReport.calculate_z_statistics" title="Permalink to this definition"></a></dt>
-<dd><p>Calculate statistics using the given categories as false/true positives/negatives.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.ComparisonReport.count_positions">
-<span class="sig-name descname"><span class="pre">count_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.comparison.report.Category" title="organoid_tracker.comparison.report.Category"><span class="pre">Category</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#organoid_tracker.comparison.report.ComparisonReport.count_positions" title="Permalink to this definition"></a></dt>
-<dd><p>Gets how many entries there are in the given category, optionally at the given time point. Returns 0 if the
-given category is not used.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.ComparisonReport.delete_data">
-<span class="sig-name descname"><span class="pre">delete_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.comparison.report.Category" title="organoid_tracker.comparison.report.Category"><span class="pre">Category</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.comparison.report.ComparisonReport.delete_data" title="Permalink to this definition"></a></dt>
-<dd><p>Deletes all data of the given position.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.ComparisonReport.first_time_point_number">
-<span class="sig-name descname"><span class="pre">first_time_point_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.comparison.report.ComparisonReport.first_time_point_number" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the first time point number at which data exits for at least one category. Returns None if therea is no
-data at all in this object.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.ComparisonReport.get_categories">
-<span class="sig-name descname"><span class="pre">get_categories</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#organoid_tracker.comparison.report.Category" title="organoid_tracker.comparison.report.Category"><span class="pre">Category</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.comparison.report.ComparisonReport.get_categories" title="Permalink to this definition"></a></dt>
-<dd><p>Gets all categories that are used in this report.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.ComparisonReport.get_category_by_name">
-<span class="sig-name descname"><span class="pre">get_category_by_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#organoid_tracker.comparison.report.Category" title="organoid_tracker.comparison.report.Category"><span class="pre">Category</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.comparison.report.ComparisonReport.get_category_by_name" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the category with the given name.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.ComparisonReport.get_entries">
-<span class="sig-name descname"><span class="pre">get_entries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.comparison.report.Category" title="organoid_tracker.comparison.report.Category"><span class="pre">Category</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#organoid_tracker.comparison.report.Details" title="organoid_tracker.comparison.report.Details"><span class="pre">Details</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.comparison.report.ComparisonReport.get_entries" title="Permalink to this definition"></a></dt>
-<dd><p>Gets all entries for the given category.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.ComparisonReport.get_positions">
-<span class="sig-name descname"><span class="pre">get_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.comparison.report.Category" title="organoid_tracker.comparison.report.Category"><span class="pre">Category</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.comparison.report.ComparisonReport.get_positions" title="Permalink to this definition"></a></dt>
-<dd><p>Gets all positions in the given category, optionally filtered to the given time point.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.ComparisonReport.last_time_point_number">
-<span class="sig-name descname"><span class="pre">last_time_point_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.comparison.report.ComparisonReport.last_time_point_number" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the first time point number at which data exits for at least one category. Returns None if therea is no
-data at all in this object.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.ComparisonReport.recorded_parameters">
-<span class="sig-name descname"><span class="pre">recorded_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.comparison.report.ComparisonReport.recorded_parameters" title="Permalink to this definition"></a></dt>
-<dd><p>Gets all parameters set for this comparison. Useful for reproducing this comparison.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.ComparisonReport.summary">
-<span class="sig-name descname"><span class="pre">summary</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#organoid_tracker.comparison.report.ComparisonReport.summary" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.ComparisonReport.time_points">
-<span class="sig-name descname"><span class="pre">time_points</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.comparison.report.ComparisonReport.time_points" title="Permalink to this definition"></a></dt>
-<dd><p>Returns all time points from the first to the last, inclusive. Time points in between might not have data
-attached to them.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.ComparisonReport.title">
-<span class="sig-name descname"><span class="pre">title</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Comparison'</span></em><a class="headerlink" href="#organoid_tracker.comparison.report.ComparisonReport.title" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.Details">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.comparison.report.</span></span><span class="sig-name descname"><span class="pre">Details</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">detail</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.comparison.report.Details" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Represents the details of a certain entry in the report.</p>
-<dl class="py property">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.Details.details">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">details</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#organoid_tracker.comparison.report.Details.details" title="Permalink to this definition"></a></dt>
-<dd><p>The details, cannot be modified.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.Statistics">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.comparison.report.</span></span><span class="sig-name descname"><span class="pre">Statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">first_x_axis_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_positives</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">false_positives</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">false_negatives</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.comparison.report.Statistics" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Used to plot the true positives, false positives, false negatives, recall, precisiion and F1</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.Statistics.debug_plot">
-<span class="sig-name descname"><span class="pre">debug_plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.comparison.report.Statistics.debug_plot" title="Permalink to this definition"></a></dt>
-<dd><p>Shows a Matplotlib plot. Must only be called from the command line.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.Statistics.f1_score">
-<span class="sig-name descname"><span class="pre">f1_score</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#organoid_tracker.comparison.report.Statistics.f1_score" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.Statistics.f1_score_overall">
-<span class="sig-name descname"><span class="pre">f1_score_overall</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#organoid_tracker.comparison.report.Statistics.f1_score_overall" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.Statistics.false_negatives">
-<span class="sig-name descname"><span class="pre">false_negatives</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#organoid_tracker.comparison.report.Statistics.false_negatives" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.Statistics.false_positives">
-<span class="sig-name descname"><span class="pre">false_positives</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#organoid_tracker.comparison.report.Statistics.false_positives" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.Statistics.precision">
-<span class="sig-name descname"><span class="pre">precision</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#organoid_tracker.comparison.report.Statistics.precision" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.Statistics.precision_overall">
-<span class="sig-name descname"><span class="pre">precision_overall</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#organoid_tracker.comparison.report.Statistics.precision_overall" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.Statistics.recall">
-<span class="sig-name descname"><span class="pre">recall</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#organoid_tracker.comparison.report.Statistics.recall" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.Statistics.recall_overall">
-<span class="sig-name descname"><span class="pre">recall_overall</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#organoid_tracker.comparison.report.Statistics.recall_overall" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.Statistics.true_positives">
-<span class="sig-name descname"><span class="pre">true_positives</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#organoid_tracker.comparison.report.Statistics.true_positives" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.Statistics.x_axis_numbers">
-<span class="sig-name descname"><span class="pre">x_axis_numbers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#organoid_tracker.comparison.report.Statistics.x_axis_numbers" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report.Statistics.x_label">
-<span class="sig-name descname"><span class="pre">x_label</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#organoid_tracker.comparison.report.Statistics.x_label" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.comparison.report_csv_io">
-<span id="organoid-tracker-comparison-report-csv-io-module"></span><h2>organoid_tracker.comparison.report_csv_io module<a class="headerlink" href="#module-organoid_tracker.comparison.report_csv_io" title="Permalink to this heading"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report_csv_io.save_report_time_statistics">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.comparison.report_csv_io.</span></span><span class="sig-name descname"><span class="pre">save_report_time_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.comparison.report.ComparisonReport" title="organoid_tracker.comparison.report.ComparisonReport"><span class="pre">ComparisonReport</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.comparison.report_csv_io.save_report_time_statistics" title="Permalink to this definition"></a></dt>
-<dd><p>Saves the number of positions in each category for each time point to a CSV file.</p>
-</dd></dl>
-
-</section>
-<section id="module-organoid_tracker.comparison.report_json_io">
-<span id="organoid-tracker-comparison-report-json-io-module"></span><h2>organoid_tracker.comparison.report_json_io module<a class="headerlink" href="#module-organoid_tracker.comparison.report_json_io" title="Permalink to this heading"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report_json_io.load_report">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.comparison.report_json_io.</span></span><span class="sig-name descname"><span class="pre">load_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.comparison.report.ComparisonReport" title="organoid_tracker.comparison.report.ComparisonReport"><span class="pre">ComparisonReport</span></a></span></span><a class="headerlink" href="#organoid_tracker.comparison.report_json_io.load_report" title="Permalink to this definition"></a></dt>
-<dd><p>Reconstructs a report from a JSON file.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.comparison.report_json_io.save_report">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.comparison.report_json_io.</span></span><span class="sig-name descname"><span class="pre">save_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.comparison.report.ComparisonReport" title="organoid_tracker.comparison.report.ComparisonReport"><span class="pre">ComparisonReport</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.comparison.report_json_io.save_report" title="Permalink to this definition"></a></dt>
-<dd><p>Saves the report to the given file. Make sure the parent directory of the file already exists.</p>
-</dd></dl>
-
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.comparison.lineage_comparison.html">organoid_tracker.comparison.lineage_comparison module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.comparison.links_comparison.html">organoid_tracker.comparison.links_comparison module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.comparison.positions_comparison.html">organoid_tracker.comparison.positions_comparison module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.comparison.report.html">organoid_tracker.comparison.report module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.comparison.report_csv_io.html">organoid_tracker.comparison.report_csv_io module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.comparison.report_json_io.html">organoid_tracker.comparison.report_json_io module</a></li>
+</ul>
+</div>
 </section>
 <section id="module-organoid_tracker.comparison">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-organoid_tracker.comparison" title="Permalink to this heading"></a></h2>
@@ -369,7 +140,10 @@ attached to them.</p>
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="organoid_tracker.html" class="btn btn-neutral float-left" title="organoid_tracker package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="organoid_tracker.comparison.lineage_comparison.html" class="btn btn-neutral float-right" title="organoid_tracker.comparison.lineage_comparison module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

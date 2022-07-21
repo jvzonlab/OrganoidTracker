@@ -1,0 +1,7 @@
+organoid\_tracker.imaging.depth\_colored\_image\_creator module
+===============================================================
+
+.. automodule:: organoid_tracker.imaging.depth_colored_image_creator
+   :members:
+   :undoc-members:
+   :show-inheritance:

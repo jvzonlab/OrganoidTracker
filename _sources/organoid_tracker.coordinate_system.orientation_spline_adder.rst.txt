@@ -1,0 +1,7 @@
+organoid\_tracker.coordinate\_system.orientation\_spline\_adder module
+======================================================================
+
+.. automodule:: organoid_tracker.coordinate_system.orientation_spline_adder
+   :members:
+   :undoc-members:
+   :show-inheritance:

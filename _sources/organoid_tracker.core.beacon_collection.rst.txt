@@ -1,0 +1,7 @@
+organoid\_tracker.core.beacon\_collection module
+================================================
+
+.. automodule:: organoid_tracker.core.beacon_collection
+   :members:
+   :undoc-members:
+   :show-inheritance:

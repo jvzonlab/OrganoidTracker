@@ -4,29 +4,12 @@ organoid\_tracker.coordinate\_system package
 Submodules
 ----------
 
-organoid\_tracker.coordinate\_system.orientation\_spline\_adder module
-----------------------------------------------------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: organoid_tracker.coordinate_system.orientation_spline_adder
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.coordinate\_system.sphere\_representer module
----------------------------------------------------------------
-
-.. automodule:: organoid_tracker.coordinate_system.sphere_representer
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.coordinate\_system.spherical\_coordinates module
-------------------------------------------------------------------
-
-.. automodule:: organoid_tracker.coordinate_system.spherical_coordinates
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   organoid_tracker.coordinate_system.orientation_spline_adder
+   organoid_tracker.coordinate_system.sphere_representer
+   organoid_tracker.coordinate_system.spherical_coordinates
 
 Module contents
 ---------------

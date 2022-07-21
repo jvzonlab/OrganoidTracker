@@ -1,0 +1,7 @@
+organoid\_tracker.visualizer.lineage\_tree\_visualizer module
+=============================================================
+
+.. automodule:: organoid_tracker.visualizer.lineage_tree_visualizer
+   :members:
+   :undoc-members:
+   :show-inheritance:

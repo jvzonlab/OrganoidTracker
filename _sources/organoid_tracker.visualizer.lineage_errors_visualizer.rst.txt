@@ -1,0 +1,7 @@
+organoid\_tracker.visualizer.lineage\_errors\_visualizer module
+===============================================================
+
+.. automodule:: organoid_tracker.visualizer.lineage_errors_visualizer
+   :members:
+   :undoc-members:
+   :show-inheritance:

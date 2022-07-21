@@ -1,0 +1,7 @@
+organoid\_tracker.visualizer.cell\_death\_visualizer module
+===========================================================
+
+.. automodule:: organoid_tracker.visualizer.cell_death_visualizer
+   :members:
+   :undoc-members:
+   :show-inheritance:

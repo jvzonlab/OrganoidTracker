@@ -1,0 +1,7 @@
+organoid\_tracker.linking\_analysis.lineage\_fate\_finder module
+================================================================
+
+.. automodule:: organoid_tracker.linking_analysis.lineage_fate_finder
+   :members:
+   :undoc-members:
+   :show-inheritance:

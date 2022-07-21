@@ -4,53 +4,15 @@ organoid\_tracker.comparison package
 Submodules
 ----------
 
-organoid\_tracker.comparison.lineage\_comparison module
--------------------------------------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: organoid_tracker.comparison.lineage_comparison
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.comparison.links\_comparison module
------------------------------------------------------
-
-.. automodule:: organoid_tracker.comparison.links_comparison
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.comparison.positions\_comparison module
----------------------------------------------------------
-
-.. automodule:: organoid_tracker.comparison.positions_comparison
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.comparison.report module
-------------------------------------------
-
-.. automodule:: organoid_tracker.comparison.report
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.comparison.report\_csv\_io module
----------------------------------------------------
-
-.. automodule:: organoid_tracker.comparison.report_csv_io
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.comparison.report\_json\_io module
-----------------------------------------------------
-
-.. automodule:: organoid_tracker.comparison.report_json_io
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   organoid_tracker.comparison.lineage_comparison
+   organoid_tracker.comparison.links_comparison
+   organoid_tracker.comparison.positions_comparison
+   organoid_tracker.comparison.report
+   organoid_tracker.comparison.report_csv_io
+   organoid_tracker.comparison.report_json_io
 
 Module contents
 ---------------

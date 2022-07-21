@@ -4,85 +4,19 @@ organoid\_tracker.imaging package
 Submodules
 ----------
 
-organoid\_tracker.imaging.angles module
----------------------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: organoid_tracker.imaging.angles
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.imaging.cropper module
-----------------------------------------
-
-.. automodule:: organoid_tracker.imaging.cropper
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.imaging.ctc\_io module
-----------------------------------------
-
-.. automodule:: organoid_tracker.imaging.ctc_io
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.imaging.depth\_colored\_image\_creator module
----------------------------------------------------------------
-
-.. automodule:: organoid_tracker.imaging.depth_colored_image_creator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.imaging.image\_adder module
----------------------------------------------
-
-.. automodule:: organoid_tracker.imaging.image_adder
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.imaging.image\_file\_name\_pattern\_finder module
--------------------------------------------------------------------
-
-.. automodule:: organoid_tracker.imaging.image_file_name_pattern_finder
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.imaging.io module
------------------------------------
-
-.. automodule:: organoid_tracker.imaging.io
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.imaging.lines module
---------------------------------------
-
-.. automodule:: organoid_tracker.imaging.lines
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.imaging.list\_io module
------------------------------------------
-
-.. automodule:: organoid_tracker.imaging.list_io
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.imaging.trackmate\_io module
-----------------------------------------------
-
-.. automodule:: organoid_tracker.imaging.trackmate_io
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   organoid_tracker.imaging.angles
+   organoid_tracker.imaging.cropper
+   organoid_tracker.imaging.ctc_io
+   organoid_tracker.imaging.depth_colored_image_creator
+   organoid_tracker.imaging.image_adder
+   organoid_tracker.imaging.image_file_name_pattern_finder
+   organoid_tracker.imaging.io
+   organoid_tracker.imaging.lines
+   organoid_tracker.imaging.list_io
+   organoid_tracker.imaging.trackmate_io
 
 Module contents
 ---------------

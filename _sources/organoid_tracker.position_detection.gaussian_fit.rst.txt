@@ -1,0 +1,7 @@
+organoid\_tracker.position\_detection.gaussian\_fit module
+==========================================================
+
+.. automodule:: organoid_tracker.position_detection.gaussian_fit
+   :members:
+   :undoc-members:
+   :show-inheritance:

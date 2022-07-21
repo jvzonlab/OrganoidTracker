@@ -1,0 +1,7 @@
+organoid\_tracker.gui.image\_series\_loader\_dialog module
+==========================================================
+
+.. automodule:: organoid_tracker.gui.image_series_loader_dialog
+   :members:
+   :undoc-members:
+   :show-inheritance:

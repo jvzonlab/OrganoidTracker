@@ -1,0 +1,7 @@
+organoid\_tracker.visualizer.debug\_image\_visualizer module
+============================================================
+
+.. automodule:: organoid_tracker.visualizer.debug_image_visualizer
+   :members:
+   :undoc-members:
+   :show-inheritance:

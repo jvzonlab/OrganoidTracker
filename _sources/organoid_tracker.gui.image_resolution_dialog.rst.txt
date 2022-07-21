@@ -1,0 +1,7 @@
+organoid\_tracker.gui.image\_resolution\_dialog module
+======================================================
+
+.. automodule:: organoid_tracker.gui.image_resolution_dialog
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -4,197 +4,33 @@ organoid\_tracker.linking\_analysis package
 Submodules
 ----------
 
-organoid\_tracker.linking\_analysis.cell\_compartment\_finder module
---------------------------------------------------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: organoid_tracker.linking_analysis.cell_compartment_finder
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.cell\_division\_counter module
-------------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.cell_division_counter
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.cell\_error\_finder module
---------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.cell_error_finder
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.cell\_fate\_finder module
--------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.cell_fate_finder
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.cell\_nearby\_death\_counter module
------------------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.cell_nearby_death_counter
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.errors module
--------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.errors
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.lineage\_division\_counter module
----------------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.lineage_division_counter
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.lineage\_drawing module
------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.lineage_drawing
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.lineage\_end\_finder module
----------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.lineage_end_finder
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.lineage\_error\_finder module
------------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.lineage_error_finder
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.lineage\_fate\_finder module
-----------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.lineage_fate_finder
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.lineage\_finder module
-----------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.lineage_finder
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.lineage\_id\_creator module
----------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.lineage_id_creator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.lineage\_markers module
------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.lineage_markers
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.linking\_markers module
------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.linking_markers
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.links\_filter module
---------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.links_filter
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.links\_postprocessor module
----------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.links_postprocessor
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.particle\_age\_finder module
-----------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.particle_age_finder
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.particle\_flow\_calculator module
----------------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.particle_flow_calculator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.particle\_movement\_finder module
----------------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.particle_movement_finder
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.particle\_rotation\_calculator module
--------------------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.particle_rotation_calculator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.position\_connection\_finder module
------------------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.position_connection_finder
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.scores\_dataframe module
-------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.scores_dataframe
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.linking\_analysis.track\_positions\_finder module
--------------------------------------------------------------------
-
-.. automodule:: organoid_tracker.linking_analysis.track_positions_finder
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   organoid_tracker.linking_analysis.cell_compartment_finder
+   organoid_tracker.linking_analysis.cell_division_counter
+   organoid_tracker.linking_analysis.cell_error_finder
+   organoid_tracker.linking_analysis.cell_fate_finder
+   organoid_tracker.linking_analysis.cell_nearby_death_counter
+   organoid_tracker.linking_analysis.errors
+   organoid_tracker.linking_analysis.lineage_division_counter
+   organoid_tracker.linking_analysis.lineage_drawing
+   organoid_tracker.linking_analysis.lineage_end_finder
+   organoid_tracker.linking_analysis.lineage_error_finder
+   organoid_tracker.linking_analysis.lineage_fate_finder
+   organoid_tracker.linking_analysis.lineage_finder
+   organoid_tracker.linking_analysis.lineage_id_creator
+   organoid_tracker.linking_analysis.lineage_markers
+   organoid_tracker.linking_analysis.linking_markers
+   organoid_tracker.linking_analysis.links_filter
+   organoid_tracker.linking_analysis.links_postprocessor
+   organoid_tracker.linking_analysis.particle_age_finder
+   organoid_tracker.linking_analysis.particle_flow_calculator
+   organoid_tracker.linking_analysis.particle_movement_finder
+   organoid_tracker.linking_analysis.particle_rotation_calculator
+   organoid_tracker.linking_analysis.position_connection_finder
+   organoid_tracker.linking_analysis.scores_dataframe
+   organoid_tracker.linking_analysis.track_positions_finder
 
 Module contents
 ---------------

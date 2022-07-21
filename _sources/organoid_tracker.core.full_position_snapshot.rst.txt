@@ -1,0 +1,7 @@
+organoid\_tracker.core.full\_position\_snapshot module
+======================================================
+
+.. automodule:: organoid_tracker.core.full_position_snapshot
+   :members:
+   :undoc-members:
+   :show-inheritance:

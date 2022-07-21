@@ -1,0 +1,7 @@
+organoid\_tracker.core.gaussian module
+======================================
+
+.. automodule:: organoid_tracker.core.gaussian
+   :members:
+   :undoc-members:
+   :show-inheritance:

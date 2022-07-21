@@ -1,0 +1,7 @@
+organoid\_tracker.guizela\_tracker\_compatibility.track\_lib\_v3 module
+=======================================================================
+
+.. automodule:: organoid_tracker.guizela_tracker_compatibility.track_lib_v3
+   :members:
+   :undoc-members:
+   :show-inheritance:

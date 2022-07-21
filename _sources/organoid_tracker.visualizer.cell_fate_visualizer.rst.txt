@@ -1,0 +1,7 @@
+organoid\_tracker.visualizer.cell\_fate\_visualizer module
+==========================================================
+
+.. automodule:: organoid_tracker.visualizer.cell_fate_visualizer
+   :members:
+   :undoc-members:
+   :show-inheritance:

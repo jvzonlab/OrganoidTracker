@@ -1,0 +1,7 @@
+organoid\_tracker.gui.option\_choose\_dialog module
+===================================================
+
+.. automodule:: organoid_tracker.gui.option_choose_dialog
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -4,213 +4,35 @@ organoid\_tracker.core package
 Submodules
 ----------
 
-organoid\_tracker.core.beacon\_collection module
-------------------------------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: organoid_tracker.core.beacon_collection
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.bounding\_box module
--------------------------------------------
-
-.. automodule:: organoid_tracker.core.bounding_box
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.concurrent module
-----------------------------------------
-
-.. automodule:: organoid_tracker.core.concurrent
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.connections module
------------------------------------------
-
-.. automodule:: organoid_tracker.core.connections
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.ellipse module
--------------------------------------
-
-.. automodule:: organoid_tracker.core.ellipse
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.experiment module
-----------------------------------------
-
-.. automodule:: organoid_tracker.core.experiment
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.full\_position\_snapshot module
-------------------------------------------------------
-
-.. automodule:: organoid_tracker.core.full_position_snapshot
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.gaussian module
---------------------------------------
-
-.. automodule:: organoid_tracker.core.gaussian
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.global\_data module
-------------------------------------------
-
-.. automodule:: organoid_tracker.core.global_data
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.image\_filters module
---------------------------------------------
-
-.. automodule:: organoid_tracker.core.image_filters
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.image\_loader module
--------------------------------------------
-
-.. automodule:: organoid_tracker.core.image_loader
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.images module
-------------------------------------
-
-.. automodule:: organoid_tracker.core.images
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.link\_data module
-----------------------------------------
-
-.. automodule:: organoid_tracker.core.link_data
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.links module
------------------------------------
-
-.. automodule:: organoid_tracker.core.links
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.marker module
-------------------------------------
-
-.. automodule:: organoid_tracker.core.marker
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.mask module
-----------------------------------
-
-.. automodule:: organoid_tracker.core.mask
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.position module
---------------------------------------
-
-.. automodule:: organoid_tracker.core.position
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.position\_collection module
---------------------------------------------------
-
-.. automodule:: organoid_tracker.core.position_collection
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.position\_data module
---------------------------------------------
-
-.. automodule:: organoid_tracker.core.position_data
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.resolution module
-----------------------------------------
-
-.. automodule:: organoid_tracker.core.resolution
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.score module
------------------------------------
-
-.. automodule:: organoid_tracker.core.score
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.shape module
------------------------------------
-
-.. automodule:: organoid_tracker.core.shape
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.spline module
-------------------------------------
-
-.. automodule:: organoid_tracker.core.spline
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.typing module
-------------------------------------
-
-.. automodule:: organoid_tracker.core.typing
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.vector module
-------------------------------------
-
-.. automodule:: organoid_tracker.core.vector
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-organoid\_tracker.core.warning\_limits module
----------------------------------------------
-
-.. automodule:: organoid_tracker.core.warning_limits
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   organoid_tracker.core.beacon_collection
+   organoid_tracker.core.bounding_box
+   organoid_tracker.core.concurrent
+   organoid_tracker.core.connections
+   organoid_tracker.core.ellipse
+   organoid_tracker.core.experiment
+   organoid_tracker.core.full_position_snapshot
+   organoid_tracker.core.gaussian
+   organoid_tracker.core.global_data
+   organoid_tracker.core.image_filters
+   organoid_tracker.core.image_loader
+   organoid_tracker.core.images
+   organoid_tracker.core.link_data
+   organoid_tracker.core.links
+   organoid_tracker.core.marker
+   organoid_tracker.core.mask
+   organoid_tracker.core.position
+   organoid_tracker.core.position_collection
+   organoid_tracker.core.position_data
+   organoid_tracker.core.resolution
+   organoid_tracker.core.score
+   organoid_tracker.core.shape
+   organoid_tracker.core.spline
+   organoid_tracker.core.typing
+   organoid_tracker.core.vector
+   organoid_tracker.core.warning_limits
 
 Module contents
 ---------------

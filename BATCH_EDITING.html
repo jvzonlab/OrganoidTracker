@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Batch operations &mdash; OrganoidTracker 2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Custom tracking formats" href="CUSTOM_TRACKING_FORMATS.html" />
+    <link rel="prev" title="API reference" href="API.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> OrganoidTracker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Batch operations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#deleting-all-positions-within-a-rectangle">Deleting all positions within a rectangle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#deleting-all-positions-of-a-time-point">Deleting all positions of a time point</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#deleting-all-positions-of-multiple-time-points">Deleting all positions of multiple time points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#deleting-some-positions-over-multple-time-points">Deleting some positions over multple time points</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">organoid_tracker</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OrganoidTracker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Batch operations</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/BATCH_EDITING.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="batch-operations">
+<h1>Batch operations<a class="headerlink" href="#batch-operations" title="Permalink to this heading"></a></h1>
+<p><a class="reference internal" href="index.html"><span class="doc std std-doc">← Back to main page</span></a></p>
+<p>This page describes the batch editing options available from the GUI. The positions and links editor, described on the <a class="reference internal" href="MANUAL_TRACKING.html"><span class="doc std std-doc">manual tracking page</span></a>, is mainly intended to make one change at a time. However, there are a few options for large-scale data editing.</p>
+<p>All the instructions below assume that you are in the manual data editing screen (<code class="docutils literal notranslate"><span class="pre">Edit</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Manually</span> <span class="pre">change</span> <span class="pre">data...</span></code>).</p>
+<section id="deleting-all-positions-within-a-rectangle">
+<h2>Deleting all positions within a rectangle<a class="headerlink" href="#deleting-all-positions-within-a-rectangle" title="Permalink to this heading"></a></h2>
+<p>Select <code class="docutils literal notranslate"><span class="pre">Edit</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Batch</span> <span class="pre">deletion</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Delete</span> <span class="pre">all</span> <span class="pre">positions</span> <span class="pre">within</span> <span class="pre">a</span> <span class="pre">rectangle</span></code>. Double-click somewhere to define one corner, double-click somewhere else to define the other corner. A rectangle will be drawn. Then use <code class="docutils literal notranslate"><span class="pre">Edit</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Batch</span> <span class="pre">deletion</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Delete</span> <span class="pre">all</span> <span class="pre">positions</span> <span class="pre">inside</span> <span class="pre">the</span> <span class="pre">rectangle</span></code> to delete those positions. Note that only positions at the layer where the rectangle is will be deleted.</p>
+<p>The “rectangle” can span multiple z-layers, making it a three-dimensional volume. The rectangle can even span multiple time points, which allows for large-scale deletion of points. For example, you can drawn a rectangle from <code class="docutils literal notranslate"><span class="pre">x=50</span></code>, <code class="docutils literal notranslate"><span class="pre">y=40</span></code>, <code class="docutils literal notranslate"><span class="pre">z=4</span></code>, <code class="docutils literal notranslate"><span class="pre">t=2</span></code> all the way to <code class="docutils literal notranslate"><span class="pre">x=400</span></code>, <code class="docutils literal notranslate"><span class="pre">y=300</span></code>, <code class="docutils literal notranslate"><span class="pre">z=20</span></code>, <code class="docutils literal notranslate"><span class="pre">t=200</span></code>.</p>
+<p>In the <code class="docutils literal notranslate"><span class="pre">Edit</span></code> menu, you can also choose to delete all positions <em>outside</em> the rectangle, instead of inside. This essentially keeps on the positions inside the rectanble. Note that this operation only deletes positions in the time points where you have drawn the rectangle; other time points are unaffected.</p>
+</section>
+<section id="deleting-all-positions-of-a-time-point">
+<h2>Deleting all positions of a time point<a class="headerlink" href="#deleting-all-positions-of-a-time-point" title="Permalink to this heading"></a></h2>
+<p>One way would be to drawn a rectangle over all points (see above). However, there’s an easier option: simply select <code class="docutils literal notranslate"><span class="pre">Edit</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Batch</span> <span class="pre">deletion</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Delete</span> <span class="pre">all</span> <span class="pre">data</span> <span class="pre">of</span> <span class="pre">time</span> <span class="pre">point</span></code>. Note that this also deletes other annotations, such as <a class="reference internal" href="DATA_AXES.html"><span class="doc std std-doc">splines</span></a>.</p>
+</section>
+<section id="deleting-all-positions-of-multiple-time-points">
+<h2>Deleting all positions of multiple time points<a class="headerlink" href="#deleting-all-positions-of-multiple-time-points" title="Permalink to this heading"></a></h2>
+<p>The best way to do this is to draw a single volume that goes over all time points and z layers. Select one corner of the image at the first time point, and the opposite corner at the last time point.</p>
+</section>
+<section id="deleting-some-positions-over-multple-time-points">
+<h2>Deleting some positions over multple time points<a class="headerlink" href="#deleting-some-positions-over-multple-time-points" title="Permalink to this heading"></a></h2>
+<p>If there are already links established between time points, you can use <code class="docutils literal notranslate"><span class="pre">Edit</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Delete</span> <span class="pre">entire</span> <span class="pre">lineage</span></code>. This only works for one lineage at a time.</p>
+<p>If your data set is without any warnings, there is one trick to delete multiple lineages at once. At one (arbitrary) time point, delete the positions of all lineages that you want to remove. This will cause warnings to appear at other time points, as you have just removed one time point from a lineage tree. You can then use <code class="docutils literal notranslate"><span class="pre">Edit</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Batch</span> <span class="pre">deletion</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Delete</span> <span class="pre">all</span> <span class="pre">tracks</span> <span class="pre">with</span> <span class="pre">errors</span></code> to get rid of those lineages.</p>
+<p>If your data set doesn’t have links between time points established, then the rectangle deletion tool (<code class="docutils literal notranslate"><span class="pre">Edit</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Batch</span> <span class="pre">deletion</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Delete</span> <span class="pre">all</span> <span class="pre">positions</span> <span class="pre">inside</span> <span class="pre">the</span> <span class="pre">rectangle</span></code>) is your only option. This tool can work accross multiple time points at once.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="API.html" class="btn btn-neutral float-left" title="API reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="CUSTOM_TRACKING_FORMATS.html" class="btn btn-neutral float-right" title="Custom tracking formats" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Jeroen van Zon Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+organoid\_tracker.visualizer.cell\_division\_visualizer module
+==============================================================
+
+.. automodule:: organoid_tracker.visualizer.cell_division_visualizer
+   :members:
+   :undoc-members:
+   :show-inheritance:

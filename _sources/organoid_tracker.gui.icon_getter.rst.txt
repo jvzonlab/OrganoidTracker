@@ -1,0 +1,7 @@
+organoid\_tracker.gui.icon\_getter module
+=========================================
+
+.. automodule:: organoid_tracker.gui.icon_getter
+   :members:
+   :undoc-members:
+   :show-inheritance:
