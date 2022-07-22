@@ -4,12 +4,10 @@
 nucleus in the previous time point, which is a simplistic way of linking. However, if your time resolution is high
 enough, it might actually work well."""
 
-from organoid_tracker.config import ConfigFile, config_type_int
+from organoid_tracker.config import ConfigFile
 from organoid_tracker.imaging import io
-from organoid_tracker.image_loading import general_image_loader
-from organoid_tracker.linking import nearest_neighbor_linker, dpct_linker, cell_division_finder
-from organoid_tracker.linking.rational_scoring_system import RationalScoringSystem
-from organoid_tracker.linking_analysis import cell_error_finder, links_postprocessor
+from organoid_tracker.linking import nearest_neighbor_linker
+from organoid_tracker.linking_analysis import cell_error_finder
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)

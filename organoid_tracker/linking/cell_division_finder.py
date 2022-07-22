@@ -3,13 +3,9 @@
 import itertools
 from typing import Set, List, Optional
 
-from organoid_tracker.core.images import Images
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
-from organoid_tracker.core.position_collection import PositionCollection
-from organoid_tracker.core.position_data import PositionData
-from organoid_tracker.core.score import Family, ScoreCollection
-from organoid_tracker.linking.scoring_system import MotherScoringSystem
+from organoid_tracker.core.score import Family
 
 
 def get_next_division(links: Links, position: Position) -> Optional[Family]:
@@ -92,28 +88,3 @@ def find_families(links: Links, warn_on_many_daughters = True) -> List[Family]:
                 families.append(Family(track.find_last_position(), daughter1, daughter2))
 
     return families
-
-
-def calculates_scores(images: Images, position_data: PositionData, links: Links,
-                      scoring_system: MotherScoringSystem) -> ScoreCollection:
-    """Finds all families in the given links and calculates their scores."""
-    scores = ScoreCollection()
-    families = find_families(links, warn_on_many_daughters=False)
-
-    # Sorting is important so that consecutive score calculations can use an image that is still in the cache
-    _sort_by_time_point(families)
-
-    i = 0
-    for family in families:
-        scores.set_family_score(family, scoring_system.calculate(images, position_data, family))
-        i += 1
-        if i % 100 == 0:
-            print("   working on " + str(i) + "/" + str(len(families)) + "...")
-    return scores
-
-
-def _sort_by_time_point(families: List[Family]):
-    def get_time_point_number(family: Family):
-        return family.mother.time_point_number()
-
-    families.sort(key=get_time_point_number)
