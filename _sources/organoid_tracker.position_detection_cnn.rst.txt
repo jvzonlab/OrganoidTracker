@@ -5,7 +5,7 @@ Submodules
 ----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    organoid_tracker.position_detection_cnn.convolutional_neural_network
    organoid_tracker.position_detection_cnn.custom_filters

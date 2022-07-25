@@ -1,0 +1,7 @@
+organoid\_tracker.division\_detection\_cnn.training\_data\_creator module
+=========================================================================
+
+.. automodule:: organoid_tracker.division_detection_cnn.training_data_creator
+   :members:
+   :undoc-members:
+   :show-inheritance:

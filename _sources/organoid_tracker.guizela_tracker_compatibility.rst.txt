@@ -5,7 +5,7 @@ Submodules
 ----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    organoid_tracker.guizela_tracker_compatibility.axis_lib
    organoid_tracker.guizela_tracker_compatibility.axis_lib_v2

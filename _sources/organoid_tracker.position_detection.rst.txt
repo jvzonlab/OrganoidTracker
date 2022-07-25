@@ -5,7 +5,7 @@ Submodules
 ----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    organoid_tracker.position_detection.clusterer
    organoid_tracker.position_detection.gaussian_detector_for_experiment

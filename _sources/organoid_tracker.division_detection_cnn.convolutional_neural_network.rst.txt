@@ -1,0 +1,7 @@
+organoid\_tracker.division\_detection\_cnn.convolutional\_neural\_network module
+================================================================================
+
+.. automodule:: organoid_tracker.division_detection_cnn.convolutional_neural_network
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -5,7 +5,7 @@ Submodules
 ----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    organoid_tracker.image_loading.array_image_loader
    organoid_tracker.image_loading.builtin_image_filters

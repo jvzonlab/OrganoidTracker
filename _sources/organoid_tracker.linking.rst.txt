@@ -5,15 +5,12 @@ Submodules
 ----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    organoid_tracker.linking.cell_division_finder
-   organoid_tracker.linking.cheating_score_system
    organoid_tracker.linking.dpct_linker
    organoid_tracker.linking.nearby_position_finder
    organoid_tracker.linking.nearest_neighbor_linker
-   organoid_tracker.linking.rational_scoring_system
-   organoid_tracker.linking.scoring_system
 
 Module contents
 ---------------

@@ -5,7 +5,7 @@ Submodules
 ----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    organoid_tracker.connection_analysis.cluster_finder
    organoid_tracker.connection_analysis.connected_position_finder

@@ -75,5 +75,5 @@ Want to measure the migration of a cell? You can of course track the x, y and z 
    :maxdepth: 5
    :hidden:
 
-   modules
+   organoid_tracker
 :::

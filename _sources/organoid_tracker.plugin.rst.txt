@@ -1,0 +1,19 @@
+organoid\_tracker.plugin package
+================================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   organoid_tracker.plugin.instance
+   organoid_tracker.plugin.plugin_loader
+
+Module contents
+---------------
+
+.. automodule:: organoid_tracker.plugin
+   :members:
+   :undoc-members:
+   :show-inheritance:

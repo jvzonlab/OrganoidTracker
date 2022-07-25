@@ -5,7 +5,7 @@ Submodules
 ----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    organoid_tracker.coordinate_system.orientation_spline_adder
    organoid_tracker.coordinate_system.sphere_representer

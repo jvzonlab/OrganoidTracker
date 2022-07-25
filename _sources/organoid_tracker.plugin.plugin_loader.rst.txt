@@ -1,0 +1,7 @@
+organoid\_tracker.plugin.plugin\_loader module
+==============================================
+
+.. automodule:: organoid_tracker.plugin.plugin_loader
+   :members:
+   :undoc-members:
+   :show-inheritance:
