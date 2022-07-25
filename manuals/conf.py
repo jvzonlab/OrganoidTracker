@@ -33,11 +33,14 @@ release = '2.0'
 # ones.
 extensions = [
     'myst_parser',  # Markdown support
-    'sphinx.ext.autodoc'   # Comment extraction from Python code
+    'sphinx.ext.autodoc',   # Comment extraction from Python code
+    'sphinx.ext.intersphinx'   # Links to other documentations
 ]
 
 # To link to the official Python docs
-intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None),
+                       'numpy': ('https://docs.scipy.org/doc/numpy', None),
+                       'matplotlib': ('https://matplotlib.org/stable', None)}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = []

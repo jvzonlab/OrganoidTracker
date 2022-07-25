@@ -1,5 +1,23 @@
-"""Some base classes. You should start reading at the `experiment` package. We also got a ton of other classes, but
-the `experiment` package introduces the overall structure."""
+"""
+The core classes of OrganoidTracker. The most important one is :class:`~organoid_tracker.core.experiment.Experiment`,
+which holds all data of a single time-lapse movie.
+
+Some example code to construct positions and links:
+
+>>> from organoid_tracker.core.experiment import Experiment
+>>> from organoid_tracker.core.images import ImageResolution
+>>> from organoid_tracker.core.position import Position
+>>> experiment = Experiment()
+>>> experiment.images.set_resolution(ImageResolution(0.32, 0.32, 2, 12))
+>>> experiment.name.set_name("Some name")
+>>>
+>>> # Add two positions and link them
+>>> experiment.positions.add(Position(0, 0, 0, time_point_number=0))
+>>> experiment.positions.add(Position(1, 3, 0, time_point_number=1))
+>>> experiment.links.add_link(Position(0, 0, 0, time_point_number=0), Position(1, 3, 0, time_point_number=1))
+>>>
+>>> print(experiment.positions.of_time_point(TimePoint(1)))  # "{Position(1, 3, 0, time_point_number=1)}"
+"""
 import re
 from typing import Optional, Iterable, Union, Tuple, Any
 

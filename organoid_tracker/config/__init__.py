@@ -1,9 +1,30 @@
+"""
+With this package, you can read the organoid_tracker.ini config files.
+
+This will read from the config section called "my_script_name":
+>>> config = ConfigFile("my_script_name")
+
+This will read an organoid_tracker.ini file from a different folder:
+>>> config = ConfigFile("my_script_name", folder_name=r"C:\path\to\folder")
+
+This will read some settings, or provide default values for them if not found:
+>>> config.get_or_default("example_string", "My default value", comment="Some helpful comment")
+>>> config.get_or_default("example_int", "4", comment="Only accepts integers", type=config_type_int)
+>>> config.save()  # Saves to disk
+
+You can also define custom config types. For that, you need to create a function that takes a string and returns some
+object.
+>>> def config_type_complex_number(input: str) -> complex:
+>>>     input = input.replace(" ", "")  # Strip spaces, so that you can write "5 + 3j" instead of "5+3j"
+>>>     input = input.replacE("i", "j")  # Allow writing "5+2i" instead of just "5+2j"
+>>>     return complex(input)
+>>>
+>>> config.get_or_default("example_complex", "8+2j", comment="Oooh, complex!", type=config_type_complex_number)
+
+"""
 from configparser import RawConfigParser
 import os.path
-from enum import Enum
-from typing import Tuple, Callable, Any, Dict, Type
-
-from organoid_tracker.core import typing
+from typing import Tuple, Callable, Any, Dict
 
 
 def config_type_str(input: str) -> str:

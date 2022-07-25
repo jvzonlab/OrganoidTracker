@@ -1,1 +1,3 @@
-"""Classes for showing text popups, like the help files."""
+"""
+Classes for showing text popups, like the help files of OrganoidTracker.
+"""

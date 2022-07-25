@@ -60,10 +60,10 @@ def run(positions: PositionCollection, position_data: PositionData, starting_lin
     """
     Calculates the optimal links, based on the given starting points and weights.
     :param positions: The positions.
-    :param position_data: Metadata for the positions.
+    :param position_data: Metadata for the positions. Must contain 'division_penalty', 'appearance_penalty',
+    'dissappearance_penalty' for all positions.
     :param starting_links: Basic linking network that includes all possible links.
-    :param scores: Scores, for deciding whether something is a cell division.
-    :param resolution: Resolution.
+    :param link_data: Metadata for the links. Must contain 'link_penalty' for all potential links.
     :param link_weight: multiplier for linking features - the higher, the more expensive to create a link.
     :param detection_weight: multiplier for detection of a cell - the higher, the more expensive to omit a cell
     :param division_weight: multiplier for division features - the higher, the cheaper it is to create a cell division

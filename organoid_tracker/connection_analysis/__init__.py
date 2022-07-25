@@ -1,1 +1,3 @@
-"""Used for analysis on the connections that are defined between positions."""
+"""
+Used for analysis on the already-defined connections between positions.
+"""

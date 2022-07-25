@@ -22,17 +22,18 @@ class Experiment:
     """A complete experiment, with many stacks of images collected over time. This class ultimately collects all
     details of the experiment.
 
-    An experiment contains `Position` objects. They represent a cell detection at a particular time point. The object
-    itself just stores an x, y, z and time point. The objects can be found in `experiment.positions`. For example, to
-    get a list of all positions at time point 7, use `list(experiment.positions.of_time_point(TimePoint(7))`.
+    An experiment contains :class:`~organoid_tracker.core.position.Position` objects. They represent a cell detection
+    at a particular time point. The object itself just stores an x, y, z and time point. The objects can be found in
+    :code:`experiment.positions`. For example, to get a list of all positions at time point 7, use
+    :code:`list(experiment.positions.of_time_point(TimePoint(7))`.
 
     Cell detections from different time points can be marked as belonging to the same biological cell. These links over
-    time are stored in `experiment.links`. Using for example `experiment.links.find_futures(position)`, you'll know what
-    position in the next time point represents locates same cell. This will usually be one position, but in the case of
-    a division, it will be two positions. In the case of a cell death, it will be 0 positions.
+    time are stored in :code:`experiment.links`. Using for example :code:`experiment.links.find_futures(position)`,
+    you'll know what  position in the next time point represents locates same cell. This will usually be one position,
+    but in the case of a division, it will be two positions. In the case of a cell death, it will be 0 positions.
 
-    Cells can also have neighbors, and those are defined in `experiment.connections`. Metadata of cell positions, like
-    the cell type or fluorescent intensity, is stored in `experiment.position_data`.
+    Cells can also have neighbors, and those are defined in :code:`experiment.connections`. Metadata of cell positions,
+    like the cell type or fluorescent intensity, is stored in :code:`experiment.position_data`.
     """
 
     # Note: none of the fields may be None after __init__ is called

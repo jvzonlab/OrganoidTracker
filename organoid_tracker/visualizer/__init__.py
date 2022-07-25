@@ -1,4 +1,26 @@
-"""A bunch of visualizers, all based on Matplotlib. (The fact that TkInter is also used is abstracted away.)"""
+"""
+OrganoidTracker is centered around a Matplotlib window, and that window is controlled here.
+
+Each screen in OrganoidTracker inherits from the Visualizer class, which just shows an empty Matplotlib plot. The
+subclasses show more interesting behaviour, like
+:class:`~organoid_tracker.visualizer.abstract_image_visualizer.AbstractImageVisualizer` which shows an image from your
+time-lapse movie, with the positions and links drawn on top.
+
+If you want to create your own screeen, I would recommend that you create a subclass from ExitableImageVisualzer:
+
+>>> from organoid_tracker.visualizer.exitable_image_visualizer import ExitableImageVisualizer
+>>> class YourVisualizer(ExitableImageVisualizer):
+>>>     def get_extra_menu_options(self) -> Dict[str, Any]:
+>>>         return { "My menu//Some option": self._clicked_my_menu_option }
+>>>
+>>>     def _clicked_my_menu_option(self):
+>>>         self.update_status("Clicked on my menu option!")
+>>>
+>>>     def _on_position_draw(self, position: Position, color: str, dz: int, dt: int) -> bool:
+>>>         if dt == 0 and dz == 0:
+>>>             self._ax.text(position.x, position.y, "Some text")  # Draws some text at the positions
+>>>         return True  # Change this to False to no longer draw the original marker
+"""
 from typing import Iterable, Optional, Union, Dict, Any, List, Callable
 
 import numpy
