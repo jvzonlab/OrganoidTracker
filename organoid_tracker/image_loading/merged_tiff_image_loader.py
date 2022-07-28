@@ -137,7 +137,7 @@ class _MergedTiffImageLoader(ImageLoader):
         with self._tiff_lock:
             out = tifffile.create_output(None, self._image_size_zyx, self._tiff_series.dtype)
             for z in range(self._image_size_zyx[0]):
-                self._get_2d_image_array(time_point.time_point_number(), image_channel.index, z, out[z])
+                self._get_2d_image_array(time_point.time_point_number(), image_channel.index_zero, z, out[z])
         return out
 
     def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
@@ -151,7 +151,7 @@ class _MergedTiffImageLoader(ImageLoader):
 
         with self._tiff_lock:
             out = tifffile.create_output(None, self._image_size_zyx[1:], self._tiff_series.dtype)
-            self._get_2d_image_array(time_point.time_point_number(), image_channel.index, image_z, out)
+            self._get_2d_image_array(time_point.time_point_number(), image_channel.index_zero, image_z, out)
         return out
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
