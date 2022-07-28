@@ -47,11 +47,6 @@ class _PerExperimentParameters:
         return experiment
 
 
-if " " in os.getcwd():
-    print(f"Unfortunately, we cannot train the neural network in a folder that contains spaces in its path."
-          f" So '{os.getcwd()}' is not a valid location.")
-    exit()
-
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("train_link_network")
 
