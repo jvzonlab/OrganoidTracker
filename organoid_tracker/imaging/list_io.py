@@ -14,6 +14,7 @@ FILES_LIST_EXTENSION = ".autlist"
 
 def load_experiment_list_file(open_files_list_file: str) -> Iterable[Experiment]:
     """Loads all the listed files in the given file.."""
+    open_files_list_file = os.path.abspath(open_files_list_file)
 
     # Makes paths to images and AUT files relative to the list file, which is probably what you want
     previous_working_directory = os.getcwd()
