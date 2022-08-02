@@ -203,7 +203,7 @@ def _generate_division_training_config(window: Window):
     config.get_or_default(f"time_window_before", str(-1))
     config.get_or_default(f"time_window_after", str(1))
 
-    config.get_or_default(f"use_TFRecords", str(False))
+    config.get_or_default(f"use_tfrecords", str(False))
 
     i = 0
     for index, experiment in enumerate(experiments):
