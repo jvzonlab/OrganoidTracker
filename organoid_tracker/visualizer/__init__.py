@@ -212,7 +212,8 @@ class Visualizer:
             image_shape = time_point_image.shape
 
             rgb_images = numpy.zeros((image_shape[0], image_shape[1], 3), dtype='float')
-            rgb_images[:,:,1] = time_point_image  # Green channel is current image
+            rgb_images[:, :, 1] = time_point_image  # Green channel is current image
+            rgb_images[:, :, 1] /= max(1, rgb_images[:, :, 1].max())  # Normalize the green channel
             try:
                 next_time_point = self._experiment.get_next_time_point(time_point)
                 next_time_point_image = self._experiment.images.get_image_slice_2d(next_time_point, channel, z)
@@ -227,10 +228,11 @@ class Visualizer:
                     next_time_point_image = numpy.zeros_like(original_images)
                     cropper.crop_2d(original_images, int(relative_offset.x), int(relative_offset.y),
                                     output=next_time_point_image)
-                rgb_images[:,:,0] = next_time_point_image  # Red channel is next image
+                rgb_images[:, :, 0] = next_time_point_image  # Red channel is next image
+                rgb_images[:, :, 0] /= max(1, rgb_images[:, :, 0].max())  # Normalize the red channel
             except ValueError:
                 pass  # There is no next time point, ignore
-            rgb_images /= rgb_images.max()
+
             time_point_image = rgb_images
         return time_point_image
 
