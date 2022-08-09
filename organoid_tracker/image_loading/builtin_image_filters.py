@@ -1,9 +1,10 @@
 """Some builtin image filters, so that they can be saved and loaded."""
-import math
 from typing import NamedTuple, Dict, Tuple, Optional
 
 import numpy
 from numpy import ndarray
+from scipy.interpolate import LinearNDInterpolator
+from scipy.spatial.qhull import QhullError
 
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.image_filters import ImageFilter
@@ -106,6 +107,8 @@ class InterpolatedMinMaxFilter(ImageFilter):
     """Allows you to set the min/max pixel values at different points during the time-lapse. For all other points,
     the min and max values are interpolated."""
 
+    _interpolator_minima: Optional[LinearNDInterpolator] = None
+    _interpolator_maxima: Optional[LinearNDInterpolator] = None
 
     points: Dict[IntensityPoint, Tuple[float, float]]  # Dictionary of point to (min, max)
 
@@ -120,34 +123,35 @@ class InterpolatedMinMaxFilter(ImageFilter):
         if len(self.points) == 1:
             return list(self.points.values())[0]  # Return the only point
 
-        # Find the closest two points
-        closest_point = None
-        second_closest_point = None
-        closest_distance_squared = 1_000_000_000
-        second_closest_distance_squared = 1_000_000_000
+        # First interpolate on the time axis
+        try:
+            if self._interpolator_minima is None:
+                self._interpolator_minima = LinearNDInterpolator(
+                    [(point.time_point.time_point_number(), point.z) for point in self.points.keys()],
+                    [value[0] for value in self.points.values()])
+                self._interpolator_maxima = LinearNDInterpolator(
+                    [(point.time_point.time_point_number(), point.z) for point in self.points.keys()],
+                    [value[1] for value in self.points.values()])
+            min_value = self._interpolator_minima(search_point.time_point.time_point_number(), search_point.z)
+            max_value = self._interpolator_maxima(search_point.time_point.time_point_number(), search_point.z)
+        except QhullError:
+            # This happens if the user didn't create a 2D shape, for example, the user only placed points at one
+            # time point. Maybe we should do 1D interpolation in that case?
+            # For now, let's just fall back on nearest neighbor interpolation by setting these to NaN
+            min_value = numpy.nan
+            max_value = numpy.nan
 
-        for point in self.points.keys():
-            distance_squared = point.distance_squared(search_point)
-            if distance_squared < closest_distance_squared:
-                second_closest_point = closest_point
-                second_closest_distance_squared = closest_distance_squared
-                closest_point = point
-                closest_distance_squared = distance_squared
-            elif distance_squared < second_closest_distance_squared:
-                second_closest_distance_squared = distance_squared
-                second_closest_point = point
-
-        closest_distance = math.sqrt(closest_distance_squared)
-        second_closest_distance = math.sqrt(second_closest_distance_squared)
-        sum_distance = closest_distance + second_closest_distance
-
-        # Do linear interpolation of min and max intensity
-        closest_min_intensity, closest_max_intensity = self.points[closest_point]
-        second_closest_min_intensity, second_closest_max_intensity = self.points[second_closest_point]
-
-        min_intensity = closest_min_intensity * second_closest_distance / sum_distance + second_closest_min_intensity * closest_distance / sum_distance
-        max_intensity = closest_max_intensity * second_closest_distance / sum_distance + second_closest_max_intensity * closest_distance / sum_distance
-        return min_intensity, max_intensity
+        if numpy.isnan(min_value) or numpy.isnan(max_value):
+            # Outside, for now lets just use the nearest position
+            nearest_point = None
+            nearest_distance = float("inf")
+            for point in self.points.keys():
+                distance = point.distance_squared(search_point)
+                if distance < nearest_distance:
+                    nearest_point = point
+                    nearest_distance = distance
+            return self.points[nearest_point]
+        return min_value, max_value
 
     def filter(self, time_point: TimePoint, image_z: Optional[int], image: ndarray):
         if len(image.shape) == 3:
@@ -167,6 +171,9 @@ class InterpolatedMinMaxFilter(ImageFilter):
         if numpy.issubdtype(image.dtype, numpy.integer):
             min_value = int(min_value)
             max_value = int(max_value)
+            data_format_max_value = numpy.iinfo(image.dtype).max  # For integer types, we scale from 0 to max_int
+        else:
+            data_format_max_value = 1.0  # For float types, we scale from 0 to 1
 
         # Change the min
         image[image < min_value] = min_value
@@ -175,6 +182,9 @@ class InterpolatedMinMaxFilter(ImageFilter):
 
         # Change the max
         image[image > max_value] = max_value
+
+        # Multiply to use full data range
+        image[...] = image * (data_format_max_value / max_value)
 
     def copy(self) -> "InterpolatedMinMaxFilter":
         return InterpolatedMinMaxFilter(self.points.copy())
@@ -194,3 +204,7 @@ class InterpolatedMinMaxFilter(ImageFilter):
                 del self.points[point]
         else:
             self.points[point] = float(value[0]), float(value[1])
+
+        # We need to remove the interpolators, as they're now outdated
+        self._interpolator_minima = None
+        self._interpolator_maxima = None

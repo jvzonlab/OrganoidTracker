@@ -76,4 +76,4 @@ def load_images_from_dictionary(experiment: Experiment, dictionary: Dict[str, An
                     max_time_point)
         return
 
-    raise ValueError("Unknown file format: " + str(dictionary))
+    raise ValueError("Unknown images format: " + str(dictionary))

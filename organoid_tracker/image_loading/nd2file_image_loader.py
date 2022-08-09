@@ -1,5 +1,5 @@
 import os
-from typing import Tuple, List, Optional, Any
+from typing import Tuple, List, Optional
 
 import numpy
 from nd2reader.parser import Parser
@@ -8,7 +8,6 @@ from numpy.core.multiarray import ndarray
 from organoid_tracker.core import TimePoint, max_none, min_none
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.image_loader import ImageLoader, ImageChannel
-from organoid_tracker.core.images import Images
 
 
 class Nd2File:
@@ -39,6 +38,10 @@ def load_image_series(experiment: Experiment, file: Nd2File, field_of_view: int,
     file_name = os.path.basename(file._file_name)
     if file_name.lower().endswith(".nd2"):
         file_name = file_name[:-4]
+    if "_" in file_name and not file_name.endswith("_"):
+        file_name += "_"  # This will add a _ before the xy02 if the file name already uses the _ as a separator
+    elif "-" in file_name and not file_name.endswith("-"):
+        file_name += "-"  # This will add a - before the xy02 if the file name already uses the - as a separator
     experiment.name.provide_automatic_name(file_name + f"xy{field_of_view:02}")
 
 

@@ -178,7 +178,7 @@ for image_set_index in range(image_set_count):
 
         # Comparison between image_max and im to find the coordinates of local maxima
         #im = erosion(im, np.ones((7,7,7)))
-        coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=0.1,  exclude_border=False) #, footprint=prediction_mask)
+        coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=0.25,  exclude_border=False) #, footprint=prediction_mask)
 
         for coordinate in coordinates:
             pos = Position(coordinate[2], coordinate[1], coordinate[0] / z_divisor - 1,
