@@ -16,7 +16,13 @@ class WarningLimits:
 
     def __init__(self, *, min_time_between_divisions_h: float = 10,
                  max_distance_moved_um_per_min: float = 10/12,
-                 min_probability: float = 0.1):
+                 min_probability: float = 0.1, **kwargs):
+        """Initializes the warning limits.
+
+        Note: any data stored in the kwargs parameter is discarded. This parameter exists to make the program
+        forwards compatible. If a future version of OrganoidTracker introduces a new warning limit, then this version
+        will simply load (and discard) that warning limit, instead of crashing.
+        """
         self.min_time_between_divisions_h = min_time_between_divisions_h
         self.max_distance_moved_um_per_min = max_distance_moved_um_per_min
         self.min_probability = min_probability
