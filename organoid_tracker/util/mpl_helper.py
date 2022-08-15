@@ -34,17 +34,17 @@ def _create_qualitative_colormap() -> ListedColormap:
 QUALITATIVE_COLORMAP = _create_qualitative_colormap()
 
 
-def line_infinite(ax: Axes, x1: float, y1: float, x2: float, y2: float, color: MPLColor="red", linewidth: int = 2):
+def line_infinite(ax: Axes, x1: float, y1: float, x2: float, y2: float, color: MPLColor="red", linewidth: int = 2, alpha: float = 1):
     """Draws a 2D line that extends a long while across the current view."""
     dx = abs(x2 - x1)
     dy = abs(y2 - y1)
 
     # Two cases in which we can have truly infinite lines
     if dx == 0:
-        ax.axvline(x1, color=color, linewidth=linewidth)
+        ax.axvline(x1, color=color, linewidth=linewidth, alpha=alpha)
         return
     if dy == 0:
-        ax.axhline(y1, color=color, linewidth=linewidth)
+        ax.axhline(y1, color=color, linewidth=linewidth, alpha=alpha)
         return
 
     # Calculate scale
@@ -54,8 +54,8 @@ def line_infinite(ax: Axes, x1: float, y1: float, x2: float, y2: float, color: M
     scale = 1000 * max(axes_dx, axes_dy) / max(dx, dy)
 
     # Plot the line
-    ax.plot([x1, x1 + scale * (x2 - x1)], [y1, y1 + scale * (y2 - y1)], color=color, linewidth=linewidth)
-    ax.plot([x1, x1 - scale * (x2 - x1)], [y1, y1 - scale * (y2 - y1)], color=color, linewidth=linewidth)
+    ax.plot([x1, x1 + scale * (x2 - x1)], [y1, y1 + scale * (y2 - y1)], color=color, linewidth=linewidth, alpha=alpha)
+    ax.plot([x1, x1 - scale * (x2 - x1)], [y1, y1 - scale * (y2 - y1)], color=color, linewidth=linewidth, alpha=alpha)
     ax.set_xlim([axes[0], axes[1]])
     ax.set_ylim([axes[2], axes[3]])
 
