@@ -11,7 +11,7 @@ The intended workflow is as follows:
 
 The steps are described below.
 
-Before you start, create a directory that will hold all you analysis data. You can create this directory inside the directory that holds your images.
+Before you start, create a directory that will hold all your analysis data. You can create this directory inside the directory that holds your images.
 
 Step 1: Obtaining nucleus positions
 -----------------------------------
@@ -64,3 +64,11 @@ If you don't want to correct everything, there are several options:
 * Limiting the area you are looking at. This is most easily done by pressing L in the cell track editor, and then observing any lineages that still have warnings. Correct any lineages that need to be corrected (press E while you hover your mouse over them). Once you are satisfied, you can then delete all lineages that still have errors in them. This is done from the cell track editor: press `Edit > Batch deletion > Delete lineages with errors`. See [batch editing](BATCH_OPERATIONS.md) for more ways to delete a lot of lineages at once.
 
 You can change a few settings of the error checker, to make it stricter or less strict. In the error checking screen (the screen you opened with `E`) there are three options available in the `Edit` menu: the minimum time in between two cell divisions of the same cell, and the maximum distance a cell may move per minute.
+
+## What to do if my results aren't good?
+That's a difficult problem! You have a few options:
+
+* Improve image quality. The images should be good enough that it is straightforward to track the nuclei by hand.
+* Change some settings. The generated `organoid_tracker.ini` files contain an explanation for each of the settings.
+* [Retrain the neural networks for your data.](TRAINING_THE_NETWORK.md)
+* [Replace parts of the tracker with custom code](CUSTOM_TRACKING_SCRIPTS.md)
