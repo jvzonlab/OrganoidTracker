@@ -62,6 +62,12 @@ class TimePoint:
     def __repr__(self):
         return "TimePoint(" + str(self._time_point_number) + ")"
 
+    def __lt__(self, other: "TimePoint") -> bool:
+        return self._time_point_number < other._time_point_number
+
+    def __gt__(self, other: "TimePoint") -> bool:
+        return self._time_point_number > other._time_point_number
+
 
 class Name:
     """The name of the experiment. Includes a flag, is_automatic, that specifies whether the name was manually set or
