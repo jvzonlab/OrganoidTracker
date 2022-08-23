@@ -3,9 +3,8 @@ from typing import Tuple
 import numpy
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from numpy import ndarray
+from scipy.stats import norm, lognorm
 
-from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.dialog import DefaultOption
 from organoid_tracker.gui.window import Window
@@ -23,8 +22,11 @@ def _prompt_average_movement_speed(window: Window):
     # Collect all distances, switch to 2D
     distances_um = []
     for experiment in window.get_active_experiments():
-        distances_um.append(_get_average_movement_speed(experiment))
-    distances_um = numpy.array(distances_um).flatten()
+        resolution = experiment.images.resolution()
+        for source, target in experiment.links.find_all_links():
+            distances_um.append(source.distance_um(target, resolution))
+
+    distances_um = numpy.array(distances_um)
 
     mean = numpy.mean(distances_um)
     stdev = numpy.std(distances_um)
@@ -35,18 +37,15 @@ def _prompt_average_movement_speed(window: Window):
     if result == 1:
         def draw_figure(figure: Figure):
             ax: Axes = figure.gca()
-            ax.hist(distances_um, bins=20)
-            ax.set_ylabel("Frequency")
+            ax.hist(distances_um, bins="scott", density=True)
+
+            a, loc, scale = lognorm.fit(distances_um, loc=-1, scale=2)
+            ax.text(0, 0, f"a={a:.2f}, loc={loc:.2f}, scale={scale:.2f}")
+
+            x = numpy.linspace(0, 30, 1000)
+            ax.plot(x, lognorm(a, loc=loc, scale=scale).pdf(x))
+
+            ax.set_ylabel("Fraction")
             ax.set_xlabel("Distance (µm)")
 
         dialog.popup_figure(window.get_gui_experiment(), draw_figure)
-
-
-def _get_average_movement_speed(experiment: Experiment) -> ndarray:
-    resolution = experiment.images.resolution()
-    distances_um = list()
-    for source, target in experiment.links.find_all_links():
-        distance_um = source.distance_um(target, resolution)
-        distances_um.append(distance_um)
-
-    return numpy.array(distances_um, dtype=numpy.float64)
