@@ -1,7 +1,7 @@
 from typing import Optional, List
 
-from PySide2 import QtCore
-from PySide2.QtCore import Qt, QEvent, qApp
+from PySide2 import QtCore, QtWidgets
+from PySide2.QtCore import Qt, QEvent
 from PySide2.QtGui import QFontMetrics, QStandardItem, QPalette
 from PySide2.QtWidgets import QDialog, QGroupBox, QFormLayout, QLabel, QComboBox, QDialogButtonBox, QVBoxLayout, \
     QStyledItemDelegate
@@ -25,7 +25,7 @@ class MultipleComboBox(QComboBox):
         self.setEditable(True)
         self.lineEdit().setReadOnly(True)
         # Make the lineedit the same color as QPushButton
-        palette = qApp.palette()
+        palette = QtWidgets.QApplication.instance().palette()
         palette.setBrush(QPalette.Base, palette.button())
         self.lineEdit().setPalette(palette)
 
