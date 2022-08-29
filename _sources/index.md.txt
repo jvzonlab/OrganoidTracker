@@ -10,6 +10,7 @@ Tutorials
 * [Tutorial for training a neural network](TRAINING_THE_NETWORK.md)
 * [Tutorial for using Jupyter Notebooks with OrganoidTracker](JUPYTER_NOTEBOOK.md)
 * [Tutorial for working with custom metadata](WORKING_WITH_CUSTOM_METADATA.md)
+* [Tutorial for replacing the tracking scripts with custom scripts](CUSTOM_TRACKING_SCRIPTS.md)
 
 
 For reference

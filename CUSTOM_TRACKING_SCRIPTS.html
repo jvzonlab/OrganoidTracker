@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Custom scoring system &mdash; OrganoidTracker 2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> OrganoidTracker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OrganoidTracker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Custom scoring system</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/CUSTOM_TRACKING_SCRIPTS.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="custom-scoring-system">
+<h1>Custom scoring system<a class="headerlink" href="#custom-scoring-system" title="Permalink to this heading"></a></h1>
+<p><a class="reference internal" href="index.html"><span class="doc std std-doc">← Back to main page</span></a></p>
+<p>If you use the cell tracker in the <a class="reference internal" href="AUTOMATIC_TRACKING.html"><span class="doc std std-doc">standard way</span></a>, you would first obtain a set of positions using an U-net type neural network, and then add likelihoods for divisions and linking. Each of these steps can be replaced by an alternative method, if you desire. This does require some programming.</p>
+<section id="creating-a-custom-position-detector">
+<h2>Creating a custom position detector<a class="headerlink" href="#creating-a-custom-position-detector" title="Permalink to this heading"></a></h2>
+<p>If you create a custom position detector, you no longer use the <code class="docutils literal notranslate"><span class="pre">organoid_tracker_predict_positions.py</span></code> script. Instead, you would use your own custom script.</p>
+<p>An alternative approach is to keep using the OrganoidTracker script, but with a custom trained network, so that it works better with your images. See <a class="reference internal" href="TRAINING_THE_NETWORK.html"><span class="doc std std-doc">this page</span></a> for more information.</p>
+<p>This guide is about how to replace the OrganoidTracker script with a custom script. The guide does not explain how to go from images to a list of positions, since that is an extremely broad topic. Instead, we will assume that you have already found some way to detect positions, and simply want to put that in a format that OrganoidTracker understands.</p>
+<p>You can write positions to an <code class="docutils literal notranslate"><span class="pre">.aut</span></code> file as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.core.position</span> <span class="kn">import</span> <span class="n">Position</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.core.images</span> <span class="kn">import</span> <span class="n">ImageResolution</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.imaging</span> <span class="kn">import</span> <span class="n">io</span>
+
+<span class="c1"># This creates an empty experiment</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+
+<span class="c1"># Next, we add some positions</span>
+<span class="c1"># (all in pixel coordinates)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Position</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">time_point_number</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Position</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">time_point_number</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="c1"># ... etc</span>
+
+<span class="c1"># The linking step of the cell tracker requires setting a resolution, so we can set that too</span>
+<span class="c1"># The numbers are x (um/px), y (um/px), z (um/px), t (minutes)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">set_resolution</span><span class="p">(</span><span class="n">ImageResolution</span><span class="p">(</span><span class="mf">0.32</span><span class="p">,</span> <span class="mf">0.32</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+
+<span class="c1"># Finally, we save the file</span>
+<span class="n">io</span><span class="o">.</span><span class="n">save_data_to_json</span><span class="p">(</span><span class="n">experiment</span><span class="p">,</span> <span class="s2">&quot;output_file.aut&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>That’s it! Now you end up with a file that OrganoidTracker can read. You could use this file as the input file for the <code class="docutils literal notranslate"><span class="pre">organoid_tracker_predict_divisions.py</span></code> and <code class="docutils literal notranslate"><span class="pre">organoid_tracker_predict_links,py</span></code> scripts.</p>
+</section>
+<section id="creating-a-custom-linking-division-scoring-system">
+<h2>Creating a custom linking/division scoring system<a class="headerlink" href="#creating-a-custom-linking-division-scoring-system" title="Permalink to this heading"></a></h2>
+<p>Here, we want to replace the <code class="docutils literal notranslate"><span class="pre">organoid_tracker_predict_links.py</span></code> and the <code class="docutils literal notranslate"><span class="pre">organoid_tracker_predic_positions.py</span></code> scripts.</p>
+<p>The linking step requires all possible links to be present, and every one of those possible links to have a link penalty. In addition, every position must have a division penalty set.</p>
+<p>The link/division penalty is the log likelihood of the chance of that link being real:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">penalty</span> <span class="o">=</span> <span class="o">-</span><span class="n">log10</span><span class="p">(</span><span class="n">chance</span><span class="p">)</span> <span class="o">+</span> <span class="n">log10</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">chance</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can specify the set of possible links using the <code class="docutils literal notranslate"><span class="pre">add_link</span></code> function:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.position</span> <span class="kn">import</span> <span class="n">Position</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.imaging</span> <span class="kn">import</span> <span class="n">io</span>
+
+<span class="c1"># Load some tracking data</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">load_data_file</span><span class="p">(</span><span class="s2">&quot;input file.aut&quot;</span><span class="p">)</span>
+
+<span class="c1"># Select some positions</span>
+<span class="c1"># (normally you would retrieve those from experiment.positions instead of hardcoding)</span>
+<span class="n">position1</span> <span class="o">=</span> <span class="n">Position</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">time_point_number</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">position2</span> <span class="o">=</span> <span class="n">Position</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">time_point_number</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">position3</span> <span class="o">=</span> <span class="n">Position</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">time_point_number</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># Specify the possible links</span>
+<span class="c1"># In this case, position1 is linked to position2 and/or position3</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">add_link</span><span class="p">(</span><span class="n">position1</span><span class="p">,</span> <span class="n">position2</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">add_link</span><span class="p">(</span><span class="n">position1</span><span class="p">,</span> <span class="n">position3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>There’s a premade function in OrganoidTracker that select the nearest position as the potenial candidate for a link, as well as any other position that is at most twice as far away. In our experience, this criterium works very well to select all possible links.</p>
+<p>You can call that function as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.imaging</span> <span class="kn">import</span> <span class="n">io</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.linking</span> <span class="kn">import</span> <span class="n">nearest_neighbor_linker</span>
+
+<span class="c1"># Load some tracking data</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">load_data_file</span><span class="p">(</span><span class="s2">&quot;input file.aut&quot;</span><span class="p">)</span>
+
+<span class="n">experiment</span><span class="o">.</span><span class="n">links</span> <span class="o">=</span> <span class="n">nearest_neighbor_linker</span><span class="o">.</span><span class="n">nearest_neighbor</span><span class="p">(</span><span class="n">experiment</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now that you have your set of links, you can score each possible link as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.imaging</span> <span class="kn">import</span> <span class="n">io</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.linking</span> <span class="kn">import</span> <span class="n">nearest_neighbor_linker</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="c1"># Load the experiment, create possible links</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">load_data_file</span><span class="p">(</span><span class="s2">&quot;input file.aut&quot;</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">links</span> <span class="o">=</span> <span class="n">nearest_neighbor_linker</span><span class="o">.</span><span class="n">nearest_neighbor</span><span class="p">(</span><span class="n">experiment</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Loop over all links</span>
+<span class="k">for</span> <span class="n">source</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">find_all_links</span><span class="p">():</span>
+    <span class="n">chance</span> <span class="o">=</span> <span class="mf">0.55</span>  <span class="c1"># Replace this with the chance of this link being real</span>
+    <span class="c1"># The chance may not be 0 or 1, so limit it from 0.00000001 to 0.99999999</span>
+
+    <span class="n">penalty</span> <span class="o">=</span> <span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">chance</span><span class="p">)</span><span class="o">+</span><span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">chance</span><span class="p">)</span>
+    <span class="n">experiment</span><span class="o">.</span><span class="n">link_data</span><span class="o">.</span><span class="n">set_link_data</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="s2">&quot;link_penalty&quot;</span><span class="p">,</span> <span class="n">penalty</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For divisions, you would use a very similar approach. You specify, for each nucleus position, the chance of that nucleus having divided into two nuclei in the next time point.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="c1"># Load the experiment, create possible links</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+
+<span class="c1"># Loop over all links</span>
+<span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="p">:</span>
+    <span class="n">chance</span> <span class="o">=</span> <span class="mf">0.05</span>  <span class="c1"># Replace this with the chance of this position being a cell that divides</span>
+    <span class="c1"># The chance may not be 0 or 1, so limit it from 0.00000001 to 0.99999999</span>
+
+    <span class="n">penalty</span> <span class="o">=</span> <span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">chance</span><span class="p">)</span><span class="o">+</span><span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">chance</span><span class="p">)</span>
+    <span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="o">.</span><span class="n">set_position_data</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="s2">&quot;division_penalty&quot;</span><span class="p">,</span> <span class="n">penalty</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>That’s it! Don’t forget to save your experiment at the end of the script with <code class="docutils literal notranslate"><span class="pre">io.save_data_to_json(experiment,</span> <span class="pre">&quot;output_file.aut&quot;)</span></code>. Now your tracking data file is ready for the <code class="docutils literal notranslate"><span class="pre">organoid_tracker_create_links.py</span></code> script.</p>
+</section>
+<section id="creating-a-custom-linking-script">
+<h2>Creating a custom linking script<a class="headerlink" href="#creating-a-custom-linking-script" title="Permalink to this heading"></a></h2>
+<p>The linking script is already highly customizable, as you can chance which positions, links and scores it receives.</p>
+<p>But if you want to replace it anyways, that’s possible. See the <code class="docutils literal notranslate"><span class="pre">organoid_tracker_create_nearest_neigbhors.py</span></code> script for an example. This script simply always links positions to the nearest position.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020-2022, Jeroen van Zon Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

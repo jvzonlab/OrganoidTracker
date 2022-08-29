@@ -50,6 +50,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#step-5-manually-correct-warnings">Step 5: Manually correct warnings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-to-do-if-my-results-aren-t-good">What to do if my results aren’t good?</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
@@ -109,7 +110,7 @@
 <li><p>Manually correct all warnings</p></li>
 </ol>
 <p>The steps are described below.</p>
-<p>Before you start, create a directory that will hold all you analysis data. You can create this directory inside the directory that holds your images.</p>
+<p>Before you start, create a directory that will hold all your analysis data. You can create this directory inside the directory that holds your images.</p>
 <section id="step-1-obtaining-nucleus-positions">
 <h2>Step 1: Obtaining nucleus positions<a class="headerlink" href="#step-1-obtaining-nucleus-positions" title="Permalink to this heading"></a></h2>
 <p>Open the OrganoidTracker GUI, load your images and select <code class="docutils literal notranslate"><span class="pre">Tools</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Detect</span> <span class="pre">cells</span> <span class="pre">in</span> <span class="pre">images...</span></code>. Select the already trained neural network that you want to use. (<a class="reference internal" href="TRAINING_THE_NETWORK.html"><span class="doc std std-doc">See here for how to train a model</span></a>. Find pre-trained models at <a class="reference external" href="https://github.com/jvzonlab/OrganoidTracker">our Github page</a>.) You’ll end up with a folder containing configuration files. Run the <code class="docutils literal notranslate"><span class="pre">organoid_tracker_predict_positions</span></code> script in that directory to put the neural network into action. (On Windows, double-click the BAT file. On Linux/macOs, run the SH file instead.) You’ll end up with a file that contains the positions of the cells. Load it into the program to see how the neural network performed.</p>
@@ -147,6 +148,16 @@
 <li><p>Limiting the area you are looking at. This is most easily done by pressing L in the cell track editor, and then observing any lineages that still have warnings. Correct any lineages that need to be corrected (press E while you hover your mouse over them). Once you are satisfied, you can then delete all lineages that still have errors in them. This is done from the cell track editor: press <code class="docutils literal notranslate"><span class="pre">Edit</span> <span class="pre">&gt;</span> <span class="pre">Batch</span> <span class="pre">deletion</span> <span class="pre">&gt;</span> <span class="pre">Delete</span> <span class="pre">lineages</span> <span class="pre">with</span> <span class="pre">errors</span></code>. See <span class="xref myst">batch editing</span> for more ways to delete a lot of lineages at once.</p></li>
 </ul>
 <p>You can change a few settings of the error checker, to make it stricter or less strict. In the error checking screen (the screen you opened with <code class="docutils literal notranslate"><span class="pre">E</span></code>) there are three options available in the <code class="docutils literal notranslate"><span class="pre">Edit</span></code> menu: the minimum time in between two cell divisions of the same cell, and the maximum distance a cell may move per minute.</p>
+</section>
+<section id="what-to-do-if-my-results-aren-t-good">
+<h2>What to do if my results aren’t good?<a class="headerlink" href="#what-to-do-if-my-results-aren-t-good" title="Permalink to this heading"></a></h2>
+<p>That’s a difficult problem! You have a few options:</p>
+<ul class="simple">
+<li><p>Improve image quality. The images should be good enough that it is straightforward to track the nuclei by hand.</p></li>
+<li><p>Change some settings. The generated <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> files contain an explanation for each of the settings.</p></li>
+<li><p><a class="reference internal" href="TRAINING_THE_NETWORK.html"><span class="doc std std-doc">Retrain the neural networks for your data.</span></a></p></li>
+<li><p><a class="reference internal" href="CUSTOM_TRACKING_SCRIPTS.html"><span class="doc std std-doc">Replace parts of the tracker with custom code</span></a></p></li>
+</ul>
 </section>
 </section>
 
