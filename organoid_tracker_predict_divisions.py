@@ -35,10 +35,6 @@ experiment = io.load_data_file(_positions_file, _min_time_point, _max_time_point
 general_image_loader.load_images(experiment, _images_folder, _images_format,
                                  min_time_point=_min_time_point, max_time_point=_max_time_point)
 
-_patch_shape_z = int(config.get_or_default("patch_shape_z", str(30), store_in_defaults=True))
-_patch_shape_y = int(config.get_or_default("patch_shape_y", str(240), store_in_defaults=True))
-_patch_shape_x = int(config.get_or_default("patch_shape_x", str(240), store_in_defaults=True))
-
 _model_folder = config.get_or_prompt("checkpoint_folder", "Please paste the path here to the \"checkpoints\" folder containing the trained model.")
 _output_file = config.get_or_default("positions_output_file", "Automatic positions.aut", comment="Output file for the positions, can be viewed using the visualizer program.")
 _channels_str = config.get_or_default("images_channels", str(1), comment="Index(es) of the channels to use. Use \"3\" to use the third channel for predictions. Use \"1,3,4\" to use the sum of the first, third and fourth channel for predictions.")
@@ -66,13 +62,13 @@ if _images_channels != {1}:
 image_with_positions_list, positions_list = create_image_with_positions_list(experiment)
 
 # set relevant parameters
-patch_shape = [_patch_shape_z, _patch_shape_y, _patch_shape_x]
 with open(os.path.join(_model_folder, "settings.json")) as file_handle:
     json_contents = json.load(file_handle)
     if json_contents["type"] != "divisions":
         print("Error: model at " + _model_folder + " is made for working with " + str(json_contents["type"]) + ", not divisions")
         exit(1)
     time_window = json_contents["time_window"]
+    patch_shape = json_contents["patch_shape_zyx"]
 
 # load model
 print("Loading model...")

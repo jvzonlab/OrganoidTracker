@@ -271,11 +271,6 @@ def _generate_division_detection_config(window: Window):
     config.get_or_default("max_time_point", str(image_loader.last_time_point_number()), store_in_defaults=True)
     config.get_or_default("checkpoint_folder", checkpoint_directory)
     config.get_or_default("predictions_output_folder", "out")
-
-    config.get_or_default("patch_shape_z", str(8))
-    config.get_or_default("patch_shape_y", str(32))
-    config.get_or_default("patch_shape_x", str(32))
-
     config.get_or_default("save_video_ram", "true")
 
     config.save()
