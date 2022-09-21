@@ -77,12 +77,11 @@ def find_shed_positions(links: Links, position_data: PositionData) -> Iterable[P
     """Gets all positions that were marked as a cell shedding event."""
     shed_marker = EndMarker.SHED.name.lower()
     shed_outside_marker = EndMarker.SHED_OUTSIDE.name.lower()
-    stimulated_shed_marker = EndMarker.STIMULATED_SHED.name.lower()
     for position, ending_marker in position_data.find_all_positions_with_data("ending"):
         if len(links.find_futures(position)) > 0:
             continue  # Not actually ending, ending marker is useless
 
-        if ending_marker == shed_marker or ending_marker == shed_outside_marker or ending_marker == stimulated_shed_marker:
+        if ending_marker == shed_marker or ending_marker == shed_outside_marker:
             yield position
 
 
@@ -94,6 +93,16 @@ def find_death_positions(links: Links, position_data: PositionData) -> Iterable[
             continue  # Not actually ending, ending marker is useless
 
         if ending_marker == dead_marker:
+            yield position
+
+def find_stimulated_shed_positions(links: Links, position_data: PositionData) -> Iterable[Position]:
+    """Gets all positions that were marked as a cell death event."""
+    stimulated_shed_marker = EndMarker.STIMULATED_SHED.name.lower()
+    for position, ending_marker in position_data.find_all_positions_with_data("ending"):
+        if len(links.find_futures(position)) > 0:
+            continue  # Not actually ending, ending marker is useless
+
+        if ending_marker == stimulated_shed_marker:
             yield position
 
 
