@@ -349,6 +349,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//LineageEnd-Mark as cell death [D]": lambda: self._try_set_end_marker(EndMarker.DEAD),
             "Edit//LineageEnd-Mark as cell shedding into lumen [S]": lambda: self._try_set_end_marker(EndMarker.SHED),
             "Edit//LineageEnd-Mark as cell shedding to outside": lambda: self._try_set_end_marker(EndMarker.SHED_OUTSIDE),
+            "Edit//LineageEnd-Mark as cell stimulated shedding": lambda: self._try_set_end_marker(EndMarker.STIMULATED_SHED),
             "Edit//LineageEnd-Mark as moving out of view [V]": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
             "Edit//LineageEnd-Remove end marker": lambda: self._try_set_end_marker(None),
             "Edit//Marker-Mark position as uncertain": lambda: self._try_mark_uncertainty(True),
