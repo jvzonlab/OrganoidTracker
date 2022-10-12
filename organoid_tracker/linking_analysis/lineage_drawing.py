@@ -1,5 +1,5 @@
 # File originally written by Jeroen van Zon
-from typing import Callable, Optional
+from typing import Callable, Optional, List, Union
 
 from matplotlib.axes import Axes
 from matplotlib.collections import LineCollection
@@ -41,10 +41,13 @@ def _black(time_point_number: int, track: LinkingTrack) -> MPLColor:
 
 
 class LineageDrawing:
-    links: Links
+    starting_tracks: List[LinkingTrack]
 
-    def __init__(self, links: Links):
-        self.links = links
+    def __init__(self, links: Union[Links, List[LinkingTrack]]):
+        if isinstance(links, Links):
+            self.starting_tracks = list(links.find_starting_tracks())
+        else:
+            self.starting_tracks = links
 
     def _get_sublineage_draw_data(self, lin_id: LinkingTrack, x_curr_branch, x_end_branch, line_list):
         # if current branch has no next tracks
@@ -98,20 +101,20 @@ class LineageDrawing:
                               location_map: LocationMap = LocationMap(),
                               label_getter: Callable[[LinkingTrack], Optional[str]] = _no_labels,
                               lineage_filter: Callable[[LinkingTrack], bool] = _no_filter,
-                              line_width: float = 1.5):
+                              line_width: float = 1.5, x_offset_start: float = 0):
         """Draws lineage trees that are color coded. You can for example color cells by z position, by track
         length, etc. Returns the width of the lineage tree in Matplotlib pixels."""
 
-        x_offset = 0
-        for lineage in self.links.find_starting_tracks():
+        x_offset = x_offset_start
+        for lineage in self.starting_tracks:
             if not lineage_filter(lineage):
                 continue
             width = self._draw_single_lineage_colored(axes, lineage, x_offset, color_getter, label_getter, resolution,
                                                       location_map, line_width)
             x_offset += width
-        return x_offset
+        return x_offset - x_offset_start
 
-    def _draw_single_lineage_colored(self, ax: Axes, lineage: LinkingTrack, x_offset: int, color_getter: _ColorGetter,
+    def _draw_single_lineage_colored(self, ax: Axes, lineage: LinkingTrack, x_offset: float, color_getter: _ColorGetter,
                                      label_getter: _LabelGetter, image_resolution: ImageResolution,
                                      location_map: LocationMap, line_width: float) -> int:
         """Draw lineage with given function used for color. You can for example color cells by z position, by track
@@ -181,4 +184,4 @@ class LineageDrawing:
         return diagram_width
 
     def __repr__(self) -> str:
-        return f"<Lineage tree of {self.links}>"
+        return f"<Lineage tree of {len(self.starting_tracks)} cells>"
