@@ -113,6 +113,8 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
             for link in links_to_mother:
                 daughter = positions_of_time_point[link.daughter_id]
                 mother = positions_of_previous_time_point[link.parent_id]
+                if mother is None or daughter is None:
+                    continue
                 all_links.add_link(mother, daughter)
 
         time_point_number += 1
