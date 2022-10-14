@@ -12,6 +12,8 @@ def load_images(experiment: Experiment, container: str, pattern: str,
     used to search within that file or directory. For a sequence of TIFF files, container will be a directroy and
     pattern the pattern of files in that directory. For a LIF file, container will be the LIF file, and pattern the name
     of the experiment within that file. Etc."""
+    container = os.path.abspath(container)
+
     if container.endswith(".lif"):  # Try as LIF file
         from organoid_tracker.image_loading import liffile_image_loader
         liffile_image_loader.load_from_lif_file(experiment, container, pattern, min_time_point, max_time_point)

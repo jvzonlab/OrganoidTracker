@@ -759,7 +759,7 @@ class Links:
             time_point_number -= 1
 
     def iterate_to_future(self, position: Position) -> Iterable[Position]:
-        """Iterates towards the future, yielding this position, the next position, the position before that, ect.
+        """Iterates towards the future, yielding this position, the next position, the position after that, ect.
          Stops at cell divisions or at the last detection."""
         track = self.get_track(position)
         if track is None:
