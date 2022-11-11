@@ -116,6 +116,10 @@ class _Nd2ImageLoader(ImageLoader):
         height = self._nd2_parser.metadata["height"]
         width = self._nd2_parser.metadata["width"]
         depth = len(self._nd2_parser.metadata["z_levels"])
+        if depth == 0:
+            # Image has zero Z levels. This means that it is a 2D image.
+            # Increase the depth to 1, so that we can still load z=0
+            depth = 1
         return depth, height, width
 
     def first_time_point_number(self) -> Optional[int]:
