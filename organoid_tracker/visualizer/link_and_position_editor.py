@@ -3,7 +3,7 @@ from typing import Optional, List, Dict, Iterable
 from matplotlib.backend_bases import KeyEvent, MouseEvent, LocationEvent
 
 from organoid_tracker import core
-from organoid_tracker.core import Color, UserError
+from organoid_tracker.core import Color, UserError, TimePoint
 from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import LinkingTrack
@@ -339,7 +339,8 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Experiment-Edit splines... [A]": self._show_spline_editor,
             "Edit//Experiment-Edit beacons... [B]": self._show_beacon_editor,
             "Edit//Experiment-Edit image offsets... [O]": self._show_offset_editor,
-            "Edit//Batch-Batch deletion//Delete data of time point...": self._delete_data_of_time_point,
+            "Edit//Batch-Batch deletion//Delete data of current time point": self._delete_data_of_time_point,
+            "Edit//Batch-Batch deletion//Delete data of multiple time points...": self._delete_data_of_multiple_time_points,
             "Edit//Batch-Batch deletion//Delete all tracks with errors...": self._delete_tracks_with_errors,
             "Edit//Batch-Batch deletion//Delete all tracks not in the first time point...": self._delete_tracks_not_in_first_time_point,
             "Edit//Batch-Batch deletion//Delete all positions in a rectangle...": self._show_positions_in_rectangle_deleter,
@@ -500,8 +501,28 @@ class LinkAndPositionEditor(AbstractEditor):
     def _delete_data_of_time_point(self):
         """Deletes all annotations of a given time point."""
         positions = self._experiment.positions.of_time_point(self._time_point)
-        particles = (FullPositionSnapshot.from_position(self._experiment, position) for position in positions)
-        self._perform_action(_DeletePositionsAction(particles))
+        snapshots = (FullPositionSnapshot.from_position(self._experiment, position) for position in positions)
+        self._perform_action(_DeletePositionsAction(snapshots))
+
+    def _delete_data_of_multiple_time_points(self):
+        """Deletes all annotations of a given time point range."""
+        minimum, maximum = self._experiment.first_time_point_number(), self._experiment.last_time_point_number()
+        if minimum is None or maximum is None:
+            raise UserError("No data loaded", "No time points found. Did you load any data?")
+
+        time_point_number_start = dialog.prompt_int("Start time point", "At which time point should we start the deletion?",
+                                                    minimum=minimum, maximum=maximum, default=self._time_point.time_point_number())
+        if time_point_number_start is None:
+            return
+        time_point_number_end = dialog.prompt_int("End time point", "Up to and including which time point should we delete?",
+                                                  minimum=time_point_number_start, maximum=maximum, default=time_point_number_start)
+        if time_point_number_end is None:
+            return
+        snapshots = []
+        for time_point_number in range(time_point_number_start, time_point_number_end + 1):
+            positions = self._experiment.positions.of_time_point(TimePoint(time_point_number))
+            snapshots += [FullPositionSnapshot.from_position(self._experiment, position) for position in positions]
+        self._perform_action(_DeletePositionsAction(snapshots))
 
     def _delete_positions_without_links(self):
         """Deletes all positions that have no links."""

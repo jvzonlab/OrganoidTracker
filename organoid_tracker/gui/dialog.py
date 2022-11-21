@@ -4,6 +4,7 @@ import subprocess as _subprocess
 import sys as _sys
 import traceback as _traceback
 from enum import Enum
+from statistics import median
 from typing import Tuple, List, Optional, Callable, Any, Dict
 
 from PySide2 import QtCore
@@ -31,15 +32,20 @@ def _window() -> QWidget:
 def prompt_int(title: str, question: str, *, minimum: int = -2147483647, maximum: int = 2147483647,
                default=0) -> Optional[int]:
     """Asks the user to enter an integer. Returns None if the user pressed Cancel or closed the dialog box. If the
-    minimum is equal to the maximum, that number is returned."""
+    minimum is equal to the maximum, that number is returned. The default value is automatically clamped to the minimum
+    and maximum."""
     if minimum == maximum:
         return minimum
+    default = median([minimum, default, maximum])  # Make the default bounded by the minimum and maximum
     result, ok = QInputDialog.getInt(_window(), title, question, minValue=minimum, maxValue=maximum, value=default)
     return result if ok else None
 
 
 def prompt_float(title: str, question: str, minimum: float = -1.0e10, maximum: float = 1.0e10, default: float = 0
                  ) -> Optional[float]:
+    """Asks the user to enter a float. Returns None if the user pressed Cancel or closed the dialog box. The default
+    value is automatically clamped to the minimum and maximum."""
+    default = median([minimum, default, maximum])  # Make the default bounded by the minimum and maximum
     result, ok = QInputDialog.getDouble(_window(), title, question, minValue=minimum, maxValue=maximum, value=default)
     return result if ok else None
 
