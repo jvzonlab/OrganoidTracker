@@ -13,22 +13,28 @@ def load_images_with_positions(i, image_with_positions_list: List[_ImageWithPosi
 
     # Image is zyxt, label is zyx
     image = image_with_positions.load_image_time_stack(time_window)
-    label = image_with_positions.create_labels(image.shape[0:3])
 
     if crop:
         coords = image_with_positions.xyz_positions
-        min_coords = np.amin(coords, axis=0)  # Becomes [x, y, z]
-        max_coords = np.amax(coords, axis=0)
+        min_coords_xyz = np.amin(coords, axis=0)  # Becomes [x, y, z]
+        max_coords_xyz = np.amax(coords, axis=0)
 
-        # Crop in x and y
-        image = image[:, min_coords[1]:max_coords[1], min_coords[0]:max_coords[0]]
-        label = label[:, min_coords[1]:max_coords[1], min_coords[0]:max_coords[0]]
+        # Crop in x and y. We make a copy of the crop to save memory: if you make a crop in numpy, it is just a
+        # reference to the original array. So the original array, which may be large, is kept in memory. To avoid
+        # that, we copy the small crop, which forces numpy to allocate a new, smaller array, and allows it to delete
+        # the original, large array. This was necessary to be able to train on 2048 by 2048 images with 16 GB of RAM.
+        image = image[:, min_coords_xyz[1]:max_coords_xyz[1], min_coords_xyz[0]:max_coords_xyz[0]].copy()
+
+        # Create labels (for the crop only)
+        label = image_with_positions.create_labels(image_offset_zyx=(0, min_coords_xyz[1], min_coords_xyz[0]), image_size_zyx=image.shape[0:3])
 
         # Zero out in z (we don't crop, to preserve z-coord for CoordConv)
-        if min_coords[2] > 1:
-            image[0:min_coords[2] - 1].fill(0)
-        if max_coords[2] < image.shape[0] - 2:
-            image[max_coords[2] + 1:].fill(0)
+        if min_coords_xyz[2] > 1:
+            image[0:min_coords_xyz[2] - 1].fill(0)
+        if max_coords_xyz[2] < image.shape[0] - 2:
+            image[max_coords_xyz[2] + 1:].fill(0)
+    else:
+        label = image_with_positions.create_labels(image_size_zyx=image.shape[0:3])
 
     return image, label
 

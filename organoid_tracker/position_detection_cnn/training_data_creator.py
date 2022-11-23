@@ -129,7 +129,9 @@ class _ImageWithPositions:
 
         return stack
 
-    def create_labels(self, image_size_zyx: Tuple[int, int, int]):
+    def create_labels(self, image_size_zyx: Tuple[int, int, int], *, image_offset_zyx: Tuple[int, int, int] = (0, 0, 0)):
+        """Creates an image with the number 1 at self.xyz_positions. Ignores positions outside the image. Allows you
+        to specify an offset and size, which makes it possible to draw the labels for any crop."""
         sub_data_xyz = self.xyz_positions
         markers = numpy.zeros(image_size_zyx).astype(numpy.float32)
 
@@ -137,11 +139,11 @@ class _ImageWithPositions:
         max_y = image_size_zyx[1]
         max_z = image_size_zyx[0]
 
-        x = sub_data_xyz[:, 0]
-        y = sub_data_xyz[:, 1]
-        z = sub_data_xyz[:, 2]
+        x = sub_data_xyz[:, 0] - image_offset_zyx[2]
+        y = sub_data_xyz[:, 1] - image_offset_zyx[1]
+        z = sub_data_xyz[:, 2] - image_offset_zyx[0]
 
-        in_range = numpy.where((x >= max_x) + (y >= max_y) + (z >= max_z) == 0)
+        in_range = numpy.where((x < 0) + (x >= max_x) + (y < 0) + (y >= max_y) + (z < 0) + (z >= max_z) == 0)
 
         x = tuple(x[in_range])
         y = tuple(y[in_range])
