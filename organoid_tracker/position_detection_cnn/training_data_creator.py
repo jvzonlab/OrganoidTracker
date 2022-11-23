@@ -74,6 +74,9 @@ class _ImageWithPositions:
             shift.y = round(shift.y)
             shift.z = round(shift.z)
 
+            if shift.x == 0 and shift.y == 0 and shift.z == 0:
+                return image  # No need to do anything
+
             # shift images according to offsets
             image = numpy.roll(image, shift=(shift.z, shift.y, shift.x), axis=(0, 1, 2))
 
@@ -125,9 +128,11 @@ class _ImageWithPositions:
             if dt > numpy.max(image_dt):
                 images_padded.append(images[-1])
 
-        stack = numpy.stack(images_padded, axis=-1)
-
-        return stack
+        # Stack our list of padded images
+        if len(images_padded) == 1:
+            single_image = images_padded[0]
+            return single_image[:, :, :, numpy.newaxis]  # Optimization: stack without allocating memory
+        return numpy.stack(images_padded, axis=-1)
 
     def create_labels(self, image_size_zyx: Tuple[int, int, int], *, image_offset_zyx: Tuple[int, int, int] = (0, 0, 0)):
         """Creates an image with the number 1 at self.xyz_positions. Ignores positions outside the image. Allows you
