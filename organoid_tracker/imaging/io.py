@@ -287,6 +287,8 @@ def _add_d3_data(links: Links, link_data: LinkData, position_data: PositionData,
             # No extra data found
             continue
         position = node["id"]
+        if position.time_point_number() < min_time_point or position.time_point_number() > max_time_point:
+            continue  # Out of range
         for data_key, data_value in node.items():
             if data_key == "id":
                 continue
