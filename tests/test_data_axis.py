@@ -45,7 +45,7 @@ class TestDataAxis(unittest.TestCase):
 
         # Get a point on the curve
         self.assertAlmostEqual(10.44, path.to_position_on_axis(Position(10, 0, 0)).pos, places=2)
-        x, y = path.from_position_on_axis(10.44)
+        x, y, z = path.from_position_on_axis(10.44)
         self.assertAlmostEqual(10, x, places=1)
         self.assertAlmostEqual(0, y, places=1)
 

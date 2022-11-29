@@ -1,10 +1,15 @@
 """" Loads images and positions into tensors and can write these tensors into TFR files"""
 import os
 from typing import Tuple, List
+
+import numpy
 import tensorflow as tf
 import numpy as np
 from functools import partial
 from organoid_tracker.position_detection_cnn.training_data_creator import _ImageWithPositions
+
+
+_CROP_PADDING_XYZ = numpy.array([10, 10, 1])
 
 
 def load_images_with_positions(i, image_with_positions_list: List[_ImageWithPositions], time_window=(0, 0), crop=True):
@@ -15,9 +20,12 @@ def load_images_with_positions(i, image_with_positions_list: List[_ImageWithPosi
     image = image_with_positions.load_image_time_stack(time_window)
 
     if crop:
+        # Find coords to crop to
         coords = image_with_positions.xyz_positions
-        min_coords_xyz = np.amin(coords, axis=0)  # Becomes [x, y, z]
-        max_coords_xyz = np.amax(coords, axis=0)
+        min_coords_xyz = np.amin(coords, axis=0) - _CROP_PADDING_XYZ
+        max_coords_xyz = np.amax(coords, axis=0) + _CROP_PADDING_XYZ
+        min_coords_xyz = np.clip(min_coords_xyz, [0, 0, 0], [image.shape[2], image.shape[1], image.shape[0]])
+        max_coords_xyz = np.clip(max_coords_xyz, [0, 0, 0], [image.shape[2], image.shape[1], image.shape[0]])
 
         # Crop in x and y. We make a copy of the crop to save memory: if you make a crop in numpy, it is just a
         # reference to the original array. So the original array, which may be large, is kept in memory. To avoid

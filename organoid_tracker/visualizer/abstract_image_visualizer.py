@@ -341,18 +341,28 @@ class AbstractImageVisualizer(Visualizer):
         if not self._display_settings.show_splines:
             return
 
-        dz = abs(data_axis.get_z() - self._z)
-        marker = data_axis.get_direction_marker() if self._experiment.splines.is_axis(id) else "o"
-        linewidth = 3 if dz == 0 else 1
-
+        # Draw a marker at the origin
         origin_pos = data_axis.from_position_on_axis(0)
         if origin_pos is not None:
             self._ax.plot(origin_pos[0], origin_pos[1], marker="*", markerfacecolor=core.COLOR_CELL_CURRENT,
-                          markeredgecolor="black", markersize=max(11, 18 - dz))
+                          markeredgecolor="black", markersize=max(11.0, 18 - abs(origin_pos[2] - self._z)))
 
+        # Draw the line
+        points_x, points_y, points_z = data_axis.get_points_3d()
+        if self._z < min(points_z):
+            z_distance_to_spline = min(points_z) - self._z
+        elif self._z > max(points_z):
+            z_distance_to_spline = self._z - max(points_z)
+        else:
+            z_distance_to_spline = 0
+        linewidth = 3 if z_distance_to_spline < 0.5 else 1
         self._ax.plot(*data_axis.get_interpolation_2d(), color=color, linewidth=linewidth)
-        self._ax.plot(*data_axis.get_points_2d(), linewidth=0, marker=marker, markerfacecolor=color,
-                      markeredgecolor="black", markersize=max(7, marker_size_max - dz))
+
+        # Draw the marker points
+        marker = data_axis.get_direction_marker() if self._experiment.splines.is_axis(id) else "o"
+        points_size = [max(7.0, marker_size_max - abs(point_z - self._z))**2 for point_z in points_z]
+        self._ax.scatter(x=points_x, y=points_y, marker=marker, facecolors=color,
+                         linewidths=2, edgecolors="black", s=points_size)
 
     def _get_position_at(self, x: Optional[int], y: Optional[int]) -> Optional[Position]:
         """Wrapper of get_closest_position that makes use of the fact that we can lookup all positions ourselves."""

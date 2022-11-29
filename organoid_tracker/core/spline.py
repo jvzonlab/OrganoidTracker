@@ -12,7 +12,6 @@ from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.core.vector import Vector3
 from organoid_tracker.imaging import angles
 
-
 _REFERENCE = Vector3(0, 0, -1)
 
 
@@ -38,14 +37,16 @@ class SplinePosition:
         closest_position_on_axis = self.spline.from_position_on_axis(self.pos)
         if closest_position_on_axis is None:
             print(position)
-        closest_position_on_axis = Position(closest_position_on_axis[0], closest_position_on_axis[1], self.spline.get_z()).to_vector_um(resolution)
+        closest_position_on_axis = Position(closest_position_on_axis[0], closest_position_on_axis[1],
+                                            closest_position_on_axis[2]).to_vector_um(resolution)
 
         vector_towards_axis = position.to_vector_um(resolution) - closest_position_on_axis
         angle = angles.angle_between_vectors(vector_towards_axis, _REFERENCE)
 
         # Make angle negative
         next_position_on_axis = self.spline.from_position_on_axis(self.pos + 1)
-        next_position_on_axis = Position(next_position_on_axis[0], next_position_on_axis[1], self.spline.get_z()).to_vector_um(resolution)
+        next_position_on_axis = Position(next_position_on_axis[0], next_position_on_axis[1],
+                                         next_position_on_axis[2]).to_vector_um(resolution)
         aa = _REFERENCE.cross(vector_towards_axis)
         bb = aa.dot(next_position_on_axis - closest_position_on_axis)
         angle = numpy.sign(bb) * angle
@@ -64,24 +65,23 @@ class Spline:
 
     _x_list: List[float]
     _y_list: List[float]
-    _z: Optional[int]
+    _z_list: List[float]
 
-    _interpolation: Optional[Tuple[List[float], List[float]]]
+    _interpolation: Optional[Tuple[List[float], List[float], List[float]]]
     _offset: float
 
     def __init__(self):
         self._x_list = []
         self._y_list = []
-        self._z = None
+        self._z_list = []
         self._interpolation = None
         self._offset = 0
 
     def add_point(self, x: float, y: float, z: float):
         """Adds a new point to the path."""
-        if self._z is None:
-            self._z = int(z)
         self._x_list.append(float(x))
         self._y_list.append(float(y))
+        self._z_list.append(float(z))
 
         self._interpolation = None  # Invalidate previous interpolation
 
@@ -89,43 +89,55 @@ class Spline:
         """Gets all explicitly added points (no interpolation) without the z coord."""
         return self._x_list, self._y_list
 
+    def get_points_3d(self) -> Tuple[List[float], List[float], List[float]]:
+        """Gets all explicitly added points (no interpolation) including the z coord."""
+        return self._x_list, self._y_list, self._z_list
+
     def length(self) -> float:
         """Gets the length of the spline."""
-        x_values, y_values = self.get_interpolation_2d()
+        x_values, y_values, z_values = self.get_interpolation_3d()
         combined_length = 0
         for i in range(1, len(x_values)):
-            combined_length += _distance(x_values[i], y_values[i], x_values[i - 1], y_values[i - 1])
+            combined_length += _distance(x_values[i], y_values[i], z_values[i], x_values[i - 1], y_values[i - 1],
+                                         z_values[i - 1])
         return combined_length
 
     def get_z(self) -> int:
-        """Gets the Z coord of this path. Raises ValueError if the path has no points."""
-        if self._z is None:
+        """Gets the average Z coord of this path. Raises ValueError if the path has no points."""
+        if len(self._z_list) == 0:
             raise ValueError("Empty path, so no z is set")
-        return self._z
+        return round(sum(self._z_list) / len(self._z_list))
 
     def get_interpolation_2d(self) -> Tuple[List[float], List[float]]:
         """Returns a (cached) list of x and y values that are used for interpolation."""
         if self._interpolation is None:
             self._interpolation = self._calculate_interpolation()
+        return self._interpolation[0], self._interpolation[1]
+
+    def get_interpolation_3d(self) -> Tuple[List[float], List[float], List[float]]:
+        """Returns a (cached) list of x, y and z values that are used for interpolation."""
+        if self._interpolation is None:
+            self._interpolation = self._calculate_interpolation()
         return self._interpolation
 
-    def _calculate_interpolation(self) -> Tuple[List[float], List[float]]:
+    def _calculate_interpolation(self) -> Tuple[List[float], List[float], List[float]]:
         if len(self._x_list) <= 1:
             # Not possible to interpolate
-            return self._x_list, self._y_list
+            return self._x_list, self._y_list, self._z_list
 
         k = 3 if len(self._x_list) > 3 else 1
         # noinspection PyTupleAssignmentBalance
-        spline, _ = interpolate.splprep([self._x_list, self._y_list], k=k)
+        spline, _ = interpolate.splprep([self._x_list, self._y_list, self._z_list], k=k)
         points = interpolate.splev(numpy.arange(0, 1.01, 0.05), spline)
         x_values = points[0]
         y_values = points[1]
-        return x_values, y_values
+        z_values = points[2]
+        return x_values, y_values, z_values
 
     def to_position_on_axis(self, position: Position) -> Optional[SplinePosition]:
         """Interprets this spline as an axis. Gets the closest position on this axis and the distance to the axis,
          both in pixels. Returns None if this spline has fewer than 2 points."""
-        x_values, y_values = self.get_interpolation_2d()
+        x_values, y_values, z_values = self.get_interpolation_3d()
         if len(x_values) < 2:
             return None
 
@@ -135,10 +147,12 @@ class Spline:
         for i in range(1, len(x_values)):
             line_x1 = x_values[i - 1]
             line_y1 = y_values[i - 1]
+            line_z1 = z_values[i - 1]
             line_x2 = x_values[i]
             line_y2 = y_values[i]
-            distance_squared = _distance_to_line_segment_squared(line_x1, line_y1, line_x2, line_y2, position.x,
-                                                                 position.y)
+            line_z2 = z_values[i]
+            distance_squared = _distance_to_line_segment_squared(line_x1, line_y1, line_z1, line_x2, line_y2, line_z2,
+                                                                 position.x, position.y, position.z)
             if min_distance_to_line_squared is None or distance_squared < min_distance_to_line_squared:
                 min_distance_to_line_squared = distance_squared
                 closest_line_index = i
@@ -146,40 +160,44 @@ class Spline:
         # Calculate length to beginning of line segment
         combined_length_of_previous_lines = 0
         for i in range(1, closest_line_index):
-            combined_length_of_previous_lines += _distance(x_values[i], y_values[i], x_values[i - 1], y_values[i - 1])
+            combined_length_of_previous_lines += _distance(x_values[i], y_values[i], z_values[i], x_values[i - 1],
+                                                           y_values[i - 1], z_values[i - 1])
 
         # Calculate length on line segment
         distance_to_start_of_line_squared = _distance_squared(x_values[closest_line_index - 1],
                                                               y_values[closest_line_index - 1],
-                                                              position.x, position.y)
+                                                              z_values[closest_line_index - 1],
+                                                              position.x, position.y, position.z)
         distance_on_line = numpy.sqrt(distance_to_start_of_line_squared - min_distance_to_line_squared)
 
         raw_path_position = combined_length_of_previous_lines + distance_on_line
 
         return SplinePosition(self, raw_path_position - self._offset, math.sqrt(min_distance_to_line_squared))
 
-    def from_position_on_axis(self, path_position: float) -> Optional[Tuple[float, float]]:
-        """Given a path position, this returns the corresponding x and y coordinates. Returns None for positions outside
-        of the line."""
+    def from_position_on_axis(self, path_position: float) -> Optional[Tuple[float, float, float]]:
+        """Given a path position, this returns the corresponding x, y and z coordinates. Returns None for positions
+        outside of the line."""
         if len(self._x_list) < 2:
             return None
         raw_path_position = path_position + self._offset
         if raw_path_position < 0:
             return None
         line_index = 1
-        x_values, y_values = self.get_interpolation_2d()
+        x_values, y_values, z_values = self.get_interpolation_3d()
 
         while True:
-            line_length = _distance(x_values[line_index - 1], y_values[line_index - 1],
-                                    x_values[line_index], y_values[line_index])
+            line_length = _distance(x_values[line_index - 1], y_values[line_index - 1], z_values[line_index - 1],
+                                    x_values[line_index], y_values[line_index], z_values[line_index])
             if raw_path_position < line_length or line_index == len(x_values) - 1:
                 # If the position is on this line segment, or it's the last line segment, then interpolate (or
                 # extrapolate) the position on that line
                 line_dx = x_values[line_index] - x_values[line_index - 1]
                 line_dy = y_values[line_index] - y_values[line_index - 1]
+                line_dz = z_values[line_index] - z_values[line_index - 1]
                 travelled_fraction = raw_path_position / line_length
                 return x_values[line_index - 1] + line_dx * travelled_fraction, \
-                       y_values[line_index - 1] + line_dy * travelled_fraction
+                       y_values[line_index - 1] + line_dy * travelled_fraction, \
+                       z_values[line_index - 1] + line_dz * travelled_fraction
 
             raw_path_position -= line_length
             line_index += 1
@@ -206,7 +224,7 @@ class Spline:
         """Returns a copy of this path. Changes to this path will not affect the copy and vice versa."""
         copy = Spline()
         for i in range(len(self._x_list)):
-            copy.add_point(self._x_list[i], self._y_list[i], self._z)
+            copy.add_point(self._x_list[i], self._y_list[i], self._z_list[i])
         copy._offset = self._offset
         return copy
 
@@ -248,28 +266,31 @@ class Spline:
         """Translates all points in this path with the specified amount."""
         self._x_list = [x + delta.x for x in self._x_list]
         self._y_list = [y + delta.y for y in self._y_list]
-        self._z += int(delta.z)
+        self._z_list = [z + delta.z for z in self._z_list]
 
         self._interpolation = None  # Invalidate previous interpolation
 
-def _distance(x1, y1, x2, y2):
+
+def _distance(x1, y1, z1, x2, y2, z2) -> float:
     """Distance between two points."""
-    return numpy.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+    return numpy.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
 
 
-def _distance_squared(vx, vy, wx, wy):
-    return (vx - wx) ** 2 + (vy - wy) ** 2
+def _distance_squared(vx, vy, vz, wx, wy, wz) -> float:
+    return (vx - wx) ** 2 + (vy - wy) ** 2 + (vz - wz) ** 2
 
 
-def _distance_to_line_segment_squared(line_x1, line_y1, line_x2, line_y2, point_x, point_y):
-    """Distance from point to a line defined by the points (line_x1, line_y1) and (line_x2, line_y2)."""
-    l2 = _distance_squared(line_x1, line_y1, line_x2, line_y2)
+def _distance_to_line_segment_squared(line_x1, line_y1, line_z1, line_x2, line_y2, line_z2, point_x, point_y, point_z):
+    """Distance from point to a line defined by the points (line_x1, line_y1, line_z1) and (line_x2, line_y2, line_z2)."""
+    l2 = _distance_squared(line_x1, line_y1, line_z1, line_x2, line_y2, line_z2)
     if l2 == 0:
-        return _distance_squared(point_x, point_y, line_x1, line_y1)
-    t = ((point_x - line_x1) * (line_x2 - line_x1) + (point_y - line_y1) * (line_y2 - line_y1)) / l2
+        return _distance_squared(point_x, point_y, point_z, line_x1, line_y1, line_z1)
+    t = ((point_x - line_x1) * (line_x2 - line_x1) + (point_y - line_y1) * (line_y2 - line_y1) + (point_z - line_z1) * (
+                line_z2 - line_z1)) / l2
     t = max(0, min(1, t))
-    return _distance_squared(point_x, point_y,
-                             line_x1 + t * (line_x2 - line_x1), line_y1 + t * (line_y2 - line_y1))
+    return _distance_squared(point_x, point_y, point_z,
+                             line_x1 + t * (line_x2 - line_x1), line_y1 + t * (line_y2 - line_y1),
+                             line_z1 + t * (line_z2 - line_z1))
 
 
 class SplineCollection:
@@ -352,7 +373,9 @@ class SplineCollection:
         reference_time_point = self.reference_time_point()
         if reference_time_point is None:
             return None
-        first_position = links.get_position_near_time_point(position, reference_time_point)
+        first_position = links.get_position_at_time_point(position, reference_time_point)
+        if first_position is None:
+            return None
         first_axis_position = self.to_position_on_spline(first_position, only_axis=True)
         if first_axis_position is None:
             return None
@@ -409,7 +432,7 @@ class SplineCollection:
         if len(existing_paths) == 0:
             # We just removed the last path of this time point
             del self._splines[time_point]
-            if time_point.time_point_number() == self._min_time_point_number\
+            if time_point.time_point_number() == self._min_time_point_number \
                     or time_point.time_point_number() == self._max_time_point_number:
                 self._recalculate_min_max_time_point()  # Removed first or last time point, calculate new min/max
 

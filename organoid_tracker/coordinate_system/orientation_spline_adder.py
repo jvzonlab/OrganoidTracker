@@ -24,7 +24,7 @@ def add_all_splines(sphere_representation: SphereRepresentation, splines: Spline
                 continue
             crypt_bottom = spline.from_position_on_axis(0)
             if crypt_bottom is not None:
-                crypt_bottom_position = Position(crypt_bottom[0], crypt_bottom[1], spline.get_z(),
+                crypt_bottom_position = Position(crypt_bottom[0], crypt_bottom[1], crypt_bottom[2],
                                                  time_point=time_point)
                 past_crypt_positions.append(crypt_bottom_position)
         sphere_representation.add_orientation_track(past_crypt_positions)

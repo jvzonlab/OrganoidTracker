@@ -199,9 +199,12 @@ def _parse_splines_format(experiment: Experiment, splines_data: List[Dict], min_
         spline = Spline()
         points_x = spline_json["x_list"]
         points_y = spline_json["y_list"]
-        z = spline_json["z"]
+        if "z_list" in spline_json:
+            points_z = spline_json["z_list"]
+        else:
+            points_z = [spline_json["z"]] * len(points_y)  # Old format, when axes where 2D
         for i in range(len(points_x)):
-            spline.add_point(points_x[i], points_y[i], z)
+            spline.add_point(points_x[i], points_y[i], points_z[i])
         spline.set_offset(spline_json["offset"])
         spline_id = int(spline_json["id"]) if "id" in spline_json else None
         experiment.splines.add_spline(TimePoint(time_point_number), spline, spline_id)
@@ -458,12 +461,13 @@ def _encode_positions_and_shapes(positions: PositionCollection, shapes: Position
 def _encode_data_axes_to_json(data_axes: SplineCollection) -> List[Dict]:
     json_list = list()
     for spline_id, time_point, spline in data_axes.all_splines():
-        points_x, points_y = spline.get_points_2d()
+        points_x, points_y, points_z = spline.get_points_3d()
         json_object = {
             "_time_point_number": time_point.time_point_number(),
             "x_list": points_x,
             "y_list": points_y,
-            "z": spline.get_z(),
+            "z_list": points_z,
+            "z": spline.get_z(),  # For compatibility with older OrganoidTracker versions (December 2022)
             "offset": spline.get_offset(),
             "id": spline_id
         }

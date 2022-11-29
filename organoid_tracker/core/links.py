@@ -684,10 +684,7 @@ class Links:
     def get_position_near_time_point(self, position: Position, time_point: TimePoint) -> Position:
         """Follows the position backwards or forwards in time through the linking network, until a position as close as
         possible to the specified time has been reached. If the given position has no links, the same position will just
-        be returned. If a cell divides, an arbitrary daughter cell will be picked.
-
-        See `particle_movement_finder.find_future_positions_at` if you need an accurate list of all future positions at a
-        certain time point in the future."""
+        be returned. If a cell divides, an arbitrary daughter cell will be picked."""
         track = self.get_track(position)
         if track is None:
             return position  # Position has no links
@@ -713,6 +710,15 @@ class Links:
                 else:
                     track = next_tracks.pop()
             return track.find_position_at_time_point_number(time_point_number)
+
+    def get_position_at_time_point(self, position: Position, time_point: TimePoint) -> Optional[Position]:
+        """Follows the position backwards or forwards in time through the linking network, until a position at the
+        given time point has been found. If a cell divides, an arbitrary daughter cell will be picked. Returns None if
+        we couldn't track the position until the requested time point."""
+        position_near_time_point = self.get_position_near_time_point(position, time_point)
+        if position_near_time_point.time_point() != time_point:
+            return None  # Failed
+        return position_near_time_point
 
     def of_time_point(self, time_point: TimePoint) -> Iterable[Tuple[Position, Position]]:
         """Returns all links where one of the two positions is in that time point. The first position in each tuple is

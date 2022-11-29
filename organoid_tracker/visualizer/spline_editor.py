@@ -109,7 +109,7 @@ class SplineEditor(AbstractEditor):
     def get_extra_menu_options(self) -> Dict[str, Any]:
         options = {
             **super().get_extra_menu_options(),
-            "View//Toggle-Toggle showing spline positions [P]": self._toggle_viewing_axis_positions,
+            "View//Toggle-Toggle showing spline positions [S]": self._toggle_viewing_axis_positions,
             "Edit//Axes-Change reference time point...": self._set_reference_time_point,
             "Edit//Axes-Copy axis to this time point [C]": self._copy_spline_to_current_time_point,
         }
