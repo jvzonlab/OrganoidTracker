@@ -23,7 +23,7 @@ def load_experiment_list_file(open_files_list_file: str) -> Iterable[Experiment]
         os.chdir(start_dir)
 
     try:
-        with open(open_files_list_file, "r") as handle:
+        with open(open_files_list_file, "r", encoding="utf-8") as handle:
             experiments_json = json.load(handle)
 
         for experiment_json in experiments_json:
