@@ -3,6 +3,11 @@
 import operator
 from typing import Iterable, List, Optional, Set, Dict
 
+import numpy
+from networkx import Graph
+from numpy import ndarray
+from scipy.spatial import distance_matrix
+
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.resolution import ImageResolution
 
@@ -116,3 +121,44 @@ def find_closest_n_positions(positions: Iterable[Position], *, around: Position,
     for distance_squared, position in closest_positions:
         return_value.add(position)
     return return_value
+
+def _to_numpy_array_xyz(resolution: ImageResolution, positions: List[Position]) -> ndarray:
+    """Returns an array with each row representing an XYZ position."""
+    resolution_z, resolution_y, resolution_x = resolution.pixel_size_zyx_um
+
+    array = numpy.empty((len(positions), 3), dtype=numpy.float32)
+    for i, position in enumerate(positions):
+        array[i, 0] = position.x * resolution_x
+        array[i, 1] = position.y * resolution_y
+        array[i, 2] = position.z * resolution_z
+    return array
+
+def make_nearby_positions_graph(resolution: ImageResolution, positions: List[Position], *, neighbors: int) -> Graph:
+    """Creates a networkx.Graph of Position objects, where each object is connected to its N nearest neighbors. The
+    edges all have the "distance_um" attribute, which is hte distance between those positions in micrometers.
+
+    Example of how to iterate over the resulting object:
+    >>> for position_a, position_b, distance_um in graph.edges.data("distance_um"):
+    >>>     ... # Do something with the positions and the distance between them
+    """
+    # adjust nummber of neighbors if set of positions is to small
+    if len(positions) < neighbors + 1:
+        neighbors = len(positions) - 1
+
+    # Generate distance matrix
+    position_array_um = _to_numpy_array_xyz(resolution, positions)
+    distance_matrix_array_um = distance_matrix(position_array_um, position_array_um)
+
+    # Select indices of closest cells
+    indices = numpy.argpartition(distance_matrix_array_um, numpy.arange(neighbors + 1), axis=-1, kind='introselect',
+                                 order=None)[:, 1:neighbors + 1]
+    distances_um = numpy.take_along_axis(distance_matrix_array_um, indices, axis=-1)
+
+    # Convert to graph
+    graph = Graph()
+    graph.add_nodes_from(positions)
+    for position_id, neighbor_ids in enumerate(indices):
+        for i, neighbor_id in enumerate(neighbor_ids):
+            graph.add_edge(positions[position_id], positions[neighbor_id], distance_um=distances_um[position_id, i])
+
+    return graph
