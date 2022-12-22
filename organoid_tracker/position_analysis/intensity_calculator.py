@@ -69,6 +69,16 @@ class IntensityOverTime:
                 self._slope_stderr = 0
         return self._slope_stderr
 
+    def get_production(self, degradation_rate_h: float) -> float:
+        """Calculates the production using a simple production-degradation model
+            f
+        ∅  ⇄  G
+            b
+        """
+        if self.mean <= 0:
+            return 0  # Assume the actual slope and mean are zero
+        return degradation_rate_h * self.mean + self.slope
+
 
 def get_normalized_intensity_over_time(experiment: Experiment, around_position: Position, time_window_h: float, *,
                                        allow_incomplete: bool = False
