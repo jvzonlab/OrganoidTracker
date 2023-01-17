@@ -64,7 +64,7 @@ class _Nd2ImageLoader(ImageLoader):
                  max_time_point: Optional[int]):
         max_field_of_view = len(nd2_parser.metadata["fields_of_view"])
         if location < 1 or location > max_field_of_view:
-            raise ValueError(f"Unknown field_of_view: {location}. Available: 0 to {max_field_of_view}")
+            raise ValueError(f"Unknown field_of_view: {location}. Available: 1 to {max_field_of_view}")
 
         self._file_name = file_name
         self._nd2_parser = nd2_parser
