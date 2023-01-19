@@ -149,6 +149,16 @@ only the nearest positions are returned.</p></li>
 <dd><p>Gets the position closest ot the given position.</p>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.linking.nearby_position_finder.make_nearby_positions_graph">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking.nearby_position_finder.</span></span><span class="sig-name descname"><span class="pre">make_nearby_positions_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.resolution.html#organoid_tracker.core.resolution.ImageResolution" title="organoid_tracker.core.resolution.ImageResolution"><span class="pre">ImageResolution</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighbors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Graph</span></span></span><a class="headerlink" href="#organoid_tracker.linking.nearby_position_finder.make_nearby_positions_graph" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a networkx.Graph of Position objects, where each object is connected to its N nearest neighbors. The
+edges all have the “distance_um” attribute, which is hte distance between those positions in micrometers.</p>
+<p>Example of how to iterate over the resulting object:
+&gt;&gt;&gt; for position_a, position_b, distance_um in graph.edges.data(“distance_um”):
+&gt;&gt;&gt;     … # Do something with the positions and the distance between them</p>
+</dd></dl>
+
 </section>
 
 
@@ -162,7 +172,7 @@ only the nearest positions are returned.</p></li>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2020-2022, Jeroen van Zon Lab.</p>
+    <p>&#169; Copyright 2020-2023, Jeroen van Zon Lab.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

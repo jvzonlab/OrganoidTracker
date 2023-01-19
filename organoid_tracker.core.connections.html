@@ -234,6 +234,14 @@ not equal.</p>
 <dd><p>Gets all time points that have at least one connection present.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.connections.Connections.to_networkx_graph">
+<span class="sig-name descname"><span class="pre">to_networkx_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Graph</span></span></span><a class="headerlink" href="#organoid_tracker.core.connections.Connections.to_networkx_graph" title="Permalink to this definition"></a></dt>
+<dd><p>Gets a non-directional NetworkX graph that represents the connections of the given time point. The graph is
+a copy, so any changes will not affect the connections in the experiment. This has been done so that we can
+still switch to another data storage method in the future.</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -249,7 +257,7 @@ not equal.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2020-2022, Jeroen van Zon Lab.</p>
+    <p>&#169; Copyright 2020-2023, Jeroen van Zon Lab.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

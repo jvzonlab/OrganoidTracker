@@ -511,8 +511,12 @@
 </li>
       <li><a href="organoid_tracker.core.gaussian.html#organoid_tracker.core.gaussian.Gaussian.cov_zz">cov_zz (organoid_tracker.core.gaussian.Gaussian attribute)</a>
 </li>
-      <li><a href="organoid_tracker.connecting.connector_by_distance.html#organoid_tracker.connecting.connector_by_distance.ConnectorByDistance.create_connections">create_connections() (organoid_tracker.connecting.connector_by_distance.ConnectorByDistance method)</a>
+      <li><a href="organoid_tracker.connecting.connector_using_angles.html#organoid_tracker.connecting.connector_using_angles.create_connections">create_connections() (in module organoid_tracker.connecting.connector_using_angles)</a>
+
+      <ul>
+        <li><a href="organoid_tracker.connecting.connector_by_distance.html#organoid_tracker.connecting.connector_by_distance.ConnectorByDistance.create_connections">(organoid_tracker.connecting.connector_by_distance.ConnectorByDistance method)</a>
 </li>
+      </ul></li>
       <li><a href="organoid_tracker.imaging.depth_colored_image_creator.html#organoid_tracker.imaging.depth_colored_image_creator.create_image">create_image() (in module organoid_tracker.imaging.depth_colored_image_creator)</a>
 </li>
       <li><a href="organoid_tracker.position_detection_cnn.training_data_creator.html#organoid_tracker.position_detection_cnn.training_data_creator.create_image_list_without_positions">create_image_list_without_positions() (in module organoid_tracker.position_detection_cnn.training_data_creator)</a>
@@ -759,8 +763,6 @@
 </li>
       <li><a href="organoid_tracker.core.gaussian.html#organoid_tracker.core.gaussian.Gaussian.draw_gradient">draw_gradient() (organoid_tracker.core.gaussian.Gaussian method)</a>
 </li>
-      <li><a href="organoid_tracker.linking_analysis.lineage_drawing.html#organoid_tracker.linking_analysis.lineage_drawing.LineageDrawing.draw_lineages_colored">draw_lineages_colored() (organoid_tracker.linking_analysis.lineage_drawing.LineageDrawing method)</a>
-</li>
       <li><a href="organoid_tracker.core.shape.html#organoid_tracker.core.shape.draw_marker_2d">draw_marker_2d() (in module organoid_tracker.core.shape)</a>
 
       <ul>
@@ -787,8 +789,6 @@
 
       <ul>
         <li><a href="organoid_tracker.visualizer.empty_visualizer.html#organoid_tracker.visualizer.empty_visualizer.EmptyVisualizer.draw_view">(organoid_tracker.visualizer.empty_visualizer.EmptyVisualizer method)</a>
-</li>
-        <li><a href="organoid_tracker.visualizer.lineage_tree_visualizer.html#organoid_tracker.visualizer.lineage_tree_visualizer.LineageTreeVisualizer.draw_view">(organoid_tracker.visualizer.lineage_tree_visualizer.LineageTreeVisualizer method)</a>
 </li>
         <li><a href="organoid_tracker.visualizer.position_list_visualizer.html#organoid_tracker.visualizer.position_list_visualizer.PositionListVisualizer.draw_view">(organoid_tracker.visualizer.position_list_visualizer.PositionListVisualizer method)</a>
 </li>
@@ -1214,8 +1214,6 @@
 </li>
         <li><a href="organoid_tracker.visualizer.image_offset_editor.html#organoid_tracker.visualizer.image_offset_editor.ImageOffsetEditor.get_extra_menu_options">(organoid_tracker.visualizer.image_offset_editor.ImageOffsetEditor method)</a>
 </li>
-        <li><a href="organoid_tracker.visualizer.lineage_tree_visualizer.html#organoid_tracker.visualizer.lineage_tree_visualizer.LineageTreeVisualizer.get_extra_menu_options">(organoid_tracker.visualizer.lineage_tree_visualizer.LineageTreeVisualizer method)</a>
-</li>
         <li><a href="organoid_tracker.visualizer.link_and_position_editor.html#organoid_tracker.visualizer.link_and_position_editor.LinkAndPositionEditor.get_extra_menu_options">(organoid_tracker.visualizer.link_and_position_editor.LinkAndPositionEditor method)</a>
 </li>
         <li><a href="organoid_tracker.visualizer.position_in_rectangle_deleter.html#organoid_tracker.visualizer.position_in_rectangle_deleter.PositionsInRectangleDeleter.get_extra_menu_options">(organoid_tracker.visualizer.position_in_rectangle_deleter.PositionsInRectangleDeleter method)</a>
@@ -1225,8 +1223,6 @@
         <li><a href="organoid_tracker.visualizer.spline_editor.html#organoid_tracker.visualizer.spline_editor.SplineEditor.get_extra_menu_options">(organoid_tracker.visualizer.spline_editor.SplineEditor method)</a>
 </li>
         <li><a href="organoid_tracker.visualizer.standard_image_visualizer.html#organoid_tracker.visualizer.standard_image_visualizer.StandardImageVisualizer.get_extra_menu_options">(organoid_tracker.visualizer.standard_image_visualizer.StandardImageVisualizer method)</a>
-</li>
-        <li><a href="organoid_tracker.visualizer.track_visualizer.html#organoid_tracker.visualizer.track_visualizer.TrackVisualizer.get_extra_menu_options">(organoid_tracker.visualizer.track_visualizer.TrackVisualizer method)</a>
 </li>
         <li><a href="organoid_tracker.visualizer.html#organoid_tracker.visualizer.Visualizer.get_extra_menu_options">(organoid_tracker.visualizer.Visualizer method)</a>
 </li>
@@ -1277,6 +1273,8 @@
 </li>
       <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.Spline.get_interpolation_2d">get_interpolation_2d() (organoid_tracker.core.spline.Spline method)</a>
 </li>
+      <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.Spline.get_interpolation_3d">get_interpolation_3d() (organoid_tracker.core.spline.Spline method)</a>
+</li>
       <li><a href="organoid_tracker.core.links.html#organoid_tracker.core.links.Links.get_lineage_data">get_lineage_data() (organoid_tracker.core.links.Links method)</a>
 </li>
       <li><a href="organoid_tracker.linking_analysis.lineage_fate_finder.html#organoid_tracker.linking_analysis.lineage_fate_finder.get_lineage_fate">get_lineage_fate() (in module organoid_tracker.linking_analysis.lineage_fate_finder)</a>
@@ -1287,12 +1285,12 @@
 </li>
       <li><a href="organoid_tracker.image_loading.nd2file_image_loader.html#organoid_tracker.image_loading.nd2file_image_loader.Nd2File.get_location_counts">get_location_counts() (organoid_tracker.image_loading.nd2file_image_loader.Nd2File method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="organoid_tracker.gui.gui_experiment.html#organoid_tracker.gui.gui_experiment.GuiExperiment.get_marker_by_save_name">get_marker_by_save_name() (organoid_tracker.gui.gui_experiment.GuiExperiment method)</a>
 </li>
       <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.SplineCollection.get_marker_name">get_marker_name() (organoid_tracker.core.spline.SplineCollection method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.SplineCollection.get_marker_names">get_marker_names() (organoid_tracker.core.spline.SplineCollection method)</a>
 </li>
       <li><a href="organoid_tracker.plugin.instance.html#organoid_tracker.plugin.instance.Plugin.get_markers">get_markers() (organoid_tracker.plugin.instance.Plugin method)</a>
@@ -1381,6 +1379,8 @@
 </li>
       <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.Spline.get_points_2d">get_points_2d() (organoid_tracker.core.spline.Spline method)</a>
 </li>
+      <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.Spline.get_points_3d">get_points_3d() (organoid_tracker.core.spline.Spline method)</a>
+</li>
       <li><a href="organoid_tracker.core.ellipse.html#organoid_tracker.core.ellipse.Ellipse.get_pos">get_pos() (organoid_tracker.core.ellipse.Ellipse method)</a>
 
       <ul>
@@ -1393,6 +1393,8 @@
         <li><a href="organoid_tracker.guizela_tracker_compatibility.track_lib_v4.html#organoid_tracker.guizela_tracker_compatibility.track_lib_v4.Track.get_pos">(organoid_tracker.guizela_tracker_compatibility.track_lib_v4.Track method)</a>
 </li>
       </ul></li>
+      <li><a href="organoid_tracker.core.links.html#organoid_tracker.core.links.Links.get_position_at_time_point">get_position_at_time_point() (organoid_tracker.core.links.Links method)</a>
+</li>
       <li><a href="organoid_tracker.core.position_data.html#organoid_tracker.core.position_data.PositionData.get_position_data">get_position_data() (organoid_tracker.core.position_data.PositionData method)</a>
 </li>
       <li><a href="organoid_tracker.core.links.html#organoid_tracker.core.links.Links.get_position_near_time_point">get_position_near_time_point() (organoid_tracker.core.links.Links method)</a>
@@ -1416,6 +1418,8 @@
       <li><a href="organoid_tracker.core.links.html#organoid_tracker.core.links.LinkingTrack.get_previous_tracks">get_previous_tracks() (organoid_tracker.core.links.LinkingTrack method)</a>
 </li>
       <li><a href="organoid_tracker.linking_analysis.lineage_error_finder.html#organoid_tracker.linking_analysis.lineage_error_finder.get_problematic_lineages">get_problematic_lineages() (in module organoid_tracker.linking_analysis.lineage_error_finder)</a>
+</li>
+      <li><a href="organoid_tracker.position_analysis.intensity_calculator.html#organoid_tracker.position_analysis.intensity_calculator.IntensityOverTime.get_production">get_production() (organoid_tracker.position_analysis.intensity_calculator.IntensityOverTime method)</a>
 </li>
       <li><a href="organoid_tracker.position_analysis.intensity_calculator.html#organoid_tracker.position_analysis.intensity_calculator.get_raw_intensity">get_raw_intensity() (in module organoid_tracker.position_analysis.intensity_calculator)</a>
 
@@ -1791,15 +1795,11 @@
 </li>
       <li><a href="organoid_tracker.util.mpl_helper.html#organoid_tracker.util.mpl_helper.line_infinite">line_infinite() (in module organoid_tracker.util.mpl_helper)</a>
 </li>
-      <li><a href="organoid_tracker.linking_analysis.lineage_drawing.html#organoid_tracker.linking_analysis.lineage_drawing.LineageDrawing">LineageDrawing (class in organoid_tracker.linking_analysis.lineage_drawing)</a>
-</li>
       <li><a href="organoid_tracker.visualizer.lineage_errors_visualizer.html#organoid_tracker.visualizer.lineage_errors_visualizer.LineageErrorsVisualizer">LineageErrorsVisualizer (class in organoid_tracker.visualizer.lineage_errors_visualizer)</a>
 </li>
       <li><a href="organoid_tracker.linking_analysis.lineage_fate_finder.html#organoid_tracker.linking_analysis.lineage_fate_finder.LineageFate">LineageFate (class in organoid_tracker.linking_analysis.lineage_fate_finder)</a>
 </li>
       <li><a href="organoid_tracker.visualizer.lineage_fate_visualizer.html#organoid_tracker.visualizer.lineage_fate_visualizer.LineageFateVisualizer">LineageFateVisualizer (class in organoid_tracker.visualizer.lineage_fate_visualizer)</a>
-</li>
-      <li><a href="organoid_tracker.visualizer.lineage_tree_visualizer.html#organoid_tracker.visualizer.lineage_tree_visualizer.LineageTreeVisualizer">LineageTreeVisualizer (class in organoid_tracker.visualizer.lineage_tree_visualizer)</a>
 </li>
       <li><a href="organoid_tracker.linking_analysis.lineage_error_finder.html#organoid_tracker.linking_analysis.lineage_error_finder.LineageWithErrors">LineageWithErrors (class in organoid_tracker.linking_analysis.lineage_error_finder)</a>
 </li>
@@ -1809,10 +1809,10 @@
 </li>
       <li><a href="organoid_tracker.visualizer.link_and_position_editor.html#organoid_tracker.visualizer.link_and_position_editor.LinkAndPositionEditor">LinkAndPositionEditor (class in organoid_tracker.visualizer.link_and_position_editor)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="organoid_tracker.core.link_data.html#organoid_tracker.core.link_data.LinkData">LinkData (class in organoid_tracker.core.link_data)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="organoid_tracker.core.links.html#organoid_tracker.core.links.LinkingTrack">LinkingTrack (class in organoid_tracker.core.links)</a>
 </li>
       <li><a href="organoid_tracker.core.links.html#organoid_tracker.core.links.Links">Links (class in organoid_tracker.core.links)</a>
@@ -1894,6 +1894,8 @@
       <li><a href="organoid_tracker.gui.launcher.html#organoid_tracker.gui.launcher.mainloop">mainloop() (in module organoid_tracker.gui.launcher)</a>
 </li>
       <li><a href="organoid_tracker.gui.launcher.html#organoid_tracker.gui.launcher.MainWindow">MainWindow (class in organoid_tracker.gui.launcher)</a>
+</li>
+      <li><a href="organoid_tracker.linking.nearby_position_finder.html#organoid_tracker.linking.nearby_position_finder.make_nearby_positions_graph">make_nearby_positions_graph() (in module organoid_tracker.linking.nearby_position_finder)</a>
 </li>
       <li><a href="organoid_tracker.gui.undo_redo.html#organoid_tracker.gui.undo_redo.UndoRedo.mark_everything_saved">mark_everything_saved() (organoid_tracker.gui.undo_redo.UndoRedo method)</a>
 </li>
@@ -1986,6 +1988,8 @@
         <li><a href="organoid_tracker.connecting.html#module-organoid_tracker.connecting">organoid_tracker.connecting</a>
 </li>
         <li><a href="organoid_tracker.connecting.connector_by_distance.html#module-organoid_tracker.connecting.connector_by_distance">organoid_tracker.connecting.connector_by_distance</a>
+</li>
+        <li><a href="organoid_tracker.connecting.connector_using_angles.html#module-organoid_tracker.connecting.connector_using_angles">organoid_tracker.connecting.connector_using_angles</a>
 </li>
         <li><a href="organoid_tracker.connection_analysis.html#module-organoid_tracker.connection_analysis">organoid_tracker.connection_analysis</a>
 </li>
@@ -2175,8 +2179,6 @@
 </li>
         <li><a href="organoid_tracker.linking_analysis.lineage_division_counter.html#module-organoid_tracker.linking_analysis.lineage_division_counter">organoid_tracker.linking_analysis.lineage_division_counter</a>
 </li>
-        <li><a href="organoid_tracker.linking_analysis.lineage_drawing.html#module-organoid_tracker.linking_analysis.lineage_drawing">organoid_tracker.linking_analysis.lineage_drawing</a>
-</li>
         <li><a href="organoid_tracker.linking_analysis.lineage_end_finder.html#module-organoid_tracker.linking_analysis.lineage_end_finder">organoid_tracker.linking_analysis.lineage_end_finder</a>
 </li>
         <li><a href="organoid_tracker.linking_analysis.lineage_error_finder.html#module-organoid_tracker.linking_analysis.lineage_error_finder">organoid_tracker.linking_analysis.lineage_error_finder</a>
@@ -2305,8 +2307,6 @@
 </li>
         <li><a href="organoid_tracker.visualizer.lineage_fate_visualizer.html#module-organoid_tracker.visualizer.lineage_fate_visualizer">organoid_tracker.visualizer.lineage_fate_visualizer</a>
 </li>
-        <li><a href="organoid_tracker.visualizer.lineage_tree_visualizer.html#module-organoid_tracker.visualizer.lineage_tree_visualizer">organoid_tracker.visualizer.lineage_tree_visualizer</a>
-</li>
         <li><a href="organoid_tracker.visualizer.link_and_position_editor.html#module-organoid_tracker.visualizer.link_and_position_editor">organoid_tracker.visualizer.link_and_position_editor</a>
 </li>
         <li><a href="organoid_tracker.visualizer.link_score_visualizer.html#module-organoid_tracker.visualizer.link_score_visualizer">organoid_tracker.visualizer.link_score_visualizer</a>
@@ -2318,8 +2318,6 @@
         <li><a href="organoid_tracker.visualizer.spline_editor.html#module-organoid_tracker.visualizer.spline_editor">organoid_tracker.visualizer.spline_editor</a>
 </li>
         <li><a href="organoid_tracker.visualizer.standard_image_visualizer.html#module-organoid_tracker.visualizer.standard_image_visualizer">organoid_tracker.visualizer.standard_image_visualizer</a>
-</li>
-        <li><a href="organoid_tracker.visualizer.track_visualizer.html#module-organoid_tracker.visualizer.track_visualizer">organoid_tracker.visualizer.track_visualizer</a>
 </li>
       </ul></li>
   </ul></td>
@@ -2539,6 +2537,13 @@
 
       <ul>
         <li><a href="organoid_tracker.connecting.connector_by_distance.html#module-organoid_tracker.connecting.connector_by_distance">module</a>
+</li>
+      </ul></li>
+      <li>
+    organoid_tracker.connecting.connector_using_angles
+
+      <ul>
+        <li><a href="organoid_tracker.connecting.connector_using_angles.html#module-organoid_tracker.connecting.connector_using_angles">module</a>
 </li>
       </ul></li>
       <li>
@@ -3045,6 +3050,8 @@
         <li><a href="organoid_tracker.imaging.cropper.html#module-organoid_tracker.imaging.cropper">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     organoid_tracker.imaging.ctc_io
 
@@ -3059,8 +3066,6 @@
         <li><a href="organoid_tracker.imaging.depth_colored_image_creator.html#module-organoid_tracker.imaging.depth_colored_image_creator">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     organoid_tracker.imaging.image_adder
 
@@ -3199,13 +3204,6 @@
 
       <ul>
         <li><a href="organoid_tracker.linking_analysis.lineage_division_counter.html#module-organoid_tracker.linking_analysis.lineage_division_counter">module</a>
-</li>
-      </ul></li>
-      <li>
-    organoid_tracker.linking_analysis.lineage_drawing
-
-      <ul>
-        <li><a href="organoid_tracker.linking_analysis.lineage_drawing.html#module-organoid_tracker.linking_analysis.lineage_drawing">module</a>
 </li>
       </ul></li>
       <li>
@@ -3657,13 +3655,6 @@
 </li>
       </ul></li>
       <li>
-    organoid_tracker.visualizer.lineage_tree_visualizer
-
-      <ul>
-        <li><a href="organoid_tracker.visualizer.lineage_tree_visualizer.html#module-organoid_tracker.visualizer.lineage_tree_visualizer">module</a>
-</li>
-      </ul></li>
-      <li>
     organoid_tracker.visualizer.link_and_position_editor
 
       <ul>
@@ -3703,13 +3694,6 @@
 
       <ul>
         <li><a href="organoid_tracker.visualizer.standard_image_visualizer.html#module-organoid_tracker.visualizer.standard_image_visualizer">module</a>
-</li>
-      </ul></li>
-      <li>
-    organoid_tracker.visualizer.track_visualizer
-
-      <ul>
-        <li><a href="organoid_tracker.visualizer.track_visualizer.html#module-organoid_tracker.visualizer.track_visualizer">module</a>
 </li>
       </ul></li>
       <li><a href="organoid_tracker.linking_analysis.linking_markers.html#organoid_tracker.linking_analysis.linking_markers.EndMarker.OUT_OF_VIEW">OUT_OF_VIEW (organoid_tracker.linking_analysis.linking_markers.EndMarker attribute)</a>
@@ -4242,8 +4226,6 @@
 </li>
       <li><a href="organoid_tracker.linking_analysis.lineage_error_finder.html#organoid_tracker.linking_analysis.lineage_error_finder.LineageWithErrors.start">start (organoid_tracker.linking_analysis.lineage_error_finder.LineageWithErrors attribute)</a>
 </li>
-      <li><a href="organoid_tracker.linking_analysis.lineage_drawing.html#organoid_tracker.linking_analysis.lineage_drawing.LineageDrawing.starting_tracks">starting_tracks (organoid_tracker.linking_analysis.lineage_drawing.LineageDrawing attribute)</a>
-</li>
       <li><a href="organoid_tracker.linking_analysis.linking_markers.html#organoid_tracker.linking_analysis.linking_markers.StartMarker">StartMarker (class in organoid_tracker.linking_analysis.linking_markers)</a>
 </li>
       <li><a href="organoid_tracker.gui.option_choose_dialog.html#organoid_tracker.gui.option_choose_dialog.MultipleComboBox.staticMetaObject">staticMetaObject (organoid_tracker.gui.option_choose_dialog.MultipleComboBox attribute)</a>
@@ -4356,6 +4338,8 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="organoid_tracker.core.connections.html#organoid_tracker.core.connections.Connections.to_networkx_graph">to_networkx_graph() (organoid_tracker.core.connections.Connections method)</a>
+</li>
       <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.Spline.to_position_on_axis">to_position_on_axis() (organoid_tracker.core.spline.Spline method)</a>
 </li>
       <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.SplineCollection.to_position_on_original_axis">to_position_on_original_axis() (organoid_tracker.core.spline.SplineCollection method)</a>
@@ -4393,8 +4377,6 @@
 </li>
       </ul></li>
       <li><a href="organoid_tracker.linking_analysis.lineage_fate_finder.html#organoid_tracker.linking_analysis.lineage_fate_finder.LineageFate.tracks">tracks (organoid_tracker.linking_analysis.lineage_fate_finder.LineageFate attribute)</a>
-</li>
-      <li><a href="organoid_tracker.visualizer.track_visualizer.html#organoid_tracker.visualizer.track_visualizer.TrackVisualizer">TrackVisualizer (class in organoid_tracker.visualizer.track_visualizer)</a>
 </li>
       <li><a href="organoid_tracker.imaging.lines.html#organoid_tracker.imaging.lines.Line3.translate">translate() (organoid_tracker.imaging.lines.Line3 method)</a>
 </li>
@@ -4632,7 +4614,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2020-2022, Jeroen van Zon Lab.</p>
+    <p>&#169; Copyright 2020-2023, Jeroen van Zon Lab.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

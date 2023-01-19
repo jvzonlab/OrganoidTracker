@@ -8,6 +8,7 @@ Submodules
    :maxdepth: 1
 
    organoid_tracker.connecting.connector_by_distance
+   organoid_tracker.connecting.connector_using_angles
 
 Module contents
 ---------------

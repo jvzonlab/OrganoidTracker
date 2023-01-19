@@ -189,8 +189,8 @@
 <h3>Additional locations for storing plugins<a class="headerlink" href="#additional-locations-for-storing-plugins" title="Permalink to this heading"></a></h3>
 <p>By default, OrganoidTracker loads all files starting with <code class="docutils literal notranslate"><span class="pre">plugin_</span></code> in the <code class="docutils literal notranslate"><span class="pre">organoid_tracker_plugins</span></code> folder. If you start do develop your own plugins, you may want to keep them in a separate folder. Here, we show how to instruct OrganoidTracker to load plugins from this seperate folder.</p>
 <p>To add an additional plugin folder, create a file named <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> in the folder from which you normally start OrganoidTracker. If you start OrganoidTracker from PyCharm, then you need to create this file in the root folder of the project (so in the same folder where the <code class="docutils literal notranslate"><span class="pre">organoid_tracker.py</span></code> file is located). Make sure that the file has the following contents:</p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[scripts]</span><span class="w"></span>
-<span class="na">extra_plugin_directory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">C:\path\to\your\plugin\folder</span><span class="w"></span>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[scripts]</span>
+<span class="na">extra_plugin_directory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">C:\path\to\your\plugin\folder</span>
 </pre></div>
 </div>
 <p>Change the path so that it points to your plugin folder. Once you (re)start OrganoidTracker, it will load plugins from the specified folder.</p>
@@ -262,7 +262,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2020-2022, Jeroen van Zon Lab.</p>
+    <p>&#169; Copyright 2020-2023, Jeroen van Zon Lab.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

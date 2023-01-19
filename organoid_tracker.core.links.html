@@ -358,13 +358,19 @@ Otherwise, it returns None.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.links.Links.get_position_at_time_point">
+<span class="sig-name descname"><span class="pre">get_position_at_time_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.core.links.Links.get_position_at_time_point" title="Permalink to this definition"></a></dt>
+<dd><p>Follows the position backwards or forwards in time through the linking network, until a position at the
+given time point has been found. If a cell divides, an arbitrary daughter cell will be picked. Returns None if
+we couldn’t track the position until the requested time point.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.core.links.Links.get_position_near_time_point">
 <span class="sig-name descname"><span class="pre">get_position_near_time_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.links.Links.get_position_near_time_point" title="Permalink to this definition"></a></dt>
 <dd><p>Follows the position backwards or forwards in time through the linking network, until a position as close as
 possible to the specified time has been reached. If the given position has no links, the same position will just
 be returned. If a cell divides, an arbitrary daughter cell will be picked.</p>
-<p>See <cite>particle_movement_finder.find_future_positions_at</cite> if you need an accurate list of all future positions at a
-certain time point in the future.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -466,7 +472,7 @@ find_starting_tracks).</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2020-2022, Jeroen van Zon Lab.</p>
+    <p>&#169; Copyright 2020-2023, Jeroen van Zon Lab.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
