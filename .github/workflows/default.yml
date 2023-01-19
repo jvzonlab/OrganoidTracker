@@ -12,20 +12,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - name: Install Conda environment from environment-sphinx.yml
+      uses: mamba-org/provision-with-micromamba@main
       with:
-        python-version: 3.9
-    - name: Install dependencies
-      run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        $CONDA/bin/conda env update --file environment-sphinx.yml --name base
+        environment-file: environment-sphinx.yml
     # Run Sphinx build
     - name: Run Sphinx build
+      shell: bash -l {0}
       run: |
-        $CONDA/bin/sphinx-apidoc -o manuals/ organoid_tracker --separate --force -d 1 --no-toc
-        $CONDA/bin/sphinx-build -b html manuals/ manuals_build/html
+        sphinx-apidoc -o manuals/ organoid_tracker --separate --force -d 1 --no-toc
+        sphinx-build -b html manuals/ manuals_build/html
     # Create an artifact of the html output.
     - uses: actions/upload-artifact@v1
       with:
