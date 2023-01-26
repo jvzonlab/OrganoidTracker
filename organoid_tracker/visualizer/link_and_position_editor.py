@@ -336,7 +336,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Marker-Mark position as uncertain": lambda: self._try_mark_uncertainty(True),
             "Edit//Marker-Remove uncertainty marker": lambda: self._try_mark_uncertainty(False),
             "Edit//Marker-Set color of lineage...": self._set_color_of_lineage,
-            "Edit//Marker-Delete entire lineage": self._delete_selected_lineage,
+            "Edit//Marker-Delete entire lineage [Ctrl+Delete]": self._delete_selected_lineage,
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
             "View//Linking-Lineage errors and warnings [T]": self._show_lineage_errors,
             "Navigate//Layer-Layer of selected position [Space]": self._move_to_z_of_selected_position,
