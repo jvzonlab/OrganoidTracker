@@ -27,7 +27,8 @@ def load_images(experiment: Experiment, container: str, pattern: str,
         merged_tiff_image_loader.load_from_tif_file(experiment, container, min_time_point, max_time_point)
         return
     if not os.path.exists(container):
-        raise ValueError("File or directory does not exist: " + container)
+        print("Failed to load \"" + container + "\" - file or folder does not exist")
+        return  # Cannot load anything
     if os.path.isdir(container):  # Try as images folder
         from organoid_tracker.image_loading import folder_image_loader
         folder_image_loader.load_images_from_folder(experiment, container, pattern, min_time_point, max_time_point)
