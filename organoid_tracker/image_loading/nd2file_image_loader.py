@@ -47,6 +47,9 @@ def load_image_series(experiment: Experiment, file: Nd2File, field_of_view: int,
 
 def load_image_series_from_config(experiment: Experiment, file_name: str, pattern: str, min_time_point: int, max_time_point: int):
     """Loads the image seriers into the images object using the file_name and pattern settings."""
+    if not os.path.exists(file_name):
+        print("Failed to load \"" + file_name + "\" - file does not exist")
+        return
     field_of_view = int(pattern)
     load_image_series(experiment, Nd2File(file_name), field_of_view, min_time_point, max_time_point)
 
