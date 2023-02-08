@@ -37,7 +37,7 @@ Unfortunately, OrganoidTracker has not been tested on any other OSes. If you're 
 
 Download and install Anaconda/Miniconda and open the Anaconda Prompt. Use the `cd` command to navigate to the directory of OrganoidTracker. Run the following commands:
 
-    conda create -n organoid_tracker -c ilastik-forge -c esri -c conda-forge  python=3.7 dpct matplotlib-base mahotas tifffile scikit-image scipy nd2reader opencv pyside2 tensorflow-gpu tensorflow-addons
+    conda create -n organoid_tracker -c ilastik-forge -c esri -c conda-forge  python=3.9 dpct matplotlib-base mahotas tifffile scikit-image scipy nd2reader opencv pyside2 tensorflow-gpu tensorflow-addons
     source activate organoid_tracker
 
 The first command creates an Anaconda environment named "organoid_tracker" with all dependencies installed. The second command activates this environment. The third command installs Tensorflow, which only has a PIP package.
