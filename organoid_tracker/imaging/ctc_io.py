@@ -200,7 +200,7 @@ def _save_track_images(experiment: Experiment, image_prefix: str, mask: Mask):
             mask.center_around(position)
             mask.stamp_image(image_fill_array, track_id + 1)  # Track id is offset by 1 to avoid track id 0
 
-        tifffile.imsave(image_file_name, image_fill_array.array, compress=9)
+        tifffile.imsave(image_file_name, image_fill_array.array, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
 
 
 def _save_track_images_watershed(experiment: Experiment, image_prefix: str, mask: Mask, resolution: ImageResolution):
@@ -236,7 +236,7 @@ def _save_track_images_watershed(experiment: Experiment, image_prefix: str, mask
 
         regions = mahotas.cwatershed(distance_map, image_seed_array).astype(numpy.uint16)
         regions[image_mask_array.array == 0] = 0  # Remove background
-        tifffile.imsave(image_file_name, regions, compress=9)
+        tifffile.imsave(image_file_name, regions, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
 
 
 def _save_overview_file(experiment: Experiment, file_name: str):

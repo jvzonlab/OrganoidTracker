@@ -582,7 +582,7 @@ class AbstractImageVisualizer(Visualizer):
                 and (images[:, :, :, 0] == images[:, :, :, 2]).all():
             images = images[:, :, :, 0]
 
-        tifffile.imsave(file, images, compress=9)
+        tifffile.imsave(file, images, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
 
     def _toggle_showing_next_time_point(self):
         self._display_settings.show_next_time_point = not self._display_settings.show_next_time_point

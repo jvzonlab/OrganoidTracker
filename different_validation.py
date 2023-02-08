@@ -170,14 +170,14 @@ for i in range(10):
 
     array = element[0].numpy()
     array = array[0, :, :, :, 0]
-    tifffile.imsave("example_input" + str(i) + ".tiff", array, compress=9)
+    tifffile.imsave("example_input" + str(i) + ".tiff", array, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
 
     array = element[1].numpy()
     array = array[0, :, :, :, 0]
-    tifffile.imsave("example_prediction" + str(i) + ".tiff", array, compress=9)
+    tifffile.imsave("example_prediction" + str(i) + ".tiff", array, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
 
     array = element[2].numpy()
     array = array[0, :, :, :, 0]
-    tifffile.imsave("input_prediction" + str(i) + ".tiff", array, compress=9)
+    tifffile.imsave("input_prediction" + str(i) + ".tiff", array, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
 
 

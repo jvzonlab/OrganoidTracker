@@ -30,7 +30,7 @@ class _EventListeners:
 
     def call_all(self, *args):
         """Calls all registered event listeners with the specified parameters."""
-        for listeners in self._listeners.values():
+        for listeners in list(self._listeners.values()):
             for listener in listeners:
                 listener(*args)
 

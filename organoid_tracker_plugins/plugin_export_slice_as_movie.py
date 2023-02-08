@@ -86,7 +86,7 @@ class _MovieGenerator(Task):
 
     def compute(self) -> Any:
         array = _generate_slice_movie(self._experiment, self._coord, self._slice_type, self._channel)
-        tifffile.imwrite(self._output_file, array, compress=9)
+        tifffile.imwrite(self._output_file, array, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
         return True
 
     def on_finished(self, result: Any):
