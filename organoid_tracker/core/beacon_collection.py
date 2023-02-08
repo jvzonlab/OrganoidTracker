@@ -166,3 +166,12 @@ class BeaconCollection:
                 self._beacons[time_point] += beacons_of_time_point
             else:
                 self._beacons[time_point] = beacons_of_time_point
+
+    def find_single_beacon(self) -> Optional[Position]:
+        """If there is only one beacon in the entire experiment, return it. Otherwise, it returns None."""
+        if len(self._beacons) != 1:
+            return None  # There cannot be exactly one beacon
+        beacons = next(iter(self._beacons.values()))
+        if len(beacons) == 1:
+            return beacons[0]
+        return None
