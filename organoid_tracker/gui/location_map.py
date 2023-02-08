@@ -27,7 +27,7 @@ class LocationMap:
             while y >= new_y_size:
                 new_y_size *= 2
             old_array = self._array
-            self._array = numpy.full((new_y_size, new_x_size), None, dtype=numpy.object)
+            self._array = numpy.full((new_y_size, new_x_size), None, dtype=object)
             self._array[0:old_array.shape[0], 0:old_array.shape[1]] = old_array
 
         self._array[y, x] = value
