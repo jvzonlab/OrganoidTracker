@@ -11,7 +11,7 @@ class LocationMap:
     _array: ndarray  # Indexed as y, x
 
     def __init__(self):
-        self._array = numpy.full((4, 4), None, dtype=numpy.object)
+        self._array = numpy.full((4, 4), None, dtype=object)
 
     def set(self, x: int, y: int, value: Optional[object]):
         """Sets the value in the grid to be equal to the given object."""
