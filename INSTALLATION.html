@@ -110,8 +110,8 @@
 <p>Next, to run the scripts you first need to install the dependencies. Open the Anaconda Prompt (in the “All Programs” list of your start menu, there should now be a folder named Anaconda3, which contains the Anaconda Prompt). Use the command <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">path\to\folder\with\OrganoidTracker</span></code> (replace path with real path) to navigate to the directory you installed OrganoidTracker in. If you are not used to the command line, you can also type “<code class="docutils literal notranslate"><span class="pre">cd</span></code> <code class="docutils literal notranslate"> </code>” (a <code class="docutils literal notranslate"><span class="pre">c</span></code>, a <code class="docutils literal notranslate"><span class="pre">d</span></code> and a space) and then drag in the OrganoidTracker folder and drop it in the command prompt, and then press Enter. See this illustration:</p>
 <p><img alt="Dragging and dropping a folder" src="_images/change_directory.png" /></p>
 <p>Once you’re in the right directory, run the following two commands.</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda create --name organoid_tracker --file spec-file-win64.txt
-activate organoid_tracker
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda env create -f environment-exact-win64.yml
+conda activate organoid_tracker
 </pre></div>
 </div>
 <p>The last command is necessary because Tensorflow 2 is not available in Anaconda. If you need to remove (the previous version of) OrganoidTracker, execute this command:</p>
