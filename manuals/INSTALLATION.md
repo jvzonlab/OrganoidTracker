@@ -21,8 +21,8 @@ Next, to run the scripts you first need to install the dependencies. Open the An
 
 Once you're in the right directory, run the following two commands.
 
-    conda create --name organoid_tracker --file spec-file-win64.txt
-    activate organoid_tracker
+    conda env create -f environment-exact-win64.yml
+    conda activate organoid_tracker
 
 The last command is necessary because Tensorflow 2 is not available in Anaconda. If you need to remove (the previous version of) OrganoidTracker, execute this command:
 
