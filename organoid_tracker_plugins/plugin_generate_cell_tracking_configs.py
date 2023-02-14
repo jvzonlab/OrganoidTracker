@@ -43,6 +43,7 @@ def _create_run_script(output_folder: str, script_name: str):
         writer.write(f"""@rem Automatically generated script for running {script_name}
 @echo off
 @CALL "{conda_installation_folder}\\condabin\\conda.bat" activate {os.getenv('CONDA_DEFAULT_ENV')}
+set TF_FORCE_GPU_ALLOW_GROWTH=true
 "{sys.executable}" "{script_file}"
 pause""")
 
