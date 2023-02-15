@@ -1,0 +1,7 @@
+organoid\_tracker.plugin.registry module
+========================================
+
+.. automodule:: organoid_tracker.plugin.registry
+   :members:
+   :undoc-members:
+   :show-inheritance:

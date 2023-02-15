@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>organoid_tracker.linking_analysis.lineage_error_finder module &mdash; OrganoidTracker 2.0 documentation</title>
+  <title>organoid_tracker.plugin.registry module &mdash; OrganoidTracker 2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -19,8 +19,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="organoid_tracker.linking_analysis.lineage_fate_finder module" href="organoid_tracker.linking_analysis.lineage_fate_finder.html" />
-    <link rel="prev" title="organoid_tracker.linking_analysis.lineage_end_finder module" href="organoid_tracker.linking_analysis.lineage_end_finder.html" /> 
+    <link rel="next" title="organoid_tracker.position_analysis package" href="organoid_tracker.position_analysis.html" />
+    <link rel="prev" title="organoid_tracker.plugin.plugin_manager module" href="organoid_tracker.plugin.plugin_manager.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -75,12 +75,12 @@
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.imaging.html">organoid_tracker.imaging package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.link_detection_cnn.html">organoid_tracker.link_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking.html">organoid_tracker.linking package</a></li>
-<li class="toctree-l3 current"><a class="reference internal" href="organoid_tracker.linking_analysis.html">organoid_tracker.linking_analysis package</a><ul class="current">
-<li class="toctree-l4 current"><a class="reference internal" href="organoid_tracker.linking_analysis.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.linking_analysis.html#module-organoid_tracker.linking_analysis">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking_analysis.html">organoid_tracker.linking_analysis package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="organoid_tracker.plugin.html">organoid_tracker.plugin package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="organoid_tracker.plugin.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.plugin.html#module-organoid_tracker.plugin">Module contents</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.plugin.html">organoid_tracker.plugin package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_analysis.html">organoid_tracker.position_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection.html">organoid_tracker.position_detection package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html">organoid_tracker.position_detection_cnn package</a></li>
@@ -109,10 +109,10 @@
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="organoid_tracker.html">organoid_tracker package</a> &raquo;</li>
-          <li><a href="organoid_tracker.linking_analysis.html">organoid_tracker.linking_analysis package</a> &raquo;</li>
-      <li>organoid_tracker.linking_analysis.lineage_error_finder module</li>
+          <li><a href="organoid_tracker.plugin.html">organoid_tracker.plugin package</a> &raquo;</li>
+      <li>organoid_tracker.plugin.registry module</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/organoid_tracker.linking_analysis.lineage_error_finder.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/organoid_tracker.plugin.registry.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -120,16 +120,44 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="organoid-tracker-linking-analysis-lineage-error-finder-module">
-<h1>organoid_tracker.linking_analysis.lineage_error_finder module<a class="headerlink" href="#organoid-tracker-linking-analysis-lineage-error-finder-module" title="Permalink to this heading"></a></h1>
+  <section id="module-organoid_tracker.plugin.registry">
+<span id="organoid-tracker-plugin-registry-module"></span><h1>organoid_tracker.plugin.registry module<a class="headerlink" href="#module-organoid_tracker.plugin.registry" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.plugin.registry.Registry">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.plugin.registry.</span></span><span class="sig-name descname"><span class="pre">Registry</span></span><a class="headerlink" href="#organoid_tracker.plugin.registry.Registry" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A plugin-controlled registry for various plugin-provided things, like cell types.</p>
+<p>For example, to add something to the marker list, plugins can define a get_markers() method.
+See the plugin documentation for more information</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.plugin.registry.Registry.clear_all">
+<span class="sig-name descname"><span class="pre">clear_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.plugin.registry.Registry.clear_all" title="Permalink to this definition"></a></dt>
+<dd><p>Clears the registry.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.plugin.registry.Registry.get_marker_by_save_name">
+<span class="sig-name descname"><span class="pre">get_marker_by_save_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.marker.html#organoid_tracker.core.marker.Marker" title="organoid_tracker.core.marker.Marker"><span class="pre">Marker</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.plugin.registry.Registry.get_marker_by_save_name" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the marker using the given save name. Returns None if no marker exists for that save name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.plugin.registry.Registry.get_registered_markers">
+<span class="sig-name descname"><span class="pre">get_registered_markers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.11)"><span class="pre">Type</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.11)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.marker.html#organoid_tracker.core.marker.Marker" title="organoid_tracker.core.marker.Marker"><span class="pre">Marker</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.plugin.registry.Registry.get_registered_markers" title="Permalink to this definition"></a></dt>
+<dd><p>Gets all registered markers for the given type. For example, you can ask all registered cell types using
+get_registered_markers(Position).</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="organoid_tracker.linking_analysis.lineage_end_finder.html" class="btn btn-neutral float-left" title="organoid_tracker.linking_analysis.lineage_end_finder module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="organoid_tracker.linking_analysis.lineage_fate_finder.html" class="btn btn-neutral float-right" title="organoid_tracker.linking_analysis.lineage_fate_finder module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="organoid_tracker.plugin.plugin_manager.html" class="btn btn-neutral float-left" title="organoid_tracker.plugin.plugin_manager module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="organoid_tracker.position_analysis.html" class="btn btn-neutral float-right" title="organoid_tracker.position_analysis package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

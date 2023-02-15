@@ -9,6 +9,8 @@ Submodules
 
    organoid_tracker.plugin.instance
    organoid_tracker.plugin.plugin_loader
+   organoid_tracker.plugin.plugin_manager
+   organoid_tracker.plugin.registry
 
 Module contents
 ---------------

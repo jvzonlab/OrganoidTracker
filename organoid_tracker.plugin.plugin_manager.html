@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>organoid_tracker.plugin.instance module &mdash; OrganoidTracker 2.0 documentation</title>
+  <title>organoid_tracker.plugin.plugin_manager module &mdash; OrganoidTracker 2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -19,8 +19,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="organoid_tracker.plugin.plugin_loader module" href="organoid_tracker.plugin.plugin_loader.html" />
-    <link rel="prev" title="organoid_tracker.plugin package" href="organoid_tracker.plugin.html" /> 
+    <link rel="next" title="organoid_tracker.plugin.registry module" href="organoid_tracker.plugin.registry.html" />
+    <link rel="prev" title="organoid_tracker.plugin.plugin_loader module" href="organoid_tracker.plugin.plugin_loader.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -110,9 +110,9 @@
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="organoid_tracker.html">organoid_tracker package</a> &raquo;</li>
           <li><a href="organoid_tracker.plugin.html">organoid_tracker.plugin package</a> &raquo;</li>
-      <li>organoid_tracker.plugin.instance module</li>
+      <li>organoid_tracker.plugin.plugin_manager module</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/organoid_tracker.plugin.instance.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/organoid_tracker.plugin.plugin_manager.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -120,49 +120,58 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-organoid_tracker.plugin.instance">
-<span id="organoid-tracker-plugin-instance-module"></span><h1>organoid_tracker.plugin.instance module<a class="headerlink" href="#module-organoid_tracker.plugin.instance" title="Permalink to this heading"></a></h1>
-<p>Module containing plugin-related code.</p>
+  <section id="module-organoid_tracker.plugin.plugin_manager">
+<span id="organoid-tracker-plugin-plugin-manager-module"></span><h1>organoid_tracker.plugin.plugin_manager module<a class="headerlink" href="#module-organoid_tracker.plugin.plugin_manager" title="Permalink to this heading"></a></h1>
 <dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.plugin.instance.Plugin">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.plugin.instance.</span></span><span class="sig-name descname"><span class="pre">Plugin</span></span><a class="headerlink" href="#organoid_tracker.plugin.instance.Plugin" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="organoid_tracker.plugin.plugin_manager.PluginManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.plugin.plugin_manager.</span></span><span class="sig-name descname"><span class="pre">PluginManager</span></span><a class="headerlink" href="#organoid_tracker.plugin.plugin_manager.PluginManager" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Represents a plugin. Plugins can add new data visualizers or provide support for more file types.
-Instead of writing a plugin, you can also write a script that uses the classes in core and imaging.</p>
+<p>Holds all plugins in memory, as well as the folders where they were loaded from.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.plugin.instance.Plugin.get_commands">
-<span class="sig-name descname"><span class="pre">get_commands</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.11)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.plugin.instance.Plugin.get_commands" title="Permalink to this definition"></a></dt>
-<dd><p>Used to add new command-line tools. Returns a dict: {“COMMAND NAME”: callable(args)}.
-Those are called using <cite>python organoid_tracker.py [COMMAND NAME] [ARGS]</cite>.
-Command names are case sensitive and should be lower case.
-The command callable takes a list of args, and returns a status code: 0 for success,
-anything else is an error code. This error code is passed to the operating system.</p>
+<dt class="sig sig-object py" id="organoid_tracker.plugin.plugin_manager.PluginManager.get_plugin_count">
+<span class="sig-name descname"><span class="pre">get_plugin_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#organoid_tracker.plugin.plugin_manager.PluginManager.get_plugin_count" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the number of loaded plugins.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.plugin.instance.Plugin.get_markers">
-<span class="sig-name descname"><span class="pre">get_markers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.marker.html#organoid_tracker.core.marker.Marker" title="organoid_tracker.core.marker.Marker"><span class="pre">Marker</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.plugin.instance.Plugin.get_markers" title="Permalink to this definition"></a></dt>
-<dd><p>Called once to run initialization code.</p>
+<dt class="sig sig-object py" id="organoid_tracker.plugin.plugin_manager.PluginManager.get_plugins">
+<span class="sig-name descname"><span class="pre">get_plugins</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.11)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.plugin.instance.html#organoid_tracker.plugin.instance.Plugin" title="organoid_tracker.plugin.instance.Plugin"><span class="pre">Plugin</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.plugin.plugin_manager.PluginManager.get_plugins" title="Permalink to this definition"></a></dt>
+<dd><p>Iterates over all loaded plugins.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.plugin.instance.Plugin.get_menu_items">
-<span class="sig-name descname"><span class="pre">get_menu_items</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Window</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.11)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.plugin.instance.Plugin.get_menu_items" title="Permalink to this definition"></a></dt>
-<dd><p>Used to add menu items that must always be visible. Example:</p>
-<blockquote>
-<div><dl class="simple">
-<dt>return {</dt><dd><p>“File//Import-Import my format… [Ctrl+W]”: lambda: my_code_here(),
-“View//Analysis-Useful analysis screen here…”: lambda: my_other_code_here()</p>
-</dd>
-</dl>
-<p>}</p>
-</div></blockquote>
+<dt class="sig sig-object py" id="organoid_tracker.plugin.plugin_manager.PluginManager.get_registry">
+<span class="sig-name descname"><span class="pre">get_registry</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.plugin.registry.html#organoid_tracker.plugin.registry.Registry" title="organoid_tracker.plugin.registry.Registry"><span class="pre">Registry</span></a></span></span><a class="headerlink" href="#organoid_tracker.plugin.plugin_manager.PluginManager.get_registry" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.plugin.plugin_manager.PluginManager.get_user_folders">
+<span class="sig-name descname"><span class="pre">get_user_folders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.11)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.plugin.plugin_manager.PluginManager.get_user_folders" title="Permalink to this definition"></a></dt>
+<dd><p>Iterates over all plugin folders.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.plugin.instance.Plugin.reload">
-<span class="sig-name descname"><span class="pre">reload</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.plugin.instance.Plugin.reload" title="Permalink to this definition"></a></dt>
-<dd><p>Reloads this plugin from disk.</p>
+<dt class="sig sig-object py" id="organoid_tracker.plugin.plugin_manager.PluginManager.load_folder">
+<span class="sig-name descname"><span class="pre">load_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">built_in_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.plugin.plugin_manager.PluginManager.load_folder" title="Permalink to this definition"></a></dt>
+<dd><p>Loads a new folder. New plugins are loaded immediately.</p>
+<p>The folder argument is quite permissive. If it’s empty or already in use, this method does nothing.
+Any environment variables in it, like “%appdata%”, are expanded automatically.
+If the folder does not exist yet, it will be created.</p>
+<p>If built_in_folder is True, then the folder will not appear in get_user_folders().</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.plugin.plugin_manager.PluginManager.reload_plugins">
+<span class="sig-name descname"><span class="pre">reload_plugins</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.plugin.plugin_manager.PluginManager.reload_plugins" title="Permalink to this definition"></a></dt>
+<dd><p>Reloads all plugins. Any new plugins in the folders will be picked up, any removed plugins will be
+unloaded.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.plugin.plugin_manager.PluginManager.unregister_folder">
+<span class="sig-name descname"><span class="pre">unregister_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.plugin.plugin_manager.PluginManager.unregister_folder" title="Permalink to this definition"></a></dt>
+<dd><p>Removes the folder from the list of folders. Will have no effect on loaded plugins until you reload the
+plugins.</p>
 </dd></dl>
 
 </dd></dl>
@@ -173,8 +182,8 @@ anything else is an error code. This error code is passed to the operating syste
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="organoid_tracker.plugin.html" class="btn btn-neutral float-left" title="organoid_tracker.plugin package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="organoid_tracker.plugin.plugin_loader.html" class="btn btn-neutral float-right" title="organoid_tracker.plugin.plugin_loader module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="organoid_tracker.plugin.plugin_loader.html" class="btn btn-neutral float-left" title="organoid_tracker.plugin.plugin_loader module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="organoid_tracker.plugin.registry.html" class="btn btn-neutral float-right" title="organoid_tracker.plugin.registry module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

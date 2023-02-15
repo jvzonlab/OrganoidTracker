@@ -127,6 +127,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="organoid_tracker.plugin.instance.html">organoid_tracker.plugin.instance module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="organoid_tracker.plugin.plugin_loader.html">organoid_tracker.plugin.plugin_loader module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.plugin.plugin_manager.html">organoid_tracker.plugin.plugin_manager module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.plugin.registry.html">organoid_tracker.plugin.registry module</a></li>
 </ul>
 </div>
 </section>
@@ -134,8 +136,8 @@
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-organoid_tracker.plugin" title="Permalink to this heading"></a></h2>
 <p>Internal OrganoidTracker code to load plugins. Example usage:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">organoid_tracker.plugin</span> <span class="kn">import</span> <span class="n">plugin_loader</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">plugins</span> <span class="o">=</span> <span class="n">plugin_loader</span><span class="o">.</span><span class="n">load_plugins</span><span class="p">(</span><span class="s2">&quot;path/to/folder&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">plugins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_commands</span><span class="p">())</span>  <span class="c1"># Prints the commands of the first plugin in the folder</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plugin</span> <span class="o">=</span> <span class="n">plugin_loader</span><span class="o">.</span><span class="n">load_plugin</span><span class="p">(</span><span class="s2">&quot;path/to/folder/plugin_file.py&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">plugin</span><span class="o">.</span><span class="n">get_commands</span><span class="p">())</span>  <span class="c1"># Prints the commands of the first plugin in the folder</span>
 </pre></div>
 </div>
 </section>

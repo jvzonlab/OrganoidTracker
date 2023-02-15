@@ -172,9 +172,8 @@ been selected, this returns all tabs.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.gui.gui_experiment.GuiExperiment.get_marker_by_save_name">
-<span class="sig-name descname"><span class="pre">get_marker_by_save_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.marker.html#organoid_tracker.core.marker.Marker" title="organoid_tracker.core.marker.Marker"><span class="pre">Marker</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.gui.gui_experiment.GuiExperiment.get_marker_by_save_name" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the marker using the given save name. Returns None if no marker exists for that save name.</p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">get_marker_by_save_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.gui_experiment.GuiExperiment.get_marker_by_save_name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.gui.gui_experiment.GuiExperiment.get_open_tab">
@@ -184,10 +183,8 @@ been selected, this returns all tabs.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.gui.gui_experiment.GuiExperiment.get_registered_markers">
-<span class="sig-name descname"><span class="pre">get_registered_markers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.11)"><span class="pre">Type</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.11)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.marker.html#organoid_tracker.core.marker.Marker" title="organoid_tracker.core.marker.Marker"><span class="pre">Marker</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.gui.gui_experiment.GuiExperiment.get_registered_markers" title="Permalink to this definition"></a></dt>
-<dd><p>Gets all registered markers for the given type. For example, you can ask all registered cell types using
-get_registered_markers(Position).</p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">get_registered_markers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.gui_experiment.GuiExperiment.get_registered_markers" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.gui.gui_experiment.GuiExperiment.get_selectable_experiments">
@@ -232,12 +229,6 @@ get_registered_markers(Position).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.gui.gui_experiment.GuiExperiment.register_marker">
-<span class="sig-name descname"><span class="pre">register_marker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">marker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.marker.html#organoid_tracker.core.marker.Marker" title="organoid_tracker.core.marker.Marker"><span class="pre">Marker</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.gui_experiment.GuiExperiment.register_marker" title="Permalink to this definition"></a></dt>
-<dd><p>Registers a new position type (overwriting any existing one with the same save name).</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.gui.gui_experiment.GuiExperiment.remove_experiment">
 <span class="sig-name descname"><span class="pre">remove_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.gui_experiment.GuiExperiment.remove_experiment" title="Permalink to this definition"></a></dt>
 <dd><p>Removes the given experiment from the list of loaded experiments. If no experiments are remaining, an empty
@@ -266,12 +257,6 @@ experiment.</p>
 <dt class="sig sig-object py" id="organoid_tracker.gui.gui_experiment.GuiExperiment.unregister_event_handlers">
 <span class="sig-name descname"><span class="pre">unregister_event_handlers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_to_remove</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.gui_experiment.GuiExperiment.unregister_event_handlers" title="Permalink to this definition"></a></dt>
 <dd><p>Unregisters all handles registered using register_event_handler</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.gui.gui_experiment.GuiExperiment.unregister_marker">
-<span class="sig-name descname"><span class="pre">unregister_marker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">marker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.marker.html#organoid_tracker.core.marker.Marker" title="organoid_tracker.core.marker.Marker"><span class="pre">Marker</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.gui_experiment.GuiExperiment.unregister_marker" title="Permalink to this definition"></a></dt>
-<dd><p>Unregisters a marker, so that it is no longer included in get_registered_markers .</p>
 </dd></dl>
 
 </dd></dl>
