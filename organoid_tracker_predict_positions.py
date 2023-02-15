@@ -94,7 +94,7 @@ for i in range(len(image_list)):
 corners = corners_split(max_image_shape, patch_shape)
 
 # due to memory constraints only ~10 images can be processed at a given time (depending on patch shape)
-set_size = 2
+set_size = 1
 
 # set relevant parameters
 if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
@@ -178,7 +178,7 @@ for image_set_index in range(image_set_count):
 
         # Comparison between image_max and im to find the coordinates of local maxima
         #im = erosion(im, np.ones((7,7,7)))
-        coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=0.01,  exclude_border=False) #, footprint=prediction_mask)
+        coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=im.max() / 10,  exclude_border=False) #, footprint=prediction_mask)
 
         for coordinate in coordinates:
             pos = Position(coordinate[2], coordinate[1], coordinate[0] / z_divisor - 1,

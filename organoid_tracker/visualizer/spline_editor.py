@@ -115,7 +115,7 @@ class SplineEditor(AbstractEditor):
         }
 
         # Add options for changing axis types
-        for position_type in self.get_window().get_gui_experiment().get_registered_markers(Spline):
+        for position_type in self.get_window().registry.get_registered_markers(Spline):
             # Create copy of position_type variable to avoid it changing in loop iteration
             action = lambda bound_position_type=position_type: self._mark_spline_as_type(bound_position_type)
 
@@ -175,7 +175,7 @@ class SplineEditor(AbstractEditor):
 
     def _get_axis_label(self, axis_id: int) -> str:
         marker_name = self._experiment.splines.get_marker_name(axis_id)
-        marker = self._window.get_gui_experiment().get_marker_by_save_name(marker_name)
+        marker = self._window.registry.get_marker_by_save_name(marker_name)
         if marker is None:
             return f"Axis {axis_id}"
         return f"Axis {axis_id}: {marker.display_name}"
@@ -250,7 +250,7 @@ class SplineEditor(AbstractEditor):
             return
 
         old_marker_name = self._experiment.splines.get_marker_name(self._selected_spline_id)
-        old_marker = self._window.get_gui_experiment().get_marker_by_save_name(old_marker_name)
+        old_marker = self._window.registry.get_marker_by_save_name(old_marker_name)
         self._perform_action(_SetMarkerAction(self._selected_spline_id, axis_marker, old_marker))
 
     def _set_reference_time_point(self):

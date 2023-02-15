@@ -63,7 +63,7 @@ def _export_positions_um_as_csv(window: Window, *, metadata: bool):
         return
     os.mkdir(folder)
     if metadata:
-        cell_types = list(window.get_gui_experiment().get_registered_markers(Position))
+        cell_types = list(window.registry.get_registered_markers(Position))
         window.get_scheduler().add_task(_AsyncExporter(experiment, cell_types, folder))
     else:
         _write_positions_to_csv(experiment, folder)

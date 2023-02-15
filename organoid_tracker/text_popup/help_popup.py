@@ -44,7 +44,7 @@ class HelpPopup(RichTextPopup):
         try:
             remove_start_index = markdown_str.index(":::{eval-rst}")
             markdown_str = markdown_str[0:remove_start_index]
-        except IndexError:
+        except ValueError:
             pass  # There's not metadata
 
         return markdown_str

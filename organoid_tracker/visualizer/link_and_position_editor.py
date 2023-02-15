@@ -343,7 +343,7 @@ class LinkAndPositionEditor(AbstractEditor):
         }
 
         # Add options for changing position types
-        for position_type in self.get_window().get_gui_experiment().get_registered_markers(Position):
+        for position_type in self.get_window().registry.get_registered_markers(Position):
             # Create copy of position_type variable to avoid it changing in loop iteration
             track_action = lambda bound_position_type = position_type: self._set_track_to_type(bound_position_type)
             options["Edit//Marker-Set type of track//Type-" + position_type.display_name] = track_action
