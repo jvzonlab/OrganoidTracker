@@ -7,11 +7,11 @@ Plugins (like the rest of OrganoidTracker) are programmed in Python, a "friendly
 In this tutorial, we're going to create a plugin that how many detected cells there are in each time point. No prior programming knowledge is necessary to read the code, but for writing your own code some knowledge of Python is necessary. If you haven't used Python before, it's best to follow a course or have a supervisor explaining things to you. Alternatively, there is the website [automatetheboringstuff.com](https://automatetheboringstuff.com/) with a good Python tutorial.
 
 ## First steps
-Let's get started. We will assume that you have opened the OrganoidTracker folder in PyCharm. Create a new Python file in the organoid_tracker_plugins folder:
+Let's get started. Open OrganoidTracker, go to the file menu and click the plugin folder, as seen in the image:
 
-![Screenshot](images/plugin_creation.png)
+![Opening the plugin folder](images%2Fplugin_creation.png)
 
-Give the file a name like `plugin_some_example.py`. It's important that the file name starts with `plugin_`, otherwise OrganoidTracker will not know that it is a plugin.
+For you, the path will of course be different. Once you click it, a File Explorer window will open. In this folder, create a new Python file. (You can do this from your favorite Python editor, like PyCharm.) Give the file a name like `plugin_some_example.py`. It's important that the file name starts with `plugin_`, otherwise OrganoidTracker will not know that it is a plugin.
 
 Next, fill the file you just created with the following contents: *(copy-paste it, and note that every missing space or colon (':') can make your plugin crash)*
 
@@ -100,22 +100,17 @@ Congratulations, you now know the basics of plugin writing!OrganoidTracker conta
 ## Advanced techniques
 
 ### Additional locations for storing plugins
-By default, OrganoidTracker loads all files starting with `plugin_` in the `organoid_tracker_plugins` folder. If you start do develop your own plugins, you may want to keep them in a separate folder. Here, we show how to instruct OrganoidTracker to load plugins from this seperate folder.
+In the same menu where you found the location of the plugins, there's an option to add another folder. It's just below the selected option:
 
-To add an additional plugin folder, create a file named `organoid_tracker.ini` in the folder from which you normally start OrganoidTracker. If you start OrganoidTracker from PyCharm, then you need to create this file in the root folder of the project (so in the same folder where the `organoid_tracker.py` file is located). Make sure that the file has the following contents:
+![plugin_creation.png](images%2Fplugin_creation.png)
 
-```ini
-[scripts]
-extra_plugin_directory = C:\path\to\your\plugin\folder
-```
-
-Change the path so that it points to your plugin folder. Once you (re)start OrganoidTracker, it will load plugins from the specified folder.
+This helps to keep plugins for different projects together in a folder.
 
 ### Multi-file plugins
 For larger plugins, placing all code in a single file becomes unwieldy. Instead, you can also put your code in multiple files placed in a single directory. The directory must have a name that starts with `plugin_`, for example `plugin_directory_example`. In that folder, you must place an `__init__.py` file. This file should contain the hooks described above, such as the `get_menu_items` function. So you get this directory structure:
 
 ```
-organoid_tracker_plugins/
+Plugin directory/
     plugin_some_example.py
     plugin_other_example.py
     plugin_directory_example/
