@@ -110,9 +110,9 @@
 </section>
 <section id="first-steps">
 <h2>First steps<a class="headerlink" href="#first-steps" title="Permalink to this heading"></a></h2>
-<p>Let’s get started. We will assume that you have opened the OrganoidTracker folder in PyCharm. Create a new Python file in the organoid_tracker_plugins folder:</p>
-<p><img alt="Screenshot" src="_images/plugin_creation.png" /></p>
-<p>Give the file a name like <code class="docutils literal notranslate"><span class="pre">plugin_some_example.py</span></code>. It’s important that the file name starts with <code class="docutils literal notranslate"><span class="pre">plugin_</span></code>, otherwise OrganoidTracker will not know that it is a plugin.</p>
+<p>Let’s get started. Open OrganoidTracker, go to the file menu and click the plugin folder, as seen in the image:</p>
+<p><img alt="Opening the plugin folder" src="images%2Fplugin_creation.png" /></p>
+<p>For you, the path will of course be different. Once you click it, a File Explorer window will open. In this folder, create a new Python file. (You can do this from your favorite Python editor, like PyCharm.) Give the file a name like <code class="docutils literal notranslate"><span class="pre">plugin_some_example.py</span></code>. It’s important that the file name starts with <code class="docutils literal notranslate"><span class="pre">plugin_</span></code>, otherwise OrganoidTracker will not know that it is a plugin.</p>
 <p>Next, fill the file you just created with the following contents: <em>(copy-paste it, and note that every missing space or colon (‘:’) can make your plugin crash)</em></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.gui</span> <span class="kn">import</span> <span class="n">dialog</span>
 
@@ -187,18 +187,14 @@
 <h2>Advanced techniques<a class="headerlink" href="#advanced-techniques" title="Permalink to this heading"></a></h2>
 <section id="additional-locations-for-storing-plugins">
 <h3>Additional locations for storing plugins<a class="headerlink" href="#additional-locations-for-storing-plugins" title="Permalink to this heading"></a></h3>
-<p>By default, OrganoidTracker loads all files starting with <code class="docutils literal notranslate"><span class="pre">plugin_</span></code> in the <code class="docutils literal notranslate"><span class="pre">organoid_tracker_plugins</span></code> folder. If you start do develop your own plugins, you may want to keep them in a separate folder. Here, we show how to instruct OrganoidTracker to load plugins from this seperate folder.</p>
-<p>To add an additional plugin folder, create a file named <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> in the folder from which you normally start OrganoidTracker. If you start OrganoidTracker from PyCharm, then you need to create this file in the root folder of the project (so in the same folder where the <code class="docutils literal notranslate"><span class="pre">organoid_tracker.py</span></code> file is located). Make sure that the file has the following contents:</p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[scripts]</span>
-<span class="na">extra_plugin_directory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">C:\path\to\your\plugin\folder</span>
-</pre></div>
-</div>
-<p>Change the path so that it points to your plugin folder. Once you (re)start OrganoidTracker, it will load plugins from the specified folder.</p>
+<p>In the same menu where you found the location of the plugins, there’s an option to add another folder. It’s just below the selected option:</p>
+<p><img alt="plugin_creation.png" src="images%2Fplugin_creation.png" /></p>
+<p>This helps to keep plugins for different projects together in a folder.</p>
 </section>
 <section id="multi-file-plugins">
 <h3>Multi-file plugins<a class="headerlink" href="#multi-file-plugins" title="Permalink to this heading"></a></h3>
 <p>For larger plugins, placing all code in a single file becomes unwieldy. Instead, you can also put your code in multiple files placed in a single directory. The directory must have a name that starts with <code class="docutils literal notranslate"><span class="pre">plugin_</span></code>, for example <code class="docutils literal notranslate"><span class="pre">plugin_directory_example</span></code>. In that folder, you must place an <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> file. This file should contain the hooks described above, such as the <code class="docutils literal notranslate"><span class="pre">get_menu_items</span></code> function. So you get this directory structure:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">organoid_tracker_plugins</span><span class="o">/</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Plugin</span> <span class="n">directory</span><span class="o">/</span>
     <span class="n">plugin_some_example</span><span class="o">.</span><span class="n">py</span>
     <span class="n">plugin_other_example</span><span class="o">.</span><span class="n">py</span>
     <span class="n">plugin_directory_example</span><span class="o">/</span>
