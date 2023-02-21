@@ -322,3 +322,10 @@ class Connections:
         if time_point.time_point_number() not in self._by_time_point:
             return networkx.Graph()  # Return an empty graph
         return self._by_time_point[time_point.time_point_number()].to_networkx_graph()
+
+    def copy(self) -> "Connections":
+        """Returns a copy of this object. Changes made to the copy will not affect this object."""
+        copy = Connections()
+        for time_point, connections in self._by_time_point.items():
+            copy._by_time_point[time_point] = connections.copy()
+        return copy

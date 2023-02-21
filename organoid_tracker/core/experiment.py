@@ -357,8 +357,9 @@ class Experiment:
         self.connections.add_connections(other.connections)
         self.global_data.merge_data(other.global_data)
 
-    def copy_selected(self, images: bool = False, positions: bool = False, position_data: bool = False,
-                      links: bool = False, link_data: bool = False, global_data: bool = False) -> "Experiment":
+    def copy_selected(self, *, images: bool = False, positions: bool = False, position_data: bool = False,
+                      links: bool = False, link_data: bool = False, global_data: bool = False,
+                      connections: bool = False) -> "Experiment":
         """Copies the selected attributes over to a new experiment. Note that position_data and links can only be copied
         if the positions are copied."""
         copy = Experiment()
@@ -374,4 +375,6 @@ class Experiment:
                     copy.link_data = self._link_data.copy()
         if global_data:
             copy.global_data = self._global_data.copy()
+        if connections:
+            copy.connections = self._connections.copy()
         return copy
