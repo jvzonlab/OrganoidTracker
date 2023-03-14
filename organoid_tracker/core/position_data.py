@@ -1,4 +1,4 @@
-from typing import Dict, Optional, ItemsView, Iterable, Tuple, Union
+from typing import Dict, Optional, ItemsView, Iterable, Tuple, Union, Set, Type
 
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.shape import ParticleShape
@@ -115,3 +115,27 @@ class PositionData:
         """Deletes the data with the given key, for all positions in the experiment."""
         if data_name in self._position_data:
             del self._position_data[data_name]
+
+    def get_data_names_and_types(self) -> Dict[str, Type]:
+        """Gets all data names that are currently in use, along with their type. The type will be str, float, bool,
+        list, ParticleShape or object. (The type int is never returned, for ints float is returned instead. This is done
+        so that users don't have to worry about storing their numbers with the correct type.)"""
+        return_dict = dict()
+        for key, values_by_position in self._position_data.items():
+            if len(values_by_position) == 0:
+                continue
+            example_value = next(iter(values_by_position.values()))
+            if isinstance(example_value, int) or isinstance(example_value, float):
+                return_dict[key] = float
+            elif isinstance(example_value, str):
+                return_dict[key] = str
+            elif isinstance(example_value, bool):
+                return_dict[key] = bool
+            elif isinstance(example_value, list):
+                return_dict[key] = list
+            elif isinstance(example_value, ParticleShape):
+                return_dict[key] = ParticleShape
+            else:
+                return_dict[key] = object  # Don't know the type
+
+        return return_dict

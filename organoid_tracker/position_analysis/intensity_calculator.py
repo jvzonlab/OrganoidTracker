@@ -144,11 +144,6 @@ def set_raw_intensities(experiment: Experiment, raw_intensities: Dict[Position, 
     experiment.position_data.add_positions_data(intensity_key, raw_intensities)
     experiment.position_data.add_positions_data(intensity_key + "_volume", volumes)
 
-    # Add to intensity keys
-    intensity_keys = get_intensity_keys(experiment)
-    if intensity_key not in intensity_keys:
-        intensity_keys.append(intensity_key)
-        experiment.global_data.set_data("intensity_keys", get_intensity_keys(experiment) + [intensity_key])
 
 def remove_intensities(experiment: Experiment, *, intensity_key: str = DEFAULT_INTENSITY_KEY):
     """Deletes the intensities with the given key."""
@@ -156,12 +151,6 @@ def remove_intensities(experiment: Experiment, *, intensity_key: str = DEFAULT_I
     # Remove values
     experiment.position_data.delete_data_with_name(intensity_key)
     experiment.position_data.delete_data_with_name(intensity_key + "_volume")
-
-    # Remove from key index
-    intensity_keys = get_intensity_keys(experiment)
-    if intensity_key in intensity_keys:
-        intensity_keys.remove(intensity_key)
-        experiment.global_data.set_data("intensity_keys", intensity_keys)
 
     # Remove normalization
     remove_intensity_normalization(experiment, intensity_key=intensity_key)
@@ -173,13 +162,17 @@ def get_intensity_keys(experiment: Experiment) -> List[str]:
     In the past, this list did not exist. For backwards compatibility, we check whether there are any
     intensities saved under the default key "intensity", and if yes, we automatically add that to this list.
     """
-    intensity_keys = experiment.global_data.get_data("intensity_keys")
-    if intensity_keys is None or not isinstance(intensity_keys, list):
-        intensity_keys = list()
-    if DEFAULT_INTENSITY_KEY not in intensity_keys and experiment.position_data.has_position_data_with_name(DEFAULT_INTENSITY_KEY):
-        # Previously, we didn't store which intensities were present
-        intensity_keys.append(DEFAULT_INTENSITY_KEY)
-    return intensity_keys
+    return_list = list()
+    names_and_types = experiment.position_data.get_data_names_and_types()
+    for data_name, data_type in names_and_types.items():
+        if data_type != float:
+            continue  # Skip non-numeric metadata
+
+        if data_name.endswith("_volume") and data_name[:-len("_volume")] in names_and_types:
+            continue  # Skip volume of an intensity
+
+        return_list.append(data_name)
+    return return_list
 
 
 def get_raw_intensity(position_data: PositionData, position: Position, *, intensity_key: str = DEFAULT_INTENSITY_KEY
