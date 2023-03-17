@@ -49,9 +49,13 @@ def create_image(image: ndarray, *, background_rgba: Tuple[int, int, int, int] =
         if color_image_pil is None:
             color_image_pil = slice_buffer_pil
         else:
-            color_image_pil = Image.alpha_composite(color_image_pil, slice_buffer_pil)
+            result = Image.alpha_composite(color_image_pil, slice_buffer_pil)
+            color_image_pil.close()
+            slice_buffer_pil.close()
+            color_image_pil = result
 
     color_image = numpy.asarray(color_image_pil, dtype=numpy.float32)
+    color_image_pil.close()
     color_image /= 255  # Scale to 0-1
     return color_image
 
