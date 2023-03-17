@@ -97,7 +97,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             def compute(self):
                 from organoid_tracker.imaging import depth_colored_image_creator
                 image_movie = depth_colored_image_creator.create_movie(images_copy, channel)
-                tifffile.imsave(file, image_movie, compress=6)
+                tifffile.imwrite(file, image_movie, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
                 return file
 
             def on_finished(self, result: Any):
