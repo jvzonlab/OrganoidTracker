@@ -54,7 +54,6 @@ class PluginManager:
         # Second, load any new plugins from the registered folders
         for folder in self._folders:
             self._load_new_plugins(folder)
-        print(self._plugins)
 
     def _load_new_plugins(self, folder: str):
         """Loads any plugin in the given folder that wasn't loaded already."""

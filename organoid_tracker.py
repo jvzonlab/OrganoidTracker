@@ -22,6 +22,8 @@ plugins.load_folder(plugin_directory, built_in_folder=True)
 config = ConfigFile("scripts")
 for extra_plugin_directory in config.get_or_default("extra_plugin_directory", plugin_manager.STANDARD_USER_PLUGIN_FOLDER).split(os.path.pathsep):
     plugins.load_folder(extra_plugin_directory)
+if config.made_value_changes:
+    config.save()
 
 # Command handling
 if len(sys.argv) > 1:
