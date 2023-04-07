@@ -105,9 +105,9 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links,
 
         # check if all the scores are there!
         if disappearance_penalty is None:
-            print('alarm')
+            disappearance_penalty = 0
         if division_penalty is None:
-            print('missing')
+            division_penalty = 0
 
         if division_penalty < division_penalty_cut_off:
             map = {
