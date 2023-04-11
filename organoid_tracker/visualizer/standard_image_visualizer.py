@@ -36,14 +36,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
                 link_data = dict(self._experiment.link_data.find_all_data_of_link(position, previous_position)) \
                     if previous_position is not None else dict()
 
-                scores = list(self._experiment.scores.of_mother(position))
-                scores.sort(key=lambda scored_family: scored_family.score.total(), reverse=True)
-                score_str = ""
-                for score in scores:
-                    score_str += f"\nDivision score: {score.score.total()}"
-
-                self.update_status(f"Clicked on {position}.\n  Data: {data}\n  Link data (to previous): {link_data}"
-                                   f" {score_str}")
+                self.update_status(f"Clicked on {position}.\n  Data: {data}\n  Link data (to previous): {link_data}")
         else:
             super()._on_mouse_click(event)
 

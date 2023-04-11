@@ -5,19 +5,16 @@ Targets. ECCV 2016 Proceedings.
 
 """
 
+from typing import Dict, List, Tuple
+
 import dpct
 import numpy as np
-import math
-from typing import Dict, List, Iterable, Tuple
 
 from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.links import Links
-from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position_data import PositionData
-from organoid_tracker.core.resolution import ImageResolution
-from organoid_tracker.core.score import ScoreCollection, Score, ScoredFamily
-from organoid_tracker.linking_analysis import linking_markers
 
 
 class _PositionToId:

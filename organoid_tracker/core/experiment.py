@@ -14,7 +14,6 @@ from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.spline import SplineCollection
 from organoid_tracker.core.resolution import ImageResolution
-from organoid_tracker.core.score import ScoreCollection
 from organoid_tracker.core.warning_limits import WarningLimits
 
 
@@ -39,7 +38,6 @@ class Experiment:
     # Note: none of the fields may be None after __init__ is called
     _positions: PositionCollection  # Used to mark cell positions
     _beacons: BeaconCollection  # Used to mark some abstract position that the cells move to or move around.
-    scores: ScoreCollection  # Used to assign scores to putative mother cells
     _links: Links  # Used to link cells together accross multiple time points
     _position_data: PositionData  # Used for metadata of cells
     _link_data: LinkData  # Used for metadata of links
@@ -57,7 +55,6 @@ class Experiment:
         self._positions = PositionCollection()
         self._beacons = BeaconCollection()
         self._position_data = PositionData()
-        self.scores = ScoreCollection()
         self.splines = SplineCollection()
         self._links = Links()
         self._link_data = LinkData()

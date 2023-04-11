@@ -4,8 +4,6 @@ from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
-from organoid_tracker.core.score import Score, ScoreCollection, Family
-from organoid_tracker.linking import cell_division_finder
 from organoid_tracker.linking_analysis import linking_markers, particle_age_finder
 from organoid_tracker.linking_analysis.errors import Error
 
@@ -105,18 +103,6 @@ def _get_volumes(position: Position, volume_lookup: PositionData,
     if len(volumes) < 2:
         return None  # Too few data points for an average
     return sum(volumes) / len(volumes)
-
-
-def _get_highest_mother_score(scores: ScoreCollection, position: Position) -> Optional[Score]:
-    highest_score = None
-    highest_score_num = -999
-    for scored_family in scores.of_time_point(position.time_point()):
-        score = scored_family.score
-        score_num = score.total()
-        if score_num > highest_score_num:
-            highest_score = score
-            highest_score_num = score_num
-    return highest_score
 
 
 def find_errors_in_positions_links_and_all_dividing_cells(experiment: Experiment, *iterable: Position):

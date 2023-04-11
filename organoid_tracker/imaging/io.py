@@ -23,7 +23,6 @@ from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.spline import SplineCollection, Spline
 from organoid_tracker.core.resolution import ImageResolution
-from organoid_tracker.core.score import ScoredFamily, Score, Family
 from organoid_tracker.core.warning_limits import WarningLimits
 from organoid_tracker.image_loading.builtin_image_filters import ThresholdFilter, GaussianBlurFilter, \
     MultiplyPixelsFilter, InterpolatedMinMaxFilter, IntensityPoint
@@ -128,9 +127,6 @@ def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point:
 
         if "connections" in data:
             _parse_connections_format(experiment, data["connections"], min_time_point, max_time_point)
-
-        if "family_scores" in data:
-            experiment.scores.add_scored_families(data["family_scores"])
 
         if "warning_limits" in data:
             experiment.warning_limits = WarningLimits(**data["warning_limits"])
@@ -323,17 +319,6 @@ class _MyEncoder(JSONEncoder):
             if o.time_point_number() is None:
                 return {"x": o.x, "y": o.y, "z": o.z}
             return {"x": o.x, "y": o.y, "z": o.z, "_time_point_number": o.time_point_number()}
-        if isinstance(o, Score):
-            return o.__dict__
-
-        if isinstance(o, ScoredFamily):
-            daughters = list(o.family.daughters)
-            return {
-                "scores": o.score.dict(),
-                "mother": o.family.mother,
-                "daughter1": daughters[0],
-                "daughter2": daughters[1]
-            }
 
         if isinstance(o, numpy.int32):
             return numpy.asscalar(o)
@@ -348,13 +333,6 @@ def _my_decoder(json_object):
                             time_point_number=json_object['_time_point_number'])
         else:
             return Position(json_object['x'], json_object['y'], json_object['z'])
-    if 'scores' in json_object and 'mother' in json_object and 'daughter1' in json_object:
-        mother = json_object["mother"]
-        daughter1 = json_object["daughter1"]
-        daughter2 = json_object["daughter2"]
-        family = Family(mother, daughter1, daughter2)
-        score = Score(**json_object["scores"])
-        return ScoredFamily(family, score)
     return json_object
 
 
@@ -547,11 +525,6 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
     if experiment.links.has_links() or experiment.position_data.has_position_data():
         save_data["links"] = _links_to_d3_data(experiment.links, experiment.positions, experiment.position_data,
                                                experiment.link_data)
-
-    # Save scores of families
-    scored_families = list(experiment.scores.all_scored_families())
-    if len(scored_families) > 0:
-        save_data["family_scores"] = scored_families
 
     # Save data axes
     if experiment.splines.has_splines():
