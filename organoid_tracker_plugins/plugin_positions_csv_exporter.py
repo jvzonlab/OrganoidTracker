@@ -1,6 +1,9 @@
 import json
 import os
+from enum import Enum, auto
 from typing import Dict, Any, List, Optional
+
+import numpy
 
 from organoid_tracker.core import UserError
 from organoid_tracker.core.experiment import Experiment
@@ -10,9 +13,10 @@ from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.resolution import ImageResolution
-from organoid_tracker.gui import dialog
+from organoid_tracker.gui import dialog, option_choose_dialog
 from organoid_tracker.gui.threading import Task
 from organoid_tracker.gui.window import Window
+from organoid_tracker.linking_analysis.cell_nearby_death_counter import NearbyDeaths
 from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking_analysis import lineage_markers
 from organoid_tracker.linking_analysis.cell_fate_finder import CellFateType
@@ -27,6 +31,35 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
         "File//Export-Export positions//CSV, as μm coordinates with metadata...":
             lambda: _export_positions_um_as_csv(window, metadata=True),
     }
+
+
+class _BuiltInDataNames(Enum):
+    lineage_id = auto()
+    ancestor_track_id = auto()
+    track_id = auto()
+    cell_type_id = auto()
+    density_mm1 = auto()
+    times_divided = auto()
+    times_neighbor_died = auto()
+    cell_compartment_id = auto()
+    hours_until_division = auto()
+    hours_until_dead = auto()
+    hours_since_division = auto()
+
+def _get_data_names(window: Window) -> List[str]:
+    answers = set()
+
+    # Add metadata we can calculate on the fly
+    for built_in_name in _BuiltInDataNames:
+        answers.add(built_in_name.name)
+
+    # Find metdata in position_data that we can store in CSV files
+    for experiment in window.get_active_experiments():
+        for data_name, data_type in experiment.position_data.get_data_names_and_types().items():
+            if data_type in {float, bool, int, str}:
+                answers.add(data_name)
+
+    return list(answers)
 
 
 def _export_positions_px_as_csv(window: Window):
@@ -54,22 +87,32 @@ def _export_positions_px_as_csv(window: Window):
 
 
 def _export_positions_um_as_csv(window: Window, *, metadata: bool):
-    experiment = window.get_experiment()
-    if not experiment.positions.has_positions():
-        raise UserError("No positions are found", "No annotated positions are found. Cannot export anything.")
+    experiments = list(window.get_active_experiments())
+    for experiment in experiments:
+        if not experiment.positions.has_positions():
+            raise UserError("No positions are found", f"No annotated positions are found in experiment"
+                                                      f" \"{experiment.name}\". Cannot export anything.")
 
     folder = dialog.prompt_save_file("Select a directory", [("Folder", "*")])
     if folder is None:
         return
-    os.mkdir(folder)
     if metadata:
+        available_data_names = _get_data_names(window)
+        answer = option_choose_dialog.prompt_list_multiple("Exporting positions", "Metadata names", "Metadata to export:",
+                                                  available_data_names)
+        if answer is None:
+            return
+        data_names = [available_data_names[i] for i in answer]
         cell_types = list(window.registry.get_registered_markers(Position))
-        window.get_scheduler().add_task(_AsyncExporter(experiment, cell_types, folder))
+        window.get_scheduler().add_task(_AsyncExporter(experiments, cell_types, data_names, folder))
     else:
-        _write_positions_to_csv(experiment, folder)
+        for i, experiment in enumerate(experiments):
+            positions_folder = folder if len(experiments) == 1 else os.path.join(folder, str(i + 1) + ". " + experiment.name.get_save_name())
+            os.makedirs(positions_folder, exist_ok=True)
+            _write_positions_to_csv(experiment, positions_folder)
         _export_help_file(folder)
         dialog.popup_message("Positions", "Exported all positions, as well as a help file with instructions on how to"
-                             " visualize the points in Paraview.")
+                                          " visualize the points in Paraview.")
 
 
 def _export_help_file(folder: str, links: Optional[Links] = None):
@@ -94,8 +137,10 @@ You will now end up with a nice 3D view of the detected points. To save a movie,
 How to color the lineages correctly
 ===================================
 This assumes you want to color the lineage trees in the same way as OrganoidTracker does.
-1. Select the TableToPoints filter and color by original_track_id (to color all cells)
+1. Select the TableToPoints filter and color by ancestor_track_id (to color all cells)
    or lineage_id (to color only cells that have divided or will divide during the time lapse).
+   (If "ancestor_track_id" or "lineage_id" is missing from your table, then you need to re-export. This time,
+   select one or both of those values during exporting.)
 2. On the right of the screen you see a color panel. Make sure "Interpret Values as Categories" is OFF.
 3. Click "Choose Preset" (small square button with an icon, on the right of the "Mapping Data" color graph).
 4. In the dropdown-menu on the top right, change "default" into "All". 
@@ -107,7 +152,8 @@ This assumes you want to color the lineage trees in the same way as OrganoidTrac
 How to color the cell types correctly
 =====================================
 This assumes you want to color the cell types in the same way as OrganoidTracker does.
-1. Select the TableToPoints filter and color by the cell type id.
+1. Select the TableToPoints filter and color by the cell type id. If the cell type id value is missing, then
+   you'll need to re-export. This time, make sure to select "cell_type_id" as one of the values that you export.)
 2. On the right of the screen you see a color panel. Make sure "Interpret Values as Categories" is ON.
 3. Click "Choose Preset" (small square button with an icon, on the right of the "Mapping Data" color graph).
 4. Press the gear icon near the top right of the screen of the popup to show the advanced options.
@@ -196,36 +242,38 @@ def _export_cell_types_file(folder: str, cell_types: List[Marker], cell_type_ids
 
 
 class _AsyncExporter(Task):
-    _positions: PositionCollection
-    _links: Links
-    _position_data: PositionData
-    _resolution: ImageResolution
+    _experiments: List[Experiment]
     _folder: str
-    _save_name: str
     _registered_cell_types: List[Marker]
     _cell_types_to_id: _CellTypesToId
-    _division_lookahead_time_points: int
+    _data_names: List[str]
 
-    def __init__(self, experiment: Experiment, registered_cell_types: List[Marker], folder: str):
-        self._positions = experiment.positions.copy()
-        self._links = experiment.links.copy()
-        self._position_data = experiment.position_data.copy()
-        self._resolution = experiment.images.resolution()
+    def __init__(self, experiments: List[Experiment], registered_cell_types: List[Marker], data_names: List[str], folder: str):
+        self._experiments = [self._copy(experiment) for experiment in experiments]
+        self._data_names = data_names
         self._folder = folder
-        self._save_name = experiment.name.get_save_name()
         self._registered_cell_types = registered_cell_types
         self._cell_types_to_id = _CellTypesToId()
-        self._division_lookahead_time_points = experiment.division_lookahead_time_points
+
+    def _copy(self, experiment: Experiment):
+        copy = experiment.copy_selected(positions=True, links=True, position_data=True)
+        copy.name.set_name(experiment.name.get_name(), is_automatic=experiment.name.is_automatic())
+        copy.images.set_resolution(experiment.images.resolution())
+        return copy
 
     def compute(self) -> Any:
-        self._links.sort_tracks_by_x()
+        for i, experiment in enumerate(self._experiments):
+            folder = self._folder if len(self._experiments) == 1\
+                else os.path.join(self._folder, str(i + 1) + ". " + experiment.name.get_save_name())
+            os.makedirs(folder, exist_ok=True)
+            experiment.links.sort_tracks_by_x()
 
-        _write_positions_and_metadata_to_csv(self._positions, self._position_data, self._links, self._resolution,
-                                             self._cell_types_to_id, self._division_lookahead_time_points,
-                                             self._folder, self._save_name)
-        _export_help_file(self._folder, self._links)
-        _export_cell_types_file(self._folder, self._registered_cell_types, self._cell_types_to_id)
-        _export_colormap_file(self._folder, self._links)
+            _write_positions_and_metadata_to_csv(self._data_names, experiment.positions, experiment.position_data,
+                   experiment.links, experiment.images.resolution(), self._cell_types_to_id,
+                   experiment.division_lookahead_time_points, folder, experiment.name.get_save_name())
+            _export_help_file(folder, experiment.links)
+            _export_cell_types_file(folder, self._registered_cell_types, self._cell_types_to_id)
+            _export_colormap_file(folder, experiment.links)
         return "done"  # We're not using the result
 
     def on_finished(self, result: Any):
@@ -233,54 +281,107 @@ class _AsyncExporter(Task):
                                           " visualize the points in Paraview.")
 
 
-def _write_positions_and_metadata_to_csv(positions: PositionCollection, position_data: PositionData, links: Links,
+def _get_metadata(position: Position, data_name: str, positions: PositionCollection, position_data: PositionData,
+                  links: Links, resolution: ImageResolution, cell_types_to_id: _CellTypesToId,
+                  deaths_nearby_tracks: NearbyDeaths,
+                  division_lookahead_time_points: int):
+    if data_name == "lineage_id":
+        from organoid_tracker.linking_analysis import lineage_id_creator
+        lineage_id = lineage_id_creator.get_lineage_id(links, position)
+        return lineage_id
+
+    if data_name == "ancestor_track_id":
+        from organoid_tracker.linking_analysis import lineage_id_creator
+        ancestor_track_id = lineage_id_creator.get_original_track_id(links, position)
+        return ancestor_track_id
+    
+    if data_name == "track_id":
+        track = links.get_track(position)
+        if track is None:
+            return -1
+        return links.get_track_id(track)
+
+    if data_name == "cell_type_id":
+        cell_type_id = cell_types_to_id.get_or_add_id(
+            position_markers.get_position_type(position_data, position))
+        return cell_type_id
+
+    if data_name == "density_mm1":
+        from organoid_tracker.position_analysis import cell_density_calculator
+        positions_of_time_point = positions.of_time_point(position.time_point())
+        density = cell_density_calculator.get_density_mm1(positions_of_time_point, position, resolution)
+        return density
+
+    if data_name == "times_divided":
+        from organoid_tracker.linking_analysis import cell_division_counter
+        first_time_point_number = positions.first_time_point_number()
+        times_divided = cell_division_counter.find_times_divided(links, position, first_time_point_number)
+        return times_divided
+
+    if data_name == "times_neighbor_died":
+        times_neighbor_died = deaths_nearby_tracks.count_nearby_deaths_in_past(links, position)
+        return times_neighbor_died
+
+    if data_name == "cell_compartment_id":
+        from organoid_tracker.linking_analysis import cell_compartment_finder
+        cell_compartment_id = cell_compartment_finder.find_compartment_ext(positions, links, resolution,
+                                                                           division_lookahead_time_points,
+                                                                           position).value
+        if cell_compartment_id == cell_compartment_finder.CellCompartment.UNKNOWN.value:
+            cell_compartment_id = None  # Set to none if unknown
+        return cell_compartment_id
+
+    if data_name == "hours_until_division" or data_name == "hours_until_dead" or data_name == "hours_since_division":
+        from organoid_tracker.linking import cell_division_finder
+        from organoid_tracker.linking_analysis import cell_fate_finder
+
+        cell_fate = cell_fate_finder.get_fate_ext(links, position_data, division_lookahead_time_points,
+                                                  position)
+        hours_until_division = cell_fate.time_points_remaining * resolution.time_point_interval_h \
+            if cell_fate.type == CellFateType.WILL_DIVIDE else -1
+        hours_until_dead = cell_fate.time_points_remaining * resolution.time_point_interval_h \
+            if cell_fate.type in cell_fate_finder.WILL_DIE_OR_SHED else -1
+        previous_division = cell_division_finder.get_previous_division(links, position)
+        hours_since_division = (position.time_point_number() - previous_division.mother.time_point_number()) \
+                               * resolution.time_point_interval_h if previous_division is not None else None
+        if cell_fate.type == CellFateType.UNKNOWN:  # If unknown, set to None
+            hours_until_dead = None
+            hours_until_division = None
+
+        if data_name == "hours_until_division":
+            return hours_until_division
+        if data_name == "hours_since_division":
+            return hours_since_division
+        return hours_until_dead
+
+    return position_data.get_position_data(position, data_name)
+
+
+def _write_positions_and_metadata_to_csv(data_names: List[str], positions: PositionCollection,
+                                         position_data: PositionData, links: Links,
                                          resolution: ImageResolution, cell_types_to_id: _CellTypesToId,
                                          division_lookahead_time_points: int, folder: str, save_name: str):
-    from organoid_tracker.linking import cell_division_finder
-    from organoid_tracker.position_analysis import cell_density_calculator
-    from organoid_tracker.linking_analysis import lineage_id_creator, cell_division_counter, cell_nearby_death_counter,\
-        cell_fate_finder, cell_compartment_finder
+    from organoid_tracker.linking_analysis import cell_nearby_death_counter
 
     deaths_nearby_tracks = cell_nearby_death_counter.NearbyDeaths(links, position_data, resolution)
-    first_time_point_number = positions.first_time_point_number()
 
     file_prefix = save_name + ".csv."
     for time_point in positions.time_points():
         file_name = os.path.join(folder, file_prefix + str(time_point.time_point_number()))
         with open(file_name, "w") as file_handle:
-            file_handle.write("x,y,z,density_mm1,times_divided,times_neighbor_died,cell_in_dividing_compartment,"
-                              "cell_type_id,hours_until_division,hours_until_dead,hours_since_division,lineage_id,"
-                              "original_track_id\n")
+            header = ["x", "y", "z"] + data_names
+            file_handle.write(",".join(header) + "\n")
             positions_of_time_point = positions.of_time_point(time_point)
             for position in positions_of_time_point:
-                lineage_id = lineage_id_creator.get_lineage_id(links, position)
-                original_track_id = lineage_id_creator.get_original_track_id(links, position)
-                cell_type_id = cell_types_to_id.get_or_add_id(
-                    position_markers.get_position_type(position_data, position))
-                density = cell_density_calculator.get_density_mm1(positions_of_time_point, position, resolution)
-                times_divided = cell_division_counter.find_times_divided(links, position, first_time_point_number)
-                times_neighbor_died = deaths_nearby_tracks.count_nearby_deaths_in_past(links, position)
-                cell_compartment_id = cell_compartment_finder.find_compartment_ext(positions, links, resolution,
-                                             division_lookahead_time_points, position).value
-                if cell_compartment_id == cell_compartment_finder.CellCompartment.UNKNOWN.value:
-                    cell_compartment_id = None  # Set to none if unknown
-                cell_fate = cell_fate_finder.get_fate_ext(links, position_data, division_lookahead_time_points, position)
-                hours_until_division = cell_fate.time_points_remaining * resolution.time_point_interval_h \
-                        if cell_fate.type == CellFateType.WILL_DIVIDE else -1
-                hours_until_dead = cell_fate.time_points_remaining * resolution.time_point_interval_h \
-                        if cell_fate.type in cell_fate_finder.WILL_DIE_OR_SHED else -1
-                previous_division = cell_division_finder.get_previous_division(links, position)
-                hours_since_division = (time_point.time_point_number() - previous_division.mother.time_point_number())\
-                                       * resolution.time_point_interval_h if previous_division is not None else None
-                if cell_fate.type == CellFateType.UNKNOWN:  # If unknown, set to None
-                    hours_until_dead = None
-                    hours_until_division = None
-
                 vector = position.to_vector_um(resolution)
-                file_handle.write(f"{vector.x},{vector.y},{vector.z},{density},{_str(times_divided)},"
-                                  f"{times_neighbor_died},{_str(cell_compartment_id)},{_str(cell_type_id)},"
-                                  f"{_str(hours_until_division)},{_str(hours_until_dead)},{_str(hours_since_division)},"
-                                  f"{lineage_id},{original_track_id}\n")
+                data_row = [str(vector.x), str(vector.y), str(vector.z)]
+                for data_name in data_names:
+                    value = _get_metadata(position, data_name, positions, position_data, links, resolution,
+                                          cell_types_to_id, deaths_nearby_tracks, division_lookahead_time_points)
+                    if value is None:
+                        value = "NaN"
+                    data_row.append(str(value))
+                file_handle.write(",".join(data_row) + "\n")
 
 
 def _export_colormap_file(folder: str, links: Links):
