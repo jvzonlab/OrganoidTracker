@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>organoid_tracker.link_detection_cnn.training_data_creator module &mdash; OrganoidTracker 2.0 documentation</title>
+  <title>organoid_tracker.text_popup.position_popup module &mdash; OrganoidTracker 2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -19,8 +19,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="organoid_tracker.link_detection_cnn.training_dataset module" href="organoid_tracker.link_detection_cnn.training_dataset.html" />
-    <link rel="prev" title="organoid_tracker.link_detection_cnn.prediction_dataset module" href="organoid_tracker.link_detection_cnn.prediction_dataset.html" /> 
+    <link rel="next" title="organoid_tracker.text_popup.text_popup module" href="organoid_tracker.text_popup.text_popup.html" />
+    <link rel="prev" title="organoid_tracker.text_popup.position_list_popup module" href="organoid_tracker.text_popup.position_list_popup.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -73,18 +73,18 @@
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html">organoid_tracker.guizela_tracker_compatibility package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.image_loading.html">organoid_tracker.image_loading package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.imaging.html">organoid_tracker.imaging package</a></li>
-<li class="toctree-l3 current"><a class="reference internal" href="organoid_tracker.link_detection_cnn.html">organoid_tracker.link_detection_cnn package</a><ul class="current">
-<li class="toctree-l4 current"><a class="reference internal" href="organoid_tracker.link_detection_cnn.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.link_detection_cnn.html#module-organoid_tracker.link_detection_cnn">Module contents</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.link_detection_cnn.html">organoid_tracker.link_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking.html">organoid_tracker.linking package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking_analysis.html">organoid_tracker.linking_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.plugin.html">organoid_tracker.plugin package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_analysis.html">organoid_tracker.position_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection.html">organoid_tracker.position_detection package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html">organoid_tracker.position_detection_cnn package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.text_popup.html">organoid_tracker.text_popup package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="organoid_tracker.text_popup.html">organoid_tracker.text_popup package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="organoid_tracker.text_popup.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.text_popup.html#module-organoid_tracker.text_popup">Module contents</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.util.html">organoid_tracker.util package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.visualizer.html">organoid_tracker.visualizer package</a></li>
 </ul>
@@ -109,10 +109,10 @@
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="organoid_tracker.html">organoid_tracker package</a> &raquo;</li>
-          <li><a href="organoid_tracker.link_detection_cnn.html">organoid_tracker.link_detection_cnn package</a> &raquo;</li>
-      <li>organoid_tracker.link_detection_cnn.training_data_creator module</li>
+          <li><a href="organoid_tracker.text_popup.html">organoid_tracker.text_popup package</a> &raquo;</li>
+      <li>organoid_tracker.text_popup.position_popup module</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/organoid_tracker.link_detection_cnn.training_data_creator.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/organoid_tracker.text_popup.position_popup.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -120,22 +120,26 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-organoid_tracker.link_detection_cnn.training_data_creator">
-<span id="organoid-tracker-link-detection-cnn-training-data-creator-module"></span><h1>organoid_tracker.link_detection_cnn.training_data_creator module<a class="headerlink" href="#module-organoid_tracker.link_detection_cnn.training_data_creator" title="Permalink to this heading"></a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.link_detection_cnn.training_data_creator.create_image_with_links_list">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.link_detection_cnn.training_data_creator.</span></span><span class="sig-name descname"><span class="pre">create_image_with_links_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.11)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">division_multiplier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.link_detection_cnn.training_data_creator.create_image_with_links_list" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+  <section id="module-organoid_tracker.text_popup.position_popup">
+<span id="organoid-tracker-text-popup-position-popup-module"></span><h1>organoid_tracker.text_popup.position_popup module<a class="headerlink" href="#module-organoid_tracker.text_popup.position_popup" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.text_popup.position_popup.PositionPopup">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.text_popup.position_popup.</span></span><span class="sig-name descname"><span class="pre">PositionPopup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Window</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.text_popup.position_popup.PositionPopup" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="organoid_tracker.text_popup.text_popup.html#organoid_tracker.text_popup.text_popup.RichTextPopup" title="organoid_tracker.text_popup.text_popup.RichTextPopup"><code class="xref py py-class docutils literal notranslate"><span class="pre">RichTextPopup</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.text_popup.position_popup.PositionPopup.get_title">
+<span class="sig-name descname"><span class="pre">get_title</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#organoid_tracker.text_popup.position_popup.PositionPopup.get_title" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the title for the whole website.</p>
+</dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.link_detection_cnn.training_data_creator.create_image_with_possible_links_list">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.link_detection_cnn.training_data_creator.</span></span><span class="sig-name descname"><span class="pre">create_image_with_possible_links_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.link_detection_cnn.training_data_creator.create_image_with_possible_links_list" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.text_popup.position_popup.PositionPopup.navigate">
+<span class="sig-name descname"><span class="pre">navigate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.text_popup.position_popup.PositionPopup.navigate" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the Markdown for the given URL. The website can also perform some other action, like zooming in on a
+position or starting a program. If this method returns None, then the navigation is cancelled.</p>
+</dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.link_detection_cnn.training_data_creator.inside_image">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.link_detection_cnn.training_data_creator.</span></span><span class="sig-name descname"><span class="pre">inside_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">position:</span> <span class="pre">~organoid_tracker.core.position.Position,</span> <span class="pre">offset:</span> <span class="pre">&lt;property</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f55dd7901d0&gt;,</span> <span class="pre">image_shape:</span> <span class="pre">~typing.Tuple[int]</span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.link_detection_cnn.training_data_creator.inside_image" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+</dd></dl>
 
 </section>
 
@@ -143,8 +147,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="organoid_tracker.link_detection_cnn.prediction_dataset.html" class="btn btn-neutral float-left" title="organoid_tracker.link_detection_cnn.prediction_dataset module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="organoid_tracker.link_detection_cnn.training_dataset.html" class="btn btn-neutral float-right" title="organoid_tracker.link_detection_cnn.training_dataset module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="organoid_tracker.text_popup.position_list_popup.html" class="btn btn-neutral float-left" title="organoid_tracker.text_popup.position_list_popup module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="organoid_tracker.text_popup.text_popup.html" class="btn btn-neutral float-right" title="organoid_tracker.text_popup.text_popup module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

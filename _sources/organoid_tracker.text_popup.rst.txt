@@ -9,6 +9,7 @@ Submodules
 
    organoid_tracker.text_popup.help_popup
    organoid_tracker.text_popup.position_list_popup
+   organoid_tracker.text_popup.position_popup
    organoid_tracker.text_popup.text_popup
 
 Module contents

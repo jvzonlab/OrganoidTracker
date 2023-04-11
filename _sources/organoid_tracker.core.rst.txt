@@ -27,7 +27,6 @@ Submodules
    organoid_tracker.core.position_collection
    organoid_tracker.core.position_data
    organoid_tracker.core.resolution
-   organoid_tracker.core.score
    organoid_tracker.core.shape
    organoid_tracker.core.spline
    organoid_tracker.core.typing
