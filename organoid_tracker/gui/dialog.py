@@ -41,12 +41,13 @@ def prompt_int(title: str, question: str, *, minimum: int = -2147483647, maximum
     return result if ok else None
 
 
-def prompt_float(title: str, question: str, minimum: float = -1.0e10, maximum: float = 1.0e10, default: float = 0
-                 ) -> Optional[float]:
+def prompt_float(title: str, question: str, minimum: float = -1.0e10, maximum: float = 1.0e10, default: float = 0,
+                 decimals: int = 1) -> Optional[float]:
     """Asks the user to enter a float. Returns None if the user pressed Cancel or closed the dialog box. The default
     value is automatically clamped to the minimum and maximum."""
     default = median([minimum, default, maximum])  # Make the default bounded by the minimum and maximum
-    result, ok = QInputDialog.getDouble(_window(), title, question, minValue=minimum, maxValue=maximum, value=default)
+    result, ok = QInputDialog.getDouble(_window(), title, question, minValue=minimum, maxValue=maximum, value=default,
+                                        decimals=decimals)
     return result if ok else None
 
 
