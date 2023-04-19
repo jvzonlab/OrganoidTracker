@@ -171,6 +171,9 @@ def get_intensity_keys(experiment: Experiment) -> List[str]:
         if data_name.endswith("_volume") and data_name[:-len("_volume")] in names_and_types:
             continue  # Skip volume of an intensity
 
+        if not data_name + "_volume" in names_and_types.keys():
+            continue  # Has no measured volume, so cannot be used as an intensity
+
         return_list.append(data_name)
     return return_list
 
