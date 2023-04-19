@@ -140,15 +140,15 @@
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ground_truth</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>  <span class="c1"># Placeholder</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">tracking_output</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>  <span class="c1"># Placeholder</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">organoid_tracker.comparison</span> <span class="kn">import</span> <span class="n">links_comparison</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">report</span> <span class="o">=</span> <span class="n">links_comparison</span><span class="o">.</span><span class="n">compare_links</span><span class="p">(</span><span class="n">ground_truth</span><span class="p">,</span> <span class="n">tracking_output</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Save to a file that OrganoidTracker can load in the Tools menu</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">organoid_tracker.comparison</span> <span class="kn">import</span> <span class="n">report_json_io</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">output_file</span> <span class="o">=</span> <span class="s2">&quot;my_output_file.json&quot;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">report_json_io</span><span class="o">.</span><span class="n">save_report</span><span class="p">(</span><span class="n">report</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Show graphs</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">report</span><span class="o">.</span><span class="n">calculate_time_correctness_statistics</span><span class="p">()</span><span class="o">.</span><span class="n">debug_plot</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">report</span><span class="o">.</span><span class="n">calculate_z_correctness_statistics</span><span class="p">()</span><span class="o">.</span><span class="n">debug_plot</span><span class="p">()</span>
