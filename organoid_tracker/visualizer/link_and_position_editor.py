@@ -324,6 +324,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Batch-Batch deletion//Delete data of current time point": self._delete_data_of_time_point,
             "Edit//Batch-Batch deletion//Delete data of multiple time points...": self._delete_data_of_multiple_time_points,
             "Edit//Batch-Batch deletion//Delete all tracks with errors...": self._delete_tracks_with_errors,
+            "Edit//Batch-Batch deletion//Delete short lineages...": self._delete_short_lineages,
             "Edit//Batch-Batch deletion//Delete all tracks not in the first time point...": self._delete_tracks_not_in_first_time_point,
             "Edit//Batch-Batch deletion//Delete all positions in a rectangle...": self._show_positions_in_rectangle_deleter,
             "Edit//Batch-Batch deletion//Delete all positions without links...": self._delete_positions_without_links,
@@ -524,6 +525,38 @@ class LinkAndPositionEditor(AbstractEditor):
         lineage_error_finder.delete_problematic_lineages(self._experiment)
 
         self.get_window().redraw_data()
+
+    def _delete_short_lineages(self):
+        """Deletes all lineages where at least a single error was present."""
+        min_time_points = dialog.prompt_int("Deleting short lineages", "For how many time points should a cell be "
+                                            "visible in order to keep it? Cells (including their offspring) that are"
+                                            " visible for less time points will be deleted.", minimum=1, default=4)
+        if min_time_points is None:
+            return
+
+        snapshots_to_delete = []
+        experiment = self._experiment
+        links = experiment.links
+
+        # Delete all positions without links (since their track length is 1 by defintion, and they don't always appear
+        # in experiment.links)
+        for position in self._experiment.positions:
+            if not links.contains_position(position):
+                snapshots_to_delete.append(FullPositionSnapshot.from_position(experiment, position))
+
+        # Delete all positions from short tracks
+        for track in links.find_starting_tracks():
+            min_time_point_number = track.min_time_point_number()
+            max_time_point_number = max([some_track.max_time_point_number()
+                                         for some_track in track.find_all_descending_tracks(include_self=True)])
+            duration_time_points = max_time_point_number - min_time_point_number + 1
+            if duration_time_points < min_time_points:
+                for some_track in track.find_all_descending_tracks(include_self=True):
+                    for position in some_track.positions():
+                        snapshots_to_delete.append(FullPositionSnapshot.from_position(experiment, position))
+
+        # Perform the deletion
+        self._perform_action(_DeletePositionsAction(snapshots_to_delete))
 
     def _delete_selected_lineage(self):
         if self._selected1 is None:
