@@ -167,6 +167,7 @@ def _generate_position_detection_config(window: Window):
     config.get_or_default("buffer_z", str(1))
     config.get_or_default("buffer_y", str(8))
     config.get_or_default("buffer_x", str(8))
+    config.get_or_default("images_channels", str(window.display_settings.image_channel.index_one))
 
     config.save()
     _create_run_script(save_directory, "organoid_tracker_predict_positions")
@@ -273,6 +274,7 @@ def _generate_division_detection_config(window: Window):
     config.get_or_default("checkpoint_folder", checkpoint_directory)
     config.get_or_default("predictions_output_folder", "out")
     config.get_or_default("save_video_ram", "true")
+    config.get_or_default("images_channels", str(window.display_settings.image_channel.index_one))
 
     config.save()
     _create_run_script(save_directory, "organoid_tracker_predict_divisions")
@@ -385,6 +387,7 @@ def _generate_link_detection_config(window: Window):
     config.get_or_default("checkpoint_folder", checkpoint_directory)
     config.get_or_default("predictions_output_folder", "out")
     config.get_or_default("save_video_ram", "true")
+    config.get_or_default("images_channels", str(window.display_settings.image_channel.index_one))
 
     config.save()
     _create_run_script(save_directory, "organoid_tracker_predict_links")
