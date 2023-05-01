@@ -2,8 +2,10 @@ from typing import Optional, Iterable, Callable, Tuple
 
 from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
+from organoid_tracker.core.warning_limits import WarningLimits
 from organoid_tracker.linking_analysis import linking_markers, particle_age_finder
 from organoid_tracker.linking_analysis.errors import Error
 
@@ -51,14 +53,21 @@ def get_error(experiment: Experiment, position: Position) -> Optional[Error]:
         return Error.NO_FUTURE_POSITION
     elif len(future_positions) == 2:
         # Found a putative mother
-        if position_data.get_position_data(position, 'division_probability') is None:
-            return Error.LOW_MOTHER_SCORE
-        elif position_data.get_position_data(position, 'division_probability') < warning_limits.min_probability:
+        division_probability = position_data.get_position_data(position, 'division_probability')
+        if division_probability is not None and division_probability < warning_limits.min_probability:
             return Error.LOW_MOTHER_SCORE
 
         age = particle_age_finder.get_age(links, position)
         if age is not None and age * resolution.time_point_interval_h < warning_limits.min_time_between_divisions_h:
             return Error.YOUNG_MOTHER
+    elif len(future_positions) == 1:
+        division_probability = position_data.get_position_data(position, 'division_probability')
+        if division_probability is not None\
+                and division_probability > 1 - warning_limits.min_probability:
+            # Likely missed a division
+            if not _has_high_division_probability_hereafter(links, position_data, warning_limits,
+                                                            next(iter(future_positions))):
+                return Error.POTENTIALLY_SHOULD_BE_A_MOTHER
 
     past_positions = links.find_pasts(position)
     if len(past_positions) == 0:
@@ -83,6 +92,37 @@ def get_error(experiment: Experiment, position: Position) -> Optional[Error]:
             return Error.LOW_LINK_SCORE
 
     return None
+
+
+def _has_high_division_probability_hereafter(links: Links, position_data: PositionData, warning_limits: WarningLimits,
+                                             future_position: Position) -> bool:
+    """Returns True if the cell has a high division probability in one or two time points. If the tracking data actually
+    included a division after future_position, this method always returns True.
+    """
+
+    # Check division probability in next time point, to avoid showing warning multiple times in a row
+    future_future_positions = links.find_futures(future_position)
+    division_probability_next = position_data.get_position_data(future_position, 'division_probability')
+    if division_probability_next is None:
+        division_probability_next = 0
+
+    if division_probability_next > 1 - warning_limits.min_probability:
+        return True  # Already seen
+
+    # Check division probability after this
+    division_probability_next_next = 0
+    if len(future_future_positions) == 1:
+        division_probability_next_next = position_data.get_position_data(next(iter(future_future_positions)),
+                                                                         'division_probability')
+        if division_probability_next_next is None:
+            division_probability_next_next = 0
+        return division_probability_next_next > 1 - warning_limits.min_probability
+    elif len(future_future_positions) >= 2:
+        # We have seen a division! Assume probability of 1
+        return True  # Will divide
+    else:
+        # Cell disappeared
+        return False
 
 
 def _get_volumes(position: Position, volume_lookup: PositionData,

@@ -92,8 +92,6 @@ def find_mothers(links: Links) -> Set[Position]:
         future_tracks = track.get_next_tracks()
         if len(future_tracks) >= 2:
             mothers.add(track.find_last_position())
-        if len(future_tracks) > 2:
-            print("Illegal mother: " + str(len(future_tracks)) + " daughters found")
 
     return mothers
 
