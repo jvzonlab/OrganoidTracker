@@ -35,9 +35,9 @@ class PositionListVisualizer(Visualizer):
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
             **super().get_extra_menu_options(),
-            "View//Exit-Exit this view (Esc)": lambda: self._exit_view(),
-            "Navigate//Time-Next (Right)": self._goto_next,
-            "Navigate//Time-Previous (Left)": self._goto_previous
+            "View//Exit-Exit this view [Escape]": lambda: self._exit_view(),
+            "Navigate//Time-Next [Right]": self._goto_next,
+            "Navigate//Time-Previous [Left]": self._goto_previous
         }
 
     def _show_closest_or_stored_position(self, position: Optional[Position]):
@@ -158,15 +158,9 @@ class PositionListVisualizer(Visualizer):
         activate(image_visualizer)
 
     def _on_key_press(self, event: KeyEvent):
-        if event.key == "left":
-            self._goto_previous()
-        elif event.key == "right":
-            self._goto_next()
-        elif event.key == DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP:
+        if event.key == DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP:
             self._display_settings.show_next_time_point = not self._display_settings.show_next_time_point
             self.draw_view()
-        elif event.key == "escape":
-            self._exit_view()
 
     def _on_command(self, command: str) -> bool:
         if command == "exit":
