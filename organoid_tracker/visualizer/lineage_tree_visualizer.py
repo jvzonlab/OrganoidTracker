@@ -246,6 +246,9 @@ class LineageTreeVisualizer(Visualizer):
         experiment = self._experiment
         position_data = experiment.position_data
         links = experiment.links
+        if links.get_highest_track_id() > 2000:
+            raise ValueError(f"Lineage tree is too complex to display ({links.get_highest_track_id()} ids)")
+
         links.sort_tracks_by_x()
 
         self._calculate_track_colors()

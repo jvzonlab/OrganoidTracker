@@ -60,17 +60,20 @@ class LinkingTrack:
         return self._positions_by_time_point[-1]
 
     def find_all_descending_tracks(self, include_self: bool = False) -> Iterable["LinkingTrack"]:
-        """Iterates over all tracks that will follow this one, and the one after thet, etc. Stops if there's a cell
-        merge occuring."""
-        if len(self._previous_tracks) > 1:
-            # Cell merge, concept of descending tracks falls apart
-            # - every track could be connected to every track if merges are allowed
-            return
+        """Iterates over all tracks that will follow this one, and the one after that, etc."""
         if include_self:
             yield self
         for next_track in self._next_tracks:
             yield next_track
             yield from next_track.find_all_descending_tracks()
+
+    def find_all_previous_tracks(self, include_self: bool = False) -> Iterable["LinkingTrack"]:
+        """Iterates over all tracks that precede this one, and the one before that, etc."""
+        if include_self:
+            yield self
+        for previous_track in self._previous_tracks:
+            yield previous_track
+            yield from previous_track.find_all_previous_tracks()
 
     def positions(self, connect_to_previous_track: bool = False) -> Iterable[Position]:
         """Returns all positions in this track, in order.
@@ -78,7 +81,7 @@ class LinkingTrack:
         If connect_to_previous_track is True, then it also returns the last position of the previous track, if that exists. This is useful if you
         are drawing lines in between positions."""
         if connect_to_previous_track:
-            if len(self._previous_tracks) == 1:
+            if len(self._previous_tracks) >= 1:
                 yield next(iter(self._previous_tracks)).find_last_position()
 
         yield from self._positions_by_time_point
@@ -139,11 +142,8 @@ class LinkingTrack:
 
     def find_all_previous_and_descending_tracks(self, *, include_self: bool = False) -> Iterable["LinkingTrack"]:
         """Finds all tracks in the lineage of this track, including siblings, cousins, etc."""
-        previous_track = self
-        while len(previous_track._previous_tracks) == 1:
-            previous_track = next(iter(previous_track._previous_tracks))
-            yield previous_track
-        yield from self.find_all_descending_tracks(include_self=include_self)
+        yield from self.find_all_previous_tracks(include_self=include_self)
+        yield from self.find_all_descending_tracks(include_self=False)  # Avoid including self twice
 
     def get_duration_in_time_points(self) -> int:
         """Gets the time this track takes in time points. This is simply the number of recorded positions."""
