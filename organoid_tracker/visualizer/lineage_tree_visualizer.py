@@ -294,6 +294,7 @@ class LineageTreeVisualizer(Visualizer):
                                                             line_width=self._get_lineage_line_width())
 
         self._ax.set_ylabel(self._display_y_label)
+        self._ax.set_xticks([])
         if self._ax.get_xlim() == (0, 1):
             # Only change axis if the default values were used
             # noinspection PyTypeChecker
