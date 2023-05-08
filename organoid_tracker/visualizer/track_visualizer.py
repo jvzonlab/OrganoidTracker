@@ -208,7 +208,7 @@ class TrackVisualizer(ExitableImageVisualizer):
         dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
 
     def _show_lineage_tree(self):
-        dialog.popup_visualizer(self.get_window().get_gui_experiment(),
+        dialog.popup_visualizer(self.get_window(),
                                 lambda w: _SelectedTracksTreeVisualizer(w, self._selected_positions))
 
     def _show_sphere(self):

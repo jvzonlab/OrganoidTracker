@@ -244,6 +244,11 @@ class _PopupQWindow(QMainWindow):
 
 class PopupWindow(Window):
 
+    def __init__(self, q_window: QMainWindow, figure: Figure, parent_window: Window,
+                 title_text: QLabel, status_text: QLabel):
+        super().__init__(q_window, figure, parent_window.get_gui_experiment(), title_text, status_text)
+        self.replace_plugin_manager(parent_window.plugin_manager)
+
     def _get_default_menu(self) -> Dict[str, Any]:
         return {
             "File//Save-Save figure...": self._save_figure
@@ -259,7 +264,7 @@ class PopupWindow(Window):
             self.get_figure().savefig(file_name)
 
 
-def popup_visualizer(experiment: GuiExperiment, visualizer_callable: Callable[[Window], Any]):
+def popup_visualizer(parent_window: Window, visualizer_callable: Callable[[Window], Any]):
     """Pops up a window, which is then returned. You can then for example attach a Visualizer to this window to show
     something."""
     figure = Figure(figsize=(5.5, 5), dpi=95)
@@ -269,7 +274,7 @@ def popup_visualizer(experiment: GuiExperiment, visualizer_callable: Callable[[W
     def no_draw(_: Figure):
         pass
     q_window = _PopupQWindow(_window(), figure, no_draw, close_listener)
-    window = PopupWindow(q_window, figure, experiment, q_window._title_text, q_window._status_text)
+    window = PopupWindow(q_window, figure, parent_window, q_window._title_text, q_window._status_text)
 
     from organoid_tracker.visualizer import Visualizer
     visualizer: Visualizer = visualizer_callable(window)

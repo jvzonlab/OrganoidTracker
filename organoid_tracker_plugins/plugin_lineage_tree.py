@@ -17,4 +17,4 @@ def _show_lineage_tree(window: Window):
     if not experiment.links.has_links():
         raise UserError("No links specified", "No links were loaded. Cannot plot anything.")
 
-    dialog.popup_visualizer(window.get_gui_experiment(), LineageTreeVisualizer)
+    dialog.popup_visualizer(window, LineageTreeVisualizer)
