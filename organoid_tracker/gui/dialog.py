@@ -5,7 +5,7 @@ import sys as _sys
 import traceback as _traceback
 from enum import Enum
 from statistics import median
-from typing import Tuple, List, Optional, Callable, Any, Dict
+from typing import Tuple, List, Optional, Callable, Any, Dict, Union
 
 from PySide2 import QtCore
 from PySide2.QtGui import QCloseEvent, QColor
@@ -242,12 +242,24 @@ class _PopupQWindow(QMainWindow):
             popup_exception(e)
 
 
+
+def _as_gui_experiment(object: Union[GuiExperiment, Window]) -> GuiExperiment:
+    """Helper method so that you can pass both a Window and a GuiExperiment instance, but always get a GuiExperiment
+    out."""
+    if isinstance(object, GuiExperiment):
+        return object
+    return object.get_gui_experiment()
+
+
 class PopupWindow(Window):
 
-    def __init__(self, q_window: QMainWindow, figure: Figure, parent_window: Window,
+    def __init__(self, q_window: QMainWindow, figure: Figure, parent_window: Union[GuiExperiment, Window],
                  title_text: QLabel, status_text: QLabel):
-        super().__init__(q_window, figure, parent_window.get_gui_experiment(), title_text, status_text)
-        self.replace_plugin_manager(parent_window.plugin_manager)
+        # parent_window used to always be a GuiExperiment. Now we also support passing a window object instead
+        # (hence the name change), so that we can access the plugin manager too.
+        super().__init__(q_window, figure, _as_gui_experiment(parent_window), title_text, status_text)
+        if isinstance(parent_window, Window):
+            self.replace_plugin_manager(parent_window.plugin_manager)
 
     def _get_default_menu(self) -> Dict[str, Any]:
         return {
@@ -286,11 +298,15 @@ def popup_visualizer(parent_window: Window, visualizer_callable: Callable[[Windo
     visualizer.update_status(visualizer.get_default_status())
 
 
-def popup_figure(experiment: GuiExperiment, draw_function: Callable[[Figure], None], *,
+def popup_figure(parent_window: Union[GuiExperiment, Window], draw_function: Callable[[Figure], None], *,
                  size_cm: Tuple[float, float] = (14, 12.7),
                  export_function: Optional[Callable[[], Dict[str, Any]]] = None):
     """Pops up a figure. The figure is drawn inside draw_function. Size (x, y) is specified using size_cm.
-    export_function is used to save a JSON structure when the user presses Ctrl+E."""
+    export_function is used to save a JSON structure when the user presses Ctrl+E.
+
+    For backwards compatibility, parent_window can still be a GuiExperiment. However, then plugins cannot
+    access anything in the popup window.
+    """
     def do_nothing_on_close():
         pass  # Used to indicate that no action needs to be taken once the window closes
 
@@ -312,7 +328,7 @@ def popup_figure(experiment: GuiExperiment, draw_function: Callable[[Figure], No
             json.dump(data, handle)
     figure.canvas.mpl_connect("key_release_event", try_export)
 
-    PopupWindow(q_window, figure, experiment, q_window._title_text, q_window._status_text)
+    PopupWindow(q_window, figure, parent_window, q_window._title_text, q_window._status_text)
 
 
 def prompt_yes_no(title: str, message: str) -> bool:
