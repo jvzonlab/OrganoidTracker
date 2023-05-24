@@ -41,7 +41,7 @@ class ImageResolution:
 
     def is_incomplete(self) -> bool:
         """Returns True if the x, y, z and/or t resolution is zero. Otherwise it returns False."""
-        return 0 in self.pixel_size_zyx_um or self.time_point_interval_m == 0
+        return 0 in self.pixel_size_zyx_um or self.time_point_interval_m == 0 or self.time_point_interval_m == float("inf")
 
 
 # See typehint at beginning of ImageResolution class
