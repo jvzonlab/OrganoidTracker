@@ -750,6 +750,7 @@ class Links:
          Stops at cell merges or at the first detection."""
         track = self.get_track(position)
         if track is None:
+            yield position  # Only yield position itself
             return
 
         time_point_number = position.time_point_number()
@@ -769,6 +770,7 @@ class Links:
          Stops at cell divisions or at the last detection."""
         track = self.get_track(position)
         if track is None:
+            yield position  # Only yield position itself
             return
 
         time_point_number = position.time_point_number()
