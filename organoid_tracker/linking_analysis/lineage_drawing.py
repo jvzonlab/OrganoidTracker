@@ -1,5 +1,5 @@
 # File originally written by Jeroen van Zon
-from typing import Callable, Optional, List, Union, NamedTuple, Tuple
+from typing import Callable, Optional, List, Union, NamedTuple, Tuple, Set
 
 from matplotlib.axes import Axes
 from matplotlib.collections import LineCollection
@@ -7,11 +7,10 @@ from matplotlib.collections import LineCollection
 from organoid_tracker.core.links import LinkingTrack, Links
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.core.typing import MPLColor
+from organoid_tracker.gui.location_map import LocationMap
 
 # Type definition: a color getter is a function that takes an int (time point) and the linking track, and returns a
 # Matplotlib color
-from organoid_tracker.gui.location_map import LocationMap
-
 _ColorGetter = Callable[[int, LinkingTrack], MPLColor]
 _LabelGetter = Callable[[LinkingTrack], Optional[str]]
 
@@ -67,6 +66,45 @@ class _Line(NamedTuple):
         return self.x_start != self.x_end
 
 
+def _get_vertical_lines(x: float, linking_track: LinkingTrack, next_tracks: Set[LinkingTrack]) -> List[_Line]:
+    """Draws the vertical line for the track, along with any cells that will merge into this track.
+
+    In general, our code cannot draw cell nucleus merges. That would be extremely difficult to code. However,
+    we make an exception for the case where all but one of the merging cells are "simple": they consist of only a
+    single vertical line, with nothing prior."""
+
+    # Find what tracks to draw
+    tracks_to_draw = [linking_track]
+    if len(next_tracks) == 1:
+        # A possible cell merge
+        next_track = next(iter(next_tracks))
+        previous_tracks = linking_track.get_previous_tracks()
+        potential_multiline_tracks = next_track.get_previous_tracks()
+        if len(potential_multiline_tracks) >= 2:
+            # Yes, a cell merge. Now check if we draw it as a double (or more) line
+            i = 1
+            for potential_multiline_track in potential_multiline_tracks:
+                if potential_multiline_track is linking_track:
+                    continue  # Self, ignore
+                that_previous_tracks = potential_multiline_track.get_previous_tracks()
+                if len(that_previous_tracks) > 0 and that_previous_tracks != previous_tracks:
+                    return []  # Can't draw multilines, situation is too complex
+                tracks_to_draw.append(potential_multiline_track)
+                i += 1
+
+    # Decide where vertical lines are going to be
+    lines_list = list()
+    x_start = x - (len(tracks_to_draw) - 1) / 4
+    x_end = x + (len(tracks_to_draw) - 1) / 4
+    for i, track_to_draw in enumerate(tracks_to_draw):
+        lines_list.append(_Line.vertical(x=x_start + i / 2, track=track_to_draw))
+    if x_end > x_start:
+        # Add horizontal line connecting the lines
+        lines_list.append(_Line.horizontal(x_start=x_start, x_end=x_end, track=linking_track))
+
+    return lines_list
+
+
 class LineageDrawing:
     starting_tracks: List[LinkingTrack]
 
@@ -84,27 +122,37 @@ class LineageDrawing:
             x_curr_branch = x_end_branch
             line_list.append(_Line.vertical(x=x_curr_branch, track=linking_track))
             x_end_branch = x_end_branch + 1
-        else:
-            # Plot sublineages
-            x_daughters = []
-            for daughter_track in next_tracks:
-                if daughter_track.get_previous_tracks().pop() != linking_track:
-                    continue  # Ignore this one, it will be drawn by another parent
-                (x_curr_branch, x_end_branch, line_list) = self._get_sublineage_draw_data(daughter_track, x_curr_branch,
-                                                                                          x_end_branch, line_list)
-                x_daughters.append(x_curr_branch)
+            return x_curr_branch, x_end_branch, line_list
 
-            # Plot horizontal line connecting the daughter branches
-            # (but don't do this if we only have one next track)
-            if len(x_daughters) > 1:
-                line_list.append(_Line.horizontal(x_start=x_daughters[0], x_end=x_daughters[-1], track=linking_track))
+        # Plot sublineages
+        x_next_tracks = []
+        for next_track in next_tracks:
+            if next_track.get_previous_tracks().pop() != linking_track:
+                continue  # Ignore this one, it will be drawn by another parent
+            (x_curr_branch, x_end_branch, line_list) = self._get_sublineage_draw_data(next_track, x_curr_branch,
+                                                                                      x_end_branch, line_list)
+            x_next_tracks.append(x_curr_branch)
 
-            # Plot the mother branch
-            x_curr_branch = (x_daughters[0] + x_daughters[-1]) / 2 if len(x_daughters) > 0 else x_end_branch
-            if len(x_daughters) == 0:
-                # Found an end branch, make some room for it
-                x_end_branch = x_end_branch + 1
-            line_list.append(_Line.vertical(x=x_curr_branch, track=linking_track))
+        # Plot horizontal line connecting the daughter branches
+        # (but don't do this if we only have one next track)
+        if len(x_next_tracks) > 1:
+            line_list.append(_Line.horizontal(x_start=x_next_tracks[0], x_end=x_next_tracks[-1], track=linking_track))
+
+        # Plot the mother branch
+        x_curr_branch = (x_next_tracks[0] + x_next_tracks[-1]) / 2 if len(x_next_tracks) > 0 else x_end_branch
+
+        # Draw our own lines
+        main_lines = _get_vertical_lines(x_curr_branch, linking_track, next_tracks)
+        if len(main_lines) <= 1:
+            # A simple, vertical line - reserve space for it
+            line_list += main_lines
+            x_end_branch = x_end_branch + 1
+        elif len(x_next_tracks) > 0:
+            # A vertical line that will connect to something else
+            line_list += main_lines
+        # else: we have multiple lines to draw for this track - this indices that multiple cells will
+        # merge into this one. We don't draw it though, since some other track was responsible for
+        # drawing the next track(s), so that one should be the one to draw the multilines
 
         return x_curr_branch, x_end_branch, line_list
 
@@ -190,7 +238,7 @@ class LineageDrawing:
                 location_map.set_area(int(x_offset + line.x_start), int(time), int(x_offset + line.x_end), int(time),
                                       linking_track.find_position_at_time_point_number(time_point_of_line))
 
-        line_segments = LineCollection(lines_XY, colors=lines_col, lw=line_width)
+        line_segments = LineCollection(lines_XY, colors=lines_col, lw=line_width, capstyle="projecting")
         ax.add_collection(line_segments)
 
         return diagram_width
