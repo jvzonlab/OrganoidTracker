@@ -4,20 +4,19 @@ from matplotlib.backend_bases import KeyEvent, MouseEvent, LocationEvent
 
 from organoid_tracker import core
 from organoid_tracker.core import Color, UserError, TimePoint
-from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.core.full_position_snapshot import FullPositionSnapshot
 from organoid_tracker.core.links import LinkingTrack
 from organoid_tracker.core.marker import Marker
-from organoid_tracker.core.full_position_snapshot import FullPositionSnapshot
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.undo_redo import UndoableAction, ReversedAction
 from organoid_tracker.gui.window import Window
-from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking_analysis import cell_error_finder, linking_markers, track_positions_finder, \
     lineage_markers
 from organoid_tracker.linking_analysis.linking_markers import EndMarker
+from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.visualizer import activate
 from organoid_tracker.visualizer.abstract_editor import AbstractEditor
 
@@ -54,7 +53,8 @@ class _InsertLinkAction(UndoableAction):
             for position in self.all_positions[1:-1]:
                 experiment.remove_position(position)
 
-        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.all_positions[0], self.all_positions[-1])
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.all_positions[0],
+                                                                                self.all_positions[-1])
         return f"Removed link between {self.all_positions[0]} and {self.all_positions[-1]}"
 
 
@@ -68,7 +68,8 @@ class _InsertPositionAction(UndoableAction):
 
     def do(self, experiment: Experiment) -> str:
         self.particle.restore(experiment)
-        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.particle.position, *self.particle.links)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.particle.position,
+                                                                                *self.particle.links)
 
         return_value = f"Added {self.particle.position}"
         if len(self.particle.links) > 1:
@@ -85,7 +86,6 @@ class _InsertPositionAction(UndoableAction):
 
 
 class _DeletePositionsAction(UndoableAction):
-
     _particles: List[FullPositionSnapshot]
 
     def __init__(self, particles: Iterable[FullPositionSnapshot]):
@@ -224,7 +224,6 @@ class _SetLineageColor(UndoableAction):
 
 
 class _OverwritePositionAction(UndoableAction):
-
     _new_particle: FullPositionSnapshot
     _old_particle: FullPositionSnapshot
 
@@ -247,22 +246,25 @@ class _OverwritePositionAction(UndoableAction):
         return f"Restored {self._old_particle.position}"
 
 
-class _MarkPositionAsUncertainAction(UndoableAction):
-
+class _MarkPositionAsSomethingAction(UndoableAction):
     _position: Position
+    _name: str
 
-    def __init__(self, position: Position):
+    def __init__(self, position: Position, data_name: str):
         self._position = position
+        self._name = data_name
 
     def do(self, experiment: Experiment) -> str:
-        linking_markers.set_uncertain(experiment.position_data, self._position, True)
-        cell_error_finder.find_errors_in_just_these_positions(experiment, self._position)
-        return f"Marked {self._position} as uncertain"
+        experiment.position_data.set_position_data(self._position, self._name, True)
+        if self._name == linking_markers.UNCERTAIN_MARKER:
+            cell_error_finder.find_errors_in_just_these_positions(experiment, self._position)
+        return f"Marked {self._position} as {self._name}"
 
     def undo(self, experiment: Experiment) -> str:
-        linking_markers.set_uncertain(experiment.position_data, self._position, False)
-        cell_error_finder.find_errors_in_just_these_positions(experiment, self._position)
-        return f"Marked that {self._position} is no longer uncertain"
+        experiment.position_data.set_position_data(self._position, self._name, None)
+        if self._name == linking_markers.UNCERTAIN_MARKER:
+            cell_error_finder.find_errors_in_just_these_positions(experiment, self._position)
+        return f"Marked that {self._position} is no longer {self._name}"
 
 
 class LinkAndPositionEditor(AbstractEditor):
@@ -313,7 +315,25 @@ class LinkAndPositionEditor(AbstractEditor):
             self._selected2 = self._selected1
             self._selected1 = new_selection
         self.draw_view()
-        self.update_status("Selected:\n        " + str(self._selected1) + "\n        " + str(self._selected2))
+        self.update_status("Selected:\n        " + self._position_string(self._selected1) + "\n        " + self._position_string(self._selected2))
+
+    def _position_string(self, position: Optional[Position]) -> str:
+        """Gets a somewhat compact representation of the position. This will return its x, y, z, time point and some
+        metadata."""
+        if position is None:
+            return "none"
+        return_value = str(position)
+
+        data_names = list()
+        for data_name, value in self._experiment.position_data.find_all_data_of_position(position):
+            if value:
+                data_names.append("'" + data_name + "'")
+        if len(data_names) > 10:
+            data_names = data_names[0:10]
+            data_names.append("...")
+        if len(data_names) > 0:
+            return_value += " (with " + ",".join(data_names) + ")"
+        return return_value
 
     def get_extra_menu_options(self):
         options = {
@@ -330,12 +350,12 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Batch-Batch deletion//Delete all positions without links...": self._delete_positions_without_links,
             "Edit//LineageEnd-Mark as cell death [D]": lambda: self._try_set_end_marker(EndMarker.DEAD),
             "Edit//LineageEnd-Mark as cell shedding into lumen [S]": lambda: self._try_set_end_marker(EndMarker.SHED),
-            "Edit//LineageEnd-Mark as cell shedding to outside": lambda: self._try_set_end_marker(EndMarker.SHED_OUTSIDE),
-            "Edit//LineageEnd-Mark as cell stimulated shedding": lambda: self._try_set_end_marker(EndMarker.STIMULATED_SHED),
+            "Edit//LineageEnd-Mark as cell shedding to outside": lambda: self._try_set_end_marker(
+                EndMarker.SHED_OUTSIDE),
+            "Edit//LineageEnd-Mark as cell stimulated shedding": lambda: self._try_set_end_marker(
+                EndMarker.STIMULATED_SHED),
             "Edit//LineageEnd-Mark as moving out of view [V]": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
             "Edit//LineageEnd-Remove end marker": lambda: self._try_set_end_marker(None),
-            "Edit//Marker-Mark position as uncertain": lambda: self._try_mark_uncertainty(True),
-            "Edit//Marker-Remove uncertainty marker": lambda: self._try_mark_uncertainty(False),
             "Edit//Marker-Set color of lineage...": self._set_color_of_lineage,
             "Edit//Marker-Delete entire lineage [Ctrl+Delete]": self._delete_selected_lineage,
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
@@ -343,10 +363,21 @@ class LinkAndPositionEditor(AbstractEditor):
             "Navigate//Layer-Layer of selected position [Space]": self._move_to_z_of_selected_position,
         }
 
+        # Add options for adding position flags
+        for flag_name in position_markers.get_position_flags(self._experiment):
+            # Create copy of flag_name variable to avoid it changing in loop iteration
+            add_action = lambda bound_flag_name=flag_name: self._try_mark_as(bound_flag_name, True)
+            options["Edit//Marker-Flag position as//Type-" + flag_name] = add_action
+        options["Edit//Marker-Flag position as//Action-New flag..."] = lambda: self._try_mark_as(None, True)
+        for flag_name in position_markers.get_position_flags(self._experiment):
+            # Create copy of flag_name variable to avoid it changing in loop iteration
+            remove_action = lambda bound_flag_name=flag_name: self._try_mark_as(bound_flag_name, False)
+            options["Edit//Marker-Flag position as//Action-Remove flag//Type-" + flag_name] = remove_action
+
         # Add options for changing position types
         for position_type in self.get_window().registry.get_registered_markers(Position):
             # Create copy of position_type variable to avoid it changing in loop iteration
-            track_action = lambda bound_position_type = position_type: self._set_track_to_type(bound_position_type)
+            track_action = lambda bound_position_type=position_type: self._set_track_to_type(bound_position_type)
             options["Edit//Marker-Set type of track//Type-" + position_type.display_name] = track_action
             position_action = lambda bound_position_type=position_type: self._set_position_to_type(bound_position_type)
             options["Edit//Marker-Set type of position//Type-" + position_type.display_name] = position_action
@@ -433,21 +464,35 @@ class LinkAndPositionEditor(AbstractEditor):
             return
         self._perform_action(_MarkLineageEndAction(self._selected1, marker, current_marker))
 
-    def _try_mark_uncertainty(self, uncertain: bool):
+    def _try_mark_as(self, flag_name: Optional[str], value: bool):
+        """Marks a position as having a certain flag. If the flag_name is None, the user will be prompted for a name."""
         if self._selected1 is None or self._selected2 is not None:
             self.update_status("You need to have exactly one cell selected.")
             return
+
+        update_menus = flag_name is None
+        if flag_name is None:
+            flag_name = dialog.prompt_str("Flag name", "As what do you want to flag the position?\n\nYou can pick any"
+                                                       " name. Possible examples would be \"ablated\",\n\"responder\""
+                                                       " or \"proliferative\". These flags have no intrinsic\nmeaning,"
+                                                       " but you could use them from your own scripts.")
+            if flag_name is None:
+                return
+
         position_data = self._experiment.position_data
-        if linking_markers.is_uncertain(position_data, self._selected1) == uncertain:
-            if uncertain:
-                self.update_status("Selected position is already marked as uncertain.")
+        if bool(position_data.get_position_data(self._selected1, flag_name)) == value:
+            if value:
+                self.update_status(f"Selected position is already marked as {flag_name}.")
             else:
-                self.update_status("Selected position is not marked as uncertain, cannot remove marker.")
+                self.update_status(f"Selected position is not marked as {flag_name}, cannot remove marker.")
             return
-        if uncertain:
-            self._perform_action(_MarkPositionAsUncertainAction(self._selected1))
+        if value:
+            self._perform_action(_MarkPositionAsSomethingAction(self._selected1, flag_name))
         else:
-            self._perform_action(ReversedAction(_MarkPositionAsUncertainAction(self._selected1)))
+            self._perform_action(ReversedAction(_MarkPositionAsSomethingAction(self._selected1, flag_name)))
+
+        if update_menus:
+            self._window.redraw_all()  # So that the new flag appears in the menus
 
     def _show_spline_editor(self):
         from organoid_tracker.visualizer.spline_editor import SplineEditor
@@ -491,12 +536,16 @@ class LinkAndPositionEditor(AbstractEditor):
         if minimum is None or maximum is None:
             raise UserError("No data loaded", "No time points found. Did you load any data?")
 
-        time_point_number_start = dialog.prompt_int("Start time point", "At which time point should we start the deletion?",
-                                                    minimum=minimum, maximum=maximum, default=self._time_point.time_point_number())
+        time_point_number_start = dialog.prompt_int("Start time point",
+                                                    "At which time point should we start the deletion?",
+                                                    minimum=minimum, maximum=maximum,
+                                                    default=self._time_point.time_point_number())
         if time_point_number_start is None:
             return
-        time_point_number_end = dialog.prompt_int("End time point", "Up to and including which time point should we delete?",
-                                                  minimum=time_point_number_start, maximum=maximum, default=time_point_number_start)
+        time_point_number_end = dialog.prompt_int("End time point",
+                                                  "Up to and including which time point should we delete?",
+                                                  minimum=time_point_number_start, maximum=maximum,
+                                                  default=time_point_number_start)
         if time_point_number_end is None:
             return
         snapshots = []
@@ -529,8 +578,9 @@ class LinkAndPositionEditor(AbstractEditor):
     def _delete_short_lineages(self):
         """Deletes all lineages where at least a single error was present."""
         min_time_points = dialog.prompt_int("Deleting short lineages", "For how many time points should a cell be "
-                                            "visible in order to keep it? Cells (including their offspring) that are"
-                                            " visible for less time points will be deleted.", minimum=1, default=4)
+                                                                       "visible in order to keep it? Cells (including their offspring) that are"
+                                                                       " visible for less time points will be deleted.",
+                                            minimum=1, default=4)
         if min_time_points is None:
             return
 
@@ -561,7 +611,7 @@ class LinkAndPositionEditor(AbstractEditor):
     def _delete_selected_lineage(self):
         if self._selected1 is None:
             raise UserError("No cell selected", "You need to select a cell first to delete all cells in that"
-                                                    " lineage.")
+                                                " lineage.")
         if self._selected2 is not None:
             raise UserError("Too many cell selected", "You have selected multiple cells - please select only one.")
 
@@ -633,8 +683,10 @@ class LinkAndPositionEditor(AbstractEditor):
                     mouse_position = Position(event.xdata, event.ydata, self._z, time_point=mouse_position.time_point())
                     self._selected1 = mouse_position
                     new_particle = FullPositionSnapshot.position_with_links(mouse_position, links=[connection,
-                                                                                                   *(link for link in old_particle.links
-                                               if link.time_point() != connection.time_point())])
+                                                                                                   *(link for link in
+                                                                                                     old_particle.links
+                                                                                                     if
+                                                                                                     link.time_point() != connection.time_point())])
                     self._perform_action(_OverwritePositionAction(new_particle, old_particle))
             else:
                 inserting_position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)

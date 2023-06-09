@@ -9,6 +9,7 @@ from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.shape import ParticleShape, UNKNOWN_SHAPE
 from organoid_tracker.linking_analysis.errors import Error
+from organoid_tracker.position_analysis.position_markers import UNCERTAIN_MARKER
 
 
 class EndMarker(Enum):
@@ -223,7 +224,7 @@ def has_mother_scores(position_data: PositionData) -> bool:
 def is_uncertain(position_data: PositionData, position: Position) -> bool:
     """Returns True if the given position is marked as uncertain. A person can mark a position as uncertain if it is not
     clear whether there is actually a position marker there. The error checker will warm for such cases."""
-    uncertain = position_data.get_position_data(position, "uncertain")
+    uncertain = position_data.get_position_data(position, UNCERTAIN_MARKER)
     if uncertain is None:
         return False
     return uncertain
@@ -232,6 +233,6 @@ def is_uncertain(position_data: PositionData, position: Position) -> bool:
 def set_uncertain(position_data: PositionData, position: Position, uncertain: bool):
     """Marks the given position as certain/uncertain. See is_uncertain for more info."""
     if uncertain:
-        position_data.set_position_data(position, "uncertain", True)
+        position_data.set_position_data(position, UNCERTAIN_MARKER, True)
     else:
-        position_data.set_position_data(position, "uncertain", None)  # This removes the marker
+        position_data.set_position_data(position, UNCERTAIN_MARKER, None)  # This removes the marker

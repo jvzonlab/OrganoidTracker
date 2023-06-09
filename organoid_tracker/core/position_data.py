@@ -125,12 +125,12 @@ class PositionData:
             if len(values_by_position) == 0:
                 continue
             example_value = next(iter(values_by_position.values()))
-            if isinstance(example_value, int) or isinstance(example_value, float):
+            if isinstance(example_value, bool):
+                return_dict[key] = bool
+            elif isinstance(example_value, int) or isinstance(example_value, float):
                 return_dict[key] = float
             elif isinstance(example_value, str):
                 return_dict[key] = str
-            elif isinstance(example_value, bool):
-                return_dict[key] = bool
             elif isinstance(example_value, list):
                 return_dict[key] = list
             elif isinstance(example_value, ParticleShape):

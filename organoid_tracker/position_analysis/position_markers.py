@@ -6,6 +6,9 @@ from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
 
 
+UNCERTAIN_MARKER = "uncertain"
+
+
 def get_position_type(position_data: PositionData, position: Position) -> Optional[str]:
     """Gets the type of the cell in UPPERCASE, interpreted as the intestinal organoid cell type."""
     type = position_data.get_position_data(position, "type")
@@ -59,3 +62,17 @@ def get_normalized_intensity(experiment: Experiment, position: Position) -> Opti
     """@deprecated Old method, please use intensity_calculator.get_normalized_intensity instead."""
     from . import intensity_calculator
     return intensity_calculator.get_normalized_intensity(experiment, position)
+
+
+def get_position_flags(experiment: Experiment) -> Iterable[str]:
+    """Gets all position"""
+    returned_uncertain_marker = False
+    for data_name, data_type in experiment.position_data.get_data_names_and_types().items():
+        if data_type == bool:
+            yield data_name
+            if data_name == UNCERTAIN_MARKER:
+                returned_uncertain_marker = True
+
+    # Always make sure that this one is returned, this flag is present by default
+    if not returned_uncertain_marker:
+        yield UNCERTAIN_MARKER
