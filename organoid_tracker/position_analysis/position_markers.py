@@ -6,6 +6,8 @@ from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
 
 
+# If a position has position data with this name, the error checker will always flag it for manual review. Useful for
+# reminding yourself to revisit a position.
 UNCERTAIN_MARKER = "uncertain"
 
 
@@ -65,7 +67,9 @@ def get_normalized_intensity(experiment: Experiment, position: Position) -> Opti
 
 
 def get_position_flags(experiment: Experiment) -> Iterable[str]:
-    """Gets all position"""
+    """Gets all used position flags of the experiment. These are simply all keys in experiment.position_data with the
+    bool data type. In addition, the special flag `UNCERTAIN_MARKER` is always returned, as that flag is used in the
+    error checker."""
     returned_uncertain_marker = False
     for data_name, data_type in experiment.position_data.get_data_names_and_types().items():
         if data_type == bool:
