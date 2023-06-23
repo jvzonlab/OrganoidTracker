@@ -263,7 +263,7 @@ def _parse_image_filters(data: Dict[str, Any]) -> ImageFilters:
             if filter_dict["type"] == "threshold":
                 filters.add_filter(channel, ThresholdFilter(filter_dict["min"]))
             elif filter_dict["type"] == "gaussian":
-                filters.add_filter(channel, GaussianBlurFilter(filter_dict["radius"]))
+                filters.add_filter(channel, GaussianBlurFilter(filter_dict["radius_px"]))
             elif filter_dict["type"] == "multiply":
                 filters.add_filter(channel, MultiplyPixelsFilter(filter_dict["factor"]))
             elif filter_dict["type"] == "interpolated_min_max":
