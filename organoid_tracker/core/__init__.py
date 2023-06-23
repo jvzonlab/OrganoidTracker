@@ -124,6 +124,9 @@ class Name:
         set it manually."""
         return self._is_automatic
 
+    def copy(self) -> "Name":
+        """Creates a copy of this name, so that name changes don't propagate through."""
+        return Name(name=self._name, is_automatic=self._is_automatic)
 
 class Color:
     """Represents an RGB color."""

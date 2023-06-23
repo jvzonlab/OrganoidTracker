@@ -253,6 +253,12 @@ class Experiment:
         # Don't allow to replace the Name object
         return self._name
 
+    @name.setter
+    def name(self, name: Name):
+        if not isinstance(name, Name):
+            raise TypeError("name must be an instance of Name, but as " + str(name))
+        self._name = name
+
     @property
     def warning_limits(self) -> WarningLimits:
         """Gets the limits used by the error checker. For example: what movement is so fast that it should raise an
@@ -356,7 +362,7 @@ class Experiment:
 
     def copy_selected(self, *, images: bool = False, positions: bool = False, position_data: bool = False,
                       links: bool = False, link_data: bool = False, global_data: bool = False,
-                      connections: bool = False) -> "Experiment":
+                      connections: bool = False, name: bool = False) -> "Experiment":
         """Copies the selected attributes over to a new experiment. Note that position_data and links can only be copied
         if the positions are copied."""
         copy = Experiment()
@@ -374,4 +380,6 @@ class Experiment:
             copy.global_data = self._global_data.copy()
         if connections:
             copy.connections = self._connections.copy()
+        if name:
+            copy.name = self._name.copy()
         return copy
