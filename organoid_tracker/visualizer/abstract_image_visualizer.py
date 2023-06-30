@@ -62,7 +62,7 @@ class AbstractImageVisualizer(Visualizer):
         image_2d = None
         if self._display_settings.show_images:
             image_2d = self.load_image(self._time_point, self._z, self._display_settings.show_next_time_point)
-        if self._display_settings.show_reconstruction:
+        if self.should_show_image_reconstruction():
             if image_2d is not None:
                 # Create background based on time point images
                 image_shape = image_2d.shape[0:2] + (3,)
@@ -94,7 +94,7 @@ class AbstractImageVisualizer(Visualizer):
         """Just returns the full 3D image. Likely requites loading additional images from disk."""
         image_3d = self._experiment.images.get_image_stack(self._display_settings.time_point,
                                                            self._display_settings.image_channel)
-        if not self._display_settings.show_reconstruction:
+        if not self.should_show_image_reconstruction():
             return image_3d  # Done, just return the image
 
         # Create reconstruction
@@ -117,7 +117,7 @@ class AbstractImageVisualizer(Visualizer):
 
     def refresh_data(self):
         self._calculate_time_point_metadata()
-        if self._display_settings.show_reconstruction:
+        if self.should_show_image_reconstruction():
             self._load_2d_image()  # Reload image, as image is a reconstruction of the data
         super().refresh_data()
 
@@ -158,8 +158,6 @@ class AbstractImageVisualizer(Visualizer):
         time_point_number = position.time_point_number()
         dt = 0 if time_point_number is None else self._time_point.time_point_number() - time_point_number
         self._ax.plot(position.x, position.y, 'o', markersize=25, color=(0, 0, 0, 0), markeredgecolor=color, markeredgewidth=5)
-        shape = linking_markers.get_shape(self._experiment.position_data, position)
-        shape.draw2d(position.x, position.y, dz, dt, self._ax, color, "black")
 
     def _draw_beacons(self):
         for beacon in self._experiment.beacons.of_time_point(self._time_point):
@@ -411,8 +409,6 @@ class AbstractImageVisualizer(Visualizer):
                 self._toggle_showing_next_time_point,
             "View//Toggle-Toggle showing images [" + DisplaySettings.KEY_SHOW_IMAGES.upper() + "]":
                 self._toggle_showing_images,
-            "View//Toggle-Toggle showing reconstruction [" + DisplaySettings.KEY_SHOW_RECONSTRUCTION.upper() + "]":
-                self._toggle_showing_reconstruction,
             "View//Toggle-Toggle showing splines": self._toggle_showing_splines,
             "View//Toggle-Toggle showing position markers [P]": self._toggle_showing_position_markers,
             "View//Toggle-Toggle showing link and connection markers": self._toggle_showing_links_and_connections,
@@ -547,7 +543,6 @@ class AbstractImageVisualizer(Visualizer):
             self._display_settings.show_images = True
             self._display_settings.show_positions = True
             self._display_settings.show_splines = True
-            self._display_settings.show_reconstruction = False
             self._display_settings.show_next_time_point = False
             self.refresh_all()
             self.update_status("You're already in the home screen. Reset most display settings.")
@@ -590,10 +585,6 @@ class AbstractImageVisualizer(Visualizer):
 
     def _toggle_showing_images(self):
         self._display_settings.show_images = not self._display_settings.show_images
-        self._move_in_time(0)  # Refreshes image
-
-    def _toggle_showing_reconstruction(self):
-        self._display_settings.show_reconstruction = not self._display_settings.show_reconstruction
         self._move_in_time(0)  # Refreshes image
 
     def _toggle_showing_splines(self):
@@ -762,3 +753,5 @@ class AbstractImageVisualizer(Visualizer):
             self.update_status(f"Switched to channel {new_index + 1} of {len(channels)}")
         except ValueError:
             pass
+
+

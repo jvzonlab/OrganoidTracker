@@ -11,7 +11,6 @@ dependencies:
   - numpy
   - pip
   - python
-  - mahotas
   - tifffile
   - scikit-image
   - scipy

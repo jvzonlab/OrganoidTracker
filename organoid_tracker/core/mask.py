@@ -1,6 +1,5 @@
 from typing import Optional, Callable, Union
 
-import mahotas
 import numpy
 from numpy import ndarray
 from scipy.ndimage import binary_dilation
@@ -217,13 +216,6 @@ class Mask:
         result_xyz = func(xaxis[:, None, None], yaxis[None, :, None], zaxis[None, None, :])
         result_zyx = numpy.moveaxis(result_xyz, [2, 0], [0, 2])
         array[result_zyx == True] = 1
-
-    def dilate_xyz(self, iterations: int = 1):
-        """Dilates the image in the xyz direction."""
-        mask = self.get_mask_array()
-        for i in range(iterations):
-            mask = mahotas.dilate(mask)
-        self._mask = mask
 
     def dilate_xy(self, iterations: int = 1):
         """Dilates the mask image in the xy direction."""

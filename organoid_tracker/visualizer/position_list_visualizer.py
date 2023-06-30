@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any, Type
 from matplotlib.backend_bases import KeyEvent
 
 from organoid_tracker import core
-from organoid_tracker.core import clamp, shape
+from organoid_tracker.core import marker
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
 from organoid_tracker.gui.window import Window, DisplaySettings
@@ -87,12 +87,10 @@ class PositionListVisualizer(Visualizer):
         self._show_image()
 
         current_position = self._position_list[self._current_position_index]
-        shape = linking_markers.get_shape(self._experiment.position_data, current_position)
         edge_color = self._get_type_color(current_position)
         if edge_color is None:
             edge_color = "black"
-        shape.draw2d(current_position.x, current_position.y, 0, 0, self._ax, core.COLOR_CELL_CURRENT, edge_color)
-        shape.draw_marker_2d(current_position.x, current_position.y, 0, 0, self._ax, core.COLOR_CELL_CURRENT, edge_color)
+        marker.draw_marker_2d(current_position.x, current_position.y, 0, 0, self._ax, core.COLOR_CELL_CURRENT, edge_color)
         self._draw_connections(self._experiment.links, current_position)
         self._window.set_figure_title(self.get_title(self._position_list, self._current_position_index))
 
@@ -124,11 +122,6 @@ class PositionListVisualizer(Visualizer):
 
             self._ax.plot([connected_position.x, main_position.x], [connected_position.y, main_position.y],
                           color=color, linestyle=line_style, linewidth=line_width)
-            edge_color = self._get_type_color(connected_position)
-            if edge_color is None:
-                edge_color = "black"
-            shape.draw_marker_2d(connected_position.x, connected_position.y, dz, delta_time, self._ax, color,
-                                             edge_color)
 
     def _show_image(self):
         current_position = self._position_list[self._current_position_index]

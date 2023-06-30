@@ -5,9 +5,9 @@ import os
 from typing import Optional, Dict, List
 
 import numpy
+import skimage.measure
+import skimage.segmentation
 from numpy import ndarray
-
-import mahotas
 from scipy.ndimage import distance_transform_edt
 from tifffile import tifffile
 
@@ -20,7 +20,6 @@ from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.resolution import ImageResolution
-from organoid_tracker.util import bits
 
 
 class _Link:
@@ -87,19 +86,17 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
 
         print(f"Working on time point {time_point_number}...")
         image = tifffile.imread(f"{file_prefix}{time_point_number:03}.tif")
-        position_boxes : ndarray = mahotas.labeled.bbox(image)
-        positions_of_time_point = [None]  # ID 0 is never used, that's the background
+        regionprops = skimage.measure.regionprops(image)
+        positions_of_time_point = dict()
 
-        for i in range(1, position_boxes.shape[0]):
-            position = _box_to_position(position_boxes[i], time_point_number)
-            positions_of_time_point.append(position)
-
-            if position is None:
-                continue
+        for region in regionprops:
+            centroid = region.centroid
+            position = Position(float(centroid[2]), float(centroid[1]), float(centroid[0]), time_point_number=time_point_number)
+            positions_of_time_point[region.label] = position
 
             # Add position
             all_positions.add(position)
-            all_position_data.set_position_data(position, "ctc_id", i)
+            all_position_data.set_position_data(position, "ctc_id", region.label)
 
             # Try to add link
             if i < len(positions_of_previous_time_point):
@@ -234,9 +231,9 @@ def _save_track_images_watershed(experiment: Experiment, image_prefix: str, mask
         background_color = distance_map.max() + 1
         distance_map[image_mask_array.array == 0] = background_color
 
-        regions = mahotas.cwatershed(distance_map, image_seed_array).astype(numpy.uint16)
+        regions = skimage.segmentation.watershed(distance_map, image_seed_array).astype(numpy.uint16)
         regions[image_mask_array.array == 0] = 0  # Remove background
-        tifffile.imsave(image_file_name, regions, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
+        tifffile.imwrite(image_file_name, regions, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
 
 
 def _save_overview_file(experiment: Experiment, file_name: str):

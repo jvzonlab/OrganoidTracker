@@ -125,26 +125,6 @@ def _has_high_division_probability_hereafter(links: Links, position_data: Positi
         return False
 
 
-def _get_volumes(position: Position, volume_lookup: PositionData,
-                 next_position_getter: Callable[[Position], Optional[Position]], max_amount: int) -> Optional[float]:
-    """Gets the mean volume over time, based on the given number of recorded volumes. If there aren't that many
-    recorded volumes, then the it uses less. However, if there are less than 2 volumes recorded, None is returned, as in
-    that case we don't have enough data to say anything useful."""
-    volumes = list()
-    while len(volumes) < max_amount:
-        shape = linking_markers.get_shape(volume_lookup, position)
-        if shape.is_unknown():
-            break
-        volumes.append(shape.volume())
-
-        position = next_position_getter(position)
-        if position is None:
-            break
-    if len(volumes) < 2:
-        return None  # Too few data points for an average
-    return sum(volumes) / len(volumes)
-
-
 def find_errors_in_positions_links_and_all_dividing_cells(experiment: Experiment, *iterable: Position):
     """Checks all of the given positions and all dividing cells in the experiment for logical errors, like cell merges,
     cell dividing into three daughters, cells moving too fast, ect. The reason dividing cells are also checked is that

@@ -8,21 +8,21 @@ from typing import List, Dict, Any, Iterable, Optional
 
 import numpy
 
-from organoid_tracker.core import shape, TimePoint, UserError, Color
+from organoid_tracker.core import TimePoint, UserError, Color
 from organoid_tracker.core.beacon_collection import BeaconCollection
 from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.global_data import GlobalData
-from organoid_tracker.core.image_filters import ImageFilter, ImageFilters
+from organoid_tracker.core.image_filters import ImageFilters
 from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.core.images import ImageOffsets
 from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.links import Links
-from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position_data import PositionData
-from organoid_tracker.core.spline import SplineCollection, Spline
 from organoid_tracker.core.resolution import ImageResolution
+from organoid_tracker.core.spline import SplineCollection, Spline
 from organoid_tracker.core.warning_limits import WarningLimits
 from organoid_tracker.image_loading.builtin_image_filters import ThresholdFilter, GaussianBlurFilter, \
     MultiplyPixelsFilter, InterpolatedMinMaxFilter, IntensityPoint
@@ -170,10 +170,7 @@ def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List],
 
         for raw_position in raw_positions:
             position = Position(*raw_position[0:3], time_point_number=time_point_number)
-            position_shape = shape.from_list(raw_position[3:])
             positions.add(position)
-            if not position_shape.is_unknown():
-                linking_markers.set_shape(position_data, position, position_shape)
 
 
 def _parse_links_format(experiment: Experiment, links_json: Dict[str, Any], min_time_point: int, max_time_point: int):
@@ -429,8 +426,7 @@ def _encode_positions_and_shapes(positions: PositionCollection, shapes: Position
     for time_point in positions.time_points():
         encoded_positions = []
         for position in positions.of_time_point(time_point):
-            shape = linking_markers.get_shape(shapes, position)
-            encoded_positions.append([position.x, position.y, position.z] + shape.to_list())
+            encoded_positions.append([position.x, position.y, position.z])
 
         data_structure[str(time_point.time_point_number())] = encoded_positions
     return data_structure

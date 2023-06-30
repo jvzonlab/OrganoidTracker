@@ -7,7 +7,6 @@ dependencies:
   - python=3.9
   - ilastik-forge::dpct
   - matplotlib-base
-  - mahotas
   - numpy=1.21.*  # Newer version not supported by scipy (February 2023)
   - tifffile
   - scikit-image
