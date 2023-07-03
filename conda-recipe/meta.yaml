@@ -1,0 +1,33 @@
+package:
+    name: organoid_tracker
+    version: "2.0_alpha"
+
+source:
+    path: ../
+
+requirements:
+  build:
+    - python
+  run:
+    - python
+    - dpct
+    - matplotlib-base
+    - tifffile
+    - scikit-image
+    - scipy
+    - nd2reader
+    - pyside2
+    - tensorflow-gpu
+    - tensorflow-addons
+
+test:
+  imports:
+    - organoid_tracker
+
+  commands:
+    - python -m unittest discover -s tests/
+
+about:
+    home: https://github.com/jvzonlab/OrganoidTracker
+    license: GPL2
+    summary: 'Single-cell tracking in organoids with automatic error detection'
