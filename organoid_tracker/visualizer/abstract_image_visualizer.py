@@ -1,6 +1,5 @@
 from typing import Optional, Dict, Any
 
-import cv2
 import numpy
 from matplotlib import cm
 from matplotlib.backend_bases import MouseEvent
@@ -20,6 +19,7 @@ from organoid_tracker.gui.dialog import prompt_int
 from organoid_tracker.gui.window import Window, DisplaySettings
 from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking_analysis import linking_markers
+from organoid_tracker.util import bits
 from organoid_tracker.util.mpl_helper import line_infinite
 from organoid_tracker.visualizer import Visualizer, activate
 
@@ -557,7 +557,7 @@ class AbstractImageVisualizer(Visualizer):
         if file is None:
             return
 
-        images: ndarray = cv2.convertScaleAbs(image_3d, alpha=256 / image_3d.max(), beta=0)
+        images: ndarray = bits.image_to_8bit(image_3d)
         image_shape = image_3d.shape
 
         if len(image_shape) == 3 and isinstance(self._color_map, Colormap):

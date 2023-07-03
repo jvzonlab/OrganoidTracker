@@ -15,7 +15,6 @@ dependencies:
   - scikit-image
   - scipy
   - nd2reader
-  - opencv
   - pyside2
   - sphinx=5.0.2
   - pip:

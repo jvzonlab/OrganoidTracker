@@ -12,7 +12,6 @@ dependencies:
   - scikit-image
   - scipy
   - nd2reader
-  - opencv=4.6.*  # Other versions gave issues
   - pyside2
   - tensorflow-gpu=2.7.*  # Latest available on Anaconda (February 2023)
   - keras=2.7.*  # Keep in sync with Tensorflow
