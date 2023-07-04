@@ -34,12 +34,14 @@ To test if the software is working, run `python organoid_tracker.py`. A window s
 
 Note: in previous versions of OrganoidTracker you would need to install CUDA and cuDNN. Because those programs are now installed via Anaconda, you no longer need to do this.
 
+> Tip: you can install the `orjson` library into your Conda environment to speed up saving/loading of AUT files by a factor of two. To do this, run the command `conda install --channel conda-forge orjson`.
+
 ## macOS and Linux
 Unfortunately, OrganoidTracker has not been tested on any other OSes. If you're in for a challenge, here are some instructions. Feel free to ask the authors if you run into any problems, we're interested in getting OrganoidTracker to work on other OSes.
 
 Download and install Anaconda/Miniconda and open the Anaconda Prompt. Use the `cd` command to navigate to the directory of OrganoidTracker. Run the following commands:
 
-    conda create -n organoid_tracker -c ilastik-forge -c esri -c conda-forge  python=3.9 dpct matplotlib-base tifffile scikit-image scipy nd2reader pyside2 tensorflow-gpu tensorflow-addons
+    conda create -n organoid_tracker -c ilastik-forge -c esri -c conda-forge python=3.9 dpct matplotlib-base tifffile scikit-image scipy nd2reader pyside2 tensorflow-gpu tensorflow-addons
     source activate organoid_tracker
 
 The first command creates an Anaconda environment named "organoid_tracker" with all dependencies installed. The second command activates this environment. The third command installs Tensorflow, which only has a PIP package.

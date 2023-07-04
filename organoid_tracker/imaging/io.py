@@ -1,12 +1,8 @@
 """Classes for expressing the positions of positions"""
-import json
 import os
 import warnings
-from json import JSONEncoder
 from pathlib import Path
 from typing import List, Dict, Any, Iterable, Optional
-
-import numpy
 
 from organoid_tracker.core import TimePoint, UserError, Color
 from organoid_tracker.core.beacon_collection import BeaconCollection
@@ -30,18 +26,18 @@ from organoid_tracker.linking_analysis import linking_markers
 
 FILE_EXTENSION = "aut"
 SUPPORTED_IMPORT_FILES = [
-        (FILE_EXTENSION.upper() + " file", "*." + FILE_EXTENSION),
-        ("Detection or linking files", "*.json"),
-        ("Cell tracking challenge files", "*.txt"),
-        ("TrackMate file", "*.xml"),
-        ("Guizela's tracking files", "track_00000.p")]
+    (FILE_EXTENSION.upper() + " file", "*." + FILE_EXTENSION),
+    ("Detection or linking files", "*.json"),
+    ("Cell tracking challenge files", "*.txt"),
+    ("TrackMate file", "*.xml"),
+    ("Guizela's tracking files", "track_00000.p")]
+
 
 def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: str,
                                         min_time_point: int = 0, max_time_point: int = 5000):
     """Loads a JSON file that contains position positions, with or without shape information."""
-    with open(json_file_name) as handle:
-        time_points = json.load(handle)
-        _parse_shape_format(experiment, time_points, min_time_point, max_time_point)
+    time_points = _read_json_from_file(json_file_name)
+    _parse_position_format(experiment, time_points, min_time_point, max_time_point)
 
 
 def _load_guizela_data_file(experiment: Experiment, file_name: str, min_time_point: int, max_time_point: int):
@@ -51,7 +47,8 @@ def _load_guizela_data_file(experiment: Experiment, file_name: str, min_time_poi
     guizela_data_importer.add_data_to_experiment(experiment, os.path.dirname(file_name), min_time_point, max_time_point)
 
 
-def _load_cell_tracking_challenge_file(experiment: Experiment, file_name: str, min_time_point: int, max_time_point: int):
+def _load_cell_tracking_challenge_file(experiment: Experiment, file_name: str, min_time_point: int,
+                                       max_time_point: int):
     from organoid_tracker.imaging import ctc_io
     ctc_io.load_data_file(file_name, min_time_point, max_time_point, experiment=experiment)
 
@@ -86,82 +83,81 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
 
 def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point: int, max_time_point: int):
     """Loads any kind of JSON file."""
-    with open(file_name) as handle:
-        data = json.load(handle, object_hook=_my_decoder)
+    data = _read_json_from_file(file_name)
 
-        if "version" not in data and "family_scores" not in data:
-            # We don't have a general data file, but a specialized one
-            if "directed" in data:
-                # File is a linking result file
-                _parse_links_format(experiment, data, min_time_point, max_time_point)
-            else:  # file is a position/shape file
-                _parse_shape_format(experiment, data, min_time_point, max_time_point)
-            return experiment
+    if "version" not in data and "family_scores" not in data:
+        # We don't have a general data file, but a specialized one
+        if "directed" in data:
+            # File is a linking result file
+            _parse_links_format(experiment, data, min_time_point, max_time_point)
+        else:  # file is a position/shape file
+            _parse_position_format(experiment, data, min_time_point, max_time_point)
+        return experiment
 
-        if data.get("version", "v1") != "v1":
-            raise ValueError("Unknown data version", "This program is not able to load data of version "
-                             + str(data["version"]) + ".")
+    if data.get("version", "v1") != "v1":
+        raise ValueError("Unknown data version", "This program is not able to load data of version "
+                         + str(data["version"]) + ".")
 
-        # We have a valid data file
-        # Let the experiment overwrite this file upon the next save
-        experiment.last_save_file = file_name
+    # We have a valid data file
+    # Let the experiment overwrite this file upon the next save
+    experiment.last_save_file = file_name
 
-        if "name" in data:
-            is_automatic = bool(data.get("name_is_automatic"))
-            experiment.name.set_name(data["name"], is_automatic=is_automatic)
+    if "name" in data:
+        is_automatic = bool(data.get("name_is_automatic"))
+        experiment.name.set_name(data["name"], is_automatic=is_automatic)
 
-        if "shapes" in data:
-            # Deprecated, nowadays stored in "positions"
-            _parse_shape_format(experiment, data["shapes"], min_time_point, max_time_point)
-        elif "positions" in data:
-            _parse_shape_format(experiment, data["positions"], min_time_point, max_time_point)
+    if "shapes" in data:
+        # Deprecated, nowadays stored in "positions"
+        _parse_position_format(experiment, data["shapes"], min_time_point, max_time_point)
+    elif "positions" in data:
+        _parse_position_format(experiment, data["positions"], min_time_point, max_time_point)
 
-        if "data_axes" in data:
-            _parse_splines_format(experiment, data["data_axes"], min_time_point, max_time_point)
+    if "data_axes" in data:
+        _parse_splines_format(experiment, data["data_axes"], min_time_point, max_time_point)
 
-        if "data_axes_meta" in data:
-            _parse_splines_meta_format(experiment, data["data_axes_meta"])
+    if "data_axes_meta" in data:
+        _parse_splines_meta_format(experiment, data["data_axes_meta"])
 
-        if "beacons" in data:
-            _parse_beacons_format(experiment, data["beacons"], min_time_point, max_time_point)
+    if "beacons" in data:
+        _parse_beacons_format(experiment, data["beacons"], min_time_point, max_time_point)
 
-        if "connections" in data:
-            _parse_connections_format(experiment, data["connections"], min_time_point, max_time_point)
+    if "connections" in data:
+        _parse_connections_format(experiment, data["connections"], min_time_point, max_time_point)
 
-        if "warning_limits" in data:
-            experiment.warning_limits = WarningLimits(**data["warning_limits"])
+    if "warning_limits" in data:
+        experiment.warning_limits = WarningLimits(**data["warning_limits"])
 
-        if "links" in data:
-            _parse_links_format(experiment, data["links"], min_time_point, max_time_point)
-        elif "links_scratch" in data:  # Deprecated, was used back when experiments could hold multiple linking sets
-            _parse_links_format(experiment, data["links_scratch"], min_time_point, max_time_point)
-        elif "links_baseline" in data:  # Deprecated, was used back when experiments could hold multiple linking sets
-            _parse_links_format(experiment, data["links_baseline"], min_time_point, max_time_point)
+    if "links" in data:
+        _parse_links_format(experiment, data["links"], min_time_point, max_time_point)
+    elif "links_scratch" in data:  # Deprecated, was used back when experiments could hold multiple linking sets
+        _parse_links_format(experiment, data["links_scratch"], min_time_point, max_time_point)
+    elif "links_baseline" in data:  # Deprecated, was used back when experiments could hold multiple linking sets
+        _parse_links_format(experiment, data["links_baseline"], min_time_point, max_time_point)
 
-        if "image_resolution" in data:
-            x_res = data["image_resolution"]["x_um"]
-            y_res = data["image_resolution"]["y_um"]
-            z_res = data["image_resolution"]["z_um"]
-            t_res = data["image_resolution"]["t_m"]
-            experiment.images.set_resolution(ImageResolution(x_res, y_res, z_res, t_res))
+    if "image_resolution" in data:
+        x_res = data["image_resolution"]["x_um"]
+        y_res = data["image_resolution"]["y_um"]
+        z_res = data["image_resolution"]["z_um"]
+        t_res = data["image_resolution"]["t_m"]
+        experiment.images.set_resolution(ImageResolution(x_res, y_res, z_res, t_res))
 
-        if "image_offsets" in data:
-            experiment.images.offsets = ImageOffsets(data["image_offsets"])
+    if "image_offsets" in data:
+        experiment.images.offsets = ImageOffsets([_parse_position(entry) for entry in data["image_offsets"]])
 
-        if "image_filters" in data:
-            experiment.images.filters = _parse_image_filters(data["image_filters"])
+    if "image_filters" in data:
+        experiment.images.filters = _parse_image_filters(data["image_filters"])
 
-        if "color" in data:
-            color = data["color"]
-            experiment.color = Color.from_rgb_floats(color[0], color[1], color[2])
+    if "color" in data:
+        color = data["color"]
+        experiment.color = Color.from_rgb_floats(color[0], color[1], color[2])
 
-        if "other_data" in data:
-            experiment.global_data = GlobalData(data["other_data"])
+    if "other_data" in data:
+        experiment.global_data = GlobalData(data["other_data"])
 
 
-def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List], min_time_point: int, max_time_point: int):
+def _parse_position_format(experiment: Experiment, json_structure: Dict[str, List], min_time_point: int,
+                           max_time_point: int):
     positions = experiment.positions
-    position_data = experiment.position_data
 
     for time_point_number, raw_positions in json_structure.items():
         time_point_number = int(time_point_number)  # str -> int
@@ -222,7 +218,8 @@ def _parse_splines_meta_format(experiment: Experiment, axes_meta: Dict[str, obje
                 experiment.splines.set_marker_name(spline_id, marker, is_axis)
 
 
-def _parse_beacons_format(experiment: Experiment, beacons_data: Dict[str, List], min_time_point: int, max_time_point: int):
+def _parse_beacons_format(experiment: Experiment, beacons_data: Dict[str, List], min_time_point: int,
+                          max_time_point: int):
     """Expects a dict: `{"1": [...], "2": [...]}`. Keys are time points, values are lists with [x,y,z] positions:
     `[[2,4,7], [4,5.3,3], ...]`."""
     for time_point_str, beacons_list in beacons_data.items():
@@ -233,7 +230,7 @@ def _parse_beacons_format(experiment: Experiment, beacons_data: Dict[str, List],
             experiment.beacons.add(Position(*beacon_values, time_point_number=time_point_number))
 
 
-def _parse_connections_format(experiment: Experiment, connections_data: Dict[str, List[List[Position]]],
+def _parse_connections_format(experiment: Experiment, connections_data: Dict[str, List[List[Dict]]],
                               min_time_point: int, max_time_point: int):
     """Adds all connections from the serialized format to the Connections object."""
     connections = experiment.connections
@@ -243,8 +240,8 @@ def _parse_connections_format(experiment: Experiment, connections_data: Dict[str
             continue
 
         for connection in connections_list:
-            position1 = connection[0]
-            position2 = connection[1]
+            position1 = _parse_position(connection[0])
+            position2 = _parse_position(connection[1])
 
             connections.add_connection(position1.with_time_point_number(time_point_number),
                                        position2.with_time_point_number(time_point_number))
@@ -266,7 +263,7 @@ def _parse_image_filters(data: Dict[str, Any]) -> ImageFilters:
             elif filter_dict["type"] == "interpolated_min_max":
                 points = dict()
                 for point_dict in filter_dict["points"]:
-                    points[IntensityPoint(time_point=TimePoint(point_dict["t"]), z=point_dict["z"])]\
+                    points[IntensityPoint(time_point=TimePoint(point_dict["t"]), z=point_dict["z"])] \
                         = point_dict["min"], point_dict["max"]
                 filters.add_filter(channel, InterpolatedMinMaxFilter(points))
             else:
@@ -274,7 +271,15 @@ def _parse_image_filters(data: Dict[str, Any]) -> ImageFilters:
     return filters
 
 
-def _add_d3_data(links: Links, link_data: LinkData, position_data: PositionData, links_json: Dict, min_time_point: int = -100000, max_time_point: int = 100000):
+def _parse_position(json_structure: Dict[str, Any]) -> Position:
+    if "_time_point_number" in json_structure:
+        return Position(json_structure["x"], json_structure["y"], json_structure["z"],
+                        time_point_number=json_structure["_time_point_number"])
+    return Position(json_structure["x"], json_structure["y"], json_structure["z"])
+
+
+def _add_d3_data(links: Links, link_data: LinkData, position_data: PositionData, links_json: Dict,
+                 min_time_point: int = -100000, max_time_point: int = 100000):
     """Adds data in the D3.js node-link format. Used for deserialization."""
 
     # Add position data
@@ -282,9 +287,10 @@ def _add_d3_data(links: Links, link_data: LinkData, position_data: PositionData,
         if len(node.keys()) == 1:
             # No extra data found
             continue
-        position = node["id"]
+        position = _parse_position(node["id"])
         if position.time_point_number() < min_time_point or position.time_point_number() > max_time_point:
             continue  # Out of range
+
         for data_key, data_value in node.items():
             if data_key == "id":
                 continue
@@ -293,10 +299,10 @@ def _add_d3_data(links: Links, link_data: LinkData, position_data: PositionData,
 
     # Add links (and link and lineage data)
     for link in links_json["links"]:
-        source: Position = link["source"]
-        target: Position = link["target"]
+        source = _parse_position(link["source"])
+        target = _parse_position(link["target"])
         if source.time_point_number() < min_time_point or target.time_point_number() < min_time_point \
-            or source.time_point_number() > max_time_point or target.time_point_number() > max_time_point:
+                or source.time_point_number() > max_time_point or target.time_point_number() > max_time_point:
             continue  # Ignore time points out of range
         links.add_link(source, target)
 
@@ -310,30 +316,8 @@ def _add_d3_data(links: Links, link_data: LinkData, position_data: PositionData,
                 link_data.set_link_data(source, target, data_key, data_value)
 
 
-class _MyEncoder(JSONEncoder):
-    def default(self, o):
-        if isinstance(o, Position):
-            if o.time_point_number() is None:
-                return {"x": o.x, "y": o.y, "z": o.z}
-            return {"x": o.x, "y": o.y, "z": o.z, "_time_point_number": o.time_point_number()}
-
-        if isinstance(o, numpy.int32):
-            return numpy.asscalar(o)
-
-        return JSONEncoder.default(self, o)
-
-
-def _my_decoder(json_object):
-    if 'x' in json_object and 'y' in json_object and 'z' in json_object:
-        if '_time_point_number' in json_object:
-            return Position(json_object['x'], json_object['y'], json_object['z'],
-                            time_point_number=json_object['_time_point_number'])
-        else:
-            return Position(json_object['x'], json_object['y'], json_object['z'])
-    return json_object
-
-
-def _links_to_d3_data(links: Links, positions: Iterable[Position], position_data: PositionData, link_data: LinkData) -> Dict:
+def _links_to_d3_data(links: Links, positions: Iterable[Position], position_data: PositionData,
+                      link_data: LinkData) -> Dict:
     """Return data in D3.js node-link format that is suitable for JSON serialization
     and use in Javascript documents."""
     links.sort_tracks_by_x()  # Make sure tracks are always saved in the correct order
@@ -343,7 +327,7 @@ def _links_to_d3_data(links: Links, positions: Iterable[Position], position_data
     # Save nodes and store extra data
     for position in positions:
         node = {
-            "id": position
+            "id": _encode_position(position)
         }
         for data_name, data_value in position_data.find_all_data_of_position(position):
             if data_name == "shape":
@@ -356,8 +340,8 @@ def _links_to_d3_data(links: Links, positions: Iterable[Position], position_data
     edges = list()
     for source, target in links.find_all_links():
         edge = {
-            "source": source,
-            "target": target
+            "source": _encode_position(source),
+            "target": _encode_position(target)
         }
         if source in lineage_starting_positions:
             # Start of a lineage, so add lineage data
@@ -387,8 +371,7 @@ def save_positions_to_json(experiment: Experiment, json_file_name: str):
     json_file_name_old = json_file_name + ".OLD"
     if os.path.exists(json_file_name):
         os.rename(json_file_name, json_file_name_old)
-    with open(json_file_name, 'w') as handle:
-        json.dump(data_structure, handle, cls=_MyEncoder)
+    _write_json_to_file(json_file_name, data_structure)
     if os.path.exists(json_file_name_old):
         os.remove(json_file_name_old)
 
@@ -459,12 +442,29 @@ def _encode_data_axes_meta_to_json(splines: SplineCollection) -> Dict[str, Dict[
     return json_dict
 
 
-def _encode_connections_to_json(connections: Connections) -> Dict[str, List[List[Position]]]:
+def _encode_position(position: Position) -> Dict[str, Any]:
+    if position.time_point_number() is None:
+        return {
+            "x": position.x,
+            "y": position.y,
+            "z": position.z
+        }
+    else:
+        return {
+            "x": position.x,
+            "y": position.y,
+            "z": position.z,
+            "_time_point_number": position.time_point_number()
+        }
+
+
+def _encode_connections_to_json(connections: Connections) -> Dict[str, List[List[Dict]]]:
     connections_dict = dict()
     for time_point in connections.time_points():
         connections_json = list()
         for position1, position2 in connections.of_time_point(time_point):
-            connections_json.append([position1.with_time_point(None), position2.with_time_point(None)])
+            connections_json.append([_encode_position(position1.with_time_point(None)),
+                                     _encode_position(position2.with_time_point(None))])
         connections_dict[str(time_point.time_point_number())] = connections_json
     return connections_dict
 
@@ -492,8 +492,9 @@ def _encode_image_filters_to_json(filters: ImageFilters) -> Dict[str, Any]:
             elif isinstance(filter, InterpolatedMinMaxFilter):
                 filter_dicts.append({
                     "type": "interpolated_min_max",
-                    "points": [{"min": values[0], "max": values[1], "t": point.time_point.time_point_number(), "z": point.z}
-                               for point, values in filter.points.items()]
+                    "points": [
+                        {"min": values[0], "max": values[1], "t": point.time_point.time_point_number(), "z": point.z}
+                        for point, values in filter.points.items()]
                 })
             else:
                 warnings.warn("Unknown filter: " + str(filter.get_name()))
@@ -550,7 +551,7 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
         pass
 
     # Save image offsets
-    save_data["image_offsets"] = experiment.images.offsets.to_list()
+    save_data["image_offsets"] = [_encode_position(position) for position in experiment.images.offsets.to_list()]
 
     # Save image filters
     if experiment.images.filters.has_filters():
@@ -567,10 +568,35 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
     json_file_name_old = json_file_name + ".OLD"
     if os.path.exists(json_file_name):
         os.rename(json_file_name, json_file_name_old)
-    with open(json_file_name, 'w') as handle:
-        json.dump(save_data, handle, cls=_MyEncoder)
+    _write_json_to_file(json_file_name, save_data)
     if os.path.exists(json_file_name_old):
         os.remove(json_file_name_old)
+
+
+def _read_json_from_file(file_name: str) -> Dict[str, Any]:
+    try:
+        # Faster
+        import orjson
+        with open(file_name, "rb") as handle:
+            return orjson.loads(handle.read())
+    except ModuleNotFoundError:
+        # Slower, but doesn't need the orjson library
+        import json
+        with open(file_name, "r") as handle:
+            return json.load(handle)
+
+
+def _write_json_to_file(file_name: str, data_structure):
+    try:
+        # Faster path
+        import orjson
+        with open(file_name, "wb") as handle:
+            handle.write(orjson.dumps(data_structure))
+    except ModuleNotFoundError:
+        # SLower path, but only relies on Python standard library
+        import json
+        with open(file_name, 'w') as handle:
+            json.dump(data_structure, handle)
 
 
 def _create_parent_directories(file_name: str):
