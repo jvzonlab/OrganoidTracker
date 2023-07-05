@@ -76,7 +76,7 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
 
     file_prefix = file_name[:-4]
     time_point_number = 0
-    positions_of_previous_time_point = list()
+    positions_of_previous_time_point = dict()
 
     while os.path.exists(f"{file_prefix}{time_point_number:03}.tif"):
         if time_point_number < min_time_point:
@@ -91,6 +91,8 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
 
         for region in regionprops:
             centroid = region.centroid
+            if len(centroid) == 2:  # Support 2D images too
+                centroid = (0,) + centroid
             position = Position(float(centroid[2]), float(centroid[1]), float(centroid[0]), time_point_number=time_point_number)
             positions_of_time_point[region.label] = position
 
@@ -99,17 +101,17 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
             all_position_data.set_position_data(position, "ctc_id", region.label)
 
             # Try to add link
-            if i < len(positions_of_previous_time_point):
-                previous_position = positions_of_previous_time_point[i]
+            if region.label in positions_of_previous_time_point:
+                previous_position = positions_of_previous_time_point[region.label]
                 if previous_position is not None:
-                    all_links.add_link(position, positions_of_previous_time_point[i])
+                    all_links.add_link(position, positions_of_previous_time_point[region.label])
 
         # Add mother-daughter links
         links_to_mother = links_to_mother_by_time_point.get(time_point_number)
         if links_to_mother is not None:
             for link in links_to_mother:
-                daughter = positions_of_time_point[link.daughter_id]
-                mother = positions_of_previous_time_point[link.parent_id]
+                daughter = positions_of_time_point.get(link.daughter_id)
+                mother = positions_of_previous_time_point.get(link.parent_id)
                 if mother is None or daughter is None:
                     continue
                 all_links.add_link(mother, daughter)
