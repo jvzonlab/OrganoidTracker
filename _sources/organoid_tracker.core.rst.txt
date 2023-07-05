@@ -11,10 +11,8 @@ Submodules
    organoid_tracker.core.bounding_box
    organoid_tracker.core.concurrent
    organoid_tracker.core.connections
-   organoid_tracker.core.ellipse
    organoid_tracker.core.experiment
    organoid_tracker.core.full_position_snapshot
-   organoid_tracker.core.gaussian
    organoid_tracker.core.global_data
    organoid_tracker.core.image_filters
    organoid_tracker.core.image_loader
@@ -27,7 +25,6 @@ Submodules
    organoid_tracker.core.position_collection
    organoid_tracker.core.position_data
    organoid_tracker.core.resolution
-   organoid_tracker.core.shape
    organoid_tracker.core.spline
    organoid_tracker.core.typing
    organoid_tracker.core.vector

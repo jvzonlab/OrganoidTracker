@@ -121,12 +121,15 @@ conda activate organoid_tracker
 </div>
 <p>To test if the software is working, run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">organoid_tracker.py</span></code>. A window should pop up, from which you can load images and tracking data. See the Help menu for more information and tutorials.</p>
 <p>Note: in previous versions of OrganoidTracker you would need to install CUDA and cuDNN. Because those programs are now installed via Anaconda, you no longer need to do this.</p>
+<blockquote>
+<div><p>Tip: you can install the <code class="docutils literal notranslate"><span class="pre">orjson</span></code> library into your Conda environment to speed up saving/loading of AUT files by a factor of two. To do this, run the command <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">--channel</span> <span class="pre">conda-forge</span> <span class="pre">orjson</span></code>.</p>
+</div></blockquote>
 </section>
 <section id="macos-and-linux">
 <h2>macOS and Linux<a class="headerlink" href="#macos-and-linux" title="Permalink to this heading"></a></h2>
 <p>Unfortunately, OrganoidTracker has not been tested on any other OSes. If you’re in for a challenge, here are some instructions. Feel free to ask the authors if you run into any problems, we’re interested in getting OrganoidTracker to work on other OSes.</p>
 <p>Download and install Anaconda/Miniconda and open the Anaconda Prompt. Use the <code class="docutils literal notranslate"><span class="pre">cd</span></code> command to navigate to the directory of OrganoidTracker. Run the following commands:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda create -n organoid_tracker -c ilastik-forge -c esri -c conda-forge  python=3.9 dpct matplotlib-base mahotas tifffile scikit-image scipy nd2reader opencv pyside2 tensorflow-gpu tensorflow-addons
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda create -n organoid_tracker -c ilastik-forge -c esri -c conda-forge python=3.9 dpct matplotlib-base tifffile scikit-image scipy nd2reader pyside2 tensorflow-gpu tensorflow-addons
 source activate organoid_tracker
 </pre></div>
 </div>
