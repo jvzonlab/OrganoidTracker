@@ -591,7 +591,7 @@ def _write_json_to_file(file_name: str, data_structure):
         # Faster path
         import orjson
         with open(file_name, "wb") as handle:
-            handle.write(orjson.dumps(data_structure))
+            handle.write(orjson.dumps(data_structure, option=orjson.OPT_SERIALIZE_NUMPY))
     except ModuleNotFoundError:
         # SLower path, but only relies on Python standard library
         import json
