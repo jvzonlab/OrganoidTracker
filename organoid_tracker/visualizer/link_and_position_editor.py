@@ -1,4 +1,4 @@
-from typing import Optional, List, Dict, Iterable
+from typing import Optional, List, Dict, Iterable, Tuple
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent, LocationEvent
 
@@ -6,10 +6,12 @@ from organoid_tracker import core
 from organoid_tracker.core import Color, UserError, TimePoint
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.full_position_snapshot import FullPositionSnapshot
+from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.links import LinkingTrack
 from organoid_tracker.core.marker import Marker
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.resolution import ImageResolution
+from organoid_tracker.core.typing import DataType
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.undo_redo import UndoableAction, ReversedAction
 from organoid_tracker.gui.window import Window
@@ -22,7 +24,7 @@ from organoid_tracker.visualizer.abstract_editor import AbstractEditor
 
 
 class _InsertLinkAction(UndoableAction):
-    """Used to insert a link between two positions."""
+    """Used to insert a link between two positions. Will add interpolated positions in between if necessary."""
     all_positions = List[Position]
 
     def __init__(self, position1: Position, position2: Position):
@@ -56,6 +58,29 @@ class _InsertLinkAction(UndoableAction):
         cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.all_positions[0],
                                                                                 self.all_positions[-1])
         return f"Removed link between {self.all_positions[0]} and {self.all_positions[-1]}"
+
+
+class _DeleteLinksAction(UndoableAction):
+    """Inserts multiple links. Will not interpolate any positions."""
+    position_pairs: List[Tuple[Position, Position, Dict[str, DataType]]]
+
+    def __init__(self, link_data: LinkData, position_pairs: List[Tuple[Position, Position]]):
+        self.position_pairs = list()
+        for position_a, position_b in position_pairs:
+            self.position_pairs.append((position_a, position_b,
+                                        dict(link_data.find_all_data_of_link(position_a, position_b))))
+
+    def do(self, experiment: Experiment) -> str:
+        for position1, position2, data in self.position_pairs:
+            experiment.links.remove_link(position1, position2)
+        return f"Removed {len(self.position_pairs)} links"
+
+    def undo(self, experiment: Experiment) -> str:
+        for position1, position2, data in self.position_pairs:
+            experiment.links.add_link(position1, position2)
+            for data_key, data_value in data.items():
+                experiment.link_data.set_link_data(position1, position2, data_key, data_value)
+        return f"Inserted {len(self.position_pairs)} links"
 
 
 class _InsertPositionAction(UndoableAction):
@@ -348,6 +373,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Batch-Batch deletion//Delete all tracks not in the first time point...": self._delete_tracks_not_in_first_time_point,
             "Edit//Batch-Batch deletion//Delete all positions in a rectangle...": self._show_positions_in_rectangle_deleter,
             "Edit//Batch-Batch deletion//Delete all positions without links...": self._delete_positions_without_links,
+            "Edit//Batch-Batch deletion//Delete all links with low likelihood...": self._delete_unlikely_links,
             "Edit//LineageEnd-Mark as cell death [D]": lambda: self._try_set_end_marker(EndMarker.DEAD),
             "Edit//LineageEnd-Mark as cell shedding into lumen [S]": lambda: self._try_set_end_marker(EndMarker.SHED),
             "Edit//LineageEnd-Mark as cell shedding to outside": lambda: self._try_set_end_marker(
@@ -562,6 +588,21 @@ class LinkAndPositionEditor(AbstractEditor):
             if not links.contains_position(position):
                 particles_without_links.append(FullPositionSnapshot.from_position(self._experiment, position))
         self._perform_action(_DeletePositionsAction(particles_without_links))
+
+    def _delete_unlikely_links(self):
+        """Deletes all links with a low score"""
+        cutoff = dialog.prompt_float("Deleting unlikely links", "What is the minimum required likelihood for a link (0% - 100%)?"
+                            "\nLinks with a lower likelihood, as predicted by the neural network, will be removed.",
+                            minimum=0, maximum=100, decimals=1, default=10)
+        if cutoff is None:
+            return  # Cancelled
+        cutoff_fraction = cutoff / 100
+        to_remove = list()
+        link_data = self._experiment.link_data
+        for position_a, position_b, value in link_data.find_all_links_with_data("link_probability"):
+            if value < cutoff_fraction:
+                to_remove.append((position_a, position_b))
+        self._perform_action(_DeleteLinksAction(link_data, to_remove))
 
     def _delete_tracks_with_errors(self):
         """Deletes all lineages where at least a single error was present."""
