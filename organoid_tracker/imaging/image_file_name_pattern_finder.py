@@ -41,16 +41,15 @@ def _find_time_pattern(directory: Optional[str], file_name: str) -> Optional[str
     If directory is not None, this method will only return time patterns if a next image is found after the first.
     """
     # Support t001
-    counting_part = re.search('t0*[01]', file_name)
+    counting_part = re.search('([tT]0*[01])[^0-9]', file_name)
     if counting_part is not None:
-        start, end = counting_part.start(0), counting_part.end(0)
-        return _fixup_pattern("time", file_name[0:start] + "t{time:0" + str(end - start - 1) + "}" + file_name[end:])
-
-    # Support T001
-    counting_part = re.search('T0*[01]', file_name)
-    if counting_part is not None:
-        start, end = counting_part.start(0), counting_part.end(0)
-        return _fixup_pattern("time", file_name[0:start] + "T{time:0" + str(end - start - 1) + "}" + file_name[end:])
+        start, end = counting_part.start(1), counting_part.end(1)
+        letter = file_name[start]
+        detected_number = int(file_name[start + 1:end])
+        pattern = _fixup_pattern("time", file_name[0:start] + letter + "{time:0" + str(end - start - 1) + "}" + file_name[end:])
+        if _test_few_time_points(directory, pattern, first_number=detected_number):
+            return pattern
+        return None
 
     # Support 001.extension
     counting_part = re.search('0*[01]\\.[A-Za-z]', file_name)
