@@ -96,7 +96,7 @@ class _MovieGenerator(Task):
 
 
 def _draw_marker(image_rgb: ndarray, image_x: float, image_y: float):
-    rr, cc = skimage.draw.disk((int(image_x), int(image_y)), 7, shape=image_rgb.shape[0:2])
+    rr, cc = skimage.draw.disk((int(image_y), int(image_x)), 7, shape=image_rgb.shape[0:2])
     image_rgb[rr, cc, :] = (255, 0, 255)  # Magenta
 
 
