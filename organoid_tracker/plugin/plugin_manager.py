@@ -99,6 +99,10 @@ class PluginManager:
         if folder in self._folders:
             return  # Already in use
 
+        if os.path.exists(os.path.join(folder, "__init__.py")):
+            raise ValueError("The plugins folder cannot contain an __init__.py file. Instead, the plugins folder should"
+                             " contain files and/or folders that start with \"plugin_\".")
+
         os.makedirs(folder, exist_ok=True)
         self._folders.append(folder)
         if built_in_folder:
