@@ -14,9 +14,13 @@ class WarningLimits:
     # Minimum probability of a link/division
     min_probability: float
 
+    # Minimum probability of a marginal
+    min_marginal_probability: float
+
     def __init__(self, *, min_time_between_divisions_h: float = 10,
                  max_distance_moved_um_per_min: float = 10/12,
-                 min_probability: float = 0.1, **kwargs):
+                 min_probability: float = 0.1,
+                 min_marginal_probability: float = 0.0, **kwargs):
         """Initializes the warning limits.
 
         Note: any data stored in the kwargs parameter is discarded. This parameter exists to make the program
@@ -26,6 +30,7 @@ class WarningLimits:
         self.min_time_between_divisions_h = min_time_between_divisions_h
         self.max_distance_moved_um_per_min = max_distance_moved_um_per_min
         self.min_probability = min_probability
+        self.min_marginal_probability = min_marginal_probability
 
     def to_dict(self) -> Dict[str, float]:
         """Gets all settings in a dictionary. `WarningLimits(**limits.to_dict())` will result in an object with the same

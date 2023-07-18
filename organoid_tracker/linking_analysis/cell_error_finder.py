@@ -10,7 +10,7 @@ from organoid_tracker.linking_analysis import linking_markers, particle_age_find
 from organoid_tracker.linking_analysis.errors import Error
 
 
-def find_errors_in_experiment(experiment: Experiment) -> Tuple[int, int]:
+def find_errors_in_experiment(experiment: Experiment, marginalization = False) -> Tuple[int, int]:
     """Adds errors for all logical inconsistencies in the graph, like cells that spawn out of nowhere, cells that
     merge together and cells that have three or more daughters.
     Returns the amount of errors (excluding positions without links) and the number of positions without links."""
@@ -20,7 +20,7 @@ def find_errors_in_experiment(experiment: Experiment) -> Tuple[int, int]:
     warning_count = 0
     no_links_count = 0
     for position in experiment.positions:
-        error = get_error(experiment, position)
+        error = get_error(experiment, position, marginalization=marginalization)
         linking_markers.set_error_marker(position_data, position, error)
         if error is not None:
             if links.contains_position(position):
@@ -30,7 +30,7 @@ def find_errors_in_experiment(experiment: Experiment) -> Tuple[int, int]:
     return warning_count, no_links_count
 
 
-def get_error(experiment: Experiment, position: Position) -> Optional[Error]:
+def get_error(experiment: Experiment, position: Position, marginalization = False) -> Optional[Error]:
     links = experiment.links
     position_data = experiment.position_data
     link_data = experiment.link_data
@@ -69,7 +69,16 @@ def get_error(experiment: Experiment, position: Position) -> Optional[Error]:
             return Error.NO_PAST_POSITION
     elif len(past_positions) >= 2:
         return Error.CELL_MERGE
-    else:  # len(past_positions) == 1
+
+    elif marginalization:  # len(past_positions) == 1
+        past_position = past_positions.pop()
+        # Check marginalized link probability
+        link_probability = link_data.get_link_data(past_position, position, data_name="marginal_probability")
+        if link_probability is not None and link_probability < warning_limits.min_marginal_probability\
+                and linking_markers.is_live(position_data, position):
+            print('low_link_score')
+            return Error.LOW_LINK_SCORE
+    else:
         past_position = past_positions.pop()
 
         # Check movement distance (fast movement is only allowed when a cell is launched into its death)
