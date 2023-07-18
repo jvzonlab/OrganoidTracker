@@ -1,7 +1,10 @@
 """Predictions particle positions using an already-trained convolutional neural network."""
 import json
 import os
+from functools import partial
 from typing import Tuple
+
+from tifffile import tifffile
 
 from organoid_tracker.config import ConfigFile, config_type_bool
 from organoid_tracker.core.resolution import ImageResolution
@@ -89,8 +92,11 @@ with open(os.path.join(_model_folder, "settings.json")) as file_handle:
         print("Error: model at " + _model_folder + " is made for working with " + str(json_contents["type"]) + ", not links")
         exit(1)
     time_window = json_contents["time_window"]
-    patch_shape_xyz = json_contents["patch_shape_xyz"]
-    patch_shape_zyx = [patch_shape_xyz[2], patch_shape_xyz[1], patch_shape_xyz[0]]
+    patch_shape_zyx = json_contents["patch_shape_zyx"]
+
+    scaling = json_contents["platt_scaling"]
+    intercept = json_contents["platt_intercept"]
+    intercept = np.log10(np.exp(intercept))
 
 # load models
 print("Loading model...")
@@ -121,9 +127,22 @@ for i in range(len(image_with_links_list)):
     predicted_links = predicted_links_list[i]
 
     for predicted_link, prediction in zip(predicted_links, predictions):
-        experiment.link_data.set_link_data(predicted_link[0], predicted_link[1], data_name="link_probability", value=float(prediction))
-        eps= 10 ** -10
-        experiment.link_data.set_link_data(predicted_link[0], predicted_link[1], data_name="link_penalty", value=float(-np.log10(prediction+eps)+np.log10(1-prediction+eps)))
+        eps = 10 ** -10
+        likelihood = intercept+scaling*float(np.log10(prediction+eps)-np.log10(1-prediction+eps))
+        scaled_prediction = (10**likelihood)/(1+10**likelihood)
+
+        #experiment.link_data.set_link_data(predicted_link[0], predicted_link[1], data_name="link_probability",
+                                         #  value=float(scaled_prediction))
+        experiment.link_data.set_link_data(predicted_link[0], predicted_link[1], data_name="link_probability",
+                                           value=float(scaled_prediction))
+        experiment.link_data.set_link_data(predicted_link[0], predicted_link[1], data_name="link_penalty",
+                                           value=float(-likelihood))
+
+# If predictions replace existing data, record overlap. Useful for evaluation purposes.
+if experiment.links is not None:
+    for link in experiment.links.find_all_links():
+        experiment.link_data.set_link_data(link[0], link[1], data_name="present_in_original",
+                                           value=True)
 
 print("Saving file...")
 experiment.links = possible_links
