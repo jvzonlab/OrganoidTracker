@@ -4,7 +4,6 @@ from organoid_tracker.core.position import Position
 from organoid_tracker.core.shape import ParticleShape
 from organoid_tracker.core.typing import DataType
 
-
 # All types of data that can be stored in this class
 PositionDataType = Union[DataType, ParticleShape]
 
@@ -115,3 +114,7 @@ class PositionData:
         """Deletes the data with the given key, for all positions in the experiment."""
         if data_name in self._position_data:
             del self._position_data[data_name]
+
+    def find_all_data_names(self):
+        """Finds all data_names"""
+        return self._position_data.keys()
