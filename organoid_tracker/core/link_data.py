@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, Optional, Iterable
+from typing import Dict, Tuple, Optional, Iterable, ItemsView
 
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.typing import DataType
@@ -116,6 +116,14 @@ class LinkData:
                 del data_of_links[link_tuple_old]
                 data_of_links[link_tuple_new] = data_old
 
+    def find_all_links_with_data(self, data_name: str) -> ItemsView[Tuple[Position, Position], DataType]:
+        """Gets a dictionary of all positions with the given data marker. Do not modify the returned dictionary."""
+        data_set = self._link_data.get(data_name)
+        if data_set is None:
+            return dict().items()
+        return data_set.items()
+
+
     def find_all_data_of_link(self, position1: Position, position2: Position) -> Iterable[Tuple[str, DataType]]:
         """Finds all data associated with the given link. Raises ValueError if the two positions are not in
         consecutive time points."""
@@ -124,10 +132,6 @@ class LinkData:
             if link_tuple in data_of_links:
                 yield data_name, data_of_links[link_tuple]
 
-    def find_all_links_with_data(self, data_name: str) -> Iterable[Tuple[Position, Position, DataType]]:
-        """Finds all links that have a value for the given data_name. Returns as an iteratble with
-        entries (position1, position2, value). The first position is always earliest in time."""
-        if data_name not in self._link_data:
-            return
-        for (position1, position2), data_value in  self._link_data[data_name].items():
-            yield position1, position2, data_value
+    def find_all_data_names(self):
+        """Finds all data_names"""
+        return self._link_data.keys()
