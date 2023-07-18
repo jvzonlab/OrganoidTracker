@@ -4,7 +4,7 @@ from organoid_tracker.core.typing import DataType
 
 
 class GlobalData:
-    """Miscellaneous data that applies to the entire experiment, such as pixel background information."""
+    """Miscellaneous data that applies to the entire experiment, such """
 
     _global_data: Dict[str, DataType]
 

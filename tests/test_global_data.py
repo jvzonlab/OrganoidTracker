@@ -9,12 +9,12 @@ class TestGlobalData(unittest.TestCase):
         global_data = GlobalData()
         global_data.set_data("name", "AA")
 
-        self.assertEqual("AA", global_data.get_data("name"))
+        self.assertEquals("AA", global_data.get_data("name"))
 
     def test_initialization(self):
         global_data = GlobalData({"name": "BB"})
 
-        self.assertEqual("BB", global_data.get_data("name"))
+        self.assertEquals("BB", global_data.get_data("name"))
 
     def test_get_all(self):
         global_data = GlobalData()

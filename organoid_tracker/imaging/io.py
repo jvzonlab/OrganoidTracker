@@ -1,7 +1,6 @@
 """Classes for expressing the positions of positions"""
 import json
 import os
-import warnings
 from json import JSONEncoder
 from pathlib import Path
 from typing import List, Dict, Any, Iterable, Optional
@@ -13,8 +12,6 @@ from organoid_tracker.core.beacon_collection import BeaconCollection
 from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.global_data import GlobalData
-from organoid_tracker.core.image_filters import ImageFilter, ImageFilters
-from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.core.images import ImageOffsets
 from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.links import Links
@@ -25,8 +22,6 @@ from organoid_tracker.core.spline import SplineCollection, Spline
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.core.score import ScoredFamily, Score, Family
 from organoid_tracker.core.warning_limits import WarningLimits
-from organoid_tracker.image_loading.builtin_image_filters import ThresholdFilter, GaussianBlurFilter, \
-    MultiplyPixelsFilter, InterpolatedMinMaxFilter, IntensityPoint
 from organoid_tracker.linking_analysis import linking_markers
 
 FILE_EXTENSION = "aut"
@@ -108,11 +103,9 @@ def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point:
         experiment.last_save_file = file_name
 
         if "name" in data:
-            is_automatic = bool(data.get("name_is_automatic"))
-            experiment.name.set_name(data["name"], is_automatic=is_automatic)
+            experiment.name.set_name(data["name"])
 
         if "shapes" in data:
-            # Deprecated, nowadays stored in "positions"
             _parse_shape_format(experiment, data["shapes"], min_time_point, max_time_point)
         elif "positions" in data:
             _parse_shape_format(experiment, data["positions"], min_time_point, max_time_point)
@@ -151,9 +144,6 @@ def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point:
 
         if "image_offsets" in data:
             experiment.images.offsets = ImageOffsets(data["image_offsets"])
-
-        if "image_filters" in data:
-            experiment.images.filters = _parse_image_filters(data["image_filters"])
 
         if "color" in data:
             color = data["color"]
@@ -252,30 +242,6 @@ def _parse_connections_format(experiment: Experiment, connections_data: Dict[str
 
             connections.add_connection(position1.with_time_point_number(time_point_number),
                                        position2.with_time_point_number(time_point_number))
-
-
-def _parse_image_filters(data: Dict[str, Any]) -> ImageFilters:
-    filters = ImageFilters()
-    for key, filters_dict in data.items():
-        channel_index = int(key.replace("channel_", ""))
-        channel = ImageChannel(index_zero=channel_index)
-
-        for filter_dict in filters_dict:
-            if filter_dict["type"] == "threshold":
-                filters.add_filter(channel, ThresholdFilter(filter_dict["min"]))
-            elif filter_dict["type"] == "gaussian":
-                filters.add_filter(channel, GaussianBlurFilter(filter_dict["radius"]))
-            elif filter_dict["type"] == "multiply":
-                filters.add_filter(channel, MultiplyPixelsFilter(filter_dict["factor"]))
-            elif filter_dict["type"] == "interpolated_min_max":
-                points = dict()
-                for point_dict in filter_dict["points"]:
-                    points[IntensityPoint(time_point=TimePoint(point_dict["t"]), z=point_dict["z"])]\
-                        = point_dict["min"], point_dict["max"]
-                filters.add_filter(channel, InterpolatedMinMaxFilter(points))
-            else:
-                raise ValueError("Unknown image filter: " + filter_dict["type"])
-    return filters
 
 
 def _add_d3_data(links: Links, link_data: LinkData, position_data: PositionData, links_json: Dict, min_time_point: int = -100000, max_time_point: int = 100000):
@@ -489,38 +455,6 @@ def _encode_connections_to_json(connections: Connections) -> Dict[str, List[List
     return connections_dict
 
 
-def _encode_image_filters_to_json(filters: ImageFilters) -> Dict[str, Any]:
-    result_dict = dict()
-    for image_channel, filters_of_channel in filters.items():
-        filter_dicts = list()
-        for filter in filters_of_channel:
-            if isinstance(filter, ThresholdFilter):
-                filter_dicts.append({
-                    "type": "threshold",
-                    "min": filter.noise_limit
-                })
-            elif isinstance(filter, GaussianBlurFilter):
-                filter_dicts.append({
-                    "type": "gaussian",
-                    "radius_px": filter.blur_radius
-                })
-            elif isinstance(filter, MultiplyPixelsFilter):
-                filter_dicts.append({
-                    "type": "multiply",
-                    "factor": filter.factor
-                })
-            elif isinstance(filter, InterpolatedMinMaxFilter):
-                filter_dicts.append({
-                    "type": "interpolated_min_max",
-                    "points": [{"min": values[0], "max": values[1], "t": point.time_point.time_point_number(), "z": point.z}
-                               for point, values in filter.points.items()]
-                })
-            else:
-                warnings.warn("Unknown filter: " + str(filter.get_name()))
-        result_dict[f"channel_{image_channel.index_zero}"] = filter_dicts
-    return result_dict
-
-
 def save_data_to_json(experiment: Experiment, json_file_name: str):
     """Saves positions, shapes, scores and links to a JSON file. The file should end with the extension FILE_EXTENSION.
     """
@@ -535,7 +469,6 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
     # Save name
     if experiment.name.has_name():
         save_data["name"] = str(experiment.name)
-        save_data["name_is_automatic"] = experiment.name.is_automatic()
 
     # Save links
     if experiment.links.has_links() or experiment.position_data.has_position_data():
@@ -576,10 +509,6 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
 
     # Save image offsets
     save_data["image_offsets"] = experiment.images.offsets.to_list()
-
-    # Save image filters
-    if experiment.images.filters.has_filters():
-        save_data["image_filters"] = _encode_image_filters_to_json(experiment.images.filters)
 
     # Save color
     save_data["color"] = list(experiment.color.to_rgb_floats())

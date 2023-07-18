@@ -1,14 +1,14 @@
-from typing import Dict, Optional, List, Tuple, Iterable, Union, Any
+from typing import Dict, Optional, List, Tuple, Iterable, Union
 
 import numpy
 from numpy import ndarray
 
 from organoid_tracker.core import TimePoint, UserError
 from organoid_tracker.core.bounding_box import BoundingBox
-from organoid_tracker.core.image_filters import ImageFilter, ImageFilters
-from organoid_tracker.core.image_loader import ImageLoader, ImageChannel, NullImageLoader
+from organoid_tracker.core.image_loader import ImageLoader, ImageChannel, NullImageLoader, ImageFilter
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.resolution import ImageResolution
+from organoid_tracker.util import bits
 
 _ZERO = Position(0, 0, 0)
 
@@ -74,8 +74,8 @@ class _CachedImageLoader(ImageLoader):
         self._add_to_cache(time_point.time_point_number(), image_z, image_channel, array)
         return array
 
-    def get_channel_count(self) -> int:
-        return self._internal.get_channel_count()
+    def get_channels(self) -> List[ImageChannel]:
+        return self._internal.get_channels()
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
         return self._internal.get_image_size_zyx()
@@ -94,9 +94,6 @@ class _CachedImageLoader(ImageLoader):
 
     def serialize_to_config(self) -> Tuple[str, str]:
         return self._internal.serialize_to_config()
-
-    def serialize_to_dictionary(self) -> Dict[str, Any]:
-        return self._internal.serialize_to_dictionary()
 
 
 class ImageOffsets:
@@ -240,13 +237,13 @@ class Images:
     _image_loader: ImageLoader
     _offsets: ImageOffsets
     _resolution: ImageResolution
-    filters: ImageFilters
+    _filters: List[ImageFilter]
 
     def __init__(self):
         self._image_loader = NullImageLoader()
         self._offsets = ImageOffsets()
         self._resolution = ImageResolution(0, 0, 0, 0)
-        self.filters = ImageFilters()
+        self._filters = []
 
     @property
     def offsets(self):
@@ -288,7 +285,7 @@ class Images:
             return False
         return True
 
-    def get_image(self, time_point: TimePoint, image_channel: ImageChannel = ImageChannel(index_zero=0)) -> Optional[Image]:
+    def get_image(self, time_point: TimePoint, image_channel: Optional[ImageChannel] = None) -> Optional[Image]:
         """Gets an image along with offset information, or None if there is no image available for that time point."""
         array = self.get_image_stack(time_point, image_channel)
         if array is None:
@@ -296,7 +293,7 @@ class Images:
         return Image(array, self._offsets.of_time_point(time_point))
 
     def image_loader(self, image_loader: Optional[ImageLoader] = None) -> ImageLoader:
-        """Gets/sets the image loader. Note: images loaded directly from this image loader will be uncached."""
+        """Gets/sets the image loader."""
         if image_loader is not None:
             self._image_loader = _CachedImageLoader(image_loader)
             return image_loader
@@ -306,17 +303,36 @@ class Images:
         """Transfers the image loader from another Images instance, sharing the image cache."""
         self._image_loader = images._image_loader
 
-    def get_image_stack(self, time_point: TimePoint, image_channel: ImageChannel = ImageChannel(index_zero=0)) -> Optional[ndarray]:
+    def get_image_stack(self, time_point: TimePoint, image_channel: Optional[ImageChannel] = None) -> Optional[ndarray]:
         """Loads an image using the current image loader. Returns None if there is no image for this time point."""
+        if image_channel is None:
+            # Find the default image channel
+            channels = self._image_loader.get_channels()
+            if len(channels) == 0:
+                return None
+            image_channel = channels[0]
+
         array = self._image_loader.get_3d_image_array(time_point, image_channel)
-        return self.filters.filter(time_point, image_channel, None, array)
+        if len(self._filters) > 0:
+            # Apply all filters
+            image_8bit = bits.image_to_8bit(array)
+            for image_filter in self._filters:
+                image_filter.filter(image_8bit)
+            array = image_8bit
+        return array
 
     def get_image_slice_2d(self, time_point: TimePoint, image_channel: ImageChannel, z: int) -> Optional[ndarray]:
         """Gets a 2D grayscale image for the given time point, image channel and z."""
         offset_z = self._offsets.of_time_point(time_point).z
         image_z = int(z - offset_z)
         array = self._image_loader.get_2d_image_array(time_point, image_channel, image_z)
-        return self.filters.filter(time_point, image_channel, image_z, array)
+        if len(self._filters) > 0 and array is not None:
+            # Apply all filters
+            image_8bit = bits.image_to_8bit(array)
+            for image_filter in self._filters:
+                image_filter.filter(image_8bit)
+            array = image_8bit
+        return array
 
     def set_resolution(self, resolution: Optional[ImageResolution]):
         """Sets the image resolution."""
@@ -330,7 +346,7 @@ class Images:
         copy._image_loader = self._image_loader.copy()
         copy._resolution = self._resolution  # No copy, as this object is immutable
         copy._offsets = self._offsets.copy()
-        copy.filters = self.filters.copy()
+        copy._filters = [filter.copy() for filter in self._filters]
         return copy
 
     def first_time_point_number(self) -> Optional[int]:
@@ -349,6 +365,11 @@ class Images:
             return
         for time_point_number in range(min_time_point_number, max_time_point_number + 1):
             yield TimePoint(time_point_number)
+
+    @property
+    def filters(self) -> List[ImageFilter]:
+        """Gets a mutable list of all filters applied to the images."""
+        return self._filters
 
     def get_channels(self) -> List[ImageChannel]:
         """Gets all available image channels. These are determined by the image_loader."""
