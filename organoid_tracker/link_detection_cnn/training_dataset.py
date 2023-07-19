@@ -36,26 +36,29 @@ from organoid_tracker.link_detection_cnn.training_data_creator import _ImageWith
 # Creates training and validation data from an image_with_positions_list
 
 def training_data_creator_from_raw(tf_load_images_with_links_list: List[_ImageWithLinks], time_window: List[int],
-                                   patch_shape: List[int], batch_size: int, mode: str, split_proportion: float = 0.8):
+                                   patch_shape: List[int], batch_size: int, mode: str, split_proportion: float = 0.8, buffer: int = 2000, perturb_validation=True):
 
     dataset = tf.data.Dataset.range(len(tf_load_images_with_links_list))
+    len_dataset = len(dataset)
 
     # split dataset in validation and training part
     if mode == 'train':
-        dataset = dataset.take(round(split_proportion * len(dataset)))
-        dataset = dataset.shuffle(round(split_proportion * len(dataset)))
+        dataset = dataset.take(round(split_proportion * len_dataset))
         dataset = dataset.repeat()
-    elif mode == 'validation':
-        dataset = dataset.skip(round(split_proportion * len(dataset)))
-        dataset = dataset.repeat()
+        dataset = dataset.shuffle(round(split_proportion * 0.5 * len_dataset), reshuffle_each_iteration=True)
 
+    elif mode == 'validation':
+        dataset = dataset.skip(round(split_proportion * len_dataset))
+        dataset = dataset.repeat()
 
     # Load data
     dataset = dataset.map(partial(tf_load_images_with_links, image_with_positions_list=tf_load_images_with_links_list,
                                   time_window=time_window), num_parallel_calls=12)
 
     # Normalize images
+    #scale_down = 2
     dataset = dataset.map(normalize)
+    #dataset = dataset.map(partial(scale, scale=scale_down))
 
     # Repeat images (as perturbations will be made)
     dataset = dataset.flat_map(partial(repeat, repeats=1))
@@ -63,21 +66,25 @@ def training_data_creator_from_raw(tf_load_images_with_links_list: List[_ImageWi
     if mode == 'train':
         # generate multiple patches from image
         dataset = dataset.flat_map(partial(generate_patches_links, patch_shape=patch_shape, perturb=True))
+        #dataset = dataset.map(random_flip_z)
+        dataset = dataset.map(apply_noise)
+        dataset = dataset.map(add_3d_coord)
         # create random batches
-        dataset = dataset.shuffle(buffer_size=25000)
+        dataset = dataset.shuffle(buffer_size=buffer)
         dataset = dataset.batch(batch_size)
-
 
     elif mode == 'validation':
-        dataset = dataset.flat_map(partial(generate_patches_links, patch_shape=patch_shape, perturb=False))
-        #dataset = dataset.shuffle(buffer_size=1000)
-        dataset = dataset.shuffle(buffer_size=200)
+        #dataset = dataset.flat_map(partial(repeat, repeats=1))
+        dataset = dataset.flat_map(partial(generate_patches_links, patch_shape=patch_shape, perturb=perturb_validation))
+        if perturb_validation:
+            #dataset = dataset.map(random_flip_z)
+            dataset = dataset.map(apply_noise)
+        dataset = dataset.map(add_3d_coord)
         dataset = dataset.batch(batch_size)
 
-    #dataset = dataset.map(apply_noise)
     dataset = dataset.map(format)
 
-    dataset.prefetch(2)
+    dataset.prefetch(1)
 
     return dataset
 
@@ -86,7 +93,6 @@ def normalize(image, target_image, label, target_label, distances, linked):
     image = tf.divide(tf.subtract(image, tf.reduce_min(image)), tf.subtract(tf.reduce_max(image), tf.reduce_min(image)))
     target_image = tf.divide(tf.subtract(target_image, tf.reduce_min(target_image)), tf.subtract(tf.reduce_max(target_image), tf.reduce_min(target_image)))
     return image, target_image, label, target_label, distances, linked
-
 
 # Repeats
 def repeat(image, target_image, label, target_label, distances, linked, repeats=5):
@@ -141,7 +147,10 @@ def generate_patches_links(image, target_image, label, target_label, distances, 
         combined_init_crops = tf.concat([init_crop, init_target_crop], axis=-1)
 
         if perturb:
-            combined_init_crops, distance = apply_random_perturbations_stacked(combined_init_crops, distance)
+            random = tf.random.uniform((1,))
+            combined_init_crops, distance = tf.cond(random<0.99,
+                                                    lambda: apply_random_flips(combined_init_crops, distance),
+                                                    lambda: apply_random_perturbations_stacked(combined_init_crops, distance))
         else:
             distance = tf.cast(distance, tf.float32)
 
@@ -192,20 +201,123 @@ def apply_random_perturbations_stacked(stacked, distance):
     # transform displacement vector
 
     distance = tf.cast(distance, tf.float32)
-    new_angle = tf.math.atan2(distance[1], distance[2]) + angle
+    new_angle = tf.math.atan2(distance[2], distance[1]) + angle
     xy_length = tf.sqrt(tf.square(distance[1])+tf.square(distance[2]))
-    y_dist = xy_length*tf.math.sin(new_angle)*scale
-    x_dist = xy_length*tf.math.cos(new_angle)*scale
+
+    y_dist = xy_length*tf.math.cos(new_angle)/scale
+    x_dist = xy_length*tf.math.sin(new_angle)/scale
+
     distance_new = tf.concat([distance[0], y_dist, x_dist], axis=0)
     #tf.print(distance_new)
 
     return stacked, distance_new
 
+def apply_random_flips(stacked, distance):
+    random = tf.random.uniform((1,))
 
-def apply_noise(image, target_image, distances, linked):
-    random_mul = tf.random.uniform(tf.shape(image), minval=0.75, maxval=1.0)
-    image = tf.multiply(image, random_mul)
-    target_image = tf.multiply(target_image, random_mul)
+    stacked = tf.cond(random<0.5, lambda: tf.reverse(stacked, axis=[1]), lambda: stacked)
+    distance = tf.cond(random<0.5, lambda: distance * tf.constant([1, -1, 1]), lambda: distance)
+
+    random = tf.random.uniform((1,))
+
+    stacked = tf.cond(random<0.5, lambda: tf.reverse(stacked, axis=[2]), lambda: stacked)
+    distance = tf.cond(random<0.5, lambda: distance * tf.constant([1, 1, -1]), lambda: distance)
+
+    distance = tf.cast(distance, tf.float32)
+
+    return stacked, distance
+
+def random_flip_z(image, target_image, distances, linked):
+    random = tf.random.uniform((1,))
+
+    image = tf.cond(random<0.5, lambda: tf.reverse(image, axis=[0]), lambda: image)
+    target_image = tf.cond(random<0.5, lambda: tf.reverse(target_image, axis=[0]), lambda: target_image)
+    distances = tf.cond(random<0.5, lambda: distances * tf.constant([-1., 1., 1.]), lambda: distances)
 
     return image, target_image, distances, linked
+
+
+def apply_noise(image, target_image, distances, linked):
+    # take power of image to increase or reduce contrast
+    random_mul = tf.random.uniform((1,), minval=0.7, maxval=1.3)
+    image = tf.pow(image, random_mul)
+    target_image = tf.pow(target_image, random_mul)
+
+    # take a random decay constant (biased to 1 by taking the root)
+    #decay = tf.sqrt(tf.random.uniform((1,), minval=0.16, maxval=1))
+
+    # let image intensity decay differently
+    #scale = decay + (1-decay) * (1 - tf.range(tf.shape(image)[0], dtype=tf.float32) / tf.cast(tf.shape(image)[0], tf.float32))
+    #image = tf.reshape(scale, shape=(tf.shape(image)[0], 1, 1, 1)) * image
+    #target_image = tf.reshape(scale, shape=(tf.shape(target_image)[0], 1, 1, 1)) * target_image
+
+    return image, target_image, distances, linked
+
+
+def add_3d_coord(image, target_image, distances, linked):
+    image = _add_3d_coord(image, distances)
+    target_image = _add_3d_coord(target_image, distances, reversable=True)
+    return image, target_image, distances, linked
+
+
+def _add_3d_coord(image, offset, reversable = False):
+
+    im_shape = tf.shape(image)
+    if reversable:
+        z = tf.abs(tf.range(-im_shape[0]//2, im_shape[0]//2, dtype='float32') + tf.cast(offset[0], dtype='float32'))
+        y = tf.abs(tf.range(-im_shape[1]//2, im_shape[1]//2, dtype='float32') + tf.cast(offset[1], dtype='float32'))
+        x = tf.abs(tf.range(-im_shape[2]//2, im_shape[2]//2, dtype='float32') + tf.cast(offset[2], dtype='float32'))
+    else:
+        z = tf.abs(tf.range(-im_shape[0]//2, im_shape[0]//2, dtype='float32') - tf.cast(offset[0], dtype='float32'))
+        y = tf.abs(tf.range(-im_shape[1]//2, im_shape[1]//2, dtype='float32') - tf.cast(offset[1], dtype='float32'))
+        x = tf.abs(tf.range(-im_shape[2]//2, im_shape[2]//2, dtype='float32') - tf.cast(offset[2], dtype='float32'))
+
+    Z, Y, X = tf.meshgrid(z, y, x, indexing='ij')
+
+    Z = tf.expand_dims(Z, axis=-1)/tf.cast(im_shape[0],  dtype='float32')
+    Y = tf.expand_dims(Y, axis=-1)/tf.cast(im_shape[1],  dtype='float32')
+    X = tf.expand_dims(X, axis=-1)/tf.cast(im_shape[2],  dtype='float32')
+
+    if reversable:
+        image = tf.concat([X, Y, Z, image], axis=-1)
+    else:
+        image = tf.concat([image, Z, Y, X], axis=-1)
+
+    return image
+
+
+# scale images
+def scale(image, target_image, label, target_label, distances, linked, scale = 1):
+    if scale != 1:
+
+        transform = tf.convert_to_tensor([[scale, 0., 0,
+                                           0., scale, 0., 0.,
+                                           0.]], dtype=tf.float32)
+
+        new_size = [divide_and_round(tf.shape(image)[1], scale),
+                    divide_and_round(tf.shape(image)[2], scale)]
+        image = tfa.image.transform(image, transform, interpolation='BILINEAR',
+                                    output_shape=new_size)
+
+        new_size = [divide_and_round(tf.shape(target_image)[1], scale),
+                    divide_and_round(tf.shape(target_image)[2], scale)]
+        target_image = tfa.image.transform(target_image, transform, interpolation='BILINEAR',
+                                           output_shape=new_size)
+
+        position_scaling = [1, scale, scale]
+        label = divide_and_round(label, position_scaling)
+        target_label = divide_and_round(target_label, position_scaling)
+        distances = divide_and_round(distances, position_scaling)
+
+    return image, target_image, label, target_label, distances, linked
+
+
+def divide_and_round(tensor, scale):
+    tensor = tf.divide(tf.cast(tensor, dtype=tf.float32), scale)
+
+    return tf.cast(tf.round(tensor),  dtype=tf.int32)
+
+
+
+
 

@@ -33,6 +33,8 @@ from organoid_tracker.link_detection_cnn.training_data_creator import _ImageWith
 
 
 # Creates training and validation data from an image_with_positions_list
+from organoid_tracker.link_detection_cnn.training_dataset import normalize, scale, _add_3d_coord
+
 
 def prediction_data_creator(tf_load_images_with_links_list: List[_ImageWithLinks], time_window: List[int], patch_shape_zyx: List[int]):
     dataset = tf.data.Dataset.range(len(tf_load_images_with_links_list))
@@ -41,16 +43,16 @@ def prediction_data_creator(tf_load_images_with_links_list: List[_ImageWithLinks
     dataset = dataset.map(partial(tf_load_images_with_links, image_with_positions_list=tf_load_images_with_links_list,
                                   time_window=time_window), num_parallel_calls=12)
 
-    dataset = dataset.map(drop_linked)
 
     # Normalize images
     dataset = dataset.map(normalize)
 
+    dataset = dataset.map(drop_linked)
     dataset = dataset.flat_map(partial(generate_patches_links, patch_shape=patch_shape_zyx, perturb=False))
+    dataset = dataset.map(add_3d_coord)
     dataset = dataset.map(format)
 
-    dataset = dataset.batch(1)
-
+    dataset = dataset.batch(50)
     dataset.prefetch(2)
 
     return dataset
@@ -59,10 +61,10 @@ def drop_linked(image, target_image, label, target_label, distances, linked):
     return image, target_image, label, target_label, distances
 
 # Normalizes image data
-def normalize(image, target_image, label, target_label, distances):
-    image = tf.divide(tf.subtract(image, tf.reduce_min(image)), tf.subtract(tf.reduce_max(image), tf.reduce_min(image)))
-    target_image = tf.divide(tf.subtract(target_image, tf.reduce_min(target_image)), tf.subtract(tf.reduce_max(target_image), tf.reduce_min(target_image)))
-    return image, target_image, label, target_label, distances
+#def normalize(image, target_image, label, target_label, distances):
+    #image = tf.divide(tf.subtract(image, tf.reduce_min(image)), tf.subtract(tf.reduce_max(image), tf.reduce_min(image)))
+    #target_image = tf.divide(tf.subtract(target_image, tf.reduce_min(target_image)), tf.subtract(tf.reduce_max(target_image), tf.reduce_min(target_image)))
+    #return image, target_image, label, target_label, distances
 
 
 def format(image, target_image, distances):
@@ -92,9 +94,10 @@ def generate_patches_links(image, target_image, label, target_label, distances, 
     image_padded = tf.pad(image, padding)
     target_image_padded = tf.pad(target_image, padding)
 
-    def single_patch(center_points):
-        center_point = center_points[:, 0]
-        target_center_point = center_points[:, 1]
+    def single_patch(center_points_distance):
+        center_point = center_points_distance[:, 0]
+        target_center_point = center_points_distance[:, 1]
+        distance = center_points_distance[:, 2]
 
         # first crop
 
@@ -109,17 +112,22 @@ def generate_patches_links(image, target_image, label, target_label, distances, 
         combined_init_crops = tf.concat([init_crop, init_target_crop], axis=-1)
 
         if perturb:
-            combined_init_crops = apply_random_perturbations_stacked(combined_init_crops)
+            combined_init_crops, distance = apply_random_perturbations_stacked(combined_init_crops, distance)
+        else:
+            distance = tf.cast(distance, tf.float32)
 
         # second crop of the center region
         combined_crops = combined_init_crops[:,
                tf.cast(patch_shape[1] / 2, tf.int32): tf.cast(patch_shape[1] / 2, tf.int32) + patch_shape[1],
                tf.cast(patch_shape[2] / 2, tf.int32): tf.cast(patch_shape[2] / 2, tf.int32) + patch_shape[2], :]
 
-        return combined_crops
+        return combined_crops, distance
 
-    both_labels = tf.stack([label, target_label], axis=-1)
-    stacked_combined_crops = tf.map_fn(single_patch, both_labels, parallel_iterations=10, fn_output_signature=tf.float32)
+    distances = tf.cast(distances, tf.int32)
+    both_labels = tf.stack([label, target_label, distances], axis=-1)
+    stacked_combined_crops, distances = tf.map_fn(single_patch, both_labels, parallel_iterations=10, fn_output_signature=(tf.float32, tf.float32))
+
+    #tf.print(distances)
 
     stacked_crops = stacked_combined_crops[:, :, :, :, :tf.shape(image)[3]]
     stacked_target_crops = stacked_combined_crops[:, :, :, :, tf.shape(image)[3]:]
@@ -130,13 +138,21 @@ def generate_patches_links(image, target_image, label, target_label, distances, 
 
     return dataset
 
-def apply_random_perturbations_stacked(stacked):
+
+def add_3d_coord(image, target_image, distances):
+    image = _add_3d_coord(image, distances)
+
+    return image, _add_3d_coord(target_image, distances, reversable=True), distances
+
+
+def apply_random_perturbations_stacked(stacked, distance):
     image_shape = tf.cast(tf.shape(stacked), tf.float32)
 
     transforms = []
     # random rotation in xy
+    angle = tf.random.uniform([], -np.pi, np.pi)
     transform = tfa.image.transform_ops.angles_to_projective_transforms(
-        tf.random.uniform([], -np.pi, np.pi), image_shape[1], image_shape[2])
+        angle, image_shape[1], image_shape[2])
     transforms.append(transform)
     # random scale 80% to 120% size
     scale = tf.random.uniform([], 0.8, 1.2, dtype=tf.float32)
@@ -149,9 +165,14 @@ def apply_random_perturbations_stacked(stacked):
     compose_transforms = tfa.image.transform_ops.compose_transforms(transforms)
     stacked = tfa.image.transform(stacked, compose_transforms, interpolation='BILINEAR')
 
-    return stacked
+    # transform displacement vector
+    distance = tf.cast(distance, tf.float32)
+    new_angle = tf.math.atan2(distance[2], distance[1]) + angle
+    xy_length = tf.sqrt(tf.square(distance[1])+tf.square(distance[2]))
 
+    y_dist = xy_length*tf.math.cos(new_angle)/scale
+    x_dist = xy_length*tf.math.sin(new_angle)/scale
 
+    distance_new = tf.concat([distance[0], y_dist, x_dist], axis=0)
 
-
-
+    return stacked, distance_new
