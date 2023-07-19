@@ -84,17 +84,21 @@ def get_previous_division(links: Links, position: Position) -> Optional[Family]:
     return Family(previous_track.find_last_position(), siblings[0], siblings[1])
 
 
-def find_mothers(links: Links) -> Set[Position]:
+def find_mothers(links: Links, exclude_multipolar = True) -> Set[Position]:
     """Finds all mother cells in a graph. Mother cells are cells with at least two daughter cells."""
     mothers = set()
 
     for track in links.find_all_tracks():
         future_tracks = track.get_next_tracks()
-        if len(future_tracks) >= 2:
+        if len(future_tracks) == 2:
             mothers.add(track.find_last_position())
+        if len(future_tracks) > 2:
+            if exclude_multipolar:
+                print("Illegal mother: " + str(len(future_tracks)) + " daughters found")
+            else:
+                mothers.add(track.find_last_position())
 
     return mothers
-
 
 def find_families(links: Links, warn_on_many_daughters = True) -> List[Family]:
     """Finds all mother and daughter cells in a graph. Mother cells are cells with at least two daughter cells.

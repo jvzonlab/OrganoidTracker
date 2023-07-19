@@ -50,27 +50,29 @@ class _ImageWithLinks(_ImageWithPositions):
         self.distances = distances
 
 
-def create_image_with_links_list(experiments: Iterable[Experiment], division_multiplier=5):
+def create_image_with_links_list(experiments: Iterable[Experiment], division_multiplier=5, mid_distance_multiplier=5,
+                                 div_window=3, medium_distance=(3.5, 5)):
     image_with_links_list = list()
+
     print('analyzing links...')
     for experiment in experiments:
         # read a complete experiment
-        div_positions = cell_division_finder.find_mothers(experiment.links)
+        resolution = experiment.images.resolution()
+        div_positions = cell_division_finder.find_mothers(experiment.links, exclude_multipolar=False)
         links = experiment.links
         possible_links = nearest_neighbor_linker.nearest_neighbor(experiment, tolerance=2)
 
         div_positions_plus_window = set()
-        window = 3
 
         for div_pos in div_positions:
             children = links.find_futures(div_pos)
 
             for child in children:
                 futures = list(links.iterate_to_future(child))
-                div_positions_plus_window = div_positions_plus_window.union(set(futures[:window]))
+                div_positions_plus_window = div_positions_plus_window.union(set(futures[:div_window]))
 
             pasts = list(links.iterate_to_past(div_pos))
-            div_positions_plus_window = div_positions_plus_window.union(set(pasts[:window + 1]))
+            div_positions_plus_window = div_positions_plus_window.union(set(pasts[:div_window + 1]))
 
         for time_point in experiment.positions.time_points():
             # if there is no next timepoint available end the routine
@@ -104,10 +106,23 @@ def create_image_with_links_list(experiments: Iterable[Experiment], division_mul
                     else:
                         repeats=1
 
-                    for i in range(repeats):
-                        for future_possibility in future_possibilities:
-                            if inside_image(future_possibility, future_offset, future_image_shape):
+                    for future_possibility in future_possibilities:
+                        if inside_image(future_possibility, future_offset, future_image_shape):
 
+                            repeats_link = repeats
+
+                            if future_possibility in div_positions_plus_window:
+                                repeats_link = division_multiplier
+
+                            distance_sq = (((future_possibility.x - position.x)*resolution.pixel_size_x_um)**2 +
+                                ((future_possibility.y - position.y) * resolution.pixel_size_y_um) ** 2 +
+                                ((future_possibility.z - position.z) * resolution.pixel_size_z_um) ** 2)
+
+                            # is the distance travelled not very informative (not very far away not very close)?
+                            if (distance_sq > medium_distance[0]**2) and (distance_sq < medium_distance[1]**2):
+                                repeats_link = mid_distance_multiplier
+
+                            for i in range(repeats_link):
                                 # add positions to list
                                 target_positions_xyz.append(
                                     [future_possibility.x - future_offset.x, future_possibility.y - future_offset.y, future_possibility.z - future_offset.z])
@@ -171,8 +186,8 @@ def create_image_with_possible_links_list(experiment: Experiment):
                             [position.x - offset.x, position.y - offset.y, position.z - offset.z])
 
                         distances.append(
-                            [abs(future_possibility.x - position.x), abs(future_possibility.y - position.y),
-                             abs(future_possibility.z - position.z)])
+                            [(future_possibility.x - position.x), (future_possibility.y - position.y),
+                             (future_possibility.z - position.z)])
 
                         linked.append(False)
 

@@ -14,7 +14,10 @@ def load_images_with_links(i, image_with_positions_list: List[_ImageWithLinks], 
 
     image = image_with_positions.load_image_time_stack(time_window)
 
-    target_image = image_with_positions.load_image_time_stack(time_window, delay=1)
+    time_window_target = []
+    time_window_target.append(-time_window[1])
+    time_window_target.append(-time_window[0])
+    target_image = image_with_positions.load_image_time_stack(time_window_target, delay=1)
 
     label = image_with_positions.xyz_positions
     label = label[:, [2,1,0]]
