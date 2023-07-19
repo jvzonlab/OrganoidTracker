@@ -287,6 +287,15 @@ class Links:
                 if len(track.get_previous_tracks()) == 0:
                     yield track.find_first_position()
 
+    def find_disappeared_positions(self, time_point_number_to_ignore: Optional[int] = None) -> Iterable[Position]:
+        """This method gets all positions that "disappear into nothing": that have no links to the future. You can give
+        this method a time point number to ignore. Usually, this would be the last time point number of the experiment,
+        as cells that have no links to the future in the last time point are not that interesting."""
+        for track in self._tracks:
+            if time_point_number_to_ignore is None or time_point_number_to_ignore != track._positions_by_time_point[-1].time_point_number():
+                if len(track.get_next_tracks()) == 0:
+                    yield track.find_last_position()
+
     def add_link(self, position1: Position, position2: Position):
         """Adds a link between the positions. The linking network will be initialized if necessary."""
         dt = position1.time_point_number() - position2.time_point_number()
