@@ -97,8 +97,8 @@ with open(os.path.join(_model_folder, "settings.json")) as file_handle:
         patch_shape_zyx = [patch_shape_xyz[2], patch_shape_xyz[1], patch_shape_xyz[0]]
     else:
         patch_shape_zyx = json_contents["patch_shape_zyx"]  # Seems like some versions of OrganoidTracker use this
-    scaling = json_contents["platt_scaling"]
-    intercept = json_contents["platt_intercept"]
+    scaling = json_contents["platt_scaling"] if "platt_scaling" in json_contents else 1
+    intercept = json_contents["platt_intercept"] if "platt_intercept" in json_contents else 0
     intercept = np.log10(np.exp(intercept))
 
 # load models

@@ -80,8 +80,8 @@ with open(os.path.join(_model_folder, "settings.json")) as file_handle:
     time_window = json_contents["time_window"]
     patch_shape = json_contents["patch_shape_zyx"]
 
-    scaling = json_contents["platt_scaling"]
-    intercept = json_contents["platt_intercept"]
+    scaling = json_contents["platt_scaling"] if "platt_scaling" in json_contents else 1
+    intercept = json_contents["platt_intercept"] if "platt_intercept" in json_contents else 0
     intercept = np.log10(np.exp(intercept))
 
 # load model

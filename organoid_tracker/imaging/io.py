@@ -20,8 +20,8 @@ from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.core.spline import SplineCollection, Spline
 from organoid_tracker.core.warning_limits import WarningLimits
-from organoid_tracker.image_loading.builtin_image_filters import InterpolatedMinMaxFilter, GaussianBlurFilter, \
-    ThresholdFilter, MultiplyPixelsFilter
+from organoid_tracker.image_loading.builtin_image_filters import ThresholdFilter, GaussianBlurFilter, \
+    MultiplyPixelsFilter, InterpolatedMinMaxFilter, IntensityPoint
 from organoid_tracker.linking_analysis import linking_markers
 
 FILE_EXTENSION = "aut"
@@ -516,6 +516,7 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
     # Save name
     if experiment.name.has_name():
         save_data["name"] = str(experiment.name)
+        save_data["name_is_automatic"] = experiment.name.is_automatic()
 
     # Save links
     if experiment.links.has_links() or experiment.position_data.has_position_data():
@@ -551,6 +552,10 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
 
     # Save image offsets
     save_data["image_offsets"] = [_encode_position(position) for position in experiment.images.offsets.to_list()]
+
+    # Save image filters
+    if experiment.images.filters.has_filters():
+        save_data["image_filters"] = _encode_image_filters_to_json(experiment.images.filters)
 
     # Save color
     save_data["color"] = list(experiment.color.to_rgb_floats())
