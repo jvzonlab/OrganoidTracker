@@ -86,7 +86,7 @@ time_window = (int(config.get_or_default(f"time_window_before", str(-1))),
 
 use_tfrecords = config.get_or_default(f"use_tfrecords", str(False), type=config_type_bool)
 
-patch_shape = list(
+patch_shape_zyx = list(
     config.get_or_default("patch_shape", "64, 64, 32", comment="Size in pixels (x, y, z) of the patches used"
                                                                " to train the network.",
                           type=config_type_image_shape))
@@ -119,22 +119,22 @@ if use_tfrecords:
     image_files, label_files = dataset_writer(image_with_positions_list, time_window, shards=10)
 
     training_dataset = training_data_creator_from_TFR(image_files, label_files,
-                                                      patch_shape=patch_shape, batch_size=batch_size, mode='train',
+                                                      patch_shape=patch_shape_zyx, batch_size=batch_size, mode='train',
                                                       split_proportion=0.8, n_images=len(image_with_positions_list))
     validation_dataset = training_data_creator_from_TFR(image_files, label_files,
-                                                        patch_shape=patch_shape, batch_size=batch_size,
+                                                        patch_shape=patch_shape_zyx, batch_size=batch_size,
                                                         mode='validation', split_proportion=0.8, n_images=len(image_with_positions_list))
 
 else:
     training_dataset = training_data_creator_from_raw(image_with_positions_list, time_window=time_window,
-                                             patch_shape=patch_shape, batch_size=batch_size, mode='train',
+                                             patch_shape=patch_shape_zyx, batch_size=batch_size, mode='train',
                                              split_proportion=0.8)
     validation_dataset = training_data_creator_from_raw(image_with_positions_list, time_window=time_window,
-                                               patch_shape=patch_shape, batch_size=batch_size,
+                                               patch_shape=patch_shape_zyx, batch_size=batch_size,
                                                mode='validation', split_proportion=0.8)
 
 print("Defining model...")
-model = build_model(shape=(patch_shape[0], None, None, time_window[1] - time_window[0] + 1), batch_size=None)
+model = build_model(shape=(patch_shape_zyx[0], None, None, time_window[1] - time_window[0] + 1), batch_size=None)
 model.summary()
 
 print("Training...")
@@ -142,10 +142,10 @@ os.makedirs(output_folder, exist_ok=True)
 tensorboard_folder = os.path.join(output_folder, "tensorboard")
 history = model.fit(training_dataset,
                     epochs=epochs,
-                    steps_per_epoch= round(1*len(image_with_positions_list)),
+                    steps_per_epoch= round(0.8*len(image_with_positions_list)),
                     validation_data=validation_dataset,
-                    validation_steps=50,
-                    callbacks=[tensorboard_callback(tensorboard_folder), tf.keras.callbacks.EarlyStopping(patience=2, restore_best_weights=True)])
+                    validation_steps=round(0.2*len(image_with_positions_list)),
+                    callbacks=[tensorboard_callback(tensorboard_folder), tf.keras.callbacks.EarlyStopping(patience=1, restore_best_weights=True)])
 
 
 print("Saving model...")
@@ -160,7 +160,7 @@ print("Sanity check...")
 os.makedirs(os.path.join(output_folder, "examples"), exist_ok=True)
 
 
-def predict(image: tf.Tensor, label: tf.Tensor, model: tf.keras.Model) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+def predict(image: tf.Tensor, label: tf.Tensor, model: tf.keras.Model) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
 
     dilation = tf.nn.max_pool3d(label, ksize=[1, 3, 3], strides=1, padding='SAME')
     peaks = tf.where(dilation == label, 1., 0)
@@ -168,10 +168,7 @@ def predict(image: tf.Tensor, label: tf.Tensor, model: tf.keras.Model) -> Tuple[
 
     label, weights = distance_map(y_true)
 
-    return image, model(image, training=False), label
-
-
-#quick_dataset: Dataset = validation_dataset.unbatch().take(10).batch(1)
+    return image, model(image, training=False), label, weights
 
 quick_dataset: Dataset = validation_dataset.unbatch().take(10).batch(1)
 
@@ -180,9 +177,9 @@ predictions = quick_dataset.map(partial(predict, model=model))
 for i, element in enumerate(predictions):
 
     array = element[0].numpy()
-    array = array[0, :, :, :, :]
-    array = np.swapaxes(array, 2, -1)
-    array = np.swapaxes(array, -2, -1)
+    array = array[0, :, :, :, 0]
+    #array = np.swapaxes(array, 2, -1)
+    #array = np.swapaxes(array, -2, -1)
     tifffile.imwrite(os.path.join(output_folder, "examples", "example_input" + str(i) + ".tiff"), array)
 
     array = element[1].numpy()
@@ -192,5 +189,9 @@ for i, element in enumerate(predictions):
     array = element[2].numpy()
     array = array[0, :, :, :, 0]
     tifffile.imwrite(os.path.join(output_folder, "examples", "example_labels" + str(i) + ".tiff"), array)
+
+    array = element[3].numpy()
+    array = array[0, :, :, :, 0]
+    tifffile.imwrite(os.path.join(output_folder, "examples", "example_weights" + str(i) + ".tiff"), array)
 
 
