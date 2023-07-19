@@ -24,9 +24,11 @@
 from typing import List
 
 import tensorflow as tf
+import tensorflow_addons as tfa
 from functools import partial
 
 from organoid_tracker.division_detection_cnn.image_with_divisions_to_tensor_loader import tf_load_images_with_positions
+from organoid_tracker.link_detection_cnn.training_dataset import divide_and_round
 from organoid_tracker.position_detection_cnn.training_data_creator import _ImageWithPositions
 
 
@@ -40,6 +42,7 @@ def prediction_data_creator(image_with_positions_list: List[_ImageWithPositions]
                                   time_window=time_window), num_parallel_calls=1)
 
     # Normalize images
+    #dataset = dataset.map(partial(scale, scale=1.33))
     dataset = dataset.map(normalize)
 
     dataset = dataset.flat_map(partial(generate_patches_division, patch_shape=patch_shape))
@@ -49,10 +52,27 @@ def prediction_data_creator(image_with_positions_list: List[_ImageWithPositions]
 
     return dataset
 
-
 # Normalizes image data
 def normalize(image, label):
     image = tf.divide(tf.subtract(image, tf.reduce_min(image)), tf.subtract(tf.reduce_max(image), tf.reduce_min(image)))
+    return image, label
+
+
+def scale(image, label, scale = 1):
+    if scale != 1:
+
+        transform = tf.convert_to_tensor([[scale, 0., 0,
+                                           0., scale, 0., 0.,
+                                           0.]], dtype=tf.float32)
+
+        new_size = [divide_and_round(tf.shape(image)[1], scale),
+                    divide_and_round(tf.shape(image)[2], scale)]
+        image = tfa.image.transform(image, transform, interpolation='BILINEAR',
+                                    output_shape=new_size)
+
+        position_scaling = [1, scale, scale]
+        label = divide_and_round(label, position_scaling)
+
     return image, label
 
 

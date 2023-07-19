@@ -34,17 +34,19 @@ from organoid_tracker.division_detection_cnn.training_data_creator import _Image
 
 # Creates training and validation data from an image_with_positions_list
 def training_data_creator_from_raw(image_with_divisions_list: List[_ImageWithDivisions], time_window, patch_shape,
-                                   batch_size: int, mode, split_proportion: float = 0.8):
+                                   batch_size: int, mode, split_proportion: float = 0.8, perturb=True):
     dataset = tf.data.Dataset.range(len(image_with_divisions_list))
+    len_dataset = len(dataset)
 
     # split dataset in validation and training part
     if mode == 'train':
         dataset = dataset.take(round(split_proportion * len(dataset)))
-        dataset = dataset.shuffle(round(split_proportion * len(dataset)))
+        #dataset = dataset.shuffle(round(split_proportion * len(dataset))) #, reshuffle_each_iteration=True)
         dataset = dataset.repeat()
+        dataset = dataset.shuffle(round(0.1*len_dataset))
     elif mode == 'validation':
         dataset = dataset.skip(round(split_proportion * len(dataset)))
-        dataset = dataset.repeat()
+        #dataset = dataset.repeat()
 
     # Load data
     dataset = dataset.map(partial(tf_load_images_with_divisions, image_with_positions_list=image_with_divisions_list,
@@ -58,17 +60,21 @@ def training_data_creator_from_raw(image_with_divisions_list: List[_ImageWithDiv
 
     if mode == 'train':
         # generate multiple patches from image
-        dataset = dataset.flat_map(partial(generate_patches_division, patch_shape=patch_shape, perturb=True))
+        dataset = dataset.flat_map(partial(generate_patches_division, patch_shape=patch_shape, perturb=perturb))
+        if perturb:
+            dataset = dataset.map(apply_noise)
         # create random batches
-        dataset = dataset.shuffle(buffer_size=7500)
+        dataset = dataset.shuffle(buffer_size=10000)
         dataset = dataset.batch(batch_size)
 
     elif mode == 'validation':
-        dataset = dataset.flat_map(partial(generate_patches_division, patch_shape=patch_shape, perturb=False))
-        dataset = dataset.shuffle(buffer_size=1000)
+        dataset = dataset.flat_map(partial(generate_patches_division, patch_shape=patch_shape, perturb=perturb))
+        if perturb:
+            dataset = dataset.map(apply_noise)
+        dataset = dataset.shuffle(buffer_size=10)
         dataset = dataset.batch(batch_size)
 
-    dataset.prefetch(2)
+    dataset.prefetch(1)
 
     return dataset
 
@@ -102,6 +108,7 @@ def training_data_creator_from_TFR(images_file, labels_file, dividing_file, patc
     if mode == 'train':
         # generate multiple patches from image
         dataset = dataset.flat_map(partial(generate_patches_division, patch_shape=patch_shape, perturb=True))
+        dataset = dataset.map(apply_noise)
         # create random batches
         dataset = dataset.shuffle(buffer_size=200000)
         dataset = dataset.batch(batch_size)
@@ -164,7 +171,13 @@ def generate_patches_division(image, label, dividing, patch_shape, perturb):
 
         # apply perturbations
         if perturb:
-            init_crop = apply_random_perturbations_stacked(init_crop)
+            #init_crop = apply_random_perturbations_stacked(init_crop)
+            random = tf.random.uniform((1,))
+            init_crop = tf.cond(random<0.5,
+                                lambda: apply_random_flips(init_crop),
+                                lambda: apply_random_perturbations_stacked(init_crop))
+
+            #init_crop = black_out(init_crop)
 
         # second crop of the center region
         crop = init_crop[:,
@@ -204,5 +217,25 @@ def apply_random_perturbations_stacked(stacked):
 
     return stacked
 
+
+def apply_random_flips(stacked):
+    random = tf.random.uniform((1,))
+    stacked = tf.cond(random<0.5, lambda: tf.reverse(stacked, axis=[1]), lambda: stacked)
+
+    random = tf.random.uniform((1,))
+    stacked = tf.cond(random<0.5, lambda: tf.reverse(stacked, axis=[2]), lambda: stacked)
+
+    random = tf.random.uniform((1,))
+    stacked = tf.cond(random<0.5, lambda: tf.reverse(stacked, axis=[0]), lambda: stacked)
+
+    return stacked
+
+
+def apply_noise(image, dividing):
+    # add noise
+    # take power of image to increase or reduce contrast
+    image = tf.pow(image, tf.random.uniform((1,), minval=0.3, maxval=1.7))
+
+    return image, dividing
 
 
