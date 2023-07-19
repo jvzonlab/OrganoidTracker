@@ -28,13 +28,13 @@ import tensorflow_addons as tfa
 from functools import partial
 import numpy as np
 
-from organoid_tracker.position_detection_cnn.custom_filters import blur_labels
+from organoid_tracker.position_detection_cnn.custom_filters import blur_labels, distance_map
 from organoid_tracker.position_detection_cnn.image_with_positions_to_tensor_loader import tf_load_images_with_positions
 from organoid_tracker.position_detection_cnn.training_data_creator import _ImageWithPositions
 
 # Creates training and validation data from an image_with_positions_list
 def training_data_creator_from_raw(image_with_positions_list: List[_ImageWithPositions], time_window, patch_shape,
-                               batch_size: int, mode, split_proportion: float = 0.8):
+                               batch_size: int, mode, split_proportion: float = 0.8, crop=False):
 
     dataset = tf.data.Dataset.range(len(image_with_positions_list))
 
@@ -49,7 +49,7 @@ def training_data_creator_from_raw(image_with_positions_list: List[_ImageWithPos
 
     # Load data
     dataset = dataset.map(partial(tf_load_images_with_positions, image_with_positions_list=image_with_positions_list,
-                                  time_window=time_window), num_parallel_calls=12)
+                                  time_window=time_window, crop=crop), num_parallel_calls=12)
 
     # Normalize images
     dataset = dataset.map(normalize)
@@ -64,8 +64,7 @@ def training_data_creator_from_raw(image_with_positions_list: List[_ImageWithPos
         dataset = dataset.batch(batch_size)
 
     elif mode == 'validation':
-        dataset = dataset.flat_map(partial(generate_patches, patch_shape=patch_shape, multiplier=2, perturb=False))
-
+        dataset = dataset.flat_map(partial(generate_patches, patch_shape=patch_shape, multiplier=batch_size, perturb=False))
         dataset = dataset.batch(batch_size)
 
     dataset.prefetch(2)
@@ -181,7 +180,10 @@ def generate_patches(image, label, patch_shape, multiplier=20, perturb=True):
     stacked = pad_to_patch(stacked, patch_shape_init)
 
     # add buffer region
-    padding = [[0, 0], [patch_shape[1], patch_shape[1]], [patch_shape[2], patch_shape[2]], [0, 0]]
+    #padding = [[patch_shape[0]//8, patch_shape[0]//8], [patch_shape[1]//2, patch_shape[1]//2], [patch_shape[2]//2, patch_shape[2]//2], [0, 0]]
+    padding = [[0, 0], [patch_shape[1] // 2, patch_shape[1] // 2],
+               [patch_shape[2] // 2, patch_shape[2] // 2], [0, 0]]
+    #padding = [[0, 0], [patch_shape[1], patch_shape[1]], [patch_shape[2], patch_shape[2]], [0, 0]]
     stacked = tf.pad(stacked, padding, mode='CONSTANT', constant_values=0)
 
     # add channel dimensions
@@ -195,7 +197,12 @@ def generate_patches(image, label, patch_shape, multiplier=20, perturb=True):
 
         # apply perturbations
         if perturb:
-            stacked_crop = apply_random_perturbations_stacked(stacked_crop)
+            #stacked_crop = apply_random_perturbations_stacked(stacked_crop)
+            random = tf.random.uniform((1,))
+            stacked_crop = tf.cond(random<0.5,
+                                                    lambda: apply_random_flips(stacked_crop),
+                                                    lambda: apply_random_perturbations_stacked(stacked_crop))
+
             #stacked_crop = z_shift(stacked_crop)
 
         # second crop of the center region
@@ -238,22 +245,19 @@ def apply_random_perturbations_stacked(stacked):
     return stacked
 
 
+def apply_random_flips(stacked):
+    random = tf.random.uniform((1,))
+    stacked = tf.cond(random<0.5, lambda: tf.reverse(stacked, axis=[1]), lambda: stacked)
+
+    random = tf.random.uniform((1,))
+    stacked = tf.cond(random<0.5, lambda: tf.reverse(stacked, axis=[2]), lambda: stacked)
+
+    return stacked
+
+
 def apply_noise(image, label):
-    # add noise
-    #image = image + tf.random.uniform(tf.shape(image), maxval=0.1)
-    #image = tf.divide(tf.subtract(image, tf.reduce_min(image)), tf.subtract(tf.reduce_max(image), tf.reduce_min(image)))
-
-    # add multiplicative noise
-    #image = image * tf.random.uniform(tf.shape(image), minval=0.9, maxval=1)
-
-    # mix image with blurred version (to approximate light-sheet data)
-    #mix = tf.where(tf.random.uniform((1,))> 0.3, tf.random.uniform((1,), maxval=0.8), 0.)
-    #image = tf.expand_dims(image, axis=0)
-    #image = (1-mix) * image + mix * blur_labels(image, sigma=2.5, normalize=False, depth=1)
-    #image = tf.squeeze(image, axis=0)
-
     # take power of image to increase or reduce contrast
-    image = tf.pow(image, tf.random.uniform((1,), minval=0.5, maxval=1.5))
+    image = tf.pow(image, tf.random.uniform((1,), minval=0.8, maxval=1.2))
 
     # take a random decay constant (biased to 1 by taking the root)
     decay = tf.sqrt(tf.random.uniform((1,), minval=0.04, maxval=1))
@@ -261,6 +265,25 @@ def apply_noise(image, label):
     # let image intensity decay differently
     scale = decay + (1-decay) * (1 - tf.range(tf.shape(image)[0], dtype=tf.float32) / tf.cast(tf.shape(image)[0], tf.float32))
     image = tf.reshape(scale, shape=(tf.shape(image)[0], 1, 1, 1)) * image
+
+    return image, label
+
+
+def remove_unannotated_z_layers(image, label):
+
+    localizations_in_z = tf.reduce_sum(label, axis=[1, 2, 3], keepdims=True)
+    top_z = tf.where(localizations_in_z > 0)[-1]
+
+    tf.print(top_z)
+
+    im_shape = tf.shape(image)
+
+    z = tf.range(im_shape[0], dtype='float32')
+    z = tf.reshape(tf.repeat(z, im_shape[1]*im_shape[2]*im_shape[3]), im_shape)
+
+    tf.print(z[10, :, :])
+
+    image = image * (z<(top_z+1))
 
     return image, label
 
