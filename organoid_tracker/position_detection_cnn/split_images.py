@@ -19,13 +19,17 @@ def corners_split(image_shape: Union[np.ndarray, List[int]], patch_shape: Union[
             spacing = round((image_shape[dim] - patch_shape[dim]) / (num_corners - 1))
 
             coords = np.arange(num_corners, dtype=int) * spacing
+
+            # make sure that we stay within image volume
+            coords[-1] = image_shape[dim] - patch_shape[dim]
+
         else:
             coords = [np.array(0)]
 
         corners_old = list(corners)
         corners = []
 
-        # clever/hacky way to get all combinations of x-y-z coner coordinates
+        # clever/hacky way to get all combinations of x-y-z corner coordinates
         for coord in coords:
             for corner in corners_old:
                 new_corner = np.array(corner)
@@ -35,7 +39,7 @@ def corners_split(image_shape: Union[np.ndarray, List[int]], patch_shape: Union[
     return corners
 
 
-def reconstruction(image_batch, corners, buffer, image_shape, patch_shape):
+def reconstruction(image_batch, corners, buffer, image_shape, patch_shape, z_interpolation = 1):
     # add channel dimension and create empty volume
     final_image = np.zeros(image_shape + [image_batch.shape[4]], dtype=image_batch[0].dtype)
     # records if volume is filled by a patch
