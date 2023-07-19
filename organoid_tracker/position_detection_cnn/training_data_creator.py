@@ -26,6 +26,7 @@ from typing import List, Optional, Iterable, Tuple, Union
 
 import numpy
 from numpy import ndarray
+from tifffile import tifffile
 
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.experiment import Experiment
@@ -75,25 +76,25 @@ class _ImageWithPositions:
             shift.z = round(shift.z)
 
             # shift images according to offsets
-            image = numpy.roll(image, shift=(shift.z, shift.y, shift.x), axis=(0, 1, 2))
+            image_roll = numpy.roll(image, shift=(shift.z, shift.y, shift.x), axis=(0, 1, 2))
 
             # if in region information at a timepoint is unknown due to shifts the t=0 image is copied
             if shift.x < 0:
-                image[:, :, shift.x:] = image_ref[:, :, shift.x:]
+                image_roll[:, :, shift.x:] = image_ref[:, :, shift.x:]
             else:
-                image[:, :, :shift.x] = image_ref[:, :, :shift.x]
+                image_roll[:, :, :shift.x] = image_ref[:, :, :shift.x]
 
             if shift.y < 0:
-                image[:, shift.y:, :] = image_ref[:, shift.y:, :]
+                image_roll[:, shift.y:, :] = image_ref[:, shift.y:, :]
             else:
-                image[:, :shift.y, :] = image_ref[:, :shift.y, :]
+                image_roll[:, :shift.y, :] = image_ref[:, :shift.y, :]
 
             if shift.z < 0:
-                image[shift.z:, :, :] = image_ref[shift.z:, :, :]
+                image_roll[shift.z:, :, :] = image_ref[shift.z:, :, :]
             else:
-                image[:shift.z, :, :] = image_ref[:shift.z, :, :]
+                image_roll[:shift.z, :, :] = image_ref[:shift.z, :, :]
 
-            return image
+            return image_roll
 
         images = list()
         # records at which timepoints images were available
@@ -108,22 +109,22 @@ class _ImageWithPositions:
                 time_point = TimePoint(self.time_point.time_point_number() + dt)
                 offset = self._images.offsets.of_time_point(time_point)
 
-                image = aligner(image, center_image, offset, offset_ref)
-                images.append(image)
+                image_shifted = aligner(image, center_image, offset, offset_ref)
+                images.append(image_shifted)
 
                 image_dt.append(dt)
 
         # pads timestack if images are missing
         images_padded = list()
-        for dt in frames:
-            if dt < numpy.min(image_dt):
-                images_padded.append(images[0])
-
-        images_padded = images_padded + images
+        insert_image = images[0]
 
         for dt in frames:
-            if dt > numpy.max(image_dt):
-                images_padded.append(images[-1])
+
+            if dt in image_dt:
+                insert_image = images.pop(0)
+                images_padded.append(insert_image)
+            else:
+                images_padded.append(insert_image)
 
         stack = numpy.stack(images_padded, axis=-1)
 
