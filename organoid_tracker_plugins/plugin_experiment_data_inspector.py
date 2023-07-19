@@ -280,8 +280,8 @@ def _get_detailed_contents_of_dictionary(obj: Dict[Any, Any]):
     element_count = 0
     collection_type = _format_type(str(type(obj)))
     output = "<ul>"
-    for key, element in obj:
-        output += "<li><code>" + html.escape(str(element)) + "</code>:"
+    for key, element in obj.items():
+        output += "<li><code>" + html.escape(str(key)) + "</code>:"
         output += " <code>" + html.escape(str(element)) + "</code></li>"
         element_count += 1
     if element_count == 0:

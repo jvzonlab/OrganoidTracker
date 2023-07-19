@@ -1,9 +1,8 @@
-from typing import Callable, List, Dict, Any, Iterable, Optional, Type, Tuple
+from typing import Callable, List, Dict, Any, Iterable, Tuple
 
 from organoid_tracker.core import UserError
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.position import Position
-from organoid_tracker.core.marker import Marker
 from organoid_tracker.gui.undo_redo import UndoRedo
 
 
@@ -30,7 +29,7 @@ class _EventListeners:
 
     def call_all(self, *args):
         """Calls all registered event listeners with the specified parameters."""
-        for listeners in self._listeners.values():
+        for listeners in list(self._listeners.values()):
             for listener in listeners:
                 listener(*args)
 
@@ -66,7 +65,6 @@ class GuiExperiment:
     _data_updated_handlers: _EventListeners
     _any_updated_event: _EventListeners
     _command_handlers: _EventListeners
-    _registered_markers: Dict[str, Marker]
 
     def __init__(self, experiment: Experiment):
         self._tabs = [SingleGuiTab(experiment)]
@@ -75,7 +73,6 @@ class GuiExperiment:
         self._data_updated_handlers = _EventListeners()
         self._any_updated_event = _EventListeners()
         self._command_handlers = _EventListeners()
-        self._registered_markers = dict()
 
     @property  # read-only
     def undo_redo(self) -> UndoRedo:
@@ -104,22 +101,11 @@ class GuiExperiment:
         self._any_updated_event.remove(source_to_remove)
         self._command_handlers.remove(source_to_remove)
 
-    def register_marker(self, marker: Marker):
-        """Registers a new position type (overwriting any existing one with the same save name)."""
-        self._registered_markers[marker.save_name] = marker
+    def get_registered_markers(self, type):
+        raise ValueError("Moved to window.registry.get_registered_markers(...)")
 
-    def get_registered_markers(self, type: Type) -> Iterable[Marker]:
-        """Gets all registered markers for the given type. For example, you can ask all registered cell types using
-        get_registered_markers(Position)."""
-        for marker in self._registered_markers.values():
-            if marker.applies_to(type):
-                yield marker
-
-    def get_marker_by_save_name(self, save_name: Optional[str]) -> Optional[Marker]:
-        """Gets the marker using the given save name. Returns None if no marker exists for that save name."""
-        if save_name is None:
-            return None
-        return self._registered_markers.get(save_name)
+    def get_marker_by_save_name(self, save_name):
+        raise ValueError("Moved to window.registry.get_marker_by_save_name(...)")
 
     def add_experiment(self, experiment: Experiment):
         # Remove current experiment if it contains no data
@@ -228,7 +214,3 @@ class GuiExperiment:
             return self.get_all_tabs()
         return [self.get_open_tab()]
 
-    def unregister_marker(self, marker: Marker):
-        """Unregisters a marker, so that it is no longer included in get_registered_markers ."""
-        if marker.save_name in self._registered_markers:
-            del self._registered_markers[marker.save_name]

@@ -50,6 +50,8 @@ class LineageTreeVisualizer(Visualizer):
     _display_cell_type_colors: bool = True
     _display_axis_colors: bool = False
     _display_track_id: bool = False
+    _display_resolution: ImageResolution = ImageResolution(1, 1, 1, 60)
+    _display_y_label: str = "Time (time points)"
 
     def __init__(self, window: Window):
         super().__init__(window)
@@ -180,7 +182,7 @@ class LineageTreeVisualizer(Visualizer):
         self.draw_view()
 
     def _set_required_cell_type(self):
-        cell_types = list(self.get_window().get_gui_experiment().get_registered_markers(Position))
+        cell_types = list(self.get_window().registry.get_registered_markers(Position))
         cell_type_names = [cell_type.display_name for cell_type in cell_types]
         cell_type_names += ["<do not filter>"]
         answer = option_choose_dialog.prompt_list("Required cell type", "Required cell type",
@@ -244,6 +246,9 @@ class LineageTreeVisualizer(Visualizer):
         experiment = self._experiment
         position_data = experiment.position_data
         links = experiment.links
+        if links.get_highest_track_id() > 2000:
+            raise ValueError(f"Lineage tree is too complex to display ({links.get_highest_track_id()} ids)")
+
         links.sort_tracks_by_x()
 
         self._calculate_track_colors()
@@ -280,20 +285,21 @@ class LineageTreeVisualizer(Visualizer):
                     return matplotlib.colors.to_rgb(color)
             return 0, 0, 0  # Default is black
 
-        resolution = ImageResolution(1, 1, 1, 60)
         self._location_map = LocationMap()
         width = LineageDrawing(links).draw_lineages_colored(self._ax, color_getter=color_getter,
-                                                            resolution=resolution,
+                                                            resolution=self._display_resolution,
                                                             location_map=self._location_map,
                                                             lineage_filter=self._lineage_filter,
                                                             label_getter=self._get_track_label,
                                                             line_width=self._get_lineage_line_width())
 
-        self._ax.set_ylabel("Time (time points)")
+        self._ax.set_ylabel(self._display_y_label)
+        self._ax.set_xticks([])
         if self._ax.get_xlim() == (0, 1):
             # Only change axis if the default values were used
             # noinspection PyTypeChecker
-            self._ax.set_ylim([experiment.last_time_point_number(), experiment.first_time_point_number() - 1])
+            self._ax.set_ylim([experiment.last_time_point_number() * self._display_resolution.time_point_interval_h,
+                               experiment.first_time_point_number() * self._display_resolution.time_point_interval_h - 1])
             # noinspection PyTypeChecker
             self._ax.set_xlim([-0.1, width + 0.1])
 

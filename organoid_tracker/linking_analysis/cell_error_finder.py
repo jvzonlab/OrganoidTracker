@@ -2,10 +2,10 @@ from typing import Optional, Iterable, Callable, Tuple
 
 from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
-from organoid_tracker.core.score import Score, ScoreCollection, Family
-from organoid_tracker.linking import cell_division_finder
+from organoid_tracker.core.warning_limits import WarningLimits
 from organoid_tracker.linking_analysis import linking_markers, particle_age_finder
 from organoid_tracker.linking_analysis.errors import Error
 
@@ -53,14 +53,21 @@ def get_error(experiment: Experiment, position: Position, marginalization = Fals
         return Error.NO_FUTURE_POSITION
     elif len(future_positions) == 2:
         # Found a putative mother
-        if position_data.get_position_data(position, 'division_probability') is None:
-            return Error.LOW_MOTHER_SCORE
-        elif position_data.get_position_data(position, 'division_probability') < warning_limits.min_probability:
+        division_probability = position_data.get_position_data(position, 'division_probability')
+        if division_probability is not None and division_probability < warning_limits.min_probability:
             return Error.LOW_MOTHER_SCORE
 
         age = particle_age_finder.get_age(links, position)
         if age is not None and age * resolution.time_point_interval_h < warning_limits.min_time_between_divisions_h:
             return Error.YOUNG_MOTHER
+    elif len(future_positions) == 1:
+        division_probability = position_data.get_position_data(position, 'division_probability')
+        if division_probability is not None\
+                and division_probability > 1 - warning_limits.min_probability:
+            # Likely missed a division
+            if not _has_high_division_probability_hereafter(links, position_data, warning_limits,
+                                                            next(iter(future_positions))):
+                return Error.POTENTIALLY_SHOULD_BE_A_MOTHER
 
     past_positions = links.find_pasts(position)
     if len(past_positions) == 0:
@@ -96,36 +103,35 @@ def get_error(experiment: Experiment, position: Position, marginalization = Fals
     return None
 
 
-def _get_volumes(position: Position, volume_lookup: PositionData,
-                 next_position_getter: Callable[[Position], Optional[Position]], max_amount: int) -> Optional[float]:
-    """Gets the mean volume over time, based on the given number of recorded volumes. If there aren't that many
-    recorded volumes, then the it uses less. However, if there are less than 2 volumes recorded, None is returned, as in
-    that case we don't have enough data to say anything useful."""
-    volumes = list()
-    while len(volumes) < max_amount:
-        shape = linking_markers.get_shape(volume_lookup, position)
-        if shape.is_unknown():
-            break
-        volumes.append(shape.volume())
+def _has_high_division_probability_hereafter(links: Links, position_data: PositionData, warning_limits: WarningLimits,
+                                             future_position: Position) -> bool:
+    """Returns True if the cell has a high division probability in one or two time points. If the tracking data actually
+    included a division after future_position, this method always returns True.
+    """
 
-        position = next_position_getter(position)
-        if position is None:
-            break
-    if len(volumes) < 2:
-        return None  # Too few data points for an average
-    return sum(volumes) / len(volumes)
+    # Check division probability in next time point, to avoid showing warning multiple times in a row
+    future_future_positions = links.find_futures(future_position)
+    division_probability_next = position_data.get_position_data(future_position, 'division_probability')
+    if division_probability_next is None:
+        division_probability_next = 0
 
+    if division_probability_next > 1 - warning_limits.min_probability:
+        return True  # Already seen
 
-def _get_highest_mother_score(scores: ScoreCollection, position: Position) -> Optional[Score]:
-    highest_score = None
-    highest_score_num = -999
-    for scored_family in scores.of_time_point(position.time_point()):
-        score = scored_family.score
-        score_num = score.total()
-        if score_num > highest_score_num:
-            highest_score = score
-            highest_score_num = score_num
-    return highest_score
+    # Check division probability after this
+    division_probability_next_next = 0
+    if len(future_future_positions) == 1:
+        division_probability_next_next = position_data.get_position_data(next(iter(future_future_positions)),
+                                                                         'division_probability')
+        if division_probability_next_next is None:
+            division_probability_next_next = 0
+        return division_probability_next_next > 1 - warning_limits.min_probability
+    elif len(future_future_positions) >= 2:
+        # We have seen a division! Assume probability of 1
+        return True  # Will divide
+    else:
+        # Cell disappeared
+        return False
 
 
 def find_errors_in_positions_links_and_all_dividing_cells(experiment: Experiment, *iterable: Position):

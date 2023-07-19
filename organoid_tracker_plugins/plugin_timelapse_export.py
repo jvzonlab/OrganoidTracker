@@ -70,4 +70,4 @@ def _write_images(image_loader: ImageLoader, output_folder: str):
                 continue
             image_3d = bits.ensure_8bit(image_3d)
             file = os.path.join(output_folder, os.path.basename(output_folder) + f"t{time_point_number:03d}c{i+1}.tif")
-            tifffile.imwrite(file, image_3d, compress=9)
+            tifffile.imwrite(file, image_3d, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})

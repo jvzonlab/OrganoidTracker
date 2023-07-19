@@ -10,6 +10,8 @@ from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
 
+# The default intensity key, used if the user didn't specify another one
+DEFAULT_INTENSITY_KEY = "intensity"
 
 class IntensityOverTime:
     """Represents an intensity over time. The object holds the raw values, and statistics are calculated dynamically."""
@@ -69,6 +71,16 @@ class IntensityOverTime:
                 self._slope_stderr = 0
         return self._slope_stderr
 
+    def get_production(self, degradation_rate_h: float) -> float:
+        """Calculates the production using a simple production-degradation model
+            f
+        ∅  ⇄  G
+            b
+        """
+        if self.mean <= 0:
+            return 0  # Assume the actual slope and mean are zero
+        return degradation_rate_h * self.mean + self.slope
+
 
 def get_normalized_intensity_over_time(experiment: Experiment, around_position: Position, time_window_h: float, *,
                                        allow_incomplete: bool = False
@@ -114,40 +126,84 @@ def get_normalized_intensity_over_time(experiment: Experiment, around_position: 
     return IntensityOverTime(times_h, intensities)
 
 
-def set_raw_intensities(experiment: Experiment, raw_intensities: Dict[Position, int], volumes: Dict[Position, int]):
+def set_raw_intensities(experiment: Experiment, raw_intensities: Dict[Position, int], volumes: Dict[Position, int],
+                        *, intensity_key: str = DEFAULT_INTENSITY_KEY):
     """Registers the given intensities for the given positions. Both dicts must have the same keys.
 
-    Also removes any previously set intensity normalization."""
+    Will overwrite any previous intensities saved under the given key.
+
+    Will also add this intensity to the intensity_keys of the experiment.
+
+    Also removes any previously set intensity normalization for that key."""
     if raw_intensities.keys() != volumes.keys():
         raise ValueError("Need to supply intensities and volumes for the same cells")
-    experiment.position_data.add_positions_data("intensity", raw_intensities)
-    experiment.position_data.add_positions_data("intensity_volume", volumes)
-    remove_intensity_normalization(experiment)
+    if len(intensity_key) == 0:
+        raise ValueError("Cannot use an empty intensity_key")
+
+    remove_intensities(experiment, intensity_key=intensity_key)
+    experiment.position_data.add_positions_data(intensity_key, raw_intensities)
+    experiment.position_data.add_positions_data(intensity_key + "_volume", volumes)
 
 
-def get_raw_intensity(position_data: PositionData, position: Position) -> Optional[float]:
+def remove_intensities(experiment: Experiment, *, intensity_key: str = DEFAULT_INTENSITY_KEY):
+    """Deletes the intensities with the given key."""
+
+    # Remove values
+    experiment.position_data.delete_data_with_name(intensity_key)
+    experiment.position_data.delete_data_with_name(intensity_key + "_volume")
+
+    # Remove normalization
+    remove_intensity_normalization(experiment, intensity_key=intensity_key)
+
+
+def get_intensity_keys(experiment: Experiment) -> List[str]:
+    """Gets the keys of all stored intensities.
+
+    In the past, this list did not exist. For backwards compatibility, we check whether there are any
+    intensities saved under the default key "intensity", and if yes, we automatically add that to this list.
+    """
+    return_list = list()
+    names_and_types = experiment.position_data.get_data_names_and_types()
+    for data_name, data_type in names_and_types.items():
+        if data_type != float:
+            continue  # Skip non-numeric metadata
+
+        if data_name.endswith("_volume") and data_name[:-len("_volume")] in names_and_types:
+            continue  # Skip volume of an intensity
+
+        if not data_name + "_volume" in names_and_types.keys():
+            continue  # Has no measured volume, so cannot be used as an intensity
+
+        return_list.append(data_name)
+    return return_list
+
+
+def get_raw_intensity(position_data: PositionData, position: Position, *, intensity_key: str = DEFAULT_INTENSITY_KEY
+                      ) -> Optional[float]:
     """Gets the raw intensity of the position."""
-    return position_data.get_position_data(position, "intensity")
+    return position_data.get_position_data(position, intensity_key)
 
 
-def get_normalized_intensity(experiment: Experiment, position: Position) -> Optional[float]:
+def get_normalized_intensity(experiment: Experiment, position: Position, *, intensity_key: str = DEFAULT_INTENSITY_KEY
+                             ) -> Optional[float]:
     """Gets the normalized intensity of the position."""
     position_data = experiment.position_data
     global_data = experiment.global_data
 
-    intensity = position_data.get_position_data(position, "intensity")
-    background = global_data.get_data("intensity_background_per_pixel")
-    multiplier = global_data.get_data("intensity_multiplier_z" + str(round(position.z)))
+    intensity = position_data.get_position_data(position, intensity_key)
+    background = global_data.get_data(intensity_key + "_background_per_pixel")
+    multiplier = global_data.get_data(intensity_key + "_multiplier_z" + str(round(position.z)))
     if multiplier is None:
         # Try global multiplier
-        multiplier = global_data.get_data("intensity_multiplier")
-    volume = position_data.get_position_data(position, "intensity_volume")
+        multiplier = global_data.get_data(intensity_key + "_multiplier")
+    volume = position_data.get_position_data(position, intensity_key + "_volume")
     if volume is None or multiplier is None or background is None:
         return intensity
     return (intensity - background * volume) * multiplier
 
 
-def perform_intensity_normalization(experiment: Experiment, *, background_correction: bool = True, z_correction: bool = True):
+def perform_intensity_normalization(experiment: Experiment, *, background_correction: bool = True, z_correction: bool = True,
+                                    intensity_key: str = DEFAULT_INTENSITY_KEY):
     """Gets the average intensity of all positions in the experiment.
     Returns None if there are no intensity recorded."""
     remove_intensity_normalization(experiment)
@@ -157,8 +213,8 @@ def perform_intensity_normalization(experiment: Experiment, *, background_correc
     zs = list()
 
     position_data = experiment.position_data
-    for position, intensity in position_data.find_all_positions_with_data("intensity"):
-        volume = position_data.get_position_data(position, "intensity_volume")
+    for position, intensity in position_data.find_all_positions_with_data(intensity_key):
+        volume = position_data.get_position_data(position, intensity_key + "_volume")
         if volume is None and background_correction:
             continue
         if intensity == 0:
@@ -182,26 +238,27 @@ def perform_intensity_normalization(experiment: Experiment, *, background_correc
 
         # Subtract this background
         intensities -= volumes * background_per_px
-        experiment.global_data.set_data("intensity_background_per_pixel", background_per_px)
+        experiment.global_data.set_data(intensity_key + "_background_per_pixel", background_per_px)
     else:
-        experiment.global_data.set_data("intensity_background_per_pixel", 0)
+        experiment.global_data.set_data(intensity_key + "_background_per_pixel", 0)
 
     # Now normalize the mean to 1
     if z_correction:
         for z in range(int(numpy.min(zs)), int(numpy.max(zs)) + 1):
             median = numpy.median(intensities[zs == z])
             normalization_factor = float(1 / median)
-            experiment.global_data.set_data("intensity_multiplier_z" + str(z), normalization_factor)
+            experiment.global_data.set_data(intensity_key + "_multiplier_z" + str(z), normalization_factor)
     else:
         median = numpy.median(intensities)
         normalization_factor = float(1 / median)
-        experiment.global_data.set_data("intensity_multiplier", normalization_factor)
+        experiment.global_data.set_data(intensity_key + "_multiplier", normalization_factor)
 
 
-def remove_intensity_normalization(experiment: Experiment):
+def remove_intensity_normalization(experiment: Experiment, *, intensity_key: str = DEFAULT_INTENSITY_KEY):
     """Removes the normalization set by perform_intensity_normalization."""
-    experiment.global_data.set_data("intensity_background_per_pixel", None)
-    experiment.global_data.set_data("intensity_multiplier", None)
-    for key in list(experiment.global_data.get_all_data().keys()):
-        if key.startswith("intensity_multiplier_z"):
-            experiment.global_data.set_data(key, None)
+    experiment.global_data.set_data(intensity_key + "_background_per_pixel", None)
+    experiment.global_data.set_data(intensity_key + "_multiplier", None)
+    for key_for_z in list(experiment.global_data.get_all_data().keys()):
+        if key_for_z.startswith(intensity_key + "_multiplier_z"):
+            experiment.global_data.set_data(key_for_z, None)
+

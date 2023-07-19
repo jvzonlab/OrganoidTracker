@@ -1,43 +1,43 @@
 """Classes for expressing the positions of positions"""
-import json
 import os
-from json import JSONEncoder
+import warnings
 from pathlib import Path
 from typing import List, Dict, Any, Iterable, Optional
 
-import numpy
-
-from organoid_tracker.core import shape, TimePoint, UserError, Color
+from organoid_tracker.core import TimePoint, UserError, Color
 from organoid_tracker.core.beacon_collection import BeaconCollection
 from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.global_data import GlobalData
+from organoid_tracker.core.image_filters import ImageFilters
+from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.core.images import ImageOffsets
 from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.links import Links
-from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position_data import PositionData
-from organoid_tracker.core.spline import SplineCollection, Spline
 from organoid_tracker.core.resolution import ImageResolution
-from organoid_tracker.core.score import ScoredFamily, Score, Family
+from organoid_tracker.core.spline import SplineCollection, Spline
 from organoid_tracker.core.warning_limits import WarningLimits
+from organoid_tracker.image_loading.builtin_image_filters import InterpolatedMinMaxFilter, GaussianBlurFilter, \
+    ThresholdFilter, MultiplyPixelsFilter
 from organoid_tracker.linking_analysis import linking_markers
 
 FILE_EXTENSION = "aut"
 SUPPORTED_IMPORT_FILES = [
-        (FILE_EXTENSION.upper() + " file", "*." + FILE_EXTENSION),
-        ("Detection or linking files", "*.json"),
-        ("Cell tracking challenge files", "*.txt"),
-        ("TrackMate file", "*.xml"),
-        ("Guizela's tracking files", "track_00000.p")]
+    (FILE_EXTENSION.upper() + " file", "*." + FILE_EXTENSION),
+    ("Detection or linking files", "*.json"),
+    ("Cell tracking challenge files", "*.txt"),
+    ("TrackMate file", "*.xml"),
+    ("Guizela's tracking files", "track_00000.p")]
+
 
 def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: str,
                                         min_time_point: int = 0, max_time_point: int = 5000):
     """Loads a JSON file that contains position positions, with or without shape information."""
-    with open(json_file_name) as handle:
-        time_points = json.load(handle)
-        _parse_shape_format(experiment, time_points, min_time_point, max_time_point)
+    time_points = _read_json_from_file(json_file_name)
+    _parse_position_format(experiment, time_points, min_time_point, max_time_point)
 
 
 def _load_guizela_data_file(experiment: Experiment, file_name: str, min_time_point: int, max_time_point: int):
@@ -47,7 +47,8 @@ def _load_guizela_data_file(experiment: Experiment, file_name: str, min_time_poi
     guizela_data_importer.add_data_to_experiment(experiment, os.path.dirname(file_name), min_time_point, max_time_point)
 
 
-def _load_cell_tracking_challenge_file(experiment: Experiment, file_name: str, min_time_point: int, max_time_point: int):
+def _load_cell_tracking_challenge_file(experiment: Experiment, file_name: str, min_time_point: int,
+                                       max_time_point: int):
     from organoid_tracker.imaging import ctc_io
     ctc_io.load_data_file(file_name, min_time_point, max_time_point, experiment=experiment)
 
@@ -82,80 +83,81 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
 
 def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point: int, max_time_point: int):
     """Loads any kind of JSON file."""
-    with open(file_name) as handle:
-        data = json.load(handle, object_hook=_my_decoder)
+    data = _read_json_from_file(file_name)
 
-        if "version" not in data and "family_scores" not in data:
-            # We don't have a general data file, but a specialized one
-            if "directed" in data:
-                # File is a linking result file
-                _parse_links_format(experiment, data, min_time_point, max_time_point)
-            else:  # file is a position/shape file
-                _parse_shape_format(experiment, data, min_time_point, max_time_point)
-            return experiment
+    if "version" not in data and "family_scores" not in data:
+        # We don't have a general data file, but a specialized one
+        if "directed" in data:
+            # File is a linking result file
+            _parse_links_format(experiment, data, min_time_point, max_time_point)
+        else:  # file is a position/shape file
+            _parse_position_format(experiment, data, min_time_point, max_time_point)
+        return experiment
 
-        if data.get("version", "v1") != "v1":
-            raise ValueError("Unknown data version", "This program is not able to load data of version "
-                             + str(data["version"]) + ".")
+    if data.get("version", "v1") != "v1":
+        raise ValueError("Unknown data version", "This program is not able to load data of version "
+                         + str(data["version"]) + ".")
 
-        # We have a valid data file
-        # Let the experiment overwrite this file upon the next save
-        experiment.last_save_file = file_name
+    # We have a valid data file
+    # Let the experiment overwrite this file upon the next save
+    experiment.last_save_file = file_name
 
-        if "name" in data:
-            experiment.name.set_name(data["name"])
+    if "name" in data:
+        is_automatic = bool(data.get("name_is_automatic"))
+        experiment.name.set_name(data["name"], is_automatic=is_automatic)
 
-        if "shapes" in data:
-            _parse_shape_format(experiment, data["shapes"], min_time_point, max_time_point)
-        elif "positions" in data:
-            _parse_shape_format(experiment, data["positions"], min_time_point, max_time_point)
+    if "shapes" in data:
+        # Deprecated, nowadays stored in "positions"
+        _parse_position_format(experiment, data["shapes"], min_time_point, max_time_point)
+    elif "positions" in data:
+        _parse_position_format(experiment, data["positions"], min_time_point, max_time_point)
 
-        if "data_axes" in data:
-            _parse_splines_format(experiment, data["data_axes"], min_time_point, max_time_point)
+    if "data_axes" in data:
+        _parse_splines_format(experiment, data["data_axes"], min_time_point, max_time_point)
 
-        if "data_axes_meta" in data:
-            _parse_splines_meta_format(experiment, data["data_axes_meta"])
+    if "data_axes_meta" in data:
+        _parse_splines_meta_format(experiment, data["data_axes_meta"])
 
-        if "beacons" in data:
-            _parse_beacons_format(experiment, data["beacons"], min_time_point, max_time_point)
+    if "beacons" in data:
+        _parse_beacons_format(experiment, data["beacons"], min_time_point, max_time_point)
 
-        if "connections" in data:
-            _parse_connections_format(experiment, data["connections"], min_time_point, max_time_point)
+    if "connections" in data:
+        _parse_connections_format(experiment, data["connections"], min_time_point, max_time_point)
 
-        if "family_scores" in data:
-            experiment.scores.add_scored_families(data["family_scores"])
+    if "warning_limits" in data:
+        experiment.warning_limits = WarningLimits(**data["warning_limits"])
 
-        if "warning_limits" in data:
-            experiment.warning_limits = WarningLimits(**data["warning_limits"])
+    if "links" in data:
+        _parse_links_format(experiment, data["links"], min_time_point, max_time_point)
+    elif "links_scratch" in data:  # Deprecated, was used back when experiments could hold multiple linking sets
+        _parse_links_format(experiment, data["links_scratch"], min_time_point, max_time_point)
+    elif "links_baseline" in data:  # Deprecated, was used back when experiments could hold multiple linking sets
+        _parse_links_format(experiment, data["links_baseline"], min_time_point, max_time_point)
 
-        if "links" in data:
-            _parse_links_format(experiment, data["links"], min_time_point, max_time_point)
-        elif "links_scratch" in data:  # Deprecated, was used back when experiments could hold multiple linking sets
-            _parse_links_format(experiment, data["links_scratch"], min_time_point, max_time_point)
-        elif "links_baseline" in data:  # Deprecated, was used back when experiments could hold multiple linking sets
-            _parse_links_format(experiment, data["links_baseline"], min_time_point, max_time_point)
+    if "image_resolution" in data:
+        x_res = data["image_resolution"]["x_um"]
+        y_res = data["image_resolution"]["y_um"]
+        z_res = data["image_resolution"]["z_um"]
+        t_res = data["image_resolution"]["t_m"]
+        experiment.images.set_resolution(ImageResolution(x_res, y_res, z_res, t_res))
 
-        if "image_resolution" in data:
-            x_res = data["image_resolution"]["x_um"]
-            y_res = data["image_resolution"]["y_um"]
-            z_res = data["image_resolution"]["z_um"]
-            t_res = data["image_resolution"]["t_m"]
-            experiment.images.set_resolution(ImageResolution(x_res, y_res, z_res, t_res))
+    if "image_offsets" in data:
+        experiment.images.offsets = ImageOffsets([_parse_position(entry) for entry in data["image_offsets"]])
 
-        if "image_offsets" in data:
-            experiment.images.offsets = ImageOffsets(data["image_offsets"])
+    if "image_filters" in data:
+        experiment.images.filters = _parse_image_filters(data["image_filters"])
 
-        if "color" in data:
-            color = data["color"]
-            experiment.color = Color.from_rgb_floats(color[0], color[1], color[2])
+    if "color" in data:
+        color = data["color"]
+        experiment.color = Color.from_rgb_floats(color[0], color[1], color[2])
 
-        if "other_data" in data:
-            experiment.global_data = GlobalData(data["other_data"])
+    if "other_data" in data:
+        experiment.global_data = GlobalData(data["other_data"])
 
 
-def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List], min_time_point: int, max_time_point: int):
+def _parse_position_format(experiment: Experiment, json_structure: Dict[str, List], min_time_point: int,
+                           max_time_point: int):
     positions = experiment.positions
-    position_data = experiment.position_data
 
     for time_point_number, raw_positions in json_structure.items():
         time_point_number = int(time_point_number)  # str -> int
@@ -164,10 +166,7 @@ def _parse_shape_format(experiment: Experiment, json_structure: Dict[str, List],
 
         for raw_position in raw_positions:
             position = Position(*raw_position[0:3], time_point_number=time_point_number)
-            position_shape = shape.from_list(raw_position[3:])
             positions.add(position)
-            if not position_shape.is_unknown():
-                linking_markers.set_shape(position_data, position, position_shape)
 
 
 def _parse_links_format(experiment: Experiment, links_json: Dict[str, Any], min_time_point: int, max_time_point: int):
@@ -189,9 +188,12 @@ def _parse_splines_format(experiment: Experiment, splines_data: List[Dict], min_
         spline = Spline()
         points_x = spline_json["x_list"]
         points_y = spline_json["y_list"]
-        z = spline_json["z"]
+        if "z_list" in spline_json:
+            points_z = spline_json["z_list"]
+        else:
+            points_z = [spline_json["z"]] * len(points_y)  # Old format, when axes where 2D
         for i in range(len(points_x)):
-            spline.add_point(points_x[i], points_y[i], z)
+            spline.add_point(points_x[i], points_y[i], points_z[i])
         spline.set_offset(spline_json["offset"])
         spline_id = int(spline_json["id"]) if "id" in spline_json else None
         experiment.splines.add_spline(TimePoint(time_point_number), spline, spline_id)
@@ -216,7 +218,8 @@ def _parse_splines_meta_format(experiment: Experiment, axes_meta: Dict[str, obje
                 experiment.splines.set_marker_name(spline_id, marker, is_axis)
 
 
-def _parse_beacons_format(experiment: Experiment, beacons_data: Dict[str, List], min_time_point: int, max_time_point: int):
+def _parse_beacons_format(experiment: Experiment, beacons_data: Dict[str, List], min_time_point: int,
+                          max_time_point: int):
     """Expects a dict: `{"1": [...], "2": [...]}`. Keys are time points, values are lists with [x,y,z] positions:
     `[[2,4,7], [4,5.3,3], ...]`."""
     for time_point_str, beacons_list in beacons_data.items():
@@ -227,7 +230,7 @@ def _parse_beacons_format(experiment: Experiment, beacons_data: Dict[str, List],
             experiment.beacons.add(Position(*beacon_values, time_point_number=time_point_number))
 
 
-def _parse_connections_format(experiment: Experiment, connections_data: Dict[str, List[List[Position]]],
+def _parse_connections_format(experiment: Experiment, connections_data: Dict[str, List[List[Dict]]],
                               min_time_point: int, max_time_point: int):
     """Adds all connections from the serialized format to the Connections object."""
     connections = experiment.connections
@@ -237,14 +240,46 @@ def _parse_connections_format(experiment: Experiment, connections_data: Dict[str
             continue
 
         for connection in connections_list:
-            position1 = connection[0]
-            position2 = connection[1]
+            position1 = _parse_position(connection[0])
+            position2 = _parse_position(connection[1])
 
             connections.add_connection(position1.with_time_point_number(time_point_number),
                                        position2.with_time_point_number(time_point_number))
 
 
-def _add_d3_data(links: Links, link_data: LinkData, position_data: PositionData, links_json: Dict, min_time_point: int = -100000, max_time_point: int = 100000):
+def _parse_image_filters(data: Dict[str, Any]) -> ImageFilters:
+    filters = ImageFilters()
+    for key, filters_dict in data.items():
+        channel_index = int(key.replace("channel_", ""))
+        channel = ImageChannel(index_zero=channel_index)
+
+        for filter_dict in filters_dict:
+            if filter_dict["type"] == "threshold":
+                filters.add_filter(channel, ThresholdFilter(filter_dict["min"]))
+            elif filter_dict["type"] == "gaussian":
+                filters.add_filter(channel, GaussianBlurFilter(filter_dict["radius_px"]))
+            elif filter_dict["type"] == "multiply":
+                filters.add_filter(channel, MultiplyPixelsFilter(filter_dict["factor"]))
+            elif filter_dict["type"] == "interpolated_min_max":
+                points = dict()
+                for point_dict in filter_dict["points"]:
+                    points[IntensityPoint(time_point=TimePoint(point_dict["t"]), z=point_dict["z"])] \
+                        = point_dict["min"], point_dict["max"]
+                filters.add_filter(channel, InterpolatedMinMaxFilter(points))
+            else:
+                raise ValueError("Unknown image filter: " + filter_dict["type"])
+    return filters
+
+
+def _parse_position(json_structure: Dict[str, Any]) -> Position:
+    if "_time_point_number" in json_structure:
+        return Position(json_structure["x"], json_structure["y"], json_structure["z"],
+                        time_point_number=json_structure["_time_point_number"])
+    return Position(json_structure["x"], json_structure["y"], json_structure["z"])
+
+
+def _add_d3_data(links: Links, link_data: LinkData, position_data: PositionData, links_json: Dict,
+                 min_time_point: int = -100000, max_time_point: int = 100000):
     """Adds data in the D3.js node-link format. Used for deserialization."""
 
     # Add position data
@@ -252,7 +287,10 @@ def _add_d3_data(links: Links, link_data: LinkData, position_data: PositionData,
         if len(node.keys()) == 1:
             # No extra data found
             continue
-        position = node["id"]
+        position = _parse_position(node["id"])
+        if position.time_point_number() < min_time_point or position.time_point_number() > max_time_point:
+            continue  # Out of range
+
         for data_key, data_value in node.items():
             if data_key == "id":
                 continue
@@ -261,10 +299,10 @@ def _add_d3_data(links: Links, link_data: LinkData, position_data: PositionData,
 
     # Add links (and link and lineage data)
     for link in links_json["links"]:
-        source: Position = link["source"]
-        target: Position = link["target"]
+        source = _parse_position(link["source"])
+        target = _parse_position(link["target"])
         if source.time_point_number() < min_time_point or target.time_point_number() < min_time_point \
-            or source.time_point_number() > max_time_point or target.time_point_number() > max_time_point:
+                or source.time_point_number() > max_time_point or target.time_point_number() > max_time_point:
             continue  # Ignore time points out of range
         links.add_link(source, target)
 
@@ -278,48 +316,8 @@ def _add_d3_data(links: Links, link_data: LinkData, position_data: PositionData,
                 link_data.set_link_data(source, target, data_key, data_value)
 
 
-class _MyEncoder(JSONEncoder):
-    def default(self, o):
-        if isinstance(o, Position):
-            if o.time_point_number() is None:
-                return {"x": o.x, "y": o.y, "z": o.z}
-            return {"x": o.x, "y": o.y, "z": o.z, "_time_point_number": o.time_point_number()}
-        if isinstance(o, Score):
-            return o.__dict__
-
-        if isinstance(o, ScoredFamily):
-            daughters = list(o.family.daughters)
-            return {
-                "scores": o.score.dict(),
-                "mother": o.family.mother,
-                "daughter1": daughters[0],
-                "daughter2": daughters[1]
-            }
-
-        if isinstance(o, numpy.int32):
-            return numpy.asscalar(o)
-
-        return JSONEncoder.default(self, o)
-
-
-def _my_decoder(json_object):
-    if 'x' in json_object and 'y' in json_object and 'z' in json_object:
-        if '_time_point_number' in json_object:
-            return Position(json_object['x'], json_object['y'], json_object['z'],
-                            time_point_number=json_object['_time_point_number'])
-        else:
-            return Position(json_object['x'], json_object['y'], json_object['z'])
-    if 'scores' in json_object and 'mother' in json_object and 'daughter1' in json_object:
-        mother = json_object["mother"]
-        daughter1 = json_object["daughter1"]
-        daughter2 = json_object["daughter2"]
-        family = Family(mother, daughter1, daughter2)
-        score = Score(**json_object["scores"])
-        return ScoredFamily(family, score)
-    return json_object
-
-
-def _links_to_d3_data(links: Links, positions: Iterable[Position], position_data: PositionData, link_data: LinkData) -> Dict:
+def _links_to_d3_data(links: Links, positions: Iterable[Position], position_data: PositionData,
+                      link_data: LinkData) -> Dict:
     """Return data in D3.js node-link format that is suitable for JSON serialization
     and use in Javascript documents."""
     links.sort_tracks_by_x()  # Make sure tracks are always saved in the correct order
@@ -329,7 +327,7 @@ def _links_to_d3_data(links: Links, positions: Iterable[Position], position_data
     # Save nodes and store extra data
     for position in positions:
         node = {
-            "id": position
+            "id": _encode_position(position)
         }
         for data_name, data_value in position_data.find_all_data_of_position(position):
             if data_name == "shape":
@@ -342,8 +340,8 @@ def _links_to_d3_data(links: Links, positions: Iterable[Position], position_data
     edges = list()
     for source, target in links.find_all_links():
         edge = {
-            "source": source,
-            "target": target
+            "source": _encode_position(source),
+            "target": _encode_position(target)
         }
         if source in lineage_starting_positions:
             # Start of a lineage, so add lineage data
@@ -373,8 +371,7 @@ def save_positions_to_json(experiment: Experiment, json_file_name: str):
     json_file_name_old = json_file_name + ".OLD"
     if os.path.exists(json_file_name):
         os.rename(json_file_name, json_file_name_old)
-    with open(json_file_name, 'w') as handle:
-        json.dump(data_structure, handle, cls=_MyEncoder)
+    _write_json_to_file(json_file_name, data_structure)
     if os.path.exists(json_file_name_old):
         os.remove(json_file_name_old)
 
@@ -412,8 +409,7 @@ def _encode_positions_and_shapes(positions: PositionCollection, shapes: Position
     for time_point in positions.time_points():
         encoded_positions = []
         for position in positions.of_time_point(time_point):
-            shape = linking_markers.get_shape(shapes, position)
-            encoded_positions.append([position.x, position.y, position.z] + shape.to_list())
+            encoded_positions.append([position.x, position.y, position.z])
 
         data_structure[str(time_point.time_point_number())] = encoded_positions
     return data_structure
@@ -422,12 +418,13 @@ def _encode_positions_and_shapes(positions: PositionCollection, shapes: Position
 def _encode_data_axes_to_json(data_axes: SplineCollection) -> List[Dict]:
     json_list = list()
     for spline_id, time_point, spline in data_axes.all_splines():
-        points_x, points_y = spline.get_points_2d()
+        points_x, points_y, points_z = spline.get_points_3d()
         json_object = {
             "_time_point_number": time_point.time_point_number(),
             "x_list": points_x,
             "y_list": points_y,
-            "z": spline.get_z(),
+            "z_list": points_z,
+            "z": spline.get_z(),  # For compatibility with older OrganoidTracker versions (December 2022)
             "offset": spline.get_offset(),
             "id": spline_id
         }
@@ -445,14 +442,64 @@ def _encode_data_axes_meta_to_json(splines: SplineCollection) -> Dict[str, Dict[
     return json_dict
 
 
-def _encode_connections_to_json(connections: Connections) -> Dict[str, List[List[Position]]]:
+def _encode_position(position: Position) -> Dict[str, Any]:
+    if position.time_point_number() is None:
+        return {
+            "x": position.x,
+            "y": position.y,
+            "z": position.z
+        }
+    else:
+        return {
+            "x": position.x,
+            "y": position.y,
+            "z": position.z,
+            "_time_point_number": position.time_point_number()
+        }
+
+
+def _encode_connections_to_json(connections: Connections) -> Dict[str, List[List[Dict]]]:
     connections_dict = dict()
     for time_point in connections.time_points():
         connections_json = list()
         for position1, position2 in connections.of_time_point(time_point):
-            connections_json.append([position1.with_time_point(None), position2.with_time_point(None)])
+            connections_json.append([_encode_position(position1.with_time_point(None)),
+                                     _encode_position(position2.with_time_point(None))])
         connections_dict[str(time_point.time_point_number())] = connections_json
     return connections_dict
+
+
+def _encode_image_filters_to_json(filters: ImageFilters) -> Dict[str, Any]:
+    result_dict = dict()
+    for image_channel, filters_of_channel in filters.items():
+        filter_dicts = list()
+        for filter in filters_of_channel:
+            if isinstance(filter, ThresholdFilter):
+                filter_dicts.append({
+                    "type": "threshold",
+                    "min": filter.noise_limit
+                })
+            elif isinstance(filter, GaussianBlurFilter):
+                filter_dicts.append({
+                    "type": "gaussian",
+                    "radius_px": filter.blur_radius
+                })
+            elif isinstance(filter, MultiplyPixelsFilter):
+                filter_dicts.append({
+                    "type": "multiply",
+                    "factor": filter.factor
+                })
+            elif isinstance(filter, InterpolatedMinMaxFilter):
+                filter_dicts.append({
+                    "type": "interpolated_min_max",
+                    "points": [
+                        {"min": values[0], "max": values[1], "t": point.time_point.time_point_number(), "z": point.z}
+                        for point, values in filter.points.items()]
+                })
+            else:
+                warnings.warn("Unknown filter: " + str(filter.get_name()))
+        result_dict[f"channel_{image_channel.index_zero}"] = filter_dicts
+    return result_dict
 
 
 def save_data_to_json(experiment: Experiment, json_file_name: str):
@@ -474,11 +521,6 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
     if experiment.links.has_links() or experiment.position_data.has_position_data():
         save_data["links"] = _links_to_d3_data(experiment.links, experiment.positions, experiment.position_data,
                                                experiment.link_data)
-
-    # Save scores of families
-    scored_families = list(experiment.scores.all_scored_families())
-    if len(scored_families) > 0:
-        save_data["family_scores"] = scored_families
 
     # Save data axes
     if experiment.splines.has_splines():
@@ -508,7 +550,7 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
         pass
 
     # Save image offsets
-    save_data["image_offsets"] = experiment.images.offsets.to_list()
+    save_data["image_offsets"] = [_encode_position(position) for position in experiment.images.offsets.to_list()]
 
     # Save color
     save_data["color"] = list(experiment.color.to_rgb_floats())
@@ -521,10 +563,35 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
     json_file_name_old = json_file_name + ".OLD"
     if os.path.exists(json_file_name):
         os.rename(json_file_name, json_file_name_old)
-    with open(json_file_name, 'w') as handle:
-        json.dump(save_data, handle, cls=_MyEncoder)
+    _write_json_to_file(json_file_name, save_data)
     if os.path.exists(json_file_name_old):
         os.remove(json_file_name_old)
+
+
+def _read_json_from_file(file_name: str) -> Dict[str, Any]:
+    try:
+        # Faster
+        import orjson
+        with open(file_name, "rb") as handle:
+            return orjson.loads(handle.read())
+    except ModuleNotFoundError:
+        # Slower, but doesn't need the orjson library
+        import json
+        with open(file_name, "r") as handle:
+            return json.load(handle)
+
+
+def _write_json_to_file(file_name: str, data_structure):
+    try:
+        # Faster path
+        import orjson
+        with open(file_name, "wb") as handle:
+            handle.write(orjson.dumps(data_structure, option=orjson.OPT_SERIALIZE_NUMPY))
+    except ModuleNotFoundError:
+        # SLower path, but only relies on Python standard library
+        import json
+        with open(file_name, 'w') as handle:
+            json.dump(data_structure, handle)
 
 
 def _create_parent_directories(file_name: str):

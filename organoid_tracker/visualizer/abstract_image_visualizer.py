@@ -1,6 +1,5 @@
 from typing import Optional, Dict, Any
 
-import cv2
 import numpy
 from matplotlib import cm
 from matplotlib.backend_bases import MouseEvent
@@ -20,6 +19,7 @@ from organoid_tracker.gui.dialog import prompt_int
 from organoid_tracker.gui.window import Window, DisplaySettings
 from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking_analysis import linking_markers
+from organoid_tracker.util import bits
 from organoid_tracker.util.mpl_helper import line_infinite
 from organoid_tracker.visualizer import Visualizer, activate
 
@@ -62,7 +62,7 @@ class AbstractImageVisualizer(Visualizer):
         image_2d = None
         if self._display_settings.show_images:
             image_2d = self.load_image(self._time_point, self._z, self._display_settings.show_next_time_point)
-        if self._display_settings.show_reconstruction:
+        if self.should_show_image_reconstruction():
             if image_2d is not None:
                 # Create background based on time point images
                 image_shape = image_2d.shape[0:2] + (3,)
@@ -94,7 +94,7 @@ class AbstractImageVisualizer(Visualizer):
         """Just returns the full 3D image. Likely requites loading additional images from disk."""
         image_3d = self._experiment.images.get_image_stack(self._display_settings.time_point,
                                                            self._display_settings.image_channel)
-        if not self._display_settings.show_reconstruction:
+        if not self.should_show_image_reconstruction():
             return image_3d  # Done, just return the image
 
         # Create reconstruction
@@ -117,7 +117,7 @@ class AbstractImageVisualizer(Visualizer):
 
     def refresh_data(self):
         self._calculate_time_point_metadata()
-        if self._display_settings.show_reconstruction:
+        if self.should_show_image_reconstruction():
             self._load_2d_image()  # Reload image, as image is a reconstruction of the data
         super().refresh_data()
 
@@ -158,8 +158,6 @@ class AbstractImageVisualizer(Visualizer):
         time_point_number = position.time_point_number()
         dt = 0 if time_point_number is None else self._time_point.time_point_number() - time_point_number
         self._ax.plot(position.x, position.y, 'o', markersize=25, color=(0, 0, 0, 0), markeredgecolor=color, markeredgewidth=5)
-        shape = linking_markers.get_shape(self._experiment.position_data, position)
-        shape.draw2d(position.x, position.y, dz, dt, self._ax, color, "black")
 
     def _draw_beacons(self):
         for beacon in self._experiment.beacons.of_time_point(self._time_point):
@@ -268,7 +266,7 @@ class AbstractImageVisualizer(Visualizer):
                 crosses_y_list.append(position.y)
 
             # Add marker
-            position_type = self.get_window().get_gui_experiment().get_marker_by_save_name(
+            position_type = self.get_window().registry.get_marker_by_save_name(
                 position_markers.get_position_type(position_data, position))
             edge_color = (0, 0, 0) if position_type is None else position_type.mpl_color
             edge_width = 1 if position_type is None else 3
@@ -341,18 +339,28 @@ class AbstractImageVisualizer(Visualizer):
         if not self._display_settings.show_splines:
             return
 
-        dz = abs(data_axis.get_z() - self._z)
-        marker = data_axis.get_direction_marker() if self._experiment.splines.is_axis(id) else "o"
-        linewidth = 3 if dz == 0 else 1
-
+        # Draw a marker at the origin
         origin_pos = data_axis.from_position_on_axis(0)
         if origin_pos is not None:
             self._ax.plot(origin_pos[0], origin_pos[1], marker="*", markerfacecolor=core.COLOR_CELL_CURRENT,
-                          markeredgecolor="black", markersize=max(11, 18 - dz))
+                          markeredgecolor="black", markersize=max(11.0, 18 - abs(origin_pos[2] - self._z)))
 
+        # Draw the line
+        points_x, points_y, points_z = data_axis.get_points_3d()
+        if self._z < min(points_z):
+            z_distance_to_spline = min(points_z) - self._z
+        elif self._z > max(points_z):
+            z_distance_to_spline = self._z - max(points_z)
+        else:
+            z_distance_to_spline = 0
+        linewidth = 3 if z_distance_to_spline < 0.5 else 1
         self._ax.plot(*data_axis.get_interpolation_2d(), color=color, linewidth=linewidth)
-        self._ax.plot(*data_axis.get_points_2d(), linewidth=0, marker=marker, markerfacecolor=color,
-                      markeredgecolor="black", markersize=max(7, marker_size_max - dz))
+
+        # Draw the marker points
+        marker = data_axis.get_direction_marker() if self._experiment.splines.is_axis(id) else "o"
+        points_size = [max(7.0, marker_size_max - abs(point_z - self._z))**2 for point_z in points_z]
+        self._ax.scatter(x=points_x, y=points_y, marker=marker, facecolors=color,
+                         linewidths=2, edgecolors="black", s=points_size)
 
     def _get_position_at(self, x: Optional[int], y: Optional[int]) -> Optional[Position]:
         """Wrapper of get_closest_position that makes use of the fact that we can lookup all positions ourselves."""
@@ -401,8 +409,6 @@ class AbstractImageVisualizer(Visualizer):
                 self._toggle_showing_next_time_point,
             "View//Toggle-Toggle showing images [" + DisplaySettings.KEY_SHOW_IMAGES.upper() + "]":
                 self._toggle_showing_images,
-            "View//Toggle-Toggle showing reconstruction [" + DisplaySettings.KEY_SHOW_RECONSTRUCTION.upper() + "]":
-                self._toggle_showing_reconstruction,
             "View//Toggle-Toggle showing splines": self._toggle_showing_splines,
             "View//Toggle-Toggle showing position markers [P]": self._toggle_showing_position_markers,
             "View//Toggle-Toggle showing link and connection markers": self._toggle_showing_links_and_connections,
@@ -537,7 +543,6 @@ class AbstractImageVisualizer(Visualizer):
             self._display_settings.show_images = True
             self._display_settings.show_positions = True
             self._display_settings.show_splines = True
-            self._display_settings.show_reconstruction = False
             self._display_settings.show_next_time_point = False
             self.refresh_all()
             self.update_status("You're already in the home screen. Reset most display settings.")
@@ -552,7 +557,7 @@ class AbstractImageVisualizer(Visualizer):
         if file is None:
             return
 
-        images: ndarray = cv2.convertScaleAbs(image_3d, alpha=256 / image_3d.max(), beta=0)
+        images: ndarray = bits.image_to_8bit(image_3d)
         image_shape = image_3d.shape
 
         if len(image_shape) == 3 and isinstance(self._color_map, Colormap):
@@ -572,7 +577,7 @@ class AbstractImageVisualizer(Visualizer):
                 and (images[:, :, :, 0] == images[:, :, :, 2]).all():
             images = images[:, :, :, 0]
 
-        tifffile.imsave(file, images, compress=9)
+        tifffile.imsave(file, images, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
 
     def _toggle_showing_next_time_point(self):
         self._display_settings.show_next_time_point = not self._display_settings.show_next_time_point
@@ -580,10 +585,6 @@ class AbstractImageVisualizer(Visualizer):
 
     def _toggle_showing_images(self):
         self._display_settings.show_images = not self._display_settings.show_images
-        self._move_in_time(0)  # Refreshes image
-
-    def _toggle_showing_reconstruction(self):
-        self._display_settings.show_reconstruction = not self._display_settings.show_reconstruction
         self._move_in_time(0)  # Refreshes image
 
     def _toggle_showing_splines(self):
@@ -752,3 +753,5 @@ class AbstractImageVisualizer(Visualizer):
             self.update_status(f"Switched to channel {new_index + 1} of {len(channels)}")
         except ValueError:
             pass
+
+

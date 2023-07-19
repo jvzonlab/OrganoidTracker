@@ -19,8 +19,6 @@ class CellDivisionVisualizer(PositionListVisualizer):
     Press M to exit this view."""
 
     def __init__(self, window: Window):
-        window.display_settings.show_next_time_point = True  # Force viewing two time points at once
-
         super().__init__(window, all_positions=_get_mothers(window.get_experiment()))
 
     def get_message_no_positions(self):

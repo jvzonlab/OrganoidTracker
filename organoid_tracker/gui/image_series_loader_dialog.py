@@ -38,7 +38,7 @@ def prompt_image_series(experiment: Experiment) -> bool:
             return True
         return False
 
-    file_name_pattern = find_time_and_channel_pattern(file_name)
+    file_name_pattern = find_time_and_channel_pattern(directory, file_name)
     if file_name_pattern is None:
         file_name_pattern = file_name  # Don't use a pattern if not available
         file_name_lower = file_name.lower()

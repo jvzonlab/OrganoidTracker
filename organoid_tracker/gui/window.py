@@ -10,13 +10,14 @@ from organoid_tracker.gui import APP_NAME
 from organoid_tracker.gui.gui_experiment import GuiExperiment
 from organoid_tracker.gui.threading import Scheduler
 from organoid_tracker.gui.undo_redo import UndoRedo, UndoableAction
+from organoid_tracker.plugin.plugin_manager import PluginManager
+from organoid_tracker.plugin.registry import Registry
 
 
 class DisplaySettings:
     """Used for window-specific display settings."""
     show_next_time_point: bool
     show_images: bool
-    show_reconstruction: bool
     show_splines: bool
     show_positions: bool
     show_links_and_connections: bool
@@ -28,10 +29,9 @@ class DisplaySettings:
     error_correction_max_time_point: Optional[TimePoint] = None
 
     def __init__(self, *, show_next_time_point: bool = False, show_images: bool = True,
-                 show_reconstruction: bool = False, show_data_axes: bool = True, show_positions: bool = True):
+                 show_data_axes: bool = True, show_positions: bool = True):
         self.show_next_time_point = show_next_time_point
         self.show_images = show_images
-        self.show_reconstruction = show_reconstruction
         self.show_splines = show_data_axes
         self.show_positions = show_positions
         self.show_errors = True
@@ -42,7 +42,6 @@ class DisplaySettings:
 
     KEY_SHOW_NEXT_IMAGE_ON_TOP = "n"
     KEY_SHOW_IMAGES = "i"
-    KEY_SHOW_RECONSTRUCTION = "r"
 
 
 class Window:
@@ -57,6 +56,7 @@ class Window:
     __event_handler_ids: List[int]
     __menu: QMenuBar
     __scheduler: Optional[Scheduler] = None
+    __plugin_manager: PluginManager
 
     def __init__(self, q_window: QMainWindow, figure: Figure, experiment: GuiExperiment,
                  title_text: QLabel, status_text: QLabel):
@@ -68,6 +68,7 @@ class Window:
         self.__title_text = title_text
         self.__event_handler_ids = list()
         self.__display_settings = DisplaySettings()
+        self.__plugin_manager = PluginManager()
 
     def _event_source(self) -> str:
         """Returns an identifier used to register and unregister events."""
@@ -160,7 +161,7 @@ class Window:
         if show_plugins:
             menu_items.update(self._get_plugins_menu())
         menu_items.update(extra_items)
-        menu_items.update(self._get_help_menu())  # This menu must come last
+        menu_items.update(self._get_last_default_menu())  # This menu must come last
         _update_menu(self.__q_window, self.__menu, menu_items)
 
     def get_undo_redo(self) -> UndoRedo:
@@ -174,12 +175,29 @@ class Window:
         """Returns all menu options added by plugins."""
         return dict()
 
-    def _get_help_menu(self) -> Dict[str, Any]:
+    def _get_last_default_menu(self) -> Dict[str, Any]:
+        """Some items that should be added last, so that they're at the end of the menu."""
         return dict()
 
-    def reload_plugins(self):
-        """For windows that support plugins, this method reloads them all."""
-        pass
+    @property
+    def plugin_manager(self) -> PluginManager:
+        """Gets the plugin manager, allowing you to load, inspect and unload plugins."""
+        # Protected by a @property so that you can't replace it while it is in use.
+        return self.__plugin_manager
+
+    @property
+    def registry(self) -> Registry:
+        """Gets the registry. Used for plugin-provided things, like new cell types."""
+        return self.__plugin_manager.get_registry()
+
+    def replace_plugin_manager(self, value: PluginManager):
+        """Replaces the plugin manager. Can only be done if no plugins are loaded."""
+        if self.__plugin_manager.get_plugin_count() > 0:
+            raise ValueError("Plugin manager already in use, cannot replace")
+        if isinstance(value, PluginManager):
+            self.__plugin_manager = value
+        else:
+            raise ValueError("Not a plugin manager: " + repr(value))
 
 
 _NEW_CATEGORY = "---"

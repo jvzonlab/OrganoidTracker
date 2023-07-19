@@ -1,4 +1,5 @@
 import os
+from threading import Lock
 from typing import Tuple, List, Optional
 
 import numpy
@@ -30,7 +31,9 @@ class Nd2File:
 def load_image_series(experiment: Experiment, file: Nd2File, field_of_view: int, min_time_point: Optional[int] = None,
                       max_time_point: Optional[int] = None):
     """Gets the image loader for the given series inside the given file. Raises ValueError if that series doesn't
-    exist."""
+    exist.
+    Note: to prevent thread-safety issues, you are not allowed to use the file argument afterwards.
+    """
     image_loader = _Nd2ImageLoader(file._file_name, file._nd2_parser, field_of_view, min_time_point, max_time_point)
     experiment.images.image_loader(image_loader)
 
@@ -47,14 +50,20 @@ def load_image_series(experiment: Experiment, file: Nd2File, field_of_view: int,
 
 def load_image_series_from_config(experiment: Experiment, file_name: str, pattern: str, min_time_point: int, max_time_point: int):
     """Loads the image seriers into the images object using the file_name and pattern settings."""
+    if not os.path.exists(file_name):
+        print("Failed to load \"" + file_name + "\" - file does not exist")
+        return
     field_of_view = int(pattern)
     load_image_series(experiment, Nd2File(file_name), field_of_view, min_time_point, max_time_point)
 
 
-
 class _Nd2ImageLoader(ImageLoader):
     _file_name: str
+
+    # These are not thread-safe, so we need to use a lock
     _nd2_parser: Parser
+    _nd2_lock: Lock  # Acquired from the public (outer) methods
+
     _channels: List[ImageChannel]
     _min_time_point: int
     _max_time_point: int
@@ -64,10 +73,11 @@ class _Nd2ImageLoader(ImageLoader):
                  max_time_point: Optional[int]):
         max_field_of_view = len(nd2_parser.metadata["fields_of_view"])
         if location < 1 or location > max_field_of_view:
-            raise ValueError(f"Unknown field_of_view: {location}. Available: 0 to {max_field_of_view}")
+            raise ValueError(f"Unknown field_of_view: {location}. Available: 1 to {max_field_of_view}")
 
         self._file_name = file_name
         self._nd2_parser = nd2_parser
+        self._nd2_lock = Lock()
         self._channels = [ImageChannel(index_zero=i) for i, name in enumerate(self._nd2_parser.metadata["channels"])]
         time_points = self._nd2_parser.metadata["frames"]
         self._min_time_point = max_none(min(time_points), min_time_point)
@@ -84,9 +94,10 @@ class _Nd2ImageLoader(ImageLoader):
         frame_number = time_point.time_point_number()
         depth, height, width = self.get_image_size_zyx()
         image = None
-        for z in self._nd2_parser.metadata["z_levels"]:
+        for z in range(depth):
             # Using "location - 1": Nikon NIS-Elements GUI is one-indexed, but save format is zero-indexed
-            frame = self._nd2_parser.get_image_by_attributes(frame_number, self._location - 1, image_channel.index_zero, z, height, width)
+            with self._nd2_lock:
+                frame = self._nd2_parser.get_image_by_attributes(frame_number, self._location - 1, image_channel.index_zero, z, height, width)
             if image is None:
                 image = numpy.zeros((depth, height, width), dtype=frame.dtype)
             if len(frame) > 0:
@@ -107,15 +118,21 @@ class _Nd2ImageLoader(ImageLoader):
         frame_number = time_point.time_point_number()
         channel_index = self._channels.index(image_channel)
         # Using "location - 1": Nikon NIS-Elements GUI is one-indexed, but save format is zero-indexed
-        image = self._nd2_parser.get_image_by_attributes(frame_number, self._location - 1, channel_index, image_z, height, width)
+        with self._nd2_lock:
+            image = self._nd2_parser.get_image_by_attributes(frame_number, self._location - 1, channel_index, image_z, height, width)
         if len(image.shape) != 2:
             return None
         return image
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
-        height = self._nd2_parser.metadata["height"]
-        width = self._nd2_parser.metadata["width"]
-        depth = len(self._nd2_parser.metadata["z_levels"])
+        with self._nd2_lock:
+            height = self._nd2_parser.metadata["height"]
+            width = self._nd2_parser.metadata["width"]
+            depth = len(self._nd2_parser.metadata["z_levels"])
+        if depth == 0:
+            # Image has zero Z levels. This means that it is a 2D image.
+            # Increase the depth to 1, so that we can still load z=0
+            depth = 1
         return depth, height, width
 
     def first_time_point_number(self) -> Optional[int]:

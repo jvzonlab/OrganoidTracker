@@ -41,10 +41,5 @@ class BoundingBox:
         return self.max_z - self.min_z, self.max_y - self.min_y, self.max_x - self.min_x
 
 
-def bounding_box_from_mahotas(coords: ndarray) -> BoundingBox:
-    """Converts a mahotas bounding box [min_z, max_z, min_y, max_y, min_x, max_x] into an object."""
-    return BoundingBox(coords[4], coords[2], coords[0], coords[5], coords[3], coords[1])
-
-
 # A bounding box around (0, 0, 0) with a size of 1.
 ONE = BoundingBox(0, 0, 0, 1, 1, 1)

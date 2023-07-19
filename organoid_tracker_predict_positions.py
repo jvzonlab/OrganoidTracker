@@ -37,9 +37,8 @@ _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_i
 general_image_loader.load_images(experiment, _images_folder, _images_format,
                                  min_time_point=_min_time_point, max_time_point=_max_time_point)
 
-_patch_shape_z = config.get_or_default("patch_shape_z", str(30), comment="Maximum patch size to use for predictions."
-                                       " Make this smaller if you run out of video card memory.", type=config_type_int)
-_patch_shape_y = config.get_or_default("patch_shape_y", str(240), type=config_type_int)
+_patch_shape_y = config.get_or_default("patch_shape_y", str(240), type=config_type_int, comment="Maximum patch size to use for predictions."
+                                       " Make this smaller if you run out of video card memory.")
 _patch_shape_x = config.get_or_default("patch_shape_x", str(240), type=config_type_int)
 
 _buffer_z = config.get_or_default("buffer_z", str(1), comment="Buffer space to use when stitching multiple patches"
@@ -80,7 +79,15 @@ if _images_channels != {1}:
 # create image_list from experiment
 image_list = create_image_list_without_positions(experiment)
 
+# load models
+print("Loading model...")
+model = tf.keras.models.load_model(_model_folder, custom_objects={"loss": loss,
+                                                                  "position_precision": position_precision,
+                                                                  "position_recall": position_recall,
+                                                                  "overcount": overcount})
+
 # set relevant parameters
+_patch_shape_z = model.layers[0].input_shape[0][1] - _buffer_z * 2  # All models have a fixed z-shape
 patch_shape = [_patch_shape_z, _patch_shape_y, _patch_shape_x]
 buffer = np.array([[_buffer_z, _buffer_z], [_buffer_y, _buffer_y], [_buffer_x, _buffer_x]])
 
@@ -94,7 +101,7 @@ for i in range(len(image_list)):
 corners = corners_split(max_image_shape, patch_shape)
 
 # due to memory constraints only ~10 images can be processed at a given time (depending on patch shape)
-set_size = 2
+set_size = 1
 
 # set relevant parameters
 if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
@@ -107,12 +114,7 @@ with open(os.path.join(_model_folder, "settings.json")) as file_handle:
         exit(1)
     time_window = json_contents["time_window"]
 
-# load models
-print("Loading model...")
-model = tf.keras.models.load_model(_model_folder, custom_objects={"loss": loss,
-                                                                  "position_precision": position_precision,
-                                                                  "position_recall": position_recall,
-                                                                  "overcount": overcount})
+# make folder for images
 if _debug_folder is not None:
     os.makedirs(_debug_folder, exist_ok=True)
 
@@ -178,7 +180,7 @@ for image_set_index in range(image_set_count):
 
         # Comparison between image_max and im to find the coordinates of local maxima
         #im = erosion(im, np.ones((7,7,7)))
-        coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=0.1,  exclude_border=False) #, footprint=prediction_mask)
+        coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=im.max() / 10,  exclude_border=False) #, footprint=prediction_mask)
 
         for coordinate in coordinates:
             pos = Position(coordinate[2], coordinate[1], coordinate[0] / z_divisor - 1,

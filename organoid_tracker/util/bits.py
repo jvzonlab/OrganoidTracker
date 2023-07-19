@@ -1,4 +1,3 @@
-import cv2
 import numpy
 from numpy import ndarray
 
@@ -8,7 +7,10 @@ def image_to_8bit(image: ndarray):
     is already an 8-bit image, it can still get rescaled.
 
     Note that this method returns a copy and does not modify the original image."""
-    return cv2.convertScaleAbs(image, alpha=256 / image.max(), beta=0)
+    image = image.astype(numpy.float32)
+    image += image.min()  # Prevent negative values
+    image = image / float(image.max()) * 255.0  # Scale from 0 to 255
+    return image.astype(numpy.uint8)  # Convert to 8bit
 
 
 def ensure_8bit(image: ndarray):

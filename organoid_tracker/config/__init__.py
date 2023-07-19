@@ -127,6 +127,15 @@ class ConfigFile:
             self._config[section_name] = {}
             self.made_value_changes = True
 
+    def set(self, key: str, value: str, *, comment: str = "", store_in_defaults: bool = False):
+        """Sets a string in the config file. Stores in the default section of store_in_defaults is True. Otherwise,
+        the setting is saved in the section specified in __init__."""
+        if store_in_defaults:
+            self._config["DEFAULTS"][key] = _ValueWithComment(value, comment)
+        else:
+            self._config[self._section_name][key] = _ValueWithComment(value, comment)
+        self.made_value_changes = True
+
     def get_or_default(self, key: str, default_value: str, *, comment: str = "", store_in_defaults: bool = False,
                        type: Callable[[str], Any] = config_type_str) -> Any:
         """Gets a string from the config file for the given key. If no such string exists, the default value is

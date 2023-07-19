@@ -17,8 +17,12 @@ def corners_split(image_shape: Union[np.ndarray, List[int]], patch_shape: Union[
 
             # equal spacing between corners
             spacing = round((image_shape[dim] - patch_shape[dim]) / (num_corners - 1))
-
             coords = np.arange(num_corners, dtype=int) * spacing
+
+            # for the last coord, its possible that the shape is smaller than the others, if an equal division
+            # wasn't possible.
+            # so move back a bit if image_shape[z dim] / num_corners is not a whole number
+            coords[-1] -= image_shape[dim] % num_corners
         else:
             coords = [np.array(0)]
 

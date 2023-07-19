@@ -16,6 +16,10 @@ from organoid_tracker.core.resolution import ImageResolution
 def load_from_tif_file(experiment: Experiment, file: str, min_time_point: Optional[int] = None,
                        max_time_point: Optional[int] = None):
     """Creates an image loader for the individual images in the TIF file."""
+    if not os.path.exists(file):
+        print("Failed to load \"" + file + "\" - file does not exist")
+        return
+
     image_loader = _MergedTiffImageLoader(file, min_time_point, max_time_point)
     experiment.images.image_loader(image_loader)
 

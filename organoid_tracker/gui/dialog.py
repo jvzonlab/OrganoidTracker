@@ -4,7 +4,8 @@ import subprocess as _subprocess
 import sys as _sys
 import traceback as _traceback
 from enum import Enum
-from typing import Tuple, List, Optional, Callable, Any, Dict
+from statistics import median
+from typing import Tuple, List, Optional, Callable, Any, Dict, Union
 
 from PySide2 import QtCore
 from PySide2.QtGui import QCloseEvent, QColor
@@ -31,16 +32,22 @@ def _window() -> QWidget:
 def prompt_int(title: str, question: str, *, minimum: int = -2147483647, maximum: int = 2147483647,
                default=0) -> Optional[int]:
     """Asks the user to enter an integer. Returns None if the user pressed Cancel or closed the dialog box. If the
-    minimum is equal to the maximum, that number is returned."""
+    minimum is equal to the maximum, that number is returned. The default value is automatically clamped to the minimum
+    and maximum."""
     if minimum == maximum:
         return minimum
+    default = median([minimum, default, maximum])  # Make the default bounded by the minimum and maximum
     result, ok = QInputDialog.getInt(_window(), title, question, minValue=minimum, maxValue=maximum, value=default)
     return result if ok else None
 
 
-def prompt_float(title: str, question: str, minimum: float = -1.0e10, maximum: float = 1.0e10, default: float = 0
-                 ) -> Optional[float]:
-    result, ok = QInputDialog.getDouble(_window(), title, question, minValue=minimum, maxValue=maximum, value=default)
+def prompt_float(title: str, question: str, minimum: float = -1.0e10, maximum: float = 1.0e10, default: float = 0,
+                 decimals: int = 1) -> Optional[float]:
+    """Asks the user to enter a float. Returns None if the user pressed Cancel or closed the dialog box. The default
+    value is automatically clamped to the minimum and maximum."""
+    default = median([minimum, default, maximum])  # Make the default bounded by the minimum and maximum
+    result, ok = QInputDialog.getDouble(_window(), title, question, minValue=minimum, maxValue=maximum, value=default,
+                                        decimals=decimals)
     return result if ok else None
 
 
@@ -235,7 +242,24 @@ class _PopupQWindow(QMainWindow):
             popup_exception(e)
 
 
+
+def _as_gui_experiment(object: Union[GuiExperiment, Window]) -> GuiExperiment:
+    """Helper method so that you can pass both a Window and a GuiExperiment instance, but always get a GuiExperiment
+    out."""
+    if isinstance(object, GuiExperiment):
+        return object
+    return object.get_gui_experiment()
+
+
 class PopupWindow(Window):
+
+    def __init__(self, q_window: QMainWindow, figure: Figure, parent_window: Union[GuiExperiment, Window],
+                 title_text: QLabel, status_text: QLabel):
+        # parent_window used to always be a GuiExperiment. Now we also support passing a window object instead
+        # (hence the name change), so that we can access the plugin manager too.
+        super().__init__(q_window, figure, _as_gui_experiment(parent_window), title_text, status_text)
+        if isinstance(parent_window, Window):
+            self.replace_plugin_manager(parent_window.plugin_manager)
 
     def _get_default_menu(self) -> Dict[str, Any]:
         return {
@@ -252,7 +276,7 @@ class PopupWindow(Window):
             self.get_figure().savefig(file_name)
 
 
-def popup_visualizer(experiment: GuiExperiment, visualizer_callable: Callable[[Window], Any]):
+def popup_visualizer(parent_window: Window, visualizer_callable: Callable[[Window], Any]):
     """Pops up a window, which is then returned. You can then for example attach a Visualizer to this window to show
     something."""
     figure = Figure(figsize=(5.5, 5), dpi=95)
@@ -262,7 +286,7 @@ def popup_visualizer(experiment: GuiExperiment, visualizer_callable: Callable[[W
     def no_draw(_: Figure):
         pass
     q_window = _PopupQWindow(_window(), figure, no_draw, close_listener)
-    window = PopupWindow(q_window, figure, experiment, q_window._title_text, q_window._status_text)
+    window = PopupWindow(q_window, figure, parent_window, q_window._title_text, q_window._status_text)
 
     from organoid_tracker.visualizer import Visualizer
     visualizer: Visualizer = visualizer_callable(window)
@@ -274,11 +298,15 @@ def popup_visualizer(experiment: GuiExperiment, visualizer_callable: Callable[[W
     visualizer.update_status(visualizer.get_default_status())
 
 
-def popup_figure(experiment: GuiExperiment, draw_function: Callable[[Figure], None], *,
+def popup_figure(parent_window: Union[GuiExperiment, Window], draw_function: Callable[[Figure], None], *,
                  size_cm: Tuple[float, float] = (14, 12.7),
                  export_function: Optional[Callable[[], Dict[str, Any]]] = None):
     """Pops up a figure. The figure is drawn inside draw_function. Size (x, y) is specified using size_cm.
-    export_function is used to save a JSON structure when the user presses Ctrl+E."""
+    export_function is used to save a JSON structure when the user presses Ctrl+E.
+
+    For backwards compatibility, parent_window can still be a GuiExperiment. However, then plugins cannot
+    access anything in the popup window.
+    """
     def do_nothing_on_close():
         pass  # Used to indicate that no action needs to be taken once the window closes
 
@@ -300,7 +328,7 @@ def popup_figure(experiment: GuiExperiment, draw_function: Callable[[Figure], No
             json.dump(data, handle)
     figure.canvas.mpl_connect("key_release_event", try_export)
 
-    PopupWindow(q_window, figure, experiment, q_window._title_text, q_window._status_text)
+    PopupWindow(q_window, figure, parent_window, q_window._title_text, q_window._status_text)
 
 
 def prompt_yes_no(title: str, message: str) -> bool:

@@ -2,6 +2,7 @@
 from typing import NamedTuple, Dict, Tuple, Optional
 
 import numpy
+import skimage.filters
 from numpy import ndarray
 from scipy.interpolate import LinearNDInterpolator
 from scipy.spatial.qhull import QhullError
@@ -32,23 +33,22 @@ class ThresholdFilter(ImageFilter):
 class GaussianBlurFilter(ImageFilter):
     """Applies a Gaussian blur in 2D."""
 
-    blur_radius: int
+    blur_radius: float
 
-    def __init__(self, blur_radius: int = 5):
+    def __init__(self, blur_radius: float = 5):
         self.blur_radius = blur_radius
 
     def filter(self, time_point, image_z, image: ndarray):
-        import cv2
         if len(image.shape) == 3:
-            out = numpy.empty_like(image[0])
+            out = numpy.empty_like(image[0], dtype=numpy.float32)
             for z in range(image.shape[0]):
-                slice = image[z]
-                cv2.GaussianBlur(slice, (self.blur_radius, self.blur_radius), 0, out)
-                image[z] = out
+                slice = image[z].astype(numpy.float32)
+                skimage.filters.gaussian(slice, sigma=self.blur_radius / 2, output=out)
+                image[z] = out.astype(image.dtype)
         elif len(image.shape) == 2: # len(...) == 2
-            out = numpy.empty_like(image)
-            cv2.GaussianBlur(image, (self.blur_radius, self.blur_radius), 0, out)
-            image[...] = out
+            out = numpy.empty_like(image, dtype=numpy.float32)
+            skimage.filters.gaussian(image.astype(numpy.float32), sigma=self.blur_radius / 2, output=out)
+            image[...] = out.astype(image.dtype)
         else:
             raise ValueError("Can only handle 2D or 3D images. Got shape " + str(image.shape))
 

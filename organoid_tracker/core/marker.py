@@ -1,6 +1,9 @@
 from typing import Set, Type, Tuple, Iterable, Dict, Any, Optional
 
+from matplotlib.axes import Axes
+
 from organoid_tracker.core import Color
+from organoid_tracker.core.typing import MPLColor
 
 
 class Marker:
@@ -53,3 +56,12 @@ class Marker:
 
     def __str__(self) -> str:
         return self._display_name
+
+
+def draw_marker_2d(x: float, y: float, dz: int, dt: int, area: Axes, color: MPLColor, edge_color: MPLColor):
+    """The default (point) representation of a shape. Implementation can fall back on this if they want."""
+    if abs(dz) > 3:
+        return
+    marker_style = 's' if dz == 0 else 'o'
+    marker_size = max(1, 7 - abs(dz) - abs(dt))
+    area.plot(x, y, marker_style, color=color, markeredgecolor=edge_color, markersize=marker_size, markeredgewidth=1)

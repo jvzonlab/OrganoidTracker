@@ -9,6 +9,11 @@ from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
 
 
+# If a position has position data with this name, the error checker will always flag it for manual review. Useful for
+# reminding yourself to revisit a position.
+UNCERTAIN_MARKER = "uncertain"
+
+
 def get_position_type(position_data: PositionData, position: Position) -> Optional[str]:
     """Gets the type of the cell in UPPERCASE, interpreted as the intestinal organoid cell type."""
     type = position_data.get_position_data(position, "type")
@@ -55,59 +60,22 @@ def get_raw_intensity(position_data: PositionData, position: Position) -> Option
 
 
 def get_normalized_intensity(experiment: Experiment, position: Position) -> Optional[float]:
-    """Gets the normalized intensity of the position."""
-    position_data = experiment.position_data
-    global_data = experiment.global_data
-
-    intensity = position_data.get_position_data(position, "intensity")
-    background = global_data.get_data("intensity_background_per_pixel")
-    multiplier = global_data.get_data("intensity_multiplier")
-    volume = position_data.get_position_data(position, "intensity_volume")
-    if volume is None or multiplier is None:
-        return intensity
-    return (intensity - background * volume) * multiplier
+    """@deprecated Old method, please use intensity_calculator.get_normalized_intensity instead."""
+    from . import intensity_calculator
+    return intensity_calculator.get_normalized_intensity(experiment, position)
 
 
-def perform_intensity_normalization(experiment: Experiment, *, background_correction: bool = True):
-    """Gets the average intensity of all positions in the experiment.
-    Returns None if there are no intensity recorded."""
-    intensities = list()
-    volumes = list()
+def get_position_flags(experiment: Experiment) -> Iterable[str]:
+    """Gets all used position flags of the experiment. These are simply all keys in experiment.position_data with the
+    bool data type. In addition, the special flag `UNCERTAIN_MARKER` is always returned, as that flag is used in the
+    error checker."""
+    returned_uncertain_marker = False
+    for data_name, data_type in experiment.position_data.get_data_names_and_types().items():
+        if data_type == bool:
+            yield data_name
+            if data_name == UNCERTAIN_MARKER:
+                returned_uncertain_marker = True
 
-    position_data = experiment.position_data
-    for position, intensity in position_data.find_all_positions_with_data("intensity"):
-        volume = position_data.get_position_data(position, "intensity_volume")
-        if volume is None and background_correction:
-            continue
-
-        intensities.append(intensity)
-        volumes.append(volume)
-
-    if len(intensities) == 0:
-        return
-
-    intensities = numpy.array(intensities, dtype=numpy.float32)
-    volumes = numpy.array(volumes, dtype=numpy.float32)
-
-    if background_correction:
-        # Assume the lowest signal consists of only background
-        lowest_intensity_index = numpy.argmin(intensities / volumes)
-        background_per_px = float(intensities[lowest_intensity_index] / volumes[lowest_intensity_index])
-
-        # Subtract this background
-        intensities -= volumes * background_per_px
-        experiment.global_data.set_data("intensity_background_per_pixel", background_per_px)
-    else:
-        experiment.global_data.set_data("intensity_background_per_pixel", 0)
-
-    # Now normalize the mean to 100
-    median = numpy.median(intensities)
-    normalization_factor = float(100 / median)
-
-    experiment.global_data.set_data("intensity_multiplier", normalization_factor)
-
-
-def remove_intensity_normalization(experiment: Experiment):
-    """Removes the normalization set by perform_intensity_normalization."""
-    experiment.global_data.set_data("intensity_background_per_pixel", None)
-    experiment.global_data.set_data("intensity_multiplier", None)
+    # Always make sure that this one is returned, this flag is present by default
+    if not returned_uncertain_marker:
+        yield UNCERTAIN_MARKER

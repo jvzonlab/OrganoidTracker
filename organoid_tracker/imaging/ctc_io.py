@@ -5,9 +5,9 @@ import os
 from typing import Optional, Dict, List
 
 import numpy
+import skimage.measure
+import skimage.segmentation
 from numpy import ndarray
-
-import mahotas
 from scipy.ndimage import distance_transform_edt
 from tifffile import tifffile
 
@@ -20,7 +20,6 @@ from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.resolution import ImageResolution
-from organoid_tracker.util import bits
 
 
 class _Link:
@@ -77,7 +76,7 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
 
     file_prefix = file_name[:-4]
     time_point_number = 0
-    positions_of_previous_time_point = list()
+    positions_of_previous_time_point = dict()
 
     while os.path.exists(f"{file_prefix}{time_point_number:03}.tif"):
         if time_point_number < min_time_point:
@@ -87,32 +86,32 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
 
         print(f"Working on time point {time_point_number}...")
         image = tifffile.imread(f"{file_prefix}{time_point_number:03}.tif")
-        position_boxes : ndarray = mahotas.labeled.bbox(image)
-        positions_of_time_point = [None]  # ID 0 is never used, that's the background
+        regionprops = skimage.measure.regionprops(image)
+        positions_of_time_point = dict()
 
-        for i in range(1, position_boxes.shape[0]):
-            position = _box_to_position(position_boxes[i], time_point_number)
-            positions_of_time_point.append(position)
-
-            if position is None:
-                continue
+        for region in regionprops:
+            centroid = region.centroid
+            if len(centroid) == 2:  # Support 2D images too
+                centroid = (0,) + centroid
+            position = Position(float(centroid[2]), float(centroid[1]), float(centroid[0]), time_point_number=time_point_number)
+            positions_of_time_point[region.label] = position
 
             # Add position
             all_positions.add(position)
-            all_position_data.set_position_data(position, "ctc_id", i)
+            all_position_data.set_position_data(position, "ctc_id", region.label)
 
             # Try to add link
-            if i < len(positions_of_previous_time_point):
-                previous_position = positions_of_previous_time_point[i]
+            if region.label in positions_of_previous_time_point:
+                previous_position = positions_of_previous_time_point[region.label]
                 if previous_position is not None:
-                    all_links.add_link(position, positions_of_previous_time_point[i])
+                    all_links.add_link(position, positions_of_previous_time_point[region.label])
 
         # Add mother-daughter links
         links_to_mother = links_to_mother_by_time_point.get(time_point_number)
         if links_to_mother is not None:
             for link in links_to_mother:
-                daughter = positions_of_time_point[link.daughter_id]
-                mother = positions_of_previous_time_point[link.parent_id]
+                daughter = positions_of_time_point.get(link.daughter_id)
+                mother = positions_of_previous_time_point.get(link.parent_id)
                 if mother is None or daughter is None:
                     continue
                 all_links.add_link(mother, daughter)
@@ -159,7 +158,7 @@ def save_data_files(experiment: Experiment, folder: str):
 
     # Create mask for stamping the positions in the images
     if is_scratch:
-        mask = _create_spherical_mask(5, experiment.images.resolution())
+        mask = _create_spherical_mask(7, experiment.images.resolution())
     else:
         mask = Mask(bounding_box.ONE.expanded(2, 2, 0))
         mask.get_mask_array().fill(1)
@@ -200,7 +199,7 @@ def _save_track_images(experiment: Experiment, image_prefix: str, mask: Mask):
             mask.center_around(position)
             mask.stamp_image(image_fill_array, track_id + 1)  # Track id is offset by 1 to avoid track id 0
 
-        tifffile.imsave(image_file_name, image_fill_array.array, compress=9)
+        tifffile.imsave(image_file_name, image_fill_array.array, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
 
 
 def _save_track_images_watershed(experiment: Experiment, image_prefix: str, mask: Mask, resolution: ImageResolution):
@@ -234,9 +233,9 @@ def _save_track_images_watershed(experiment: Experiment, image_prefix: str, mask
         background_color = distance_map.max() + 1
         distance_map[image_mask_array.array == 0] = background_color
 
-        regions = mahotas.cwatershed(distance_map, image_seed_array).astype(numpy.uint16)
+        regions = skimage.segmentation.watershed(distance_map, image_seed_array).astype(numpy.uint16)
         regions[image_mask_array.array == 0] = 0  # Remove background
-        tifffile.imsave(image_file_name, regions, compress=9)
+        tifffile.imwrite(image_file_name, regions, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
 
 
 def _save_overview_file(experiment: Experiment, file_name: str):

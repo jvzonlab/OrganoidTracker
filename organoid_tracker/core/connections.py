@@ -3,16 +3,11 @@ particles are close by, or they are part of some subsystem. This is different fr
 observations made at different time points refer to the same particle."""
 import typing
 from typing import Dict, List, Set, Tuple, Iterable
-
-import numpy
+import networkx
+from networkx import Graph
 
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.position import Position
-
-if typing.TYPE_CHECKING:
-    # NetworkX is quite slow to import. Therefore, we normally only import it when there
-    # actually are connections. (In the _ConnectionsByTimePoint constructor.)
-    import networkx
 
 
 def _lowest_first(position1: Position, position2: Position) -> Tuple[Position, Position]:
@@ -32,7 +27,6 @@ def _lowest_first(position1: Position, position2: Position) -> Tuple[Position, P
 
 
 class _ConnectionsByTimePoint:
-
     _graph: "networkx.Graph"
 
     def __init__(self):
@@ -127,6 +121,12 @@ class _ConnectionsByTimePoint:
             return True
 
         return False
+
+    def to_networkx_graph(self) -> Graph:
+        """Gets a non-directional NetworkX graph that represents the connections of this time point. The graph is a copy, so any
+        changes will not affect the connections in the experiment. This has been done so that we can still switch to
+        another data storage method in the future."""
+        return self._graph.copy()
 
 
 class Connections:
@@ -314,3 +314,18 @@ class Connections:
         if position.time_point_number() in self._by_time_point:
             return self._by_time_point[position.time_point_number()].has_full_neighbors(position)
         return False
+
+    def to_networkx_graph(self, *, time_point: TimePoint) -> Graph:
+        """Gets a non-directional NetworkX graph that represents the connections of the given time point. The graph is
+        a copy, so any changes will not affect the connections in the experiment. This has been done so that we can
+        still switch to another data storage method in the future."""
+        if time_point.time_point_number() not in self._by_time_point:
+            return networkx.Graph()  # Return an empty graph
+        return self._by_time_point[time_point.time_point_number()].to_networkx_graph()
+
+    def copy(self) -> "Connections":
+        """Returns a copy of this object. Changes made to the copy will not affect this object."""
+        copy = Connections()
+        for time_point, connections in self._by_time_point.items():
+            copy._by_time_point[time_point] = connections.copy()
+        return copy

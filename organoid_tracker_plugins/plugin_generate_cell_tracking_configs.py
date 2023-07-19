@@ -25,8 +25,7 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
         "Tools//Use-Detect cells in images...": lambda: _generate_position_detection_config(window),
         "Tools//Use-Detect dividing cells...": lambda: _generate_division_detection_config(window),
         "Tools//Use-Detect link likelihoods...": lambda: _generate_link_detection_config(window),
-        "Tools//Use-Create links between time points...": lambda: _generate_linking_config(window),
-        "Tools//Process-Detect shapes using Gaussian fit...": lambda: _generate_gaussian_fit_configs(window),
+        "Tools//Use-Create links between time points...": lambda: _generate_linking_config(window)
     }
 
 
@@ -43,6 +42,7 @@ def _create_run_script(output_folder: str, script_name: str):
         writer.write(f"""@rem Automatically generated script for running {script_name}
 @echo off
 @CALL "{conda_installation_folder}\\condabin\\conda.bat" activate {os.getenv('CONDA_DEFAULT_ENV')}
+set TF_FORCE_GPU_ALLOW_GROWTH=true
 "{sys.executable}" "{script_file}"
 pause""")
 
@@ -160,12 +160,12 @@ def _generate_position_detection_config(window: Window):
     config.get_or_default("model_folder", model_folder)
     config.get_or_default("predictions_output_folder", "out")
 
-    config.get_or_default("patch_shape_z", str(30))
     config.get_or_default("patch_shape_y", str(240))
     config.get_or_default("patch_shape_x", str(240))
     config.get_or_default("buffer_z", str(1))
     config.get_or_default("buffer_y", str(8))
     config.get_or_default("buffer_x", str(8))
+    config.get_or_default("images_channels", str(window.display_settings.image_channel.index_one))
 
     config.save()
     _create_run_script(save_directory, "organoid_tracker_predict_positions")
@@ -272,6 +272,7 @@ def _generate_division_detection_config(window: Window):
     config.get_or_default("checkpoint_folder", checkpoint_directory)
     config.get_or_default("predictions_output_folder", "out")
     config.get_or_default("save_video_ram", "true")
+    config.get_or_default("images_channels", str(window.display_settings.image_channel.index_one))
 
     config.save()
     _create_run_script(save_directory, "organoid_tracker_predict_divisions")
@@ -384,62 +385,11 @@ def _generate_link_detection_config(window: Window):
     config.get_or_default("checkpoint_folder", checkpoint_directory)
     config.get_or_default("predictions_output_folder", "out")
     config.get_or_default("save_video_ram", "true")
+    config.get_or_default("images_channels", str(window.display_settings.image_channel.index_one))
 
     config.save()
     _create_run_script(save_directory, "organoid_tracker_predict_links")
     _popup_confirmation(save_directory, "organoid_tracker_predict_links")
-
-
-def _generate_gaussian_fit_configs(window: Window):
-    experiment = window.get_experiment()
-    image_loader = experiment.images.image_loader()
-    if not image_loader.has_images():
-        raise UserError("No images", "No images were loaded, so we have nothing to fit the Gaussian functions to."
-                                     " Please load some images first.")
-    resolution = experiment.images.resolution()
-    if not experiment.positions.has_positions():
-        raise UserError("No positions", "No positions were found. The Gaussian fit requires starting points as seeds."
-                                        " You can obtain points manually or using the convolutional neural network. See"
-                                        " the automatic tracking tutorial in the help files for more information.")
-
-    # Erosion
-    erode_option = dialog.prompt_options("Cell overlap", "How much visual overlap do you have in your images between"
-                                         " the visible objects (nuclei, cells, whatever you are imaging)?\n"
-                                         "\nOption 1: almost none at all"
-                                         "\nOption 2: a bit"
-                                         "\nOption 3: a lot of objects are connected with neighbor objects"
-                                         "\n\nThe quality of the Gaussian fit is the best if you pick option 1."
-                                         " However, if all your objects overlap, then it will try to fit Gaussian"
-                                         " functions for all of them together, which is computationally very"
-                                         " expensive.", option_1="Option 1", option_2="Option 2", option_3="Option 3")
-    if erode_option is None:
-        return
-    print(erode_option)
-    erode_passes = 0
-    if erode_option == 2:
-        erode_passes = 2
-    elif erode_option == 3:
-        erode_passes = 3
-
-    save_directory = dialog.prompt_save_file("Output directory", [("Folder", "*")])
-    if save_directory is None:
-        return
-    positions_file = "positions." + io.FILE_EXTENSION
-    io.save_data_to_json(experiment, os.path.join(save_directory, positions_file))
-
-    config = ConfigFile("detect_gaussian_shapes", folder_name=save_directory)
-    config.get_or_default("images_container", image_loader.serialize_to_config()[0], store_in_defaults=True)
-    config.get_or_default("images_pattern", image_loader.serialize_to_config()[1], store_in_defaults=True)
-    config.get_or_default("min_time_point", str(image_loader.first_time_point_number()), store_in_defaults=True)
-    config.get_or_default("max_time_point", str(image_loader.last_time_point_number()), store_in_defaults=True)
-    config.get_or_default("positions_input_file", "./" + positions_file)
-    config.get_or_default("positions_and_fit_output_file", "./Gaussian fitted positions." + io.FILE_EXTENSION)
-    config.get_or_default("adaptive_threshold_block_size", str(51))
-    config.get_or_default("cluster_detection_erosion_rounds", str(erode_passes))
-    config.get_or_default("gaussian_fit_smooth_size", str(7))
-    config.save()
-    _create_run_script(save_directory, "organoid_tracker_detect_gaussian_shapes")
-    _popup_confirmation(save_directory, "organoid_tracker_detect_gaussian_shapes")
 
 
 def _generate_linking_config(window: Window):

@@ -24,59 +24,6 @@ from organoid_tracker.visualizer.exitable_image_visualizer import ExitableImageV
 from organoid_tracker.visualizer.lineage_tree_visualizer import LineageTreeVisualizer
 
 
-def _add_past_positions(links: Links, position: Position, single_lineage_links: Links):
-    """Finds all positions in earlier time points connected to this position."""
-    while True:
-        past_positions = links.find_pasts(position)
-        for past_position in past_positions:
-            single_lineage_links.add_link(position, past_position)
-
-        if len(past_positions) == 0:
-            return  # Start of lineage
-        if len(past_positions) > 1:
-            # Cell merge (physically impossible)
-            for past_position in past_positions:
-                _add_past_positions(links, past_position, single_lineage_links)
-            return
-
-        position = past_positions.pop()
-
-
-def _add_future_positions(links: Links, position: Position, single_lineage_links: Links):
-    """Finds all positions in later time points connected to this position."""
-    while True:
-        future_positions = links.find_futures(position)
-        for future_position in future_positions:
-            single_lineage_links.add_link(position, future_position)
-
-        if len(future_positions) == 0:
-            return  # End of lineage
-        if len(future_positions) > 1:
-            # Cell division
-            for daughter in future_positions:
-                _add_future_positions(links, daughter, single_lineage_links)
-            return
-
-        position = future_positions.pop()
-
-
-def _plot_volume(axes: Axes, position_data: PositionData, track: LinkingTrack, lineage_id: int):
-    volumes = list()
-    time_point_numbers = list()
-
-    for position in track.positions():
-        # Found a connection, measure distance
-        try:
-            volumes.append(linking_markers.get_shape(position_data, position).volume())
-            time_point_numbers.append(position.time_point_number())
-        except NotImplementedError:
-            pass  # No known volume at this time point
-
-    # End of this cell track: either start multiple new ones (division) or stop tracking
-    label = None if track.get_previous_tracks() else "Lineage " + str(lineage_id)
-    axes.plot(time_point_numbers, volumes, color=matplotlib.cm.Set1(lineage_id), label=label)
-
-
 def _plot_displacements(axes: Axes, resolution: ImageResolution, track: LinkingTrack, lineage_id: int):
     displacements = list()
     time_point_numbers = list()
@@ -163,7 +110,7 @@ def _find_full_lineage_tracks(experiment: Experiment, selected_position: List[Po
 def _find_earliest_predecessor_track(track: LinkingTrack) -> LinkingTrack:
     """Goes back in time, finding the earliest predecessor of this track."""
     parent_tracks = track.get_previous_tracks()
-    while len(parent_tracks) == 1:
+    while len(parent_tracks) >= 1:
         track = parent_tracks.pop()
         parent_tracks = track.get_previous_tracks()
     return track
@@ -261,7 +208,7 @@ class TrackVisualizer(ExitableImageVisualizer):
         dialog.popup_figure(self.get_window().get_gui_experiment(), draw_function)
 
     def _show_lineage_tree(self):
-        dialog.popup_visualizer(self.get_window().get_gui_experiment(),
+        dialog.popup_visualizer(self.get_window(),
                                 lambda w: _SelectedTracksTreeVisualizer(w, self._selected_positions))
 
     def _show_sphere(self):

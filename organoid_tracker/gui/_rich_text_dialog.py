@@ -13,7 +13,6 @@ _SCROLL_AREA_PALETTE = QPalette()
 _SCROLL_AREA_PALETTE.setColor(QPalette.Background, QtCore.Qt.white)
 _DOCUMENT_STYLE = """
 font-size: 12pt;
-font-family: Georgia, "Times New Roman", serif;
 """
 
 

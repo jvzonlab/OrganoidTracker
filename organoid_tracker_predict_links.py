@@ -92,8 +92,11 @@ with open(os.path.join(_model_folder, "settings.json")) as file_handle:
         print("Error: model at " + _model_folder + " is made for working with " + str(json_contents["type"]) + ", not links")
         exit(1)
     time_window = json_contents["time_window"]
-    patch_shape_zyx = json_contents["patch_shape_zyx"]
-
+    if "patch_shape_xyz" in json_contents:
+        patch_shape_xyz = json_contents["patch_shape_xyz"]
+        patch_shape_zyx = [patch_shape_xyz[2], patch_shape_xyz[1], patch_shape_xyz[0]]
+    else:
+        patch_shape_zyx = json_contents["patch_shape_zyx"]  # Seems like some versions of OrganoidTracker use this
     scaling = json_contents["platt_scaling"]
     intercept = json_contents["platt_intercept"]
     intercept = np.log10(np.exp(intercept))

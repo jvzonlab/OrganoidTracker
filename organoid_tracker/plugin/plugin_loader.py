@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import Any, List, Dict, Tuple, Callable
+from typing import Any, List, Dict, Tuple, Callable, Optional
 import importlib
 
 from organoid_tracker.core.marker import Marker
@@ -62,29 +62,22 @@ def _to_module_name(file: str) -> str:
     return module_name
 
 
-def load_plugins(folder: str) -> List[Plugin]:
-    """Loads the plugins in the given folder. The folder must follow the format "example/folder/structure". A plugin in
-    "example/folder/structure/plugin_example.py" will be loaded as the module "structure.plugin_example".
-    """
-    if not os.path.exists(folder):
-        print("No plugins folder found at " + os.path.abspath(folder))
-        return []
+def load_plugin(file_path: str) -> Optional[Plugin]:
+    """Loads a single plugin. The file_path can point to a single Python file or to a folder that is a Python module.
+    The file name must be the full path, the basename must start with 'plugin_'.
 
-    plugins = []
-    for dir_entry in os.scandir(folder):
-        file_name = dir_entry.name
-        if not file_name.startswith("plugin_"):
-            if file_name.endswith(".py"):
-                print("Ignoring Python file " + file_name + " in " + folder
-                      + " folder: it does not start with \"plugin_\"")
-            continue
-        if dir_entry.is_dir():
-            file_path = os.path.join(folder, file_name)
-            plugins.append(_ModulePlugin(file_path))
-        elif file_name.endswith(".py"):
-            file_path = os.path.join(folder, file_name)
-            plugins.append(_ModulePlugin(file_path))
-        else:
-            print("Ignoring file " + file_name + " in " + folder
-                  + " folder: is looks like a plugin, but is not a folder or a Python file.")
-    return plugins
+    Returns None if there is no plugin at that location."""
+    file_name = os.path.basename(file_path)
+    if not file_name.startswith("plugin_"):
+        if file_name.endswith(".py"):
+            print("Ignoring Python file " + file_name + " in " + os.path.basename(file_path)
+                  + " folder: it does not start with \"plugin_\"")
+        return None
+    if os.path.isdir(file_path):
+        return _ModulePlugin(file_path)
+    elif file_name.endswith(".py"):
+        return _ModulePlugin(file_path)
+    else:
+        print("Ignoring file " + file_name + " in " + os.path.dirname(file_path)
+              + " folder: is looks like a plugin, but is not a folder or a Python file.")
+        return None

@@ -10,6 +10,7 @@ from organoid_tracker.gui import dialog
 from organoid_tracker.gui.launcher import launch_window
 from organoid_tracker.gui.threading import Task
 from organoid_tracker.imaging import io
+from organoid_tracker.text_popup.position_popup import PositionPopup
 from organoid_tracker.visualizer import activate
 from organoid_tracker.visualizer.abstract_image_visualizer import AbstractImageVisualizer
 
@@ -28,22 +29,10 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     point 30 and type '/z10' + ENTER to jump to z-layer 10."""
 
     def _on_mouse_click(self, event: MouseEvent):
-        if event.button == 1:
+        if event.button == 1 and event.dblclick:
             position = self._get_position_at(event.xdata, event.ydata)
             if position is not None:
-                data = dict(self._experiment.position_data.find_all_data_of_position(position))
-                previous_position = self._experiment.links.find_single_past(position)
-                link_data = dict(self._experiment.link_data.find_all_data_of_link(position, previous_position)) \
-                    if previous_position is not None else dict()
-
-                scores = list(self._experiment.scores.of_mother(position))
-                scores.sort(key=lambda scored_family: scored_family.score.total(), reverse=True)
-                score_str = ""
-                for score in scores:
-                    score_str += f"\nDivision score: {score.score.total()}"
-
-                self.update_status(f"Clicked on {position}.\n  Data: {data}\n  Link data (to previous): {link_data}"
-                                   f" {score_str}")
+                dialog.popup_rich_text(PositionPopup(self._window, position))
         else:
             super()._on_mouse_click(event)
 
@@ -97,7 +86,7 @@ class StandardImageVisualizer(AbstractImageVisualizer):
             def compute(self):
                 from organoid_tracker.imaging import depth_colored_image_creator
                 image_movie = depth_colored_image_creator.create_movie(images_copy, channel)
-                tifffile.imsave(file, image_movie, compress=6)
+                tifffile.imwrite(file, image_movie, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
                 return file
 
             def on_finished(self, result: Any):

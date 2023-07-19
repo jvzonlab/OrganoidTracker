@@ -2,8 +2,7 @@ from typing import List, Dict, NamedTuple
 
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.position import Position
-from organoid_tracker.core.position_data import PositionDataType
-from organoid_tracker.core.shape import ParticleShape
+from organoid_tracker.core.typing import DataType
 
 
 class FullPositionSnapshot(NamedTuple):
@@ -32,7 +31,7 @@ class FullPositionSnapshot(NamedTuple):
     position: Position
     links: List[Position]
     connections: List[Position]
-    position_data: Dict[str, PositionDataType]
+    position_data: Dict[str, DataType]
 
     def restore(self, experiment: Experiment):
         """Restores a position, its shape, its metadata and its links."""

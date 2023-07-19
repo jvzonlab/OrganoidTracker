@@ -168,13 +168,6 @@ def save_tracking_data_of_tab(tab: SingleGuiTab, force_save_as: bool = False):
     return True
 
 
-def reload_plugins(window: Window):
-    """Reloads all active plugins from disk."""
-    count = window.reload_plugins()
-    window.redraw_all()
-    window.set_status(f"Reloaded all {count} plugins.")
-
-
 def _error_message(error: Exception):
     return str(type(error).__name__) + ": " + str(error)
 

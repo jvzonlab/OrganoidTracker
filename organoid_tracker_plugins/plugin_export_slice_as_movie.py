@@ -1,8 +1,9 @@
 from enum import Enum
 from typing import Optional, Any, Dict
 
-import cv2
 import numpy
+import skimage.draw
+import skimage.transform
 import tifffile
 from numpy import ndarray
 
@@ -86,7 +87,8 @@ class _MovieGenerator(Task):
 
     def compute(self) -> Any:
         array = _generate_slice_movie(self._experiment, self._coord, self._slice_type, self._channel)
-        tifffile.imwrite(self._output_file, array, compress=9)
+        tifffile.imwrite(self._output_file, array, compression=tifffile.COMPRESSION.ADOBE_DEFLATE,
+                         compressionargs={"level": 9})
         return True
 
     def on_finished(self, result: Any):
@@ -94,8 +96,8 @@ class _MovieGenerator(Task):
 
 
 def _draw_marker(image_rgb: ndarray, image_x: float, image_y: float):
-    cv2.circle(image_rgb, (int(image_x), int(image_y)), radius=7, color=(255, 0, 255),  # Magenta
-               thickness=-1)
+    rr, cc = skimage.draw.disk((int(image_y), int(image_x)), 7, shape=image_rgb.shape[0:2])
+    image_rgb[rr, cc, :] = (255, 0, 255)  # Magenta
 
 
 def _generate_slice_movie(experiment: Experiment, coord: int, slice_type: SliceType, channel: ImageChannel) -> ndarray:
@@ -132,7 +134,6 @@ def _generate_xy_movie(experiment: Experiment, z: int, channel: ImageChannel) ->
     output_array = numpy.zeros(
         (len(time_points), int(image_size_zyx[1] * y_scale), int(image_size_zyx[2] * x_scale), 3),
         dtype=numpy.uint8)
-    temp_array = numpy.zeros(output_array.shape[1:3], dtype=numpy.uint8)  # Just a 2D, uncolored slice
     for i, time_point in enumerate(time_points):
         print(f"Working on time point {time_point.time_point_number()}...")
 
@@ -140,8 +141,8 @@ def _generate_xy_movie(experiment: Experiment, z: int, channel: ImageChannel) ->
         image_slice = images.get_image_slice_2d(time_point, channel, z)
         if image_slice is not None:
             image_slice = bits.ensure_8bit(image_slice)
-            cv2.resize(image_slice, dst=temp_array, dsize=(output_array[i].shape[1], output_array[i].shape[0]),
-                       fx=0, fy=0, interpolation=cv2.INTER_NEAREST)
+            temp_array = skimage.transform.resize(image_slice, (output_array.shape[1], output_array.shape[2]),
+                                                  anti_aliasing=False, preserve_range=True)
             output_array[i, :, :, 0] = temp_array
             output_array[i, :, :, 1] = temp_array
             output_array[i, :, :, 2] = temp_array
@@ -193,7 +194,6 @@ def _generate_xz_movie(experiment: Experiment, y: int, channel: ImageChannel) ->
     output_array = numpy.zeros(
         (len(time_points), int(image_size_zyx[0] * z_scale), int(image_size_zyx[2] * x_scale), 3),
         dtype=numpy.uint8)
-    temp_array = numpy.zeros(output_array.shape[1:3], dtype=numpy.uint8)  # Just a 2D, uncolored slice
     for i, time_point in enumerate(time_points):
         print(f"Working on time point {time_point.time_point_number()}...")
 
@@ -201,8 +201,8 @@ def _generate_xz_movie(experiment: Experiment, y: int, channel: ImageChannel) ->
         image_slice = _generate_xz_image(images, y, time_point, channel)
         if image_slice is not None:
             image_slice = bits.ensure_8bit(image_slice)
-            cv2.resize(image_slice, dst=temp_array, dsize=(output_array[i].shape[1], output_array[i].shape[0]),
-                       fx=0, fy=0, interpolation=cv2.INTER_NEAREST)
+            temp_array = skimage.transform.resize(image_slice, (output_array.shape[1], output_array.shape[2]),
+                                                  anti_aliasing=False, preserve_range=True)
             output_array[i, :, :, 0] = temp_array
             output_array[i, :, :, 1] = temp_array
             output_array[i, :, :, 2] = temp_array
@@ -265,7 +265,6 @@ def _generate_yz_movie(experiment: Experiment, x: int, channel: ImageChannel) ->
     output_array = numpy.zeros(
         (len(time_points), int(image_size_zyx[0] * z_scale), int(image_size_zyx[1] * y_scale), 3),
         dtype=numpy.uint8)
-    temp_array = numpy.zeros(output_array.shape[1:3], dtype=numpy.uint8)  # Just a 2D, uncolored slice
     for i, time_point in enumerate(time_points):
         print(f"Working on time point {time_point.time_point_number()}...")
 
@@ -273,8 +272,8 @@ def _generate_yz_movie(experiment: Experiment, x: int, channel: ImageChannel) ->
         image_slice = _generate_yz_image(images, x, time_point, channel)
         if image_slice is not None:
             image_slice = bits.ensure_8bit(image_slice)
-            cv2.resize(image_slice, dst=temp_array, dsize=(output_array[i].shape[1], output_array[i].shape[0]),
-                       fx=0, fy=0, interpolation=cv2.INTER_NEAREST)
+            temp_array = skimage.transform.resize(image_slice, (output_array.shape[1], output_array.shape[2]),
+                                                  anti_aliasing=False, preserve_range=True)
             output_array[i, :, :, 0] = temp_array
             output_array[i, :, :, 1] = temp_array
             output_array[i, :, :, 2] = temp_array

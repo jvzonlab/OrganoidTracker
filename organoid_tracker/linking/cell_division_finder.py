@@ -5,7 +5,39 @@ from typing import Set, List, Optional
 
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
-from organoid_tracker.core.score import Family
+
+
+class Family:
+    """A mother cell with two daughter cells."""
+    mother: Position
+    daughters: Set[Position]  # Size of two, ensured by constructor.
+
+    def __init__(self, mother: Position, daughter1: Position, daughter2: Position):
+        """Creates a new family. daughter1 and daughter2 can be swapped without consequences."""
+        self.mother = mother
+        self.daughters = {daughter1, daughter2}
+
+    @staticmethod
+    def _pos_str(position: Position) -> str:
+        return "(" + ("%.2f" % position.x) + ", " + ("%.2f" % position.y) + ", " + ("%.0f" % position.z) + ")"
+
+    def __str__(self):
+        return self._pos_str(self.mother) + " " + str(self.mother.time_point_number()) + "---> " \
+               + " and ".join([self._pos_str(daughter) for daughter in self.daughters])
+
+    def __repr__(self):
+        return "Family(" + repr(self.mother) + ", " +  ", ".join([repr(daughter) for daughter in self.daughters]) + ")"
+
+    def __hash__(self):
+        hash_code = hash(self.mother)
+        for daughter in self.daughters:
+            hash_code += hash(daughter)
+        return hash_code
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) \
+            and other.mother == self.mother \
+            and other.daughters == self.daughters
 
 
 def get_next_division(links: Links, position: Position) -> Optional[Family]:
@@ -60,8 +92,6 @@ def find_mothers(links: Links) -> Set[Position]:
         future_tracks = track.get_next_tracks()
         if len(future_tracks) >= 2:
             mothers.add(track.find_last_position())
-        if len(future_tracks) > 2:
-            print("Illegal mother: " + str(len(future_tracks)) + " daughters found")
 
     return mothers
 

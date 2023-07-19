@@ -19,6 +19,7 @@ from organoid_tracker.gui.gui_experiment import GuiExperiment
 from organoid_tracker.gui.icon_getter import get_icon
 from organoid_tracker.gui.toolbar import Toolbar
 from organoid_tracker.gui.window import Window
+from organoid_tracker.plugin.plugin_manager import PluginManager
 
 
 class _CommandBox(QLineEdit):
@@ -98,12 +99,10 @@ class _MyQMainWindow(QMainWindow):
 
 
 class MainWindow(Window):
-    __plugins: List[Plugin]
 
     def __init__(self, q_window: QMainWindow, figure: Figure, experiment: GuiExperiment,
                  title_text: QLabel, status_text: QLabel):
         super().__init__(q_window, figure, experiment, title_text, status_text)
-        self.__plugins = list()
 
     def _get_default_menu(self) -> Dict[str, Any]:
         from organoid_tracker.gui import action
@@ -118,9 +117,6 @@ class MainWindow(Window):
             "File//Export-Export links//Guizela's file format...": lambda: action.export_links_guizela(self.get_experiment()),
             "File//Export-Export links//Cell Tracking Challenge format...": lambda: action.export_links_ctc(self.get_experiment()),
             "File//Export-Export links//TrackMate format...": lambda: action.export_links_trackmate(self.get_experiment()),
-            "File//Plugins-Reload all plugins... [Alt+F5]": lambda: action.reload_plugins(self),
-            "File//Exit-Close experiment": lambda: action.close_experiment(self),
-            "File//Exit-Exit [Alt+F4]": lambda: action.ask_exit(self.get_gui_experiment()),
             "Edit//Experiment-Rename experiment...": lambda: action.rename_experiment(self),
             "Edit//Experiment-Set image resolution...": lambda: action.set_image_resolution(self),
             "View//Toggle-Toggle showing axis numbers": lambda: action.toggle_axis(self.get_figure()),
@@ -131,45 +127,19 @@ class MainWindow(Window):
 
     def _get_plugins_menu(self) -> Dict[str, Any]:
         menu_items = dict()
-        for plugin in self.get_plugins():
+        for plugin in self.plugin_manager.get_plugins():
             menu_items.update(plugin.get_menu_items(self))
         return menu_items
 
-    def _get_help_menu(self) -> Dict[str, Any]:
+    def _get_last_default_menu(self) -> Dict[str, Any]:
         from organoid_tracker.gui import action
 
         return {
+            "File//Exit-Close experiment": lambda: action.close_experiment(self),
+            "File//Exit-Exit [Alt+F4]": lambda: action.ask_exit(self.get_gui_experiment()),
             "Help//Basic-Contents... [F1]": action.show_manual,
             "Help//Basic-About": action.about_the_program,
         }
-
-    def install_plugins(self, plugins: Iterable[Plugin]):
-        """Adds the given list of plugins to the list of active plugins."""
-        gui_experiment = self.get_gui_experiment()
-
-        for plugin in plugins:
-            self.__plugins.append(plugin)
-            for marker in plugin.get_markers():
-                gui_experiment.register_marker(marker)
-
-    def reload_plugins(self) -> int:
-        """Reloads all plugins from disk. You should update the window after calling this. Returns the number of
-        reloaded plugins."""
-        gui_experiment = self.get_gui_experiment()
-
-        for plugin in self.__plugins:
-            # We need to take care of any markers registered by the plugin
-            # - first unload the old ones, then load the new ones
-            for marker in plugin.get_markers():
-                gui_experiment.unregister_marker(marker)
-            plugin.reload()
-            for marker in plugin.get_markers():
-                gui_experiment.register_marker(marker)
-        return len(self.__plugins)
-
-    def get_plugins(self) -> Iterable[Plugin]:
-        """Gets all installed plugins. Do not modify the returned list."""
-        return self.__plugins
 
     def set_status(self, text: str):
         # Expand to at least six lines to avoid resizing the box so much
@@ -192,7 +162,7 @@ def launch_window(experiment: Experiment) -> MainWindow:
     """Launches a window with an empty figure. Doesn't start the main loop yet. Use and activate a visualizer to add
     some interactiveness."""
     pyplot.rcParams['svg.fonttype'] = 'none'
-    pyplot.rcParams["font.family"] = "Arial, Helvetica, sans-serif"
+    pyplot.rcParams["font.family"] = "Arial, sans-serif"
     pyplot.rcParams["xtick.direction"] = "in"
     pyplot.rcParams["ytick.direction"] = "in"
 

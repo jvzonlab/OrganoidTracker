@@ -60,17 +60,20 @@ class LinkingTrack:
         return self._positions_by_time_point[-1]
 
     def find_all_descending_tracks(self, include_self: bool = False) -> Iterable["LinkingTrack"]:
-        """Iterates over all tracks that will follow this one, and the one after thet, etc. Stops if there's a cell
-        merge occuring."""
-        if len(self._previous_tracks) > 1:
-            # Cell merge, concept of descending tracks falls apart
-            # - every track could be connected to every track if merges are allowed
-            return
+        """Iterates over all tracks that will follow this one, and the one after that, etc."""
         if include_self:
             yield self
         for next_track in self._next_tracks:
             yield next_track
             yield from next_track.find_all_descending_tracks()
+
+    def find_all_previous_tracks(self, include_self: bool = False) -> Iterable["LinkingTrack"]:
+        """Iterates over all tracks that precede this one, and the one before that, etc."""
+        if include_self:
+            yield self
+        for previous_track in self._previous_tracks:
+            yield previous_track
+            yield from previous_track.find_all_previous_tracks()
 
     def positions(self, connect_to_previous_track: bool = False) -> Iterable[Position]:
         """Returns all positions in this track, in order.
@@ -78,7 +81,7 @@ class LinkingTrack:
         If connect_to_previous_track is True, then it also returns the last position of the previous track, if that exists. This is useful if you
         are drawing lines in between positions."""
         if connect_to_previous_track:
-            if len(self._previous_tracks) == 1:
+            if len(self._previous_tracks) >= 1:
                 yield next(iter(self._previous_tracks)).find_last_position()
 
         yield from self._positions_by_time_point
@@ -139,11 +142,8 @@ class LinkingTrack:
 
     def find_all_previous_and_descending_tracks(self, *, include_self: bool = False) -> Iterable["LinkingTrack"]:
         """Finds all tracks in the lineage of this track, including siblings, cousins, etc."""
-        previous_track = self
-        while len(previous_track._previous_tracks) == 1:
-            previous_track = next(iter(previous_track._previous_tracks))
-            yield previous_track
-        yield from self.find_all_descending_tracks(include_self=include_self)
+        yield from self.find_all_previous_tracks(include_self=include_self)
+        yield from self.find_all_descending_tracks(include_self=False)  # Avoid including self twice
 
     def get_duration_in_time_points(self) -> int:
         """Gets the time this track takes in time points. This is simply the number of recorded positions."""
@@ -684,10 +684,7 @@ class Links:
     def get_position_near_time_point(self, position: Position, time_point: TimePoint) -> Position:
         """Follows the position backwards or forwards in time through the linking network, until a position as close as
         possible to the specified time has been reached. If the given position has no links, the same position will just
-        be returned. If a cell divides, an arbitrary daughter cell will be picked.
-
-        See `particle_movement_finder.find_future_positions_at` if you need an accurate list of all future positions at a
-        certain time point in the future."""
+        be returned. If a cell divides, an arbitrary daughter cell will be picked."""
         track = self.get_track(position)
         if track is None:
             return position  # Position has no links
@@ -713,6 +710,15 @@ class Links:
                 else:
                     track = next_tracks.pop()
             return track.find_position_at_time_point_number(time_point_number)
+
+    def get_position_at_time_point(self, position: Position, time_point: TimePoint) -> Optional[Position]:
+        """Follows the position backwards or forwards in time through the linking network, until a position at the
+        given time point has been found. If a cell divides, an arbitrary daughter cell will be picked. Returns None if
+        we couldn't track the position until the requested time point."""
+        position_near_time_point = self.get_position_near_time_point(position, time_point)
+        if position_near_time_point.time_point() != time_point:
+            return None  # Failed
+        return position_near_time_point
 
     def of_time_point(self, time_point: TimePoint) -> Iterable[Tuple[Position, Position]]:
         """Returns all links where one of the two positions is in that time point. The first position in each tuple is
@@ -744,6 +750,7 @@ class Links:
          Stops at cell merges or at the first detection."""
         track = self.get_track(position)
         if track is None:
+            yield position  # Only yield position itself
             return
 
         time_point_number = position.time_point_number()
@@ -759,10 +766,11 @@ class Links:
             time_point_number -= 1
 
     def iterate_to_future(self, position: Position) -> Iterable[Position]:
-        """Iterates towards the future, yielding this position, the next position, the position before that, ect.
+        """Iterates towards the future, yielding this position, the next position, the position after that, ect.
          Stops at cell divisions or at the last detection."""
         track = self.get_track(position)
         if track is None:
+            yield position  # Only yield position itself
             return
 
         time_point_number = position.time_point_number()

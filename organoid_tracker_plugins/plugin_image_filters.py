@@ -32,12 +32,10 @@ def _threshold(window: Window):
 
 
 def _gaussian_blur(window: Window):
-    value = dialog.prompt_int("Blur radius", "What is the blur radius in pixels? Only odd numbers are allowed.",
-                              minimum=1, maximum=31, default=5)
+    value = dialog.prompt_float("Blur radius", "What is the blur radius in pixels?",
+                                minimum=0.1, maximum=31, default=5)
     if value is None:
         return
-    if value % 2 == 0:
-        raise UserError("Even number", f"Cannot use the even number {value} - the blur radius must be an odd number.")
 
     image_channel = window.display_settings.image_channel
     window.get_experiment().images.filters.add_filter(image_channel, GaussianBlurFilter(value))

@@ -14,7 +14,6 @@ from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.spline import SplineCollection
 from organoid_tracker.core.resolution import ImageResolution
-from organoid_tracker.core.score import ScoreCollection
 from organoid_tracker.core.warning_limits import WarningLimits
 
 
@@ -39,7 +38,6 @@ class Experiment:
     # Note: none of the fields may be None after __init__ is called
     _positions: PositionCollection  # Used to mark cell positions
     _beacons: BeaconCollection  # Used to mark some abstract position that the cells move to or move around.
-    scores: ScoreCollection  # Used to assign scores to putative mother cells
     _links: Links  # Used to link cells together accross multiple time points
     _position_data: PositionData  # Used for metadata of cells
     _link_data: LinkData  # Used for metadata of links
@@ -57,7 +55,6 @@ class Experiment:
         self._positions = PositionCollection()
         self._beacons = BeaconCollection()
         self._position_data = PositionData()
-        self.scores = ScoreCollection()
         self.splines = SplineCollection()
         self._links = Links()
         self._link_data = LinkData()
@@ -256,6 +253,12 @@ class Experiment:
         # Don't allow to replace the Name object
         return self._name
 
+    @name.setter
+    def name(self, name: Name):
+        if not isinstance(name, Name):
+            raise TypeError("name must be an instance of Name, but as " + str(name))
+        self._name = name
+
     @property
     def warning_limits(self) -> WarningLimits:
         """Gets the limits used by the error checker. For example: what movement is so fast that it should raise an
@@ -357,8 +360,9 @@ class Experiment:
         self.connections.add_connections(other.connections)
         self.global_data.merge_data(other.global_data)
 
-    def copy_selected(self, images: bool = False, positions: bool = False, position_data: bool = False,
-                      links: bool = False, link_data: bool = False, global_data: bool = False) -> "Experiment":
+    def copy_selected(self, *, images: bool = False, positions: bool = False, position_data: bool = False,
+                      links: bool = False, link_data: bool = False, global_data: bool = False,
+                      connections: bool = False, name: bool = False) -> "Experiment":
         """Copies the selected attributes over to a new experiment. Note that position_data and links can only be copied
         if the positions are copied."""
         copy = Experiment()
@@ -374,4 +378,8 @@ class Experiment:
                     copy.link_data = self._link_data.copy()
         if global_data:
             copy.global_data = self._global_data.copy()
+        if connections:
+            copy.connections = self._connections.copy()
+        if name:
+            copy.name = self._name.copy()
         return copy

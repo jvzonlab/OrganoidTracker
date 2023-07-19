@@ -38,3 +38,20 @@ class TestConnections(unittest.TestCase):
         # Should fail, as no time point was specified
         self.assertRaises(ValueError, lambda: connections.add_connection(pos1, pos2))
         self.assertFalse(connections.contains_connection(pos1, pos2))  # And no connection must have been made
+
+    def test_copy(self):
+        pos1 = Position(2, 3, 4, time_point_number=3)
+        pos2 = Position(1, 3, 4, time_point_number=3)
+
+        connections_1 = Connections()
+        connections_1.add_connection(pos1, pos2)
+
+        # Test the copy
+        connections_2 = connections_1.copy()
+        self.assertTrue(connections_1.contains_connection(pos1, pos2))
+        self.assertTrue(connections_2.contains_connection(pos1, pos2))
+
+        # Modify the original, test whether copy is unaffected
+        connections_1.remove_connection(pos1, pos2)
+        self.assertFalse(connections_1.contains_connection(pos1, pos2))
+        self.assertTrue(connections_2.contains_connection(pos1, pos2))
