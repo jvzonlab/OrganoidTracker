@@ -54,6 +54,7 @@ _mid_layers = int(config.get_or_default("mid_layers", str(5), comment="Number of
                                         " z-planes. Used to improve peak finding."))
 _peak_min_distance_px = int(config.get_or_default("peak_min_distance_px", str(9), comment="Minimum distance in pixels"
                                                   " between detected positions."))
+_threshold = float(config.get_or_default("threshold", str(0.1), comment="Minimum peak intensity"))
 
 _debug_folder = config.get_or_default("predictions_output_folder", "", comment="If you want to see the raw prediction images, paste the path to a folder here. In that folder, a prediction image will be placed for each time point.")
 if len(_debug_folder) == 0:
@@ -88,7 +89,7 @@ model = tf.keras.models.load_model(_model_folder, custom_objects={"loss": loss,
 
 # set relevant parameters
 _patch_shape_z = model.layers[0].input_shape[0][1] - _buffer_z * 2  # All models have a fixed z-shape
-patch_shape = [_patch_shape_z, _patch_shape_y, _patch_shape_x]
+patch_shape_zyx = [_patch_shape_z, _patch_shape_y, _patch_shape_x]
 buffer = np.array([[_buffer_z, _buffer_z], [_buffer_y, _buffer_y], [_buffer_x, _buffer_x]])
 
 # find the maximum image size to use as the basis for splitting
@@ -98,7 +99,10 @@ for i in range(len(image_list)):
     max_image_shape = np.maximum(max_image_shape, image_shape)
 
 # define how to split input
-corners = corners_split(max_image_shape, patch_shape)
+corners = corners_split(max_image_shape, patch_shape_zyx)
+
+print('corners op patches:')
+print(corners)
 
 # due to memory constraints only ~10 images can be processed at a given time (depending on patch shape)
 set_size = 1
@@ -123,7 +127,7 @@ all_positions = PositionCollection()
 
 # Create iterator over complete dataset
 prediction_dataset_all = predicting_data_creator(image_list, time_window, corners,
-                                             patch_shape, buffer, max_image_shape, batch_size = set_size * len(corners))
+                                             patch_shape_zyx, buffer, max_image_shape, batch_size = set_size * len(corners))
 prediction_dataset_all_iter = iter(prediction_dataset_all)
 
 # Go over all images
@@ -163,7 +167,7 @@ for image_set_index in range(image_set_count):
         image_shape = list(image.get_image_size_zyx())
 
         # reconstruct image from patches
-        prediction = reconstruction(prediction_batch, corners, buffer, image_shape, patch_shape)
+        prediction = reconstruction(prediction_batch, corners, buffer, image_shape, patch_shape_zyx)
         # remove channel dimension
         prediction = np.squeeze(prediction, axis=-1)
 

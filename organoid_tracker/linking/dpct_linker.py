@@ -4,7 +4,7 @@ C. Haubold, J. Ales, S. Wolf, F. A. Hamprecht. A Generalized Successive Shortest
 Targets. ECCV 2016 Proceedings.
 
 """
-
+from random import random
 from typing import Dict, List, Tuple
 
 import dpct
@@ -82,16 +82,47 @@ def run(positions: PositionCollection, position_data: PositionData, starting_lin
 
 def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links,
                        position_data: PositionData, link_data: LinkData,
-                       min_time_point: int, max_time_point: int, division_penalty_cut_off = 1, ignore_penalty = 2.0, penalty_difference_cut_off = 4.0) -> Tuple[Dict, bool, Links]:
+                       min_time_point: int, max_time_point: int, division_penalty_cut_off = 2.0, ignore_penalty = 2.0,
+                       penalty_difference_cut_off = 4.0,
+                       penalty_abs_cut_off = 4.0) -> Tuple[Dict, bool, Links]:
     """Creates the linking network. Returns the network and whether there are possible divisions."""
+
+    # first cycle over all the links to find for very node the lowest input (top two) and output link energy
+    for position in starting_links.find_all_positions():
+        position_data.set_position_data(position, data_name='min_in_link_penalty', value=position_data.get_position_data(position, 'appearance_penalty'))
+        position_data.set_position_data(position, data_name='min_out_link_penalty', value=position_data.get_position_data(position, 'disappearance_penalty'))
+        position_data.set_position_data(position, data_name='2nd_min_out_link_penalty', value=10)
+
+    for position1, position2 in starting_links.find_all_links():
+        # Make sure position1 is earlier in time
+        if position1.time_point_number() > position2.time_point_number():
+            print('happens?')
+            position1, position2 = position2, position1
+
+        # get link penalty
+        link_penalty = link_data.get_link_data(position1, position2, data_name="link_penalty")
+        # is it there?
+        if link_penalty is None:
+            print(position1)
+            print("link data missing")
+            link_penalty = 2
+
+        # determine the lowest in and out going link penalty for every cell
+        if link_penalty < position_data.get_position_data(position2, 'min_in_link_penalty'):
+            position_data.set_position_data(position2, 'min_in_link_penalty', link_penalty)
+
+        if link_penalty < position_data.get_position_data(position1, 'min_out_link_penalty'):
+            position_data.set_position_data(position1, '2nd_min_out_link_penalty',
+                                            position_data.get_position_data(position1, 'min_out_link_penalty'))
+            position_data.set_position_data(position1, 'min_out_link_penalty', link_penalty)
+
+    # set up nodes in the graph
     created_possible_division = False
 
     naive_links = Links()
     segmentation_hypotheses = []
 
     for position in starting_links.find_all_positions():
-        position_data.set_position_data(position, data_name='min_in_link_penalty', value=10)
-        position_data.set_position_data(position, data_name='min_out_link_penalty', value=10)
 
         # find (dis)appearance penalty
         appearance_penalty = position_data.get_position_data(position, data_name='appearance_penalty') if position.time_point_number() > min_time_point else 0
@@ -104,7 +135,7 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links,
         if disappearance_penalty is None:
             disappearance_penalty = 0
         if division_penalty is None:
-            division_penalty = 0
+            division_penalty = 4
 
         if division_penalty < division_penalty_cut_off:
             map = {
@@ -128,27 +159,6 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links,
 
     linking_hypotheses = []
 
-    # first cycle over all the links
-    for position1, position2 in starting_links.find_all_links():
-        # Make sure position1 is earlier in time
-        if position1.time_point_number() > position2.time_point_number():
-            print('happens?')
-            position1, position2 = position2, position1
-
-        # get link penalty
-        link_penalty = link_data.get_link_data(position1, position2, data_name="link_penalty")
-        # is it there?
-        if link_penalty is None:
-            print("link data missing")
-            link_penalty = 2
-
-        # determine the lowest in and out going link penalty for every cell
-        if link_penalty < position_data.get_position_data(position2, 'min_in_link_penalty'):
-            position_data.set_position_data(position2, 'min_in_link_penalty', link_penalty)
-
-        if link_penalty < position_data.get_position_data(position1, 'min_out_link_penalty'):
-            position_data.set_position_data(position1, 'min_out_link_penalty', link_penalty)
-
     j= 0
     # second cycle over all links
     for position1, position2 in starting_links.find_all_links():
@@ -163,10 +173,13 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links,
             j = j + 1
             link_penalty = 2
 
-        # if the link penalty is much smaller then other options we can ignore it
-        if (link_penalty < position_data.get_position_data(position2, 'min_in_link_penalty') + penalty_difference_cut_off): # and \
-                #(link_penalty < position_data.get_position_data(position1, 'min_out_link_penalty') + penalty_difference_cut_off):
-
+        # if the link penalty is much smaller then the other options available we can prune it
+        if ((link_penalty < position_data.get_position_data(position2, 'min_in_link_penalty') + penalty_difference_cut_off) and
+                (link_penalty < position_data.get_position_data(position1,
+                                                                '2nd_min_out_link_penalty') + penalty_difference_cut_off) and
+                ((link_penalty < position_data.get_position_data(position1,'min_out_link_penalty') + penalty_difference_cut_off) or
+                 (position_data.get_position_data(position1,'division_penalty') < division_penalty_cut_off))
+                and (link_penalty < penalty_abs_cut_off)):
             naive_links.add_link(position1, position2)
             linking_hypotheses.append({
                 "src": position_ids.id(position1),
@@ -185,33 +198,43 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links,
     }, created_possible_division, naive_links
 
 
-def calculate_appearance_penalty(experiment, min_appearance_probability, name='appearance_penalty', buffer_distance = 5.0):
+def calculate_appearance_penalty(experiment, min_appearance_probability, name='appearance_penalty', buffer_distance = 5.0, only_top = True):
     # go over all timepoints
     for time_point in experiment.positions.time_points():
         positions = experiment.positions.of_time_point(time_point)
         offset = experiment.images.offsets.of_time_point(time_point)
         image_shape = experiment._images.get_image_stack(time_point).shape
         resolution = experiment.images.resolution()
-
         # and all positions
         for position in positions:
             # get distances to the image edges in x, y and z
-            distances = [(image_shape[2] - position.x + offset.x) * resolution.pixel_size_x_um,
-                         (image_shape[1] - position.y + offset.y) * resolution.pixel_size_y_um,
-                         (image_shape[0] - position.z + offset.z) * resolution.pixel_size_z_um,
-                         (position.x - offset.x) * resolution.pixel_size_x_um,
-                         (position.y - offset.y) * resolution.pixel_size_y_um,
-                         (position.z - offset.z) * resolution.pixel_size_z_um]
+            if only_top:
+                distances = [(image_shape[2] - position.x - 1 + offset.x) * resolution.pixel_size_x_um,
+                             (image_shape[1] - position.y - 1 + offset.y) * resolution.pixel_size_y_um,
+                             (image_shape[0] - position.z - 1 + offset.z) * resolution.pixel_size_z_um,
+                             (position.x + 1 - offset.x) * resolution.pixel_size_x_um,
+                             (position.y + 1 - offset.y) * resolution.pixel_size_y_um]
+            else:
+                distances = [(image_shape[2] - position.x - 1 + offset.x) * resolution.pixel_size_x_um,
+                             (image_shape[1] - position.y - 1 + offset.y) * resolution.pixel_size_y_um,
+                             (image_shape[0] - position.z - 1 + offset.z) * resolution.pixel_size_z_um,
+                             (position.x + 1 - offset.x) * resolution.pixel_size_x_um,
+                             (position.y + 1 - offset.y) * resolution.pixel_size_y_um,
+                             (position.z + 1 - offset.z) * resolution.pixel_size_z_um]
+
             # get minimum distance
             min_distance = min(distances)
 
             # calculate (dis)appearance probability
             if min_distance < buffer_distance:
-                appearance_probability = 0.5 * (1 - min_distance/buffer_distance) + min_appearance_probability
+                appearance_probability = 0.1 * (1 - min_distance/buffer_distance) + min_appearance_probability
             else:
                 appearance_probability = min_appearance_probability
 
             appearance_penalty = - np.log10(appearance_probability) + np.log10(1-appearance_probability)
+
+            # add small random number to help with optimalization
+            appearance_penalty = appearance_penalty + 0.1*(random()-0.5)
 
             experiment.position_data.set_position_data(position, data_name=name, value=appearance_penalty)
 

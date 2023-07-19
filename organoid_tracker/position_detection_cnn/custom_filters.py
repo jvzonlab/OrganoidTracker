@@ -47,9 +47,9 @@ def _gaussian_kernel(kernel_size: int, sigma: float, depth: int, n_channels: int
     return tf.expand_dims(tf.tile(g_kernel, (1, 1, 1, n_channels)), axis=-1)
 
 
-def blur_labels(label: tf.Tensor, kernel_size: int = 8, sigma: float = 2.0, depth: int = 3, normalize: bool = True):
+def blur_labels(label: tf.Tensor, kernel_size: int = 8, sigma: float = 2.0, depth: int = 3, n_channels: int = 1, normalize: bool = True):
     """Blurs the given labels (single pixels) with a Gaussian kernel."""
-    blur = _gaussian_kernel(kernel_size = kernel_size, sigma=sigma, depth=depth, n_channels=1, dtype=label.dtype, normalize=normalize)
+    blur = _gaussian_kernel(kernel_size = kernel_size, sigma=sigma, depth=depth, n_channels=n_channels, dtype=label.dtype, normalize=normalize)
 
     label_blur = tf.nn.conv3d(label, blur, [1, 1, 1, 1, 1], 'SAME')
 
@@ -74,6 +74,7 @@ def _disk(range_zyx: Tuple[float, float, float] = (2.5, 11., 11.), n_channels: i
     return tf.expand_dims(tf.tile(disk, (1, 1, 1, n_channels)), axis=-1)
 
 
+#def disk_labels(label, range_zyx: Tuple[float, float, float] = (5., 11., 11.)):
 def disk_labels(label, range_zyx: Tuple[float, float, float] = (2.5, 11., 11.)):
     """Changes the labels (single pixels) into disks."""
     disk = _disk(range_zyx= range_zyx)
@@ -81,6 +82,27 @@ def disk_labels(label, range_zyx: Tuple[float, float, float] = (2.5, 11., 11.)):
     label_disk = tf.nn.conv3d(label, disk, [1, 1, 1, 1, 1], 'SAME')
 
     return label_disk
+
+def get_edges(peaks, range_zyx: Tuple[float, float, float] = (2.5, 11., 11.), remove_top=True):
+    edges = tf.zeros(tf.shape(peaks))
+    if remove_top:
+        edges = tf.pad(edges, paddings=[[0, 0], [0, 1], [1, 1], [1, 1], [0, 0]], constant_values=1)
+        edges = disk_labels(edges, range_zyx=range_zyx)
+        edges = edges[:, 0:-1, 1:-1, 1:-1, :]
+    else:
+        edges = tf.pad(edges, paddings=[[0, 0], [0, 0], [1, 1], [1, 1], [0, 0]], constant_values=1)
+        edges = disk_labels(edges, range_zyx=range_zyx)
+        edges = edges[:, :, 1:-1, 1:-1, :]
+
+    return edges
+
+def get_edges_with_bottom(peaks, range_zyx: Tuple[float, float, float] = (2.5, 11., 11.)):
+    edges = tf.zeros(tf.shape(peaks))
+    edges = tf.pad(edges, paddings=[[0, 0], [1, 1], [1, 1], [1, 1], [0, 0]], constant_values=1)
+    edges = disk_labels(edges, range_zyx=range_zyx)
+    edges = edges[:, 1:-1, 1:-1, 1:-1, :]
+
+    return edges
 
 def _disk_res(radius=5.0, resolution =[2, 0.4, 0.4], n_channels=1):
     z_range = tf.floor(radius/resolution[0])
@@ -142,7 +164,7 @@ def _distance(range = [3., 13., 13.],  n_channels=1, squared=True):
     return tf.expand_dims(tf.tile(distance, (1, 1, 1, n_channels)), axis=-1)
 
 
-def distance_map(y_true, range=[3., 10., 10.]):
+def distance_map(y_true, range=(3., 16., 16.), range_edges = (3., 11. , 11.), adaptive = True):
 
     # exponent used to take pseudo_maximum
     k = 20.
@@ -160,24 +182,31 @@ def distance_map(y_true, range=[3., 10., 10.]):
     # sum of the inverted distance to center points
     distance_sum = tf.nn.conv3d(y_true, distance, [1, 1, 1, 1, 1], 'SAME')
 
-    # create distance map
-    distances = 1 - 2 * distances_min + distance_sum
-    distances = tf.where(distances > 1, 1. , distances)
+    if adaptive:
+        # create distance map
+        distances = 1 - 2 * distances_min + distance_sum
+        distances = tf.where(distances > 1, 1., distances)
 
-    # take gaussian on the distance map
-    distances = tf.exp(-distances ** 2 / 0.25)
+        #s_squared = 0.25
+        s_squared = 0.125
+        #s_squared = 0.125/2
+        distances = tf.exp(-distances ** 2 / (2*s_squared))
 
-    # normalize
-    distances = (distances - tf.exp(- 1/ 0.25)) / (1- tf.exp(- 1/ 0.25))
+        # normalize
+        distances = (distances - tf.exp(- 1./ (2*s_squared))) / (1.- tf.exp(- 1./ (2*s_squared)))
+    else:
+        new_range = [range[0]/2, range[1]/2, range[2]/2]
+        #new_range = [range[0]*0.75, range[1]*0.75, range[2]*0.75]
+        distance = 1 - _distance(range=new_range, squared=False)
 
+        distances = 1- tf.nn.conv3d(y_true, distance, [1, 1, 1, 1, 1], 'SAME')
+        s_squared = 0.25
+        distances = tf.exp(-distances ** 2 / (2 * s_squared))
+        distances = (distances - tf.exp(- 1. / (2 * s_squared))) / (1. - tf.exp(- 1. / (2 * s_squared)))
     # define weights based on inverted distance sum
-    weights = 1 - distance_sum
+    weights = 1-distance_sum
     weights = tf.exp(-weights ** 2 / 0.25)
-
-    weights = tf.where(weights > 1, 1. , weights)
-    weights = tf.where(weights < 0, 0., weights)
-
-    weights = (weights - tf.exp(- 1/ 0.25)) / (1- tf.exp(- 1/ 0.25))
+    weights = (weights - tf.exp(- 1 / 0.25)) / (1 - tf.exp(- 1 / 0.25))
 
     # define background as zero
     weights = tf.where(weights < 0.05, 0., weights)
@@ -188,10 +217,22 @@ def distance_map(y_true, range=[3., 10., 10.]):
     full_size = tf.cast(tf.size(weights), tf.float32)
     zero_count = full_size - non_zero_count
 
+    background_weight = 0.5
     # weight the loss by the amount of non zeroes values in label
     weights = tf.where(tf.equal(weights, 0),
-                        0.5 * full_size / zero_count,
-                       tf.divide(weights * 0.5, tf.reduce_mean(weights)))
+                        background_weight * full_size / zero_count,
+                       tf.divide(weights * (1-background_weight), tf.reduce_mean(weights)))
+
+    weights = tf.where(tf.less(weights,  background_weight * full_size / zero_count),
+                       background_weight * full_size / zero_count,
+                       weights)
+
+    # set weight edges to zero
+    #edges = get_edges_with_bottom(weights, range_zyx=range_edges)
+    edges = get_edges(weights, range_zyx=range_edges, remove_top=False)
+    weights = tf.where(edges > 0, 0., weights)
+
+    weights = tf.divide(weights, tf.reduce_mean(weights))
 
     return distances, weights
 
