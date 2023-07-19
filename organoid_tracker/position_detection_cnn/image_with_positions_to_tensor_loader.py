@@ -21,12 +21,12 @@ def load_images_with_positions(i, image_with_positions_list: List[_ImageWithPosi
         max_coords = np.amax(coords, axis=0)
 
         # Crop in x and y
-        image = image[:, min_coords[1]:max_coords[1], min_coords[0]:max_coords[0]]
-        label = label[:, min_coords[1]:max_coords[1], min_coords[0]:max_coords[0]]
+        image = image[:, min_coords[1]:max_coords[1]+1, min_coords[0]:max_coords[0]+1]
+        label = label[:, min_coords[1]:max_coords[1]+1, min_coords[0]:max_coords[0]+1]
 
         # Zero out in z (we don't crop, to preserve z-coord for CoordConv)
-        if min_coords[2] > 1:
-            image[0:min_coords[2] - 1].fill(0)
+        #if min_coords[2] > 1:
+            #image[0:min_coords[2] - 1].fill(0)
         if max_coords[2] < image.shape[0] - 2:
             image[max_coords[2] + 1:].fill(0)
 
@@ -50,10 +50,10 @@ def tf_load_images(i, image_with_positions_list: List[_ImageWithPositions], time
     return image
 
 
-def tf_load_images_with_positions(i, image_with_positions_list: List[_ImageWithPositions], time_window=(0, 0)):
+def tf_load_images_with_positions(i, image_with_positions_list: List[_ImageWithPositions], time_window=(0, 0), crop=True):
     image, label = tf.py_function(
         partial(load_images_with_positions, image_with_positions_list=image_with_positions_list,
-                time_window=time_window), [i],
+                time_window=time_window, crop=crop), [i],
         (tf.float32, tf.float32))
     # add channel dimension to labels
     label = tf.expand_dims(label, axis=-1)
