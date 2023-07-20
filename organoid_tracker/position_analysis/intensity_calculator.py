@@ -6,6 +6,7 @@ from typing import NamedTuple, Optional, Dict, List
 import numpy
 from scipy.stats import linregress
 
+from organoid_tracker.core import UserError
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
@@ -194,23 +195,30 @@ def get_normalized_intensity(experiment: Experiment, position: Position, *, inte
     background = global_data.get_data(intensity_key + "_background_per_pixel")
     multiplier = global_data.get_data(intensity_key + "_multiplier_z" + str(round(position.z)))
     if multiplier is None:
-        # Try global multiplier
-        multiplier = global_data.get_data(intensity_key + "_multiplier")
+        # Try time multiplier
+        multiplier = global_data.get_data(intensity_key + "_multiplier_t" + str(position.time_point_number()))
+
+        if multiplier is None:
+            # Try global multiplier
+            multiplier = global_data.get_data(intensity_key + "_multiplier")
     volume = position_data.get_position_data(position, intensity_key + "_volume")
     if volume is None or multiplier is None or background is None:
         return intensity
     return (intensity - background * volume) * multiplier
 
 
-def perform_intensity_normalization(experiment: Experiment, *, background_correction: bool = True, z_correction: bool = True,
-                                    intensity_key: str = DEFAULT_INTENSITY_KEY):
+def perform_intensity_normalization(experiment: Experiment, *, background_correction: bool = True, z_correction: bool = False,
+                                    time_correction: bool = False, intensity_key: str = DEFAULT_INTENSITY_KEY):
     """Gets the average intensity of all positions in the experiment.
     Returns None if there are no intensity recorded."""
+    if time_correction and z_correction:
+        raise UserError("Time and Z correction", "Cannot apply both a time and a z correction.")
     remove_intensity_normalization(experiment)
 
     intensities = list()
     volumes = list()
     zs = list()
+    ts = list()
 
     position_data = experiment.position_data
     for position, intensity in position_data.find_all_positions_with_data(intensity_key):
@@ -223,6 +231,7 @@ def perform_intensity_normalization(experiment: Experiment, *, background_correc
         intensities.append(intensity)
         volumes.append(volume)
         zs.append(round(position.z))
+        ts.append(position.time_point_number())
 
     if len(intensities) == 0:
         return
@@ -230,6 +239,7 @@ def perform_intensity_normalization(experiment: Experiment, *, background_correc
     intensities = numpy.array(intensities, dtype=numpy.float32)
     volumes = numpy.array(volumes, dtype=numpy.float32)
     zs = numpy.array(zs, dtype=numpy.int32)
+    ts = numpy.array(ts, dtype=numpy.int32)
 
     if background_correction:
         # Assume the lowest signal consists of only background
@@ -248,6 +258,11 @@ def perform_intensity_normalization(experiment: Experiment, *, background_correc
             median = numpy.median(intensities[zs == z])
             normalization_factor = float(1 / median)
             experiment.global_data.set_data(intensity_key + "_multiplier_z" + str(z), normalization_factor)
+    elif time_correction:
+        for t in range(int(numpy.min(ts)), int(numpy.max(ts)) + 1):
+            median = numpy.median(intensities[ts == t])
+            normalization_factor = float(1 / median)
+            experiment.global_data.set_data(intensity_key + "_multiplier_t" + str(t), normalization_factor)
     else:
         median = numpy.median(intensities)
         normalization_factor = float(1 / median)
@@ -258,7 +273,7 @@ def remove_intensity_normalization(experiment: Experiment, *, intensity_key: str
     """Removes the normalization set by perform_intensity_normalization."""
     experiment.global_data.set_data(intensity_key + "_background_per_pixel", None)
     experiment.global_data.set_data(intensity_key + "_multiplier", None)
-    for key_for_z in list(experiment.global_data.get_all_data().keys()):
-        if key_for_z.startswith(intensity_key + "_multiplier_z"):
-            experiment.global_data.set_data(key_for_z, None)
+    for key in list(experiment.global_data.get_all_data().keys()):
+        if key.startswith(intensity_key + "_multiplier_z") or key.startswith(intensity_key + "_multiplier_t"):
+            experiment.global_data.set_data(key, None)
 
