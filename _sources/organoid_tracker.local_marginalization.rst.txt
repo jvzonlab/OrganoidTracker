@@ -1,0 +1,18 @@
+organoid\_tracker.local\_marginalization package
+================================================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   organoid_tracker.local_marginalization.local_marginalization_functions
+
+Module contents
+---------------
+
+.. automodule:: organoid_tracker.local_marginalization
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -21,6 +21,7 @@ Subpackages
    organoid_tracker.link_detection_cnn
    organoid_tracker.linking
    organoid_tracker.linking_analysis
+   organoid_tracker.local_marginalization
    organoid_tracker.plugin
    organoid_tracker.position_analysis
    organoid_tracker.position_detection
