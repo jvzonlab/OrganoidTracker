@@ -23,3 +23,18 @@ class TestLocationMap(unittest.TestCase):
         location_map.set(50, 51, "test")
         location_map.set(200, 300, "test2")  # Needs to resize to fit this
         self.assertEqual("test", location_map.get_nearby(50, 51))  # Make sure original locations are unaffected
+
+    def test_search(self):
+        location_map = LocationMap()
+        location_map.set(50, 51, "test")
+        location_map.set(200, 300, "test2")
+
+        # Find one object
+        x, y = location_map.find_object("test2")
+        self.assertEqual(200, x)
+        self.assertEqual(300, y)
+
+        # Test non-existing object
+        x, y = location_map.find_object("test-non-existing")
+        self.assertEqual(None, x)
+        self.assertEqual(None, y)

@@ -58,3 +58,12 @@ class LocationMap:
                 if value is not None:
                     return value
         return None
+
+    def find_object(self, obj: object) -> Tuple[Optional[int], Optional[int]]:
+        """Finds back the given object in the location map. If it occurs multiple
+        times in the location map, then this method returns an arbitrary location.
+        If the object doesn't occur in the map, then this method returns (None, None)."""
+        y_indices, x_indices = numpy.where(self._array == obj)
+        if len(x_indices) == 0:
+            return None, None
+        return int(x_indices[0]), int(y_indices[0])
