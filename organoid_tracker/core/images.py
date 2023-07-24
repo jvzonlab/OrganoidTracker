@@ -263,8 +263,11 @@ class Images:
         self._offsets = offsets
 
     def resolution(self, allow_incomplete: bool = False) -> ImageResolution:
-        """Gets the image resolution. Raises UserError if you try to get the resolution when none has been set."""
-        if not allow_incomplete and self._resolution.is_incomplete():
+        """Gets the image resolution. Raises UserError no spatial resolution has been set. Also raises UserError if
+        the data has multiple time points, but no time resolution has been set.
+        """
+        require_time_resolution = self.first_time_point_number() != self.last_time_point_number()
+        if not allow_incomplete and self._resolution.is_incomplete(require_time_resolution=require_time_resolution):
             raise UserError("No image resolution set", "No image resolution was set. Please set a resolution first."
                                                        " This can be done in the Edit menu of the program.")
         return self._resolution
