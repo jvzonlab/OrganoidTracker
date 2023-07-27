@@ -148,10 +148,12 @@ class _LifImageLoader(ImageLoader):
         if time_point.time_point_number() < self._min_time_point_number\
                 or time_point.time_point_number() > self._max_time_point_number:
             return None
+        z_size = self.get_image_size_zyx()[0]
+        if image_z < 0 or image_z >= z_size:
+            return None
         if image_channel.index_zero >= self.get_channel_count():
             return None
         if self._inverted_z:
-            z_size = self.get_image_size_zyx()[0]
             image_z = z_size - image_z - 1
         array = self._serie.get2DSlice(channel=image_channel.index_zero, T=time_point.time_point_number(), Z=image_z)
         if array.dtype != numpy.uint8:  # Saves memory

@@ -91,7 +91,9 @@ class _MergedTiffImageLoader(ImageLoader):
         self._tiff_series = self._tiff.series[0]
         self._tiff_lock = Lock()
 
-        self._axes = self._tiff_series.axes
+        self._axes = self._tiff_series.axes  # See tifffile.AXES_NAMES for explanation of the symbols
+        if self._axes == "QYX":
+            self._axes = "ZYX"  # Q means 'other/unknown'. Assume a QYX image is an ZYX image
         self._shape = self._tiff_series.shape
 
         if self._axes[-2:] != "YX":
