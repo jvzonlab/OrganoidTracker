@@ -294,9 +294,6 @@ def connect_loose_ends(experiment: Experiment, experiment_result: Experiment, ov
                     # connect tracks and remove spurious positions
                     if link_penalty + oversegmentation_penalty < disappearance_penalty + appearance_penalty :
 
-                        # add connecting link
-                        experiment_result.links.add_link(past_position, position)
-
                         # remove oversegmentations
                         remove_past_positions = list(experiment_result.links.iterate_to_past(position))
                         remove_past_positions.pop(0)
@@ -308,6 +305,9 @@ def connect_loose_ends(experiment: Experiment, experiment_result: Experiment, ov
 
                         experiment.remove_positions(
                             remove_past_positions + remove_future_positions)  # Also change set of positions
+
+                        # add connecting link
+                        experiment_result.links.add_link(past_position, position)
 
                         # remember which tracks are now fixed
                         future_positions = list(experiment_result.links.iterate_to_future(position))
@@ -604,17 +604,18 @@ def _remove_tracks_too_short(experiment_result: Experiment, experiment: Experime
         experiment_result.links.find_appeared_positions(time_point_number_to_ignore=experiment.first_time_point_number()))
 
     for position in loose_start:
+        track = experiment_result.links.get_track(position)
+        if track is not None:
+            to_remove = list(track.positions())
 
-        to_remove = list(experiment_result.links.get_track(position).positions())
+            next_tracks = track.find_all_descending_tracks()
 
-        next_tracks = experiment_result.links.get_track(position).find_all_descending_tracks()
+            for next_track in next_tracks:
+                to_remove = to_remove + list(next_track.positions())
 
-        for next_track in next_tracks:
-            to_remove = to_remove + list(next_track.positions())
-
-        if len(to_remove) <= min_t:
-            experiment_result.remove_positions(to_remove)
-            experiment.remove_positions(to_remove)
+            if len(to_remove) <= min_t:
+                experiment_result.remove_positions(to_remove)
+                experiment.remove_positions(to_remove)
 
     return experiment_result, experiment
 
