@@ -131,13 +131,15 @@
 need to be saved.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="organoid_tracker.gui.gui_experiment.GuiExperiment.KNOWN_EVENTS">
-<span class="sig-name descname"><span class="pre">KNOWN_EVENTS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'any_updated_event',</span> <span class="pre">'command_event',</span> <span class="pre">'data_updated_event'}</span></em><a class="headerlink" href="#organoid_tracker.gui.gui_experiment.GuiExperiment.KNOWN_EVENTS" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">KNOWN_EVENTS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'any_updated_event',</span> <span class="pre">'command_event',</span> <span class="pre">'data_updated_event',</span> <span class="pre">'tab_list_updated_event'}</span></em><a class="headerlink" href="#organoid_tracker.gui.gui_experiment.GuiExperiment.KNOWN_EVENTS" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.gui.gui_experiment.GuiExperiment.add_experiment">
-<span class="sig-name descname"><span class="pre">add_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.gui_experiment.GuiExperiment.add_experiment" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">add_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.gui_experiment.GuiExperiment.add_experiment" title="Permalink to this definition"></a></dt>
+<dd><p>Adds an experiment to the tab list. Returns the index that is used for the new tab, which you can then use
+to select that tab.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.gui.gui_experiment.GuiExperiment.execute_command">
@@ -225,6 +227,7 @@ been selected, this returns all tabs.</p>
 <li><p>All matplotlib events.</p></li>
 <li><p>“data_updated_event” for when the figure annotations need to be redrawn.</p></li>
 <li><p>“any_updated_event” for when the complete figure needs to be redrawn, including the menu bar and image.</p></li>
+<li><p>“tab_list_updated_event” for when just the list of available experiments needs to be redrawn.</p></li>
 <li><p>“command_event” for when a command is executed</p></li>
 </ul>
 </dd></dl>
