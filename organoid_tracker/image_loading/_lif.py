@@ -56,12 +56,15 @@
 #    along with Colloids.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import struct, io, re, sys
-import xml
-from typing import List, Sequence, Any
-from xml.dom.minidom import parse, Element, NodeList
-import numpy as np
+import io
+import re
+import struct
+import sys
 import warnings
+from xml.dom.minicompat import NodeList
+from xml.dom.minidom import parse
+
+import numpy as np
 
 dimName = {1: "X",
            2: "Y",
@@ -302,15 +305,6 @@ class SerieHeader:
                 "DimensionDescription")
         return self._dimensions
 
-    def getNumpyDataType(self) -> Any:
-        """Gets the data type of the pixels: numpy.uint8, 16 or 32."""
-        bytes_inc = self.getBytesInc("X")
-        if bytes_inc == 2:
-            return np.uint16
-        elif bytes_inc == 4:
-            return np.uint32
-        return np.uint8
-
     def hasZ(self):
         """
         Method: Check if current serie includes Z stacking
@@ -541,6 +535,22 @@ class SerieHeader:
                 if dimName[int(d.getAttribute("DimID"))] == dim:
                     setattr(self, '_' + dim, int(d.getAttribute("BytesInc")))
         return getattr(self, '_' + dim)
+
+    @property
+    def dtype(self):
+        """Get the numpy dtype to use"""
+        if not hasattr(self, '_dtype'):
+            dtypes = {
+                1: np.uint8,
+                2: np.uint16,
+                4: np.uint32,
+                8: np.float64
+            }
+            nbytes = self.getBytesInc('X')
+            if nbytes not in dtypes:
+                raise ValueError(f"Unsupported byte depth: {nbytes}")
+            self._dtype = dtypes[nbytes]
+        return self._dtype
 
     def chooseChannel(self):
         """
@@ -801,7 +811,7 @@ class Serie(SerieHeader):
         shape = self.get2DShape()
         return np.fromfile(
             self.f,
-            dtype=self.getNumpyDataType(),
+            dtype=self.dtype,
             count=self.getNbPixelsPerSlice()
         ).reshape(shape)
 
@@ -816,9 +826,9 @@ class Serie(SerieHeader):
                     self.getName()))
 
         self.f.seek(self.getOffset(**dimensionsIncrements))
-        return self.f.read(self.getNbPixelsPerSlice())
+        return self.f.read(self.getNbPixelsPerSlice() * self.dtype.itemsize)
 
-    def getFrame(self, channel=0, T=0):
+    def getFrame(self, T=0, channel=0, dtype=None):
         """
         Return a numpy array (C order, thus last index is X):
          2D if XYT or XZT serie,
@@ -826,22 +836,18 @@ class Serie(SerieHeader):
          (ok if no T dependence)
         Leica use uint8 by default, but after deconvolution the datatype is np.uint16
         """
-        zcyx = []
-        dtype = self.getNumpyDataType()
+        if dtype is None:
+            dtype = self.dtype
+        if len(self.getFrameShape()) < 3:
+            return self.getFrame2D(channel=channel, T=T, dtype=dtype)
+        zyx = np.zeros(self.getFrameShape(), dtype=dtype)
         channels = self.getChannels()
-        for z in range(self.getBoxShape()[-1]):
-            cyx = []
-            for i in range(len(channels)):
-                self.f.seek(self.getOffset(**dict({'T': T, 'Z': z})) + self.getChannelOffset(i))
-                yx = np.fromfile(self.f, dtype=dtype, count=int(self.getNbPixelsPerSlice()))
-                yx = yx.reshape(self.get2DShape())
-                cyx.append(yx)
-            zcyx.append(cyx)
-        zcyx = np.array(zcyx)
-        czyx = np.moveaxis(zcyx, 1, 0)
-        return czyx[channel, :, :, :]
+        for z in range(self.getFrameShape()[0]):
+            self.f.seek(self.getOffset(T=T, Z=z) + self.getChannelOffset(channel))
+            zyx[z] = np.fromfile(self.f, dtype=dtype, count=int(self.getNbPixelsPerSlice())).reshape(self.get2DShape())
+        return zyx
 
-    def getFrame2D(self, channel=0, T=0, dtype=np.uint8):
+    def getFrame2D(self, channel=0, T=0, dtype=None):
         """
         Method: Get a 2D image from the serie XY (for XY, XYT) or XZ (for XZ, XZT)
 
@@ -850,6 +856,8 @@ class Serie(SerieHeader):
         Return: a 2D numpy array (in C order: last index is X). (ok if no T dependence)
                 Leica use uint8 by default, but after deconvolution the datatype is np.uint16
         """
+        if dtype is None:
+            dtype = self.dtype
         channels = self.getChannels()
         cyx = []
         for i in range(len(channels)):
@@ -950,22 +958,30 @@ class Serie(SerieHeader):
             f.write(self.f.read(self.getNbPixelsPerFrame()))
 
     def enumByFrame(self):
-        """yield time steps one after the other as a couple (time,numpy array). It is not safe to combine this syntax with getFrame or get2DSlice."""
-        yield 0, self.getFrame()
-        for t in range(1, self.getNbFrames()):
+        """yield time steps one after the other as a couple (time,numpy array).
+        It is not safe to combine this syntax with getFrame or get2DSlice.
+
+        This implementation works only for single channel series.
+        """
+        self.f.seek(self.getOffset())
+        for t in range(self.getNbFrames()):
             yield t, np.fromfile(
                 self.f,
-                dtype=np.ubyte,
+                dtype=self.dtype,
                 count=self.getNbPixelsPerFrame()
             ).reshape(self.getFrameShape())
 
     def enumBySlice(self):
-        """yield 2D slices one after the other as a 3-tuple (time,z,numpy array). It is not safe to combine this syntax with getFrame or get2DSlice."""
+        """yield 2D slices one after the other as a 3-tuple (time,z,numpy array).
+        It is not safe to combine this syntax with getFrame or get2DSlice.
+
+        This implementation works only for single channel series.
+        """
         self.f.seek(self.getOffset())
         for t in range(self.getNbFrames()):
             for z in range(self.getNbPixelsPerFrame() / self.getNbPixelsPerSlice()):
                 yield t, z, np.fromfile(
                     self.f,
-                    dtype=np.ubyte,
+                    dtype=self.dtype,
                     count=self.getNbPixelsPerSlice()
                 ).reshape(self.get2DShape())
