@@ -121,8 +121,116 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="organoid-tracker-gui-action-module">
-<h1>organoid_tracker.gui.action module<a class="headerlink" href="#organoid-tracker-gui-action-module" title="Permalink to this heading"></a></h1>
+  <section id="module-organoid_tracker.gui.action">
+<span id="organoid-tracker-gui-action-module"></span><h1>organoid_tracker.gui.action module<a class="headerlink" href="#module-organoid_tracker.gui.action" title="Permalink to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.action.about_the_program">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.action.</span></span><span class="sig-name descname"><span class="pre">about_the_program</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.action.about_the_program" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.action.ask_exit">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.action.</span></span><span class="sig-name descname"><span class="pre">ask_exit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gui_experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.gui_experiment.html#organoid_tracker.gui.gui_experiment.GuiExperiment" title="organoid_tracker.gui.gui_experiment.GuiExperiment"><span class="pre">GuiExperiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.action.ask_exit" title="Permalink to this definition"></a></dt>
+<dd><p>Asks to save unsaved changes, then exits.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.action.ask_save_unsaved_changes">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.action.</span></span><span class="sig-name descname"><span class="pre">ask_save_unsaved_changes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tabs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.11)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.gui.gui_experiment.html#organoid_tracker.gui.gui_experiment.SingleGuiTab" title="organoid_tracker.gui.gui_experiment.SingleGuiTab"><span class="pre">SingleGuiTab</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.action.ask_save_unsaved_changes" title="Permalink to this definition"></a></dt>
+<dd><p>If there are any unsaved changes, this method will prompt the user to save them. Returns True if the user either
+successfully saved the data, or if the user doesn’t want to save. Returns False if the action must be aborted.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.action.close_experiment">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.action.</span></span><span class="sig-name descname"><span class="pre">close_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window" title="organoid_tracker.gui.window.Window"><span class="pre">Window</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.action.close_experiment" title="Permalink to this definition"></a></dt>
+<dd><p>Closes the current experiment.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.action.export_links_ctc">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.action.</span></span><span class="sig-name descname"><span class="pre">export_links_ctc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.action.export_links_ctc" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.action.export_links_guizela">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.action.</span></span><span class="sig-name descname"><span class="pre">export_links_guizela</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.action.export_links_guizela" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.action.export_links_trackmate">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.action.</span></span><span class="sig-name descname"><span class="pre">export_links_trackmate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.action.export_links_trackmate" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.action.export_positions">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.action.</span></span><span class="sig-name descname"><span class="pre">export_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.action.export_positions" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.action.load_images">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.action.</span></span><span class="sig-name descname"><span class="pre">load_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window" title="organoid_tracker.gui.window.Window"><span class="pre">Window</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.action.load_images" title="Permalink to this definition"></a></dt>
+<dd><p>Prompts the image loader, and loads the images into the experiment.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.action.load_tracking_data">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.action.</span></span><span class="sig-name descname"><span class="pre">load_tracking_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window" title="organoid_tracker.gui.window.Window"><span class="pre">Window</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.action.load_tracking_data" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.action.new">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.action.</span></span><span class="sig-name descname"><span class="pre">new</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window" title="organoid_tracker.gui.window.Window"><span class="pre">Window</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.action.new" title="Permalink to this definition"></a></dt>
+<dd><p>Starts a new experiment.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.action.rename_experiment">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.action.</span></span><span class="sig-name descname"><span class="pre">rename_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window" title="organoid_tracker.gui.window.Window"><span class="pre">Window</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.action.rename_experiment" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.action.save_tracking_data">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.action.</span></span><span class="sig-name descname"><span class="pre">save_tracking_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window" title="organoid_tracker.gui.window.Window"><span class="pre">Window</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_save_as</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.action.save_tracking_data" title="Permalink to this definition"></a></dt>
+<dd><p>Saves the tracking data of the currently open tab. Prompts the user if no previous file name is known, or if
+force_save_as is True. Updates the status bar afterwards. Returns whether saving was successful.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.action.save_tracking_data_of_tab">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.action.</span></span><span class="sig-name descname"><span class="pre">save_tracking_data_of_tab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tab</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.gui_experiment.html#organoid_tracker.gui.gui_experiment.SingleGuiTab" title="organoid_tracker.gui.gui_experiment.SingleGuiTab"><span class="pre">SingleGuiTab</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_save_as</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.action.save_tracking_data_of_tab" title="Permalink to this definition"></a></dt>
+<dd><p>Saves the tracking data of the given tab. Prompts the user if no previous file name is known, or if
+force_save_as is True. Returns whether saving was successful.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.action.set_image_resolution">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.action.</span></span><span class="sig-name descname"><span class="pre">set_image_resolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window" title="organoid_tracker.gui.window.Window"><span class="pre">Window</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.action.set_image_resolution" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.action.show_manual">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.action.</span></span><span class="sig-name descname"><span class="pre">show_manual</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.action.show_manual" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.action.to_experiment_list_file_structure">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.action.</span></span><span class="sig-name descname"><span class="pre">to_experiment_list_file_structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tabs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.11)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.gui.gui_experiment.html#organoid_tracker.gui.gui_experiment.SingleGuiTab" title="organoid_tracker.gui.gui_experiment.SingleGuiTab"><span class="pre">SingleGuiTab</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.11)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.gui.action.to_experiment_list_file_structure" title="Permalink to this definition"></a></dt>
+<dd><p>Prompts the user to save an unsaved changes, and then exports the currently open tabs to a data structure
+suitable for JSON. If the user cancels the operation, then None is returned.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.action.toggle_axis">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.action.</span></span><span class="sig-name descname"><span class="pre">toggle_axis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">figure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://matplotlib.org/stable/api/figure_api.html#matplotlib.figure.Figure" title="(in Matplotlib v3.7.2)"><span class="pre">Figure</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.action.toggle_axis" title="Permalink to this definition"></a></dt>
+<dd><p>Toggles whether the axes are visible.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.action.view_statistics">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.action.</span></span><span class="sig-name descname"><span class="pre">view_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window" title="organoid_tracker.gui.window.Window"><span class="pre">Window</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.action.view_statistics" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 </section>
 
 

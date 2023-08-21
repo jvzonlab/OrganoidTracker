@@ -121,8 +121,205 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="organoid-tracker-gui-window-module">
-<h1>organoid_tracker.gui.window module<a class="headerlink" href="#organoid-tracker-gui-window-module" title="Permalink to this heading"></a></h1>
+  <section id="module-organoid_tracker.gui.window">
+<span id="organoid-tracker-gui-window-module"></span><h1>organoid_tracker.gui.window module<a class="headerlink" href="#module-organoid_tracker.gui.window" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.DisplaySettings">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.window.</span></span><span class="sig-name descname"><span class="pre">DisplaySettings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_next_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_data_axes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.window.DisplaySettings" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Used for window-specific display settings.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.DisplaySettings.KEY_SHOW_IMAGES">
+<span class="sig-name descname"><span class="pre">KEY_SHOW_IMAGES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'i'</span></em><a class="headerlink" href="#organoid_tracker.gui.window.DisplaySettings.KEY_SHOW_IMAGES" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP">
+<span class="sig-name descname"><span class="pre">KEY_SHOW_NEXT_IMAGE_ON_TOP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'n'</span></em><a class="headerlink" href="#organoid_tracker.gui.window.DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.DisplaySettings.error_correction_max_time_point">
+<span class="sig-name descname"><span class="pre">error_correction_max_time_point</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#organoid_tracker.gui.window.DisplaySettings.error_correction_max_time_point" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.DisplaySettings.error_correction_min_time_point">
+<span class="sig-name descname"><span class="pre">error_correction_min_time_point</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#organoid_tracker.gui.window.DisplaySettings.error_correction_min_time_point" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.DisplaySettings.image_channel">
+<span class="sig-name descname"><span class="pre">image_channel</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageChannel" title="organoid_tracker.core.image_loader.ImageChannel"><span class="pre">ImageChannel</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#organoid_tracker.gui.window.DisplaySettings.image_channel" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.DisplaySettings.show_errors">
+<span class="sig-name descname"><span class="pre">show_errors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></em><a class="headerlink" href="#organoid_tracker.gui.window.DisplaySettings.show_errors" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.DisplaySettings.show_images">
+<span class="sig-name descname"><span class="pre">show_images</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></em><a class="headerlink" href="#organoid_tracker.gui.window.DisplaySettings.show_images" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.DisplaySettings.show_links_and_connections">
+<span class="sig-name descname"><span class="pre">show_links_and_connections</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></em><a class="headerlink" href="#organoid_tracker.gui.window.DisplaySettings.show_links_and_connections" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.DisplaySettings.show_next_time_point">
+<span class="sig-name descname"><span class="pre">show_next_time_point</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></em><a class="headerlink" href="#organoid_tracker.gui.window.DisplaySettings.show_next_time_point" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.DisplaySettings.show_positions">
+<span class="sig-name descname"><span class="pre">show_positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></em><a class="headerlink" href="#organoid_tracker.gui.window.DisplaySettings.show_positions" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.DisplaySettings.show_splines">
+<span class="sig-name descname"><span class="pre">show_splines</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></em><a class="headerlink" href="#organoid_tracker.gui.window.DisplaySettings.show_splines" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.DisplaySettings.time_point">
+<span class="sig-name descname"><span class="pre">time_point</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></em><a class="headerlink" href="#organoid_tracker.gui.window.DisplaySettings.time_point" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.DisplaySettings.z">
+<span class="sig-name descname"><span class="pre">z</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#organoid_tracker.gui.window.DisplaySettings.z" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.window.</span></span><span class="sig-name descname"><span class="pre">Window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q_window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">QMainWindow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://matplotlib.org/stable/api/figure_api.html#matplotlib.figure.Figure" title="(in Matplotlib v3.7.2)"><span class="pre">Figure</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.gui_experiment.html#organoid_tracker.gui.gui_experiment.GuiExperiment" title="organoid_tracker.gui.gui_experiment.GuiExperiment"><span class="pre">GuiExperiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">title_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">QLabel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">QLabel</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.window.Window" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The model for a window.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window.display_settings">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">display_settings</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#organoid_tracker.gui.window.DisplaySettings" title="organoid_tracker.gui.window.DisplaySettings"><span class="pre">DisplaySettings</span></a></em><a class="headerlink" href="#organoid_tracker.gui.window.Window.display_settings" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window.get_active_experiments">
+<span class="sig-name descname"><span class="pre">get_active_experiments</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.11)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.gui.window.Window.get_active_experiments" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window.get_experiment">
+<span class="sig-name descname"><span class="pre">get_experiment</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.window.Window.get_experiment" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the experiment that is being shown. Raises UserError if no particular experiment was selected.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window.get_figure">
+<span class="sig-name descname"><span class="pre">get_figure</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://matplotlib.org/stable/api/figure_api.html#matplotlib.figure.Figure" title="(in Matplotlib v3.7.2)"><span class="pre">Figure</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.window.Window.get_figure" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the Matplotlib figure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window.get_gui_experiment">
+<span class="sig-name descname"><span class="pre">get_gui_experiment</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.gui.gui_experiment.html#organoid_tracker.gui.gui_experiment.GuiExperiment" title="organoid_tracker.gui.gui_experiment.GuiExperiment"><span class="pre">GuiExperiment</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.window.Window.get_gui_experiment" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the GUI experiment, which stores the experiment along with undo/redo data, and some other non-saveable
+data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window.get_scheduler">
+<span class="sig-name descname"><span class="pre">get_scheduler</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.gui.threading.html#organoid_tracker.gui.threading.Scheduler" title="organoid_tracker.gui.threading.Scheduler"><span class="pre">Scheduler</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.window.Window.get_scheduler" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window.get_undo_redo">
+<span class="sig-name descname"><span class="pre">get_undo_redo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.gui.undo_redo.html#organoid_tracker.gui.undo_redo.UndoRedo" title="organoid_tracker.gui.undo_redo.UndoRedo"><span class="pre">UndoRedo</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.window.Window.get_undo_redo" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the undo/redo handler. Any actions performed through this handler can be undone.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window.perform_data_action">
+<span class="sig-name descname"><span class="pre">perform_data_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.undo_redo.html#organoid_tracker.gui.undo_redo.UndoableAction" title="organoid_tracker.gui.undo_redo.UndoableAction"><span class="pre">UndoableAction</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.window.Window.perform_data_action" title="Permalink to this definition"></a></dt>
+<dd><p>Performs an action that will change the experiment data. The action will be executed, then the window will
+be redrawn with an updated status bar.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window.plugin_manager">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plugin_manager</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.plugin.plugin_manager.html#organoid_tracker.plugin.plugin_manager.PluginManager" title="organoid_tracker.plugin.plugin_manager.PluginManager"><span class="pre">PluginManager</span></a></em><a class="headerlink" href="#organoid_tracker.gui.window.Window.plugin_manager" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the plugin manager, allowing you to load, inspect and unload plugins.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window.redraw_all">
+<span class="sig-name descname"><span class="pre">redraw_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.window.Window.redraw_all" title="Permalink to this definition"></a></dt>
+<dd><p>Redraws the image using the latest values from the experiment.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window.redraw_data">
+<span class="sig-name descname"><span class="pre">redraw_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.window.Window.redraw_data" title="Permalink to this definition"></a></dt>
+<dd><p>Redraws the main figure using the latest values from the experiment.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window.register_event_handler">
+<span class="sig-name descname"><span class="pre">register_event_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.11)"><span class="pre">Callable</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.window.Window.register_event_handler" title="Permalink to this definition"></a></dt>
+<dd><p>Registers an event handler, whichs allows you to react on things like “data changed”. Supported events:</p>
+<ul class="simple">
+<li><p>All matplotlib events.</p></li>
+<li><p>All GuiExperiment event: GuiExperiment.KNOWN_EVENTS</p></li>
+</ul>
+<p>Don’t forget to unregister your event handlers when its no longer needed! Otherwise you’ll have a memory leak.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window.registry">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">registry</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.plugin.registry.html#organoid_tracker.plugin.registry.Registry" title="organoid_tracker.plugin.registry.Registry"><span class="pre">Registry</span></a></em><a class="headerlink" href="#organoid_tracker.gui.window.Window.registry" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the registry. Used for plugin-provided things, like new cell types.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window.replace_plugin_manager">
+<span class="sig-name descname"><span class="pre">replace_plugin_manager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.plugin.plugin_manager.html#organoid_tracker.plugin.plugin_manager.PluginManager" title="organoid_tracker.plugin.plugin_manager.PluginManager"><span class="pre">PluginManager</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.window.Window.replace_plugin_manager" title="Permalink to this definition"></a></dt>
+<dd><p>Replaces the plugin manager. Can only be done if no plugins are loaded.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window.set_figure_title">
+<span class="sig-name descname"><span class="pre">set_figure_title</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.window.Window.set_figure_title" title="Permalink to this definition"></a></dt>
+<dd><p>Sets the big text above the main figure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window.set_status">
+<span class="sig-name descname"><span class="pre">set_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.window.Window.set_status" title="Permalink to this definition"></a></dt>
+<dd><p>Sets the small text below the figure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window.set_window_title">
+<span class="sig-name descname"><span class="pre">set_window_title</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.window.Window.set_window_title" title="Permalink to this definition"></a></dt>
+<dd><p>Sets the title of the window, prefixed by APP_NAME. Use None as the title to just sown APP_NAME.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window.setup_menu">
+<span class="sig-name descname"><span class="pre">setup_menu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_items</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_plugins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.window.Window.setup_menu" title="Permalink to this definition"></a></dt>
+<dd><p>Update the main menu of the window to contain the given options.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.window.Window.unregister_event_handlers">
+<span class="sig-name descname"><span class="pre">unregister_event_handlers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.window.Window.unregister_event_handlers" title="Permalink to this definition"></a></dt>
+<dd><p>Unregisters all handlers registered using register_event_handler</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
