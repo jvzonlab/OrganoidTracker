@@ -31,6 +31,9 @@ class ImageChannel:
     def __hash__(self) -> int:
         return hash(self.index_zero)
 
+    def __repr__(self) -> str:
+        return f"ImageChannel(index_zero={self.index_zero})"
+
 
 class ImageLoader(ABC):
     """Responsible for loading all images in an experiment."""

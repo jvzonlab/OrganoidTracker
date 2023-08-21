@@ -60,15 +60,23 @@ class Toolbar(NavigationToolbar2QT):
         if len(experiment_names) == 0:
             experiment_names = ["<no data loaded>"]
 
-        # Don't update GUI if not necessary
+        # Update the experiment names in the selection box
         if experiment_names != self._old_experiment_names:
+            # Don't update GUI if not necessary
+
             self._old_experiment_names = experiment_names
+            # Change names of existing items, add new items if necessary
+            for i, experiment_name in enumerate(experiment_names):
+                if i >= self._experiment_selector_box.count():
+                    self._experiment_selector_box.addItem(experiment_name)
+                else:
+                    self._experiment_selector_box.setItemText(i, experiment_name)
+            # Remove superfluous items
+            for i in range(len(experiment_names), self._experiment_selector_box.count()):
+                self._experiment_selector_box.removeItem(self._experiment_selector_box.count() - 1)
 
-            self._experiment_selector_box.clear()
-            for experiment_name in experiment_names:
-                self._experiment_selector_box.addItem(experiment_name)
-
-        self._experiment_selector_box.setCurrentIndex(selected_index)
+        if self._experiment_selector_box.currentIndex() != selected_index:
+            self._experiment_selector_box.setCurrentIndex(selected_index)
 
     def _call(self, action: Callable):
         try:

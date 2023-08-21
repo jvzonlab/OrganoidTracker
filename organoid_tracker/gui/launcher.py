@@ -206,6 +206,7 @@ def _connect_toolbar_actions(toolbar: Toolbar, window: Window):
     def experiment(index):
         window.get_gui_experiment().select_experiment(index)
     def update_experiment_list(*args):
+        # Update the list of experiment names in the top right corner, in case experiment.name has changed
         selected_index = 0
         experiment_names = []
         for i, experiment_name in window.get_gui_experiment().get_selectable_experiments():
@@ -222,6 +223,7 @@ def _connect_toolbar_actions(toolbar: Toolbar, window: Window):
     toolbar.experiment_select_handler = experiment
     window.get_gui_experiment().register_event_handler("any_updated_event", "toolbar", update_experiment_list)
     window.get_gui_experiment().register_event_handler("data_updated_event", "toolbar", update_experiment_list)
+    window.get_gui_experiment().register_event_handler("tab_list_updated_event", "toolbar", update_experiment_list)
 
 
 def _commandbox_execute(command: str, window: Window, main_figure: QWidget):

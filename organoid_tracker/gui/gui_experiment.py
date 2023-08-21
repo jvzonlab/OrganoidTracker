@@ -58,21 +58,19 @@ class GuiExperiment:
     """Used to store the experiment, along with some data that is only relevant within a GUI app, but that doesn't
     need to be saved."""
 
-    KNOWN_EVENTS = {"data_updated_event", "any_updated_event", "command_event"}
+    KNOWN_EVENTS = {"data_updated_event", "any_updated_event", "tab_list_updated_event", "command_event"}
 
     _tabs: List[SingleGuiTab]
     _selected_experiment: int  # Index in self._experiments, or equal to len(self._experiments) if all are open.
-    _data_updated_handlers: _EventListeners
-    _any_updated_event: _EventListeners
-    _command_handlers: _EventListeners
+    _event_handlers: Dict[str, _EventListeners]
 
     def __init__(self, experiment: Experiment):
         self._tabs = [SingleGuiTab(experiment)]
         self._selected_experiment = 0
 
-        self._data_updated_handlers = _EventListeners()
-        self._any_updated_event = _EventListeners()
-        self._command_handlers = _EventListeners()
+        self._event_handlers = dict()
+        for event_name in self.KNOWN_EVENTS:
+            self._event_handlers[event_name] = _EventListeners()
 
     @property  # read-only
     def undo_redo(self) -> UndoRedo:
@@ -84,22 +82,18 @@ class GuiExperiment:
         * All matplotlib events.
         * "data_updated_event" for when the figure annotations need to be redrawn.
         * "any_updated_event" for when the complete figure needs to be redrawn, including the menu bar and image.
+        * "tab_list_updated_event" for when just the list of available experiments needs to be redrawn.
         * "command_event" for when a command is executed
         """
-        if event == "data_updated_event":
-            self._data_updated_handlers.add(source, action)
-        elif event == "any_updated_event":
-            self._any_updated_event.add(source, action)
-        elif event == "command_event":
-            self._command_handlers.add(source, action)
+        if event in self.KNOWN_EVENTS:
+            self._event_handlers[event].add(source, action)
         else:
             raise ValueError("Unknown event: " + event)
 
     def unregister_event_handlers(self, source_to_remove: str):
         """Unregisters all handles registered using register_event_handler"""
-        self._data_updated_handlers.remove(source_to_remove)
-        self._any_updated_event.remove(source_to_remove)
-        self._command_handlers.remove(source_to_remove)
+        for event_handlers in self._event_handlers.values():
+            event_handlers.remove(source_to_remove)
 
     def get_registered_markers(self, type):
         raise ValueError("Moved to window.registry.get_registered_markers(...)")
@@ -107,20 +101,27 @@ class GuiExperiment:
     def get_marker_by_save_name(self, save_name):
         raise ValueError("Moved to window.registry.get_marker_by_save_name(...)")
 
-    def add_experiment(self, experiment: Experiment):
+    def add_experiment(self, experiment: Experiment) -> int:
+        """Adds an experiment to the tab list. Returns the index that is used for the new tab, which you can then use
+        to select that tab."""
         # Remove current experiment if it contains no data
         if self.get_experiment().first_time_point_number() is None:
             self._remove_experiment_without_update(self.get_experiment())
 
         # Add new experiment
         self._tabs.append(SingleGuiTab(experiment))
-        self._selected_experiment = len(self._tabs) - 1
-        self._any_updated_event.call_all()
+        index = len(self._tabs) - 1
+
+        if index == self._selected_experiment:
+            self._event_handlers["any_updated_event"].call_all()  # This experiment is visible, so we need to redraw
+        else:
+            self._event_handlers["tab_list_updated_event"].call_all()  # Only redraw tab list
+        return index
 
     def replace_selected_experiment(self, experiment: Experiment):
         """Discards the currently selected experiment, and replaces it with a new one"""
         self._tabs[self._selected_experiment] = SingleGuiTab(experiment)
-        self._any_updated_event.call_all()
+        self._event_handlers["any_updated_event"].call_all()
 
     def get_experiment(self) -> Experiment:
         """Gets the currently selected experiment. Raises UserError if no particular experiment has been selected."""
@@ -152,19 +153,19 @@ class GuiExperiment:
             self._tabs.append(SingleGuiTab(Experiment()))
         if self._selected_experiment >= len(self._tabs):
             self._selected_experiment = len(self._tabs) - 1
-        self._any_updated_event.call_all()
+        self._event_handlers["any_updated_event"].call_all()
 
     def redraw_data(self):
         """Redraws the main figure using the latest values from the experiment."""
-        self._data_updated_handlers.call_all()
+        self._event_handlers["data_updated_event"].call_all()
 
     def redraw_image_and_data(self):
         """Redraws the image using the latest values from the experiment."""
-        self._any_updated_event.call_all()
+        self._event_handlers["any_updated_event"].call_all()
 
     def execute_command(self, command: str):
         """Calls all registered command handlers with the given argument. Used when a user entered a command."""
-        self._command_handlers.call_all(command)
+        self._event_handlers["command_event"].call_all(command)
 
     def goto_position(self, position: Position):
         """Moves the view towards the given position. The position must have a time point set."""
@@ -192,7 +193,7 @@ class GuiExperiment:
             raise ValueError(f"Out of range: {index}")
 
         self._selected_experiment = index
-        self._any_updated_event.call_all()
+        self._event_handlers["any_updated_event"].call_all()
 
     def get_all_tabs(self) -> List[SingleGuiTab]:
         """Gets all currently open tabs."""

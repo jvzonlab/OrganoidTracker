@@ -51,9 +51,11 @@ def toggle_axis(figure: Figure):
 
 def new(window: Window):
     """Starts a new experiment."""
+    gui_experiment = window.get_gui_experiment()
+    new_index = gui_experiment.add_experiment(Experiment())
+    gui_experiment.select_experiment(new_index)
     visualizer = EmptyVisualizer(window)
     activate(visualizer)
-    window.get_gui_experiment().add_experiment(Experiment())
 
 
 def close_experiment(window: Window):
