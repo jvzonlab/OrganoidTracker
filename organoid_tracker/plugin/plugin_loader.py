@@ -5,7 +5,6 @@ import importlib
 
 from organoid_tracker.core.marker import Marker
 from organoid_tracker.plugin.instance import Plugin
-from organoid_tracker.gui.window import Window
 
 
 class _ModulePlugin(Plugin):
