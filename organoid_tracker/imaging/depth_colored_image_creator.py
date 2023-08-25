@@ -46,13 +46,10 @@ def create_image(image: ndarray, *, background_rgba: Tuple[int, int, int, int] =
         # Add to existing image
         slice_buffer_uint8[...] = slice_buffer
         slice_buffer_pil = Image.fromarray(slice_buffer_uint8)
-        if color_image_pil is None:
-            color_image_pil = slice_buffer_pil
-        else:
-            result = Image.alpha_composite(color_image_pil, slice_buffer_pil)
-            color_image_pil.close()
-            slice_buffer_pil.close()
-            color_image_pil = result
+        result = Image.alpha_composite(color_image_pil, slice_buffer_pil)
+        color_image_pil.close()
+        slice_buffer_pil.close()
+        color_image_pil = result
 
     color_image = numpy.asarray(color_image_pil, dtype=numpy.float32)
     color_image_pil.close()

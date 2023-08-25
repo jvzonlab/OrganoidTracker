@@ -158,6 +158,8 @@ class Position:
         """Returns a copy of this position with the x, y and z moved.
 
         Note that you can also just add two positions together, `a + b == a.with_offset(b.x, b.y, b.z)`"""
+        if dx == dy == dz == 0:
+            return self
         return Position(self.x + dx, self.y + dy, self.z + dz, time_point_number=self._time_point_number)
 
     def interpolate(self, to_pos: "Position") -> List["Position"]:
