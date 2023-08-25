@@ -84,14 +84,17 @@ class Mask:
 
     def center_around(self, position: Position):
         """Centers this mask around the given position. So offset_x will become smaller than position.x and max_x will
-        become larger, and position.x will be halfway. Same for the y and z axis."""
+        become larger, and position.x will be halfway. Same for the y and z axis.
+
+        One exception to offset_x < position.x: if size_x is 1, then offset_x will be int(position.x).
+        """
         size_x = self._max_x - self._offset_x
         size_y = self._max_y - self._offset_y
         size_z = self._max_z - self._offset_z
 
-        self._offset_x = int(position.x - size_x / 2)
-        self._offset_y = int(position.y - size_y / 2)
-        self._offset_z = int(position.z - size_z / 2)
+        self._offset_x = int(position.x) - int(size_x / 2)
+        self._offset_y = int(position.y) - int(size_y / 2)
+        self._offset_z = int(position.z) - int(size_z / 2)
         self._max_x = self._offset_x + size_x
         self._max_y = self._offset_y + size_y
         self._max_z = self._offset_z + size_z
