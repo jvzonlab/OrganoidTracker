@@ -211,6 +211,21 @@ class Image:
         """
         return int(self._offset.z) + self._array.shape[0]
 
+    @property
+    def shape_x(self) -> Tuple[int, int, int]:
+        """Gets the size in the x direction in pixels."""
+        return self._array.shape[2]
+
+    @property
+    def shape_y(self) -> int:
+        """Gets the size in the y direction in pixels."""
+        return self._array.shape[1]
+
+    @property
+    def shape_z(self) -> int:
+        """Gets the size in the z direction in pixels."""
+        return self._array.shape[0]
+
     def bounding_box(self) -> BoundingBox:
         """Gets a bounding box that encompasses the entire image."""
         return BoundingBox(self.min_x, self.min_y, self.min_z, self.limit_x, self.limit_y, self.limit_z)
