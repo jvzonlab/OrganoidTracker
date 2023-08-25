@@ -160,6 +160,7 @@ of the desired label), as the mask array will be copied.</p>
 <span class="sig-name descname"><span class="pre">center_around</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.mask.Mask.center_around" title="Permalink to this definition"></a></dt>
 <dd><p>Centers this mask around the given position. So offset_x will become smaller than position.x and max_x will
 become larger, and position.x will be halfway. Same for the y and z axis.</p>
+<p>One exception to offset_x &lt; position.x: if size_x is 1, then offset_x will be int(position.x).</p>
 </dd></dl>
 
 <dl class="py method">
