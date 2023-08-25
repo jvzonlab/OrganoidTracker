@@ -84,7 +84,7 @@ class IntensityOverTime:
 
 
 def get_normalized_intensity_over_time(experiment: Experiment, around_position: Position, time_window_h: float, *,
-                                       allow_incomplete: bool = False
+                                       allow_incomplete: bool = False, intensity_key: str = DEFAULT_INTENSITY_KEY
                                        ) -> Optional[IntensityOverTime]:
     """Gets the slope and mean intensity over time given time span. Returns None if not enough data is
     available, which is the case if the track is too short or if some intensities are missing."""
@@ -111,7 +111,7 @@ def get_normalized_intensity_over_time(experiment: Experiment, around_position: 
     times_h = list()
     for time_point_number in range(tracking_start_time_point, tracking_end_time_point + 1):
         position = track.find_position_at_time_point_number(time_point_number)
-        intensity = get_normalized_intensity(experiment, position)
+        intensity = get_normalized_intensity(experiment, position, intensity_key=intensity_key)
         if intensity is None:
             # We don't have a full data set
             if not allow_incomplete:
