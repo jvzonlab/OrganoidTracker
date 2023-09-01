@@ -8,10 +8,7 @@ def find_time_and_channel_pattern(directory: Optional[str], file_name: str) -> O
     (time or channel) was found."""
     time_pattern = _find_time_pattern(directory, file_name)
     if time_pattern is None:
-        channel_pattern = _find_channel_pattern(file_name)
-        if channel_pattern is None:
-            return None  # Found no patterns
-        return channel_pattern  # No time pattern, at least we could find a channel pattern
+        return None  # No time pattern
     channel_pattern = _find_channel_pattern(time_pattern)
     if channel_pattern is None:
         return time_pattern  # At least we could find a time pattern
