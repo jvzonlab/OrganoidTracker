@@ -20,7 +20,7 @@ class WarningLimits:
     def __init__(self, *, min_time_between_divisions_h: float = 10,
                  max_distance_moved_um_per_min: float = 10/12,
                  min_probability: float = 0.1,
-                 min_marginal_probability: float = 0.0, **kwargs):
+                 min_marginal_probability: float = 0.99, **kwargs):
         """Initializes the warning limits.
 
         Note: any data stored in the kwargs parameter is discarded. This parameter exists to make the program
