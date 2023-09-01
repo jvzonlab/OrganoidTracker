@@ -85,7 +85,7 @@ def conv_block(n_conv, layer, filters, kernel=3, pool_size=2, pool_strides=2, dr
 
 
 def deconv_block(n_conv, layer, to_concat, filters, kernel=3, strides=2, dropout=False, name=None, depth_wise= None):
-    layer = tf.keras.layers.Conv3DTranspose(filters=filters, kernel_size=kernel, strides=strides, padding='same',
+    layer = tf.keras.layers.Conv3DTranspose(filters=filters, kernel_size=strides, strides=strides, padding='same',
                                             name=name + '/upconv')(layer)
 
     if to_concat is not None:
