@@ -44,14 +44,9 @@ def get_positions_of_type(position_data: PositionData, requested_type: str) -> I
 
 
 def set_raw_intensities(experiment: Experiment, raw_intensities: Dict[Position, int], volumes: Dict[Position, int]):
-    """Registers the given intensities for the given positions. Both dicts must have the same keys.
-
-    Also removes any previously set intensity normalization."""
-    if raw_intensities.keys() != volumes.keys():
-        raise ValueError("Need to supply intensities and volumes for the same cells")
-    experiment.position_data.add_positions_data("intensity", raw_intensities)
-    experiment.position_data.add_positions_data("intensity_volume", volumes)
-    remove_intensity_normalization(experiment)
+    """@deprecated Old method, please use intensity_calculator.get_normalized_intensity instead."""
+    from . import intensity_calculator
+    return intensity_calculator.set_raw_intensities(experiment, raw_intensities, volumes)
 
 
 def get_raw_intensity(position_data: PositionData, position: Position) -> Optional[float]:
