@@ -599,8 +599,9 @@ class LinkAndPositionEditor(AbstractEditor):
         cutoff_fraction = cutoff / 100
         to_remove = list()
         link_data = self._experiment.link_data
-        for position_a, position_b, value in link_data.find_all_links_with_data("link_probability"):
+        for (position_a, position_b), value in link_data.find_all_links_with_data("link_probability"):
             if value < cutoff_fraction:
+
                 to_remove.append((position_a, position_b))
         self._perform_action(_DeleteLinksAction(link_data, to_remove))
 
