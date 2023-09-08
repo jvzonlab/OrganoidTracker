@@ -10,7 +10,8 @@ def prompt_image_series(experiment: Experiment) -> bool:
         ("Single TIF or TIF series", "*.tif;*.tiff"),
         ("Image per time point", "*.png;*.jpg;*.gif"),
         ("LIF file", "*.lif"),
-        ("ND2 file", "*.nd2")])
+        ("ND2 file", "*.nd2"),
+        ("Imaris file", "*.ims")])
     if not full_path:
         return False  # Cancelled
     directory, file_name = os.path.split(full_path)
@@ -37,6 +38,12 @@ def prompt_image_series(experiment: Experiment) -> bool:
             nd2file_image_loader.load_image_series(experiment, reader, location)
             return True
         return False
+
+    if file_name.endswith(".ims"):
+        # IMS file loading
+        from organoid_tracker.image_loading import imsfile_image_loader
+        imsfile_image_loader.load_from_ims_file(experiment, full_path)
+        return True
 
     file_name_pattern = find_time_and_channel_pattern(directory, file_name)
     if file_name_pattern is None:
