@@ -138,6 +138,13 @@
 <dd><p>Bases: <a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageLoader</span></code></a></p>
 <p>Combines multiple image loaders, showing their channels after each other.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.close" title="Permalink to this definition"></a></dt>
+<dd><p>Used when the image loader is no longer needed, because a user closed the tab or switched out the image
+loader. Closes any file handles.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.copy">
 <span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.copy" title="Permalink to this definition"></a></dt>
 <dd><p>Copies the image loader, so that you can use it on another thread.</p>
@@ -218,6 +225,13 @@ it returns self.</p>
 </pre></div>
 </div>
 <dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.close" title="Permalink to this definition"></a></dt>
+<dd><p>Used when the image loader is no longer needed, because a user closed the tab or switched out the image
+loader. Closes any file handles.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.copy">
 <span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.copy" title="Permalink to this definition"></a></dt>
 <dd><p>Copies the image loader, so that you can use it on another thread.</p>
@@ -287,6 +301,13 @@ self.serialize_to_config().</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.builtin_merging_image_loaders.</span></span><span class="sig-name descname"><span class="pre">TimeAppendingImageLoader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_loaders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageLoader</span></code></a></p>
 <p>Combines to image loaders, showing images after each other.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.close" title="Permalink to this definition"></a></dt>
+<dd><p>Used when the image loader is no longer needed, because a user closed the tab or switched out the image
+loader. Closes any file handles.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.copy">
 <span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.copy" title="Permalink to this definition"></a></dt>

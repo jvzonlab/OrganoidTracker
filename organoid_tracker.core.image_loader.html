@@ -147,6 +147,13 @@ The image loader is responsible for the numbering. The first channel must have n
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
 <p>Responsible for loading all images in an experiment.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.image_loader.ImageLoader.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.image_loader.ImageLoader.close" title="Permalink to this definition"></a></dt>
+<dd><p>Used when the image loader is no longer needed, because a user closed the tab or switched out the image
+loader. Closes any file handles.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.core.image_loader.ImageLoader.copy">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.image_loader.ImageLoader.copy" title="Permalink to this definition"></a></dt>
 <dd><p>Copies the image loader, so that you can use it on another thread.</p>

@@ -259,6 +259,13 @@ Returns None if the position is outside the image.</p>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Records the images (3D + time), their resolution and their offset.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.images.Images.close_image_loader">
+<span class="sig-name descname"><span class="pre">close_image_loader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.images.Images.close_image_loader" title="Permalink to this definition"></a></dt>
+<dd><p>Closes the image loader, releasing file system handles, and replacing it with a dummy one that contains no
+images.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.core.images.Images.copy">
 <span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.core.images.Images" title="organoid_tracker.core.images.Images"><span class="pre">Images</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.images.Images.copy" title="Permalink to this definition"></a></dt>
 <dd><p>Returns a copy of this images object. Any changes to the copy won’t affect this object and vice versa.</p>
@@ -303,6 +310,7 @@ Returns None if the position is outside the image.</p>
 <dt class="sig sig-object py" id="organoid_tracker.core.images.Images.image_loader">
 <span class="sig-name descname"><span class="pre">image_loader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_loader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.images.Images.image_loader" title="Permalink to this definition"></a></dt>
 <dd><p>Gets/sets the image loader. Note: images loaded directly from this image loader will be uncached.</p>
+<p>Warning: consider whether you need to close the old image loader first.</p>
 </dd></dl>
 
 <dl class="py method">
