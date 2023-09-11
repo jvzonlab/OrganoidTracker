@@ -150,3 +150,6 @@ class _Nd2ImageLoader(ImageLoader):
     def copy(self) -> "ImageLoader":
         return _Nd2ImageLoader(self._file_name, Nd2File(self._file_name)._nd2_parser, self._location,
                                self._min_time_point, self._max_time_point)
+
+    def close(self):
+        self._nd2_parser._fh.close()

@@ -225,3 +225,6 @@ class _MergedTiffImageLoader(ImageLoader):
         if file_name.lower().endswith(".tiff"):
             return file_name[0:-5]
         return file_name
+
+    def close(self):
+        self._tiff.close()

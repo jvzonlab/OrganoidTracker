@@ -383,3 +383,8 @@ class Experiment:
         if name:
             copy.name = self._name.copy()
         return copy
+
+    def close(self):
+        """Closes any system resources of this experiment, like file handles for images on disk."""
+        # Right now, we only need to close the images
+        self.images.close_image_loader()

@@ -62,7 +62,11 @@ def close_experiment(window: Window):
     """Closes the current experiment."""
     if not ask_save_unsaved_changes([window.get_gui_experiment().get_open_tab()]):
         return  # Cancelled
-    window.get_gui_experiment().remove_experiment(window.get_experiment())
+
+    # Close the experiment
+    experiment = window.get_experiment()
+    window.get_gui_experiment().remove_experiment(experiment)
+    experiment.close()
 
 
 def load_images(window: Window):

@@ -107,6 +107,8 @@ class ChannelSummingImageLoader(ImageLoader):
     def copy(self) -> "ImageLoader":
         return ChannelSummingImageLoader(self._image_loader.copy(), self._channels.copy())
 
+    def close(self):
+        self._image_loader.close()
 
 class ChannelAppendingImageLoader(ImageLoader):
     """Combines multiple image loaders, showing their channels after each other."""
@@ -204,6 +206,9 @@ class ChannelAppendingImageLoader(ImageLoader):
             new_internal.append(internal.uncached())
         return ChannelAppendingImageLoader(new_internal)
 
+    def close(self):
+        for internal in self._unique_loaders:
+            internal.close()
 
 class TimeAppendingImageLoader(ImageLoader):
     """Combines to image loaders, showing images after each other."""
@@ -341,4 +346,7 @@ class TimeAppendingImageLoader(ImageLoader):
             new_internal.append(internal.uncached())
         return TimeAppendingImageLoader(new_internal)
 
+    def close(self):
+        for internal in self._internal:
+            internal.close()
 

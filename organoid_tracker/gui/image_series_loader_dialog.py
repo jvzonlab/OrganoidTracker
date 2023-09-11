@@ -23,6 +23,7 @@ def prompt_image_series(experiment: Experiment) -> bool:
         series = [header.getName() for header in reader.getSeriesHeaders()]
         series_index = option_choose_dialog.prompt_list("Choose an image serie", "Choose an image serie", "Image serie:", series)
         if series_index is not None:
+            experiment.images.close_image_loader()
             liffile_image_loader.load_from_lif_reader(experiment, full_path, reader, series_index)
             return True
         return False
@@ -35,6 +36,7 @@ def prompt_image_series(experiment: Experiment) -> bool:
         location = dialog.prompt_int("Image series", f"Which image series do you want load? (1-"
                                      f"{max_location}, inclusive)", minimum=1, maximum=max_location)
         if location is not None:
+            experiment.images.close_image_loader()
             nd2file_image_loader.load_image_series(experiment, reader, location)
             return True
         return False
@@ -42,6 +44,7 @@ def prompt_image_series(experiment: Experiment) -> bool:
     if file_name.endswith(".ims"):
         # IMS file loading
         from organoid_tracker.image_loading import imsfile_image_loader
+        experiment.images.close_image_loader()
         imsfile_image_loader.load_from_ims_file(experiment, full_path)
         return True
 
@@ -52,6 +55,7 @@ def prompt_image_series(experiment: Experiment) -> bool:
         if file_name_lower.endswith(".tif") or file_name_lower.endswith(".tiff"):
             # Try as TIF container
             from organoid_tracker.image_loading import merged_tiff_image_loader
+            experiment.images.close_image_loader()
             merged_tiff_image_loader.load_from_tif_file(experiment, full_path)
             return True
         dialog.popup_message("Could not read file pattern", "Could not find 't01' (or similar) in the file name \"" +
@@ -60,5 +64,6 @@ def prompt_image_series(experiment: Experiment) -> bool:
 
     # Load and show images
     from organoid_tracker.image_loading import folder_image_loader
+    experiment.images.close_image_loader()
     folder_image_loader.load_images_from_folder(experiment, directory, file_name_pattern)
     return True

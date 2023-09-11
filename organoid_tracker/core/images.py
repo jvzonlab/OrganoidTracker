@@ -98,6 +98,9 @@ class _CachedImageLoader(ImageLoader):
     def serialize_to_dictionary(self) -> Dict[str, Any]:
         return self._internal.serialize_to_dictionary()
 
+    def close(self):
+        self._internal.close()
+
 
 class ImageOffsets:
     _offset: Dict[int, Position]
@@ -314,7 +317,10 @@ class Images:
         return Image(array, self._offsets.of_time_point(time_point))
 
     def image_loader(self, image_loader: Optional[ImageLoader] = None) -> ImageLoader:
-        """Gets/sets the image loader. Note: images loaded directly from this image loader will be uncached."""
+        """Gets/sets the image loader. Note: images loaded directly from this image loader will be uncached.
+
+        Warning: consider whether you need to close the old image loader first.
+        """
         if image_loader is not None:
             self._image_loader = _CachedImageLoader(image_loader)
             return image_loader
@@ -371,3 +377,9 @@ class Images:
     def get_channels(self) -> List[ImageChannel]:
         """Gets all available image channels. These are determined by the image_loader."""
         return self._image_loader.get_channels()
+
+    def close_image_loader(self):
+        """Closes the image loader, releasing file system handles, and replacing it with a dummy one that contains no
+        images."""
+        self._image_loader.close()
+        self._image_loader = NullImageLoader()

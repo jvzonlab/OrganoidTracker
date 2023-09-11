@@ -111,6 +111,11 @@ class ImageLoader(ABC):
         """
         return self.get_image_size_zyx() is not None
 
+    def close(self):
+        """Used when the image loader is no longer needed, because a user closed the tab or switched out the image
+        loader. Closes any file handles."""
+        pass
+
 
 class NullImageLoader(ImageLoader):
 

@@ -767,6 +767,9 @@ class _ImsImageLoader(ImageLoader):
     def copy(self) -> "ImageLoader":
         return _ImsImageLoader(self._reader.filePathComplete, self._min_time_point, self._max_time_point)
 
+    def close(self):
+        self._reader.close()
+
     def get_spatial_resolution_um(self) -> Tuple[float, ...]:
         return self._reader.resolution
 

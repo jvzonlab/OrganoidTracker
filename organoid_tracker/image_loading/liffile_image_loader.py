@@ -89,6 +89,7 @@ def _dimensions_to_resolution(dimensions: List[Element]) -> ImageResolution:
 class _LifImageLoader(ImageLoader):
 
     _file: str
+    _reader: _lif.Reader
     _serie: _lif.Serie
     _serie_index: int
 
@@ -98,6 +99,7 @@ class _LifImageLoader(ImageLoader):
 
     def __init__(self, file: str, reader: _lif.Reader, serie_index: int, min_time_point: int, max_time_point: int):
         self._file = file
+        self._reader = reader
         self._serie = reader.getSeries()[serie_index]
         self._serie_index = serie_index
 
@@ -175,3 +177,6 @@ class _LifImageLoader(ImageLoader):
 
     def serialize_to_config(self) -> Tuple[str, str]:
         return self._file, self._serie.getName()
+
+    def close(self):
+        self._reader.f.close()
