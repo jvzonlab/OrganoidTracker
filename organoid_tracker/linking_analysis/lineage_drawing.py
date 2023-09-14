@@ -5,7 +5,7 @@ from matplotlib.axes import Axes
 from matplotlib.collections import LineCollection
 
 from organoid_tracker.core.links import LinkingTrack, Links
-from organoid_tracker.core.resolution import ImageResolution
+from organoid_tracker.core.resolution import ImageResolution, ImageTimings
 from organoid_tracker.core.typing import MPLColor
 from organoid_tracker.gui.location_map import LocationMap
 
@@ -105,6 +105,18 @@ def _get_vertical_lines(x: float, linking_track: LinkingTrack, next_tracks: Set[
     return lines_list
 
 
+def _get_timings(resolution: Optional[ImageResolution], timings: Optional[ImageTimings]) -> Tuple[ImageTimings, bool]:
+    """Gets the timings for the experiment. If no timings are available, then a time resolution of 1 hour per time point
+    is assumed, and False is returned as well. This allows you to plot the timing as raw time points."""
+    if resolution is not None and timings is not None:
+        raise ValueError("Cannot specify both a resolution and specific timings")
+    if timings is not None:
+        return timings, True
+    if resolution is not None:
+        return ImageTimings.contant_timing(resolution.time_point_interval_m), True
+    return ImageTimings.contant_timing(60), False
+
+
 class LineageDrawing:
     starting_tracks: List[LinkingTrack]
 
@@ -161,25 +173,34 @@ class LineageDrawing:
         return x_end, line_list
 
     def draw_lineages_colored(self, axes: Axes, *, color_getter: _ColorGetter = _black,
-                              resolution: ImageResolution = ImageResolution(1, 1, 1, 60),
+                              resolution: Optional[ImageResolution] = None,
+                              timings: Optional[ImageTimings] = None,
                               location_map: LocationMap = LocationMap(),
                               label_getter: Callable[[LinkingTrack], Optional[str]] = _no_labels,
                               lineage_filter: Callable[[LinkingTrack], bool] = _no_filter,
-                              line_width: float = 1.5, x_offset_start: float = 0):
+                              line_width: float = 1.5, x_offset_start: float = 0,
+                              set_ylabel: bool = True):
         """Draws lineage trees that are color coded. You can for example color cells by z position, by track
-        length, etc. Returns the width of the lineage tree in Matplotlib pixels."""
+        length, etc. Returns the width of the lineage tree in Matplotlib pixels.
+
+        You can use the resolution parameter, the timings parameter, or neither of them, but not both. If you use
+        neither, we will plot time points.
+        """
+        timings, use_hours = _get_timings(resolution, timings)
+        if set_ylabel:
+            axes.set_ylabel("Time (h)" if use_hours else "Time point")
 
         x_offset = x_offset_start
         for lineage in self.starting_tracks:
             if not lineage_filter(lineage):
                 continue
-            width = self._draw_single_lineage_colored(axes, lineage, x_offset, color_getter, label_getter, resolution,
+            width = self._draw_single_lineage_colored(axes, lineage, x_offset, color_getter, label_getter, timings,
                                                       location_map, line_width)
             x_offset += width
         return x_offset - x_offset_start
 
     def _draw_single_lineage_colored(self, ax: Axes, lineage: LinkingTrack, x_offset: float, color_getter: _ColorGetter,
-                                     label_getter: _LabelGetter, image_resolution: ImageResolution,
+                                     label_getter: _LabelGetter, image_timings: ImageTimings,
                                      location_map: LocationMap, line_width: float) -> float:
         """Draw lineage with given function used for color. You can for example color cells by z position, by track
         length, etc. Returns the width of the lineage tree in Matplotlib pixels."""
@@ -203,14 +224,14 @@ class LineageDrawing:
                 time_point_max = line.time_point_number_end
 
                 color_val = color_getter(time_point_min + 1, linking_track)
-                t0 = time_point_min * image_resolution.time_point_interval_h
+                t0 = image_timings.get_time_h_since_start(time_point_min)
                 label = label_getter(linking_track)
                 if label is not None:
                     ax.text(x_offset + x + 0.05, t0 + 0.4, label, verticalalignment='top', clip_on=True)
                 for time_point_of_line in range(time_point_min, time_point_max):
                     # get time points for current sub time interval i
 
-                    t1 = (time_point_of_line + 1) * image_resolution.time_point_interval_h
+                    t1 = image_timings.get_time_h_since_start(time_point_of_line + 1)
                     # get color corresponding to current z value
                     color_val_next = color_getter(time_point_of_line + 2, linking_track) if time_point_of_line + 2 <= time_point_max else None
                     if color_val_next != color_val:
@@ -227,7 +248,7 @@ class LineageDrawing:
 
                 # get indeces of timepoint prior to T
                 time_point_of_line = line.time_point_number_start
-                time = time_point_of_line * image_resolution.time_point_interval_h
+                time = image_timings.get_time_h_since_start(time_point_of_line)
 
                 # get color corresponding to current z value
                 color_val_next = color_getter(time_point_of_line, linking_track)

@@ -8,7 +8,7 @@ from organoid_tracker.core.bounding_box import BoundingBox
 from organoid_tracker.core.image_filters import ImageFilter, ImageFilters
 from organoid_tracker.core.image_loader import ImageLoader, ImageChannel, NullImageLoader
 from organoid_tracker.core.position import Position
-from organoid_tracker.core.resolution import ImageResolution
+from organoid_tracker.core.resolution import ImageResolution, ImageTimings
 
 _ZERO = Position(0, 0, 0)
 
@@ -154,7 +154,6 @@ class Image:
         """Returns a new image consisting of only zeros with the same shape and offset as the existing image."""
         return Image(numpy.zeros_like(image.array, dtype=dtype), offset=image.offset)
 
-
     _offset: Position
     _array: ndarray
 
@@ -248,8 +247,8 @@ class Image:
     def set_pixel(self, position: Position, value: Union[float, int]):
         """Sets a single pixel, taking the offset of this image into account. Warning: doesn't do bounds checking."""
         self._array[int(position.z - self.offset.z),
-                    int(position.y - self.offset.y),
-                    int(position.x - self.offset.x)] = value
+        int(position.y - self.offset.y),
+        int(position.x - self.offset.x)] = value
 
 
 class Images:
@@ -258,6 +257,7 @@ class Images:
     _image_loader: ImageLoader
     _offsets: ImageOffsets
     _resolution: ImageResolution
+    _timings: Optional[ImageTimings] = None
     filters: ImageFilters
 
     def __init__(self):
@@ -290,6 +290,46 @@ class Images:
                                                        " This can be done in the Edit menu of the program.")
         return self._resolution
 
+    def has_timings(self) -> bool:
+        """Checks if the experiment has timing information for the time points, i.e. how long each time point is.
+
+        If explicit is True, then we only return True if the timings information was provided explicitly, instead of
+        just using the time resolution.
+        """
+        return self._timings is not None or self._resolution.time_point_interval_m > 0
+
+    def timings(self) -> ImageTimings:
+        """Gets the timings of all time points of the experiment. If they aren't found, but a time resolution is
+        specified, then constant timing is assumed. If no time resolution, and no explicit timings are found, a
+        UserError is raised."""
+        if self._timings is None:
+            if self._resolution.time_point_interval_m > 0:
+                # No timings, but a time resolution was provided. Assume constant timing.
+                self._timings = ImageTimings.contant_timing(self._resolution.time_point_interval_m)
+                return self._timings
+            raise UserError("No time resolution set", "No time resolution was set. Please set a resolution first."
+                                                      " This can be done in the Edit menu of the program.")
+        return self._timings
+
+    def set_timings(self, timings: Optional[ImageTimings]):
+        """Sets explicit timings for all time points in the experiment. Useful if not all time points have the same
+        time resolution.
+
+        If you set the timings to None, only the time resolution in ImageResolution will be used.
+
+        Note: in ImageResolution, the time interval is updated to match t(1) - t(0). If you later set a different
+        time resolution, then that will delete the timings information.
+        """
+        if timings is None:
+            self._timings = None
+            return
+        if not isinstance(timings, ImageTimings):
+            raise ValueError("Not an ImageTimings instance: " + repr(timings))
+        self._timings = timings
+
+        # Also keep time resolution in sync
+        self._resolution.time_point_interval_m = timings.get_time_m_since_previous(TimePoint(1))
+
     def is_inside_image(self, position: Position, *, margin_xy: int = 0, margin_z: int = 0) -> Optional[bool]:
         """Checks if the given position is inside the images. If there are no images loaded, this returns None. Any
         image offsets (see self.offsets) are taken into account.
@@ -309,7 +349,8 @@ class Images:
             return False
         return True
 
-    def get_image(self, time_point: TimePoint, image_channel: ImageChannel = ImageChannel(index_zero=0)) -> Optional[Image]:
+    def get_image(self, time_point: TimePoint, image_channel: ImageChannel = ImageChannel(index_zero=0)) -> Optional[
+        Image]:
         """Gets an image along with offset information, or None if there is no image available for that time point."""
         array = self.get_image_stack(time_point, image_channel)
         if array is None:
@@ -330,7 +371,8 @@ class Images:
         """Transfers the image loader from another Images instance, sharing the image cache."""
         self._image_loader = images._image_loader
 
-    def get_image_stack(self, time_point: TimePoint, image_channel: ImageChannel = ImageChannel(index_zero=0)) -> Optional[ndarray]:
+    def get_image_stack(self, time_point: TimePoint, image_channel: ImageChannel = ImageChannel(index_zero=0)) -> \
+    Optional[ndarray]:
         """Loads an image using the current image loader. Returns None if there is no image for this time point."""
         array = self._image_loader.get_3d_image_array(time_point, image_channel)
         return self.filters.filter(time_point, image_channel, None, array)
@@ -347,6 +389,11 @@ class Images:
         if resolution is None:
             resolution = ImageResolution(0, 0, 0, 0)
         self._resolution = resolution
+
+        # Keep timings in sync
+        time_resolution_m = self._resolution.time_point_interval_m
+        if self._timings is not None and self._timings.get_time_m_since_previous(TimePoint(1)) != time_resolution_m:
+            self._timings = None  # Delete timing information, as it's not in sync with the resolution anymore
 
     def copy(self) -> "Images":
         """Returns a copy of this images object. Any changes to the copy won't affect this object and vice versa."""

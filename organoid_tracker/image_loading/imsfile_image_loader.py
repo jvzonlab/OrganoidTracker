@@ -38,6 +38,7 @@ import os
 from typing import Tuple, Optional
 
 import h5py
+import numpy
 import numpy as np
 import warnings
 
@@ -48,7 +49,7 @@ from skimage.transform import rescale
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.image_loader import ImageLoader, ImageChannel
-from organoid_tracker.core.resolution import ImageResolution
+from organoid_tracker.core.resolution import ImageResolution, ImageTimings
 
 
 def load_from_ims_file(experiment: Experiment, file_name: str, min_time_point: Optional[int] = None,
@@ -67,7 +68,9 @@ def load_from_ims_file(experiment: Experiment, file_name: str, min_time_point: O
         resolution_time_m = image_loader.get_time_resolution_m()
         experiment.images.set_resolution(
             ImageResolution(resolution_zyx[2], resolution_zyx[1], resolution_zyx[0], resolution_time_m))
-
+        timings = image_loader.get_timings()
+        if timings is not None:
+            experiment.images.set_timings(timings)
 
     experiment_name = os.path.basename(file_name)
     if experiment_name.lower().endswith(".ims"):
@@ -243,7 +246,7 @@ class _ImsReader:
         if self.write == True:
             print('Flushing Buffers to Disk')
             self.hf.flush()
-        print('Closing file: {} \n'.format(self.filePathComplete))
+        #print('Closing file: {} \n'.format(self.filePathComplete))
         if self.hf is not None:
             self.hf.close()
         self.hf = None
@@ -737,7 +740,10 @@ class _ImsImageLoader(ImageLoader):
             return None
         if image_channel.index_zero < 0 or image_channel.index_zero >= self._reader.Channels:
             return None
-        return self._reader[time_point_number - 1, image_channel.index_zero]
+        array = self._reader[time_point_number - 1, image_channel.index_zero]
+        if not numpy.any(array):
+            return None  # Got an all-zero array, ignore
+        return array
 
     def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
         time_point_number = time_point.time_point_number()
@@ -747,7 +753,10 @@ class _ImsImageLoader(ImageLoader):
             return None
         if image_z < 0 or image_z >= self._reader.shape[2]:
             return None
-        return self._reader[time_point_number - 1, image_channel.index_zero, image_z]
+        array = self._reader[time_point_number - 1, image_channel.index_zero, image_z]
+        if not numpy.any(array):
+            return None  # Got an all-zero array, ignore
+        return array
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
         return self._reader.shape[-3], self._reader.shape[-2], self._reader.shape[-1]
@@ -780,3 +789,11 @@ class _ImsImageLoader(ImageLoader):
             timespan_s = (time_1_ns - time_0_ns) / 1_000_000_000
             return timespan_s / 60
         return 0
+
+    def get_timings(self) -> Optional[ImageTimings]:
+        if "DataSetTimes" in self._reader.hf:
+            timespans_s = [float(moment[2] / 1_000_000_000) for moment in self._reader.hf["DataSetTimes"]["Time"]]
+            timespans_s = [0.0] + timespans_s
+            timespans_s = numpy.array(timespans_s, dtype=numpy.float64)
+            return ImageTimings(1, timespans_s / 60)
+        return None

@@ -68,6 +68,20 @@ class TimePoint:
     def __gt__(self, other: "TimePoint") -> bool:
         return self._time_point_number > other._time_point_number
 
+    def __add__(self, other) -> "TimePoint":
+        if isinstance(other, int):
+            return TimePoint(self._time_point_number + other)
+        if isinstance(other, TimePoint):
+            return TimePoint(self._time_point_number + other.time_point_number())
+        return NotImplemented
+
+    def __sub__(self, other) -> "TimePoint":
+        if isinstance(other, int):
+            return TimePoint(self._time_point_number - other)
+        if isinstance(other, TimePoint):
+            return TimePoint(self._time_point_number - other.time_point_number())
+        return NotImplemented
+
 
 class Name:
     """The name of the experiment. Includes a flag, is_automatic, that specifies whether the name was manually set or

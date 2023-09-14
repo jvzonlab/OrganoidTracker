@@ -198,7 +198,11 @@ class AbstractImageVisualizer(Visualizer):
         line_infinite(self._ax, start.x, start.y, end.x, end.y, linewidth=line_width, color=color)
 
     def _get_figure_title(self) -> str:
-        return "Time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
+        timing = ""
+        if self._experiment.images.has_timings():
+            timing = f", t={self._experiment.images.timings().get_time_h_since_start(self._time_point):.1f}h"
+        return f"Time point {self._time_point.time_point_number()}    (z={self._z}, " \
+               f"c={self._display_settings.image_channel.index_one}{timing})"
 
     def _draw_extra(self):
         pass  # Subclasses can override this

@@ -6,11 +6,11 @@ import matplotlib.cm
 import matplotlib.colors
 from matplotlib.backend_bases import MouseEvent
 
-from organoid_tracker.core import Color
+from organoid_tracker.core import Color, UserError
 from organoid_tracker.core.links import LinkingTrack
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
-from organoid_tracker.core.resolution import ImageResolution
+from organoid_tracker.core.resolution import ImageResolution, ImageTimings
 from organoid_tracker.gui import dialog, option_choose_dialog
 from organoid_tracker.gui.location_map import LocationMap
 from organoid_tracker.gui.window import Window
@@ -50,8 +50,6 @@ class LineageTreeVisualizer(Visualizer):
     _display_cell_type_colors: bool = True
     _display_axis_colors: bool = False
     _display_track_id: bool = False
-    _display_resolution: ImageResolution = ImageResolution(1, 1, 1, 60)
-    _display_y_label: str = "Time (time points)"
 
     def __init__(self, window: Window):
         super().__init__(window)
@@ -244,9 +242,13 @@ class LineageTreeVisualizer(Visualizer):
         self._clear_axis()
 
         experiment = self._experiment
+        try:
+            display_timings = experiment.images.timings()
+        except UserError:
+            display_timings = None
         position_data = experiment.position_data
         links = experiment.links
-        if links.get_highest_track_id() > 2000:
+        if links.get_highest_track_id() > 4000:
             raise ValueError(f"Lineage tree is too complex to display ({links.get_highest_track_id()} ids)")
 
         links.sort_tracks_by_x()
@@ -287,19 +289,18 @@ class LineageTreeVisualizer(Visualizer):
 
         self._location_map = LocationMap()
         width = LineageDrawing(links).draw_lineages_colored(self._ax, color_getter=color_getter,
-                                                            resolution=self._display_resolution,
+                                                            timings=display_timings,
                                                             location_map=self._location_map,
                                                             lineage_filter=self._lineage_filter,
                                                             label_getter=self._get_track_label,
                                                             line_width=self._get_lineage_line_width())
 
-        self._ax.set_ylabel(self._display_y_label)
         self._ax.set_xticks([])
         if self._ax.get_xlim() == (0, 1):
             # Only change axis if the default values were used
             # noinspection PyTypeChecker
-            self._ax.set_ylim([experiment.last_time_point_number() * self._display_resolution.time_point_interval_h,
-                               experiment.first_time_point_number() * self._display_resolution.time_point_interval_h - 1])
+            self._ax.set_ylim([display_timings.get_time_h_since_start(experiment.last_time_point_number()),
+                               display_timings.get_time_h_since_start(experiment.first_time_point_number()) - 1])
             # noinspection PyTypeChecker
             self._ax.set_xlim([-0.1, width + 0.1])
 

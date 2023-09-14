@@ -4,6 +4,8 @@ import warnings
 from pathlib import Path
 from typing import List, Dict, Any, Iterable, Optional
 
+import numpy
+
 from organoid_tracker.core import TimePoint, UserError, Color
 from organoid_tracker.core.beacon_collection import BeaconCollection
 from organoid_tracker.core.connections import Connections
@@ -17,7 +19,7 @@ from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position_data import PositionData
-from organoid_tracker.core.resolution import ImageResolution
+from organoid_tracker.core.resolution import ImageResolution, ImageTimings
 from organoid_tracker.core.spline import SplineCollection, Spline
 from organoid_tracker.core.warning_limits import WarningLimits
 from organoid_tracker.image_loading.builtin_image_filters import ThresholdFilter, GaussianBlurFilter, \
@@ -79,6 +81,13 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
         return experiment
     else:
         raise ValueError(f"Cannot load data from file \"{file_name}\": it is of an unknown format")
+
+
+def _parse_timings(data: Dict[str, Any], min_time_point: int, max_time_point: int):
+    min_time_point_number = data["min_time_point"]
+    timings = data["timings_m"]
+    return ImageTimings(min_time_point_number, numpy.array(timings, dtype=numpy.float64))\
+        .limit_to_time(min_time_point, max_time_point)
 
 
 def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point: int, max_time_point: int):
@@ -146,6 +155,9 @@ def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point:
 
     if "image_filters" in data:
         experiment.images.filters = _parse_image_filters(data["image_filters"])
+
+    if "image_timings" in data:
+        experiment.images.set_timings(_parse_timings(data["image_timings"], min_time_point, max_time_point))
 
     if "color" in data:
         color = data["color"]
@@ -556,6 +568,11 @@ def save_data_to_json(experiment: Experiment, json_file_name: str):
     # Save image filters
     if experiment.images.filters.has_filters():
         save_data["image_filters"] = _encode_image_filters_to_json(experiment.images.filters)
+
+    # Save image timing
+    if experiment.images.has_timings() and not experiment.images.timings().is_simple_multiplication():
+        save_data["image_timings"] = {"min_time_point": experiment.images.timings().min_time_point_number(),
+                                      "timings_m": list(experiment.images.timings().get_cumulative_timings_array_m())}
 
     # Save color
     save_data["color"] = list(experiment.color.to_rgb_floats())
