@@ -137,19 +137,35 @@ class _MovePositionAction(UndoableAction):
     old_position: Position
     new_position: Position
 
-    def __init__(self, old_position: Position, new_position: Position):
+    # Probabilities of the link to X. Removed upon move, restored upon undo
+    old_link_probabilities: Dict[Position, float]
+
+    def __init__(self, experiment: Experiment, old_position: Position, new_position: Position):
         if old_position.time_point_number() != new_position.time_point_number():
             raise ValueError(f"{old_position} and {new_position} are in different time points")
         self.old_position = old_position
         self.new_position = new_position
 
+        # Collect old link probabilities (for the undo functionality)
+        self.old_link_probabilities = dict()
+        for link in experiment.links.find_links_of(self.old_position):
+            self.old_link_probabilities[link] = experiment.link_data.get_link_data(self.old_position, link, "link_probability")
+
     def do(self, experiment: Experiment):
         experiment.move_position(self.old_position, self.new_position)
+
+        # Remove link probability, as it's no longer correct
+        for link in experiment.links.find_links_of(self.new_position):
+            experiment.link_data.set_link_data(self.new_position, link, "link_probability", None)
+
+        # Recheck errors
         cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.new_position)
         return f"Moved {self.old_position} to {self.new_position}"
 
     def undo(self, experiment: Experiment):
         experiment.move_position(self.new_position, self.old_position)
+        for link in experiment.links.find_links_of(self.old_position):
+            experiment.link_data.set_link_data(self.old_position, link, "link_probability", self.old_link_probabilities.get(link))
         cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.old_position)
         return f"Moved {self.new_position} back to {self.old_position}"
 
@@ -433,7 +449,7 @@ class LinkAndPositionEditor(AbstractEditor):
                 new_position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
                 old_position = self._selected1
                 self._selected1 = None
-                self._perform_action(_MovePositionAction(old_position, new_position))
+                self._perform_action(_MovePositionAction(self._experiment, old_position, new_position))
         else:
             super()._on_key_press(event)
 
