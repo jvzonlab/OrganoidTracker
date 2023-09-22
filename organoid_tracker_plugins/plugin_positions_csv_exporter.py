@@ -59,7 +59,9 @@ def _get_data_names(window: Window) -> List[str]:
             if data_type in {float, bool, int, str}:
                 answers.add(data_name)
 
-    return list(answers)
+    answers = list(answers)
+    answers.sort()
+    return answers
 
 
 def _export_positions_px_as_csv(window: Window):
