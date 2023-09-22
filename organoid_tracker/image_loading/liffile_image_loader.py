@@ -139,6 +139,8 @@ class _LifImageLoader(ImageLoader):
             return None
 
         array = self._serie.getFrame(channel=image_channel.index_zero, T=time_point.time_point_number())
+        if len(array.shape) == 2:  # Convert to 3D
+            array = array[numpy.newaxis, :, :]
         if array.dtype != numpy.uint8:  # Saves memory
             array = bits.image_to_8bit(array)
         if self._inverted_z:

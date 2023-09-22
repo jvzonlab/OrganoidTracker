@@ -732,7 +732,7 @@ class _ImsImageLoader(ImageLoader):
     def __init__(self, file_name: str, min_time_point: Optional[int], max_time_point: Optional[int]):
         self._reader = _ImsReader(file_name)
         self._min_time_point = 0 if min_time_point is None else min_time_point
-        self._max_time_point = self._reader.TimePoints if max_time_point is None else max_time_point
+        self._max_time_point = self._reader.TimePoints - 1 if max_time_point is None else max_time_point
 
     def get_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
         time_point_number = time_point.time_point_number()
@@ -740,7 +740,7 @@ class _ImsImageLoader(ImageLoader):
             return None
         if image_channel.index_zero < 0 or image_channel.index_zero >= self._reader.Channels:
             return None
-        array = self._reader[time_point_number - 1, image_channel.index_zero]
+        array = self._reader[time_point_number, image_channel.index_zero]
         if not numpy.any(array):
             return None  # Got an all-zero array, ignore
         return array
@@ -753,7 +753,7 @@ class _ImsImageLoader(ImageLoader):
             return None
         if image_z < 0 or image_z >= self._reader.shape[2]:
             return None
-        array = self._reader[time_point_number - 1, image_channel.index_zero, image_z]
+        array = self._reader[time_point_number, image_channel.index_zero, image_z]
         if not numpy.any(array):
             return None  # Got an all-zero array, ignore
         return array
@@ -762,10 +762,10 @@ class _ImsImageLoader(ImageLoader):
         return self._reader.shape[-3], self._reader.shape[-2], self._reader.shape[-1]
 
     def first_time_point_number(self) -> int:
-        return max(self._min_time_point, 1)
+        return max(self._min_time_point, 0)
 
     def last_time_point_number(self) -> int:
-        return min(self._max_time_point, self._reader.TimePoints)
+        return min(self._max_time_point, self._reader.TimePoints - 1)
 
     def get_channel_count(self) -> int:
         return self._reader.Channels
@@ -793,7 +793,7 @@ class _ImsImageLoader(ImageLoader):
     def get_timings(self) -> Optional[ImageTimings]:
         if "DataSetTimes" in self._reader.hf:
             timespans_s = [float(moment[2] / 1_000_000_000) for moment in self._reader.hf["DataSetTimes"]["Time"]]
-            timespans_s = [0.0] + timespans_s
             timespans_s = numpy.array(timespans_s, dtype=numpy.float64)
-            return ImageTimings(1, timespans_s / 60)
+            timespans_s -= timespans_s[0]
+            return ImageTimings(0, timespans_s / 60)
         return None

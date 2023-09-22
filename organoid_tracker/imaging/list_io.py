@@ -67,3 +67,13 @@ def _contains_images(experiment_json: Dict[str, Any]) -> bool:
         if key.startswith("images_"):
             return True
     return False
+
+
+def count_experiments_in_list_file(open_files_list_file: str) -> int:
+    """Counts the number of experiments in the given file. Used as a quick way to get that number, instead of loading
+    everything."""
+    with open(open_files_list_file, "r", encoding="utf-8") as handle:
+        experiments_json = json.load(handle)
+        if not isinstance(experiments_json, list):
+            raise TypeError("Expected a list in " + open_files_list_file + ", got " + repr(experiments_json))
+        return len(experiments_json)

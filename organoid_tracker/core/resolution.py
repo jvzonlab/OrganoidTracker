@@ -44,12 +44,15 @@ class ImageResolution:
         return f"ImageResolution({self.pixel_size_x_um}, {self.pixel_size_y_um}, {self.pixel_size_z_um}," \
                f" {self.time_point_interval_m})"
 
-    def is_incomplete(self, *, require_time_resolution: bool = True) -> bool:
+    def is_incomplete(self, *, require_time_resolution: bool = True, require_z: bool = True) -> bool:
         """Returns True if the x, y, z and/or t resolution is zero. Otherwise it returns False."""
         if require_time_resolution:
             if self.time_point_interval_m == 0 or self.time_point_interval_m == float("inf"):
                 return True
-        return 0 in self.pixel_size_zyx_um
+        if require_z:
+            if self.pixel_size_z_um == 0:
+                return True
+        return self.pixel_size_x_um == 0 or self.pixel_size_y_um == 0
 
 
 # See typehint at beginning of ImageResolution class

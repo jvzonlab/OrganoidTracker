@@ -285,7 +285,12 @@ class Images:
         the data has multiple time points, but no time resolution has been set.
         """
         require_time_resolution = self.first_time_point_number() != self.last_time_point_number()
-        if not allow_incomplete and self._resolution.is_incomplete(require_time_resolution=require_time_resolution):
+        require_z = False
+        image_size = self._image_loader.get_image_size_zyx()
+        if image_size is not None and image_size[0] > 1:
+            require_z = True  # We have 3D images, require a Z resolution
+        if not allow_incomplete and self._resolution.is_incomplete(require_time_resolution=require_time_resolution,
+                                                                   require_z=require_z):
             raise UserError("No image resolution set", "No image resolution was set. Please set a resolution first."
                                                        " This can be done in the Edit menu of the program.")
         return self._resolution
@@ -328,7 +333,9 @@ class Images:
         self._timings = timings
 
         # Also keep time resolution in sync
-        self._resolution.time_point_interval_m = timings.get_time_m_since_previous(TimePoint(1))
+        self._resolution = ImageResolution(self._resolution.pixel_size_x_um, self._resolution.pixel_size_y_um,
+                                           self._resolution.pixel_size_z_um,
+                                           timings.get_time_m_since_previous(TimePoint(1)))
 
     def is_inside_image(self, position: Position, *, margin_xy: int = 0, margin_z: int = 0) -> Optional[bool]:
         """Checks if the given position is inside the images. If there are no images loaded, this returns None. Any
