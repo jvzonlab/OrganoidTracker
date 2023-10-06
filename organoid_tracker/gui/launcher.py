@@ -61,6 +61,7 @@ class _MyQMainWindow(QMainWindow):
         self.title = QLabel(parent=main_frame)
         self.title.setStyleSheet("font-size: 16pt; font-weight: bold")
         self.title.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
+        self.title.setWordWrap(True)
         vertical_boxes.addWidget(self.title)
 
         # Add Matplotlib figure to frame
@@ -77,6 +78,7 @@ class _MyQMainWindow(QMainWindow):
         # Add status bar
         self.status_box = QLabel(parent=main_frame)
         self.status_box.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
+        self.status_box.setWordWrap(True)
         vertical_boxes.addWidget(self.status_box)
 
         # Add command box
