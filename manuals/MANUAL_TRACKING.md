@@ -17,6 +17,13 @@ To insert links between two positions, select two positions at two consecutive t
 
 A nice shortcut exists where if you have selected one single cell, then place your mouse cursor at the next or previous time point, and then press insert. The program will then both insert a position at your mouse cursor and create a link from the selected cell position to the newly added cell positions. This can be used to quickly track cells.
 
+### Working with many (cell) positions
+Use Control + A to select all positions of the current time point.
+
+Use Alt + A/D to move the positions to the left or right, use Alt + S/W to move the positions up or down in the Y-direction and use Alt + Q/E to move the positions up or down in the Z-direction.
+
+Use Alt + Delete to remove all selected positions.
+
 ### Coloring lineages
 For visualization purposes, you can give every lineage a color. By default, every lineage is black. You can change this either in the editor (`Edit` -> `Set color of lineage...`) or in the `Cells colored by lineage` viewer (accessed from the main screen, not the editor). The benefit of changing the color in the `Cells colored by lineage` viewer is that you directly see the colors, as this viewer displays every cell in the right color. The given colors are also used in the lineage trees (`Graph` menu in the main screen) and in the 3D visualizations with Paraview (see [tracking formats](./TRACKING_FORMATS.md)).
 
