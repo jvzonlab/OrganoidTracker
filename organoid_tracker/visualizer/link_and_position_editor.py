@@ -418,7 +418,7 @@ class LinkAndPositionEditor(AbstractEditor):
             data_names = data_names[0:10]
             data_names.append("...")
         if len(data_names) > 0:
-            return_value += " (with " + ",".join(data_names) + ")"
+            return_value += " (with " + ", ".join(data_names) + ")"
         return return_value
 
     def get_extra_menu_options(self):
