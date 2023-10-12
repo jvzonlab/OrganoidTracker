@@ -192,6 +192,12 @@ not be possible if the class were mutable, as then any changes would be expected
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.resolution.ImageTimings.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.core.resolution.ImageTimings" title="organoid_tracker.core.resolution.ImageTimings"><span class="pre">ImageTimings</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.resolution.ImageTimings.copy" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a copy of the current object. Changes to the copy won’t write through to this object.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.core.resolution.ImageTimings.get_cumulative_timings_array_m">
 <span class="sig-name descname"><span class="pre">get_cumulative_timings_array_m</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.resolution.ImageTimings.get_cumulative_timings_array_m" title="Permalink to this definition"></a></dt>
 <dd><p>Gets a copy of the cumulative timings array. Pay attention to the fact that position 0 in the array
@@ -239,6 +245,13 @@ corresponds to self.min_time_point_number(), and not necessarily to 0.</p>
 <dt class="sig sig-object py" id="organoid_tracker.core.resolution.ImageTimings.min_time_point_number">
 <span class="sig-name descname"><span class="pre">min_time_point_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.resolution.ImageTimings.min_time_point_number" title="Permalink to this definition"></a></dt>
 <dd><p>Gets the lowest time point number for which we have the timings. The time will always be zero at this point.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.resolution.ImageTimings.move_in_time">
+<span class="sig-name descname"><span class="pre">move_in_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point_delta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.resolution.ImageTimings.move_in_time" title="Permalink to this definition"></a></dt>
+<dd><p>Moves the timings the given amount of time points in time. So if delta is 2, then the reported timings of
+time point 2 will now be what the reported timings of time point 0 were.</p>
 </dd></dl>
 
 </dd></dl>

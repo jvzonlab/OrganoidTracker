@@ -252,8 +252,16 @@ essentially an alternative for <cite>TimePoint(time_point_number)</cite>, but wi
 <dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.merge">
 <span class="sig-name descname"><span class="pre">merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.merge" title="Permalink to this definition"></a></dt>
-<dd><p>Merges the position, linking and connections data of two experiments. Images, resolution and scores are not
-yet merged.</p>
+<dd><p>Merges the position, linking, connections and global data of the other experiment into this one. Images and
+their resolution/timings are not merged, so do that yourself in an appropriate way.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.experiment.Experiment.move_in_time">
+<span class="sig-name descname"><span class="pre">move_in_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point_delta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.experiment.Experiment.move_in_time" title="Permalink to this definition"></a></dt>
+<dd><p>Moves all data with the given time offset.</p>
+<p>The only thing that is not moved are the images themselves. So images.get_image_stack(TimePoint(2)) will still
+report the same image array as before. However, the timings and offsets of the images are moved.</p>
 </dd></dl>
 
 <dl class="py method">

@@ -172,8 +172,8 @@
 <dt class="sig sig-object py" id="organoid_tracker.position_analysis.intensity_calculator.get_intensity_keys">
 <span class="sig-prename descclassname"><span class="pre">organoid_tracker.position_analysis.intensity_calculator.</span></span><span class="sig-name descname"><span class="pre">get_intensity_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.position_analysis.intensity_calculator.get_intensity_keys" title="Permalink to this definition"></a></dt>
 <dd><p>Gets the keys of all stored intensities.</p>
-<p>In the past, this list did not exist. For backwards compatibility, we check whether there are any
-intensities saved under the default key “intensity”, and if yes, we automatically add that to this list.</p>
+<p>Any key (for example “intensity”) that is numeric and also has a “_volume” counterpart (like “intensity_volume”) is
+seen as being an intensity.</p>
 </dd></dl>
 
 <dl class="py function">
