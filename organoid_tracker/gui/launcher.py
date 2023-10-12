@@ -5,7 +5,7 @@ from typing import Dict, Any
 
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon, QKeyEvent, QPalette, QCloseEvent
-from PySide2.QtWidgets import QMainWindow, QSizePolicy
+from PySide2.QtWidgets import QMainWindow, QSizePolicy, QScrollArea, QFrame
 from PySide2.QtWidgets import QWidget, QApplication, QVBoxLayout, QLabel, QLineEdit
 from matplotlib import pyplot
 from matplotlib.backend_bases import KeyEvent
@@ -61,8 +61,13 @@ class _MyQMainWindow(QMainWindow):
         self.title = QLabel(parent=main_frame)
         self.title.setStyleSheet("font-size: 16pt; font-weight: bold")
         self.title.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
-        self.title.setWordWrap(True)
-        vertical_boxes.addWidget(self.title)
+        title_frame = QScrollArea()
+        title_frame.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        title_frame.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        title_frame.setWidgetResizable(True)
+        title_frame.setFrameShape(QFrame.NoFrame)
+        title_frame.setWidget(self.title)
+        vertical_boxes.addWidget(title_frame)
 
         # Add Matplotlib figure to frame
         self.mpl_canvas = FigureCanvasQTAgg(figure)  # A tk.DrawingArea.
@@ -78,8 +83,14 @@ class _MyQMainWindow(QMainWindow):
         # Add status bar
         self.status_box = QLabel(parent=main_frame)
         self.status_box.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
-        self.status_box.setWordWrap(True)
-        vertical_boxes.addWidget(self.status_box)
+        status_frame = QScrollArea()
+        status_frame.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        status_frame.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        status_frame.setWidgetResizable(True)
+        status_frame.setFrameShape(QFrame.NoFrame)
+        status_frame.setMinimumHeight(100)
+        status_frame.setWidget(self.status_box)
+        vertical_boxes.addWidget(status_frame)
 
         # Add command box
         self.command_box = _CommandBox(parent=main_frame)
