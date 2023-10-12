@@ -1,5 +1,5 @@
 import csv
-from typing import Dict, Any, Union
+from typing import Dict, Any, Union, Optional
 
 from organoid_tracker.core import UserError
 from organoid_tracker.core.position import Position
@@ -60,6 +60,8 @@ def _import_metadata(window: Window):
         return
 
     skipped_positions_count = _import_csv(window, new_positions=False)
+    if skipped_positions_count is None:
+        return  # Cancelled
     if skipped_positions_count > 0:
         dialog.popup_message("Imported metadata",
                              f"Imported all metadata. {skipped_positions_count} positions did not exist,"
@@ -69,12 +71,12 @@ def _import_metadata(window: Window):
                              f"Imported all metadata. If you double-click a position, the metadata should now show up.")
 
 
-def _import_csv(window: Window, *, new_positions: bool = True):
+def _import_csv(window: Window, *, new_positions: bool = True) -> Optional[int]:
     experiment = window.get_experiment()
 
     csv_file = dialog.prompt_load_file("CSV file", [("CSV file", "*.csv")])
     if csv_file is None:
-        return
+        return None
 
     with open(csv_file) as handle:
         reader = csv.reader(handle)
