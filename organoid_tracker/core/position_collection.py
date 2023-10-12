@@ -84,6 +84,14 @@ class _PositionsAtTimePoint:
             return len(self._positions[z])
         return 0
 
+    def _move_in_time(self, time_point_offset: int):
+        """Must only be called from PositionCollection, otherwise the indexing is wrong."""
+        for z in list(self._positions.keys()):
+            old_position_set = self._positions[z]
+            new_position_set = {position.with_time_point_number(position.time_point_number() + time_point_offset)
+                                for position in old_position_set}
+            self._positions[z] = new_position_set
+
 
 class PositionCollection:
 
@@ -281,3 +289,11 @@ class PositionCollection:
             else:
                 # All time points, all z
                 return len(self)
+
+    def move_in_time(self, time_point_delta: int):
+        """Moves all data with the given time point delta."""
+        new_positions_dict = dict()
+        for time_point_number, values_old in self._all_positions.items():
+            values_old._move_in_time(time_point_delta)
+            new_positions_dict[time_point_number + time_point_delta] = values_old
+        self._all_positions = new_positions_dict

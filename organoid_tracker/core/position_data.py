@@ -136,3 +136,12 @@ class PositionData:
                 return_dict[key] = object  # Don't know the type
 
         return return_dict
+
+    def move_in_time(self, time_point_delta: int):
+        """Moves all data with the given time point delta."""
+        for data_key in list(self._position_data.keys()):
+            values_new = dict()
+            values_old = self._position_data[data_key]
+            for position, value in values_old.items():
+                values_new[position.with_time_point_number(position.time_point_number() + time_point_delta)] = value
+            self._position_data[data_key] = values_new

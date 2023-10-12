@@ -161,3 +161,12 @@ class ImageTimings:
         Normally, you don't need this method, it's mostly for serialization purposes."""
         return self._timings_m.copy()
 
+    def copy(self) -> "ImageTimings":
+        """Returns a copy of the current object. Changes to the copy won't write through to this object."""
+        return ImageTimings(self._min_time_point_number, self._timings_m.copy())
+
+    def move_in_time(self, time_point_delta: int):
+        """Moves the timings the given amount of time points in time. So if delta is 2, then the reported timings of
+        time point 2 will now be what the reported timings of time point 0 were."""
+        self._min_time_point_number += time_point_delta
+

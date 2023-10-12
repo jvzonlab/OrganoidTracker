@@ -524,3 +524,15 @@ class SplineCollection:
         """Gets all registered axis markers as (id, name)."""
         for axis_id, marker_name in self._spline_markers.items():
             yield axis_id, marker_name
+
+    def move_in_time(self, time_point_delta: int):
+        """Moves all splines the specified amount of time points in time."""
+        if self._reference_time_point is not None:
+            self._reference_time_point += time_point_delta
+
+        new_splines = dict()
+        for time_point, splines_of_time_point in self._splines.items():
+            new_splines[time_point + time_point_delta] = splines_of_time_point
+            # the Spline object doesn't store time points, so we can just move them to another time point
+        self._splines = new_splines
+        self._recalculate_min_max_time_point()

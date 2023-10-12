@@ -119,32 +119,6 @@ class Experiment:
             time_point = position_new.time_point()
             self.splines.update_for_changed_positions(time_point, self._positions.of_time_point(time_point))
 
-    def _scale_to_resolution(self, new_resolution: ImageResolution):
-        """Scales this experiment so that it has a different resolution."""
-        try:
-            old_resolution = self._images.resolution()
-        except UserError:
-            return  # No resolution was set, do nothing
-        else:
-            x_factor = new_resolution.pixel_size_x_um / old_resolution.pixel_size_x_um
-            z_factor = new_resolution.pixel_size_z_um / old_resolution.pixel_size_z_um
-            t_factor = 1 if (new_resolution.time_point_interval_m == 0 or old_resolution.time_point_interval_m == 0) \
-                else new_resolution.time_point_interval_m / old_resolution.time_point_interval_m
-            if t_factor < 0.9 or t_factor > 1.1:
-                # We cannot scale in time, unfortunately. Links must go from one time point to the next time point.
-                # So we throw an error if the scale changes too much
-                raise ValueError(f"Cannot change time scale; existing scale {old_resolution.time_point_interval_m},"
-                                 f" new scale {new_resolution.time_point_interval_m}")
-            if abs(x_factor - 1) < 0.0001 and abs(z_factor - 1) < 0.0001:
-                return  # Nothing to scale
-            scale_factor = Position(x_factor, x_factor, z_factor)
-            print(f"Scaling to {scale_factor}")
-            for time_point in self.time_points():
-                positions = list(self.positions.of_time_point(time_point))
-                for position in positions:
-                    self.move_position(position, position * scale_factor)
-        self.images.set_resolution(new_resolution)
-
     def get_time_point(self, time_point_number: int) -> TimePoint:
         """Gets the time point with the given number. Throws ValueError if no such time point exists. This method is
         essentially an alternative for `TimePoint(time_point_number)`, but with added bound checks."""
@@ -341,17 +315,8 @@ class Experiment:
         self._global_data = global_data
 
     def merge(self, other: "Experiment"):
-        """Merges the position, linking and connections data of two experiments. Images, resolution and scores are not
-        yet merged."""
-
-        # Scale the other experiment first
-        try:
-            resolution = self.images.resolution()
-        except UserError:
-            pass
-        else:
-            other._scale_to_resolution(resolution)
-
+        """Merges the position, linking, connections and global data of the other experiment into this one. Images and
+        their resolution/timings are not merged, so do that yourself in an appropriate way."""
         self.positions.add_positions(other.positions)
         self.beacons.add_beacons(other.beacons)
         self.links.add_links(other.links)
@@ -359,6 +324,21 @@ class Experiment:
         self.link_data.merge_data(other.link_data)
         self.connections.add_connections(other.connections)
         self.global_data.merge_data(other.global_data)
+
+    def move_in_time(self, time_point_delta: int):
+        """Moves all data with the given time offset.
+
+        The only thing that is not moved are the images themselves. So images.get_image_stack(TimePoint(2)) will still
+        report the same image array as before. However, the timings and offsets of the images are moved.
+        """
+        self.positions.move_in_time(time_point_delta)
+        self.beacons.move_in_time(time_point_delta)
+        self.links.move_in_time(time_point_delta)
+        self.position_data.move_in_time(time_point_delta)
+        self.link_data.move_in_time(time_point_delta)
+        self.connections.move_in_time(time_point_delta)
+        self.images.move_in_time(time_point_delta)
+        self.splines.move_in_time(time_point_delta)
 
     def copy_selected(self, *, images: bool = False, positions: bool = False, position_data: bool = False,
                       links: bool = False, link_data: bool = False, global_data: bool = False,

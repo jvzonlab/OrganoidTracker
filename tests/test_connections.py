@@ -55,3 +55,14 @@ class TestConnections(unittest.TestCase):
         connections_1.remove_connection(pos1, pos2)
         self.assertFalse(connections_1.contains_connection(pos1, pos2))
         self.assertTrue(connections_2.contains_connection(pos1, pos2))
+
+    def test_move_in_time(self):
+        connections = Connections()
+        connections.add_connection(Position(2, 3, 4, time_point_number=3), Position(1, 3, 4, time_point_number=3))
+
+        connections.move_in_time(10)
+
+        self.assertFalse(connections.contains_connection(
+            Position(2, 3, 4, time_point_number=3), Position(1, 3, 4, time_point_number=3)))
+        self.assertTrue(connections.contains_connection(
+            Position(2, 3, 4, time_point_number=13), Position(1, 3, 4, time_point_number=13)))

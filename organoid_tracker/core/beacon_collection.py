@@ -175,3 +175,10 @@ class BeaconCollection:
         if len(beacons) == 1:
             return beacons[0]
         return None
+
+    def move_in_time(self, time_point_delta: int):
+        """Moves all data with the given time point delta."""
+        new_beacons_dict = dict()
+        for time_point, values in self._beacons.items():
+            new_beacons_dict[time_point + time_point_delta] = values
+        self._beacons = new_beacons_dict

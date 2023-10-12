@@ -793,3 +793,14 @@ class Links:
 
             yield track.find_position_at_time_point_number(time_point_number)
             time_point_number += 1
+
+    def move_in_time(self, time_point_delta: int):
+        """Moves all data with the given time point delta."""
+        # We need to update self._tracks and rebuild self._position_to_track
+        self._position_to_track.clear()
+        for track in self._tracks:
+            track._min_time_point_number += time_point_delta
+            for i, position in enumerate(track._positions_by_time_point):
+                moved_position = position.with_time_point_number(position.time_point_number() + time_point_delta)
+                track._positions_by_time_point[i] = moved_position
+                self._position_to_track[moved_position] = track

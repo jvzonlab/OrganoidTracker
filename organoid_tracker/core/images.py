@@ -145,6 +145,14 @@ class ImageOffsets:
         copy._offset = self._offset.copy()  # Positions are immutable, so no need for a deep copy here
         return copy
 
+    def move_in_time(self, time_point_delta: int):
+        """Moves all offsets the given amounts of time points."""
+        new_offsets = dict()
+        for old_time_point_number, old_offset in self._offset.items():
+            new_offsets[old_time_point_number + time_point_delta] =\
+                old_offset.with_time_point_number(old_time_point_number + time_point_delta)
+        self._offset = new_offsets
+
 
 class Image:
     """Represents a single 3D image"""
@@ -408,6 +416,8 @@ class Images:
         copy._image_loader = self._image_loader.copy()
         copy._resolution = self._resolution  # No copy, as this object is immutable
         copy._offsets = self._offsets.copy()
+        if self._timings is not None:
+            copy._timings = self._timings.copy()
         copy.filters = self.filters.copy()
         return copy
 
@@ -437,3 +447,9 @@ class Images:
         images."""
         self._image_loader.close()
         self._image_loader = NullImageLoader()
+
+    def move_in_time(self, time_point_delta: int):
+        """Moves all timings and offset data in time. The images themselves cannot be moved in time."""
+        if self._timings is not None:
+            self._timings.move_in_time(time_point_delta)
+        self._offsets.move_in_time(time_point_delta)

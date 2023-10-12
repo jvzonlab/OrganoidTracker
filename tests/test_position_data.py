@@ -21,3 +21,11 @@ class TestPositionData(unittest.TestCase):
         self.assertTrue(position_data.has_position_data_with_name("test_data"))
         position_data.set_position_data(position, "test_data", None)
         self.assertFalse(position_data.has_position_data_with_name("test_data"))
+
+    def test_time_offset(self):
+        position_data = PositionData()
+        position_data.set_position_data(Position(3, 5, 6, time_point_number=5), "test_data", True)
+
+        position_data.move_in_time(3)  # Move by 3, check if data can now be found in the right slot
+        self.assertIsNone(position_data.get_position_data(Position(3, 5, 6, time_point_number=5), "test_data"))
+        self.assertTrue(position_data.get_position_data(Position(3, 5, 6, time_point_number=8), "test_data"))

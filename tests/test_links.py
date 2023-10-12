@@ -23,3 +23,13 @@ class TestLinks(unittest.TestCase):
 
         self.assertEqual({past_position}, links.find_pasts(position))
         self.assertEqual(set(), links.find_pasts(past_position))
+
+    def test_move_in_time(self):
+        links = Links()
+        links.add_link(Position(0, 1, 2, time_point_number=0), Position(3, 4, 5, time_point_number=1))
+
+        links.move_in_time(10)
+        self.assertFalse(links.contains_link(
+            Position(0, 1, 2, time_point_number=0), Position(3, 4, 5, time_point_number=1)))
+        self.assertTrue(links.contains_link(
+            Position(0, 1, 2, time_point_number=10), Position(3, 4, 5, time_point_number=11)))

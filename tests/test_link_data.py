@@ -118,3 +118,14 @@ class TestLinkData(TestCase):
         self.assertEqual("test1 value", found_link_data["test1"])
         self.assertEqual("test2 value", found_link_data["test2"])
         self.assertEqual(2, len(found_link_data))
+
+    def test_move_in_time(self):
+        link_data = LinkData()
+        link_data.set_link_data(Position(0, 1, 2, time_point_number=0), Position(3, 4, 5, time_point_number=1),
+                                "test1", "test1 value")
+
+        link_data.move_in_time(10)
+        self.assertIsNone(link_data.get_link_data(
+            Position(0, 1, 2, time_point_number=0), Position(3, 4, 5, time_point_number=1), "test1"))
+        self.assertEqual("test1 value", link_data.get_link_data(
+            Position(0, 1, 2, time_point_number=10), Position(3, 4, 5, time_point_number=11), "test1"))

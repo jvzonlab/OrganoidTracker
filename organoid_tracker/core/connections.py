@@ -110,7 +110,6 @@ class _ConnectionsByTimePoint:
         True if we think they have full neighbors annotated for that position. This is the case
         if the neighbor graph is cyclic, or if the neighbor graph contains cycles.
         """
-        import networkx
         if not self._graph.has_node(position):
             return False
         neighbors = self._graph.subgraph(self._graph.neighbors(position))
@@ -127,6 +126,15 @@ class _ConnectionsByTimePoint:
         changes will not affect the connections in the experiment. This has been done so that we can still switch to
         another data storage method in the future."""
         return self._graph.copy()
+
+    def _move_in_time(self, time_point_delta: int):
+        """Must only be called from the Connections class, otherwise the time index is out of sync."""
+        new_graph = networkx.Graph()
+        for position_a, position_b in self._graph.edges:
+            new_graph.add_edge(position_a.with_time_point_number(position_a.time_point_number() + time_point_delta),
+                               position_b.with_time_point_number(position_b.time_point_number() + time_point_delta))
+        self._graph.clear()  # Helps garbage collector
+        self._graph = new_graph
 
 
 class Connections:
@@ -329,3 +337,11 @@ class Connections:
         for time_point, connections in self._by_time_point.items():
             copy._by_time_point[time_point] = connections.copy()
         return copy
+
+    def move_in_time(self, time_point_delta: int):
+        """Moves all data with the given time point delta."""
+        new_connections_dict = dict()
+        for time_point_number, values in self._by_time_point.items():
+            values._move_in_time(time_point_delta)
+            new_connections_dict[time_point_number + time_point_delta] = values
+        self._by_time_point = new_connections_dict

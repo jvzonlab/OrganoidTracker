@@ -135,3 +135,13 @@ class LinkData:
     def find_all_data_names(self):
         """Finds all data_names"""
         return self._link_data.keys()
+
+    def move_in_time(self, time_point_delta: int):
+        """Moves all data with the given time point delta."""
+        for data_key in list(self._link_data.keys()):
+            values_new = dict()
+            values_old = self._link_data[data_key]
+            for (position_a, position_b), value in values_old.items():
+                values_new[(position_a.with_time_point_number(position_a.time_point_number() + time_point_delta),
+                            position_b.with_time_point_number(position_b.time_point_number() + time_point_delta))] = value
+            self._link_data[data_key] = values_new
