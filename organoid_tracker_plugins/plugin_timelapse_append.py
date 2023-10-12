@@ -100,23 +100,11 @@ class _AppendingImageLoader(ImageLoader):
 
         time_point_number = time_point.time_point_number()
 
-        # List of channels is different for different image loaders, so use the channel index instead
-        try:
-            channel_index = self.get_channels().index(image_channel)
-        except ValueError:
-            return None  # Channel not available
-
         image_loader_index = 0
         while True:
             if time_point_number <= self._internal[image_loader_index].last_time_point_number():
-                # Check channels
-                channels = self._internal[image_loader_index].get_channels()
-                if channel_index >= len(channels):
-                    return None  # Not that many channels available for this ImageLoader
-
                 return self._internal[image_loader_index].get_2d_image_array(
-                    TimePoint(time_point_number),
-                    channels[channel_index], image_z)
+                    TimePoint(time_point_number), image_channel, image_z)
 
             # Out of bounds for this time lapse, on to the next
             time_point_number -= self._internal[image_loader_index].last_time_point_number() + 1
@@ -148,15 +136,11 @@ class _AppendingImageLoader(ImageLoader):
             image_count += new_last - new_first + 1
         return image_count + self._internal[0].first_time_point_number() - 1
 
-    def get_channels(self) -> List[ImageChannel]:
-        # Return the longest list for selecting channels, in case multiple time lapses have different numbers of
-        # channels
-        longest_list = list()
+    def get_channel_count(self) -> int:
+        channels = 0
         for internal in self._internal:
-            channels = internal.get_channels()
-            if len(channels) > len(longest_list):
-                longest_list = channels
-        return longest_list
+            channels = max(channels, internal.get_channel_count())
+        return channels
 
     def serialize_to_config(self) -> Tuple[str, str]:
         if len(self._internal) == 0:
