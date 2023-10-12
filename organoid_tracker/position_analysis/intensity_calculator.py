@@ -160,8 +160,8 @@ def remove_intensities(experiment: Experiment, *, intensity_key: str = DEFAULT_I
 def get_intensity_keys(experiment: Experiment) -> List[str]:
     """Gets the keys of all stored intensities.
 
-    In the past, this list did not exist. For backwards compatibility, we check whether there are any
-    intensities saved under the default key "intensity", and if yes, we automatically add that to this list.
+    Any key (for example "intensity") that is numeric and also has a "_volume" counterpart (like "intensity_volume") is
+    seen as being an intensity.
     """
     return_list = list()
     names_and_types = experiment.position_data.get_data_names_and_types()
