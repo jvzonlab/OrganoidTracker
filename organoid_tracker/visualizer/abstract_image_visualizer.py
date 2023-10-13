@@ -137,6 +137,7 @@ class AbstractImageVisualizer(Visualizer):
         self._draw_data_axes()
         self._draw_beacons()
         self._draw_extra()
+        self._draw_legend()
         self._window.set_figure_title(self._get_figure_title())
 
         self._fig.canvas.draw()
@@ -148,6 +149,23 @@ class AbstractImageVisualizer(Visualizer):
                       offset.y + self._image_slice_2d.shape[0], offset.y)
             self._ax.imshow(self._image_slice_2d, cmap=self._color_map, extent=extent)
             self._ax.set_aspect("equal", adjustable="datalim")
+
+    def _draw_legend(self):
+        legend_y = 0.05
+        self._ax.scatter([0.90], [legend_y], s=8**2, facecolor=core.COLOR_CELL_PREVIOUS, transform=self._fig.transFigure,
+                         edgecolors="black", linewidths=1, marker="o")
+        self._ax.scatter([0.935], [legend_y], s=7**2, facecolor=core.COLOR_CELL_CURRENT, transform=self._fig.transFigure,
+                         edgecolors="black", linewidths=1, marker="s")
+        self._ax.scatter([0.97], [legend_y], s=6**2, facecolor=core.COLOR_CELL_NEXT, transform=self._fig.transFigure,
+                         edgecolors="black", linewidths=1, marker="o")
+        self._ax.plot([0.90, 0.935], [legend_y, legend_y], transform=self._fig.transFigure, color=core.COLOR_CELL_PREVIOUS,
+                      linewidth=1)
+        self._ax.plot([0.935, 0.97], [legend_y, legend_y], transform=self._fig.transFigure, color=core.COLOR_CELL_NEXT,
+                       linewidth=1)
+        self._ax.text(0.89, legend_y + 0.01, f"t={self._time_point.time_point_number() - 1}", horizontalalignment="left",
+                      color="white", transform=self._fig.transFigure)
+        self._ax.text(0.98, legend_y + 0.01, f"t={self._time_point.time_point_number() + 1}", horizontalalignment="right",
+                      color="white", transform=self._fig.transFigure)
 
     def _draw_selection(self, position: Position, color: MPLColor):
         """Draws a marker for the given position that indicates that the position is selected. Subclasses can call this
