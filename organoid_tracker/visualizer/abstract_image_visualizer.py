@@ -1,5 +1,6 @@
 from typing import Optional, Dict, Any
 
+import matplotlib.colors
 import numpy
 from matplotlib import cm
 from matplotlib.backend_bases import MouseEvent
@@ -154,10 +155,26 @@ class AbstractImageVisualizer(Visualizer):
 
         Note: this method will draw the selection marker even if the given position is in another time point, or even on
         a completely different z layer. So only call this method if you want to have a marker visible."""
-        dz = self._z - round(position.z)
         time_point_number = position.time_point_number()
         dt = 0 if time_point_number is None else self._time_point.time_point_number() - time_point_number
-        self._ax.plot(position.x, position.y, 'o', markersize=25, color=(0, 0, 0, 0), markeredgecolor=color, markeredgewidth=5)
+        marker_shape = 'o'
+        marker_size = 20
+        marker_alpha = 1
+        if dt < -1:
+            marker_size = 10
+            marker_alpha = 0.6
+        elif dt == -1:
+            marker_size = 15
+        elif dt == 0:
+            marker_shape = "s"
+        elif dt == 1:
+            marker_size = 25
+        elif dt > 1:
+            marker_size = 30
+            marker_alpha = 0.6
+        marker_color = matplotlib.colors.to_rgb(color) + (marker_alpha,)
+        self._ax.plot(position.x, position.y, marker_shape, markersize=marker_size, color=(0, 0, 0, 0),
+                      markeredgecolor=marker_color, markeredgewidth=5)
 
     def _draw_beacons(self):
         for beacon in self._experiment.beacons.of_time_point(self._time_point):
@@ -280,7 +297,7 @@ class AbstractImageVisualizer(Visualizer):
             positions_edge_colors.append(edge_color)
             positions_edge_widths.append(edge_width)
             dz_penalty = 0 if dz == 0 else abs(dz) + 1
-            positions_marker_sizes.append(max(1, 7 - dz_penalty - abs(dt) + edge_width) ** 2)
+            positions_marker_sizes.append(max(1, 7 - dz_penalty - dt + edge_width) ** 2)
 
         self._ax.scatter(crosses_x_list, crosses_y_list, marker='X', facecolor='black', edgecolors="white",
                          s=17**2, linewidths=2)
