@@ -1,7 +1,8 @@
+import csv
 import json
 import os
 from enum import Enum, auto
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Union, Iterable
 
 import numpy
 
@@ -25,11 +26,13 @@ from organoid_tracker.linking_analysis.cell_fate_finder import CellFateType
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
         "File//Export-Export positions//CSV, as px coordinates...":
-            lambda: _export_positions_px_as_csv(window),
+            lambda: _export_positions_um_as_csv(window, metadata=False, use_micrometer=False),
+        "File//Export-Export positions//CSV, as px coordinates with metadata...":
+            lambda: _export_positions_um_as_csv(window, metadata=True, use_micrometer=False),
         "File//Export-Export positions//CSV, as μm coordinates...":
-            lambda: _export_positions_um_as_csv(window, metadata=False),
+            lambda: _export_positions_um_as_csv(window, metadata=False, use_micrometer=True),
         "File//Export-Export positions//CSV, as μm coordinates with metadata...":
-            lambda: _export_positions_um_as_csv(window, metadata=True),
+            lambda: _export_positions_um_as_csv(window, metadata=True, use_micrometer=True),
     }
 
 
@@ -53,10 +56,10 @@ def _get_data_names(window: Window) -> List[str]:
     for built_in_name in _BuiltInDataNames:
         answers.add(built_in_name.name)
 
-    # Find metdata in position_data that we can store in CSV files
+    # Find metadata in position_data that we can store in CSV files
     for experiment in window.get_active_experiments():
         for data_name, data_type in experiment.position_data.get_data_names_and_types().items():
-            if data_type in {float, bool, int, str}:
+            if data_type in {float, bool, int, str, list}:
                 answers.add(data_name)
 
     answers = list(answers)
@@ -64,31 +67,7 @@ def _get_data_names(window: Window) -> List[str]:
     return answers
 
 
-def _export_positions_px_as_csv(window: Window):
-    experiment = window.get_experiment()
-    if not experiment.positions.has_positions():
-        raise UserError("No positions are found", "No annotated positions are found. Cannot export anything.")
-
-    folder = dialog.prompt_save_file("Select a directory", [("Folder", "*")])
-    if folder is None:
-        return
-    os.mkdir(folder)
-    positions = experiment.positions
-
-    file_prefix = experiment.name.get_save_name() + ".csv."
-    for time_point in positions.time_points():
-        offset = experiment.images.offsets.of_time_point(time_point)
-        file_name = os.path.join(folder, file_prefix + str(time_point.time_point_number()))
-        with open(file_name, "w") as file_handle:
-            file_handle.write("x,y,z\n")
-            for position in positions.of_time_point(time_point):
-                position_px = position - offset
-                file_handle.write(f"{position_px.x:.0f},{position_px.y:.0f},{position_px.z:.0f}\n")
-
-    dialog.popup_message("Positions", "Exported all positions as CSV files.")
-
-
-def _export_positions_um_as_csv(window: Window, *, metadata: bool):
+def _export_positions_um_as_csv(window: Window, *, metadata: bool, use_micrometer: bool):
     experiments = list(window.get_active_experiments())
     for experiment in experiments:
         if not experiment.positions.has_positions():
@@ -106,12 +85,13 @@ def _export_positions_um_as_csv(window: Window, *, metadata: bool):
             return
         data_names = [available_data_names[i] for i in answer]
         cell_types = list(window.registry.get_registered_markers(Position))
-        window.get_scheduler().add_task(_AsyncExporter(experiments, cell_types, data_names, folder))
+        window.get_scheduler().add_task(_AsyncExporter(experiments, cell_types, data_names, folder,
+                                                       use_micrometer=use_micrometer))
     else:
         for i, experiment in enumerate(experiments):
             positions_folder = folder if len(experiments) == 1 else os.path.join(folder, str(i + 1) + ". " + experiment.name.get_save_name())
             os.makedirs(positions_folder, exist_ok=True)
-            _write_positions_to_csv(experiment, positions_folder)
+            _write_positions_to_csv(experiment, positions_folder, use_micrometer=use_micrometer)
         _export_help_file(folder)
         dialog.popup_message("Positions", "Exported all positions, as well as a help file with instructions on how to"
                                           " visualize the points in Paraview.")
@@ -168,8 +148,8 @@ This assumes you want to color the cell types in the same way as OrganoidTracker
         file_handle.write(text)
 
 
-def _write_positions_to_csv(experiment: Experiment, folder: str):
-    resolution = experiment.images.resolution()
+def _write_positions_to_csv(experiment: Experiment, folder: str, *, use_micrometer: bool):
+    resolution = experiment.images.resolution(allow_incomplete=not use_micrometer)
     positions = experiment.positions
 
     file_prefix = experiment.name.get_save_name() + ".csv."
@@ -178,7 +158,7 @@ def _write_positions_to_csv(experiment: Experiment, folder: str):
         with open(file_name, "w") as file_handle:
             file_handle.write("x,y,z\n")
             for position in positions.of_time_point(time_point):
-                vector = position.to_vector_um(resolution)
+                vector = position.to_vector_um(resolution) if use_micrometer else position
                 file_handle.write(f"{vector.x},{vector.y},{vector.z}\n")
 
 
@@ -245,22 +225,25 @@ def _export_cell_types_file(folder: str, cell_types: List[Marker], cell_type_ids
 
 class _AsyncExporter(Task):
     _experiments: List[Experiment]
+    _use_micrometer: bool
     _folder: str
     _registered_cell_types: List[Marker]
     _cell_types_to_id: _CellTypesToId
     _data_names: List[str]
 
-    def __init__(self, experiments: List[Experiment], registered_cell_types: List[Marker], data_names: List[str], folder: str):
-        self._experiments = [self._copy(experiment) for experiment in experiments]
+    def __init__(self, experiments: List[Experiment], registered_cell_types: List[Marker], data_names: List[str],
+                 folder: str, *, use_micrometer: bool):
         self._data_names = data_names
         self._folder = folder
         self._registered_cell_types = registered_cell_types
         self._cell_types_to_id = _CellTypesToId()
+        self._use_micrometer = use_micrometer
+        self._experiments = [self._copy(experiment) for experiment in experiments]
 
     def _copy(self, experiment: Experiment):
         copy = experiment.copy_selected(positions=True, links=True, position_data=True)
         copy.name.set_name(experiment.name.get_name(), is_automatic=experiment.name.is_automatic())
-        copy.images.set_resolution(experiment.images.resolution())
+        copy.images.set_resolution(experiment.images.resolution(allow_incomplete=not self._use_micrometer))
         return copy
 
     def compute(self) -> Any:
@@ -271,8 +254,9 @@ class _AsyncExporter(Task):
             experiment.links.sort_tracks_by_x()
 
             _write_positions_and_metadata_to_csv(self._data_names, experiment.positions, experiment.position_data,
-                   experiment.links, experiment.images.resolution(), self._cell_types_to_id,
-                   experiment.division_lookahead_time_points, folder, experiment.name.get_save_name())
+                   experiment.links, experiment.images.resolution(allow_incomplete=True), self._cell_types_to_id,
+                   experiment.division_lookahead_time_points, folder, experiment.name.get_save_name(),
+                                                 use_micrometer=self._use_micrometer)
             _export_help_file(folder, experiment.links)
             _export_cell_types_file(folder, self._registered_cell_types, self._cell_types_to_id)
             _export_colormap_file(folder, experiment.links)
@@ -286,7 +270,7 @@ class _AsyncExporter(Task):
 def _get_metadata(position: Position, data_name: str, positions: PositionCollection, position_data: PositionData,
                   links: Links, resolution: ImageResolution, cell_types_to_id: _CellTypesToId,
                   deaths_nearby_tracks: NearbyDeaths,
-                  division_lookahead_time_points: int):
+                  division_lookahead_time_points: int) -> Union[str, float]:
     if data_name == "lineage_id":
         from organoid_tracker.linking_analysis import lineage_id_creator
         lineage_id = lineage_id_creator.get_lineage_id(links, position)
@@ -310,6 +294,8 @@ def _get_metadata(position: Position, data_name: str, positions: PositionCollect
 
     if data_name == "density_mm1":
         from organoid_tracker.position_analysis import cell_density_calculator
+        if not resolution.is_incomplete(require_time_resolution=False):
+            raise UserError("No resolution set", "No resolution was set. Cannot calculate the density.")
         positions_of_time_point = positions.of_time_point(position.time_point())
         density = cell_density_calculator.get_density_mm1(positions_of_time_point, position, resolution)
         return density
@@ -326,6 +312,8 @@ def _get_metadata(position: Position, data_name: str, positions: PositionCollect
 
     if data_name == "cell_compartment_id":
         from organoid_tracker.linking_analysis import cell_compartment_finder
+        if not resolution.is_incomplete():
+            raise UserError("No resolution set", "No resolution was set. Cannot calculate the density.")
         cell_compartment_id = cell_compartment_finder.find_compartment_ext(positions, links, resolution,
                                                                            division_lookahead_time_points,
                                                                            position).value
@@ -336,6 +324,8 @@ def _get_metadata(position: Position, data_name: str, positions: PositionCollect
     if data_name == "hours_until_division" or data_name == "hours_until_dead" or data_name == "hours_since_division":
         from organoid_tracker.linking import cell_division_finder
         from organoid_tracker.linking_analysis import cell_fate_finder
+        if not resolution.is_incomplete():
+            raise UserError("No resolution set", "No resolution was set. Cannot calculate timings.")
 
         cell_fate = cell_fate_finder.get_fate_ext(links, position_data, division_lookahead_time_points,
                                                   position)
@@ -356,13 +346,17 @@ def _get_metadata(position: Position, data_name: str, positions: PositionCollect
             return hours_since_division
         return hours_until_dead
 
-    return position_data.get_position_data(position, data_name)
+    value = position_data.get_position_data(position, data_name)
+    if isinstance(value, list):
+        return json.dumps(value)[1:-1]  # Easy way of serializing a list. [2, 3, 4] will become "2, 3, 4"
+    return value
 
 
 def _write_positions_and_metadata_to_csv(data_names: List[str], positions: PositionCollection,
                                          position_data: PositionData, links: Links,
                                          resolution: ImageResolution, cell_types_to_id: _CellTypesToId,
-                                         division_lookahead_time_points: int, folder: str, save_name: str):
+                                         division_lookahead_time_points: int, folder: str, save_name: str,
+                                         *, use_micrometer: bool):
     from organoid_tracker.linking_analysis import cell_nearby_death_counter
 
     deaths_nearby_tracks = cell_nearby_death_counter.NearbyDeaths(links, position_data, resolution)
@@ -370,20 +364,20 @@ def _write_positions_and_metadata_to_csv(data_names: List[str], positions: Posit
     file_prefix = save_name + ".csv."
     for time_point in positions.time_points():
         file_name = os.path.join(folder, file_prefix + str(time_point.time_point_number()))
-        with open(file_name, "w") as file_handle:
-            header = ["x", "y", "z"] + data_names
-            file_handle.write(",".join(header) + "\n")
+        with open(file_name, "w", newline='') as file_handle:
+            writer = csv.writer(file_handle)
+            writer.writerow(["x", "y", "z"] + data_names)
             positions_of_time_point = positions.of_time_point(time_point)
             for position in positions_of_time_point:
-                vector = position.to_vector_um(resolution)
-                data_row = [str(vector.x), str(vector.y), str(vector.z)]
+                vector = position.to_vector_um(resolution) if use_micrometer else position
+                data_row = [vector.x, vector.y, vector.z]
                 for data_name in data_names:
                     value = _get_metadata(position, data_name, positions, position_data, links, resolution,
                                           cell_types_to_id, deaths_nearby_tracks, division_lookahead_time_points)
                     if value is None:
                         value = "NaN"
-                    data_row.append(str(value))
-                file_handle.write(",".join(data_row) + "\n")
+                    data_row.append(value)
+                writer.writerow(data_row)
 
 
 def _export_colormap_file(folder: str, links: Links):

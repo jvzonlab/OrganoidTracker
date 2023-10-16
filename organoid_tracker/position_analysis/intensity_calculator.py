@@ -127,7 +127,7 @@ def get_normalized_intensity_over_time(experiment: Experiment, around_position: 
     return IntensityOverTime(times_h, intensities)
 
 
-def set_raw_intensities(experiment: Experiment, raw_intensities: Dict[Position, int], volumes: Dict[Position, int],
+def set_raw_intensities(experiment: Experiment, raw_intensities: Dict[Position, float], volumes: Dict[Position, int],
                         *, intensity_key: str = DEFAULT_INTENSITY_KEY):
     """Registers the given intensities for the given positions. Both dicts must have the same keys.
 
