@@ -438,11 +438,11 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Experiment-Edit splines... [A]": self._show_spline_editor,
             "Edit//Experiment-Edit beacons... [B]": self._show_beacon_editor,
             "Edit//Experiment-Edit image offsets... [O]": self._show_offset_editor,
+            "Edit//Batch-Delete selected positions... [Ctrl+Delete]": self._try_delete_all_selected,
             "Edit//Batch-Batch deletion//Delete data of current time point": self._delete_data_of_time_point,
             "Edit//Batch-Batch deletion//Delete data of multiple time points...": self._delete_data_of_multiple_time_points,
             "Edit//Batch-Batch deletion//Delete all tracks with errors...": self._delete_tracks_with_errors,
             "Edit//Batch-Batch deletion//Delete short lineages...": self._delete_short_lineages,
-            "Edit//Batch-Batch deletion//Delete selected positions... [Alt+Delete]": self._try_delete_all_selected,
             "Edit//Batch-Batch deletion//Delete all tracks not in the first time point...": self._delete_tracks_not_in_first_time_point,
             "Edit//Batch-Batch deletion//Delete all positions in a rectangle...": self._show_positions_in_rectangle_deleter,
             "Edit//Batch-Batch deletion//Delete all positions without links...": self._delete_positions_without_links,
@@ -456,9 +456,10 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//LineageEnd-Mark as moving out of view [V]": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
             "Edit//LineageEnd-Remove end marker": lambda: self._try_set_end_marker(None),
             "Edit//Marker-Set color of lineage...": self._set_color_of_lineage,
-            "Edit//Marker-Delete entire lineage [Ctrl+Delete]": self._delete_selected_lineage,
+            "Select//Select-All positions in current time point [Ctrl+A]": self._select_all,
+            "Select//Select-Expand selection to entire track [T]": self._select_track,
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
-            "View//Linking-Lineage errors and warnings [T]": self._show_lineage_errors,
+            "View//Linking-Lineage errors and warnings": self._show_lineage_errors,
             "Navigate//Layer-Layer of selected position [Space]": self._move_to_z_of_selected_position,
         }
 
@@ -497,10 +498,8 @@ class LinkAndPositionEditor(AbstractEditor):
             self._try_insert(event)
         elif event.key == "delete" or event.key == "backspace":
             self._try_delete()
-        elif event.key == "alt+backspace":
-            self._try_delete_all_selected()  # Alt + Delete also works, but is registered using the menu
-        elif event.key == "ctrl+a":
-            self._select_all()
+        elif event.key == "ctrl+backspace":
+            self._try_delete_all_selected()  # Ctrl + Delete also works, but is registered using the menu
         elif event.key == "alt+a":
             self._try_move_selected(dx=-1)
         elif event.key == "alt+s":
@@ -531,6 +530,28 @@ class LinkAndPositionEditor(AbstractEditor):
         self._selected = list(self._experiment.positions.of_time_point(self._time_point))
         self.draw_view()
         self.update_status(f"Selected all {len(self._selected)} positions of this time point.")
+
+    def _select_track(self):
+        if len(self._selected) == 0:
+            self.update_status("No positions selected. Cannot expand selection to entire track.")
+            return
+
+        to_select = set()
+        for position in self._selected:
+            track_of_position = self._experiment.links.get_track(position)
+            if track_of_position is None:
+                to_select.add(position)
+                continue
+            for track in track_of_position.find_all_previous_and_descending_tracks(include_self=True):
+                for some_position in track.positions():
+                    to_select.add(some_position)
+        difference_count = len(to_select) - len(self._selected)
+        if difference_count == 0:
+            self.update_status("Couldn't add any positions to the selection - any linked positions are already added.")
+            return
+        self._selected = list(to_select)
+        self.draw_view()
+        self.update_status(f"Added all {difference_count} positions that came before or after the selected positions.")
 
     def _move_to_position(self, position: Position) -> bool:
         if position not in self._selected:
@@ -571,7 +592,7 @@ class LinkAndPositionEditor(AbstractEditor):
         else:
             self.update_status("Select a single position to delete it, or select two positions to delete the link or"
                                " connection between them.\n    To delete all selected positions at once, press"
-                               " Alt+Delete.")
+                               " Ctrl+Delete.")
 
     def _try_delete_all_selected(self):
         if len(self._selected) == 0:
@@ -758,33 +779,6 @@ class LinkAndPositionEditor(AbstractEditor):
         # Perform the deletion
         self._perform_action(_DeletePositionsAction(snapshots_to_delete))
 
-    def _delete_selected_lineage(self):
-        if len(self._selected) == 0:
-            raise UserError("No cell selected", "You need to select a cell first to delete all cells in that"
-                                                " lineage.")
-        if len(self._selected) > 1:
-            raise UserError("Too many cell selected", "You have selected multiple cells - please select only one.")
-
-        experiment = self._experiment
-        particles_in_track = []
-
-        # Find all positions in the track (and descending tracks)
-        track = experiment.links.get_track(self._selected[0])
-        if track is None:
-            particles_in_track.append(FullPositionSnapshot.from_position(experiment, self._selected[0]))
-        else:
-            # Find starter of lineage tree
-            previous_tracks = track.get_previous_tracks()
-            while len(previous_tracks) == 1:
-                track = previous_tracks.pop()
-                previous_tracks = track.get_previous_tracks()
-
-            # Find all positions in lineage tree
-            for some_track in track.find_all_descending_tracks(include_self=True):
-                for position in some_track.positions():
-                    particles_in_track.append(FullPositionSnapshot.from_position(experiment, position))
-
-        self._perform_action(_DeletePositionsAction(particles_in_track))
 
     def _delete_tracks_not_in_first_time_point(self):
         """Deletes all lineages where at least a single error was present."""
