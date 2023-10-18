@@ -1,4 +1,5 @@
 import os.path
+from functools import partial
 from typing import Dict, Any
 
 from organoid_tracker.config import ConfigFile
@@ -10,13 +11,13 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
     return_dict = dict()
 
     for folder in window.plugin_manager.get_user_folders():
-        return_dict["File//Plugins-Install new plugin//Folder-" + folder] = lambda: dialog.open_file(folder)
+        return_dict["File//Plugins-Install new plugin//Folder-" + folder] = partial(dialog.open_file, folder)
 
     return_dict["File//Plugins-Reload all plugins..."] = lambda: _reload_all_plugins(window)
     return_dict["File//Plugins-Install new plugin//Management-Add a new folder for plugins..."] = lambda: _add_folder(window)
 
     for folder in window.plugin_manager.get_user_folders():
-        return_dict["File//Plugins-Install new plugin//Management-Remove a folder//Folder-" + folder] = lambda: _remove_folder(window, folder)
+        return_dict["File//Plugins-Install new plugin//Management-Remove a folder//Folder-" + folder] = partial(_remove_folder, window, folder)
 
     return return_dict
 
