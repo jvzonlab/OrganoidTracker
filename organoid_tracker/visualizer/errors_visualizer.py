@@ -15,7 +15,7 @@ from organoid_tracker.visualizer.position_list_visualizer import PositionListVis
 class ErrorsVisualizer(PositionListVisualizer):
     """Shows all errors and warnings in the experiment.
     Press Left/Right to view the previous/next error.
-    Press Delete to delete (suppress) the shown error.
+    Press Delete or Backspace to delete (suppress) the shown error.
     Press C to change (fix) the data and press E to exit this view.
     """
 
@@ -195,6 +195,8 @@ class ErrorsVisualizer(PositionListVisualizer):
     def _on_key_press(self, event: KeyEvent):
         if event.key == "e":
             self._exit_view()
+        elif event.key == "backspace":
+            self._suppress_error()  # The Delete key also works, but that key is registered through the menu
         else:
             super()._on_key_press(event)
 
