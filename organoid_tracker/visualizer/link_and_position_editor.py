@@ -357,6 +357,17 @@ class LinkAndPositionEditor(AbstractEditor):
 
         self._selected = [] if selected_position is None else [selected_position]
 
+    def _get_figure_title(self) -> str:
+        title_start = "Editing time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")\n"
+        if len(self._selected) == 1:
+            return title_start + "1 position selected"
+        elif len(self._selected) > 1:
+            time_point_count = len({position.time_point_number() for position in self._selected})
+            time_point_text = "1 time point" if time_point_count == 1 else f"{time_point_count} time points"
+            return title_start + f"{len(self._selected)} positions selected across " + time_point_text
+        else:
+            return title_start
+
     def _draw_extra(self):
         to_unselect = set()
         for i in range(len(self._selected)):
@@ -371,7 +382,7 @@ class LinkAndPositionEditor(AbstractEditor):
             self._selected = [element for element in self._selected if element not in to_unselect]
 
     def _draw_highlight(self, position: Optional[Position]):
-        if position is None:
+        if position is None or abs(position.time_point_number() - self._time_point.time_point_number()) > 2:
             return
         color = core.COLOR_CELL_CURRENT
         if position.time_point_number() < self._time_point.time_point_number():
