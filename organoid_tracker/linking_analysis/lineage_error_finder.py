@@ -64,7 +64,8 @@ def delete_problematic_lineages(experiment: Experiment):
 
 def get_problematic_lineages(links: Links, position_data: PositionData, crumbs: AbstractSet[Position],
                              *, min_time_point: Optional[TimePoint] = None,
-                             max_time_point: Optional[TimePoint] = None) -> List[LineageWithErrors]:
+                             max_time_point: Optional[TimePoint] = None, min_divisions: int = 0
+                             ) -> List[LineageWithErrors]:
     """Gets a list of all lineages with warnings in the experiment. The provided "crumbs" are placed in the right
     lineages, so that you can see to what lineages those cells belong."""
     positions_with_errors = linking_markers.find_errored_positions(position_data, min_time_point=min_time_point,
@@ -73,16 +74,18 @@ def get_problematic_lineages(links: Links, position_data: PositionData, crumbs: 
     track_to_crumbs = _group_by_track(links, crumbs)
 
     lineages_with_errors = list()
-    for track in links.find_starting_tracks():
-        lineage = LineageWithErrors(track)
-        lineage._add_errors(track_to_errors.get(track))
-        lineage._add_crumbs(track_to_crumbs.get(track))
+    for starting_track in links.find_starting_tracks():
+        divisions_in_lineage = 0
+        lineage = LineageWithErrors(starting_track)
 
-        for next_track in track.find_all_descending_tracks():
-            lineage._add_errors(track_to_errors.get(next_track))
-            lineage._add_crumbs(track_to_crumbs.get(next_track))
+        for track in starting_track.find_all_descending_tracks(include_self=True):
+            if track.will_divide():
+                divisions_in_lineage += 1
 
-        if len(lineage.errored_positions) > 0:
+            lineage._add_errors(track_to_errors.get(track))
+            lineage._add_crumbs(track_to_crumbs.get(track))
+
+        if len(lineage.errored_positions) > 0 and divisions_in_lineage >= min_divisions:
             lineages_with_errors.append(lineage)
 
     return lineages_with_errors

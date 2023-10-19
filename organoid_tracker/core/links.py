@@ -149,6 +149,11 @@ class LinkingTrack:
         """Gets the time this track takes in time points. This is simply the number of recorded positions."""
         return len(self._positions_by_time_point)
 
+    def will_divide(self) -> bool:
+        """Checks whether there are at least two next tracks. Faster than calling len(track.get_next_tracks()) > 1,
+        since this method doesn't create a set."""
+        return len(self._next_tracks) > 1
+
 
 class Links:
     """Represents all links between positions at different time points. This is used to follow particles over time. If a
