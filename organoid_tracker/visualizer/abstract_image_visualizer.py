@@ -6,6 +6,7 @@ from matplotlib import cm
 from matplotlib.backend_bases import MouseEvent
 from matplotlib.collections import LineCollection
 from matplotlib.colors import Colormap
+from matplotlib.patches import Rectangle
 from numpy import ndarray
 from tifffile import tifffile
 
@@ -151,21 +152,24 @@ class AbstractImageVisualizer(Visualizer):
             self._ax.set_aspect("equal", adjustable="datalim")
 
     def _draw_legend(self):
+        """Draws the little legend in the bottom right corner."""
         legend_y = 0.05
-        self._ax.scatter([0.90], [legend_y], s=8**2, facecolor=core.COLOR_CELL_PREVIOUS, transform=self._fig.transFigure,
-                         edgecolors="black", linewidths=1, marker="o")
-        self._ax.scatter([0.935], [legend_y], s=7**2, facecolor=core.COLOR_CELL_CURRENT, transform=self._fig.transFigure,
-                         edgecolors="black", linewidths=1, marker="s")
-        self._ax.scatter([0.97], [legend_y], s=6**2, facecolor=core.COLOR_CELL_NEXT, transform=self._fig.transFigure,
-                         edgecolors="black", linewidths=1, marker="o")
-        self._ax.plot([0.90, 0.935], [legend_y, legend_y], transform=self._fig.transFigure, color=core.COLOR_CELL_PREVIOUS,
-                      linewidth=1)
-        self._ax.plot([0.935, 0.97], [legend_y, legend_y], transform=self._fig.transFigure, color=core.COLOR_CELL_NEXT,
-                       linewidth=1)
-        self._ax.text(0.89, legend_y + 0.01, f"t={self._time_point.time_point_number() - 1}", horizontalalignment="left",
-                      color="white", transform=self._fig.transFigure)
-        self._ax.text(0.98, legend_y + 0.01, f"t={self._time_point.time_point_number() + 1}", horizontalalignment="right",
-                      color="white", transform=self._fig.transFigure)
+        self._ax.add_patch(Rectangle(xy=(0.895, legend_y * 1.8), width=0.105, height=-legend_y * 1.8, transform=self._fig.transFigure,
+                                     zorder=4, color="white", alpha=0.8))
+        self._ax.scatter([0.91], [legend_y], s=8**2, facecolor=core.COLOR_CELL_PREVIOUS, transform=self._fig.transFigure,
+                         edgecolors="black", linewidths=1, marker="o", zorder=4.5)
+        self._ax.scatter([0.945], [legend_y], s=7**2, facecolor=core.COLOR_CELL_CURRENT, transform=self._fig.transFigure,
+                         edgecolors="black", linewidths=1, marker="s", zorder=4.5)
+        self._ax.scatter([0.98], [legend_y], s=6**2, facecolor=core.COLOR_CELL_NEXT, transform=self._fig.transFigure,
+                         edgecolors="black", linewidths=1, marker="o", zorder=4.5)
+        self._ax.plot([0.91, 0.945], [legend_y, legend_y], transform=self._fig.transFigure, color=core.COLOR_CELL_PREVIOUS,
+                      linewidth=1, zorder=4.5)
+        self._ax.plot([0.945, 0.98], [legend_y, legend_y], transform=self._fig.transFigure, color=core.COLOR_CELL_NEXT,
+                       linewidth=1, zorder=4.5)
+        self._ax.text(0.9, legend_y + 0.015, f"t={self._time_point.time_point_number() - 1}", horizontalalignment="left",
+                      color="black", transform=self._fig.transFigure, zorder=4.5)
+        self._ax.text(0.99, legend_y + 0.015, f"t={self._time_point.time_point_number() + 1}", horizontalalignment="right",
+                      color="black", transform=self._fig.transFigure, zorder=4.5)
 
     def _draw_selection(self, position: Position, color: MPLColor):
         """Draws a marker for the given position that indicates that the position is selected. Subclasses can call this
