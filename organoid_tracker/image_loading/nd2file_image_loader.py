@@ -6,9 +6,10 @@ import numpy
 from nd2reader.parser import Parser
 from numpy.core.multiarray import ndarray
 
-from organoid_tracker.core import TimePoint, max_none, min_none
+from organoid_tracker.core import TimePoint, max_none, min_none, UserError
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.image_loader import ImageLoader, ImageChannel
+from organoid_tracker.core.resolution import ImageResolution
 
 
 class Nd2File:
@@ -37,15 +38,23 @@ def load_image_series(experiment: Experiment, file: Nd2File, field_of_view: int,
     image_loader = _Nd2ImageLoader(file._file_name, file._nd2_parser, field_of_view, min_time_point, max_time_point)
     experiment.images.image_loader(image_loader)
 
+    # Update resolution if none is stored
+    try:
+        experiment.images.resolution()  # Tests if a resolution is already stored
+    except UserError:
+        experiment.images.set_resolution(image_loader.guess_resolution())
+
     # Generate an automatic name for the experiment
-    file_name = os.path.basename(file._file_name)
-    if file_name.lower().endswith(".nd2"):
-        file_name = file_name[:-4]
-    if "_" in file_name and not file_name.endswith("_"):
-        file_name += "_"  # This will add a _ before the xy02 if the file name already uses the _ as a separator
-    elif "-" in file_name and not file_name.endswith("-"):
-        file_name += "-"  # This will add a - before the xy02 if the file name already uses the - as a separator
-    experiment.name.provide_automatic_name(file_name + f"xy{field_of_view:02}")
+    automatic_name = os.path.basename(file._file_name)
+    if automatic_name.lower().endswith(".nd2"):
+        automatic_name = automatic_name[:-4]
+    if file.get_location_counts() > 1:
+        if "_" in automatic_name and not automatic_name.endswith("_"):
+            automatic_name += "_"  # This will add a _ before the xy02 if the file name already uses the _ as a separator
+        elif "-" in automatic_name and not automatic_name.endswith("-"):
+            automatic_name += "-"  # This will add a - before the xy02 if the file name already uses the - as a separator
+        automatic_name += f"xy{field_of_view:02}"
+    experiment.name.provide_automatic_name(automatic_name)
 
 
 def load_image_series_from_config(experiment: Experiment, file_name: str, pattern: str, min_time_point: int, max_time_point: int):
@@ -83,6 +92,32 @@ class _Nd2ImageLoader(ImageLoader):
         self._min_time_point = max_none(min(time_points), min_time_point)
         self._max_time_point = min_none(max(time_points), max_time_point)
         self._location = location
+
+
+    def guess_resolution(self) -> ImageResolution:
+        xy_resolution = 0
+        if "pixel_microns" in self._nd2_parser.metadata:
+            xy_resolution = self._nd2_parser.metadata["pixel_microns"]
+
+        # Calculate Z resolution by the median step of the microscope
+        # (note that the microscope can make larger jumps when moving to the next organoid or next time frame,
+        # so we only consider a single frame. But unsure how channels are recorded into this.)
+        z_resolution = 0
+        depth = len(self._nd2_parser.metadata["z_levels"])
+        if depth > 1 and "z_coordinates" in self._nd2_parser.metadata:
+            z_coordinates = self._nd2_parser.metadata["z_coordinates"][0:depth]
+            if len(z_coordinates) >= 2:
+                z_resolution = abs(float(numpy.median(numpy.diff(z_coordinates))))
+
+        # Calculate time resolution from difference between first and last acquired z plane
+        time_resolution_s = 0
+        acquisition_times = numpy.array(list(self._nd2_parser.acquisition_times))
+        frame_count = len(list(self._nd2_parser.metadata["frames"]))
+        if len(acquisition_times) > 0 and frame_count > 1:
+            time_resolution_s = (acquisition_times[-1] - acquisition_times[0]) / (frame_count - 1)
+            # Why "frame_count - 1"? The reason is as follows: if you have a time lapse of two time points, and the last
+            # picture is taken 10 minutes after the first, then you'd have a rime resolution of 10 minutes
+        return ImageResolution(xy_resolution, xy_resolution, z_resolution, time_resolution_s / 60)
 
     def get_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
         if image_channel.index_zero >= len(self._channels):
