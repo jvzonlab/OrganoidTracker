@@ -241,7 +241,7 @@ class LineageTreeVisualizer(Visualizer):
     def _get_sorted_tracks(self) -> List[LinkingTrack]:
         links = self._experiment.links
         links.sort_tracks_by_x()
-        return list(links.find_all_tracks())
+        return list(links.find_starting_tracks())
 
     def draw_view(self):
         self._clear_axis()
