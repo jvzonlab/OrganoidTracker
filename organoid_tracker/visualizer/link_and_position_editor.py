@@ -149,7 +149,8 @@ class _MovePositionAction(UndoableAction):
         # Collect old link probabilities (for the undo functionality)
         self.old_link_probabilities = dict()
         for link in experiment.links.find_links_of(self.old_position):
-            self.old_link_probabilities[link] = experiment.link_data.get_link_data(self.old_position, link, "link_probability")
+            self.old_link_probabilities[link] = experiment.link_data.get_link_data(self.old_position, link,
+                                                                                   "link_probability")
 
     def do(self, experiment: Experiment):
         experiment.move_position(self.old_position, self.new_position)
@@ -165,7 +166,8 @@ class _MovePositionAction(UndoableAction):
     def undo(self, experiment: Experiment):
         experiment.move_position(self.new_position, self.old_position)
         for link in experiment.links.find_links_of(self.old_position):
-            experiment.link_data.set_link_data(self.old_position, link, "link_probability", self.old_link_probabilities.get(link))
+            experiment.link_data.set_link_data(self.old_position, link, "link_probability",
+                                               self.old_link_probabilities.get(link))
         cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.old_position)
         return f"Moved {self.new_position} back to {self.old_position}"
 
@@ -184,7 +186,8 @@ class _MoveMultiplePositionsAction(UndoableAction):
         time_point_number = old_positions[0].time_point_number()
         for old_position in old_positions:
             if old_position.time_point_number() != time_point_number:
-                raise ValueError(f"{old_position} is not in time point number {time_point_number} (contrary to the first)")
+                raise ValueError(
+                    f"{old_position} is not in time point number {time_point_number} (contrary to the first)")
         self.old_positions = list(old_positions)
         self.dx = dx
         self.dy = dy
@@ -207,6 +210,7 @@ class _MoveMultiplePositionsAction(UndoableAction):
         # Recheck errors
         cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, *self.old_positions)
         return f"Moved {len(new_positions)} position(s) back by ({self.dx:01}, {self.dy:01}, {self.dz:01})"
+
 
 class _MarkLineageEndAction(UndoableAction):
     """Used to add a marker to the end of a lineage."""
@@ -326,24 +330,30 @@ class _OverwritePositionAction(UndoableAction):
 
 
 class _MarkPositionAsSomethingAction(UndoableAction):
-    _position: Position
+    _positions: List[Position]
     _name: str
 
-    def __init__(self, position: Position, data_name: str):
-        self._position = position
+    def __init__(self, positions: List[Position], data_name: str):
+        self._positions = list(positions)
         self._name = data_name
 
     def do(self, experiment: Experiment) -> str:
-        experiment.position_data.set_position_data(self._position, self._name, True)
+        for position in self._positions:
+            experiment.position_data.set_position_data(position, self._name, True)
         if self._name == linking_markers.UNCERTAIN_MARKER:
-            cell_error_finder.find_errors_in_just_these_positions(experiment, self._position)
-        return f"Marked {self._position} as {self._name}"
+            cell_error_finder.find_errors_in_just_these_positions(experiment, *self._positions)
+        if len(self._positions) == 1:
+            return f"Marked {self._positions[0]} as {self._name}"
+        return f"Marked {len(self._positions)} positions as {self._name}"
 
     def undo(self, experiment: Experiment) -> str:
-        experiment.position_data.set_position_data(self._position, self._name, None)
+        for position in self._positions:
+            experiment.position_data.set_position_data(position, self._name, None)
         if self._name == linking_markers.UNCERTAIN_MARKER:
-            cell_error_finder.find_errors_in_just_these_positions(experiment, self._position)
-        return f"Marked that {self._position} is no longer {self._name}"
+            cell_error_finder.find_errors_in_just_these_positions(experiment, *self._positions)
+        if len(self._positions) == 1:
+            return f"Marked that {self._positions[0]} is no longer {self._name}"
+        return f"Marked that {len(self._positions)} positions are no longer {self._name}"
 
 
 class LinkAndPositionEditor(AbstractEditor):
@@ -358,7 +368,8 @@ class LinkAndPositionEditor(AbstractEditor):
         self._selected = [] if selected_position is None else [selected_position]
 
     def _get_figure_title(self) -> str:
-        title_start = "Editing time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")\n"
+        title_start = "Editing time point " + str(self._time_point.time_point_number()) + "    (z=" + str(
+            self._z) + ")\n"
         if len(self._selected) == 1:
             return title_start + "1 position selected"
         elif len(self._selected) > 1:
@@ -410,7 +421,9 @@ class LinkAndPositionEditor(AbstractEditor):
         if len(self._selected) <= 2:
             selected_first = self._selected[0] if len(self._selected) > 0 else None
             selected_second = self._selected[1] if len(self._selected) > 1 else None
-            self.update_status("Selected:\n        " + self._position_string(selected_first) + "\n        " + self._position_string(selected_second))
+            self.update_status(
+                "Selected:\n        " + self._position_string(selected_first) + "\n        " + self._position_string(
+                    selected_second))
         else:
             self.update_status(f"Selected: {len(self._selected)} positions")
 
@@ -579,11 +592,13 @@ class LinkAndPositionEditor(AbstractEditor):
             snapshot_to_delete = FullPositionSnapshot.from_position(self._experiment, self._selected[0])
             self._perform_action(ReversedAction(_InsertPositionAction(snapshot_to_delete)))
         elif len(self._selected) == 2:
-            if self._experiment.connections.contains_connection(self._selected[0], self._selected[1]):  # Delete a connection
+            if self._experiment.connections.contains_connection(self._selected[0],
+                                                                self._selected[1]):  # Delete a connection
                 position1, position2 = self._selected
                 self._selected.clear()
                 self._perform_action(ReversedAction(_InsertConnectionAction(position1, position2)))
-            elif self._experiment.links.contains_link(self._selected[0], self._selected[1]):  # Delete link between cells
+            elif self._experiment.links.contains_link(self._selected[0],
+                                                      self._selected[1]):  # Delete link between cells
                 position1, position2 = self._selected
                 self._selected.clear()
                 self._perform_action(ReversedAction(_InsertLinkAction(position1, position2)))
@@ -619,32 +634,35 @@ class LinkAndPositionEditor(AbstractEditor):
             return
         self._perform_action(_MarkLineageEndAction(self._selected[0], marker, current_marker))
 
-    def _try_mark_as(self, flag_name: Optional[str], value: bool):
+    def _try_mark_as(self, flag_name: Optional[str], new_value: bool):
         """Marks a position as having a certain flag. If the flag_name is None, the user will be prompted for a name."""
-        if len(self._selected) != 1:
-            self.update_status("You need to have exactly one cell selected.")
-            return
-
         update_menus = flag_name is None
         if flag_name is None:
-            flag_name = dialog.prompt_str("Flag name", "As what do you want to flag the position?\n\nYou can pick any"
-                                                       " name. Possible examples would be \"ablated\",\n\"responder\""
-                                                       " or \"proliferative\". These flags have no intrinsic\nmeaning,"
-                                                       " but you could use them from your own scripts.")
+            flag_name = dialog.prompt_str("Flag name", "As what do you want to flag the position(s)?\n\nYou can pick"
+                                                       " any name. Possible examples would be \"ablated\",\n"
+                                                       "\"responder\" or \"proliferative\". These flags have no"
+                                                       " intrinsic\nmeaning, but you could use them from your own"
+                                                       " scripts.")
             if flag_name is None:
                 return
 
         position_data = self._experiment.position_data
-        if bool(position_data.get_position_data(self._selected[0], flag_name)) == value:
-            if value:
-                self.update_status(f"Selected position is already marked as {flag_name}.")
-            else:
-                self.update_status(f"Selected position is not marked as {flag_name}, cannot remove marker.")
-            return
-        if value:
-            self._perform_action(_MarkPositionAsSomethingAction(self._selected[0], flag_name))
+        positions_that_need_changing = [selected for selected in self._selected
+                                        if bool(position_data.get_position_data(selected, flag_name)) != new_value]
+        insert = " is" if len(self._selected) == 1 else "s are"
+        if new_value:
+            # Mark all as True
+            if len(positions_that_need_changing) == 0:
+                self.update_status(f"Selected position{insert} already marked as {flag_name}.")
+                return
+            self._perform_action(_MarkPositionAsSomethingAction(positions_that_need_changing, flag_name))
         else:
-            self._perform_action(ReversedAction(_MarkPositionAsSomethingAction(self._selected[0], flag_name)))
+            # Mark all as False
+            if len(positions_that_need_changing) == 0:
+                self.update_status(f"Selected position{insert} not marked as {flag_name}, cannot remove marker.")
+                return
+            self._perform_action(
+                ReversedAction(_MarkPositionAsSomethingAction(positions_that_need_changing, flag_name)))
 
         if update_menus:
             self._window.redraw_all()  # So that the new flag appears in the menus
@@ -720,9 +738,10 @@ class LinkAndPositionEditor(AbstractEditor):
 
     def _delete_unlikely_links(self):
         """Deletes all links with a low score"""
-        cutoff = dialog.prompt_float("Deleting unlikely links", "What is the minimum required likelihood for a link (0% - 100%)?"
-                            "\nLinks with a lower likelihood, as predicted by the neural network, will be removed.",
-                            minimum=0, maximum=100, decimals=1, default=10)
+        cutoff = dialog.prompt_float("Deleting unlikely links",
+                                     "What is the minimum required likelihood for a link (0% - 100%)?"
+                                     "\nLinks with a lower likelihood, as predicted by the neural network, will be removed.",
+                                     minimum=0, maximum=100, decimals=1, default=10)
         if cutoff is None:
             return  # Cancelled
         cutoff_fraction = cutoff / 100
@@ -730,7 +749,6 @@ class LinkAndPositionEditor(AbstractEditor):
         link_data = self._experiment.link_data
         for (position_a, position_b), value in link_data.find_all_links_with_data("link_probability"):
             if value < cutoff_fraction:
-
                 to_remove.append((position_a, position_b))
         self._perform_action(_DeleteLinksAction(link_data, to_remove))
 
@@ -778,7 +796,6 @@ class LinkAndPositionEditor(AbstractEditor):
 
         # Perform the deletion
         self._perform_action(_DeletePositionsAction(snapshots_to_delete))
-
 
     def _delete_tracks_not_in_first_time_point(self):
         """Deletes all lineages where at least a single error was present."""
