@@ -241,7 +241,7 @@ class LineageDrawing:
 
                         color_val = color_val_next
                         t0 = t1
-                    location_map.set(int(x_offset + x), int(t1),
+                    location_map.set(x_offset + x, t1,
                                      linking_track.find_position_at_time_point_number(time_point_of_line + 1))
             if line.is_horizontal():
                 linking_track = line.track
