@@ -183,11 +183,6 @@ class _MoveMultiplePositionsAction(UndoableAction):
     def __init__(self, old_positions: List[Position], *, dx: float = 0, dy: float = 0, dz: float = 0):
         if len(old_positions) == 0:
             raise ValueError("No positions supplied")
-        time_point_number = old_positions[0].time_point_number()
-        for old_position in old_positions:
-            if old_position.time_point_number() != time_point_number:
-                raise ValueError(
-                    f"{old_position} is not in time point number {time_point_number} (contrary to the first)")
         self.old_positions = list(old_positions)
         self.dx = dx
         self.dy = dy
