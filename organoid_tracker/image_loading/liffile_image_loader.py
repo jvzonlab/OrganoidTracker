@@ -23,13 +23,21 @@ def load_from_lif_file(experiment: Experiment, file: str, series_name: str, min_
     reader = _lif.Reader(file)
 
     # Find index of series
-    series_index = None
-    for index, header in enumerate(reader.getSeriesHeaders()):
-        if header.getName() == series_name:
-            series_index = index
-    if series_index is None:
-        raise ValueError("No series matched the given name. Available names: "
-                         + str([header.getName() for header in reader.getSeriesHeaders()]))
+    try:
+        # Try to parse as number
+        series_index = int(series_name)
+    except ValueError:
+        # Previously (< December 2023) we stored the series name
+        # Problem is that these aren't unique, so we switched to the index
+        series_index = None
+        for index, header in enumerate(reader.getSeriesHeaders()):
+            if header.getName() == series_name:
+                series_index = index
+        if series_index is None:
+            raise ValueError("No series matched the given name. Available names: "
+                             + str([header.getName() for header in reader.getSeriesHeaders()]))
+    if series_index < 0 or series_index >= len(reader.getSeriesHeaders()):
+        raise ValueError(f"Series index {series_index} is out of bounds. Range: 0 - {len(reader.getSeriesHeaders()) - 1}")
 
     load_from_lif_reader(experiment, file, reader, series_index, min_time_point, max_time_point)
 
@@ -47,6 +55,31 @@ def load_from_lif_reader(experiment: Experiment, file: str, reader: _lif.Reader,
     if file_name.lower().endswith(".lif"):
         file_name = file_name[:-4]
     experiment.name.provide_automatic_name(file_name + "_" + serie_header.getName())
+
+
+def get_series_display_names(reader: _lif.Reader) -> List[str]:
+    """Gets display names for the LIF file."""
+    name_list = list()
+
+    # Collect name parts
+    for header in reader.getSeriesHeaders():
+        name = [header.getName()]
+        parent_node = header.root.parentNode
+        while isinstance(parent_node, Element):
+            parent_name = parent_node.getAttribute("Name")
+            if parent_name and parent_node.parentNode and parent_node.parentNode.parentNode \
+                    and parent_node.parentNode.parentNode.parentNode:
+                # Only add the name if it's not the name of the root file
+                name.insert(0, parent_name)
+
+            parent_node = parent_node.parentNode
+        name_list.append(name)
+
+    if len(name_list) == 0:
+        return []
+
+    # Join the names
+    return [" » ".join(name_parts) for name_parts in name_list]
 
 
 def _dimensions_to_resolution(dimensions: List[Element]) -> ImageResolution:
@@ -178,7 +211,7 @@ class _LifImageLoader(ImageLoader):
                                self._max_time_point_number)
 
     def serialize_to_config(self) -> Tuple[str, str]:
-        return self._file, self._serie.getName()
+        return self._file, str(self._serie_index)
 
     def close(self):
         self._reader.f.close()

@@ -1,8 +1,9 @@
+from xml.dom.minidom import Element
+
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.gui import dialog, option_choose_dialog
 from organoid_tracker.imaging.image_file_name_pattern_finder import find_time_and_channel_pattern
 import os.path
-
 
 def prompt_image_series(experiment: Experiment) -> bool:
     """Prompts an image series, and loads it into the experiment. Returns whether anything was loaded."""
@@ -20,7 +21,7 @@ def prompt_image_series(experiment: Experiment) -> bool:
         # LIF file loading
         from organoid_tracker.image_loading import _lif, liffile_image_loader
         reader = _lif.Reader(full_path)
-        series = [header.getName() for header in reader.getSeriesHeaders()]
+        series = liffile_image_loader.get_series_display_names(reader)
         series_index = option_choose_dialog.prompt_list("Choose an image serie", "Choose an image serie", "Image serie:", series)
         if series_index is not None:
             experiment.images.close_image_loader()
