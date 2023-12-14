@@ -39,8 +39,6 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     def get_extra_menu_options(self):
         return {
             **super().get_extra_menu_options(),
-            "File//Export-Export image//Projection-Depth-colored projection...": self._export_depth_colored_image,
-            "File//Export-Export movie//Projection-Depth-colored projection...": self._export_depth_colored_movie,
             "Edit//Batch-Merge tracking data...": self._ask_merge_experiments,
             "Edit//Experiment-Manually change data... [C]": self._show_data_editor,
             "View//Analyze-Lists//Cell divisions... [M]": self._show_mother_cells,
@@ -57,42 +55,6 @@ class StandardImageVisualizer(AbstractImageVisualizer):
 
     def _get_must_show_plugin_menus(self) -> bool:
         return True
-
-    def _export_depth_colored_image(self):
-        image_3d = self._experiment.images.get_image_stack(self._time_point, self._display_settings.image_channel)
-        if image_3d is None:
-            raise UserError("No image available", "There is no image available for this time point.")
-
-        file = dialog.prompt_save_file("Image location", [("PNG file", "*.png")])
-        if file is None:
-            return
-
-        from organoid_tracker.imaging import depth_colored_image_creator
-        image_2d = depth_colored_image_creator.create_image(image_3d)
-        pyplot.imsave(file, image_2d)
-
-    def _export_depth_colored_movie(self):
-        if not self._experiment.images.image_loader().has_images():
-            raise UserError("No image available", "There is no image available for the experiment.")
-
-        file = dialog.prompt_save_file("Image location", [("TIFF file", "*.tif")])
-        if file is None:
-            return
-
-        images_copy = self._experiment.images.copy()
-        channel = self._display_settings.image_channel
-
-        class ImageTask(Task):
-            def compute(self):
-                from organoid_tracker.imaging import depth_colored_image_creator
-                image_movie = depth_colored_image_creator.create_movie(images_copy, channel)
-                tifffile.imwrite(file, image_movie, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
-                return file
-
-            def on_finished(self, result: Any):
-                dialog.popup_message("Movie created", f"Done! The movie is now created at {result}.")
-
-        self._window.get_scheduler().add_task(ImageTask())
 
     def _show_track_follower(self):
         from organoid_tracker.visualizer.track_visualizer import TrackVisualizer
