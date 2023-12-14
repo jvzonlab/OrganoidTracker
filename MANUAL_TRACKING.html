@@ -45,7 +45,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#working-with-links">Working with links</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#working-with-many-cell-positions">Working with many (cell) positions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coloring-lineages">Coloring lineages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#futher-details">Futher details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#further-details">Further details</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
@@ -102,7 +102,7 @@
 <h2>Working with (cell) positions<a class="headerlink" href="#working-with-cell-positions" title="Permalink to this heading"></a></h2>
 <p>To insert positions, make sure you have no cell selected, and then press the Insert key. To delete that cell position again, make sure that you have only selected that cell, and press the Delete key.</p>
 <p>You can also use the Enter and Backspace keys as alternatives for the Insert and Delete keys, respectively. Both keys perform exactly the same function, so depending on your keyboard layout, you might find it easier to use one or the other.</p>
-<p>If you press Shift while having a single cell selected, that cell will be moved to your mouse psotion. The shape and links of the cell will be preserved.</p>
+<p>If you press Shift while having a single cell selected, that cell will be moved to your mouse position. The metadata and links of the cell will be preserved.</p>
 <p>Undo and Redo functions are available from the Edit menu. You can also use the Control+Z and Control+Y keyboard shortcuts, respectively.</p>
 </section>
 <section id="working-with-links">
@@ -112,16 +112,17 @@
 </section>
 <section id="working-with-many-cell-positions">
 <h2>Working with many (cell) positions<a class="headerlink" href="#working-with-many-cell-positions" title="Permalink to this heading"></a></h2>
-<p>Use Control + A to select all positions of the current time point.</p>
+<p>There are also some tools to work with multiple positions at once.</p>
+<p>Use Control + A to select all positions of the current time point. Use Select -&gt; Select positions in a rectangle… to select positions within a rectangular area.</p>
 <p>Use Alt + A/D to move the positions to the left or right, use Alt + S/W to move the positions up or down in the Y-direction and use Alt + Q/E to move the positions up or down in the Z-direction.</p>
-<p>Use Alt + Delete to remove all selected positions.</p>
+<p>Use Ctrl + Delete to remove all selected positions. (The normal Delete key will only delete cells if you have only one selected, to prevent accidental deletion.)</p>
 </section>
 <section id="coloring-lineages">
 <h2>Coloring lineages<a class="headerlink" href="#coloring-lineages" title="Permalink to this heading"></a></h2>
 <p>For visualization purposes, you can give every lineage a color. By default, every lineage is black. You can change this either in the editor (<code class="docutils literal notranslate"><span class="pre">Edit</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Set</span> <span class="pre">color</span> <span class="pre">of</span> <span class="pre">lineage...</span></code>) or in the <code class="docutils literal notranslate"><span class="pre">Cells</span> <span class="pre">colored</span> <span class="pre">by</span> <span class="pre">lineage</span></code> viewer (accessed from the main screen, not the editor). The benefit of changing the color in the <code class="docutils literal notranslate"><span class="pre">Cells</span> <span class="pre">colored</span> <span class="pre">by</span> <span class="pre">lineage</span></code> viewer is that you directly see the colors, as this viewer displays every cell in the right color. The given colors are also used in the lineage trees (<code class="docutils literal notranslate"><span class="pre">Graph</span></code> menu in the main screen) and in the 3D visualizations with Paraview (see <a class="reference internal" href="TRACKING_FORMATS.html"><span class="doc std std-doc">tracking formats</span></a>).</p>
 </section>
-<section id="futher-details">
-<h2>Futher details<a class="headerlink" href="#futher-details" title="Permalink to this heading"></a></h2>
+<section id="further-details">
+<h2>Further details<a class="headerlink" href="#further-details" title="Permalink to this heading"></a></h2>
 <p>Links cannot skip time points. If you insert a link between two cells that are not in consecutive time points, then additions cell positions will be created in between the selected time points.</p>
 <p>Links are used to tell the program that two cell positions at different time points actually represent the same biological cell. Therefore, you cannot create a link from one cell position in a time point to another cell position in the same time point. If you try anyways, a so-called <em>connection</em> will be made. You can write plugins to do something with those connections. You can also automatically create connections for all cells within a certain distance of each other, see <code class="docutils literal notranslate"><span class="pre">Edit</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Connect</span> <span class="pre">positions</span> <span class="pre">by</span> <span class="pre">distance...</span></code></p>
 </section>

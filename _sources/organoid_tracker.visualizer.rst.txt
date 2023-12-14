@@ -28,7 +28,7 @@ Submodules
    organoid_tracker.visualizer.lineage_tree_visualizer
    organoid_tracker.visualizer.link_and_position_editor
    organoid_tracker.visualizer.link_score_visualizer
-   organoid_tracker.visualizer.position_in_rectangle_deleter
+   organoid_tracker.visualizer.position_in_rectangle_selector
    organoid_tracker.visualizer.position_list_visualizer
    organoid_tracker.visualizer.spline_editor
    organoid_tracker.visualizer.standard_image_visualizer

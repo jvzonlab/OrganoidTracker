@@ -1,0 +1,7 @@
+organoid\_tracker.visualizer.position\_in\_rectangle\_selector module
+=====================================================================
+
+.. automodule:: organoid_tracker.visualizer.position_in_rectangle_selector
+   :members:
+   :undoc-members:
+   :show-inheritance:

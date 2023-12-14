@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>organoid_tracker.visualizer.link_score_visualizer module &mdash; OrganoidTracker 2.0 documentation</title>
+  <title>organoid_tracker.visualizer.position_in_rectangle_selector module &mdash; OrganoidTracker 2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -19,8 +19,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="organoid_tracker.visualizer.position_in_rectangle_selector module" href="organoid_tracker.visualizer.position_in_rectangle_selector.html" />
-    <link rel="prev" title="organoid_tracker.visualizer.link_and_position_editor module" href="organoid_tracker.visualizer.link_and_position_editor.html" /> 
+    <link rel="next" title="organoid_tracker.visualizer.position_list_visualizer module" href="organoid_tracker.visualizer.position_list_visualizer.html" />
+    <link rel="prev" title="organoid_tracker.visualizer.link_score_visualizer module" href="organoid_tracker.visualizer.link_score_visualizer.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -111,9 +111,9 @@
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="organoid_tracker.html">organoid_tracker package</a> &raquo;</li>
           <li><a href="organoid_tracker.visualizer.html">organoid_tracker.visualizer package</a> &raquo;</li>
-      <li>organoid_tracker.visualizer.link_score_visualizer module</li>
+      <li>organoid_tracker.visualizer.position_in_rectangle_selector module</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/organoid_tracker.visualizer.link_score_visualizer.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/organoid_tracker.visualizer.position_in_rectangle_selector.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -121,14 +121,20 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-organoid_tracker.visualizer.link_score_visualizer">
-<span id="organoid-tracker-visualizer-link-score-visualizer-module"></span><h1>organoid_tracker.visualizer.link_score_visualizer module<a class="headerlink" href="#module-organoid_tracker.visualizer.link_score_visualizer" title="Permalink to this heading"></a></h1>
+  <section id="module-organoid_tracker.visualizer.position_in_rectangle_selector">
+<span id="organoid-tracker-visualizer-position-in-rectangle-selector-module"></span><h1>organoid_tracker.visualizer.position_in_rectangle_selector module<a class="headerlink" href="#module-organoid_tracker.visualizer.position_in_rectangle_selector" title="Permalink to this heading"></a></h1>
 <dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.visualizer.link_score_visualizer.LinkScoreVisualizer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.visualizer.link_score_visualizer.</span></span><span class="sig-name descname"><span class="pre">LinkScoreVisualizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window:</span> <span class="pre">~organoid_tracker.gui.window.Window</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_viewer:</span> <span class="pre">~typing.Type[~organoid_tracker.visualizer.Visualizer]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'organoid_tracker.visualizer.standard_image_visualizer.StandardImageVisualizer'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.visualizer.link_score_visualizer.LinkScoreVisualizer" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="organoid_tracker.visualizer.exitable_image_visualizer.html#organoid_tracker.visualizer.exitable_image_visualizer.ExitableImageVisualizer" title="organoid_tracker.visualizer.exitable_image_visualizer.ExitableImageVisualizer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExitableImageVisualizer</span></code></a></p>
-<p>Shows the penalty score of each link. The lower the score, the more likely that the network thinks the link is
-correct.</p>
+<dt class="sig sig-object py" id="organoid_tracker.visualizer.position_in_rectangle_selector.PositionsInRectangleSelector">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.visualizer.position_in_rectangle_selector.</span></span><span class="sig-name descname"><span class="pre">PositionsInRectangleSelector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window" title="organoid_tracker.gui.window.Window"><span class="pre">Window</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.visualizer.position_in_rectangle_selector.PositionsInRectangleSelector" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="organoid_tracker.visualizer.abstract_editor.html#organoid_tracker.visualizer.abstract_editor.AbstractEditor" title="organoid_tracker.visualizer.abstract_editor.AbstractEditor"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEditor</span></code></a></p>
+<p>Click to define the first point, then click somewhere else to define the second point. Then press Enter to
+confirm the selection, or Ctrl + I to select the positions outside the rectangle. Then, back in the data editor,
+you can either delete all selected positions using Ctrl + Delete, or perform some other action on them.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.visualizer.position_in_rectangle_selector.PositionsInRectangleSelector.get_extra_menu_options">
+<span class="sig-name descname"><span class="pre">get_extra_menu_options</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.visualizer.position_in_rectangle_selector.PositionsInRectangleSelector.get_extra_menu_options" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 </section>
@@ -137,8 +143,8 @@ correct.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="organoid_tracker.visualizer.link_and_position_editor.html" class="btn btn-neutral float-left" title="organoid_tracker.visualizer.link_and_position_editor module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="organoid_tracker.visualizer.position_in_rectangle_selector.html" class="btn btn-neutral float-right" title="organoid_tracker.visualizer.position_in_rectangle_selector module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="organoid_tracker.visualizer.link_score_visualizer.html" class="btn btn-neutral float-left" title="organoid_tracker.visualizer.link_score_visualizer module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="organoid_tracker.visualizer.position_list_visualizer.html" class="btn btn-neutral float-right" title="organoid_tracker.visualizer.position_list_visualizer module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
