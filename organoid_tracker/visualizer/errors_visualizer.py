@@ -248,7 +248,7 @@ class ErrorsVisualizer(PositionListVisualizer):
             data_editor = LinkAndPositionEditor(self._window)
         else:
             viewed_position = self._position_list[self._current_position_index]
-            data_editor = LinkAndPositionEditor(self._window, selected_position=viewed_position)
+            data_editor = LinkAndPositionEditor(self._window, selected_positions=[viewed_position])
         activate(data_editor)
 
     def _suppress_error(self):

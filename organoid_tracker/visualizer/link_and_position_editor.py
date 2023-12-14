@@ -357,10 +357,10 @@ class LinkAndPositionEditor(AbstractEditor):
 
     _selected: List[Position]
 
-    def __init__(self, window: Window, *, selected_position: Optional[Position] = None):
+    def __init__(self, window: Window, *, selected_positions: Iterable[Position] = ()):
         super().__init__(window)
 
-        self._selected = [] if selected_position is None else [selected_position]
+        self._selected = list(selected_positions)
 
     def _get_figure_title(self) -> str:
         title_start = "Editing time point " + str(self._time_point.time_point_number()) + "    (z=" + str(
@@ -452,7 +452,6 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Batch-Batch deletion//Delete all tracks with errors...": self._delete_tracks_with_errors,
             "Edit//Batch-Batch deletion//Delete short lineages...": self._delete_short_lineages,
             "Edit//Batch-Batch deletion//Delete all tracks not in the first time point...": self._delete_tracks_not_in_first_time_point,
-            "Edit//Batch-Batch deletion//Delete all positions in a rectangle...": self._show_positions_in_rectangle_deleter,
             "Edit//Batch-Batch deletion//Delete all positions without links...": self._delete_positions_without_links,
             "Edit//Batch-Batch deletion//Delete all links with low likelihood...": self._delete_unlikely_links,
             "Edit//LineageEnd-Mark as cell death [D]": lambda: self._try_set_end_marker(EndMarker.DEAD),
@@ -466,6 +465,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Marker-Set color of lineage...": self._set_color_of_lineage,
             "Select//Select-All positions in current time point [Ctrl+A]": self._select_all,
             "Select//Select-Expand selection to entire track [T]": self._select_track,
+            "Select//Select-Select positions in a rectangle...": self._show_positions_in_rectangle_selector,
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
             "View//Linking-Lineage errors and warnings": self._show_lineage_errors,
             "Navigate//Layer-Layer of selected position [Space]": self._move_to_z_of_selected_position,
@@ -687,9 +687,9 @@ class LinkAndPositionEditor(AbstractEditor):
         editor = LineageErrorsVisualizer(self._window)
         activate(editor)
 
-    def _show_positions_in_rectangle_deleter(self):
-        from organoid_tracker.visualizer.position_in_rectangle_deleter import PositionsInRectangleDeleter
-        editor = PositionsInRectangleDeleter(self._window)
+    def _show_positions_in_rectangle_selector(self):
+        from organoid_tracker.visualizer.position_in_rectangle_selector import PositionsInRectangleSelector
+        editor = PositionsInRectangleSelector(self._window)
         activate(editor)
 
     def _delete_data_of_time_point(self):

@@ -1,43 +1,21 @@
-from typing import Optional, Iterable, List
+from typing import Optional, Iterable
 
-from matplotlib.backend_bases import MouseEvent, KeyEvent
+from matplotlib.backend_bases import MouseEvent
 from matplotlib.patches import Rectangle
 
 from organoid_tracker import core
 from organoid_tracker.core import TimePoint
-from organoid_tracker.core.experiment import Experiment
-from organoid_tracker.core.full_position_snapshot import FullPositionSnapshot
 from organoid_tracker.core.position import Position
-from organoid_tracker.gui.undo_redo import UndoableAction
 from organoid_tracker.gui.window import Window
-from organoid_tracker.linking_analysis import cell_error_finder
 from organoid_tracker.visualizer import activate
 from organoid_tracker.visualizer.abstract_editor import AbstractEditor
 
 
-class _DeletePositionsAction(UndoableAction):
-    _particles: List[FullPositionSnapshot]
-
-    def __init__(self, particles: Iterable[FullPositionSnapshot]):
-        self._particles = list(particles)
-
-    def do(self, experiment: Experiment):
-        experiment.remove_positions((particle.position for particle in self._particles))
-        for particle in self._particles:  # Check linked particles for errors
-            cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, *particle.links)
-        return f"Removed all {len(self._particles)} positions within the rectangle"
-
-    def undo(self, experiment: Experiment):
-        for particle in self._particles:
-            particle.restore(experiment)
-            cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, particle.position,
-                                                                                    *particle.links)
-        return f"Re-added {len(self._particles)} positions"
-
-
-class PositionsInRectangleDeleter(AbstractEditor):
-    """Click to define the first point, then click somewhere else to define the second point. Then press Delete or
-    Alt+Delete to delete all positions inside or outside the rectangle, respectively."""
+class PositionsInRectangleSelector(AbstractEditor):
+    """Click to define the first point, then click somewhere else to define the second point. Then press Enter to
+    confirm the selection, or Ctrl + I to select the positions outside the rectangle. Then, back in the data editor,
+    you can either delete all selected positions using Ctrl + Delete, or perform some other action on them.
+    """
 
     _min_position: Optional[Position] = None
     _max_position: Optional[Position] = None
@@ -47,7 +25,7 @@ class PositionsInRectangleDeleter(AbstractEditor):
         self.MAX_Z_DISTANCE = 0
 
     def _get_figure_title(self) -> str:
-        return "Deleting positions, viewing time point " \
+        return "Selecting positions, viewing time point " \
                + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
 
     def _exit_view(self):
@@ -58,8 +36,8 @@ class PositionsInRectangleDeleter(AbstractEditor):
     def get_extra_menu_options(self):
         return {
             **super().get_extra_menu_options(),
-            "Edit//Delete-Delete all positions inside the rectangle [Delete]": lambda: self._try_delete(inside=True),
-            "Edit//Delete-Delete all positions outside the rectangle [Alt+Delete]": lambda: self._try_delete(inside=False)
+            "Select//Select-Select all outside [Ctrl+I]": lambda: self._select_positions(inside=False),
+            "Select//Select-Select all inside [Return]": lambda: self._select_positions(inside=True),
         }
 
     def _on_mouse_click(self, event: MouseEvent):
@@ -82,9 +60,8 @@ class PositionsInRectangleDeleter(AbstractEditor):
             height = self._max_position.y - self._min_position.y + 1
             depth = self._max_position.z - self._min_position.z + 1
             time = self._max_position.time_point_number() - self._min_position.time_point_number() + 1
-            self.update_status(f"Selected a volume of {width}x{height}x{depth} px, spanning {time} time points."
-                               f"\nPress Delete or Alt+Delete to delete all positions inside or outside the volume,"
-                               f" respectively.")
+            self.update_status(f"Defined a volume of {width}x{height}x{depth} px, spanning {time} time points."
+                               f"\nPress Enter to select these positions, or Ctrl + I to select the positions outside.")
             return
         # Some strange other case
         self._min_position = None
@@ -153,16 +130,17 @@ class PositionsInRectangleDeleter(AbstractEditor):
         self._max_position = Position(max(pos1.x, pos2.x), max(pos1.y, pos2.y), max(pos1.z, pos2.z),
                                       time_point_number=max(pos1.time_point_number(), pos2.time_point_number()))
 
-    def _try_delete(self, inside: bool = True):
+    def _select_positions(self, inside: bool = True):
         if self._min_position is None or self._max_position is None:
             self.update_status("Please select a rectangle first. Double-click somewhere to define the corners.")
             return
 
-        experiment = self._experiment
-        positions = [FullPositionSnapshot.from_position(experiment, position)
-                     for position in self._get_selected_positions(inside)]
-        if len(positions) == 0:
+        selected_positions = list(self._get_selected_positions(inside))
+        if len(selected_positions) == 0:
             self.update_status(
                 "There are no positions " + ("within" if inside else "outside") + " the selected rectangle")
             return
-        self._perform_action(_DeletePositionsAction(positions))
+
+        from organoid_tracker.visualizer.link_and_position_editor import LinkAndPositionEditor
+        data_editor = LinkAndPositionEditor(self._window, selected_positions=selected_positions)
+        activate(data_editor)
