@@ -345,3 +345,8 @@ class Connections:
             values._move_in_time(time_point_delta)
             new_connections_dict[time_point_number + time_point_delta] = values
         self._by_time_point = new_connections_dict
+
+    def find_all_connections(self) -> Iterable[Tuple[Position, Position]]:
+        """Gets all connections of all time points."""
+        for by_time_point in self._by_time_point.values():
+            yield from by_time_point.get_all()

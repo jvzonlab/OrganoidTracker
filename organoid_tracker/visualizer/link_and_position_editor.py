@@ -5,6 +5,7 @@ from matplotlib.backend_bases import KeyEvent, MouseEvent, LocationEvent
 
 from organoid_tracker import core
 from organoid_tracker.core import Color, UserError, TimePoint
+from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.full_position_snapshot import FullPositionSnapshot
 from organoid_tracker.core.link_data import LinkData
@@ -453,9 +454,8 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Experiment-Edit splines... [A]": self._show_spline_editor,
             "Edit//Experiment-Edit beacons... [B]": self._show_beacon_editor,
             "Edit//Experiment-Edit image offsets... [O]": self._show_offset_editor,
-            "Edit//Batch-Delete selected positions... [Ctrl+Delete]": self._try_delete_all_selected,
-            "Edit//Batch-Batch deletion//Delete data of current time point": self._delete_data_of_time_point,
-            "Edit//Batch-Batch deletion//Delete data of multiple time points...": self._delete_data_of_multiple_time_points,
+            "Edit//Batch-Delete selected positions [Ctrl+Delete]": self._try_delete_all_selected,
+            "Edit//Batch-Delete connections of selected positions": self._try_delete_connections_of_all_selected,
             "Edit//Batch-Batch deletion//Delete all tracks with errors...": self._delete_tracks_with_errors,
             "Edit//Batch-Batch deletion//Delete short lineages...": self._delete_short_lineages,
             "Edit//Batch-Batch deletion//Delete all tracks not in the first time point...": self._delete_tracks_not_in_first_time_point,
@@ -470,7 +470,8 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//LineageEnd-Mark as moving out of view [V]": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
             "Edit//LineageEnd-Remove end marker": lambda: self._try_set_end_marker(None),
             "Edit//Marker-Set color of lineage...": self._set_color_of_lineage,
-            "Select//Select-All positions in current time point [Ctrl+A]": self._select_all,
+            "Select//All-All positions in current time point [Ctrl+A]": self._select_all,
+            "Select//All-All positions in multiple time points...": self._select_all_of_multiple_time_points,
             "Select//Select-Expand selection to entire track [T]": self._select_track,
             "Select//Select-Select positions in a rectangle...": self._show_positions_in_rectangle_selector,
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
@@ -608,8 +609,8 @@ class LinkAndPositionEditor(AbstractEditor):
                 self.update_status("No link found between the two positions - nothing to delete.")
         else:
             self.update_status("Select a single position to delete it, or select two positions to delete the link or"
-                               " connection between them.\n    To delete all selected positions at once, press"
-                               " Ctrl+Delete.")
+                               " connection between them.\n    For deleting multiple positions, links or connections at"
+                               " once, check out the Edit menu.")
 
     def _try_delete_all_selected(self):
         if len(self._selected) == 0:
@@ -617,6 +618,24 @@ class LinkAndPositionEditor(AbstractEditor):
             return
         snapshots = [FullPositionSnapshot.from_position(self._experiment, position) for position in self._selected]
         self._perform_action(_DeletePositionsAction(snapshots))
+
+    def _try_delete_connections_of_all_selected(self):
+        if len(self._selected) == 0:
+            self.update_status("No positions selected - cannot delete any connections.")
+            return
+        experiment_connections = self._experiment.connections
+
+        connections_set = Connections()
+        for position in self._selected:
+            for connection in experiment_connections.find_connections(position):
+                connections_set.add_connection(position, connection)
+        if not connections_set.has_connections():
+            self.update_status("No connections found for any of the selected positions -"
+                               " cannot delete any connections.")
+            return
+
+        connection_pairs = list(connections_set.find_all_connections())
+        self._perform_action(ReversedAction(_InsertConnectionsAction(connection_pairs)))
 
     def _try_set_end_marker(self, marker: Optional[EndMarker]):
         if len(self._selected) != 1:
@@ -699,13 +718,7 @@ class LinkAndPositionEditor(AbstractEditor):
         editor = PositionsInRectangleSelector(self._window)
         activate(editor)
 
-    def _delete_data_of_time_point(self):
-        """Deletes all annotations of a given time point."""
-        positions = self._experiment.positions.of_time_point(self._time_point)
-        snapshots = (FullPositionSnapshot.from_position(self._experiment, position) for position in positions)
-        self._perform_action(_DeletePositionsAction(snapshots))
-
-    def _delete_data_of_multiple_time_points(self):
+    def _select_all_of_multiple_time_points(self):
         """Deletes all annotations of a given time point range."""
         minimum, maximum = self._experiment.first_time_point_number(), self._experiment.last_time_point_number()
         if minimum is None or maximum is None:
@@ -723,11 +736,28 @@ class LinkAndPositionEditor(AbstractEditor):
                                                   default=time_point_number_start)
         if time_point_number_end is None:
             return
-        snapshots = []
+
+        # Find newly selected positions
+        in_time_points = list()
         for time_point_number in range(time_point_number_start, time_point_number_end + 1):
-            positions = self._experiment.positions.of_time_point(TimePoint(time_point_number))
-            snapshots += [FullPositionSnapshot.from_position(self._experiment, position) for position in positions]
-        self._perform_action(_DeletePositionsAction(snapshots))
+            in_time_points += list(self._experiment.positions.of_time_point(TimePoint(time_point_number)))
+
+        # Select them, show appropriate message
+        total_selected = set(self._selected) | set(in_time_points)
+        old_count = len(self._selected)
+        new_count = len(total_selected)
+        self._selected = list(total_selected)
+        self.draw_view()
+        if old_count == new_count:
+            self.update_status(f"All positions from time points {time_point_number_start} to {time_point_number_end}"
+                               f" were already selected.")
+        elif new_count == len(in_time_points):
+            self.update_status(f"Selected {len(self._selected)} positions across"
+                               f" {time_point_number_end - time_point_number_start + 1} time point(s).")
+        else:
+            self.update_status(f"Selected {new_count - old_count} new position(s) across"
+                               f" {time_point_number_end - time_point_number_start + 1} time point(s).")
+
 
     def _delete_positions_without_links(self):
         """Deletes all positions that have no links."""
