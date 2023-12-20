@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import Optional, List, Dict, Iterable, Tuple
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent, LocationEvent
@@ -234,21 +235,27 @@ class _MarkLineageEndAction(UndoableAction):
         return f"Re-added the {self.old_marker.get_display_name()}-marker to {self.position}"
 
 
-class _InsertConnectionAction(UndoableAction):
-    _position1: Position
-    _position2: Position
+class _InsertConnectionsAction(UndoableAction):
+    _position_pairs: List[Tuple[Position, Position]]
 
-    def __init__(self, position1: Position, position2: Position):
-        self._position1 = position1
-        self._position2 = position2
+    def __init__(self, position_pairs: List[Tuple[Position, Position]]):
+        self._position_pairs = position_pairs
 
     def do(self, experiment: Experiment) -> str:
-        experiment.connections.add_connection(self._position1, self._position2)
-        return f"Added connection between {self._position1} and {self._position2}"
+        for position1, position2 in self._position_pairs:
+            experiment.connections.add_connection(position1, position2)
+        if len(self._position_pairs) == 1:
+            return f"Added connection between {self._position_pairs[0][0]} and {self._position_pairs[0][1]}"
+        else:
+            return f"Added connection between {len(self._position_pairs)} pairs of positions"
 
     def undo(self, experiment: Experiment):
-        experiment.connections.remove_connection(self._position1, self._position2)
-        return f"Removed connection between {self._position1} and {self._position2}"
+        for position1, position2 in self._position_pairs:
+            experiment.connections.remove_connection(position1, position2)
+        if len(self._position_pairs) == 1:
+            return f"Removed connection between {self._position_pairs[0][0]} and {self._position_pairs[0][1]}"
+        else:
+            return f"Removed connection between {len(self._position_pairs)} pairs of positions"
 
 
 class _SetAllAsType(UndoableAction):
@@ -591,7 +598,7 @@ class LinkAndPositionEditor(AbstractEditor):
                                                                 self._selected[1]):  # Delete a connection
                 position1, position2 = self._selected
                 self._selected.clear()
-                self._perform_action(ReversedAction(_InsertConnectionAction(position1, position2)))
+                self._perform_action(ReversedAction(_InsertConnectionsAction([(position1, position2)])))
             elif self._experiment.links.contains_link(self._selected[0],
                                                       self._selected[1]):  # Delete link between cells
                 position1, position2 = self._selected
@@ -805,10 +812,12 @@ class LinkAndPositionEditor(AbstractEditor):
         self.get_window().redraw_data()
 
     def _try_insert(self, event: LocationEvent):
+        time_point_number_of_selection = self._get_time_point_number_of_selection()
+        max_selected_in_single_time_point = self._get_most_selected_in_single_time_point()
+
         if len(self._selected) == 0:
             # Add new position without links
             self._selected.append(Position(event.xdata, event.ydata, self._z, time_point=self._time_point))
-            mouse_position = self._get_position_at(event.xdata, event.ydata)
             self._perform_action(_InsertPositionAction(FullPositionSnapshot.just_position(self._selected[0])))
         elif len(self._selected) == 1:
             # Insert new position with link to self._selected[0]
@@ -852,53 +861,62 @@ class LinkAndPositionEditor(AbstractEditor):
                     return
                 self._selected[0] = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
                 self._perform_action(_InsertPositionAction(FullPositionSnapshot.just_position(self._selected[0])))
-        elif len(self._selected) == 2:
-            if self._selected[0].time_point_number() == self._selected[1].time_point_number():
-                # Insert connection between two positions
-                if self._experiment.connections.contains_connection(self._selected[0], self._selected[1]):
+        elif len(self._selected) == 2 and time_point_number_of_selection is None:
+            # Two selected across two time points - link between two positions
+            if self._experiment.links.contains_link(self._selected[0], self._selected[1]):
+                self.update_status("A link already exists between the selected positions.")
+                return
+            position1, position2 = self._selected
+            self._selected.clear()
+            self._perform_action(_InsertLinkAction(position1, position2))
+        elif max_selected_in_single_time_point == 2:
+            # Two or more selected AND at most two per time point - insert connections
+            connection_pairs = list(self._get_connection_pairs())
+            if len(connection_pairs) > 0:
+                self._selected.clear()
+                self._perform_action(_InsertConnectionsAction(connection_pairs))
+            else:
+                if time_point_number_of_selection is None:
+                    self.update_status(f"You currently have {len(self._selected)} positions selected across"
+                                       f" multiple time points, with at most {max_selected_in_single_time_point}"
+                                       f" per time point. Normally, we would then insert connections at every time"
+                                       f" point, but those connections already exist.")
+                else:  # Selected 2 positions in 1 time point
                     self.update_status("A connection already exists between the selected positions.")
-                    return
-                position1, position2 = self._selected
-                self._selected.clear()
-                self._perform_action(_InsertConnectionAction(position1, position2))
-            else:
-                # Insert link between two positions
-                if self._experiment.links.contains_link(self._selected[0], self._selected[1]):
-                    self.update_status("A link already exists between the selected positions.")
-                    return
-                position1, position2 = self._selected
-                self._selected.clear()
-                self._perform_action(_InsertLinkAction(position1, position2))
+        elif time_point_number_of_selection is None:
+            # Selection across multiple time points with (sometimes) more than two per time point
+            self.update_status(f"You currently have {len(self._selected)} positions selected across multiple"
+                               f" time points, with a maximum of {max_selected_in_single_time_point} per time point"
+                               f" - cannot insert anything.")
+        elif time_point_number_of_selection == self._time_point.time_point_number():
+            # Selection in single time point - the current time point
+            self.update_status(f"You currently have {len(self._selected)} positions selected of the current time"
+                               f" point. To insert connections between them, select only two at a time.")
+        elif abs(time_point_number_of_selection - self._time_point.time_point_number()) > 1:
+            # Selection in single time point - time point further away
+            self.update_status(f"You currently have {len(self._selected)} positions selected in a time point"
+                               f" further away. Cannot insert them here.")
         else:
-            time_point_number_of_selection = self._get_time_point_number_of_selection()
-            if time_point_number_of_selection is None:
-                self.update_status(f"You currently have {len(self._selected)} positions selected of multiple time"
-                                   f" points - cannot insert anything.")
-            elif time_point_number_of_selection == self._time_point.time_point_number():
-                self.update_status(f"You currently have {len(self._selected)} positions selected of the current time"
-                                   f" point. To insert connections between them, select only two at a time.")
-            elif abs(time_point_number_of_selection - self._time_point.time_point_number()) > 1:
-                self.update_status(f"You currently have {len(self._selected)} positions selected in a time point"
-                                   f" further away. Cannot insert them here.")
-            else:
-                # Copy over to this time point, with links to time_point_number_of_selection
-                new_position_snapshots = [FullPositionSnapshot.position_with_links(
-                    position=position.with_time_point(self._time_point), links=[position])
-                    for position in self._selected]
-                for position_snapshot in new_position_snapshots:
-                    if self._experiment.positions.contains_position(position_snapshot.position):
-                        raise UserError("Position already exists", "Cannot insert the selected positions in this time"
-                                                                   " point, as at least one position already exists."
-                                                                   " Maybe you copied the positions before?")
-                self._selected = [snapshot.position for snapshot in new_position_snapshots]
-                self._perform_action(ReversedAction(_DeletePositionsAction(new_position_snapshots)))
+            # Selection in single time point - the next or previous time point
+            # Copy over to this time point, with links to time_point_number_of_selection
+            new_position_snapshots = [FullPositionSnapshot.position_with_links(
+                position=position.with_time_point(self._time_point), links=[position])
+                for position in self._selected]
+            for position_snapshot in new_position_snapshots:
+                if self._experiment.positions.contains_position(position_snapshot.position):
+                    raise UserError("Position already exists", "Cannot insert the selected positions in this time"
+                                                               " point, as at least one position already exists."
+                                                               " Maybe you copied the positions before?")
+            self._selected = [snapshot.position for snapshot in new_position_snapshots]
+            self._perform_action(ReversedAction(_DeletePositionsAction(new_position_snapshots)))
 
-    def _get_time_point_number_of_selection(self):
+    def _get_time_point_number_of_selection(self) -> Optional[int]:
+        if len(self._selected) == 0:
+            return None
         time_point_number_of_selection = self._selected[0].time_point_number()
         for position in self._selected:
             if position.time_point_number() != time_point_number_of_selection:
-                time_point_number_of_selection = None
-                break
+                return None
         return time_point_number_of_selection
 
     def _set_track_to_type(self, position_type: Optional[Marker]):
@@ -951,3 +969,36 @@ class LinkAndPositionEditor(AbstractEditor):
         existing_positions = list(self._selected)
         self._selected = [position.with_offset(dx=dx, dy=dy, dz=dz) for position in existing_positions]
         self._perform_action(_MoveMultiplePositionsAction(existing_positions, dx=dx, dy=dy, dz=dz))
+
+    def _get_most_selected_in_single_time_point(self) -> int:
+        """Gets the highest number of selected positions in a single time point. For example, if you have one position
+         selected in time point 8, and five in time point 9, this method returns five."""
+        if len(self._selected) == 0:
+            return 0
+        count_per_time_point = defaultdict(int)
+        for position in self._selected:
+            count_per_time_point[position.time_point_number()] += 1
+        return max(count_per_time_point.values())
+
+    def _get_connection_pairs(self) -> Iterable[Tuple[Position, Position]]:
+        """For every time point where two positions have been selected which aren't already connected, this method
+        returns them as a tuple.        """
+
+        # Group by time point number
+        positions_per_time_point_number = defaultdict(list)
+        for position in self._selected:
+            positions_in_time_point = positions_per_time_point_number[position.time_point_number()]
+            if len(positions_in_time_point) >= 2:
+                # Found a selection time point that will have at least 3 positions - in that case we refuse
+                # to insert any connections
+                return
+            positions_in_time_point.append(position)
+
+        # Collect all connection pairs that didn't exist yet
+        existing_connections = self._experiment.connections
+        for positions_in_time_point in positions_per_time_point_number.values():
+            if len(positions_in_time_point) == 2:
+                position1, position2 = positions_in_time_point
+                if existing_connections.contains_connection(position1, position2):
+                    continue
+                yield position1, position2
