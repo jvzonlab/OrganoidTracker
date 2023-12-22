@@ -45,7 +45,7 @@ def build_model(shape: Tuple, batch_size):
     # apply final batch_normalization
     layer = tf.keras.layers.BatchNormalization()(layer)
 
-    output = tf.keras.layers.Conv3D(filters=1, kernel_size=3, padding="same", activation='relu' , name='out_conv')(layer)
+    output = tf.keras.layers.Conv3D(filters=1, kernel_size=3, padding="same", activation='relu', name='out_conv')(layer)
 
     # blur predictions (leads to less noise-induced peaks) This helps sometimes (?)
     output = blur_labels(output, sigma=1.5, kernel_size=4,  depth=1, normalize=False)
@@ -84,9 +84,14 @@ def conv_block(n_conv, layer, filters, kernel=3, pool_size=2, pool_strides=2, dr
     return layer, to_concat
 
 
-def deconv_block(n_conv, layer, to_concat, filters, kernel=3, strides=2, dropout=False, name=None, depth_wise= None):
-    layer = tf.keras.layers.Conv3DTranspose(filters=filters, kernel_size=strides, strides=strides, padding='same',
-                                            name=name + '/upconv')(layer)
+def deconv_block(n_conv, layer, to_concat, filters, kernel=3, strides=2, dropout=False, name=None, depth_wise= None, deconvolve=False):
+
+    if deconvolve:
+        layer = tf.keras.layers.Conv3DTranspose(filters=filters, kernel_size=strides, strides=strides, padding='same',
+                                                name=name + '/upconv')(layer)
+    else:
+        layer = tf.keras.layers.UpSampling3D(size=strides,
+                                                name=name + '/upsample')(layer)
 
     if to_concat is not None:
         layer = tf.concat([layer, to_concat], axis=-1)
