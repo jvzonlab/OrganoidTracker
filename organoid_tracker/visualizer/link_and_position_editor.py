@@ -558,9 +558,10 @@ class LinkAndPositionEditor(AbstractEditor):
             if track_of_position is None:
                 to_select.add(position)
                 continue
-            for track in track_of_position.find_all_previous_and_descending_tracks(include_self=True):
-                for some_position in track.positions():
-                    to_select.add(some_position)
+            #for track in track_of_position.find_all_previous_and_descending_tracks(include_self=True):
+            for some_position in track_of_position.positions():
+                to_select.add(some_position)
+
         difference_count = len(to_select) - len(self._selected)
         if difference_count == 0:
             self.update_status("Couldn't add any positions to the selection - any linked positions are already added.")
