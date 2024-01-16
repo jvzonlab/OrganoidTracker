@@ -21,7 +21,10 @@ Some example code to construct positions and links:
 import re
 from typing import Optional, Iterable, Union, Tuple, Any
 
+import matplotlib.colors
 import numpy
+
+from organoid_tracker.core.typing import MPLColor
 
 COLOR_CELL_NEXT = "#d63031"
 COLOR_CELL_PREVIOUS = "#74b9ff"
@@ -154,6 +157,12 @@ class Color:
     def from_rgb_floats(red: float, green: float, blue: float) -> "Color":
         """Creates a color using a RGB float color, for example (1.0, 1.0, 1.0) for white."""
         return Color(int(round(red * 255)), int(round(green * 255)), int(round(blue * 255)))
+
+    @staticmethod
+    def from_matplotlib(mpl_color: MPLColor) -> "Color":
+        """Creates a color using the Matplotlib library, so you can for example do Color.from_matplotlib("red")."""
+        r, g, b = matplotlib.colors.to_rgb(mpl_color)
+        return Color.from_rgb_floats(r, g, b)
 
     @staticmethod
     def white():
