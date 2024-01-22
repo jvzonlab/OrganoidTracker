@@ -84,8 +84,8 @@ class IntensityOverTime:
 
 
 def get_normalized_intensity_over_time(experiment: Experiment, around_position: Position, time_window_h: float, *,
-                                       allow_incomplete: bool = False, intensity_key: str = DEFAULT_INTENSITY_KEY
-                                       ) -> Optional[IntensityOverTime]:
+                                       allow_incomplete: bool = False, intensity_key: str = DEFAULT_INTENSITY_KEY,
+                                       per_pixel: bool = False) -> Optional[IntensityOverTime]:
     """Gets the slope and mean intensity over time given time span. Returns None if not enough data is
     available, which is the case if the track is too short or if some intensities are missing."""
     resolution = experiment.images.resolution()
@@ -111,7 +111,7 @@ def get_normalized_intensity_over_time(experiment: Experiment, around_position: 
     times_h = list()
     for time_point_number in range(tracking_start_time_point, tracking_end_time_point + 1):
         position = track.find_position_at_time_point_number(time_point_number)
-        intensity = get_normalized_intensity(experiment, position, intensity_key=intensity_key)
+        intensity = get_normalized_intensity(experiment, position, intensity_key=intensity_key, per_pixel=per_pixel)
         if intensity is None:
             # We don't have a full data set
             if not allow_incomplete:
@@ -185,14 +185,21 @@ def get_raw_intensity(position_data: PositionData, position: Position, *, intens
     return position_data.get_position_data(position, intensity_key)
 
 
-def get_normalized_intensity(experiment: Experiment, position: Position, *, intensity_key: str = DEFAULT_INTENSITY_KEY
-                             ) -> Optional[float]:
-    """Gets the normalized intensity of the position."""
+def get_normalized_intensity(experiment: Experiment, position: Position, *, intensity_key: str = DEFAULT_INTENSITY_KEY,
+                             per_pixel: bool = False) -> Optional[float]:
+    """Gets the normalized intensity of the position. Takes into account the background and the intensity multiplier
+    (for normalization), which might be specific to the time point or Z layer. Either returns the intensity sum or the
+    intensity per pixel, depending on the per_pixel parameter (default false).
+    """
     position_data = experiment.position_data
     global_data = experiment.global_data
 
     intensity = position_data.get_position_data(position, intensity_key)
-    background = global_data.get_data(intensity_key + "_background_per_pixel")
+    if intensity is None:
+        return None
+    background_per_px = global_data.get_data(intensity_key + "_background_per_pixel")
+    if background_per_px is None:
+        background_per_px = 0
     multiplier = global_data.get_data(intensity_key + "_multiplier_z" + str(round(position.z)))
     if multiplier is None:
         # Try time multiplier
@@ -201,10 +208,24 @@ def get_normalized_intensity(experiment: Experiment, position: Position, *, inte
         if multiplier is None:
             # Try global multiplier
             multiplier = global_data.get_data(intensity_key + "_multiplier")
-    volume = position_data.get_position_data(position, intensity_key + "_volume")
-    if volume is None or multiplier is None or background is None:
-        return intensity
-    return (intensity - background * volume) * multiplier
+            if multiplier is None:
+                # Also failed - then don't multiply
+                multiplier = 1
+    volume_px = position_data.get_position_data(position, intensity_key + "_volume")
+    if volume_px is None:
+        if per_pixel:
+            return None  # Can't calculate intensity per pixel if volume is missing
+
+        # Can't do background subtraction if volume is missing
+        background_per_px = 0
+
+        # Assume a default volume (volume won't be used, since background is set to 0, and per-pixel intensity
+        # is disallowed)
+        volume_px = 1
+
+    if per_pixel:
+        return (intensity / volume_px - background_per_px) * multiplier
+    return (intensity - background_per_px * volume_px) * multiplier
 
 
 def perform_intensity_normalization(experiment: Experiment, *, background_correction: bool = True, z_correction: bool = False,
