@@ -25,7 +25,9 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
         "Tools//Use-Detect cells in images...": lambda: _generate_position_detection_config(window),
         "Tools//Use-Detect dividing cells...": lambda: _generate_division_detection_config(window),
         "Tools//Use-Detect link likelihoods...": lambda: _generate_link_detection_config(window),
-        "Tools//Use-Create links between time points...": lambda: _generate_linking_config(window)
+        "Tools//Use-Create links between time points...": lambda: _generate_linking_config(window),
+        "Tools//Error rates-Find scaling temperature": lambda: _generate_calibrate_marginalization_config(window),
+        "Tools//Error rates-Compute marginalized error rates": lambda: _generate_marginalization_config(window)
     }
 
 
@@ -54,6 +56,23 @@ pause""")
 {shlex.quote(sys.executable)} {shlex.quote(script_file)}
 """)
     os.chmod(sh_file, 0o777)
+
+
+def _create_run_script_no_pause(output_folder: str, script_name: str):
+    script_file = os.path.abspath(script_name + ".py")
+
+    # For Windows
+    conda_env_folder = os.sep + "envs" + os.sep
+    conda_installation_folder = sys.base_exec_prefix
+    if conda_env_folder in conda_installation_folder:
+        conda_installation_folder = conda_installation_folder[0:conda_installation_folder.index(conda_env_folder)]
+    bat_file = os.path.join(output_folder, script_name + ".bat")
+    with open(bat_file, "w") as writer:
+        writer.write(f"""@rem Automatically generated script for running {script_name}
+@echo off
+@CALL "{conda_installation_folder}\\condabin\\conda.bat" activate {os.getenv('CONDA_DEFAULT_ENV')}
+"{sys.executable}" "{script_file}"
+""")
 
 
 def _popup_confirmation(output_folder: str, script_name: str, ):
@@ -296,7 +315,7 @@ def _generate_link_training_config(window: Window):
     if save_directory is None:
         return
 
-    config = ConfigFile("train_division_network", folder_name=save_directory)
+    config = ConfigFile("train_link_network", folder_name=save_directory)
     if len(experiments) == 1:
         if not dialog.prompt_yes_no("Experiments", "Only one project is open. Training on a single data set is not"
                                                    " recommended. For a quick test it's fine, but ideally you should have a more"
@@ -421,6 +440,86 @@ def _generate_linking_config(window: Window):
     _popup_confirmation(save_directory, "organoid_tracker_create_links")
 
 
+
+
+def _generate_calibrate_marginalization_config(window: Window):
+    """For training the neural network."""
+    experiments = list(window.get_active_experiments())
+    if len(experiments) == 0:
+        raise UserError("No experimental data loaded", "No projects are open. Please load all data that you want to use for calibration.")
+
+    if not dialog.popup_message_cancellable("Output folder",
+                                            "All projects that are currently open will be used for training. You will"
+                                            " be asked to select an output folder for calibration."):
+        return
+    save_directory = dialog.prompt_save_file("Output directory", [("Folder", "*")])
+    if save_directory is None:
+        return
+
+    config = ConfigFile("find_scaling_temperature", folder_name=save_directory)
+    if len(experiments) == 1:
+        if not dialog.prompt_yes_no("Experiments", "Only one project is open. Calibration on a single data set is not"
+                                                   " recommended. For a quick test it's fine, but ideally you should have a more"
+                                                   " data sets loaded.\n\nDo you want to continue with just this data set?"):
+            return
+
+    config.get_or_default("output_folder", "./output")
+    _steps = int(config.get_or_default("size subset (steps away from link of interest)", str(3)))
+
+    i = 0
+    for index, experiment in enumerate(experiments):
+
+        if not experiment.positions.has_positions():
+            raise UserError("No positions", f"No tracking data was found in project {experiment.name}, so it cannot be"
+                                            f" used for calibration. Please make sure that all open projects are suitable for training.")
+
+        i = index + 1
+        positions_file = f"ground_truth_positions/all_links_{i}.aut"
+        io.save_data_to_json(experiment, os.path.join(save_directory, positions_file))
+
+        config.get_or_default(f"min_time_point_{i}", str(experiment.positions.first_time_point_number()))
+        config.get_or_default(f"max_time_point_{i}", str(experiment.positions.last_time_point_number()))
+        config.get_or_default(f"all_links_{i}", positions_file)
+        # new
+
+    config.get_or_default(f"images_container_{i + 1}", "<stop>")
+    config.save()
+    _create_run_script(save_directory, "organoid_tracker_calibrate_marginalization")
+    _popup_confirmation(save_directory, "organoid_tracker_calibrate_marginalization")
+
+
+def _generate_marginalization_config(window: Window):
+    """For applying an already trained network on new images."""
+    experiment = window.get_experiment()
+
+    all_links_file = _get_all_links_file()
+    if all_links_file is None:
+        return
+
+    if not dialog.popup_message_cancellable("Out folder",
+                                            "Second, we will ask you to select an output folder."):
+        return
+    save_directory = dialog.prompt_save_file("Output directory", [("Folder", "*")])
+    if save_directory is None:
+        return
+
+    positions_file = "solution_link_file.aut"
+    io.save_data_to_json(experiment, os.path.join(save_directory, positions_file))
+
+    config = ConfigFile("marginalisation", folder_name=save_directory)
+    config.get_or_default("solution_links_file", positions_file)
+    config.get_or_default("all_links_file", all_links_file)
+
+    config.get_or_default("min_time_point", str(experiment.first_time_point_number()), store_in_defaults=True)
+    config.get_or_default("max_time_point", str(experiment.last_time_point_number()), store_in_defaults=True)
+
+    config.get_or_default("predictions_output_folder", "out")
+
+    config.save()
+    _create_run_script(save_directory, "organoid_tracker_marginalization")
+    _popup_confirmation(save_directory, "organoid_tracker_marginalization")
+
+
 def _get_model_folder(model_type: str) -> Optional[str]:
     if not dialog.popup_message_cancellable("Trained model folder",
                                             "First, we will ask you where you have stored the " + model_type + " model."):
@@ -449,3 +548,15 @@ def _get_model_folder(model_type: str) -> Optional[str]:
                                "The selected folder does not contain a trained model; it contains no 'saved_model.pb' file."
                                " Please select another folder. Typically, this folder is named `trained_model`.")
 
+
+def _get_all_links_file() -> Optional[str]:
+    if not dialog.popup_message_cancellable("All links file",
+                                            "Where have you stored the file with all possible links"):
+        return None
+    while True:
+        file = dialog.prompt_load_file('choose a file', [('aut_file', '*.aut')])
+        if not file:
+            return None  # Cancelled, stop loop
+
+        if os.path.isfile(file):
+            return file
