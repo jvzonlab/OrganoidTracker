@@ -535,6 +535,7 @@ class AbstractImageVisualizer(Visualizer):
             except ValueError:
                 self.update_status(f"Invalid number in \"{command}\". Syntax: /track <track_id>")
             else:
+                self._experiment.links.sort_tracks_by_x()  # Make sure track ids are in correct order
                 track = self._experiment.links.get_track_by_id(track_id)
                 if track is None:
                     self.update_status(f"Track with id {track_id} not found.")
