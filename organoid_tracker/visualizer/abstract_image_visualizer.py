@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Tuple
 
 import matplotlib.colors
 import numpy
@@ -309,10 +309,7 @@ class AbstractImageVisualizer(Visualizer):
                 crosses_y_list.append(position.y)
 
             # Add marker
-            position_type = self.get_window().registry.get_marker_by_save_name(
-                position_markers.get_position_type(position_data, position))
-            edge_color = (0, 0, 0) if position_type is None else position_type.mpl_color
-            edge_width = 1 if position_type is None else 3
+            edge_color, edge_width = self._get_position_edge(position)
 
             positions_x_list.append(position.x)
             positions_y_list.append(position.y)
@@ -326,6 +323,14 @@ class AbstractImageVisualizer(Visualizer):
         marker = "s" if dt == 0 else "o"
         self._ax.scatter(positions_x_list, positions_y_list, s=positions_marker_sizes, facecolor=color,
                          edgecolors=positions_edge_colors, linewidths=positions_edge_widths, marker=marker)
+
+    def _get_position_edge(self, position: Position) -> tuple[tuple[float, float, float], float]:
+        """Gets the RGB color (0-1) and the line width"""
+        position_type = self.get_window().registry.get_marker_by_save_name(
+            position_markers.get_position_type(self._experiment.position_data, position))
+        edge_color = (0.0, 0.0, 0.0) if position_type is None else position_type.mpl_color
+        edge_width = 1.0 if position_type is None else 3.0
+        return edge_color, edge_width
 
     def _on_position_draw(self, position: Position, color: str, dz: int, dt: int) -> bool:
         """Called whenever a position is being drawn. Return False to prevent drawing of this position."""
