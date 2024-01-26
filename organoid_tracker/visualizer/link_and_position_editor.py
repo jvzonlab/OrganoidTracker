@@ -474,6 +474,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Select//All-All positions in multiple time points...": self._select_all_of_multiple_time_points,
             "Select//Select-Expand selection to entire track [T]": self._select_track,
             "Select//Select-Select positions in a rectangle...": self._show_positions_in_rectangle_selector,
+            "Select//Select-Deselect positions in range...": self._deselect_positions_from_time_points,
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
             "View//Linking-Lineage errors and warnings": self._show_lineage_errors,
             "Navigate//Layer-Layer of selected position [Space]": self._move_to_z_of_selected_position,
@@ -720,19 +721,19 @@ class LinkAndPositionEditor(AbstractEditor):
         activate(editor)
 
     def _select_all_of_multiple_time_points(self):
-        """Deletes all annotations of a given time point range."""
+        """Selects all annotations of a given time point range."""
         minimum, maximum = self._experiment.first_time_point_number(), self._experiment.last_time_point_number()
         if minimum is None or maximum is None:
             raise UserError("No data loaded", "No time points found. Did you load any data?")
 
         time_point_number_start = dialog.prompt_int("Start time point",
-                                                    "At which time point should we start the deletion?",
+                                                    "At which time point should we start the selection?",
                                                     minimum=minimum, maximum=maximum,
                                                     default=self._time_point.time_point_number())
         if time_point_number_start is None:
             return
         time_point_number_end = dialog.prompt_int("End time point",
-                                                  "Up to and including which time point should we delete?",
+                                                  "Up to and including which time point should we select?",
                                                   minimum=time_point_number_start, maximum=maximum,
                                                   default=time_point_number_start)
         if time_point_number_end is None:
@@ -759,6 +760,30 @@ class LinkAndPositionEditor(AbstractEditor):
             self.update_status(f"Selected {new_count - old_count} new position(s) across"
                                f" {time_point_number_end - time_point_number_start + 1} time point(s).")
 
+    def _deselect_positions_from_time_points(self):
+        """Deselects annotations of a given time point range."""
+        minimum, maximum = self._experiment.first_time_point_number(), self._experiment.last_time_point_number()
+        if minimum is None or maximum is None:
+            raise UserError("No data loaded", "No time points found. Did you load any data?")
+
+        time_point_number_start = dialog.prompt_int("First time point",
+                                                    "At which time point should we start the deselection?",
+                                                    minimum=minimum, maximum=maximum,
+                                                    default=self._time_point.time_point_number())
+        if time_point_number_start is None:
+            return
+        time_point_number_end = dialog.prompt_int("Last time point",
+                                                  "Up to and including which time point should we deselect?",
+                                                  minimum=time_point_number_start, maximum=maximum,
+                                                  default=time_point_number_start)
+        if time_point_number_end is None:
+            return
+
+        self._selected = [position for position in self._selected if (
+                    position.time_point_number() < time_point_number_start or position.time_point_number() > time_point_number_end)]
+        self.draw_view()
+        self.update_status(f"Deselected all positions from {time_point_number_end - time_point_number_start + 1} time point(s),"
+                               f"{time_point_number_start} and {time_point_number_end + 1}.")
 
     def _delete_positions_without_links(self):
         """Deletes all positions that have no links."""
