@@ -27,7 +27,8 @@ def _threshold(window: Window):
         return
 
     image_channel = window.display_settings.image_channel
-    window.get_experiment().images.filters.add_filter(image_channel, ThresholdFilter(min_value / 100))
+    for experiment in window.get_active_experiments():
+        experiment.images.filters.add_filter(image_channel, ThresholdFilter(min_value / 100))
     window.get_gui_experiment().redraw_image_and_data()
 
 
@@ -38,7 +39,8 @@ def _gaussian_blur(window: Window):
         return
 
     image_channel = window.display_settings.image_channel
-    window.get_experiment().images.filters.add_filter(image_channel, GaussianBlurFilter(value))
+    for experiment in window.get_active_experiments():
+        experiment.images.filters.add_filter(image_channel, GaussianBlurFilter(value))
     window.get_gui_experiment().redraw_image_and_data()
 
 
@@ -49,7 +51,8 @@ def _enhance_brightness(window: Window):
         return
 
     image_channel = window.display_settings.image_channel
-    window.get_experiment().images.filters.add_filter(image_channel, MultiplyPixelsFilter(multiplier))
+    for experiment in window.get_active_experiments():
+        experiment.images.filters.add_filter(image_channel, MultiplyPixelsFilter(multiplier))
     window.get_gui_experiment().redraw_image_and_data()
 
 
@@ -82,26 +85,35 @@ def _merge_channels(window: Window):
 
 
 def _remove_filters(window: Window):
-    images = window.get_experiment().images
-
     removed_count = 0
-
-    # Undo channel merging
-    image_loader = images.image_loader()
-    if isinstance(image_loader, ChannelSummingImageLoader):
-        images.image_loader(image_loader.get_unmerged_image_loader())
-        removed_count += 1
-
-    # Undo filters
+    experiment_count = 0
     image_channel = window.display_settings.image_channel
-    filters = list(images.filters.of_channel(image_channel))
-    removed_count += len(filters)
-    images.filters.clear_channel(image_channel)
 
-    if removed_count == 1:
-        window.set_status(f"Removed 1 filter for channel {image_channel.index_one}.")
+    for experiment in window.get_active_experiments():
+        experiment_count += 1
+        images = experiment.images
+
+        # Undo channel merging
+        image_loader = images.image_loader()
+        if isinstance(image_loader, ChannelSummingImageLoader):
+            images.image_loader(image_loader.get_unmerged_image_loader())
+            removed_count += 1
+
+        # Undo filters
+        filters = list(images.filters.of_channel(image_channel))
+        removed_count += len(filters)
+        images.filters.clear_channel(image_channel)
+
+    if experiment_count == 1:
+        if removed_count == 1:
+            window.set_status(f"Removed 1 filter for channel {image_channel.index_one}.")
+        else:
+            window.set_status(f"Removed {removed_count} filters for channel {image_channel.index_one}.")
     else:
-        window.set_status(f"Removed {removed_count} filters for channel {image_channel.index_one}.")
+        if removed_count == 1:
+            window.set_status(f"Removed 1 filter in total across all tabs for channel {image_channel.index_one}.")
+        else:
+            window.set_status(f"Removed {removed_count} filters in total across for channel {image_channel.index_one}.")
 
     window.get_gui_experiment().redraw_image_and_data()
 
