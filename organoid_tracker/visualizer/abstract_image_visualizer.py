@@ -239,7 +239,8 @@ class AbstractImageVisualizer(Visualizer):
     def _get_figure_title(self) -> str:
         timing = ""
         if self._experiment.images.has_timings():
-            timing = f", t={self._experiment.images.timings().get_time_h_since_start(self._time_point):.1f}h"
+            time_m = self._experiment.images.timings().get_time_m_since_start(self._time_point)
+            timing = f", t={time_m:.1f}m" if time_m < 90 else f", t={time_m/60:.1f}h"
         return f"Time point {self._time_point.time_point_number()}    (z={self._z}, " \
                f"c={self._display_settings.image_channel.index_one}{timing})"
 
