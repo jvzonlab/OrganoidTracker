@@ -37,7 +37,7 @@ def _get_sub_cell_fate(track: LinkingTrack, position_data: PositionData, lineage
         for next_track in next_tracks:
             _get_sub_cell_fate(next_track, position_data, lineage_fate, last_time_point_number)
     elif len(next_tracks) == 0:
-        if track.max_time_point_number() < last_time_point_number:
+        if track.last_time_point_number() < last_time_point_number:
             lineage_fate.ends += 1  # Ignores lineage ends in the last time point
         end_marker = linking_markers.get_track_end_marker(position_data, track.find_last_position())
         if end_marker == EndMarker.DEAD:

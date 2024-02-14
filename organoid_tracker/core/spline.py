@@ -319,6 +319,14 @@ class SplineCollection:
         """Gets the last time point (inclusive) that contains data axes, or None if there are no axes stored."""
         return self._max_time_point_number
 
+    def first_time_point(self) -> Optional[TimePoint]:
+        """Gets the first time point that contains data axes, or None if there are no axes stored."""
+        return TimePoint(self._min_time_point_number) if self._min_time_point_number is not None else None
+
+    def last_time_point(self) -> Optional[TimePoint]:
+        """Gets the last time point (inclusive) that contains data axes, or None if there are no axes stored."""
+        return TimePoint(self._max_time_point_number) if self._max_time_point_number is not None else None
+
     def time_points(self) -> Iterable[TimePoint]:
         """Gets all time points with data axes in them, from first to last."""
         if self._min_time_point_number is None:

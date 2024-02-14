@@ -1,3 +1,4 @@
+import warnings
 from pprint import pprint
 from typing import Optional, Dict, Iterable, List, Set, Union, Tuple, Any, ItemsView, Callable
 
@@ -30,7 +31,7 @@ class LinkingTrack:
         if time_point_number < self._min_time_point_number \
                 or time_point_number >= self._min_time_point_number + len(self._positions_by_time_point):
             raise IndexError(f"Time point {time_point_number} outside track from {self._min_time_point_number} to"
-                             f" {self.max_time_point_number()}")
+                             f" {self.last_time_point_number()}")
         return self._positions_by_time_point[time_point_number - self._min_time_point_number]
 
     def _find_pasts(self, time_point_number: int) -> Set[Position]:
@@ -96,9 +97,31 @@ class LinkingTrack:
         self._next_tracks.remove(was)
         self._next_tracks.append(will_be)
 
-    def max_time_point_number(self) -> int:
+    def first_time_point_number(self) -> int:
+        """Gets the first time point number of this track."""
+        return self._min_time_point_number
+
+    def last_time_point_number(self) -> int:
         """Gets the highest time point number where this track still contains a position ."""
         return self._min_time_point_number + len(self._positions_by_time_point) - 1
+
+    def min_time_point_number(self) -> int:
+        warnings.warn("LinkingTrack.min_time_point_number() was renamed to"
+                      "LinkingTrack.first_time_point_number() for consistency with other classes", DeprecationWarning)
+        return self.first_time_point_number()
+
+    def max_time_point_number(self) -> int:
+        warnings.warn("LinkingTrack.max_time_point_number() was renamed to"
+                      " LinkingTrack.last_time_point_number() for consistency with other classes", DeprecationWarning)
+        return self.last_time_point_number()
+
+    def first_time_point(self) -> TimePoint:
+        """Gets the first time point of this track."""
+        return TimePoint(self._min_time_point_number)
+
+    def last_time_point(self) -> TimePoint:
+        """Gets the last time point of this track."""
+        return TimePoint(self._min_time_point_number + len(self._positions_by_time_point) - 1)
 
     def get_age(self, position: Position) -> int:
         """Gets the age of this position. This will be 0 if its the first track position, 1 on the position after that,
@@ -106,7 +129,7 @@ class LinkingTrack:
         return position.time_point_number() - self._min_time_point_number
 
     def __repr__(self):
-        return f"<LinkingTrack t={self._min_time_point_number}-{self.max_time_point_number()}>"
+        return f"<LinkingTrack t={self._min_time_point_number}-{self.last_time_point_number()}>"
 
     def get_next_tracks(self) -> Set["LinkingTrack"]:
         """Gets a set of the tracks that will directly follow this track. If empty, the lineage end. If the length is 2,
@@ -120,9 +143,8 @@ class LinkingTrack:
         size of 1. Larger sizes indicate a cell merge, which makes no biological sense."""
         return set(self._previous_tracks)
 
-    def min_time_point_number(self) -> int:
-        """Gets the first time point number of this track."""
-        return self._min_time_point_number
+
+
 
     def __len__(self):
         """Gets the time length of the track, in number of time points."""
@@ -213,7 +235,7 @@ class Links:
                 track._positions_by_time_point = track._positions_by_time_point[1:]
         else:
             # Position is further in the track
-            if position.time_point_number() < track.max_time_point_number():
+            if position.time_point_number() < track.last_time_point_number():
                 # Need to split so that position is the last position of the track
                 _ = self._split_track(track, age + 1)
 
@@ -321,7 +343,7 @@ class Links:
             return  # Already has that link, don't add a second link (this will corrupt the data structure)
 
         if track1 is not None and track2 is None:
-            if track1.max_time_point_number() == position1.time_point_number() \
+            if track1.last_time_point_number() == position1.time_point_number() \
                     and not track1._next_tracks \
                     and position2.time_point_number() == position1.time_point_number() + 1:
                 # This very common case of adding a single position to a track is singled out
@@ -341,7 +363,7 @@ class Links:
             self._tracks.append(track2)
             self._position_to_track[position2] = track2
 
-        if position1.time_point_number() < track1.max_time_point_number():
+        if position1.time_point_number() < track1.last_time_point_number():
             # Need to split track 1 so that position1 is at the end
             _ = self._split_track(track1, track1.get_age(position1) + 1)
 
@@ -438,7 +460,7 @@ class Links:
             self._try_remove_if_one_length_track(new_track)
         else:
             # Check if the tracks connect
-            if not track1.max_time_point_number() == position1.time_point_number():
+            if not track1.last_time_point_number() == position1.time_point_number():
                 # Position 1 is not the last position in its track, so it cannot be connected to another track
                 return
             if not track2._min_time_point_number == position2.time_point_number():
@@ -637,7 +659,7 @@ class Links:
                     raise ValueError(f"{position} in track {track} is indexed as being in track"
                                      f" {self._position_to_track[position]}")
             for previous_track in track._previous_tracks:
-                if previous_track.max_time_point_number() >= track._min_time_point_number:
+                if previous_track.last_time_point_number() >= track._min_time_point_number:
                     raise ValueError(f"Previous track {previous_track} is not in the past compared to {track}")
                 if track not in previous_track._next_tracks:
                     raise ValueError(f"Current track {track} is connected to previous track {previous_track}, but that"
@@ -678,7 +700,7 @@ class Links:
         for track in self._tracks:
             if track._min_time_point_number > time_point_number:
                 continue
-            if track.max_time_point_number() < time_point_number:
+            if track.last_time_point_number() < time_point_number:
                 continue
             yield track
 
@@ -708,7 +730,7 @@ class Links:
         time_point_number = time_point.time_point_number()
         if position.time_point_number() > time_point_number:
             # Run back in time
-            while track.min_time_point_number() > time_point_number:
+            while track.first_time_point_number() > time_point_number:
                 next_tracks = track.get_previous_tracks()
                 if len(next_tracks) == 0:
                     return track.find_first_position()  # Cannot go back further
@@ -717,7 +739,7 @@ class Links:
             return track.find_position_at_time_point_number(time_point_number)
         else:
             # Run forwards in time
-            while track.max_time_point_number() < time_point_number:
+            while track.last_time_point_number() < time_point_number:
                 next_tracks = track.get_next_tracks()
                 if len(next_tracks) == 0:
                     return track.find_last_position()  # Cannot go forward further
@@ -742,7 +764,7 @@ class Links:
             track_min_time_point_number = track._min_time_point_number
             if track_min_time_point_number > time_point_number:
                 continue
-            track_max_time_point_number = track.max_time_point_number()
+            track_max_time_point_number = track.last_time_point_number()
             if track_max_time_point_number < time_point_number:
                 continue
             # Track crosses this time point
@@ -769,7 +791,7 @@ class Links:
 
         time_point_number = position.time_point_number()
         while True:
-            if time_point_number < track.min_time_point_number():
+            if time_point_number < track.first_time_point_number():
                 previous_tracks = track.get_previous_tracks()
                 if len(previous_tracks) == 1:
                     track = previous_tracks.pop()
@@ -789,7 +811,7 @@ class Links:
 
         time_point_number = position.time_point_number()
         while True:
-            if time_point_number > track.max_time_point_number():
+            if time_point_number > track.last_time_point_number():
                 next_tracks = track.get_next_tracks()
                 if len(next_tracks) == 1:
                     track = next_tracks.pop()

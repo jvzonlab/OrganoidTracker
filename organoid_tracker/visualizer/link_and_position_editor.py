@@ -842,8 +842,8 @@ class LinkAndPositionEditor(AbstractEditor):
 
         # Delete all positions from short tracks
         for track in links.find_starting_tracks():
-            min_time_point_number = track.min_time_point_number()
-            max_time_point_number = max([some_track.max_time_point_number()
+            min_time_point_number = track.first_time_point_number()
+            max_time_point_number = max([some_track.last_time_point_number()
                                          for some_track in track.find_all_descending_tracks(include_self=True)])
             duration_time_points = max_time_point_number - min_time_point_number + 1
             if duration_time_points < min_time_points:

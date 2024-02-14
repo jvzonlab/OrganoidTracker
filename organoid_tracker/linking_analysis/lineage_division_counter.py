@@ -23,14 +23,14 @@ def get_division_count_in_lineage(starting_track: LinkingTrack, position_data: P
     """
     division_count = 0
     for track in starting_track.find_all_descending_tracks(include_self=True):
-        if track.min_time_point_number() > last_time_point_number:
+        if track.first_time_point_number() > last_time_point_number:
             # Ignore this track, it is past the end of the time point window
             continue
         if not track.get_next_tracks() \
                 and linking_markers.get_track_end_marker(position_data, track.find_last_position()) != EndMarker.DEAD\
-                and track.max_time_point_number() < last_time_point_number:
+                and track.last_time_point_number() < last_time_point_number:
             return None  # Don't know why this track ended, division count in lineage is uncertain
-        if track.max_time_point_number() < last_time_point_number and len(track.get_next_tracks()) > 1:
+        if track.last_time_point_number() < last_time_point_number and len(track.get_next_tracks()) > 1:
             division_count += 1
     return division_count
 
@@ -41,7 +41,7 @@ def get_min_division_count_in_lineage(starting_track: LinkingTrack, last_time_po
     ignoring divisions that were happening outside the view."""
     division_count = 0
     for track in starting_track.find_all_descending_tracks(include_self=True):
-        if track.max_time_point_number() < last_time_point_number and len(track.get_next_tracks()) > 1:
+        if track.last_time_point_number() < last_time_point_number and len(track.get_next_tracks()) > 1:
             division_count += 1
     return division_count
 

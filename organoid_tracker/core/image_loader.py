@@ -64,6 +64,20 @@ class ImageLoader(ABC):
         """Gets the last time point (inclusive) for which images are available."""
         pass
 
+    def first_time_point(self) -> Optional[TimePoint]:
+        """Gets the first time point for which images are available. Uses first_time_point_number() under the hood."""
+        number = self.first_time_point_number()
+        if number is None:
+            return None
+        return TimePoint(number)
+
+    def last_time_point(self) -> Optional[TimePoint]:
+        """Gets the last time point for which images are available. Uses last_time_point_number() under the hood."""
+        number = self.last_time_point_number()
+        if number is None:
+            return None
+        return TimePoint(number)
+
     def get_channels(self) -> List[ImageChannel]:
         """Gets a list of all available image channels."""
         return [ImageChannel(index_zero=i) for i in range(self.get_channel_count())]
@@ -115,6 +129,7 @@ class ImageLoader(ABC):
         """Used when the image loader is no longer needed, because a user closed the tab or switched out the image
         loader. Closes any file handles."""
         pass
+
 
 
 class NullImageLoader(ImageLoader):

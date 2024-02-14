@@ -2,18 +2,17 @@ from typing import Optional, Iterable
 
 from numpy import ndarray
 
-from organoid_tracker.core import TimePoint, Name, UserError, min_none, max_none, Color
+from organoid_tracker.core import TimePoint, Name, min_none, max_none, Color
 from organoid_tracker.core.beacon_collection import BeaconCollection
 from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.global_data import GlobalData
 from organoid_tracker.core.images import Images
 from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.links import Links
-from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.spline import SplineCollection
-from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.core.warning_limits import WarningLimits
 
 
@@ -131,16 +130,31 @@ class Experiment:
         return TimePoint(time_point_number)
 
     def first_time_point_number(self) -> Optional[int]:
-        """Gets the first time point of the experiment where there is data (images and/or positions)."""
+        """Gets the first time point of the experiment where there is data (images, splines and/or positions)."""
         return min_none(self._images.image_loader().first_time_point_number(),
                         self._positions.first_time_point_number(),
                         self.splines.first_time_point_number())
 
     def last_time_point_number(self) -> Optional[int]:
-        """Gets the last time point (inclusive) of the experiment where there is data (images and/or positions)."""
+        """Gets the last time point (inclusive) of the experiment where there is data (images, splines and/or
+         positions)."""
         return max_none(self._images.image_loader().last_time_point_number(),
                         self._positions.last_time_point_number(),
                         self.splines.last_time_point_number())
+
+    def first_time_point(self) -> Optional[TimePoint]:
+        """Gets the first time point of the experiment where there is data (images, splines and/or positions)."""
+        number = self.first_time_point_number()
+        if number is None:
+            return None
+        return TimePoint(number)
+
+    def last_time_point(self) -> Optional[TimePoint]:
+        """Gets the last time point of the experiment where there is data (images, splines and/or positions)."""
+        number = self.last_time_point_number()
+        if number is None:
+            return None
+        return TimePoint(number)
 
     def get_previous_time_point(self, time_point: TimePoint) -> TimePoint:
         """Gets the time point directly before the given time point. Throws ValueError if the given time point is the

@@ -18,13 +18,13 @@ def find_times_divided(links: Links, position: Position, first_time_point_number
         division_count += 1
 
         track = parent_tracks.pop()
-        if track.min_time_point_number() > first_time_point_number:
+        if track.first_time_point_number() > first_time_point_number:
             # Go back further in time
             parent_tracks = track.get_previous_tracks()
         else:
             parent_tracks = []
 
-    if track.min_time_point_number() > first_time_point_number:
+    if track.first_time_point_number() > first_time_point_number:
         # Could not look back far enough
         return None
 
