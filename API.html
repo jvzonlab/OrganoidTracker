@@ -269,13 +269,14 @@
 <p>You can of course extract all necessary information from the <code class="docutils literal notranslate"><span class="pre">find_next</span></code> and <code class="docutils literal notranslate"><span class="pre">find_futures</span></code> methods discussed above. But it is faster for the computer to quickly jump to the end of the track, than walking through all links time point for time point.</p>
 <p>You can get the track a position belongs to using the following method:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+
 <span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
 <span class="n">position</span> <span class="o">=</span> <span class="o">...</span>
 
 <span class="n">track</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">get_track</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Track goes from time point&quot;</span><span class="p">,</span> <span class="n">track</span><span class="o">.</span><span class="n">min_time_point_number</span><span class="p">(),</span> <span class="s2">&quot;to&quot;</span><span class="p">,</span>
-      <span class="n">track</span><span class="o">.</span><span class="n">max_time_point_number</span><span class="p">(),</span> <span class="s2">&quot;after which&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">track</span><span class="o">.</span><span class="n">get_next_tracks</span><span class="p">()),</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Track goes from time point&quot;</span><span class="p">,</span> <span class="n">track</span><span class="o">.</span><span class="n">first_time_point_number</span><span class="p">(),</span> <span class="s2">&quot;to&quot;</span><span class="p">,</span>
+      <span class="n">track</span><span class="o">.</span><span class="n">last_time_point_number</span><span class="p">(),</span> <span class="s2">&quot;after which&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">track</span><span class="o">.</span><span class="n">get_next_tracks</span><span class="p">()),</span>
       <span class="s2">&quot;directly follow&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
