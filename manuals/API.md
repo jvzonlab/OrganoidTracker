@@ -187,13 +187,14 @@ You can get the track a position belongs to using the following method:
 
 ```python
 from organoid_tracker.core.experiment import Experiment
+
 experiment = Experiment()
 position = ...
 
 track = experiment.links.get_track(position)
 
-print("Track goes from time point", track.min_time_point_number(), "to",
-      track.max_time_point_number(), "after which", len(track.get_next_tracks()),
+print("Track goes from time point", track.first_time_point_number(), "to",
+      track.last_time_point_number(), "after which", len(track.get_next_tracks()),
       "directly follow")
 ```
 

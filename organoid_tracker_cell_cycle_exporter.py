@@ -51,8 +51,8 @@ for link in experiment.links.find_all_links():
 
         if (division_penalty1 + division_penalty2 + division_penalty3)/3 < -2.0:
             track = experiment.links.get_track(link[0])
-            if ((link[0].time_point_number() - track.min_time_point_number() > 6)
-                and (track.max_time_point_number() - link[0].time_point_number()  > 6)):
+            if ((link[0].time_point_number() - track.first_time_point_number() > 6)
+                and (track.last_time_point_number() - link[0].time_point_number() > 6)):
                 print(experiment.links.contains_link(link[1], next_position))
                 experiment.links.remove_link(link[1], next_position)
                 print(experiment.links.contains_link(link[1], next_position))

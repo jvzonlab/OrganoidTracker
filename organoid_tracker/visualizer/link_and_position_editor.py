@@ -470,11 +470,11 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//LineageEnd-Mark as moving out of view [V]": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
             "Edit//LineageEnd-Remove end marker": lambda: self._try_set_end_marker(None),
             "Edit//Marker-Set color of lineage...": self._set_color_of_lineage,
-            "Select//All-All positions in current time point [Ctrl+A]": self._select_all,
-            "Select//All-All positions in multiple time points...": self._select_all_of_multiple_time_points,
-            "Select//Select-Expand selection to entire track [T]": self._select_track,
             "Select//Select-Select positions in a rectangle...": self._show_positions_in_rectangle_selector,
-            "Select//Select-Deselect positions in range...": self._deselect_positions_from_time_points,
+            "Select//Select-Select all positions in current time point [Ctrl+A]": self._select_all,
+            "Select//Select-Select all positions in time point range...": self._select_all_of_multiple_time_points,
+            "Select//Deselect-Deselect positions in time point range...": self._deselect_positions_from_time_points,
+            "Select//Expand-Expand selection to entire track [T]": self._select_track,
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
             "View//Linking-Lineage errors and warnings": self._show_lineage_errors,
             "Navigate//Layer-Layer of selected position [Space]": self._move_to_z_of_selected_position,
@@ -561,7 +561,6 @@ class LinkAndPositionEditor(AbstractEditor):
             if track_of_position is None:
                 to_select.add(position)
                 continue
-            #for track in track_of_position.find_all_previous_and_descending_tracks(include_self=True):
             for some_position in track_of_position.positions():
                 to_select.add(some_position)
 
@@ -870,8 +869,8 @@ class LinkAndPositionEditor(AbstractEditor):
 
         # Delete all positions from short tracks
         for track in links.find_starting_tracks():
-            min_time_point_number = track.min_time_point_number()
-            max_time_point_number = max([some_track.max_time_point_number()
+            min_time_point_number = track.first_time_point_number()
+            max_time_point_number = max([some_track.last_time_point_number()
                                          for some_track in track.find_all_descending_tracks(include_self=True)])
             duration_time_points = max_time_point_number - min_time_point_number + 1
             if duration_time_points < min_time_points:

@@ -253,4 +253,4 @@ def _save_overview_file(experiment: Experiment, file_name: str):
 
             # Write the line, adding 1 to all track ids to avoid track 0
             handle.write(
-                f"{track_id + 1} {track.min_time_point_number()} {track.max_time_point_number()} {parent_id + 1}\n")
+                f"{track_id + 1} {track.first_time_point_number()} {track.last_time_point_number()} {parent_id + 1}\n")

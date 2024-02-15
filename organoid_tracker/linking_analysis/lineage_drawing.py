@@ -20,8 +20,8 @@ def _get_lineage_drawing_start_time(lineage: LinkingTrack) -> int:
     previous_tracks = lineage.get_previous_tracks()
     if previous_tracks:
         # Make lineage connect to previous lineage
-        return previous_tracks.pop().max_time_point_number()
-    return lineage.min_time_point_number()
+        return previous_tracks.pop().last_time_point_number()
+    return lineage.first_time_point_number()
 
 
 def _no_filter(_track: LinkingTrack) -> bool:
@@ -50,12 +50,12 @@ class _Line(NamedTuple):
     @staticmethod
     def vertical(*, x: float, track: LinkingTrack) -> "_Line":
         t_start = _get_lineage_drawing_start_time(track)
-        t_end = track.max_time_point_number()
+        t_end = track.last_time_point_number()
         return _Line(time_point_number_start=t_start, time_point_number_end=t_end, x_start=x, x_end=x, track=track)
 
     @staticmethod
     def horizontal(*, x_start: float, x_end: float, track: LinkingTrack) -> "_Line":
-        time_point_number = track.max_time_point_number()
+        time_point_number = track.last_time_point_number()
         return _Line(time_point_number_start=time_point_number, time_point_number_end=time_point_number,
                      x_start=x_start, x_end=x_end, track=track)
 

@@ -273,7 +273,7 @@ def connect_loose_ends(experiment: Experiment, experiment_result: Experiment, ov
         past_positions = []
 
         for t in range(0, window):
-            if (time_point_number - t) > track.min_time_point_number():
+            if (time_point_number - t) > track.first_time_point_number():
                 past_positions.append(track.find_position_at_time_point_number(time_point_number - t))
 
         ends_plus_window = ends_plus_window + past_positions

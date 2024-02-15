@@ -11,7 +11,7 @@ def find_ended_tracks(links: Links, last_time_point_number: int) -> Set[Position
     ended_lineages = set()
 
     for track in links.find_all_tracks():
-        time_point_number = track.max_time_point_number()
+        time_point_number = track.last_time_point_number()
         if time_point_number >= last_time_point_number - 1:
             continue
 

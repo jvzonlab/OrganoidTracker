@@ -429,6 +429,14 @@ class Images:
         """Gets the last time point with an image, if any."""
         return self._image_loader.last_time_point_number()
 
+    def first_time_point(self) -> Optional[TimePoint]:
+        """Gets the first time point with an image, if any."""
+        return self._image_loader.first_time_point()
+
+    def last_time_point(self) -> Optional[TimePoint]:
+        """Gets the last time point with an image, if any."""
+        return self._image_loader.last_time_point()
+
     def time_points(self) -> Iterable[TimePoint]:
         """Gets all time points for which images are available."""
         min_time_point_number = self._image_loader.first_time_point_number()

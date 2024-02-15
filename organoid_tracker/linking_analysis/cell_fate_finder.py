@@ -59,13 +59,13 @@ def get_fate_ext(links: Links, position_data: PositionData, division_lookahead_t
         marker = linking_markers.get_track_end_marker(position_data, track.find_last_position())
         if marker == EndMarker.DEAD:
             # Actual cell death
-            time_points_remaining = track.max_time_point_number() - position.time_point_number()
+            time_points_remaining = track.last_time_point_number() - position.time_point_number()
             return CellFate(CellFateType.WILL_DIE, time_points_remaining)
         elif EndMarker.is_shed(marker):
             # Cell shedding
-            time_points_remaining = track.max_time_point_number() - position.time_point_number()
+            time_points_remaining = track.last_time_point_number() - position.time_point_number()
             return CellFate(CellFateType.WILL_SHED, time_points_remaining)
-        elif track.max_time_point_number() > max_time_point_number:
+        elif track.last_time_point_number() > max_time_point_number:
             # No idea what happened, but we followed the cell for a long enough time, conclude that cell just moved
             return CellFate(CellFateType.JUST_MOVING, None)
 
@@ -73,7 +73,7 @@ def get_fate_ext(links: Links, position_data: PositionData, division_lookahead_t
         return UNKNOWN_FATE
     elif len(next_tracks) >= 2:
         # Found the next division
-        time_points_remaining = track.max_time_point_number() - position.time_point_number()
+        time_points_remaining = track.last_time_point_number() - position.time_point_number()
         return CellFate(CellFateType.WILL_DIVIDE, time_points_remaining)
     else:
         print("len(next_tracks) == 1, this should be impossible")

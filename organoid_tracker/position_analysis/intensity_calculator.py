@@ -97,14 +97,14 @@ def get_normalized_intensity_over_time(experiment: Experiment, around_position: 
     track = experiment.links.get_track(around_position)
     if track is None:
         return None
-    if track.min_time_point_number() > tracking_start_time_point:
+    if track.first_time_point_number() > tracking_start_time_point:
         if not allow_incomplete:
             return None  # Track is not long enough for the requested time window
-        tracking_start_time_point = track.min_time_point_number()
-    if track.max_time_point_number() < tracking_end_time_point:
+        tracking_start_time_point = track.first_time_point_number()
+    if track.last_time_point_number() < tracking_end_time_point:
         if not allow_incomplete:
             return None
-        tracking_end_time_point = track.max_time_point_number()
+        tracking_end_time_point = track.last_time_point_number()
 
     # Extract intensites from the track
     intensities = list()

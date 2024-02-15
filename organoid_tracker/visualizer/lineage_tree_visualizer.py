@@ -265,7 +265,7 @@ class LineageTreeVisualizer(Visualizer):
                 if _has_error_close_in_time(position_data, time_point_number, track):
                     return 0.7, 0.7, 0.7
 
-            if self._display_deaths and track.max_time_point_number() - time_point_number < 10:
+            if self._display_deaths and track.last_time_point_number() - time_point_number < 10:
                 end_marker = linking_markers.get_track_end_marker(position_data, track.find_last_position())
                 if end_marker == EndMarker.DEAD:
                     return 1, 0, 0
@@ -327,8 +327,8 @@ class LineageTreeVisualizer(Visualizer):
 
 
 def _has_error_close_in_time(position_data: PositionData, time_point_number: int, track: LinkingTrack, time_window: int = 5):
-    min_t = max(track.min_time_point_number(), time_point_number - time_window)
-    max_t = min(track.max_time_point_number(), time_point_number + time_window)
+    min_t = max(track.first_time_point_number(), time_point_number - time_window)
+    max_t = min(track.last_time_point_number(), time_point_number + time_window)
     for t in range(min_t, max_t + 1):
         if linking_markers.get_error_marker(position_data, track.find_position_at_time_point_number(t)):
             return True
