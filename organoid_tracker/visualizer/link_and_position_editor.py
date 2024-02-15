@@ -478,6 +478,8 @@ class LinkAndPositionEditor(AbstractEditor):
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
             "View//Linking-Lineage errors and warnings": self._show_lineage_errors,
             "Navigate//Layer-Layer of selected position [Space]": self._move_to_z_of_selected_position,
+            "Navigate//Start-Find first position of selected track [0]": self._move_to_track_start,
+            "Navigate//Start-Find last position of selected track [9]": self._move_to_track_end,
         }
 
         # Add options for adding position flags
@@ -576,6 +578,31 @@ class LinkAndPositionEditor(AbstractEditor):
             # Select that position
             self._selected.append(position)
         return super()._move_to_position(position)
+
+    def _move_to_track_start(self):
+        if len(self._selected) != 1:
+            self.update_status("Select only one position to move to a track origin")
+            return
+        track_of_position = self._experiment.links.get_track(self._selected[0])
+        if track_of_position is not None:
+            first_position_of_track = track_of_position.find_first_position()
+            return super()._move_to_position(first_position_of_track)
+        else:
+            self.update_status("Position does not belong to a track")
+            return
+
+    def _move_to_track_end(self):
+        if len(self._selected) != 1:
+            self.update_status("Select only one position to move to a track origin")
+            return
+        track_of_position = self._experiment.links.get_track(self._selected[0])
+        if track_of_position is not None:
+            last_position_of_track = track_of_position.find_last_position()
+            return super()._move_to_position(last_position_of_track)
+        else:
+            self.update_status("Position does not belong to a track")
+            return
+
 
     def _move_to_z_of_selected_position(self):
         if len(self._selected) == 0:
