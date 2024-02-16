@@ -14,7 +14,7 @@ from organoid_tracker.image_loading import _lif
 from organoid_tracker.util import bits
 
 
-def load_from_lif_file(experiment: Experiment, file: str, series_name: str, min_time_point: int = 0,
+def load_from_lif_file(experiment: Experiment, file: str, series_index_or_name: str, min_time_point: int = 0,
                        max_time_point: int = 1000000000):
     """Sets up the experimental images for a LIF file that is not yet opened."""
     if not os.path.exists(file):
@@ -25,13 +25,13 @@ def load_from_lif_file(experiment: Experiment, file: str, series_name: str, min_
     # Find index of series
     try:
         # Try to parse as number
-        series_index = int(series_name)
+        series_index = int(series_index_or_name)
     except ValueError:
         # Previously (< December 2023) we stored the series name
         # Problem is that these aren't unique, so we switched to the index
         series_index = None
         for index, header in enumerate(reader.getSeriesHeaders()):
-            if header.getName() == series_name:
+            if header.getName() == series_index_or_name:
                 series_index = index
         if series_index is None:
             raise ValueError("No series matched the given name. Available names: "

@@ -12,6 +12,7 @@ def prompt_image_series(experiment: Experiment) -> bool:
         ("Image per time point", "*.png;*.jpg;*.gif"),
         ("LIF file", "*.lif"),
         ("ND2 file", "*.nd2"),
+        ("CZI file", "*.czi"),
         ("Imaris file", "*.ims")])
     if not full_path:
         return False  # Cancelled
@@ -39,6 +40,18 @@ def prompt_image_series(experiment: Experiment) -> bool:
         if location is not None:
             experiment.images.close_image_loader()
             nd2file_image_loader.load_image_series(experiment, reader, location)
+            return True
+        return False
+
+    if file_name.endswith(".czi"):
+        # CZI file loading
+        from organoid_tracker.image_loading import czifile_image_loader
+        reader, series_count = czifile_image_loader.read_czi_file(full_path)
+        location = dialog.prompt_int("Image series", f"Which image series do you want load? (1-"
+                                                     f"{series_count}, inclusive)", minimum=1, maximum=series_count)
+        if location is not None:
+            experiment.images.close_image_loader()
+            czifile_image_loader.load_from_czi_reader(experiment, full_path, reader, location - 1)
             return True
         return False
 

@@ -22,6 +22,10 @@ def load_images(experiment: Experiment, container: str, pattern: str,
         from organoid_tracker.image_loading import nd2file_image_loader
         nd2file_image_loader.load_image_series_from_config(experiment, container, pattern, min_time_point, max_time_point)
         return
+    if container.endswith(".czi"):
+        from organoid_tracker.image_loading import czifile_image_loader
+        czifile_image_loader.load_from_czi_file(experiment, container, pattern, min_time_point, max_time_point)
+        return
     if container.endswith(".ims"):
         from organoid_tracker.image_loading import imsfile_image_loader
         imsfile_image_loader.load_from_ims_file(experiment, container, min_time_point, max_time_point)
