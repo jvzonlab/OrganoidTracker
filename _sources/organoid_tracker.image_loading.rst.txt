@@ -10,6 +10,7 @@ Submodules
    organoid_tracker.image_loading.array_image_loader
    organoid_tracker.image_loading.builtin_image_filters
    organoid_tracker.image_loading.builtin_merging_image_loaders
+   organoid_tracker.image_loading.czifile_image_loader
    organoid_tracker.image_loading.folder_image_loader
    organoid_tracker.image_loading.general_image_loader
    organoid_tracker.image_loading.imsfile_image_loader

@@ -54,7 +54,7 @@
 <li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
 <li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Supported image formats</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#lif-and-nd2-files">LIF and ND2 files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lif-czi-and-nd2-files">LIF, CZI and ND2 files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ims-files">IMS files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#a-folder-containing-one-3d-image-for-every-time-point">A folder containing one 3D image for every time point</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#a-multi-page-tiff-file">A multi-page TIFF file</a></li>
@@ -102,15 +102,14 @@
 <ul class="simple">
 <li><p>There is some basic support for 2D images. They will be loaded as 3D images with only a single xy plane.</p></li>
 <li><p>If you try to load a colored image (like a PNG file), then the image will be converted to grayscale.</p></li>
-<li><p>The program is made for tracking cells. Loading a single image is therefore not useful. The program will, after displaying a warning, load the image as a “movie” with only one time point.</p></li>
 </ul>
-<section id="lif-and-nd2-files">
-<h2>LIF and ND2 files<a class="headerlink" href="#lif-and-nd2-files" title="Permalink to this heading"></a></h2>
-<p>LIF files are used by Leica microscopes while ND2 files are used by Nikon microscopes. Both file types contain images of all available time points in a single file. To load such a file, simply select <code class="docutils literal notranslate"><span class="pre">File</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Load</span> <span class="pre">images...</span></code> and select the file. If your file contains multiple time series, you will be prompted to pick one.</p>
+<section id="lif-czi-and-nd2-files">
+<h2>LIF, CZI and ND2 files<a class="headerlink" href="#lif-czi-and-nd2-files" title="Permalink to this heading"></a></h2>
+<p>LIF files are used by Leica microscopes, CZI files by Zeiss microscopes and ND2 files by Nikon microscopes. All of these file types contain images of all available time points in a single file. To load a file, simply select <code class="docutils literal notranslate"><span class="pre">File</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Load</span> <span class="pre">images...</span></code> and select the file. If your file contains multiple time series, you will be prompted to pick one.</p>
 </section>
 <section id="ims-files">
 <h2>IMS files<a class="headerlink" href="#ims-files" title="Permalink to this heading"></a></h2>
-<p>IMS files are used by Imaris. OrganoidTracker only has basic support for those files: it will read the images, but not anything else. To load an Imaris file, simply select <code class="docutils literal notranslate"><span class="pre">File</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Load</span> <span class="pre">images...</span></code> and select the file.</p>
+<p>IMS files are used by Imaris. OrganoidTracker only has basic support for those files: it will read the images, but not anything else, like segmentation or tracking data. To load an Imaris file, simply select <code class="docutils literal notranslate"><span class="pre">File</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Load</span> <span class="pre">images...</span></code> and select the file.</p>
 </section>
 <section id="a-folder-containing-one-3d-image-for-every-time-point">
 <h2>A folder containing one 3D image for every time point<a class="headerlink" href="#a-folder-containing-one-3d-image-for-every-time-point" title="Permalink to this heading"></a></h2>

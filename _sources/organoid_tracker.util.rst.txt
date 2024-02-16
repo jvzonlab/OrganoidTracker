@@ -12,6 +12,7 @@ Submodules
    organoid_tracker.util.mpl_helper
    organoid_tracker.util.mpl_helper_3d
    organoid_tracker.util.run_script_creator
+   organoid_tracker.util.xml_wrapper
 
 Module contents
 ---------------
