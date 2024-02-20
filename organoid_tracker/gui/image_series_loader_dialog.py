@@ -26,7 +26,7 @@ def prompt_image_series(experiment: Experiment) -> bool:
         series_index = option_choose_dialog.prompt_list("Choose an image serie", "Choose an image serie", "Image serie:", series)
         if series_index is not None:
             experiment.images.close_image_loader()
-            liffile_image_loader.load_from_lif_reader(experiment, full_path, reader, series_index)
+            liffile_image_loader.load_from_lif_reader(experiment, full_path, reader, series_index + 1)
             return True
         return False
 
@@ -51,7 +51,7 @@ def prompt_image_series(experiment: Experiment) -> bool:
                                                      f"{series_count}, inclusive)", minimum=1, maximum=series_count)
         if location is not None:
             experiment.images.close_image_loader()
-            czifile_image_loader.load_from_czi_reader(experiment, full_path, reader, location - 1)
+            czifile_image_loader.load_from_czi_reader(experiment, full_path, reader, location)
             return True
         return False
 

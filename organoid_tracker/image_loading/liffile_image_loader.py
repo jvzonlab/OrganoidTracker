@@ -25,28 +25,28 @@ def load_from_lif_file(experiment: Experiment, file: str, series_index_or_name: 
     # Find index of series
     try:
         # Try to parse as number
-        series_index = int(series_index_or_name)
+        series_index_one = int(series_index_or_name)
     except ValueError:
         # Previously (< December 2023) we stored the series name
         # Problem is that these aren't unique, so we switched to the index
-        series_index = None
+        series_index_one = None
         for index, header in enumerate(reader.getSeriesHeaders()):
             if header.getName() == series_index_or_name:
-                series_index = index
-        if series_index is None:
+                series_index_one = index + 1
+        if series_index_one is None:
             raise ValueError("No series matched the given name. Available names: "
                              + str([header.getName() for header in reader.getSeriesHeaders()]))
-    if series_index < 0 or series_index >= len(reader.getSeriesHeaders()):
-        raise ValueError(f"Series index {series_index} is out of bounds. Range: 0 - {len(reader.getSeriesHeaders()) - 1}")
+    if series_index_one < 1 or series_index_one > len(reader.getSeriesHeaders()):
+        raise ValueError(f"Series index {series_index_one} is out of bounds. Range: 1 - {len(reader.getSeriesHeaders())}")
 
-    load_from_lif_reader(experiment, file, reader, series_index, min_time_point, max_time_point)
+    load_from_lif_reader(experiment, file, reader, series_index_one, min_time_point, max_time_point)
 
 
-def load_from_lif_reader(experiment: Experiment, file: str, reader: _lif.Reader, serie_index: int, min_time_point: int = 0,
+def load_from_lif_reader(experiment: Experiment, file: str, reader: _lif.Reader, serie_index_one: int, min_time_point: int = 0,
                          max_time_point: int = 1000000000):
     """Sets up the experimental images for an already opened LIF file."""
-    experiment.images.image_loader(_LifImageLoader(file, reader, serie_index, min_time_point, max_time_point))
-    serie_header = reader.getSeriesHeaders()[serie_index]
+    experiment.images.image_loader(_LifImageLoader(file, reader, serie_index_one, min_time_point, max_time_point))
+    serie_header = reader.getSeriesHeaders()[serie_index_one - 1]
     dimensions = serie_header.getDimensions()
     experiment.images.set_resolution(_dimensions_to_resolution(dimensions))
 
@@ -124,17 +124,17 @@ class _LifImageLoader(ImageLoader):
     _file: str
     _reader: _lif.Reader
     _serie: _lif.Serie
-    _serie_index: int
+    _serie_index_one: int
 
     _min_time_point_number: int
     _max_time_point_number: int
     _inverted_z: bool = False
 
-    def __init__(self, file: str, reader: _lif.Reader, serie_index: int, min_time_point: int, max_time_point: int):
+    def __init__(self, file: str, reader: _lif.Reader, serie_index_one: int, min_time_point: int, max_time_point: int):
         self._file = file
         self._reader = reader
-        self._serie = reader.getSeries()[serie_index]
-        self._serie_index = serie_index
+        self._serie = reader.getSeries()[serie_index_one - 1]
+        self._serie_index_one = serie_index_one
 
         # Check if z axis needs to be inverted
         for dimension in self._serie.getDimensions():
@@ -207,11 +207,11 @@ class _LifImageLoader(ImageLoader):
         return int(z_size), int(y_size), int(x_size)
 
     def copy(self) -> "_LifImageLoader":
-        return _LifImageLoader(self._file, _lif.Reader(self._file), self._serie_index, self._min_time_point_number,
+        return _LifImageLoader(self._file, _lif.Reader(self._file), self._serie_index_one, self._min_time_point_number,
                                self._max_time_point_number)
 
     def serialize_to_config(self) -> Tuple[str, str]:
-        return self._file, str(self._serie_index)
+        return self._file, str(self._serie_index_one)
 
     def close(self):
         self._reader.f.close()

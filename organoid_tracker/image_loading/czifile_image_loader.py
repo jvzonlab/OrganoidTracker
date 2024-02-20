@@ -13,14 +13,14 @@ from organoid_tracker.image_loading import _czi
 from organoid_tracker.util.xml_wrapper import XmlWrapper, read_xml
 
 
-def load_from_czi_file(experiment: Experiment, file: str, series_index: Union[str, int], min_time_point: int = 0,
+def load_from_czi_file(experiment: Experiment, file: str, series_index_one: Union[str, int], min_time_point: int = 0,
                        max_time_point: int = 1000000000):
     """Sets up the experimental images for a LIF file that is not yet opened."""
     if not os.path.exists(file):
         print("Failed to load \"" + file + "\" - file does not exist")
         return
 
-    load_from_czi_reader(experiment, file, _czi.CziFile(file), int(series_index), min_time_point, max_time_point)
+    load_from_czi_reader(experiment, file, _czi.CziFile(file), int(series_index_one), min_time_point, max_time_point)
 
 
 def _read_resolution(metadata: XmlWrapper) -> Optional[ImageResolution]:
@@ -56,11 +56,11 @@ def _read_resolution_zyx_um(metadata: XmlWrapper) -> Tuple[float, float, float]:
     return z_res_um, y_res_um, x_res_um
 
 
-def load_from_czi_reader(experiment: Experiment, file: str, reader: _czi.CziFile, serie_index: int,
+def load_from_czi_reader(experiment: Experiment, file: str, reader: _czi.CziFile, serie_index_one: int,
                          min_time_point: int = 0,
                          max_time_point: int = 1000000000):
     """Sets up the experimental images for an already opened LIF file."""
-    experiment.images.image_loader(_CziImageLoader(file, reader, serie_index, min_time_point, max_time_point))
+    experiment.images.image_loader(_CziImageLoader(file, reader, serie_index_one, min_time_point, max_time_point))
 
     # Set up resolution
     metadata = read_xml(reader.metadata(raw=True))
@@ -70,22 +70,22 @@ def load_from_czi_reader(experiment: Experiment, file: str, reader: _czi.CziFile
     file_name = os.path.basename(file)
     if file_name.lower().endswith(".czi"):
         file_name = file_name[:-4]
-    experiment.name.provide_automatic_name(file_name + " #" + str(serie_index + 1))
+    experiment.name.provide_automatic_name(file_name + " #" + str(serie_index_one))
 
 
 class _CziImageLoader(ImageLoader):
     _file: str
     _reader: _czi.CziFile
-    _series_index: int
+    _series_index_one: int  # Series index, starts at 1
     _location_to_subblock_mapping: ndarray  # Indexed as C, T, Z
 
     _min_time_point_number: int
     _max_time_point_number: int
 
-    def __init__(self, file: str, reader: _czi.CziFile, series_index: int, min_time_point: int, max_time_point: int):
+    def __init__(self, file: str, reader: _czi.CziFile, series_index_one: int, min_time_point: int, max_time_point: int):
         self._file = file
         self._reader = reader
-        self._series_index = series_index
+        self._series_index_one = series_index_one
 
         shape = reader.shape
         axes = reader.axes
@@ -98,10 +98,11 @@ class _CziImageLoader(ImageLoader):
         self._min_time_point_number = min_time_point
         self._max_time_point_number = max_time_point
 
-        self._location_to_subblock_mapping = self._build_subblock_mapping(axes, series_index, shape)
+        self._location_to_subblock_mapping = self._build_subblock_mapping(axes, series_index_one, shape)
 
-    def _build_subblock_mapping(self, axes, series_index, shape) -> ndarray:
+    def _build_subblock_mapping(self, axes: str, series_index: int, shape: ndarray) -> ndarray:
         """Builds a 3D array, containing the indices of self._reader.filtered_subblock_directory for each location."""
+        series_index_zero = series_index - 1
         z_size = shape[axes.index("Z")] if "Z" in axes else 1
         channel_count = shape[axes.index("C")] if "C" in axes else 1
         time_count = shape[axes.index("T")] if "T" in axes else 1
@@ -113,7 +114,7 @@ class _CziImageLoader(ImageLoader):
         subblock_z_location = axes.index("Z") if "Z" in axes else -1
         for i, subblock in enumerate(self._reader.filtered_subblock_directory):
             subblock_series_index = subblock.start[subblock_series_location] if subblock_series_location > 0 else 0
-            if subblock_series_index != series_index:
+            if subblock_series_index != series_index_zero:
                 continue
             subblock_time_index = subblock.start[subblock_time_location] if subblock_time_location > 0 else 0
             subblock_channel_index = subblock.start[subblock_channel_location] if subblock_channel_location > 0 else 0
@@ -179,11 +180,11 @@ class _CziImageLoader(ImageLoader):
         return z_size, y_size, x_size
 
     def copy(self) -> "_CziImageLoader":
-        return _CziImageLoader(self._file, _czi.CziFile(self._file), self._series_index, self._min_time_point_number,
+        return _CziImageLoader(self._file, _czi.CziFile(self._file), self._series_index_one, self._min_time_point_number,
                                self._max_time_point_number)
 
     def serialize_to_config(self) -> Tuple[str, str]:
-        return self._file, str(self._series_index)
+        return self._file, str(self._series_index_one)
 
     def close(self):
         self._reader.close()
