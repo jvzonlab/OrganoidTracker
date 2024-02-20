@@ -1,5 +1,6 @@
 """Image loader for CZI files."""
 import os.path
+from threading import Lock
 from typing import Optional, Tuple, Union
 
 import numpy
@@ -10,6 +11,7 @@ from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.image_loader import ImageLoader, ImageChannel
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.image_loading import _czi
+from organoid_tracker.image_loading._czi import SegmentNotFoundError
 from organoid_tracker.util.xml_wrapper import XmlWrapper, read_xml
 
 
@@ -75,7 +77,8 @@ def load_from_czi_reader(experiment: Experiment, file: str, reader: _czi.CziFile
 
 class _CziImageLoader(ImageLoader):
     _file: str
-    _reader: _czi.CziFile
+    _czi_file: _czi.CziFile
+    _czi_lock: Lock  # Acquired from the public (outer) methods
     _series_index_one: int  # Series index, starts at 1
     _location_to_subblock_mapping: ndarray  # Indexed as C, T, Z
 
@@ -84,7 +87,8 @@ class _CziImageLoader(ImageLoader):
 
     def __init__(self, file: str, reader: _czi.CziFile, series_index_one: int, min_time_point: int, max_time_point: int):
         self._file = file
-        self._reader = reader
+        self._czi_file = reader
+        self._czi_lock = Lock()
         self._series_index_one = series_index_one
 
         shape = reader.shape
@@ -107,12 +111,12 @@ class _CziImageLoader(ImageLoader):
         channel_count = shape[axes.index("C")] if "C" in axes else 1
         time_count = shape[axes.index("T")] if "T" in axes else 1
         location_to_subblock_mapping = numpy.zeros((channel_count, time_count, z_size), dtype=numpy.uint32)
-        axes = self._reader.axes
+        axes = self._czi_file.axes
         subblock_series_location = axes.index("S") if "S" in axes else -1
         subblock_time_location = axes.index("T") if "T" in axes else -1
         subblock_channel_location = axes.index("C") if "C" in axes else -1
         subblock_z_location = axes.index("Z") if "Z" in axes else -1
-        for i, subblock in enumerate(self._reader.filtered_subblock_directory):
+        for i, subblock in enumerate(self._czi_file.filtered_subblock_directory):
             subblock_series_index = subblock.start[subblock_series_location] if subblock_series_location > 0 else 0
             if subblock_series_index != series_index_zero:
                 continue
@@ -131,8 +135,8 @@ class _CziImageLoader(ImageLoader):
         return self._max_time_point_number
 
     def get_channel_count(self) -> int:
-        shape = self._reader.shape
-        axes = self._reader.axes
+        shape = self._czi_file.shape
+        axes = self._czi_file.axes
 
         return shape[axes.index("C")] if "C" in axes else 1
 
@@ -144,12 +148,16 @@ class _CziImageLoader(ImageLoader):
             return None
 
         image_shape_zyx = self.get_image_size_zyx()
-        array = numpy.zeros(image_shape_zyx, dtype=self._reader.dtype)
-        for z in range(array.shape[0]):
-            subblock_index = self._location_to_subblock_mapping[
-                image_channel.index_zero, time_point.time_point_number(), z]
-            array[z] = self._reader.filtered_subblock_directory[subblock_index].data_segment()\
-                        .data(resize=True, order=0).reshape(image_shape_zyx[1:])
+        array = numpy.zeros(image_shape_zyx, dtype=self._czi_file.dtype)
+        with self._czi_lock:
+            for z in range(array.shape[0]):
+                subblock_index = self._location_to_subblock_mapping[
+                    image_channel.index_zero, time_point.time_point_number(), z]
+                try:
+                    array[z] = self._czi_file.filtered_subblock_directory[subblock_index].data_segment()\
+                                .data(resize=True, order=0).reshape(image_shape_zyx[1:])
+                except SegmentNotFoundError:
+                    raise ValueError(f"Failed to load time point {time_point.time_point_number()} z {z} channel {image_channel.index_one} subblock {subblock_index}")
         return array
 
     def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
@@ -164,15 +172,16 @@ class _CziImageLoader(ImageLoader):
         if image_channel.index_zero < 0 or image_channel.index_zero >= self._location_to_subblock_mapping.shape[0]:
             return None
 
-        subblock_index = self._location_to_subblock_mapping[
-            image_channel.index_zero, time_point.time_point_number(), image_z]
-        array = self._reader.filtered_subblock_directory[subblock_index].data_segment().data(resize=True, order=0)
+        with self._czi_lock:
+            subblock_index = self._location_to_subblock_mapping[
+                image_channel.index_zero, time_point.time_point_number(), image_z]
+            array = self._czi_file.filtered_subblock_directory[subblock_index].data_segment().data(resize=True, order=0)
         array = array.reshape(image_shape_zyx[1:])
         return array
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
-        shape = self._reader.shape
-        axes = self._reader.axes
+        shape = self._czi_file.shape
+        axes = self._czi_file.axes
 
         x_size = shape[axes.index("X")] if "X" in axes else 1
         y_size = shape[axes.index("Y")] if "Y" in axes else 1
@@ -187,7 +196,8 @@ class _CziImageLoader(ImageLoader):
         return self._file, str(self._series_index_one)
 
     def close(self):
-        self._reader.close()
+        with self._czi_lock:
+            self._czi_file.close()
 
 
 def read_czi_file(file_path: str) -> Tuple[_czi.CziFile, int]:
