@@ -71,6 +71,12 @@ class TimePoint:
     def __gt__(self, other: "TimePoint") -> bool:
         return self._time_point_number > other._time_point_number
 
+    def __le__(self, other: "TimePoint") -> bool:
+        return self._time_point_number <= other._time_point_number
+
+    def __ge__(self, other: "TimePoint") -> bool:
+        return self._time_point_number >= other._time_point_number
+
     def __add__(self, other) -> "TimePoint":
         if isinstance(other, int):
             return TimePoint(self._time_point_number + other)

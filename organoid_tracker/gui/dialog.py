@@ -276,10 +276,12 @@ class PopupWindow(Window):
             self.get_figure().savefig(file_name)
 
 
-def popup_visualizer(parent_window: Window, visualizer_callable: Callable[[Window], Any]):
+def popup_visualizer(parent_window: Window, visualizer_callable: Callable[[Window], Any], *,
+                     size_cm: Tuple[float, float] = (14, 12.7)):
     """Pops up a window, which is then returned. You can then for example attach a Visualizer to this window to show
-    something."""
-    figure = Figure(figsize=(5.5, 5), dpi=95)
+    something. The size is the size of the figure, not the window. The window will be slightly larger than the figure.
+    """
+    figure = Figure(figsize=(size_cm[0] * CM_TO_INCH, size_cm[1] * CM_TO_INCH), dpi=95)
 
     def close_listener():
         visualizer.detach()
