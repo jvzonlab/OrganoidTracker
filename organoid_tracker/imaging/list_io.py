@@ -77,3 +77,41 @@ def count_experiments_in_list_file(open_files_list_file: str) -> int:
         if not isinstance(experiments_json, list):
             raise TypeError("Expected a list in " + open_files_list_file + ", got " + repr(experiments_json))
         return len(experiments_json)
+
+
+def save_experiment_list_file(experiments: List[Experiment], json_file_name: str):
+    """Saves references to the given experiments to a file. The file will contain the paths to the last saved file of
+    the experiment. Note: this method does not check for unsaved changes in the experiments, so make sure that all files
+    are saved.
+
+    Raises ValueError if the experiment contains positions or splines, but no value for experiment.last_save_file.
+
+    For an interactive version where the user is prompted to save unsaved changes, see
+    `action.to_experiment_list_file_structure(...)`.
+    """
+    experiments_json = []
+    for experiment in experiments:
+        experiment_json = dict()
+
+        # Store experiment file
+        if experiment.last_save_file is not None:
+            experiment_json["experiment_file"] = experiment.last_save_file
+        else:
+            if experiment.positions.has_positions() or experiment.splines.has_splines():
+                raise ValueError(f"The experiment \"{experiment.name}\" has not been saved to disk.")
+
+        # Store images
+        experiment_json.update(experiment.images.image_loader().serialize_to_dictionary())
+
+        # Store time points
+        if experiment.first_time_point_number() is not None:
+            experiment_json["min_time_point"] = experiment.first_time_point_number()
+        if experiment.last_time_point_number() is not None:
+            experiment_json["max_time_point"] = experiment.last_time_point_number()
+
+        if len(experiment_json) > 0:
+            # Only add if images, positions or both were stored
+            experiments_json.append(experiment_json)
+
+    with open(json_file_name, "w", encoding="utf-8") as handle:
+        json.dump(experiments_json, handle, indent=4, sort_keys=True)
