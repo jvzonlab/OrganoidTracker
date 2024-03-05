@@ -138,6 +138,17 @@ everything.</p>
 <dd><p>Loads all the listed files in the given file..</p>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.list_io.save_experiment_list_file">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.list_io.</span></span><span class="sig-name descname"><span class="pre">save_experiment_list_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.imaging.list_io.save_experiment_list_file" title="Permalink to this definition"></a></dt>
+<dd><p>Saves references to the given experiments to a file. The file will contain the paths to the last saved file of
+the experiment. Note: this method does not check for unsaved changes in the experiments, so make sure that all files
+are saved.</p>
+<p>Raises ValueError if the experiment contains positions or splines, but no value for experiment.last_save_file.</p>
+<p>For an interactive version where the user is prompted to save unsaved changes, see
+<cite>action.to_experiment_list_file_structure(…)</cite>.</p>
+</dd></dl>
+
 </section>
 
 
