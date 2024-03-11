@@ -1,10 +1,11 @@
 """Extra markers used to describe the linking data. For example, you can mark the end of a lineage as a cell death."""
 
 from enum import Enum
-from typing import Optional, Iterable
+from typing import Optional, Iterable, Set
 
 from organoid_tracker.core import TimePoint
-from organoid_tracker.core.links import Links
+from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.core.links import Links, LinkingTrack
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.linking_analysis.errors import Error
@@ -160,6 +161,11 @@ def is_error_suppressed(position_data: PositionData, position: Position, error: 
     """Returns True if the given error is suppressed. If another type of error is suppressed, this method returns
     False."""
     return position_data.get_position_data(position, "suppressed_error") == error.value
+
+
+def unsuppress_error_marker(position_data: PositionData, position: Position):
+    """Unsuppresses an error. If the error was not suppressed, or there was no error, this method does nothing."""
+    position_data.set_position_data(position, "suppressed_error", None)
 
 
 def set_error_marker(position_data: PositionData, position: Position, error: Optional[Error]):

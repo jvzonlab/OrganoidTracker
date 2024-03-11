@@ -1,5 +1,5 @@
 import collections
-from typing import Deque
+from typing import Deque, List
 
 from organoid_tracker.core.experiment import Experiment
 
@@ -35,6 +35,29 @@ class ReversedAction(UndoableAction):
 
     def undo(self, experiment: Experiment):
         return self.inverse.do(experiment)
+
+
+class CombinedAction(UndoableAction):
+    """Combines multiple actions into one. It works by calling the do and undo methods of the actions in the order they
+    were added."""
+    _actions: List[UndoableAction]
+    _do_message: str
+    _undo_message: str
+
+    def __init__(self, actions: List[UndoableAction], *, do_message: str, undo_message: str):
+        self._actions = list(actions)
+        self._do_message = do_message
+        self._undo_message = undo_message
+
+    def do(self, experiment: Experiment):
+        for action in self._actions:
+            action.do(experiment)
+        return self._do_message
+
+    def undo(self, experiment: Experiment):
+        for action in reversed(self._actions):
+            action.undo(experiment)
+        return self._undo_message
 
 
 class UndoRedo:

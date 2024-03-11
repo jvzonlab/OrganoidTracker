@@ -36,7 +36,7 @@ class LinkingTrack:
 
     def _find_pasts(self, time_point_number: int) -> Set[Position]:
         """Returns all positions directly linked to the position at the given time point."""
-        search_index = (time_point_number - 1) - self._min_time_point_number # -1 is to look one time point in the past
+        search_index = (time_point_number - 1) - self._min_time_point_number  # -1 is to look one time point in the past
         if search_index >= 0:
             return {self._positions_by_time_point[search_index]}
 
@@ -143,9 +143,6 @@ class LinkingTrack:
         size of 1. Larger sizes indicate a cell merge, which makes no biological sense."""
         return set(self._previous_tracks)
 
-
-
-
     def __len__(self):
         """Gets the time length of the track, in number of time points."""
         return len(self._positions_by_time_point)
@@ -163,9 +160,26 @@ class LinkingTrack:
         return other._positions_by_time_point[0] == self._positions_by_time_point[0]
 
     def find_all_previous_and_descending_tracks(self, *, include_self: bool = False) -> Iterable["LinkingTrack"]:
-        """Finds all tracks in the lineage of this track, including siblings, cousins, etc."""
+        """Finds all tracks that are either before this track, or after this track.
+
+        Note: this method will not tracks that branched off earlier in the lineage tree, like sister tracks, or
+        newphew tracks. It will only find ancestors and its own progeny. If you want to find all tracks in the same
+        lineage, use find_all_tracks_in_same_lineage.
+        """
         yield from self.find_all_previous_tracks(include_self=include_self)
         yield from self.find_all_descending_tracks(include_self=False)  # Avoid including self twice
+
+    def find_all_tracks_in_same_lineage(self, *, include_self: bool = False) -> Iterable["LinkingTrack"]:
+        """Finds all tracks that are in the same lineage as this track.
+
+        Note: in case of cell merges, an arbitrary choice is made to follow one of the ancestors.
+        """
+        first_track = self
+        while len(first_track._previous_tracks) > 0:
+            first_track = next(iter(first_track._previous_tracks))
+        for track in first_track.find_all_descending_tracks(include_self=True):
+            if include_self or not track == self:
+                yield track
 
     def get_duration_in_time_points(self) -> int:
         """Gets the time this track takes in time points. This is simply the number of recorded positions."""
@@ -175,6 +189,11 @@ class LinkingTrack:
         """Checks whether there are at least two next tracks. Faster than calling len(track.get_next_tracks()) > 1,
         since this method doesn't create a set."""
         return len(self._next_tracks) > 1
+
+    def is_time_point_number_in_range(self, time_point_number: int) -> bool:
+        """Checks if the given time point number is in the range of this track."""
+        return (self._min_time_point_number <= time_point_number <
+                self._min_time_point_number + len(self._positions_by_time_point))
 
 
 class Links:
@@ -262,7 +281,8 @@ class Links:
         # Update in track
         track = self._position_to_track.get(old_position)
         if track is not None:
-            track._positions_by_time_point[position_new.time_point_number() - track._min_time_point_number] = position_new
+            track._positions_by_time_point[
+                position_new.time_point_number() - track._min_time_point_number] = position_new
 
             # Update reference to track
             del self._position_to_track[old_position]
@@ -319,7 +339,8 @@ class Links:
         this method a time point number to ignore. Usually, this would be the last time point number of the experiment,
         as cells that have no links to the future in the last time point are not that interesting."""
         for track in self._tracks:
-            if time_point_number_to_ignore is None or time_point_number_to_ignore != track._positions_by_time_point[-1].time_point_number():
+            if time_point_number_to_ignore is None or time_point_number_to_ignore != track._positions_by_time_point[
+                -1].time_point_number():
                 if len(track.get_next_tracks()) == 0:
                     yield track.find_last_position()
 
@@ -334,7 +355,6 @@ class Links:
             dt = -dt
         if dt < -1:
             raise ValueError(f"Link skipped a time point: {position1} cannot be linked to {position2}")
-
 
         track1 = self._position_to_track.get(position1)
         track2 = self._position_to_track.get(position2)
@@ -471,7 +491,6 @@ class Links:
             if track2 in track1._next_tracks:
                 self._decouple_next_track(track1, next_track=track2)
                 self._decouple_previous_track(track2, previous_track=track1)
-
 
     def _decouple_next_track(self, track: LinkingTrack, *, next_track: LinkingTrack):
         """Removes a next track from the current track. If only one next track remains, a merge with the remaining next
@@ -615,7 +634,7 @@ class Links:
         if len(second_track._previous_tracks) != 1 or len(first_track._next_tracks) != 1:
             return  # Cannot be merged
         # Ok, they can be merged into just first_track. Move all positions over to first_track.
-        gap_length = second_track._min_time_point_number -\
+        gap_length = second_track._min_time_point_number - \
                      (first_track._min_time_point_number + len(first_track._positions_by_time_point))
         if gap_length != 0:
             raise ValueError("Skipping a time point")
@@ -643,7 +662,7 @@ class Links:
         for track in self._tracks:
             if len(track._positions_by_time_point) == 0:
                 raise ValueError(f"Empty track at t={track._min_time_point_number}")
-            if len(track._positions_by_time_point) == 1 and len(track._previous_tracks) == 0\
+            if len(track._positions_by_time_point) == 1 and len(track._previous_tracks) == 0 \
                     and len(track._next_tracks) == 0 and len(track._lineage_data) == 0:
                 raise ValueError(f"Length=1 track at t={track._min_time_point_number}")
             if track.find_first_position() is None:

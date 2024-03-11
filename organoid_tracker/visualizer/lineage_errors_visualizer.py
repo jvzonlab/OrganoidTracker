@@ -53,13 +53,11 @@ class LineageErrorsVisualizer(ExitableImageVisualizer):
         if not links.has_links():
             self._verified_lineages = set()
             return
-        position_data = self._experiment.position_data
 
         positions = self._experiment.positions.of_time_point(self._time_point)
-        lineages_with_errors = lineage_error_finder.get_problematic_lineages(links, position_data, positions,
+        lineages_with_errors = lineage_error_finder.get_problematic_lineages(self._experiment, positions,
                                     min_time_point=self._display_settings.error_correction_min_time_point,
-                                    max_time_point=self._display_settings.error_correction_max_time_point,
-                                    min_divisions=self._display_settings.error_correction_min_divisions)
+                                    max_time_point=self._display_settings.error_correction_max_time_point)
         verified_lineages = set()
         for position in positions:
             if not links.contains_position(position):

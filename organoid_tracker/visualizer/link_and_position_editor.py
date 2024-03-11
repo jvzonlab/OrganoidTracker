@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Optional, List, Dict, Iterable, Tuple
+from typing import Optional, List, Dict, Iterable, Tuple, Set
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent, LocationEvent
 
@@ -15,10 +15,10 @@ from organoid_tracker.core.position import Position
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.core.typing import DataType
 from organoid_tracker.gui import dialog
-from organoid_tracker.gui.undo_redo import UndoableAction, ReversedAction
+from organoid_tracker.gui.undo_redo import UndoableAction, ReversedAction, CombinedAction
 from organoid_tracker.gui.window import Window
 from organoid_tracker.linking_analysis import cell_error_finder, linking_markers, track_positions_finder, \
-    lineage_markers
+    lineage_markers, lineage_error_finder
 from organoid_tracker.linking_analysis.linking_markers import EndMarker
 from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.visualizer import activate
@@ -359,16 +359,70 @@ class _MarkPositionAsSomethingAction(UndoableAction):
         return f"Marked that {len(self._positions)} positions are no longer {self._name}"
 
 
+class _SetGlobalDataAction(UndoableAction):
+    _data_name: str
+    _old_value: Optional[DataType]
+    _new_value: Optional[DataType]
+
+    def __init__(self, data_name: str, *, old_value: Optional[DataType], new_value: Optional[DataType]):
+        self._data_name = data_name
+        self._old_value = old_value
+        self._new_value = new_value
+
+    def do(self, experiment: Experiment) -> str:
+        experiment.global_data.set_data(self._data_name, self._new_value)
+        return f"Set the global data '{self._data_name}' to {self._new_value}"
+
+    def undo(self, experiment: Experiment) -> str:
+        experiment.global_data.set_data(self._data_name, self._old_value)
+        return f"Set the global data '{self._data_name}' back to {self._old_value}"
+
+
+class _SuppressErrorsAction(UndoableAction):
+    """Suppresses errors in all given positions. You should only provide positions that have an (unsuppressed) error."""
+
+    _positions: List[Position]
+
+    def __init__(self, positions: List[Position]):
+        self._positions = list(positions)
+
+    def do(self, experiment: Experiment) -> str:
+        for position in self._positions:
+            error = linking_markers.get_error_marker(experiment.position_data, position)
+            if error is not None:
+                linking_markers.suppress_error_marker(experiment.position_data, position, error)
+        if len(self._positions) == 1:
+            return f"Suppressed the error of one position"
+        return f"Suppressed the error of {len(self._positions)} positions"
+
+    def undo(self, experiment: Experiment) -> str:
+        for position in self._positions:
+            linking_markers.unsuppress_error_marker(experiment.position_data, position)
+        if len(self._positions) == 1:
+            return f"Unsuppressed the error of one position"
+        return f"Unsuppressed the error of {len(self._positions)} positions"
+
+
 class LinkAndPositionEditor(AbstractEditor):
     """Editor for cell links and positions. Use the Insert or Enter key to insert new cells or links, and use the Delete
      or Backspace key to delete them."""
 
     _selected: List[Position]
+    _displayed_error_focus_points: Optional[Set[Position]] = None
 
     def __init__(self, window: Window, *, selected_positions: Iterable[Position] = ()):
         super().__init__(window)
 
         self._selected = list(selected_positions)
+
+    def _get_position_edge(self, position: Position) -> tuple[tuple[float, float, float], float]:
+        if self._displayed_error_focus_points is not None:
+            # We're focusing on certain tracks, so make them stand out
+            if position in self._displayed_error_focus_points:
+                return (0, 0, 0), 3
+            return (.2, .2, .2), 0.5
+        else:
+            return super()._get_position_edge(position)
 
     def _get_figure_title(self) -> str:
         title_start = "Editing time point " + str(self._time_point.time_point_number()) + "    (z=" + str(
@@ -387,7 +441,7 @@ class LinkAndPositionEditor(AbstractEditor):
         for i in range(len(self._selected)):
             selected = self._selected[i]
             if self._experiment.positions.contains_position(selected):
-                self._draw_highlight(selected)
+                self._draw_selection_marker(selected)
             else:
                 to_unselect.add(selected)  # Position doesn't exist anymore, remove from selection
 
@@ -395,7 +449,7 @@ class LinkAndPositionEditor(AbstractEditor):
         if len(to_unselect) > 0:
             self._selected = [element for element in self._selected if element not in to_unselect]
 
-    def _draw_highlight(self, position: Optional[Position]):
+    def _draw_selection_marker(self, position: Optional[Position]):
         if position is None or abs(position.time_point_number() - self._time_point.time_point_number()) > 2:
             return
         color = core.COLOR_CELL_CURRENT
@@ -475,6 +529,10 @@ class LinkAndPositionEditor(AbstractEditor):
             "Select//Select-Select all positions in time point range...": self._select_all_of_multiple_time_points,
             "Select//Deselect-Deselect positions in time point range...": self._deselect_positions_from_time_points,
             "Select//Expand-Expand selection to entire track [T]": self._select_track,
+            "Errors//Suppress-Suppress errors in selected positions": self._suppress_errors_in_selected,
+            "Errors//Focus-Focus on correcting tracks of selected positions": self._focus_on_tracks_of_selected,
+            "Errors//Focus-Focus on correcting lineages with X divisions": self._focus_on_lineages_with_min_divisions,
+            "Errors//Focus-Unfocus all tracks": self._remove_focuses,
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
             "View//Linking-Lineage errors and warnings": self._show_lineage_errors,
             "Navigate//Layer-Layer of selected position [Space]": self._move_to_z_of_selected_position,
@@ -601,7 +659,6 @@ class LinkAndPositionEditor(AbstractEditor):
         else:
             self.update_status("Position does not belong to a track")
             return
-
 
     def _move_to_z_of_selected_position(self):
         if len(self._selected) == 0:
@@ -806,10 +863,11 @@ class LinkAndPositionEditor(AbstractEditor):
             return
 
         self._selected = [position for position in self._selected if (
-                    position.time_point_number() < time_point_number_start or position.time_point_number() > time_point_number_end)]
+                position.time_point_number() < time_point_number_start or position.time_point_number() > time_point_number_end)]
         self.draw_view()
-        self.update_status(f"Deselected all positions from {time_point_number_end - time_point_number_start + 1} time point(s),"
-                               f"{time_point_number_start} and {time_point_number_end + 1}.")
+        self.update_status(
+            f"Deselected all positions from {time_point_number_end - time_point_number_start + 1} time point(s),"
+            f"{time_point_number_start} and {time_point_number_end + 1}.")
 
     def _delete_positions_without_links(self):
         """Deletes all positions that have no links."""
@@ -1084,3 +1142,101 @@ class LinkAndPositionEditor(AbstractEditor):
                 if existing_connections.contains_connection(position1, position2):
                     continue
                 yield position1, position2
+
+    def _calculate_time_point_metadata(self):
+        self._recalculate_displayed_focus_points()
+
+    def _recalculate_displayed_focus_points(self):
+        # Calculate which are the error focus points for these time points
+        error_focus_tracks = lineage_error_finder.find_error_focus_tracks(self._experiment)
+        if error_focus_tracks is None:
+            # Error focusing system is not in use
+            self._displayed_error_focus_points = None
+            return
+
+        self._displayed_error_focus_points = set()
+        time_point_number = self._time_point.time_point_number()
+        for track in error_focus_tracks:
+            for dt in [-1, 0, 1]:
+                if track.is_time_point_number_in_range(time_point_number + dt):
+                    self._displayed_error_focus_points.add(
+                        track.find_position_at_time_point_number(time_point_number + dt))
+
+    def _suppress_errors_in_selected(self):
+        if len(self._selected) == 0:
+            self.update_status("No positions selected - cannot suppress errors.")
+            return
+
+        position_data = self._experiment.position_data
+        positions_with_errors = list()
+        for position in self._selected:
+            if linking_markers.get_error_marker(position_data, position) is not None:
+                positions_with_errors.append(position)
+        self._perform_action(_SuppressErrorsAction(positions_with_errors))
+
+    def _focus_on_tracks_of_selected(self):
+        if len(self._selected) == 0:
+            self.update_status("No positions selected - cannot focus on any tracks.")
+            return
+        if len(self._selected) > 1000:
+            self.update_status("Too many positions selected. Note that you only need to select one point per track to"
+                               " make sure that error checking happens in all previous and future points.")
+            return
+
+        old_min_divisions = lineage_error_finder.find_error_focus_min_divisions(self._experiment)
+        count = len(self._selected)
+        self._perform_action(CombinedAction([
+            # First, remove all existing focus point markers
+            ReversedAction(_MarkPositionAsSomethingAction(self._find_error_focus_points(),
+                                                          lineage_error_finder.ERROR_FOCUS_POINT_MARKER)),
+            # Second, add new markers
+            _MarkPositionAsSomethingAction(self._selected, lineage_error_finder.ERROR_FOCUS_POINT_MARKER),
+            # Third, remove other filters
+            _SetGlobalDataAction(lineage_error_finder.ERROR_FOCUS_MIN_DIVISIONS, old_value=old_min_divisions,
+                                 new_value=None)],
+            do_message=f"Now focusing on the tracks of {count} selected position(s). Errors "
+                       f" will only be reported for those tracks.",
+            undo_message=f"Restored the error focus to the previous settings."))
+        self._selected.clear()
+
+    def _focus_on_lineages_with_min_divisions(self):
+        # Find the current values
+        old_min_divisions = lineage_error_finder.find_error_focus_min_divisions(self._experiment)
+        focus_points = self._find_error_focus_points()
+
+        answer = dialog.prompt_int("Error checking", "How many divisions must a lineage have in order to be included?",
+                                   default=old_min_divisions, minimum=0, maximum=100)
+        if answer is None:
+            return
+        storage_value = None if answer == 0 else answer
+
+        self._perform_action(CombinedAction([
+            ReversedAction(_MarkPositionAsSomethingAction(focus_points, lineage_error_finder.ERROR_FOCUS_POINT_MARKER)),
+            _SetGlobalDataAction(lineage_error_finder.ERROR_FOCUS_MIN_DIVISIONS, old_value=old_min_divisions,
+                                 new_value=storage_value)],
+            do_message=f"Now focusing error correction on lineages with at least {answer} division(s). Errors will only"
+                       f" be reported for those tracks.",
+            undo_message=f"Restored the error focus to the previous settings."))
+
+    def _remove_focuses(self):
+        focus_points = self._find_error_focus_points()
+        min_divisions = lineage_error_finder.find_error_focus_min_divisions(self._experiment)
+        if len(focus_points) == 0 and min_divisions == 0:
+            self.update_status("We are currently not focusing on any lineages for error correction.")
+            return
+
+        self._perform_action(CombinedAction([
+            ReversedAction(_MarkPositionAsSomethingAction(focus_points, lineage_error_finder.ERROR_FOCUS_POINT_MARKER)),
+            _SetGlobalDataAction(lineage_error_finder.ERROR_FOCUS_MIN_DIVISIONS, old_value=min_divisions,
+                                 new_value=None)],
+            do_message=f"Removed focus from {len(focus_points)} position(s) and set the"
+                       f" minimum division count back to 0.",
+            undo_message=f"Restored the error focus to the previous settings."))
+
+    def _find_error_focus_points(self):
+        focus_points = list()
+        for position, value in self._experiment.position_data.find_all_positions_with_data(
+                lineage_error_finder.ERROR_FOCUS_POINT_MARKER):
+            if value > 0:
+                focus_points.append(position)
+        return focus_points
