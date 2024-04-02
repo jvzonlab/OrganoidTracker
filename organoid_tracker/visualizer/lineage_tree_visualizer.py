@@ -269,7 +269,7 @@ class LineageTreeVisualizer(Visualizer):
                 end_marker = linking_markers.get_track_end_marker(position_data, track.find_last_position())
                 if end_marker == EndMarker.DEAD:
                     return 1, 0, 0
-                elif end_marker == EndMarker.SHED: #EndMarker.is_shed(end_marker):
+                elif end_marker == EndMarker.SHED:
                     return 0, 0, 1
                 elif end_marker == EndMarker.SHED_OUTSIDE:
                     return 0, 1, 1
