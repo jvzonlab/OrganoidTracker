@@ -12,7 +12,7 @@ from organoid_tracker.imaging import io
 FILES_LIST_EXTENSION = ".autlist"
 
 
-def load_experiment_list_file(open_files_list_file: str) -> Iterable[Experiment]:
+def load_experiment_list_file(open_files_list_file: str, *, load_images: bool = True) -> Iterable[Experiment]:
     """Loads all the listed files in the given file.."""
     open_files_list_file = os.path.abspath(open_files_list_file)
 
@@ -47,7 +47,7 @@ def load_experiment_list_file(open_files_list_file: str) -> Iterable[Experiment]
                                   min_time_point=min_time_point, max_time_point=max_time_point)
                 loaded_anything = True
 
-            if _contains_images(experiment_json):
+            if load_images and _contains_images(experiment_json):
                 general_image_loader.load_images_from_dictionary(experiment, experiment_json,
                                                  min_time_point=min_time_point, max_time_point=max_time_point)
                 loaded_anything = True
@@ -89,13 +89,16 @@ def save_experiment_list_file(experiments: List[Experiment], json_file_name: str
     For an interactive version where the user is prompted to save unsaved changes, see
     `action.to_experiment_list_file_structure(...)`.
     """
+    save_base_folder = os.path.dirname(os.path.abspath(json_file_name))
+
     experiments_json = []
     for experiment in experiments:
         experiment_json = dict()
 
         # Store experiment file
         if experiment.last_save_file is not None:
-            experiment_json["experiment_file"] = experiment.last_save_file
+            # Make last_save_file relative to save_base_folder
+            experiment_json["experiment_file"] = os.path.relpath(experiment.last_save_file, start=save_base_folder)
         else:
             if experiment.positions.has_positions() or experiment.splines.has_splines():
                 raise ValueError(f"The experiment \"{experiment.name}\" has not been saved to disk.")
