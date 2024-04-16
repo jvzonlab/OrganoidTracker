@@ -530,7 +530,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Select//Deselect-Deselect positions in time point range...": self._deselect_positions_from_time_points,
             "Select//Expand-Expand selection to entire track [T]": self._select_track,
             "Errors//Suppress-Suppress errors in selected positions": self._suppress_errors_in_selected,
-            "Errors//Focus-Focus on correcting tracks of selected positions": self._focus_on_tracks_of_selected,
+            "Errors//Focus-Focus on correcting lineages of selected positions": self._focus_on_tracks_of_selected,
             "Errors//Focus-Focus on correcting lineages with X divisions": self._focus_on_lineages_with_min_divisions,
             "Errors//Focus-Unfocus all tracks": self._remove_focuses,
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
