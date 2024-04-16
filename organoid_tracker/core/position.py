@@ -146,6 +146,10 @@ class Position:
             return self
         return Position(self.x / other, self.y / other, self.z / other, time_point_number=self._time_point_number)
 
+    def __neg__(self) -> "Position":
+        """Negation. Returns a new position (-x, -y, -z). The time point number is unaffected."""
+        return Position(-self.x, -self.y, -self.z, time_point_number=self._time_point_number)
+
     def with_time_point(self, time_point: Optional[TimePoint]) -> "Position":
         """Returns a copy of this position with the time point set to the given position."""
         return Position(self.x, self.y, self.z, time_point=time_point)
