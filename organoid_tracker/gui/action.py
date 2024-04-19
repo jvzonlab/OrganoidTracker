@@ -1,6 +1,6 @@
 from typing import Optional, Iterable, List, Any, Dict
 
-from PySide2.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication
 from matplotlib.figure import Figure
 
 from organoid_tracker.core import UserError

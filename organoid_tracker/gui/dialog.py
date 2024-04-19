@@ -7,9 +7,9 @@ from enum import Enum
 from statistics import median
 from typing import Tuple, List, Optional, Callable, Any, Dict, Union
 
-from PySide2 import QtCore
-from PySide2.QtGui import QCloseEvent, QColor
-from PySide2.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow, QVBoxLayout, \
+from PySide6 import QtCore
+from PySide6.QtGui import QCloseEvent, QColor
+from PySide6.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow, QVBoxLayout, \
     QLabel, QSizePolicy, QColorDialog, QMenuBar
 from matplotlib.backend_bases import KeyEvent
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT

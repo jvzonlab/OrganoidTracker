@@ -1,6 +1,6 @@
 from typing import Callable, Dict, List, Any, Optional, Union, Iterable, Tuple
 
-from PySide2.QtWidgets import QMainWindow, QLabel, QMenuBar, QMenu
+from PySide6.QtWidgets import QMainWindow, QLabel, QMenuBar, QMenu
 from matplotlib.figure import Figure
 
 from organoid_tracker.core import TimePoint
