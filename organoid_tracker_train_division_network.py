@@ -84,8 +84,6 @@ full_window = bool(config.get_or_default(f"identify full division window", 'True
 time_window = [int(config.get_or_default(f"time_window_before", str(-1))),
                int(config.get_or_default(f"time_window_after", str(1)))]
 
-use_TFR = config.get_or_default(f"use_tfrecords", str(False), type=config_type_bool)
-
 patch_shape_zyx = list(
     config.get_or_default("patch_shape", "32, 32, 16", comment="Size in pixels (x, y, z) of the patches used"
                                                                " to train the network.",
@@ -125,25 +123,12 @@ for image_with_divisions in image_with_divisions_list[-round(0.2*len(image_with_
     validation_list.append((image_with_divisions.experiment_name, image_with_divisions.time_point.time_point_number()))
 
 # create tf.datasets that generate the data
-if use_TFR:
-    print("creating_TFRecords...")
-    image_files, label_files, dividing_files = dataset_writer(image_with_divisions_list, time_window, shards=10)
-
-    training_dataset = training_data_creator_from_TFR(image_files, label_files, dividing_files,
-                                                      patch_shape=patch_shape_zyx, batch_size=batch_size, mode='train',
-                                                      split_proportion=0.8, n_images=len(image_with_divisions_list))
-    validation_dataset = training_data_creator_from_TFR(image_files, label_files, dividing_files,
-                                                        patch_shape=patch_shape_zyx, batch_size=batch_size,
-                                                        mode='validation', split_proportion=0.8,
-                                                        n_images=len(image_with_divisions_list))
-
-else:
-    training_dataset = training_data_creator_from_raw(image_with_divisions_list, time_window=time_window,
-                                                      patch_shape=patch_shape_zyx, batch_size=batch_size, mode='train',
-                                                      split_proportion=0.8)
-    validation_dataset = training_data_creator_from_raw(image_with_divisions_list, time_window=time_window,
-                                                        patch_shape=patch_shape_zyx, batch_size=batch_size,
-                                                        mode='validation', split_proportion=0.8)
+training_dataset = training_data_creator_from_raw(image_with_divisions_list, time_window=time_window,
+                                                  patch_shape=patch_shape_zyx, batch_size=batch_size, mode='train',
+                                                  split_proportion=0.8)
+validation_dataset = training_data_creator_from_raw(image_with_divisions_list, time_window=time_window,
+                                                    patch_shape=patch_shape_zyx, batch_size=batch_size,
+                                                    mode='validation', split_proportion=0.8)
 
 # build model
 model = build_model(
