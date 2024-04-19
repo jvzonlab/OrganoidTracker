@@ -21,16 +21,15 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from typing import Tuple, List
+from typing import List
 
-import numpy
 import tensorflow as tf
 import tensorflow_addons as tfa
 from functools import partial
 import numpy as np
 
-from organoid_tracker.link_detection_cnn.ImageWithLinks_to_tensor_loader import tf_load_images_with_links
-from organoid_tracker.link_detection_cnn.training_data_creator import _ImageWithLinks
+from organoid_tracker.neural_network.link_detection_cnn.ImageWithLinks_to_tensor_loader import tf_load_images_with_links
+from organoid_tracker.neural_network.link_detection_cnn.training_data_creator import _ImageWithLinks
 
 
 # Creates training and validation data from an image_with_positions_list

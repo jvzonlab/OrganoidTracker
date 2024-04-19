@@ -4,8 +4,9 @@ from typing import List
 import tensorflow as tf
 from functools import partial
 
-from organoid_tracker.division_detection_cnn.training_data_creator import _ImageWithDivisions
-from organoid_tracker.position_detection_cnn.training_data_creator import _ImageWithPositions
+from organoid_tracker.neural_network.division_detection_cnn.training_data_creator import _ImageWithDivisions
+from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import ImageWithPositions
+
 
 # Loads images with position and division information
 def load_images_with_divisions(i, image_with_positions_list: List[_ImageWithDivisions], time_window=[0, 0], create_labels=False):
@@ -26,7 +27,7 @@ def load_images_with_divisions(i, image_with_positions_list: List[_ImageWithDivi
     return image, label, dividing
 
 # tensorflow wrapper to laod image + division data
-def tf_load_images_with_divisions(i, image_with_positions_list: List[_ImageWithPositions], time_window=[0, 0], create_labels=False):
+def tf_load_images_with_divisions(i, image_with_positions_list: List[ImageWithPositions], time_window=[0, 0], create_labels=False):
     if create_labels:
         image, label, dividing = tf.py_function(
             partial(load_images_with_divisions, image_with_positions_list=image_with_positions_list,
@@ -58,7 +59,7 @@ def load_images_with_positions(i, image_with_positions_list: List[_ImageWithDivi
     return image, label
 
 # tensorflow wrapper to laod image + positions
-def tf_load_images_with_positions(i, image_with_positions_list: List[_ImageWithPositions], time_window=[0, 0], create_labels=False):
+def tf_load_images_with_positions(i, image_with_positions_list: List[ImageWithPositions], time_window=[0, 0], create_labels=False):
     if create_labels:
         image, label = tf.py_function(
             partial(load_images_with_positions, image_with_positions_list=image_with_positions_list,

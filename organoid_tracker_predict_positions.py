@@ -4,9 +4,8 @@ import math
 import os
 
 import numpy as np
-import tensorflow as tf
 from skimage.feature import peak_local_max
-from tifffile import tifffile
+import tifffile
 
 from organoid_tracker.config import ConfigFile, config_type_int
 from organoid_tracker.core.experiment import Experiment
@@ -15,11 +14,11 @@ from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 from organoid_tracker.imaging import io, list_io
-from organoid_tracker.position_detection_cnn.loss_functions import loss, position_precision, overcount, position_recall
-from organoid_tracker.position_detection_cnn.peak_calling import reconstruct_volume
-from organoid_tracker.position_detection_cnn.prediction_dataset import predicting_data_creator
-from organoid_tracker.position_detection_cnn.split_images import corners_split, reconstruction
-from organoid_tracker.position_detection_cnn.training_data_creator import create_image_list_without_positions
+from organoid_tracker.neural_network.position_detection_cnn.loss_functions import loss, position_precision, overcount, position_recall
+from organoid_tracker.neural_network.position_detection_cnn.peak_calling import reconstruct_volume
+from organoid_tracker.neural_network.position_detection_cnn.prediction_dataset import predicting_data_creator
+from organoid_tracker.neural_network.position_detection_cnn.split_images import corners_split, reconstruction
+from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import create_image_list_without_positions
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)

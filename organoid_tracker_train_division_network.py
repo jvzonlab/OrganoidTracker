@@ -10,15 +10,15 @@ from typing import Set, Tuple
 import tensorflow as tf
 import numpy as np
 from tensorflow.python.data import Dataset
-from tifffile import tifffile
+import tifffile
 
 from organoid_tracker.linear_models.logistic_regression import platt_scaling
 from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int, config_type_bool
 from organoid_tracker.core.experiment import Experiment
-from organoid_tracker.division_detection_cnn.convolutional_neural_network import build_model, tensorboard_callback
-from organoid_tracker.division_detection_cnn.image_with_divisions_to_tensor_loader import dataset_writer
-from organoid_tracker.division_detection_cnn.training_data_creator import create_image_with_divisions_list
-from organoid_tracker.division_detection_cnn.training_dataset import training_data_creator_from_TFR, \
+from organoid_tracker.neural_network.division_detection_cnn.convolutional_neural_network import build_model, tensorboard_callback
+from organoid_tracker.neural_network.division_detection_cnn.image_with_divisions_to_tensor_loader import dataset_writer
+from organoid_tracker.neural_network.division_detection_cnn.training_data_creator import create_image_with_divisions_list
+from organoid_tracker.neural_network.division_detection_cnn.training_dataset import training_data_creator_from_TFR, \
     training_data_creator_from_raw
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader

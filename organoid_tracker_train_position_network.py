@@ -4,27 +4,25 @@
 import json
 import os
 import random
-import numpy as np
 from functools import partial
-from os import path
 from typing import Set, Tuple
 
-import tensorflow as tf
+import keras
+import keras.callbacks
+import keras.models
 import tifffile
-from tensorflow.python.data import Dataset
 
-from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int, config_type_bool
+from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 from organoid_tracker.imaging import io
-from organoid_tracker.position_detection_cnn.custom_filters import distance_map
-
-from organoid_tracker.position_detection_cnn.image_with_positions_to_tensor_loader import dataset_writer
-from organoid_tracker.position_detection_cnn.convolutional_neural_network import build_model, tensorboard_callback
-from organoid_tracker.position_detection_cnn.training_data_creator import create_image_with_positions_list
-
-from organoid_tracker.position_detection_cnn.training_dataset import training_data_creator_from_TFR, training_data_creator_from_raw
+from organoid_tracker.neural_network.position_detection_cnn.convolutional_neural_network import build_model, \
+    tensorboard_callback
+from organoid_tracker.neural_network.position_detection_cnn.custom_filters import distance_map
+from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import \
+    create_image_with_positions_list
+from organoid_tracker.neural_network.position_detection_cnn.training_dataset import training_data_creator_from_raw
 
 
 # PARAMETERS
@@ -84,8 +82,6 @@ while True:
 time_window = (int(config.get_or_default(f"time_window_before", str(-1))),
                int(config.get_or_default(f"time_window_after", str(1))))
 
-use_tfrecords = config.get_or_default(f"use_tfrecords", str(False), type=config_type_bool)
-
 patch_shape_zyx = list(
     config.get_or_default("patch_shape", "64, 64, 32", comment="Size in pixels (x, y, z) of the patches used"
                                                                " to train the network.",
@@ -113,25 +109,13 @@ image_with_positions_list = create_image_with_positions_list(experiment_provider
 random.seed("using a fixed seed to ensure reproducibility")
 random.shuffle(image_with_positions_list)
 
-# create tf.datasets that generate the data
-if use_tfrecords:
-    print("creating_TFRecords...")
-    image_files, label_files = dataset_writer(image_with_positions_list, time_window, shards=10)
-
-    training_dataset = training_data_creator_from_TFR(image_files, label_files,
-                                                      patch_shape=patch_shape_zyx, batch_size=batch_size, mode='train',
-                                                      split_proportion=0.8, n_images=len(image_with_positions_list))
-    validation_dataset = training_data_creator_from_TFR(image_files, label_files,
-                                                        patch_shape=patch_shape_zyx, batch_size=batch_size,
-                                                        mode='validation', split_proportion=0.8, n_images=len(image_with_positions_list))
-
-else:
-    training_dataset = training_data_creator_from_raw(image_with_positions_list, time_window=time_window,
-                                             patch_shape=patch_shape_zyx, batch_size=batch_size, mode='train',
-                                             split_proportion=0.8)
-    validation_dataset = training_data_creator_from_raw(image_with_positions_list, time_window=time_window,
-                                               patch_shape=patch_shape_zyx, batch_size=batch_size,
-                                               mode='validation', split_proportion=0.8)
+# create datasets that generate the data
+training_dataset = training_data_creator_from_raw(image_with_positions_list, time_window=time_window,
+                                                  patch_shape=patch_shape_zyx, batch_size=batch_size, mode='train',
+                                                  split_proportion=0.8)
+validation_dataset = training_data_creator_from_raw(image_with_positions_list, time_window=time_window,
+                                                    patch_shape=patch_shape_zyx, batch_size=batch_size,
+                                                    mode='validation', split_proportion=0.8)
 
 print("Defining model...")
 model = build_model(shape=(patch_shape_zyx[0], None, None, time_window[1] - time_window[0] + 1), batch_size=None)
@@ -145,12 +129,12 @@ history = model.fit(training_dataset,
                     steps_per_epoch= round(0.8*len(image_with_positions_list)),
                     validation_data=validation_dataset,
                     validation_steps=round(0.2*len(image_with_positions_list)),
-                    callbacks=[tensorboard_callback(tensorboard_folder), tf.keras.callbacks.EarlyStopping(patience=1, restore_best_weights=True)])
+                    callbacks=[tensorboard_callback(tensorboard_folder), keras.callbacks.EarlyStopping(patience=1, restore_best_weights=True)])
 
 
 print("Saving model...")
 trained_model_folder = os.path.join(output_folder, "model_positions")
-tf.keras.models.save_model(model, trained_model_folder)
+model.save(os.path.join(trained_model_folder, "model.keras"))
 with open(os.path.join(trained_model_folder, "settings.json"), "w") as file_handle:
     json.dump({"type": "positions", "time_window": time_window}, file_handle, indent=4)
 
@@ -160,11 +144,11 @@ print("Sanity check...")
 os.makedirs(os.path.join(output_folder, "examples"), exist_ok=True)
 
 
-def predict(image: tf.Tensor, label: tf.Tensor, model: tf.keras.Model) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
+def predict(image: Tensor, label: Tensor, model: keras.Model) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
 
-    dilation = tf.nn.max_pool3d(label, ksize=[1, 3, 3], strides=1, padding='SAME')
-    peaks = tf.where(dilation == label, 1., 0)
-    y_true = tf.where(label > 0.1, peaks, 0)
+    dilation = keras.ops.max_pool(label, pool_size=[1, 3, 3], strides=1, padding='same')
+    peaks = keras.ops.where(dilation == label, 1., 0)
+    y_true = keras.ops.where(label > 0.1, peaks, 0)
 
     label, weights = distance_map(y_true)
 
@@ -176,21 +160,21 @@ predictions = quick_dataset.map(partial(predict, model=model))
 
 for i, element in enumerate(predictions):
 
-    array = element[0].numpy()
+    array = keras.ops.convert_to_numpy(element[0])
     array = array[0, :, :, :, 0]
     #array = np.swapaxes(array, 2, -1)
     #array = np.swapaxes(array, -2, -1)
     tifffile.imwrite(os.path.join(output_folder, "examples", "example_input" + str(i) + ".tiff"), array)
 
-    array = element[1].numpy()
+    array = keras.ops.convert_to_numpy(element[1])
     array = array[0, :, :, :, 0]
     tifffile.imwrite(os.path.join(output_folder, "examples", "example_prediction" + str(i) + ".tiff"), array)
 
-    array = element[2].numpy()
+    array = keras.ops.convert_to_numpy(element[2])
     array = array[0, :, :, :, 0]
     tifffile.imwrite(os.path.join(output_folder, "examples", "example_labels" + str(i) + ".tiff"), array)
 
-    array = element[3].numpy()
+    array = keras.ops.convert_to_numpy(element[3])
     array = array[0, :, :, :, 0]
     tifffile.imwrite(os.path.join(output_folder, "examples", "example_weights" + str(i) + ".tiff"), array)
 

@@ -22,24 +22,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import List, Optional, Iterable, Tuple
+from typing import List, Iterable, Tuple
 
 import numpy
 from numpy import ndarray
-import random
 
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.images import Images
 from organoid_tracker.core.position import Position
 from organoid_tracker.linking import cell_division_finder, nearest_neighbor_linker
-from organoid_tracker.position_detection_cnn.training_data_creator import _ImageWithPositions
+from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import ImageWithPositions
 
 
-class _ImageWithLinks(_ImageWithPositions):
-    target_xyz_positions = ndarray
-    distances = ndarray
-    _linked = List[bool]
+class _ImageWithLinks(ImageWithPositions):
+    target_xyz_positions: ndarray
+    distances: ndarray
+    _linked: List[bool]
 
     def __init__(self, experiment_name: str, images: Images, time_point: TimePoint, xyz_positions: ndarray,
                  target_xyz_positions: ndarray, distances: ndarray, linked: List[bool]):

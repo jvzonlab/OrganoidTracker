@@ -27,13 +27,13 @@ import tensorflow as tf
 import tensorflow_addons as tfa
 from functools import partial
 
-from organoid_tracker.division_detection_cnn.image_with_divisions_to_tensor_loader import tf_load_images_with_positions
-from organoid_tracker.link_detection_cnn.training_dataset import divide_and_round
-from organoid_tracker.position_detection_cnn.training_data_creator import _ImageWithPositions
+from organoid_tracker.neural_network.division_detection_cnn.image_with_divisions_to_tensor_loader import tf_load_images_with_positions
+from organoid_tracker.neural_network.link_detection_cnn.training_dataset import divide_and_round
+from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import ImageWithPositions
 
 
 # Creates training and validation data from an image_with_positions_list
-def prediction_data_creator(image_with_positions_list: List[_ImageWithPositions], time_window, patch_shape):
+def prediction_data_creator(image_with_positions_list: List[ImageWithPositions], time_window, patch_shape):
 
     dataset = tf.data.Dataset.range(len(image_with_positions_list))
 

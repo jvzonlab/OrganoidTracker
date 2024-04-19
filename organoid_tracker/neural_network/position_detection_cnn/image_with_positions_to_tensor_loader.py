@@ -4,7 +4,7 @@ from typing import Tuple, List
 import tensorflow as tf
 import numpy as np
 from functools import partial
-from organoid_tracker.position_detection_cnn.training_data_creator import _ImageWithPositions
+from organoid_tracker.neural_network.position_detection_cnn import _ImageWithPositions
 
 
 def load_images_with_positions(i, image_with_positions_list: List[_ImageWithPositions], time_window=(0, 0), crop=True):
