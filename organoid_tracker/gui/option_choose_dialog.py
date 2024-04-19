@@ -1,9 +1,9 @@
 from typing import Optional, List
 
-from PySide2 import QtCore, QtWidgets
-from PySide2.QtCore import Qt, QEvent
-from PySide2.QtGui import QFontMetrics, QStandardItem, QPalette
-from PySide2.QtWidgets import QDialog, QGroupBox, QFormLayout, QLabel, QComboBox, QDialogButtonBox, QVBoxLayout, \
+from PySide6 import QtCore, QtWidgets
+from PySide6.QtCore import Qt, QEvent
+from PySide6.QtGui import QFontMetrics, QStandardItem, QPalette
+from PySide6.QtWidgets import QDialog, QGroupBox, QFormLayout, QLabel, QComboBox, QDialogButtonBox, QVBoxLayout, \
     QStyledItemDelegate
 
 

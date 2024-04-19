@@ -4,8 +4,8 @@ from queue import Queue
 from threading import Thread
 from typing import Optional, Any
 
-from PySide2.QtCore import QTimer
-from PySide2.QtWidgets import QApplication
+from PySide6.QtCore import QTimer
+from PySide6.QtWidgets import QApplication
 
 from organoid_tracker.core import UserError
 from organoid_tracker.core.concurrent import ConcurrentSet

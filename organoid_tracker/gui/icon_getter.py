@@ -1,7 +1,7 @@
 import sys
 from os import path
 
-from PySide2.QtGui import QIcon
+from PySide6.QtGui import QIcon
 
 
 def get_icon(file_name: str) -> QIcon:

@@ -1,16 +1,14 @@
 """Shows a "website" (multiple HTML files, see the Website class) in a popup window. Used by dialog.show_website()."""
 
-from os import path
-
-from PySide2 import QtCore
-from PySide2.QtCore import QUrl
-from PySide2.QtGui import QPalette
-from PySide2.QtWidgets import QMainWindow, QWidget, QTextBrowser
+from PySide6 import QtCore
+from PySide6.QtCore import QUrl
+from PySide6.QtGui import QPalette
+from PySide6.QtWidgets import QMainWindow, QWidget, QTextBrowser
 
 from organoid_tracker.text_popup.text_popup import RichTextPopup
 
 _SCROLL_AREA_PALETTE = QPalette()
-_SCROLL_AREA_PALETTE.setColor(QPalette.Background, QtCore.Qt.white)
+_SCROLL_AREA_PALETTE.setColor(QPalette.ColorRole.Window, QtCore.Qt.GlobalColor.white)
 _DOCUMENT_STYLE = """
 font-size: 12pt;
 """
