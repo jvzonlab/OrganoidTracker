@@ -4,11 +4,9 @@
 import os
 import random
 from functools import partial
-from os import path
 from typing import Set
 
 import tensorflow as tf
-from PIL import Image as Img
 from tifffile import tifffile
 
 from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int
@@ -18,10 +16,10 @@ from organoid_tracker.image_loading.builtin_merging_image_loaders import Channel
 from organoid_tracker.imaging import io
 # from organoid_tracker.position_detection_cnn import training_data_creator, trainer
 
-from organoid_tracker.position_detection_cnn.convolutional_neural_network import build_model, tensorboard_callback
-from organoid_tracker.position_detection_cnn.training_data_creator import create_image_with_positions_list
+from organoid_tracker.neural_network.position_detection_cnn import build_model, tensorboard_callback
+from organoid_tracker.neural_network.position_detection_cnn import create_image_with_positions_list
 
-from organoid_tracker.position_detection_cnn.training_dataset import  training_data_creator_from_TFR, training_data_creator_from_raw
+from organoid_tracker.neural_network.position_detection_cnn import training_data_creator_from_raw
 
 
 # PARAMETERS

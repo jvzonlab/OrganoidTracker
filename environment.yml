@@ -16,5 +16,6 @@ dependencies:
   - pandas
   - h5py
   - lifelines
-  - torchvision
   - markdown
+  - pytorch-cuda=11.8
+  - keras

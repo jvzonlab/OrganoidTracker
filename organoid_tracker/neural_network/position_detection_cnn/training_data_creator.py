@@ -34,7 +34,7 @@ from organoid_tracker.core.images import Images
 from organoid_tracker.core.position import Position
 
 
-class _ImageWithPositions:
+class ImageWithPositions:
     time_point: TimePoint
     _images: Images
     xyz_positions: ndarray
@@ -183,17 +183,17 @@ def create_image_with_positions_list(experiments: Iterable[Experiment]):
             positions_xyz = numpy.array(positions_xyz, dtype=numpy.int32)
 
             image_with_positions_list.append(
-                _ImageWithPositions(str(experiment.name), experiment.images, time_point, positions_xyz))
+                ImageWithPositions(str(experiment.name), experiment.images, time_point, positions_xyz))
 
     return image_with_positions_list
 
 
-def create_image_list_without_positions(experiment: Experiment) -> List[_ImageWithPositions]:
+def create_image_list_without_positions(experiment: Experiment) -> List[ImageWithPositions]:
     image_list = []
 
     for time_point in experiment.time_points():
         image_list.append(
-            _ImageWithPositions(str(experiment.name), experiment.images, time_point, numpy.empty((0, 3), dtype=numpy.float32)))
+            ImageWithPositions(str(experiment.name), experiment.images, time_point, numpy.empty((0, 3), dtype=numpy.float32)))
 
     return image_list
 

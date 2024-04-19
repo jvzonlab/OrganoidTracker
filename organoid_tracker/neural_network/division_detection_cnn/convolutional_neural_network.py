@@ -3,7 +3,6 @@ from typing import List, Tuple
 import tensorflow as tf
 from tensorflow import keras
 
-from organoid_tracker.position_detection_cnn.convolutional_neural_network import add_3d_coord
 
 
 def build_model(shape: Tuple, batch_size):

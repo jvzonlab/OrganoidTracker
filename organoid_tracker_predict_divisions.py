@@ -12,8 +12,8 @@ from organoid_tracker.imaging import io
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.core.position_collection import PositionCollection
 
-from organoid_tracker.division_detection_cnn.prediction_dataset import prediction_data_creator
-from organoid_tracker.division_detection_cnn.training_data_creator import create_image_with_positions_list
+from organoid_tracker.neural_network.division_detection_cnn.prediction_dataset import prediction_data_creator
+from organoid_tracker.neural_network.division_detection_cnn.training_data_creator import create_image_with_positions_list
 
 import tensorflow as tf
 import numpy as np
