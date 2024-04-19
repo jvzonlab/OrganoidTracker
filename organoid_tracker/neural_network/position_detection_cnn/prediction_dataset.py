@@ -1,14 +1,12 @@
 from functools import partial
 from typing import List
 
-import tensorflow as tf
-
-from organoid_tracker.position_detection_cnn.image_with_positions_to_tensor_loader import tf_load_images
-from organoid_tracker.position_detection_cnn.training_data_creator import _ImageWithPositions
-from organoid_tracker.position_detection_cnn.training_dataset import pad_to_patch
+from organoid_tracker.neural_network.position_detection_cnn.image_with_positions_to_tensor_loader import tf_load_images
+from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import ImageWithPositions
+from organoid_tracker.neural_network.position_detection_cnn.training_dataset import pad_to_patch
 
 
-def predicting_data_creator(image_with_positions_list: List[_ImageWithPositions], time_window, corners,
+def predicting_data_creator(image_with_positions_list: List[ImageWithPositions], time_window, corners,
                             patch_shape, buffer, image_shape, batch_size):
     # load data
     dataset = tf.data.Dataset.range(len(image_with_positions_list))

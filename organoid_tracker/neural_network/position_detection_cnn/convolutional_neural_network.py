@@ -1,10 +1,10 @@
-from typing import List, Tuple
+from typing import Tuple
 
-import tensorflow as tf
-from tensorflow import keras
+import keras
+import keras.callbacks
 
-from organoid_tracker.position_detection_cnn.custom_filters import blur_labels
-from organoid_tracker.position_detection_cnn.loss_functions import position_recall, position_precision, \
+from organoid_tracker.neural_network.position_detection_cnn.custom_filters import blur_labels
+from organoid_tracker.neural_network.position_detection_cnn.loss_functions import position_recall, position_precision, \
     overcount, loss
 
 
@@ -43,9 +43,9 @@ def build_model(shape: Tuple, batch_size):
                        dropout=False, name="up_z")
 
     # apply final batch_normalization
-    layer = tf.keras.layers.BatchNormalization()(layer)
+    layer = keras.layers.BatchNormalization()(layer)
 
-    output = tf.keras.layers.Conv3D(filters=1, kernel_size=3, padding="same", activation='relu', name='out_conv')(layer)
+    output = keras.layers.Conv3D(filters=1, kernel_size=3, padding="same", activation='relu', name='out_conv')(layer)
 
     # blur predictions (leads to less noise-induced peaks) This helps sometimes (?)
     output = blur_labels(output, sigma=1.5, kernel_size=4,  depth=1, normalize=False)
@@ -53,7 +53,7 @@ def build_model(shape: Tuple, batch_size):
 
     model = keras.Model(inputs=input, outputs=output, name="YOLO")
 
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005),
+    model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.0005),
                   loss=loss, metrics=[position_recall, position_precision, overcount])
 
     return model
@@ -63,20 +63,20 @@ def conv_block(n_conv, layer, filters, kernel=3, pool_size=2, pool_strides=2, dr
     for index in range(n_conv):
 
         if depth_wise is not None:
-            layer = tf.keras.layers.Conv3D(filters=filters, kernel_size=kernel, groups=depth_wise, padding='same', activation='linear',
+            layer = keras.layers.Conv3D(filters=filters, kernel_size=kernel, groups=depth_wise, padding='same', activation='linear',
                                            name=name + '/vol_conv{0}'.format(index + 1))(layer)
-            layer = tf.keras.layers.Conv3D(filters=filters, kernel_size=(1, 1, 1), padding='same', activation='relu',
+            layer = keras.layers.Conv3D(filters=filters, kernel_size=(1, 1, 1), padding='same', activation='relu',
                                            name=name + '/depth_conv{0}'.format(index + 1))(layer)
 
         else:
-            layer = tf.keras.layers.Conv3D(filters=filters, kernel_size=kernel, padding='same', activation='relu',
+            layer = keras.layers.Conv3D(filters=filters, kernel_size=kernel, padding='same', activation='relu',
                                            name=name + '/conv{0}'.format(index + 1))(layer)
 
         if dropout:
-            layer = tf.keras.layers.SpatialDropout3D(rate=0.5)(layer)
+            layer = keras.layers.SpatialDropout3D(rate=0.5)(layer)
 
     to_concat = layer
-    layer = tf.keras.layers.MaxPooling3D(pool_size=pool_size, strides=pool_strides, padding='same',
+    layer = keras.layers.MaxPooling3D(pool_size=pool_size, strides=pool_strides, padding='same',
                                          name=name + '/pool')(layer)
 
     #layer = tf.keras.layers.BatchNormalization()(layer)
@@ -87,28 +87,28 @@ def conv_block(n_conv, layer, filters, kernel=3, pool_size=2, pool_strides=2, dr
 def deconv_block(n_conv, layer, to_concat, filters, kernel=3, strides=2, dropout=False, name=None, depth_wise= None, deconvolve=False):
 
     if deconvolve:
-        layer = tf.keras.layers.Conv3DTranspose(filters=filters, kernel_size=strides, strides=strides, padding='same',
+        layer = keras.layers.Conv3DTranspose(filters=filters, kernel_size=strides, strides=strides, padding='same',
                                                 name=name + '/upconv')(layer)
     else:
-        layer = tf.keras.layers.UpSampling3D(size=strides,
+        layer = keras.layers.UpSampling3D(size=strides,
                                                 name=name + '/upsample')(layer)
 
     if to_concat is not None:
-        layer = tf.concat([layer, to_concat], axis=-1)
+        layer = keras.ops.concatenate([layer, to_concat], axis=-1)
 
     for index in range(n_conv):
 
         if depth_wise:
-            layer = tf.keras.layers.Conv3D(filters=filters, kernel_size=kernel, groups=filters, padding='same', activation='linear',
+            layer = keras.layers.Conv3D(filters=filters, kernel_size=kernel, groups=filters, padding='same', activation='linear',
                                            name=name + '/vol_conv{0}'.format(index + 1))(layer)
-            layer = tf.keras.layers.Conv3D(filters=filters, kernel_size=(1, 1, 1), padding='same', activation='relu',
+            layer = keras.layers.Conv3D(filters=filters, kernel_size=(1, 1, 1), padding='same', activation='relu',
                                            name=name + '/depth_conv{0}'.format(index + 1))(layer)
         else:
-            layer = tf.keras.layers.Conv3D(filters=filters, kernel_size=kernel, padding='same', activation='relu',
+            layer = keras.layers.Conv3D(filters=filters, kernel_size=kernel, padding='same', activation='relu',
                                            name=name + '/conv{0}'.format(index + 1))(layer)
 
         if dropout:
-            layer = tf.keras.layers.SpatialDropout3D(rate=0.5)(layer)
+            layer = keras.layers.SpatialDropout3D(rate=0.5)(layer)
 
     #layer = tf.keras.layers.BatchNormalization()(layer)
 
@@ -117,55 +117,55 @@ def deconv_block(n_conv, layer, to_concat, filters, kernel=3, strides=2, dropout
 
 def add_3d_coord(layer, only_z=False):
     # FIXME can we make this using a loop?
-    im_shape = tf.shape(layer)[1:4]
-    batch_size_tensor = tf.shape(layer)[0]
+    im_shape = keras.ops.shape(layer)[1:4]
+    batch_size_tensor = keras.ops.shape(layer)[0]
 
     # create nzyx_matrix
-    xval_range = tf.range(im_shape[2])
-    xval_range = tf.expand_dims(xval_range, axis=0)
-    xval_range = tf.expand_dims(xval_range, axis=0)
-    xval_range = tf.expand_dims(xval_range, axis=0)
-    xval_range = tf.tile(xval_range, [batch_size_tensor, im_shape[0], im_shape[1], 1])
+    xval_range = keras.ops.arange(im_shape[2])
+    xval_range = keras.ops.expand_dims(xval_range, axis=0)
+    xval_range = keras.ops.expand_dims(xval_range, axis=0)
+    xval_range = keras.ops.expand_dims(xval_range, axis=0)
+    xval_range = keras.ops.tile(xval_range, [batch_size_tensor, im_shape[0], im_shape[1], 1])
 
     # normalize?
-    xval_range = tf.cast(xval_range, 'float32')
+    xval_range = keras.ops.cast(xval_range, 'float32')
     # add batch channel dim
-    xval_range = tf.expand_dims(xval_range, axis=-1)
+    xval_range = keras.ops.expand_dims(xval_range, axis=-1)
 
     # create nzyx_matrix
-    yval_range = tf.range(im_shape[1])
-    yval_range = tf.expand_dims(yval_range, axis=0)
-    yval_range = tf.expand_dims(yval_range, axis=0)
-    yval_range = tf.expand_dims(yval_range, axis=-1)
-    yval_range = tf.tile(yval_range, [batch_size_tensor, im_shape[0], 1, im_shape[2]])
+    yval_range = keras.ops.arange(im_shape[1])
+    yval_range = keras.ops.expand_dims(yval_range, axis=0)
+    yval_range = keras.ops.expand_dims(yval_range, axis=0)
+    yval_range = keras.ops.expand_dims(yval_range, axis=-1)
+    yval_range = keras.ops.tile(yval_range, [batch_size_tensor, im_shape[0], 1, im_shape[2]])
 
     # normalize?
-    yval_range = tf.cast(yval_range, 'float32')
+    yval_range = keras.ops.cast(yval_range, 'float32')
     # add batch channel dim
-    yval_range = tf.expand_dims(yval_range, axis=-1)
+    yval_range = keras.ops.expand_dims(yval_range, axis=-1)
 
     # create nzyx_matrix
-    zval_range = tf.range(im_shape[0])
-    zval_range = tf.expand_dims(zval_range, axis=0)
-    zval_range = tf.expand_dims(zval_range, axis=-1)
-    zval_range = tf.expand_dims(zval_range, axis=-1)
-    zval_range = tf.tile(zval_range, [batch_size_tensor, 1, im_shape[1], im_shape[2]])
+    zval_range = keras.ops.arange(im_shape[0])
+    zval_range = keras.ops.expand_dims(zval_range, axis=0)
+    zval_range = keras.ops.expand_dims(zval_range, axis=-1)
+    zval_range = keras.ops.expand_dims(zval_range, axis=-1)
+    zval_range = keras.ops.tile(zval_range, [batch_size_tensor, 1, im_shape[1], im_shape[2]])
 
     # normalize?
-    zval_range = tf.cast(zval_range, 'float32')
+    zval_range = keras.ops.cast(zval_range, 'float32')
     # add batch channel dim
-    zval_range = tf.expand_dims(zval_range, axis=-1)
+    zval_range = keras.ops.expand_dims(zval_range, axis=-1)
 
     if only_z:
-        layer = tf.concat([layer, zval_range], axis=-1)
+        layer = keras.ops.concatenate([layer, zval_range], axis=-1)
     else:
-        layer = tf.concat([layer, zval_range, yval_range, xval_range], axis=-1)
+        layer = keras.ops.concatenate([layer, zval_range, yval_range, xval_range], axis=-1)
 
     return layer
 
 
-def tensorboard_callback(tensorboard_folder: str) -> tf.keras.callbacks.Callback:
-    return tf.keras.callbacks.TensorBoard(
+def tensorboard_callback(tensorboard_folder: str) -> keras.callbacks.Callback:
+    return keras.callbacks.TensorBoard(
         log_dir=tensorboard_folder,
         histogram_freq=0,
         write_graph=False,

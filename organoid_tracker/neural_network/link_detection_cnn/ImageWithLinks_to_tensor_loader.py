@@ -5,8 +5,8 @@ import tensorflow as tf
 from functools import partial
 
 
-from organoid_tracker.link_detection_cnn.training_data_creator import _ImageWithLinks
-from organoid_tracker.position_detection_cnn.training_data_creator import _ImageWithPositions
+from organoid_tracker.neural_network.link_detection_cnn.training_data_creator import _ImageWithLinks
+from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import ImageWithPositions
 
 
 def load_images_with_links(i, image_with_positions_list: List[_ImageWithLinks], time_window=[0, 0]):
@@ -44,7 +44,7 @@ def tf_load_images_with_links(i: int, image_with_positions_list: List[_ImageWith
     return image, target_image, label, target_label, distances, linked
 
 
-def dataset_writer(image_with_positions_list: List[_ImageWithPositions], time_window: List[int], shards: int = 10):
+def dataset_writer(image_with_positions_list: List[ImageWithPositions], time_window: List[int], shards: int = 10):
     dataset = tf.data.Dataset.range(len(image_with_positions_list))
 
     # load and serialize data
