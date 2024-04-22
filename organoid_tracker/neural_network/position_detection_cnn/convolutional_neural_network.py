@@ -64,20 +64,20 @@ def conv_block(n_conv, layer, filters, kernel=3, pool_size=2, pool_strides=2, dr
 
         if depth_wise is not None:
             layer = keras.layers.Conv3D(filters=filters, kernel_size=kernel, groups=depth_wise, padding='same', activation='linear',
-                                           name=name + '/vol_conv{0}'.format(index + 1))(layer)
+                                           name=name + '>vol_conv{0}'.format(index + 1))(layer)
             layer = keras.layers.Conv3D(filters=filters, kernel_size=(1, 1, 1), padding='same', activation='relu',
-                                           name=name + '/depth_conv{0}'.format(index + 1))(layer)
+                                           name=name + '>depth_conv{0}'.format(index + 1))(layer)
 
         else:
             layer = keras.layers.Conv3D(filters=filters, kernel_size=kernel, padding='same', activation='relu',
-                                           name=name + '/conv{0}'.format(index + 1))(layer)
+                                           name=name + '>conv{0}'.format(index + 1))(layer)
 
         if dropout:
             layer = keras.layers.SpatialDropout3D(rate=0.5)(layer)
 
     to_concat = layer
     layer = keras.layers.MaxPooling3D(pool_size=pool_size, strides=pool_strides, padding='same',
-                                         name=name + '/pool')(layer)
+                                         name=name + '>pool')(layer)
 
     #layer = tf.keras.layers.BatchNormalization()(layer)
 
@@ -88,10 +88,10 @@ def deconv_block(n_conv, layer, to_concat, filters, kernel=3, strides=2, dropout
 
     if deconvolve:
         layer = keras.layers.Conv3DTranspose(filters=filters, kernel_size=strides, strides=strides, padding='same',
-                                                name=name + '/upconv')(layer)
+                                                name=name + '>upconv')(layer)
     else:
         layer = keras.layers.UpSampling3D(size=strides,
-                                                name=name + '/upsample')(layer)
+                                                name=name + '>upsample')(layer)
 
     if to_concat is not None:
         layer = keras.ops.concatenate([layer, to_concat], axis=-1)
@@ -100,12 +100,12 @@ def deconv_block(n_conv, layer, to_concat, filters, kernel=3, strides=2, dropout
 
         if depth_wise:
             layer = keras.layers.Conv3D(filters=filters, kernel_size=kernel, groups=filters, padding='same', activation='linear',
-                                           name=name + '/vol_conv{0}'.format(index + 1))(layer)
+                                           name=name + '>vol_conv{0}'.format(index + 1))(layer)
             layer = keras.layers.Conv3D(filters=filters, kernel_size=(1, 1, 1), padding='same', activation='relu',
-                                           name=name + '/depth_conv{0}'.format(index + 1))(layer)
+                                           name=name + '>depth_conv{0}'.format(index + 1))(layer)
         else:
             layer = keras.layers.Conv3D(filters=filters, kernel_size=kernel, padding='same', activation='relu',
-                                           name=name + '/conv{0}'.format(index + 1))(layer)
+                                           name=name + '>conv{0}'.format(index + 1))(layer)
 
         if dropout:
             layer = keras.layers.SpatialDropout3D(rate=0.5)(layer)
@@ -171,7 +171,6 @@ def tensorboard_callback(tensorboard_folder: str) -> keras.callbacks.Callback:
         write_graph=False,
         write_images=False,
         update_freq=1000,
-        profile_batch=(100, 105),
         embeddings_freq=0,
         embeddings_metadata=None,
     )

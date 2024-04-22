@@ -7,10 +7,12 @@ import random
 from functools import partial
 from typing import Set, Tuple
 
+os.environ["KERAS_BACKEND"] = "torch"
 import keras
 import keras.callbacks
 import keras.models
 import tifffile
+from torch import Tensor
 
 from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int
 from organoid_tracker.core.experiment import Experiment
@@ -83,7 +85,7 @@ time_window = (int(config.get_or_default(f"time_window_before", str(-1))),
                int(config.get_or_default(f"time_window_after", str(1))))
 
 patch_shape_zyx = list(
-    config.get_or_default("patch_shape", "64, 64, 32", comment="Size in pixels (x, y, z) of the patches used"
+    config.get_or_default("patch_shape", "32, 64, 64", comment="Size in pixels (z, y, x) of the patches used"
                                                                " to train the network.",
                           type=config_type_image_shape))
 
@@ -116,6 +118,8 @@ training_dataset = training_data_creator_from_raw(image_with_positions_list, tim
 validation_dataset = training_data_creator_from_raw(image_with_positions_list, time_window=time_window,
                                                     patch_shape=patch_shape_zyx, batch_size=batch_size,
                                                     mode='validation', split_proportion=0.8)
+
+sample = next(iter(training_dataset))
 
 print("Defining model...")
 model = build_model(shape=(patch_shape_zyx[0], None, None, time_window[1] - time_window[0] + 1), batch_size=None)

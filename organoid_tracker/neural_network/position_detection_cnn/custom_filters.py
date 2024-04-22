@@ -53,7 +53,7 @@ def blur_labels(label: Tensor, kernel_size: int = 8, sigma: float = 2.0, depth: 
     """Blurs the given labels (single pixels) with a Gaussian kernel."""
     blur = _gaussian_kernel(kernel_size = kernel_size, sigma=sigma, depth=depth, n_channels=n_channels, dtype=label.dtype, normalize=normalize)
 
-    label_blur = keras.ops.conv(label, blur, [1, 1, 1, 1, 1], 'same')
+    label_blur = keras.ops.conv(label, blur, [1, 1, 1], 'same')
 
     return label_blur
 
@@ -88,11 +88,11 @@ def disk_labels(label, range_zyx: Tuple[float, float, float] = (2.5, 11., 11.)):
 def get_edges(peaks, range_zyx: Tuple[float, float, float] = (2.5, 11., 11.), remove_top=True):
     edges = keras.ops.zeros(keras.ops.shape(peaks))
     if remove_top:
-        edges = keras.ops.pad(edges, paddings=[[0, 0], [0, 1], [1, 1], [1, 1], [0, 0]], constant_values=1)
+        edges = keras.ops.pad(edges, [[0, 0], [0, 1], [1, 1], [1, 1], [0, 0]], constant_values=1)
         edges = disk_labels(edges, range_zyx=range_zyx)
         edges = edges[:, 0:-1, 1:-1, 1:-1, :]
     else:
-        edges = keras.ops.pad(edges, paddings=[[0, 0], [0, 0], [1, 1], [1, 1], [0, 0]], constant_values=1)
+        edges = keras.ops.pad(edges, [[0, 0], [0, 0], [1, 1], [1, 1], [0, 0]], constant_values=1)
         edges = disk_labels(edges, range_zyx=range_zyx)
         edges = edges[:, :, 1:-1, 1:-1, :]
 

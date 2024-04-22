@@ -21,6 +21,39 @@ import keras
 from organoid_tracker.neural_network import Tensor, TensorLike
 
 
+def random_crop(value: TensorLike, size: TensorLike, seed=None):
+    """Randomly crops a tensor to a given size.
+
+    Slices a shape `size` portion out of `value` at a uniformly chosen offset.
+    Requires `value.shape >= size`.
+
+    If a dimension should not be cropped, pass the full size of that dimension.
+    For example, RGB images can be cropped with
+    `size = [crop_height, crop_width, 3]`.
+
+    Args:
+      value: Input tensor to crop.
+      size: 1-D tensor with size the rank of `value`.
+      seed: Python integer. Used to create a random seed. See
+        `tf.random.set_seed`
+        for behavior.
+
+    Returns:
+      A cropped tensor of the same rank as `value` and shape `size`.
+    """
+    value = keras.ops.convert_to_tensor(value)
+    size = keras.ops.convert_to_tensor(size, dtype="int32")
+    shape = keras.ops.convert_to_tensor(keras.ops.shape(value), dtype="int32")
+    limit = shape - size + 1
+    offset = keras.ops.random.randint(
+        keras.ops.shape(shape),
+        dtype="int32",
+        minval=0,
+        maxval=2**31,
+        seed=seed) % limit
+    return keras.ops.slice(value, offset, size)
+
+
 def compose_transforms(transforms: Tensor) -> Tensor:
     """Composes the transforms tensors.
 
@@ -64,12 +97,12 @@ def flat_transforms_to_matrices(transforms: Tensor) -> Tensor:
     if len(keras.ops.shape(transforms)) not in (1, 2):
         raise ValueError("Transforms should be 1D or 2D, got: %s" % transforms)
     # Make the transform(s) 2D in case the input is a single transform.
-    transforms = keras.ops.reshape(transforms, keras.ops.convert_to_tensor([-1, 8]))
+    transforms = keras.ops.reshape(transforms, (-1, 8))
     num_transforms = keras.ops.shape(transforms)[0]
     # Add a column of ones for the implicit last entry in the matrix.
     return keras.ops.reshape(
         keras.ops.concatenate([transforms, keras.ops.ones([num_transforms, 1])], axis=1),
-        keras.ops.convert_to_tensor([-1, 3, 3]),
+        (-1, 3, 3),
     )
 
 
@@ -92,14 +125,14 @@ def matrices_to_flat_transforms(transform_matrices: Tensor) -> Tensor:
     Raises:
       ValueError: If `transform_matrices` have an invalid shape.
     """
-    if len(keras.ops.shape(transform_matrices.shape)) not in (2, 3):
+    if len(keras.ops.shape(transform_matrices)) not in (2, 3):
         raise ValueError(
             "Matrices should be 2D or 3D, got: %s" % transform_matrices
         )
     # Flatten each matrix.
-    transforms = keras.ops.reshape(transform_matrices, keras.ops.convert_to_tensor([-1, 9]))
+    transforms = keras.ops.reshape(transform_matrices, (-1, 9))
     # Divide each matrix by the last entry (normally 1).
-    transforms /= transforms[:, 8:9]
+    transforms = transforms / transforms[:, 8:9]
     return transforms[:, :8]
 
 
@@ -117,9 +150,7 @@ def angles_to_projective_transforms(angles: TensorLike, image_height: TensorLike
       A tensor of shape (num_images, 8). Projective transforms which can be
       given to `transform` op.
     """
-    angle_or_angles = keras.ops.convert_to_tensor(
-        angles, name="angles", dtype="float32"
-    )
+    angle_or_angles = keras.ops.convert_to_tensor(angles, dtype="float32")
     if len(keras.ops.shape(angle_or_angles)) == 0:
         angles = angle_or_angles[None]
     elif len(keras.ops.shape(angle_or_angles)) == 1:
@@ -132,7 +163,7 @@ def angles_to_projective_transforms(angles: TensorLike, image_height: TensorLike
     y_offset = ((image_height - 1) - (sin_angles * (image_width - 1) + cos_angles * (image_height - 1))) / 2.0
     num_angles = keras.ops.shape(angles)[0]
     return keras.ops.concatenate(
-        values=[
+        [
             cos_angles[:, None],
             -sin_angles[:, None],
             x_offset[:, None],
