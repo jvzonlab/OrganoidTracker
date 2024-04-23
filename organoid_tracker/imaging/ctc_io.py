@@ -141,7 +141,7 @@ def _create_spherical_mask(radius_um: float, resolution: ImageResolution) -> Mas
     return mask
 
 
-def save_data_files(experiment: Experiment, folder: str):
+def save_data_files(experiment: Experiment, folder: str, mask_size_um=7):
     """Saves all cell tracks in the data format of the Cell Tracking Challenge. Requires the presence of links and
      images. Also requires an image size to be known, as well as the file name ending with .txt (case insensitive).
      Throws ValueError if any of these conditions are violated."""
@@ -158,7 +158,7 @@ def save_data_files(experiment: Experiment, folder: str):
 
     # Create mask for stamping the positions in the images
     if is_scratch:
-        mask = _create_spherical_mask(7, experiment.images.resolution())
+        mask = _create_spherical_mask(mask_size_um, experiment.images.resolution())
     else:
         mask = Mask(bounding_box.ONE.expanded(2, 2, 0))
         mask.get_mask_array().fill(1)
@@ -199,7 +199,7 @@ def _save_track_images(experiment: Experiment, image_prefix: str, mask: Mask):
             mask.center_around(position)
             mask.stamp_image(image_fill_array, track_id + 1)  # Track id is offset by 1 to avoid track id 0
 
-        tifffile.imsave(image_file_name, image_fill_array.array, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
+        tifffile.imsave(image_file_name, image_fill_array.array) #, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
 
 
 def _save_track_images_watershed(experiment: Experiment, image_prefix: str, mask: Mask, resolution: ImageResolution):
@@ -235,8 +235,7 @@ def _save_track_images_watershed(experiment: Experiment, image_prefix: str, mask
 
         regions = skimage.segmentation.watershed(distance_map, image_seed_array).astype(numpy.uint16)
         regions[image_mask_array.array == 0] = 0  # Remove background
-        tifffile.imwrite(image_file_name, regions, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
-
+        tifffile.imwrite(image_file_name, regions) #, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
 
 def _save_overview_file(experiment: Experiment, file_name: str):
     """Save overview of all linking tracks and their ids"""
