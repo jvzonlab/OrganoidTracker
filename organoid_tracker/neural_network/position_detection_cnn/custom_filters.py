@@ -81,7 +81,7 @@ def disk_labels(label, range_zyx: Tuple[float, float, float] = (2.5, 11., 11.)):
     """Changes the labels (single pixels) into disks."""
     disk = _disk(range_zyx= range_zyx)
 
-    label_disk = keras.ops.conv(label, disk, [1, 1, 1, 1, 1], 'same')
+    label_disk = keras.ops.conv(label, disk, [1, 1, 1], 'same')
 
     return label_disk
 
@@ -169,7 +169,7 @@ def distance_map(y_true, range=(3., 16., 16.), range_edges = (3., 11. , 11.), ad
     distances_min = keras.ops.where(keras.ops.is_inf(distances_min), 1., distances_min)
 
     # sum of the inverted distance to center points
-    distance_sum = keras.ops.nn.conv3d(y_true, distance, [1, 1, 1], 'same')
+    distance_sum = keras.ops.conv(y_true, distance, [1, 1, 1], 'same')
 
     if adaptive:
         # create distance map

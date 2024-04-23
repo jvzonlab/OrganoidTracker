@@ -133,7 +133,7 @@ history = model.fit(training_dataset,
                     steps_per_epoch= round(0.8*len(image_with_positions_list)),
                     validation_data=validation_dataset,
                     validation_steps=round(0.2*len(image_with_positions_list)),
-                    callbacks=[tensorboard_callback(tensorboard_folder), keras.callbacks.EarlyStopping(patience=1, restore_best_weights=True)])
+                    callbacks=[keras.callbacks.EarlyStopping(patience=1, restore_best_weights=True)])
 
 
 print("Saving model...")
