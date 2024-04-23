@@ -165,6 +165,9 @@ def _distance(range = [3., 13., 13.],  n_channels=1, squared=True):
 
 
 def distance_map(y_true, range=(3., 16., 16.), range_edges = (3., 11. , 11.), adaptive = True):
+#def distance_map(y_true, range=(3., 16., 16.), range_edges = (3., 11. , 11.), adaptive = False): #unadapted
+#def distance_map(y_true, range=(4., 16., 16.), range_edges=(3., 11., 11.), adaptive=True): # fly embryo
+#def distance_map(y_true, range=(3., 12., 12.), range_edges=(3., 8., 8.), adaptive=True): # lower resolution
 
     # exponent used to take pseudo_maximum
     k = 20.
@@ -187,7 +190,7 @@ def distance_map(y_true, range=(3., 16., 16.), range_edges = (3., 11. , 11.), ad
         distances = 1 - 2 * distances_min + distance_sum
         distances = tf.where(distances > 1, 1., distances)
 
-        #s_squared = 0.25
+        #s_squared = 0.25 # c Elegans
         s_squared = 0.125
         #s_squared = 0.125/2
         distances = tf.exp(-distances ** 2 / (2*s_squared))
@@ -203,10 +206,20 @@ def distance_map(y_true, range=(3., 16., 16.), range_edges = (3., 11. , 11.), ad
         s_squared = 0.25
         distances = tf.exp(-distances ** 2 / (2 * s_squared))
         distances = (distances - tf.exp(- 1. / (2 * s_squared))) / (1. - tf.exp(- 1. / (2 * s_squared)))
+
     # define weights based on inverted distance sum
-    weights = 1-distance_sum
-    weights = tf.exp(-weights ** 2 / 0.25)
-    weights = (weights - tf.exp(- 1 / 0.25)) / (1 - tf.exp(- 1 / 0.25))
+    #s_squared_weight = 0.125/2 fly
+    s_squared_weight = 0.125
+    #s_squared_weight = 0.25
+    #s_squared_weight = 0.5 # fly embryo
+
+    #new_range = [range[0]*1.5, range[1]*1.5, range[2]*1.5] fly
+    #distance = 1 - _distance(range=new_range, squared=False)
+    #distance_sum = tf.nn.conv3d(y_true, distance, [1, 1, 1, 1, 1], 'SAME')
+
+    weights = 1-tf.math.minimum(distance_sum, 1.0)
+    weights = tf.exp(-weights ** 2 / (2*s_squared_weight))
+    weights = (weights - tf.exp(- 1 / (2*s_squared_weight))) / (1 - tf.exp(- 1 / (2*s_squared_weight)))
 
     # define background as zero
     weights = tf.where(weights < 0.05, 0., weights)
@@ -218,6 +231,8 @@ def distance_map(y_true, range=(3., 16., 16.), range_edges = (3., 11. , 11.), ad
     zero_count = full_size - non_zero_count
 
     background_weight = 0.5
+    #background_weight = 0.0 #fly
+    # background_weight = 0.95 #worm
     # weight the loss by the amount of non zeroes values in label
     weights = tf.where(tf.equal(weights, 0),
                         background_weight * full_size / zero_count,
