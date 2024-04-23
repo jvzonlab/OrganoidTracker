@@ -459,14 +459,18 @@ class LinkAndPositionEditor(AbstractEditor):
             color = core.COLOR_CELL_NEXT
         self._draw_selection(position, color)
 
+    def _exit_view(self):
+        if len(self._selected) > 0:
+            self._deselect_all()  # First deselect all before exiting using Escape
+        else:
+            super()._exit_view()
+
     def _on_mouse_click(self, event: MouseEvent):
         if not event.dblclick:
             return
         new_selection = self._get_position_at(event.xdata, event.ydata)
         if new_selection is None:
-            self._selected.clear()
-            self.draw_view()
-            self.update_status("Cannot find a cell here. Unselected all cells.")
+            self.update_status("Cannot find a cell here.\n(To unselect all cells, press Escape or Ctrl+D.)")
             return
 
         if new_selection in self._selected:
@@ -478,11 +482,11 @@ class LinkAndPositionEditor(AbstractEditor):
         if len(self._selected) <= 2:
             selected_first = self._selected[0] if len(self._selected) > 0 else None
             selected_second = self._selected[1] if len(self._selected) > 1 else None
-            self.update_status(
-                "Selected:\n        " + self._position_string(selected_first) + "\n        " + self._position_string(
-                    selected_second))
+            self.update_status("Selected: (press Escape or Ctrl+D to deselect all)" +
+                               "\n        " + self._position_string(selected_first) +
+                               "\n        " + self._position_string(selected_second))
         else:
-            self.update_status(f"Selected: {len(self._selected)} positions")
+            self.update_status(f"Selected: {len(self._selected)} positions. Press Escape or Ctrl+D to deselect all.")
 
     def _position_string(self, position: Optional[Position]) -> str:
         """Gets a somewhat compact representation of the position. This will return its x, y, z, time point and some
@@ -527,6 +531,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Select//Select-Select positions in a rectangle...": self._show_positions_in_rectangle_selector,
             "Select//Select-Select all positions in current time point [Ctrl+A]": self._select_all,
             "Select//Select-Select all positions in time point range...": self._select_all_of_multiple_time_points,
+            "Select//Deselect-Deselect all positions [Ctrl+D]": self._deselect_all,
             "Select//Deselect-Deselect positions in time point range...": self._deselect_positions_from_time_points,
             "Select//Expand-Expand selection to entire track [T]": self._select_track,
             "Errors//Suppress-Suppress errors in selected positions": self._suppress_errors_in_selected,
@@ -564,7 +569,7 @@ class LinkAndPositionEditor(AbstractEditor):
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "c":
-            self._exit_view()
+            super()._exit_view()  # We use super here, to bypass not exiting when we have a selection
         elif event.xdata is None or event.ydata is None:
             # Rest of the keys requires a mouse position
             super()._on_key_press(event)
@@ -842,6 +847,11 @@ class LinkAndPositionEditor(AbstractEditor):
         else:
             self.update_status(f"Selected {new_count - old_count} new position(s) across"
                                f" {time_point_number_end - time_point_number_start + 1} time point(s).")
+
+    def _deselect_all(self):
+        self._selected.clear()
+        self.draw_view()
+        self.update_status("Deselected all positions.")
 
     def _deselect_positions_from_time_points(self):
         """Deselects annotations of a given time point range."""
