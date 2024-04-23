@@ -53,7 +53,7 @@ def _to_links(position_ids: _PositionToId, results: Dict) -> Links:
 
 def run(positions: PositionCollection, position_data: PositionData, starting_links: Links, link_data: LinkData,
             *, link_weight: int, detection_weight: int, division_weight: int, appearance_weight: int,
-            dissappearance_weight: int) -> Tuple[Links, Links]:
+            dissappearance_weight: int, method = 'FlowBased') -> Tuple[Links, Links]:
     """
     Calculates the optimal links, based on the given starting points and weights.
     :param positions: The positions.
@@ -76,15 +76,24 @@ def run(positions: PositionCollection, position_data: PositionData, starting_lin
         weights = {"weights": [link_weight, detection_weight, division_weight, appearance_weight, dissappearance_weight]}
     else:
         weights = {"weights": [link_weight, detection_weight, appearance_weight, dissappearance_weight]}
-    results = dpct.trackFlowBased(input, weights)
+
+    if method == 'FlowBased':
+        results = dpct.trackFlowBased(input, weights)
+    elif method == 'Magnusson':
+        results = dpct.trackMagnusson(input, weights)
+    else:
+        print('tracking method not available, doing FlowBased instead')
+        results = dpct.trackFlowBased(input, weights)
+
+    print('converting results...')
     return _to_links(position_ids, results), naive_links
 
 
 def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links,
                        position_data: PositionData, link_data: LinkData,
                        min_time_point: int, max_time_point: int, division_penalty_cut_off = 2.0, ignore_penalty = 2.0,
-                       penalty_difference_cut_off = 4.0,
-                       penalty_abs_cut_off = 4.0) -> Tuple[Dict, bool, Links]:
+                       penalty_difference_cut_off = 3.0,
+                       penalty_abs_cut_off = 3.0) -> Tuple[Dict, bool, Links]:
     """Creates the linking network. Returns the network and whether there are possible divisions."""
 
     # first cycle over all the links to find for very node the lowest input (top two) and output link energy
@@ -115,6 +124,9 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links,
             position_data.set_position_data(position1, '2nd_min_out_link_penalty',
                                             position_data.get_position_data(position1, 'min_out_link_penalty'))
             position_data.set_position_data(position1, 'min_out_link_penalty', link_penalty)
+        elif link_penalty < position_data.get_position_data(position1, '2nd_min_out_link_penalty'):
+            position_data.set_position_data(position1, '2nd_min_out_link_penalty',
+                                            link_penalty)
 
     # set up nodes in the graph
     created_possible_division = False
@@ -131,13 +143,21 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links,
         # find division penalty
         division_penalty = position_data.get_position_data(position, data_name='division_penalty')
 
+        # other relevant penaltiies
+        second_most_likely_link_penalty = position_data.get_position_data(position, data_name='2nd_min_out_link_penalty')
+
+        # find next positions
+        futures = starting_links.find_futures(position)
+
         # check if all the scores are there!
         if disappearance_penalty is None:
             disappearance_penalty = 0
         if division_penalty is None:
             division_penalty = 4
+            position_data.set_position_data(position, 'division_penalty', division_penalty)
+            print('should not happen')
 
-        if division_penalty < division_penalty_cut_off:
+        if (division_penalty < division_penalty_cut_off) and (len(futures) > 1) and (second_most_likely_link_penalty < disappearance_penalty):
             map = {
                 "id": position_ids.id(position),
                 "features": [[ignore_penalty], [0]],  # Assigning a detection to zero cells costs, using it is free
