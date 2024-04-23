@@ -79,6 +79,8 @@ while True:
     per_experiment_params.append(params)
     i += 1
 
+full_window = bool(config.get_or_default(f"identify full division window", 'True'))
+
 time_window = [int(config.get_or_default(f"time_window_before", str(-1))),
                int(config.get_or_default(f"time_window_after", str(1)))]
 
@@ -105,7 +107,7 @@ config.save_and_exit_if_changed()
 experiment_provider = (params.to_experiment() for params in per_experiment_params)
 
 # Create a list of images and annotated positions
-image_with_divisions_list = create_image_with_divisions_list(experiment_provider)
+image_with_divisions_list = create_image_with_divisions_list(experiment_provider, full_window=full_window)
 
 # get mean number of positions per timepoint
 number_of_postions = []
@@ -121,9 +123,6 @@ random.shuffle(image_with_divisions_list)
 validation_list = []
 for image_with_divisions in image_with_divisions_list[-round(0.2*len(image_with_divisions_list)):]:
     validation_list.append((image_with_divisions.experiment_name, image_with_divisions.time_point.time_point_number()))
-
-with open(os.path.join(output_folder, "validation_list.json"), "w") as file_handle:
-    json.dump(validation_list, file_handle, indent=4)
 
 # create tf.datasets that generate the data
 if use_TFR:
@@ -171,7 +170,7 @@ tf.keras.models.save_model(model, trained_model_folder)
 def predict(image, dividing, model: tf.keras.Model) -> Tuple[tf.Tensor, tf.Tensor]:
     return model(image, training=False), dividing
 
-# new list withour any upsampling
+# new list without any upsampling
 experiment_provider = (params.to_experiment() for params in per_experiment_params)
 list_for_platt_scaling = create_image_with_divisions_list(experiment_provider, division_multiplier=1,
                                                           loose_end_multiplier=0, counter_examples_per_div=1000,
@@ -185,7 +184,7 @@ for i in list_for_platt_scaling:
 
 callibration_dataset = training_data_creator_from_raw(list_for_platt_scaling_val, time_window=time_window,
                                                       patch_shape=patch_shape_zyx, batch_size=batch_size,
-                                                      mode='validation', split_proportion=0.0)
+                                                      mode='validation', split_proportion=0.0, perturb=False)
 quick_dataset: Dataset = callibration_dataset.take(5000)  #
 predictions = quick_dataset.map(partial(predict, model=model)).take(2000)
 
@@ -207,6 +206,10 @@ print(scaling)
 with open(os.path.join(trained_model_folder, "settings.json"), "w") as file_handle:
     json.dump({"type": "divisions", "time_window": time_window, "patch_shape_zyx": patch_shape_zyx,
                "platt_intercept": intercept, "platt_scaling": scaling}, file_handle, indent=4)
+
+# saves which timepoints are used for validation vs training
+with open(os.path.join(output_folder, "validation_list.json"), "w") as file_handle:
+    json.dump(validation_list, file_handle, indent=4)
 
 # Generate examples for sanity check
 os.makedirs(os.path.join(output_folder, "examples"), exist_ok=True)

@@ -48,16 +48,22 @@ class _ImageWithDivisions(_ImageWithPositions):
 
 
 # Creates list of ImagesWithDivisions from experiments
-#def create_image_with_divisions_list(experiments: Iterable[Experiment], division_multiplier=10, loose_end_multiplier=0, #loose_end_multiplier=1
-                                    # counter_examples_per_div=8, window=(0, 0), loose_end_window = 1, # counter_examples_per_div=0.2, window=(3, 3),
-                                    # full_window=False, exclusion_window=0):
-def create_image_with_divisions_list(experiments: Iterable[Experiment], division_multiplier=10,
-                                    loose_end_multiplier=10,
-                                    counter_examples_per_div=0.5, window=(2, 2), loose_end_window=1,
-                                    full_window=False, exclusion_window=0):
+def create_image_with_divisions_list(experiments: Iterable[Experiment], division_multiplier=10, loose_end_multiplier=1,
+                                     counter_examples_per_div=0.25, window=(3, 2), loose_end_window=1,
+                                     full_window=False, exclusion_window=None):
+    # def create_image_with_divisions_list(experiments: Iterable[Experiment], division_multiplier=10, loose_end_multiplier=0,
+    # counter_examples_per_div=8, window=(0, 0), loose_end_window = 1,
+    # full_window=False, exclusion_window=0): (this gives the settings of an 'unadapted model' in the organoidtracker 2.0 publication)
     """"Creates training data set. Allows upsampling of dividing and dying cells (loose ends). If full_window is TRUE
     all cells within the window around cell division are deemed dividing, otherwise only the anaphase is classified as division.
-    The exlcusion window allows the exclusion of difficult cases just outside the winow if full_window=TRUE."""
+    The exclusion window allows the exclusion of difficult cases just outside the window if full_window=TRUE."""
+
+    # if the exclusion_window is not set, use default of 2 if needed
+    if full_window:
+        exclusion_window = 2
+    else:
+        exclusion_window = 0
+
     image_with_divisions_list = []
     for experiment in experiments:
 
@@ -97,10 +103,11 @@ def create_image_with_divisions_list(experiments: Iterable[Experiment], division
             time_point_number_to_ignore=experiment.last_time_point_number()))
         end_positions_plus_window = set()
 
-        if loose_end_multiplier>0:
+        if loose_end_multiplier > 0:
             for end_pos in loose_ends:
                 pasts = list(links.iterate_to_past(end_pos))
-                end_positions_plus_window = end_positions_plus_window.union(set(pasts[:min(loose_end_window+ 1, len(pasts))]))
+                end_positions_plus_window = end_positions_plus_window.union(
+                    set(pasts[:min(loose_end_window + 1, len(pasts))]))
 
         # get the time points where divisions happen
         div_time_points = []
@@ -120,7 +127,7 @@ def create_image_with_divisions_list(experiments: Iterable[Experiment], division
             dividing = []
 
             non_division_counter = 0
-            division_counter = 1 #start with one to so there is way to select all cells
+            division_counter = 1  # start with one to so there is way to select all cells
 
             for position in positions:
                 divide = False
@@ -131,7 +138,7 @@ def create_image_with_divisions_list(experiments: Iterable[Experiment], division
                     divide = True
                     # dividing cells are represented 1:2 vs children and the non-dividing cell in the earlier timepoint
                     # (so 1:1 in the end)
-                    repeat = 1 #max(window[0] + 2*window[1], 1)
+                    repeat = 1  # max(window[0] + 2*window[1], 1)
 
                 # is cell dividing?
                 if position in div_positions_plus_window:
@@ -142,7 +149,7 @@ def create_image_with_divisions_list(experiments: Iterable[Experiment], division
                     repeat = loose_end_multiplier
                 # do we add it an anyway?
                 elif position not in div_positions_exclusion_window:
-                    #non_division_counter = non_division_counter + 1
+                    # non_division_counter = non_division_counter + 1
                     if non_division_counter >= (counter_examples_per_div * division_multiplier * division_counter):
                         repeat = 0
                     else:
@@ -157,6 +164,8 @@ def create_image_with_divisions_list(experiments: Iterable[Experiment], division
                         dividing.append(divide)
                 else:
                     print('position out of frame')
+                    print(str(experiment.name))
+                    print(time_point)
                     print(offset.z)
                     print(position.z)
 
