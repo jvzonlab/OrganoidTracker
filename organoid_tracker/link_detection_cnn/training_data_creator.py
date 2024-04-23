@@ -51,7 +51,8 @@ class _ImageWithLinks(_ImageWithPositions):
 
 
 def create_image_with_links_list(experiments: Iterable[Experiment], division_multiplier=5, mid_distance_multiplier=5,
-                                 div_window=3, medium_distance=(3.5, 5)):
+                                 loose_end_multiplier=0, multiple_options_multiplier=0,
+                                 div_window=3, medium_distance=(3, 7), min_cases=0):
     image_with_links_list = list()
 
     print('analyzing links...')
@@ -74,19 +75,49 @@ def create_image_with_links_list(experiments: Iterable[Experiment], division_mul
             pasts = list(links.iterate_to_past(div_pos))
             div_positions_plus_window = div_positions_plus_window.union(set(pasts[:div_window + 1]))
 
+        # find loose ends, possibly extruding cells
+        loose_ends = list(experiment.links.find_disappeared_positions(
+            time_point_number_to_ignore=experiment.last_time_point_number()))
+        end_positions_plus_window = set()
+
+        if loose_end_multiplier > 0:
+            for end_pos in loose_ends:
+                pasts = list(links.iterate_to_past(end_pos))
+                loose_end_window = 0
+                end_positions_plus_window = end_positions_plus_window.union(
+                    set(pasts[:min(loose_end_window + 1, len(pasts))]))
+
+        # find positions with multiple out-links
+        multiple_options_positions = []
+
+        if multiple_options_multiplier > 0:
+
+            for position in experiment.positions:
+                futures = list(possible_links.find_futures(position))
+
+                if len(futures) > 1:
+                    multiple_options_positions.append(position)
+
         for time_point in experiment.positions.time_points():
             # if there is no next timepoint available end the routine
-            if experiment._images.get_image_stack(TimePoint(time_point.time_point_number()+1)) is None:
+            if experiment._images.get_image_stack(TimePoint(time_point.time_point_number() + 1)) is None:
                 break
+
+            # counts if events of interest happen at this timepoint.
+            # First three were usefull for diagnostics/trouble shooting.
+            mid_counter = 0
+            loose_counter = 0
+            multiple_counter = 0
+            upsampled_case = 0
 
             # read a single time point and the next one
             positions = experiment.positions.of_time_point(time_point)
 
             offset = experiment.images.offsets.of_time_point(time_point)
-            future_offset = experiment.images.offsets.of_time_point(TimePoint(time_point.time_point_number()+1))
+            future_offset = experiment.images.offsets.of_time_point(TimePoint(time_point.time_point_number() + 1))
 
             image_shape = experiment._images.get_image_stack(time_point).shape
-            future_image_shape = experiment._images.get_image_stack(TimePoint(time_point.time_point_number()+1)).shape
+            future_image_shape = experiment._images.get_image_stack(TimePoint(time_point.time_point_number() + 1)).shape
 
             positions_xyz = list()
             target_positions_xyz = list()
@@ -104,7 +135,17 @@ def create_image_with_links_list(experiments: Iterable[Experiment], division_mul
                     if position in div_positions_plus_window:
                         repeats = division_multiplier
                     else:
-                        repeats=1
+                        repeats = 1
+
+                    # end point
+                    if position in end_positions_plus_window:
+                        repeats = loose_end_multiplier
+                        loose_counter = loose_counter + 1
+
+                    # multiple options
+                    if position in multiple_options_positions:
+                        repeats = multiple_options_multiplier
+                        multiple_counter = multiple_counter + 1
 
                     for future_possibility in future_possibilities:
                         if inside_image(future_possibility, future_offset, future_image_shape):
@@ -114,23 +155,31 @@ def create_image_with_links_list(experiments: Iterable[Experiment], division_mul
                             if future_possibility in div_positions_plus_window:
                                 repeats_link = division_multiplier
 
-                            distance_sq = (((future_possibility.x - position.x)*resolution.pixel_size_x_um)**2 +
-                                ((future_possibility.y - position.y) * resolution.pixel_size_y_um) ** 2 +
-                                ((future_possibility.z - position.z) * resolution.pixel_size_z_um) ** 2)
+                            distance_sq = (((future_possibility.x - position.x) * resolution.pixel_size_x_um) ** 2 +
+                                           ((future_possibility.y - position.y) * resolution.pixel_size_y_um) ** 2 +
+                                           ((future_possibility.z - position.z) * resolution.pixel_size_z_um) ** 2)
 
                             # is the distance travelled not very informative (not very far away not very close)?
-                            if (distance_sq > medium_distance[0]**2) and (distance_sq < medium_distance[1]**2):
+                            if (distance_sq > medium_distance[0] ** 2) and (distance_sq < medium_distance[1] ** 2):
                                 repeats_link = mid_distance_multiplier
+
+                                mid_counter = mid_counter + 1
+
+                            if repeats_link > 1:
+                                upsampled_case = upsampled_case + 1
 
                             for i in range(repeats_link):
                                 # add positions to list
                                 target_positions_xyz.append(
-                                    [future_possibility.x - future_offset.x, future_possibility.y - future_offset.y, future_possibility.z - future_offset.z])
+                                    [future_possibility.x - future_offset.x, future_possibility.y - future_offset.y,
+                                     future_possibility.z - future_offset.z])
                                 positions_xyz.append(
                                     [position.x - offset.x, position.y - offset.y, position.z - offset.z])
 
                                 # get distance vector
-                                distances.append([(future_possibility.x - position.x), (future_possibility.y - position.y), (future_possibility.z - position.z)])
+                                distances.append(
+                                    [(future_possibility.x - position.x), (future_possibility.y - position.y),
+                                     (future_possibility.z - position.z)])
 
                                 # are the positions linked
                                 if future_possibility in future_link:
@@ -140,11 +189,18 @@ def create_image_with_links_list(experiments: Iterable[Experiment], division_mul
 
             # read positions to numpy array
             if len(positions_xyz) > 0:
-                positions_xyz = numpy.array(positions_xyz, dtype=numpy.int32)
-                target_positions_xyz = numpy.array(target_positions_xyz, dtype=numpy.int32)
-                distances = numpy.array(distances, dtype=numpy.int32)
-                image_with_links_list.append(
-                    _ImageWithLinks(str(experiment.name), experiment.images, time_point, positions_xyz, target_positions_xyz, distances, linked))
+                repeat_image = 1
+
+                if upsampled_case >= min_cases:
+
+                    positions_xyz = numpy.array(positions_xyz, dtype=numpy.int32)
+                    target_positions_xyz = numpy.array(target_positions_xyz, dtype=numpy.int32)
+                    distances = numpy.array(distances, dtype=numpy.int32)
+
+                    for i in range(repeat_image):
+                        image_with_links_list.append(
+                            _ImageWithLinks(str(experiment.name), experiment.images, time_point, positions_xyz,
+                                            target_positions_xyz, distances, linked))
 
     return image_with_links_list
 
@@ -178,10 +234,9 @@ def create_image_with_possible_links_list(experiment: Experiment):
 
                 for future_possibility in future_possibilities:
                     if inside_image(future_possibility, future_offset, future_image_shape):
-
                         target_positions_xyz.append(
                             [future_possibility.x - future_offset.x, future_possibility.y - future_offset.y,
-                                future_possibility.z - future_offset.z])
+                             future_possibility.z - future_offset.z])
                         positions_xyz.append(
                             [position.x - offset.x, position.y - offset.y, position.z - offset.z])
 
@@ -196,23 +251,32 @@ def create_image_with_possible_links_list(experiment: Experiment):
         print(time_point)
 
         # read positions to numpy array
-        if len(positions_xyz) > 0:
-            positions_xyz = numpy.array(positions_xyz, dtype=numpy.int32)
-            target_positions_xyz = numpy.array(target_positions_xyz, dtype=numpy.int32)
-            distances = numpy.array(distances, dtype=numpy.int32)
-
+        max_size = 1000
+        while len(positions_xyz) > 0:
+            print(len(positions_xyz))
+            if len(positions_xyz) > max_size:
+                print('split link list')
             image_with_links_list.append(
-                _ImageWithLinks(str(experiment.name), experiment.images, time_point, positions_xyz,
-                target_positions_xyz, distances, linked))
+                _ImageWithLinks(str(experiment.name), experiment.images, time_point,
+                                numpy.array(positions_xyz[:max_size], dtype=numpy.int32),
+                                numpy.array(target_positions_xyz[:max_size], dtype=numpy.int32),
+                                numpy.array(distances[:max_size], dtype=numpy.int32),
+                                linked[:max_size]))
 
-            predicted_links_list.append(predicted_links)
+            predicted_links_list.append(predicted_links[:max_size])
+
+            positions_xyz = positions_xyz[max_size:]
+            target_positions_xyz = target_positions_xyz[max_size:]
+            distances = distances[max_size:]
+            linked = linked[max_size:]
+            predicted_links = predicted_links[max_size:]
 
     return image_with_links_list, predicted_links_list, possible_links
 
 
 def inside_image(position: Position, offset: Images.offsets, image_shape: Tuple[int]):
     inside = False
-    if position.x - offset.x < image_shape[2] and position.y - offset.y < image_shape[1]\
+    if position.x - offset.x < image_shape[2] and position.y - offset.y < image_shape[1] \
             and position.z - offset.z < image_shape[0]:
         inside = True
 
@@ -222,3 +286,14 @@ def inside_image(position: Position, offset: Images.offsets, image_shape: Tuple[
         inside = False
 
     return inside
+
+
+def remove_random_positions(experiment, rate=0.02):
+    to_remove = []
+    for pos in experiment.positions:
+        if random.random() < rate:
+            to_remove.append(pos)
+
+    experiment.remove_positions(to_remove)
+
+    return experiment
