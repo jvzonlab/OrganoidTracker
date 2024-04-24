@@ -1,6 +1,7 @@
 from typing import List
 
 import keras
+import tifffile
 import torch.nn.functional
 
 from organoid_tracker.neural_network.position_detection_cnn.custom_filters import blur_labels, disk_labels, distance_map, \
@@ -76,14 +77,25 @@ def overcount(y_true, y_pred):
     return (keras.ops.sum(correct_positions) + 0.001) / (keras.ops.sum(detected_positions) + 0.001)
 
 
+step = 0
 def loss(y_true, y_pred):
     # find cell centers on target after distortions (rotation/scaling)
-    dilation = torch.nn.functional.max_pool3d(y_pred, (1, 3, 3), stride=1, padding=(0, 1, 1))
+    dilation = torch.nn.functional.max_pool3d(y_true, (1, 3, 3), stride=1, padding=(0, 1, 1))
     # The following line should also work, but for some reason the padding is miscalculated as [1, 1, 0]
     # instead of [0, 1, 1] by Keras. Bug in Keras?
     # dilation = keras.ops.max_pool(y_true, [1, 3, 3], strides=1, padding='same')
     peaks = keras.ops.where(dilation == y_true, 1., 0)
-    y_true = keras.ops.where(y_true > 0.1, peaks, 0)
+    y_true = keras.ops.where(y_true > 0.1, peaks, 0)  # Only keep peaks where the true value > 0.1
+
+    # global step
+    # if step % 10 == 0:
+    #     tifffile.imwrite(r"E:\Scratch\training\dilation_" + str(step) + ".tif",
+    #                      keras.ops.convert_to_numpy(dilation[0])[..., 0])
+    #     tifffile.imwrite(r"E:\Scratch\training\peaks_" + str(step) + ".tif",
+    #                      keras.ops.convert_to_numpy(peaks[0])[..., 0])
+    #     tifffile.imwrite(r"E:\Scratch\training\y_true_" + str(step) + ".tif", keras.ops.convert_to_numpy(y_true[0])[..., 0])
+    #     tifffile.imwrite(r"E:\Scratch\training\y_pred_" + str(step) + ".tif", keras.ops.convert_to_numpy(y_pred[0])[..., 0])
+    # step += 1
 
     # create target image
     dist_map, weights = distance_map(y_true)

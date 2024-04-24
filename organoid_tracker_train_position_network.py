@@ -7,8 +7,6 @@ import random
 from functools import partial
 from typing import Set, Tuple
 
-from matplotlib import pyplot as plt
-
 os.environ["KERAS_BACKEND"] = "torch"
 import keras
 import keras.callbacks
@@ -21,12 +19,13 @@ from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 from organoid_tracker.imaging import io
-from organoid_tracker.neural_network.position_detection_cnn.convolutional_neural_network import build_model, \
-    tensorboard_callback
+from organoid_tracker.neural_network.position_detection_cnn.convolutional_neural_network import build_model
 from organoid_tracker.neural_network.position_detection_cnn.custom_filters import distance_map
 from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import \
     create_image_with_positions_list
 from organoid_tracker.neural_network.position_detection_cnn.training_dataset import training_data_creator_from_raw
+from organoid_tracker.neural_network.position_detection_cnn.training_inspection_callback import WriteExamplesCallback, \
+    ExampleDataset
 
 
 # PARAMETERS
@@ -128,60 +127,27 @@ model = build_model(shape=(patch_shape_zyx[0], None, None, time_window[1] - time
 model.summary()
 
 print("Training...")
-os.makedirs(output_folder, exist_ok=True)
-tensorboard_folder = os.path.join(output_folder, "tensorboard")
+logging_folder = os.path.join(output_folder, "training_logging")
+os.makedirs(logging_folder, exist_ok=True)
+example_x, example_y_true = next(iter(validation_dataset))
+example_dataset = ExampleDataset(input=keras.ops.convert_to_numpy(example_x), y_true=keras.ops.convert_to_numpy(example_y_true))
+del example_x, example_y_true
+
 history = model.fit(training_dataset,
                     epochs=epochs,
-                    steps_per_epoch= round(0.8*len(image_with_positions_list)),
+                    steps_per_epoch=len(training_dataset),
                     validation_data=validation_dataset,
-                    validation_steps=round(0.2*len(image_with_positions_list)),
-                    callbacks=[keras.callbacks.EarlyStopping(patience=1, restore_best_weights=True)])
+                    validation_steps=len(validation_dataset),
+                    callbacks=[
+                        keras.callbacks.CSVLogger(os.path.join(logging_folder, "logging.csv"), separator=",", append=False),
+                        WriteExamplesCallback(logging_folder, example_dataset),
+                        keras.callbacks.EarlyStopping(patience=1, restore_best_weights=True)])
 
 
 print("Saving model...")
 trained_model_folder = os.path.join(output_folder, "model_positions")
+os.makedirs(trained_model_folder, exist_ok=True)
 model.save(os.path.join(trained_model_folder, "model.keras"))
 with open(os.path.join(trained_model_folder, "settings.json"), "w") as file_handle:
     json.dump({"type": "positions", "time_window": time_window}, file_handle, indent=4)
-
-
-# Sanity check, do predictions on 10 samples of the validation set
-print("Sanity check...")
-os.makedirs(os.path.join(output_folder, "examples"), exist_ok=True)
-
-
-def predict(image: Tensor, label: Tensor, model: keras.Model) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-
-    dilation = keras.ops.max_pool(label, pool_size=[1, 3, 3], strides=1, padding='same')
-    peaks = keras.ops.where(dilation == label, 1., 0)
-    y_true = keras.ops.where(label > 0.1, peaks, 0)
-
-    label, weights = distance_map(y_true)
-
-    return image, model(image, training=False), label, weights
-
-quick_dataset: Dataset = validation_dataset.unbatch().take(10).batch(1)
-
-predictions = quick_dataset.map(partial(predict, model=model))
-
-for i, element in enumerate(predictions):
-
-    array = keras.ops.convert_to_numpy(element[0])
-    array = array[0, :, :, :, 0]
-    #array = np.swapaxes(array, 2, -1)
-    #array = np.swapaxes(array, -2, -1)
-    tifffile.imwrite(os.path.join(output_folder, "examples", "example_input" + str(i) + ".tiff"), array)
-
-    array = keras.ops.convert_to_numpy(element[1])
-    array = array[0, :, :, :, 0]
-    tifffile.imwrite(os.path.join(output_folder, "examples", "example_prediction" + str(i) + ".tiff"), array)
-
-    array = keras.ops.convert_to_numpy(element[2])
-    array = array[0, :, :, :, 0]
-    tifffile.imwrite(os.path.join(output_folder, "examples", "example_labels" + str(i) + ".tiff"), array)
-
-    array = keras.ops.convert_to_numpy(element[3])
-    array = array[0, :, :, :, 0]
-    tifffile.imwrite(os.path.join(output_folder, "examples", "example_weights" + str(i) + ".tiff"), array)
-
-
+print("Done! Model is in " + os.path.abspath(trained_model_folder))
