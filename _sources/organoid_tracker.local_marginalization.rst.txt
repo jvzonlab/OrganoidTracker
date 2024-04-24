@@ -8,6 +8,7 @@ Submodules
    :maxdepth: 1
 
    organoid_tracker.local_marginalization.local_marginalization_functions
+   organoid_tracker.local_marginalization.tree_drawing
 
 Module contents
 ---------------
