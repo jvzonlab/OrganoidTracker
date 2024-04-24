@@ -7,20 +7,25 @@ import matplotlib.colors
 from matplotlib.backend_bases import MouseEvent
 
 from organoid_tracker.core import Color, UserError
+from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import LinkingTrack
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.resolution import ImageResolution, ImageTimings
+from organoid_tracker.core.typing import MPLColor
 from organoid_tracker.gui import dialog, option_choose_dialog
 from organoid_tracker.gui.location_map import LocationMap
 from organoid_tracker.gui.window import Window
+from organoid_tracker.local_marginalization.tree_drawing import color_error_rates, color_error_rates_cumulative, \
+    set_cumulative_marginals, compute_lineage_error_probability, compute_track_error_probability
 from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking_analysis import linking_markers, lineage_markers
-from organoid_tracker.linking_analysis.lineage_division_counter import get_min_division_count_in_lineage
+from organoid_tracker.linking_analysis.lineage_division_counter import get_min_division_count_in_lineage, \
+    get_number_of_cells_at_end
 from organoid_tracker.linking_analysis.lineage_drawing import LineageDrawing
 from organoid_tracker.linking_analysis.linking_markers import EndMarker
 from organoid_tracker.visualizer import Visualizer
-
+from organoid_tracker_plugins.plugin_positions_csv_exporter import _get_data_names
 
 _SPLINE_COLORMAP = matplotlib.cm.get_cmap("YlOrBr")  # For drawing position on axis
 
@@ -42,6 +47,7 @@ class LineageTreeVisualizer(Visualizer):
 
     _filter_min_division_count: int = 0
     _filter_cell_type: Optional[str] = None
+    _filter_min_present_at_end: int = 0
 
     _display_deaths: bool = True
     _display_warnings: bool = True
@@ -49,7 +55,13 @@ class LineageTreeVisualizer(Visualizer):
     _display_custom_colors: bool = False
     _display_cell_type_colors: bool = True
     _display_axis_colors: bool = False
+    _display_error_rates: bool = False
+    _display_error_rates_cumulative: bool = False
+    _display_color_by_value: bool = False
+    _display_color_by_flags: bool = False
     _display_track_id: bool = False
+    _display_lineage_error_probability: bool = False
+    _display_track_error_probability: bool = False
 
     def __init__(self, window: Window):
         super().__init__(window)
@@ -66,6 +78,12 @@ class LineageTreeVisualizer(Visualizer):
         if self._filter_min_division_count > 0:
             if get_min_division_count_in_lineage(linking_track) < self._filter_min_division_count:
                 return False  # Don't even check, every lineage has 0 or more divisions
+
+        if self._filter_min_present_at_end > 0:
+            if get_number_of_cells_at_end(linking_track,
+                                          last_time_point_number=self._experiment.last_time_point_number()) < self._filter_min_present_at_end:
+                return False  # Don't even check, every lineage has 0 or more divisions
+
         if self._filter_cell_type is not None:
             if not _includes_cell_type(self._experiment.position_data, linking_track, self._filter_cell_type):
                 return False
@@ -86,16 +104,21 @@ class LineageTreeVisualizer(Visualizer):
             "View//Toggles-Toggle showing warnings": self._toggle_errors,
             "View//Toggles-Toggle showing deaths": self._toggle_deaths,
             "View//Toggles-Toggle showing lineage ids": self._toggle_track_id,
+            "View//Toggles-Toggle showing lineage error probabilities": self._toggle_lineage_error_probability,
+            "View//Toggles-Toggle showing track error probabilities": self._toggle_track_error_probability,
             "View//Color toggles-Toggle showing cell types": self._toggle_cell_types,
             "View//Color toggles-Toggle showing manual colors": self._toggle_manual_colors,
-            "View//Color toggles-Toggle showing axis positions": self._toggle_axis_colors
+            "View//Color toggles-Toggle showing axis positions": self._toggle_axis_colors,
+            "View//Color toggles-Toggle showing error rates": self._toggle_error_rates,
         }
         if self._allow_lineage_filtering():
             # Allow additional filters
             options = {
                 **options,
                 "View//Filters-Require X amount of divisions...": self._set_minimum_divisions,
-                "View//Filters-Require cell type...": self._set_required_cell_type
+                "View//Filters-Require X amount of cells at the end...": self._set_min_present_at_end,
+                "View//Filters-Require cell type...": self._set_required_cell_type,
+
             }
         if self._get_custom_color_label() is not None:
             options[f"View//Color toggles-Toggle showing {self._get_custom_color_label()}"] = self._toggle_custom_colors
@@ -146,6 +169,16 @@ class LineageTreeVisualizer(Visualizer):
             self.update_status("No longer coloring by axis position")
         self.draw_view()
 
+    def _toggle_error_rates(self):
+        self._display_error_rates = not self._display_error_rates
+        if self._display_error_rates:
+            self._uncolor_lineages()
+            self._display_error_rates = True
+            self.update_status("Now showing error rates; turned off other lineage coloring")
+        else:
+            self.update_status("No longer showing error rates")
+        self.draw_view()
+
     def _toggle_custom_colors(self):
         self._display_custom_colors = not self._display_custom_colors
         if self._display_custom_colors:
@@ -166,8 +199,37 @@ class LineageTreeVisualizer(Visualizer):
 
     def _get_track_label(self, track: LinkingTrack) -> Optional[str]:
         """Gets the label that should be displayed for the given track."""
+
+        if self._display_lineage_error_probability and (track.get_previous_tracks() == set()):
+            string = str(self._experiment.links.get_track_id(track)) + ': \n'
+            return string + str(round(compute_lineage_error_probability(track, self._experiment), 4))
+        if self._display_track_error_probability:
+            string = str(self._experiment.links.get_track_id(track)) + ': \n'
+            return string + str(round(compute_track_error_probability(track, self._experiment), 4))
         if self._display_track_id:
             return str(self._experiment.links.get_track_id(track))
+        return None
+
+    def _toggle_lineage_error_probability(self):
+        self._display_lineage_error_probability = not self._display_lineage_error_probability
+        if self._display_lineage_error_probability:
+            self.update_status("Now displaying lineage probabilities")
+        else:
+            self.update_status("No longer displaying lineage probabilities")
+        self.draw_view()
+
+    def _toggle_track_error_probability(self):
+        self._display_track_error_probability = not self._display_track_error_probability
+        if self._display_track_error_probability:
+            self.update_status("Now displaying track probabilities")
+        else:
+            self.update_status("No longer displaying track probabilities")
+        self.draw_view()
+
+    def _get_lineage_error_probability(self, track: LinkingTrack) -> Optional[str]:
+        """Gets the label that should be displayed for the given track."""
+        if self._display_lineage_error_probability and (track.get_previous_tracks() is None):
+            return str(compute_lineage_error_probability(track, self._experiment))
         return None
 
     def _set_minimum_divisions(self):
@@ -177,6 +239,15 @@ class LineageTreeVisualizer(Visualizer):
         if min_division_count is None:
             return
         self._filter_min_division_count = min_division_count
+        self.draw_view()
+
+    def _set_min_present_at_end(self):
+        min_count = dialog.prompt_int("Minimum cells at end",
+                                      "How many cells at the end for a lineage"
+                                      " tree before it shows up?", minimum=0, default=self._filter_min_present_at_end)
+        if min_count is None:
+            return
+        self._filter_min_present_at_end = min_count
         self.draw_view()
 
     def _set_required_cell_type(self):
@@ -291,15 +362,19 @@ class LineageTreeVisualizer(Visualizer):
                 color = self._get_type_color(track.find_position_at_time_point_number(time_point_number))
                 if color is not None:
                     return matplotlib.colors.to_rgb(color)
+            if self._display_error_rates:
+                color = color_error_rates(time_point_number, track, experiment)
+                return color
+
             return 0, 0, 0  # Default is black
 
         self._location_map = LocationMap()
         width = LineageDrawing(tracks).draw_lineages_colored(self._ax, color_getter=color_getter,
-                                                            timings=display_timings,
-                                                            location_map=self._location_map,
-                                                            lineage_filter=self._lineage_filter,
-                                                            label_getter=self._get_track_label,
-                                                            line_width=self._get_lineage_line_width())
+                                                             timings=display_timings,
+                                                             location_map=self._location_map,
+                                                             lineage_filter=self._lineage_filter,
+                                                             label_getter=self._get_track_label,
+                                                             line_width=self._get_lineage_line_width())
 
         self._ax.set_xticks([])
         if self._ax.get_xlim() == (0, 1):

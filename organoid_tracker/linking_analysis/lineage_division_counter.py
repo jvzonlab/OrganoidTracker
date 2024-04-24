@@ -45,4 +45,15 @@ def get_min_division_count_in_lineage(starting_track: LinkingTrack, last_time_po
             division_count += 1
     return division_count
 
+def get_number_of_cells_at_end(starting_track: LinkingTrack, last_time_point_number: int = 999999999):
+    """Gets the number of divisions we could see up until last_time_point_number. This method returns a result even
+    for lineages that are not fully tracked. In that case, the actual number of divisions may be higher, as we might be
+    ignoring divisions that were happening outside the view."""
+    count = 0
+    for track in starting_track.find_all_descending_tracks(include_self=True):
+        if (track.max_time_point_number() == last_time_point_number):
+           count += 1
+    return count
+
+
 
