@@ -16,8 +16,7 @@ from organoid_tracker.core.typing import MPLColor
 from organoid_tracker.gui import dialog, option_choose_dialog
 from organoid_tracker.gui.location_map import LocationMap
 from organoid_tracker.gui.window import Window
-from organoid_tracker.local_marginalization.tree_drawing import color_error_rates, color_error_rates_cumulative, \
-    set_cumulative_marginals, compute_lineage_error_probability, compute_track_error_probability
+from organoid_tracker.local_marginalization.tree_drawing import color_error_rates, compute_lineage_error_probability, compute_track_error_probability
 from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking_analysis import linking_markers, lineage_markers
 from organoid_tracker.linking_analysis.lineage_division_counter import get_min_division_count_in_lineage, \
