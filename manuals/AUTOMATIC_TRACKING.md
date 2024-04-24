@@ -81,6 +81,8 @@ If you don't want to correct everything, there are several options:
 
 You can change a few settings of the error checker, to make it stricter or less strict. In the error checking screen (the screen you opened with `E`) there are three options available in the `Edit` menu: the minimimum marginalized probability a link should have, the minimum time in between two cell divisions of the same cell, and the maximum distance a cell may move per minute (only useful before marginalization).
 
+Often correcting mistakes below a certain threshold also fixes a few mistakes that were not flagged. The increase in tracking quality might therefore be more than naively expected. To check the resulting quality you can rerun the marginalization on your corrected data while flagging in the `organoid_tracker.ini` file that you have checked part or all of the errors.
+
 ## What to do if my results aren't good?
 That's a difficult problem! You have a few options:
 
@@ -88,3 +90,11 @@ That's a difficult problem! You have a few options:
 * Change some settings. The generated `organoid_tracker.ini` files contain an explanation for each of the settings.
 * [Retrain the neural networks for your data.](TRAINING_THE_NETWORK.md)
 * [Replace parts of the tracker with custom code](CUSTOM_TRACKING_SCRIPTS.md)
+
+Step 7: Automated analysis
+---------------------------------
+
+In step 5 a set of filtered high-confidence tracks is produced. You can choose to analyze these further. Generally for many application, manual corrections are not needed. 
+* If you want to quantify a fluorescence reporter you can take long tracks (`Edit` -> `Manually change data` -> `Batch deletion` -> `Delete short lineages`) and work from there.
+* If you want to quantify tissue flows flawless trajectories are often overkill. Setting a lower threshold should still give you good enough data. 
+* Analyzing cell cycle dynamics should be done using survival analysis ([See here for how to do this](./SURVIVAL_ANALYSIS.md) anyway and this can deal with cells that are lost to follow up. 
