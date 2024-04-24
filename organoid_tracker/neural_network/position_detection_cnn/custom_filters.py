@@ -166,7 +166,7 @@ def distance_map(y_true, range=(3., 16., 16.), range_edges = (3., 11. , 11.), ad
     distances_min = keras.ops.conv(y_true, keras.ops.exp(distance*k)-1, [1, 1, 1], 'same') + 1
     # d* = log(sum(exp(d*k)-1)))/k
     distances_min = keras.ops.log(distances_min) / k
-    distances_min = keras.ops.where(keras.ops.is_inf(distances_min), 1., distances_min)
+    distances_min = keras.ops.where(keras.ops.isinf(distances_min), 1., distances_min)
 
     # sum of the inverted distance to center points
     distance_sum = keras.ops.conv(y_true, distance, [1, 1, 1], 'same')
@@ -211,9 +211,9 @@ def distance_map(y_true, range=(3., 16., 16.), range_edges = (3., 11. , 11.), ad
     weights = keras.ops.where(weights < 0.05, 0., weights)
 
     # give background equal weight to foreground
-    non_zero_count = keras.ops.cast(keras.ops.count_nonzero(weights), keras.ops.float32)
+    non_zero_count = keras.ops.cast(keras.ops.count_nonzero(weights), "float32")
 
-    full_size = keras.ops.cast(keras.ops.size(weights), keras.ops.float32)
+    full_size = keras.ops.cast(keras.ops.size(weights), "float32")
     zero_count = full_size - non_zero_count
 
     background_weight = 0.5
