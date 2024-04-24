@@ -52,6 +52,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#step-5-calculate-error-rates">Step 5: Calculate error rates</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#step-6-manually-correct-warnings">Step 6: Manually correct warnings</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#what-to-do-if-my-results-aren-t-good">What to do if my results aren’t good?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-7-automated-analysis">Step 7: Automated analysis</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
@@ -161,6 +162,7 @@
 <li><p>Limiting the area you are looking at. This is most easily done by pressing L in the cell track editor, and then observing any lineages that still have warnings. Correct any lineages that need to be corrected (press E while you hover your mouse over them). Once you are satisfied, you can then delete all lineages that still have errors in them. This is done from the cell track editor: press <code class="docutils literal notranslate"><span class="pre">Edit</span> <span class="pre">&gt;</span> <span class="pre">Batch</span> <span class="pre">deletion</span> <span class="pre">&gt;</span> <span class="pre">Delete</span> <span class="pre">lineages</span> <span class="pre">with</span> <span class="pre">errors</span></code>. See <span class="xref myst">batch editing</span> for more ways to delete a lot of lineages at once.</p></li>
 </ul>
 <p>You can change a few settings of the error checker, to make it stricter or less strict. In the error checking screen (the screen you opened with <code class="docutils literal notranslate"><span class="pre">E</span></code>) there are three options available in the <code class="docutils literal notranslate"><span class="pre">Edit</span></code> menu: the minimimum marginalized probability a link should have, the minimum time in between two cell divisions of the same cell, and the maximum distance a cell may move per minute (only useful before marginalization).</p>
+<p>Often correcting mistakes below a certain threshold also fixes a few mistakes that were not flagged. The increase in tracking quality might therefore be more than naively expected. To check the resulting quality you can rerun the marginalization on your corrected data while flagging in the <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> file that you have checked part or all of the errors.</p>
 </section>
 <section id="what-to-do-if-my-results-aren-t-good">
 <h2>What to do if my results aren’t good?<a class="headerlink" href="#what-to-do-if-my-results-aren-t-good" title="Permalink to this heading"></a></h2>
@@ -170,6 +172,15 @@
 <li><p>Change some settings. The generated <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> files contain an explanation for each of the settings.</p></li>
 <li><p><a class="reference internal" href="TRAINING_THE_NETWORK.html"><span class="doc std std-doc">Retrain the neural networks for your data.</span></a></p></li>
 <li><p><a class="reference internal" href="CUSTOM_TRACKING_SCRIPTS.html"><span class="doc std std-doc">Replace parts of the tracker with custom code</span></a></p></li>
+</ul>
+</section>
+<section id="step-7-automated-analysis">
+<h2>Step 7: Automated analysis<a class="headerlink" href="#step-7-automated-analysis" title="Permalink to this heading"></a></h2>
+<p>In step 5 a set of filtered high-confidence tracks is produced. You can choose to analyze these further. Generally for many application, manual corrections are not needed.</p>
+<ul class="simple">
+<li><p>If you want to quantify a fluorescence reporter you can take long tracks (<code class="docutils literal notranslate"><span class="pre">Edit</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Manually</span> <span class="pre">change</span> <span class="pre">data</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Batch</span> <span class="pre">deletion</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Delete</span> <span class="pre">short</span> <span class="pre">lineages</span></code>) and work from there.</p></li>
+<li><p>If you want to quantify tissue flows flawless trajectories are often overkill. Setting a lower threshold should still give you good enough data.</p></li>
+<li><p>Analyzing cell cycle dynamics should be done using survival analysis (<a class="reference internal" href="SURVIVAL_ANALYSIS.html"><span class="doc std std-doc">See here for how to do this</span></a> anyway and this can deal with cells that are lost to follow up.</p></li>
 </ul>
 </section>
 </section>
