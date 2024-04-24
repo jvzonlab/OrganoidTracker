@@ -4,6 +4,25 @@ from typing import List, Any, Iterable, Optional
 from torch.utils.data import IterableDataset
 
 
+class RepeatingDataset(IterableDataset):
+    """Wraps an IterableDataset and repeats it an infinite number of times."""
+
+    _internal_dataset: IterableDataset
+
+    def __init__(self, dataset: IterableDataset):
+        self._internal_dataset = dataset
+
+    def __iter__(self) -> Iterable[Any]:
+        while True:
+            yield from iter(self._internal_dataset)
+
+    def __len__(self) -> int:
+        """We still return the length of the internal dataset, so that the user knows how long an epoch should be."""
+        # Will throw a TypeError if the internal dataset doesn't have a __len__ method
+        # noinspection PyTypeChecker
+        return len(self._internal_dataset)
+
+
 class ShufflingDataset(IterableDataset):
     """Data loading works best when images are read in sequence, i.e. that we don't read random patches spread over
     all kinds of imaging files. Neural networks on the other hand need a random order of the data for most optimized
@@ -16,23 +35,31 @@ class ShufflingDataset(IterableDataset):
 
     _internal_dataset: IterableDataset
     _buffer_size: int
-    _seed: int
+    _random: Random
 
     def __init__(self, dataset: IterableDataset, buffer_size: int = 2000, seed: int = 1):
         """Wraps an IterableDataset and shuffles the samples in a buffer before yielding them."""
         self._internal_dataset = dataset
         self._buffer_size = buffer_size
-        self._seed = seed
+        self._random = Random(seed)
 
     def __iter__(self) -> Iterable[Any]:
         buffer = list()
-        random = Random(self._seed)
         for sample in self._internal_dataset:
             # Keep on collecting samples until buffer is full
             buffer.append(sample)
 
             if len(buffer) >= self._buffer_size:
                 # Time to shuffle buffer and yield all samples
-                random.shuffle(buffer)
+                self._random.shuffle(buffer)
                 yield from buffer
                 buffer.clear()
+
+        # Yield the remaining samples
+        self._random.shuffle(buffer)
+        yield from buffer
+
+    def __len__(self) -> int:
+        # Will throw a TypeError if the internal dataset doesn't have a __len__ method
+        # noinspection PyTypeChecker
+        return len(self._internal_dataset)

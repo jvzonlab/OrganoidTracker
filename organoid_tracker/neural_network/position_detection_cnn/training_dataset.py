@@ -21,21 +21,18 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from random import Random
 from typing import List, Tuple, Iterable
-
-from functools import partial
 
 import keras
 import keras.random
 import numpy as np
-from torch.utils.data import Dataset, IterableDataset, DataLoader
+from torch.utils.data import IterableDataset, DataLoader
 
 from organoid_tracker.neural_network import image_transforms, Tensor
 from organoid_tracker.neural_network.position_detection_cnn.image_with_positions_to_tensor_loader import \
-    tf_load_images_with_positions, load_images_with_positions
+    load_images_with_positions
 from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import ImageWithPositions
-from organoid_tracker.neural_network.shuffling_dataset import ShufflingDataset
+from organoid_tracker.neural_network.dataset_transforms import ShufflingDataset, RepeatingDataset
 
 
 class _TorchDataset(IterableDataset):
@@ -92,8 +89,8 @@ def training_data_creator_from_raw(image_with_positions_list: List[ImageWithPosi
 
     dataset = _TorchDataset(image_with_positions_list, time_window, patch_shape, mode == "train", crop)
     if mode == "train":
-        dataset = ShufflingDataset(dataset, buffer_size=2000, seed=seed)
-    return DataLoader(dataset, batch_size=batch_size, num_workers=0, drop_last=True)
+        dataset = ShufflingDataset(dataset, buffer_size=batch_size * 100, seed=seed)
+    return DataLoader(RepeatingDataset(dataset), batch_size=batch_size, num_workers=0, drop_last=True)
 
 
 # Normalizes image data
