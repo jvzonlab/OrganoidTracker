@@ -88,6 +88,15 @@
   <section id="calibrate-marginalization">
 <h1>Calibrate Marginalization<a class="headerlink" href="#calibrate-marginalization" title="Permalink to this heading"></a></h1>
 <p><a class="reference internal" href="index.html"><span class="doc std std-doc">← Back to main page</span></a></p>
+<p>If your data differs substantially from the training data of the neural networks you might have reason to doubt the accuracy of the error rate predictions. In this case you can calibrate the error rates against a ground truth. The ground truth here would consist of manually corrected data.</p>
+<p>Alternatively if you have trained new neural networks you have to calibrate them for the first time. In this case you can reuse your validation data (or even training data in our experience) as the ground truth.</p>
+<p>Calibration then proceeds as follows:</p>
+<ol class="arabic simple">
+<li><p>Run your division detection model on all your ground truth datasets.</p></li>
+<li><p>Run your link detection model on the outputs.</p></li>
+<li><p>Go to the <code class="docutils literal notranslate"><span class="pre">all</span> <span class="pre">experiments</span></code> tab and use <code class="docutils literal notranslate"><span class="pre">Tools</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Calibrate</span> <span class="pre">marginalization...</span></code> to get the marginalization script.</p></li>
+<li><p>Run the script. The result will be saved in a <code class="docutils literal notranslate"><span class="pre">.json</span></code>.</p></li>
+</ol>
 </section>
 
 

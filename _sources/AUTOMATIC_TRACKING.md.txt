@@ -45,7 +45,7 @@ Step 4: Obtaining links
 
 Open the OrganoidTracker GUI again and load the images and the output file from the previous step. Use `Tools` -> `Create links between time points...` and run the resulting `organoid_tracker_create_links` script.
 
-In order for the tracking to work we need to give the algorithm a few more probabilities to work with, these can be adjusted in the `organoid_tracker.ini` file. The first is the probability of a cell disappearing. This is simply the false negative rate of the cell detection plus the death rate of cells in the system. The appearance probability is again given by false negative rate alone. Cells can of course also appear from outside the field of view, to account for this you can set the maximum distance from which a cell could move out of view in a single timepoint. The (dis)appearance probabilities are the calculated automatically.
+In order for the tracking to work we need to give the algorithm a few more probabilities to work with, these can be adjusted in the `organoid_tracker.ini` file. The first is the probability of a cell disappearing. This is simply the false negative rate of the cell detection plus the death rate of cells in the system. The appearance probability is again given by false negative rate alone. Cells can of course also appear from outside the field of view, to account for this you can set the maximum distance from which a cell could move out of view in a single timepoint. The (dis)appearance probabilities are the calculated automatically. It is good to note that the exact values of these probabilities should not substantially change the results in our experience, so a reasonable estimate will do.
 
 Now you can also set some parameters to clean up the data after tracking. It is advisable to at least remove very short tracks for clarity.
 
@@ -56,7 +56,7 @@ Step 5: Calculate error rates
 
 Now that we have the tracks we can compute error rates through marginalization. Use `Tools` -> `Compute marginalized error rates...` and run the resulting `organoid_tracker_marginalize` script.
 
-In the `organoid_tracker.ini` file you might need to change the so-called 'temperature'. This accounts for the amount of shared information between the individual neural network predictions. If your data is similar to the data the neural networks are trained on you can use the temperature associated with them (1.5 for our own models). If you have trained your own models you have to calibrate the marginalization procedure to get a temperature ([See here for how to calibrate](./CALIBRATE_MARGINALIZATION.md).
+In the `organoid_tracker.ini` file you might need to change the so-called 'temperature'. This accounts for the amount of shared information between the individual neural network predictions. If your data is similar to the data the neural networks are trained on you can use the temperature associated with them (1.5 for our own models). If you have trained your own models you have to calibrate the marginalization procedure to get a temperature ([See here for how to calibrate](./CALIBRATE_MARGINALIZATION.md). It is good to note that this temperature is generally able to absorb any miscalibration of the neural network outputs as well. 
 
 This step also will you dataset where all low-confidence links are filtered out. The threshold can be set in the `organoid_tracker.ini` file.
 
@@ -97,4 +97,4 @@ Step 7: Automated analysis
 In step 5 a set of filtered high-confidence tracks is produced. You can choose to analyze these further. Generally for many application, manual corrections are not needed. 
 * If you want to quantify a fluorescence reporter you can take long tracks (`Edit` -> `Manually change data` -> `Batch deletion` -> `Delete short lineages`) and work from there.
 * If you want to quantify tissue flows flawless trajectories are often overkill. Setting a lower threshold should still give you good enough data. 
-* Analyzing cell cycle dynamics should be done using survival analysis ([See here for how to do this](./SURVIVAL_ANALYSIS.md) anyway and this can deal with cells that are lost to follow up. 
+* Analyzing cell cycle dynamics should be done using survival analysis ([See here for how to do this](./SURVIVAL_ANALYSIS.md)) anyway and this can deal with cells that are lost to follow up. 
