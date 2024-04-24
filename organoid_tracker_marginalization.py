@@ -27,6 +27,9 @@ _steps = int(config.get_or_default("size subset (steps away from link of interes
 _temperature = float(config.get_or_default("temperature (to account for shared information)", str(1.5)))
 _filter_cut_off = float(config.get_or_default("maximum error rate", str(0.01)))
 
+_reviewed = bool(config.get_or_default("is the data (partially) reviewed?", str(False)))
+_fully_reviewed = bool(config.get_or_default("are all (dis)appearances reviewed?", str(False)))
+
 # Load experiments
 experiment = io.load_data_file(_experiment_file, _min_time_point, _max_time_point)
 
@@ -38,22 +41,147 @@ _filtered_output_file = config.get_or_default("filtered_output_file", "Filtered 
 config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
+if _reviewed:
+    # remove single positions
+    remove = []
+    for position in experiment.positions:
+        if not experiment.links.contains_position(position):
+            remove.append(position)
+
+    experiment.remove_positions(remove)
+
+    # remove positions not present in curated data
+    remove = []
+    for position in experiment_all_links.positions:
+        if not experiment.links.contains_position(position):
+            remove.append(position)
+    experiment_all_links.remove_positions(remove)
+
+    # check which links have been corrected
+    for position1, position2 in experiment.links.find_all_links():
+
+        # newly created link? (bit ugly)
+        if ((experiment.link_data.get_link_data(position1, position2, 'marginal_probability') is None)
+                or experiment.link_data.get_link_data(position1, position2, 'link_penalty') is None):
+
+            # set high probability to newly created links
+            experiment_all_links.link_data.set_link_data(position1, position2, data_name="link_probability",
+                                           value=1-10**-10)
+            experiment_all_links.link_data.set_link_data(position1, position2, data_name="link_penalty",
+                                               value=-10.)
+
+            # set low probability to connecting links that are not part of the tracking
+            for other_pos in experiment_all_links.links.find_pasts(position2):
+                if not experiment.links.contains_link(other_pos, position2):
+                    experiment_all_links.link_data.set_link_data(other_pos, position2, data_name="link_probability",
+                                                                 value=10 ** -10)
+                    experiment_all_links.link_data.set_link_data(other_pos, position2, data_name="link_penalty",
+                                                                 value=10.)
+
+            for other_pos in experiment_all_links.links.find_futures(position1):
+                if not experiment.links.contains_link(position1, other_pos):
+                    experiment_all_links.link_data.set_link_data(position1, other_pos, data_name="link_probability",
+                                                                 value=10 ** -10)
+                    experiment_all_links.link_data.set_link_data(position1, other_pos, data_name="link_penalty",
+                                                                 value=10.)
+        else:
+            # Is there an error corrected
+            error = experiment.position_data.get_position_data(position1, 'error') == 14
+            suppressed_error = experiment.position_data.get_position_data(position2, 'suppressed_error') == 14
+
+            # Is the error removed or supressed?
+            if experiment.link_data.get_link_data(position1, position2, 'marginal_probability')<0.99 and not (error and not suppressed_error): #0.996 for example because the probs are not tempeerature scaled well
+                experiment_all_links.link_data.set_link_data(position1, position2, data_name="link_probability",
+                                                   value=1 - 10 ** -10)
+                experiment_all_links.link_data.set_link_data(position1, position2, data_name="link_penalty",
+                                                   value=-10.)
+
+
+    # check which loose ends have been corrected
+    loose_ends = list(experiment.links.find_disappeared_positions(
+                time_point_number_to_ignore=experiment.last_time_point_number()))
+    for position in loose_ends:
+        error = experiment.position_data.get_position_data(position, 'error') == 1
+        suppressed_error = experiment.position_data.get_position_data(position, 'suppressed_error') == 1
+
+        # Is the error removed or supressed?
+        if not (error and not suppressed_error):
+            # cells have to disappear
+            experiment_all_links.position_data.set_position_data(position, 'disappearance_probability', value=1 - 10 ** -10)
+            experiment_all_links.position_data.set_position_data(position, 'disappearance_penalty', value=-10)
+
+            # link is also corrected
+            prev_pos = experiment.links.find_single_past(position)
+            experiment_all_links.link_data.set_link_data(prev_pos, position, data_name="link_probability",
+                                           value=1-10**-10)
+            experiment_all_links.link_data.set_link_data(prev_pos, position, data_name="link_penalty",
+                                               value=-10)
+
+    # check which loose starts have been corrected
+    loose_starts = list(experiment.links.find_appeared_positions(
+        time_point_number_to_ignore=experiment.first_time_point_number()))
+    for position in loose_starts:
+        error = experiment.position_data.get_position_data(position, 'error') == 5
+        suppressed_error = experiment.position_data.get_position_data(position, 'suppressed_error') == 5
+
+        # Is the error removed or supressed?
+        if not (error and not suppressed_error):
+            # cells have to appear
+            experiment_all_links.position_data.set_position_data(position, 'appearance_probability',
+                                                                 value=1 - 10 ** -10)
+            experiment_all_links.position_data.set_position_data(position, 'appearance_penalty', value=-10.)
+
+            # link is also corrected
+            next_pos = experiment.links.find_single_future(position)
+            experiment_all_links.link_data.set_link_data(position, next_pos, data_name="link_probability",
+                                           value=1-10**-10)
+            experiment_all_links.link_data.set_link_data(position, next_pos, data_name="link_penalty",
+                                               value=-10.)
+
+if _fully_reviewed:
+    # change appearance probabilities reflecting fully checked nature. If all cell endings are taken care of then cells cannot appear anymore (except at the image volume edges)
+    for position in experiment.positions:
+        appearance_penalty = experiment.position_data.get_position_data(position, 'appearance_penalty')
+        if appearance_penalty is not None:
+            # do not correct the penalties if they are are deemed likely to appear for other reasons.
+            if appearance_penalty > 1.5:
+                if (position.time_point_number()-experiment.first_time_point_number())>1:
+                    experiment_all_links.position_data.set_position_data(position, 'appearance_probability',
+                                                                         value=10 ** -10)
+                    experiment_all_links.position_data.set_position_data(position, 'appearance_penalty', value=10.)
+
+if _reviewed or _fully_reviewed:
+    print("Saving files...")
+    io.save_data_to_json(experiment_all_links, "updated_all_links.aut")
+
 number_of_links = len(list(experiment.links.find_all_links()))
 index = 1
 
 # Marginalize
-for (position1, position2), link_penalty in experiment.link_data.find_all_links_with_data("link_penalty"):
+for (position1, position2) in experiment.links.find_all_links():
     print(f"Marginalizing {index}/{number_of_links}")
 
-    print(position1)
-    # if links are extremely (un)likely we do not have to perform marginalization over a large subgraph.
-    if abs(link_penalty) < 4.:
-        marginalized_probability = local_marginalization(position1, position2, experiment_all_links, complete_graph=True, steps=_steps, scale=1/_temperature)
-    else:
-        marginalized_probability = minimal_marginalization(position1, position2, experiment_all_links,  scale=1/_temperature)
+    link_penalty = experiment.link_data.get_link_data(position1, position2, 'link_penalty')
 
-    experiment.link_data.set_link_data(position1, position2, data_name="marginal_probability",
-                                       value=marginalized_probability)
+    if link_penalty is None:
+        print('missing penalty')
+        link_penalty=0
+
+    if (not experiment_all_links.links.contains_link(position1, position2)):# or (link_penalty is None):
+        print('link not present in graph, assumed to be corrected by user')
+        print(position1)
+        print(position2)
+        experiment.link_data.set_link_data(position1, position2, data_name="marginal_probability",
+                                           value=1)
+    else:
+        # if links are extremely (un)likely we do not have to perform marginalization over a large subgraph.
+        if abs(link_penalty) < 4.:
+            marginalized_probability = local_marginalization(position1, position2, experiment_all_links, complete_graph=True, steps=_steps, scale=1/_temperature)
+        else:
+            marginalized_probability = minimal_marginalization(position1, position2, experiment_all_links,  scale=1/_temperature)
+
+        experiment.link_data.set_link_data(position1, position2, data_name="marginal_probability",
+                                           value=marginalized_probability)
 
     index = index +1
 
