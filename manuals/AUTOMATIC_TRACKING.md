@@ -7,7 +7,9 @@ The intended workflow is as follows:
 2. Obtain division scores.
 3. Obtain linking scores.
 4. Link the cells of different time points together
-5. Manually correct all warnings
+5. Calculate error probabilities
+6. Manually correct warnings
+7. OR Filter and do automated analysis
 
 The steps are described below.
 
@@ -15,10 +17,16 @@ Before you start, create a directory that will hold all your analysis data. You 
 
 Step 1: Obtaining nucleus positions
 -----------------------------------
+To get the best results it is key that the input data somewhat resembles the data being trained on. This can often simply be achieved with a little pre-processing ([See here for tips](./PREPROCESSING_TIPS.md). 
 
 Open the OrganoidTracker GUI, load your images and select `Tools` -> `Detect cells in images...`. Select the already trained neural network that you want to use. ([See here for how to train a model](./TRAINING_THE_NETWORK.md). Find pre-trained models at [our Github page](https://github.com/jvzonlab/OrganoidTracker).) You'll end up with a folder containing configuration files. Run the `organoid_tracker_predict_positions` script in that directory to put the neural network into action. (On Windows, double-click the BAT file. On Linux/macOs, run the SH file instead.) You'll end up with a file that contains the positions of the cells. Load it into the program to see how the neural network performed.
 
 If you want to debug what the program is doing, open the `organoid_tracker.ini` file and give the `predictions_output_folder` setting a value, for example `test`. If you run the script again, it will create a folder with that name (`test` in this example) and place images there indicating how likely it is to find a cell there.
+
+### Correcting for changed image offsets
+When taking longer time lapse movies, the organoid can slowly slide out of the view. For this reason, the microscope user can move the imaged area so that the organoid stays in the view. In the time lapse movie, this makes the organoid appear to "teleport": from the edges of the image it jumps back to the center.
+
+To create links over this "jump", the program would need to create a lot of large-distance links. The program will likely refuse to do this. To correct for this, *before running the linking process*, open the OrganoidTracker GUI and load the images and positions (`File` menu). Then edit the data (`Edit -> Manually change data...`) and edit the image offsets (`Edit -> Edit image offsets...`) of the correct time point. Instructions are on the bottom of the window.
 
 Step 2: Obtaining division scores
 ---------------------------------
@@ -32,19 +40,27 @@ Step 3: Obtaining link scores
 
 This step works the same as the above script, except that you now run `Detect link likelihoods...`. This script will predict the scores for all links that OrganoidTracker considers to be possible. (That are links to the nearest position, plus links to positions at most two times as far as the nearest position.)
 
-
 Step 4: Obtaining links
 -----------------------
 
 Open the OrganoidTracker GUI again and load the images and the output file from the previous step. Use `Tools` -> `Create links between time points...` and run the resulting `organoid_tracker_create_links` script.
 
+In order for the tracking to work we need to give the algorithm a few more probabilities to work with, these can be adjusted in the `organoid_tracker.ini` file. The first is the probability of a cell disappearing. This is simply the false negative rate of the cell detection plus the death rate of cells in the system. The appearance probability is again given by false negative rate alone. Cells can of course also appear from outside the field of view, to account for this you can set the maximum distance from which a cell could move out of view in a single timepoint. The (dis)appearance probabilities are the calculated automatically.
 
-### Correcting for changed image offsets
-When taking longer time lapse movies, the organoid can slowly slide out of the view. For this reason, the microscope user can move the imaged area so that the organoid stays in the view. In the time lapse movie, this makes the organoid appear to "teleport": from the edges of the image it jumps back to the center.
+Now you can also set some parameters to clean up the data after tracking. It is advisable to at least remove very short tracks for clarity.
 
-To create links over this "jump", the program would need to create a lot of large-distance links. The program will likely refuse to do this. To correct for this, *before running the linking process*, open the OrganoidTracker GUI and load the images and positions (`File` menu). Then edit the data (`Edit -> Manually change data...`) and edit the image offsets (`Edit -> Edit image offsets...`) of the correct time point. Instructions are on the bottom of the window.
+This step outputs both a file containing the tracks and a file in which all links are retained. The latter is important when calculating error rates.    
 
-Step 5: Manually correct warnings
+Step 5: Calculate error rates
+---------------------------------
+
+Now that we have the tracks we can compute error rates through marginalization. Use `Tools` -> `Compute marginalized error rates...` and run the resulting `organoid_tracker_marginalize` script.
+
+In the `organoid_tracker.ini` file you might need to change the so-called 'temperature'. This accounts for the amount of shared information between the individual neural network predictions. If your data is similar to the data the neural networks are trained on you can use the temperature associated with them (1.5 for our own models). If you have trained your own models you have to calibrate the marginalization procedure to get a temperature ([See here for how to calibrate](./CALIBRATE_MARGINALIZATION.md).
+
+This step also will you dataset where all low-confidence links are filtered out. The threshold can be set in the `organoid_tracker.ini` file.
+
+Step 6: Manually correct warnings
 ---------------------------------
 
 This step is not automated. 😉 Open the OrganoidTracker GUI and load the images and data (`File` menu). Then go to `Edit -> Manually change data...`. A cross will appear over all locations where the program has detected some inconsistency in the tracking data:
@@ -63,7 +79,7 @@ If you don't want to correct everything, there are several options:
 * Limiting the number of time steps that you are looking at. In the warning screen, if you open the Edit menu, there's an option to set the minimum and maximum time point for correction.
 * Limiting the area you are looking at. This is most easily done by pressing L in the cell track editor, and then observing any lineages that still have warnings. Correct any lineages that need to be corrected (press E while you hover your mouse over them). Once you are satisfied, you can then delete all lineages that still have errors in them. This is done from the cell track editor: press `Edit > Batch deletion > Delete lineages with errors`. See [batch editing](BATCH_OPERATIONS.md) for more ways to delete a lot of lineages at once.
 
-You can change a few settings of the error checker, to make it stricter or less strict. In the error checking screen (the screen you opened with `E`) there are three options available in the `Edit` menu: the minimum time in between two cell divisions of the same cell, and the maximum distance a cell may move per minute.
+You can change a few settings of the error checker, to make it stricter or less strict. In the error checking screen (the screen you opened with `E`) there are three options available in the `Edit` menu: the minimimum marginalized probability a link should have, the minimum time in between two cell divisions of the same cell, and the maximum distance a cell may move per minute (only useful before marginalization).
 
 ## What to do if my results aren't good?
 That's a difficult problem! You have a few options:

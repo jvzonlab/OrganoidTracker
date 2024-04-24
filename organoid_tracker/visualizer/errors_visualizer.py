@@ -66,6 +66,7 @@ class ErrorsVisualizer(PositionListVisualizer):
             "Edit//Errors-Recheck all errors": self._recheck_errors,
             "Edit//Error settings-Change minimum allowed time in between divisions...": self._change_min_division_time,
             "Edit//Error settings-Change maximum allowed movement per minute...": self._change_max_distance,
+            "Edit//Error settings-Change minimum marginal probability...": self._change_min_marginal_probability,
             "Edit//Time-Change minimum time point for correction...": self._change_min_time_point,
             "Edit//Time-Change maximum time point for correction...": self._change_max_time_point,
             "Navigate//Lineage-Next lineage [Up]": self.__goto_next_lineage,
@@ -95,6 +96,18 @@ class ErrorsVisualizer(PositionListVisualizer):
         if new_distance != old_distance:
             self._experiment.warning_limits.max_distance_moved_um_per_min = new_distance
             self._recheck_errors()
+
+    def _change_min_marginal_probability(self):
+        old_limit = self._experiment.warning_limits.min_marginal_probability
+        new_limit = dialog.prompt_float("Minimum marginal probability of a link",
+                                       "Links with lower probability will be flagged",
+                                       minimum=0, default=old_limit)
+        if new_limit is None:
+            return
+        if old_limit != new_limit:
+            self._experiment.warning_limits.min_marginal_probability = new_limit
+            self._recheck_errors()
+
 
     def _change_min_time_point(self):
         # Find out the bounds
