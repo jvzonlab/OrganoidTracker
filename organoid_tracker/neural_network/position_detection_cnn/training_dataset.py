@@ -21,8 +21,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import random
-from typing import List, Tuple
+from random import Random
+from typing import List, Tuple, Iterable
 
 from functools import partial
 
@@ -31,13 +31,14 @@ import keras.random
 import numpy as np
 from torch.utils.data import Dataset, IterableDataset, DataLoader
 
-from organoid_tracker.neural_network import image_transforms
+from organoid_tracker.neural_network import image_transforms, Tensor
 from organoid_tracker.neural_network.position_detection_cnn.image_with_positions_to_tensor_loader import \
     tf_load_images_with_positions, load_images_with_positions
 from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import ImageWithPositions
+from organoid_tracker.neural_network.shuffling_dataset import ShufflingDataset
 
 
-class _TorchDataset(Dataset):
+class _TorchDataset(IterableDataset):
     _CROPS_PER_IMAGE: int = 20
 
     _image_with_position_list: List[ImageWithPositions]
@@ -54,25 +55,27 @@ class _TorchDataset(Dataset):
         self._perturb = perturb
         self._crop_to_positions = crop_to_positions
 
-    def __getitem__(self, index: int):
-        image_index = index // self._CROPS_PER_IMAGE
-        image, label = load_images_with_positions(self._image_with_position_list[image_index],
-                                                  time_window=self._time_window, crop=self._crop_to_positions)
-        image = keras.ops.convert_to_tensor(image)
-        label = keras.ops.convert_to_tensor(label)
+    def __iter__(self) -> Iterable[Tuple[Tensor, Tensor]]:
+        for image_with_positions in self._image_with_position_list:
+            image, label = load_images_with_positions(image_with_positions,
+                                                      time_window=self._time_window, crop=self._crop_to_positions)
+            image = keras.ops.convert_to_tensor(image)
+            label = keras.ops.convert_to_tensor(label)
 
-        label = keras.ops.expand_dims(label, axis=-1)  # Add channel dimension to labels
+            label = keras.ops.expand_dims(label, axis=-1)  # Add channel dimension to labels
 
-        image, label = normalize(image, label)
+            image, label = normalize(image, label)
 
-        image_patches, label_patches = generate_patches(image, label, self._patch_shape, multiplier=1, perturb=self._perturb)
-        image = image_patches[0]
-        label = label_patches[0]
+            image_patches, label_patches = generate_patches(image, label, self._patch_shape,
+                                                            multiplier=self._CROPS_PER_IMAGE, perturb=self._perturb)
+            for i in range(len(image_patches)):
+                image = image_patches[i]
+                label = label_patches[i]
 
-        if self._perturb:
-            image, label = apply_noise(image, label)
+                if self._perturb:
+                    image, label = apply_noise(image, label)
 
-        return image, label
+                yield image, label
 
     def __len__(self):
         return len(self._image_with_position_list) * self._CROPS_PER_IMAGE
@@ -80,14 +83,17 @@ class _TorchDataset(Dataset):
 
 # Creates training and validation data from an image_with_positions_list
 def training_data_creator_from_raw(image_with_positions_list: List[ImageWithPositions], time_window, patch_shape,
-                                   batch_size: int, mode, split_proportion: float = 0.8, crop=False):
+                                   batch_size: int, mode, split_proportion: float = 0.8, seed: int = 1,
+                                   crop=False):
     if mode == "train":
         image_with_positions_list = image_with_positions_list[:round(split_proportion * len(image_with_positions_list))]
     elif mode == "validation":
         image_with_positions_list = image_with_positions_list[round(split_proportion * len(image_with_positions_list)):]
 
     dataset = _TorchDataset(image_with_positions_list, time_window, patch_shape, mode == "train", crop)
-    return DataLoader(dataset, batch_size=batch_size, shuffle=mode == "train", num_workers=0, drop_last=True)
+    if mode == "train":
+        dataset = ShufflingDataset(dataset, buffer_size=2000, seed=seed)
+    return DataLoader(dataset, batch_size=batch_size, num_workers=0, drop_last=True)
 
 
 # Normalizes image data
