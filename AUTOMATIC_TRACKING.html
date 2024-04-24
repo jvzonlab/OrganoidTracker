@@ -42,14 +42,15 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Automatic tracking</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#step-1-obtaining-nucleus-positions">Step 1: Obtaining nucleus positions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#step-2-obtaining-division-scores">Step 2: Obtaining division scores</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#step-3-obtaining-link-scores">Step 3: Obtaining link scores</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#step-4-obtaining-links">Step 4: Obtaining links</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#step-1-obtaining-nucleus-positions">Step 1: Obtaining nucleus positions</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#correcting-for-changed-image-offsets">Correcting for changed image offsets</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#step-5-manually-correct-warnings">Step 5: Manually correct warnings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-2-obtaining-division-scores">Step 2: Obtaining division scores</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-3-obtaining-link-scores">Step 3: Obtaining link scores</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-4-obtaining-links">Step 4: Obtaining links</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-5-calculate-error-rates">Step 5: Calculate error rates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-6-manually-correct-warnings">Step 6: Manually correct warnings</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#what-to-do-if-my-results-aren-t-good">What to do if my results aren’t good?</a></li>
 </ul>
 </li>
@@ -107,14 +108,22 @@
 <li><p>Obtain division scores.</p></li>
 <li><p>Obtain linking scores.</p></li>
 <li><p>Link the cells of different time points together</p></li>
-<li><p>Manually correct all warnings</p></li>
+<li><p>Calculate error probabilities</p></li>
+<li><p>Manually correct warnings</p></li>
+<li><p>OR Filter and do automated analysis</p></li>
 </ol>
 <p>The steps are described below.</p>
 <p>Before you start, create a directory that will hold all your analysis data. You can create this directory inside the directory that holds your images.</p>
 <section id="step-1-obtaining-nucleus-positions">
 <h2>Step 1: Obtaining nucleus positions<a class="headerlink" href="#step-1-obtaining-nucleus-positions" title="Permalink to this heading"></a></h2>
+<p>To get the best results it is key that the input data somewhat resembles the data being trained on. This can often simply be achieved with a little pre-processing (<a class="reference internal" href="PREPROCESSING_TIPS.html"><span class="doc std std-doc">See here for tips</span></a>.</p>
 <p>Open the OrganoidTracker GUI, load your images and select <code class="docutils literal notranslate"><span class="pre">Tools</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Detect</span> <span class="pre">cells</span> <span class="pre">in</span> <span class="pre">images...</span></code>. Select the already trained neural network that you want to use. (<a class="reference internal" href="TRAINING_THE_NETWORK.html"><span class="doc std std-doc">See here for how to train a model</span></a>. Find pre-trained models at <a class="reference external" href="https://github.com/jvzonlab/OrganoidTracker">our Github page</a>.) You’ll end up with a folder containing configuration files. Run the <code class="docutils literal notranslate"><span class="pre">organoid_tracker_predict_positions</span></code> script in that directory to put the neural network into action. (On Windows, double-click the BAT file. On Linux/macOs, run the SH file instead.) You’ll end up with a file that contains the positions of the cells. Load it into the program to see how the neural network performed.</p>
 <p>If you want to debug what the program is doing, open the <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> file and give the <code class="docutils literal notranslate"><span class="pre">predictions_output_folder</span></code> setting a value, for example <code class="docutils literal notranslate"><span class="pre">test</span></code>. If you run the script again, it will create a folder with that name (<code class="docutils literal notranslate"><span class="pre">test</span></code> in this example) and place images there indicating how likely it is to find a cell there.</p>
+<section id="correcting-for-changed-image-offsets">
+<h3>Correcting for changed image offsets<a class="headerlink" href="#correcting-for-changed-image-offsets" title="Permalink to this heading"></a></h3>
+<p>When taking longer time lapse movies, the organoid can slowly slide out of the view. For this reason, the microscope user can move the imaged area so that the organoid stays in the view. In the time lapse movie, this makes the organoid appear to “teleport”: from the edges of the image it jumps back to the center.</p>
+<p>To create links over this “jump”, the program would need to create a lot of large-distance links. The program will likely refuse to do this. To correct for this, <em>before running the linking process</em>, open the OrganoidTracker GUI and load the images and positions (<code class="docutils literal notranslate"><span class="pre">File</span></code> menu). Then edit the data (<code class="docutils literal notranslate"><span class="pre">Edit</span> <span class="pre">-&gt;</span> <span class="pre">Manually</span> <span class="pre">change</span> <span class="pre">data...</span></code>) and edit the image offsets (<code class="docutils literal notranslate"><span class="pre">Edit</span> <span class="pre">-&gt;</span> <span class="pre">Edit</span> <span class="pre">image</span> <span class="pre">offsets...</span></code>) of the correct time point. Instructions are on the bottom of the window.</p>
+</section>
 </section>
 <section id="step-2-obtaining-division-scores">
 <h2>Step 2: Obtaining division scores<a class="headerlink" href="#step-2-obtaining-division-scores" title="Permalink to this heading"></a></h2>
@@ -128,14 +137,18 @@
 <section id="step-4-obtaining-links">
 <h2>Step 4: Obtaining links<a class="headerlink" href="#step-4-obtaining-links" title="Permalink to this heading"></a></h2>
 <p>Open the OrganoidTracker GUI again and load the images and the output file from the previous step. Use <code class="docutils literal notranslate"><span class="pre">Tools</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Create</span> <span class="pre">links</span> <span class="pre">between</span> <span class="pre">time</span> <span class="pre">points...</span></code> and run the resulting <code class="docutils literal notranslate"><span class="pre">organoid_tracker_create_links</span></code> script.</p>
-<section id="correcting-for-changed-image-offsets">
-<h3>Correcting for changed image offsets<a class="headerlink" href="#correcting-for-changed-image-offsets" title="Permalink to this heading"></a></h3>
-<p>When taking longer time lapse movies, the organoid can slowly slide out of the view. For this reason, the microscope user can move the imaged area so that the organoid stays in the view. In the time lapse movie, this makes the organoid appear to “teleport”: from the edges of the image it jumps back to the center.</p>
-<p>To create links over this “jump”, the program would need to create a lot of large-distance links. The program will likely refuse to do this. To correct for this, <em>before running the linking process</em>, open the OrganoidTracker GUI and load the images and positions (<code class="docutils literal notranslate"><span class="pre">File</span></code> menu). Then edit the data (<code class="docutils literal notranslate"><span class="pre">Edit</span> <span class="pre">-&gt;</span> <span class="pre">Manually</span> <span class="pre">change</span> <span class="pre">data...</span></code>) and edit the image offsets (<code class="docutils literal notranslate"><span class="pre">Edit</span> <span class="pre">-&gt;</span> <span class="pre">Edit</span> <span class="pre">image</span> <span class="pre">offsets...</span></code>) of the correct time point. Instructions are on the bottom of the window.</p>
+<p>In order for the tracking to work we need to give the algorithm a few more probabilities to work with, these can be adjusted in the <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> file. The first is the probability of a cell disappearing. This is simply the false negative rate of the cell detection plus the death rate of cells in the system. The appearance probability is again given by false negative rate alone. Cells can of course also appear from outside the field of view, to account for this you can set the maximum distance from which a cell could move out of view in a single timepoint. The (dis)appearance probabilities are the calculated automatically.</p>
+<p>Now you can also set some parameters to clean up the data after tracking. It is advisable to at least remove very short tracks for clarity.</p>
+<p>This step outputs both a file containing the tracks and a file in which all links are retained. The latter is important when calculating error rates.</p>
 </section>
+<section id="step-5-calculate-error-rates">
+<h2>Step 5: Calculate error rates<a class="headerlink" href="#step-5-calculate-error-rates" title="Permalink to this heading"></a></h2>
+<p>Now that we have the tracks we can compute error rates through marginalization. Use <code class="docutils literal notranslate"><span class="pre">Tools</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Compute</span> <span class="pre">marginalized</span> <span class="pre">error</span> <span class="pre">rates...</span></code> and run the resulting <code class="docutils literal notranslate"><span class="pre">organoid_tracker_marginalize</span></code> script.</p>
+<p>In the <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> file you might need to change the so-called ‘temperature’. This accounts for the amount of shared information between the individual neural network predictions. If your data is similar to the data the neural networks are trained on you can use the temperature associated with them (1.5 for our own models). If you have trained your own models you have to calibrate the marginalization procedure to get a temperature (<a class="reference internal" href="CALIBRATE_MARGINALIZATION.html"><span class="doc std std-doc">See here for how to calibrate</span></a>.</p>
+<p>This step also will you dataset where all low-confidence links are filtered out. The threshold can be set in the <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> file.</p>
 </section>
-<section id="step-5-manually-correct-warnings">
-<h2>Step 5: Manually correct warnings<a class="headerlink" href="#step-5-manually-correct-warnings" title="Permalink to this heading"></a></h2>
+<section id="step-6-manually-correct-warnings">
+<h2>Step 6: Manually correct warnings<a class="headerlink" href="#step-6-manually-correct-warnings" title="Permalink to this heading"></a></h2>
 <p>This step is not automated. 😉 Open the OrganoidTracker GUI and load the images and data (<code class="docutils literal notranslate"><span class="pre">File</span></code> menu). Then go to <code class="docutils literal notranslate"><span class="pre">Edit</span> <span class="pre">-&gt;</span> <span class="pre">Manually</span> <span class="pre">change</span> <span class="pre">data...</span></code>. A cross will appear over all locations where the program has detected some inconsistency in the tracking data:</p>
 <p><img alt="Example of a warning" src="_images/warning.png" /></p>
 <p>To view why OrganoidTracker warned you about this position, hover you mouse over a nucleus and press E. This will show you what the warning is. If the warning was a false positive, just press Delete to delete the warning. Otherwise, exit the warning screen (press E or Escape). This takes you back to the cell track editor, where you can fix the error.</p>
@@ -147,7 +160,7 @@
 <li><p>Limiting the number of time steps that you are looking at. In the warning screen, if you open the Edit menu, there’s an option to set the minimum and maximum time point for correction.</p></li>
 <li><p>Limiting the area you are looking at. This is most easily done by pressing L in the cell track editor, and then observing any lineages that still have warnings. Correct any lineages that need to be corrected (press E while you hover your mouse over them). Once you are satisfied, you can then delete all lineages that still have errors in them. This is done from the cell track editor: press <code class="docutils literal notranslate"><span class="pre">Edit</span> <span class="pre">&gt;</span> <span class="pre">Batch</span> <span class="pre">deletion</span> <span class="pre">&gt;</span> <span class="pre">Delete</span> <span class="pre">lineages</span> <span class="pre">with</span> <span class="pre">errors</span></code>. See <span class="xref myst">batch editing</span> for more ways to delete a lot of lineages at once.</p></li>
 </ul>
-<p>You can change a few settings of the error checker, to make it stricter or less strict. In the error checking screen (the screen you opened with <code class="docutils literal notranslate"><span class="pre">E</span></code>) there are three options available in the <code class="docutils literal notranslate"><span class="pre">Edit</span></code> menu: the minimum time in between two cell divisions of the same cell, and the maximum distance a cell may move per minute.</p>
+<p>You can change a few settings of the error checker, to make it stricter or less strict. In the error checking screen (the screen you opened with <code class="docutils literal notranslate"><span class="pre">E</span></code>) there are three options available in the <code class="docutils literal notranslate"><span class="pre">Edit</span></code> menu: the minimimum marginalized probability a link should have, the minimum time in between two cell divisions of the same cell, and the maximum distance a cell may move per minute (only useful before marginalization).</p>
 </section>
 <section id="what-to-do-if-my-results-aren-t-good">
 <h2>What to do if my results aren’t good?<a class="headerlink" href="#what-to-do-if-my-results-aren-t-good" title="Permalink to this heading"></a></h2>

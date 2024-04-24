@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Working with custom metadata &mdash; OrganoidTracker 2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> OrganoidTracker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OrganoidTracker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Working with custom metadata</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/PREPROCESSING_TIPS.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="working-with-custom-metadata">
+<h1>Working with custom metadata<a class="headerlink" href="#working-with-custom-metadata" title="Permalink to this heading"></a></h1>
+<p><a class="reference internal" href="index.html"><span class="doc std std-doc">← Back to main page</span></a></p>
+<p>In OrganoidTracker, you can apply custom metadata to individual positions, links or even experiments as a whole. For example, you could store the moment in time where you added a certain drug to your experiment.</p>
+<p>There is one catch: almomst all interaction with metadata needs to be done through plugins. OrganoidTracker by itself uses metadata in a few specific scenarios (like for error reporting in cell tracking), but it cannot interact with generic metadata. So that means it’s time to write code!</p>
+<p>First, you’ll need to know how to write an OrganoidTracker plugin. That is discussed on <a class="reference internal" href="PLUGIN_TUTORIAL.html"><span class="doc std std-doc">the plugin tutorial page</span></a>. After completion of that tutorial, you can get started to add custom metadata.</p>
+<section id="metadata-for-an-experiment-as-a-whole">
+<h2>Metadata for an experiment as a whole<a class="headerlink" href="#metadata-for-an-experiment-as-a-whole" title="Permalink to this heading"></a></h2>
+<p>We will start by introducing metadata that applies to an experiment as a whole. From code, it’s quite straightforward to set or get some metadata:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">global_data</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s2">&quot;drug_type&quot;</span><span class="p">)</span>  <span class="c1"># Will return None</span>
+
+<span class="n">experiment</span><span class="o">.</span><span class="n">global_data</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="s2">&quot;drug_type&quot;</span><span class="p">,</span> <span class="s2">&quot;control&quot;</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">global_data</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s2">&quot;drug_type&quot;</span><span class="p">)</span>  <span class="c1"># Will now return &quot;control&quot;</span>
+</pre></div>
+</div>
+<p>You can store floats, integers, strings, booleans and lists of those. For example, this would also work:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">global_data</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="s2">&quot;temperature_by_time_point&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mf">20.1</span><span class="p">,</span> <span class="mf">20.4</span><span class="p">,</span> <span class="mf">21.2</span><span class="p">,</span> <span class="mf">21.9</span><span class="p">,</span> <span class="mf">22.3</span><span class="p">,</span> <span class="mf">23.2</span><span class="p">,</span> <span class="mf">25.4</span><span class="p">,</span> <span class="mf">27.1</span><span class="p">,</span> <span class="mf">29.8</span><span class="p">,</span> <span class="mf">31.2</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Storing more complex objects is not possible though, so you need to find a way to distribute the information over multiple metadata values. Let’s say you want to store an <code class="docutils literal notranslate"><span class="pre">organoid_tracker.core.Color</span></code> instance. You would need to do that as follows:</p>
+<p>To delete a piece of metadata, simply set it to <code class="docutils literal notranslate"><span class="pre">None</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">global_data</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="s2">&quot;my_data&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="making-experiment-metadata-available-to-the-end-user">
+<h3>Making experiment metadata available to the end user<a class="headerlink" href="#making-experiment-metadata-available-to-the-end-user" title="Permalink to this heading"></a></h3>
+<p>You’ll find that metadata is not accessible from the graphical OrganoidTracker program. You’ll need to write a plugin to solve this issue. Here is an example plugin for changing the drug type:</p>
+<p>(Again, see the <a class="reference internal" href="PLUGIN_TUTORIAL.html"><span class="doc std std-doc">the plugin tutorial page</span></a> for details on how to write a plugin.)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plugin file - save this as plugin_whatever.py in the plugins folder.</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="kn">from</span> <span class="nn">organoid_tracker.gui</span> <span class="kn">import</span> <span class="n">option_choose_dialog</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.gui.window</span> <span class="kn">import</span> <span class="n">Window</span>
+
+
+<span class="c1"># This adds a menu option that calls _set_drug_type</span>
+<span class="k">def</span> <span class="nf">get_menu_items</span><span class="p">(</span><span class="n">window</span><span class="p">:</span> <span class="n">Window</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">{</span>
+         <span class="s2">&quot;Edit//Set drug type...&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">_set_drug_type</span><span class="p">(</span><span class="n">window</span><span class="p">),</span>
+    <span class="p">}</span>
+
+
+<span class="c1"># This function asks the user to set a drug type</span>
+<span class="k">def</span> <span class="nf">_set_drug_type</span><span class="p">(</span><span class="n">window</span><span class="p">:</span> <span class="n">Window</span><span class="p">):</span>
+    <span class="n">experiment</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">()</span>
+    <span class="n">current_drug_type</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">global_data</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s2">&quot;drug_type&quot;</span><span class="p">)</span>
+    <span class="n">available_drugs</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;Choose a drug&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;palbociclib&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;gefitinib&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;erlotinib&quot;</span>
+    <span class="p">]</span>
+    
+    <span class="n">result</span> <span class="o">=</span> <span class="n">option_choose_dialog</span><span class="o">.</span><span class="n">prompt_list</span><span class="p">(</span><span class="s2">&quot;Choose drug type&quot;</span><span class="p">,</span> <span class="s2">&quot;Drug type&quot;</span><span class="p">,</span> <span class="s2">&quot;Choose the drug that was applied to the experiment.</span><span class="se">\n\n</span><span class="s2">Current value: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">current_drug_type</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">available_drugs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span>  <span class="c1"># User pressed Cancel or choose &quot;Choose a drug&quot;</span>
+    <span class="n">experiment</span><span class="o">.</span><span class="n">global_data</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="s2">&quot;drug_type&quot;</span><span class="p">,</span> <span class="n">available_drugs</span><span class="p">[</span><span class="n">result</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>This provides a plugin that adds a menu option “Set drug type…” to the Edit menu, which when clicked provides the following dialog box:</p>
+<p><img alt="The dialog box" src="_images/metadata_example.png" /></p>
+<p>This example used a list. However, there are other dialog boxes available for other data types:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.gui</span> <span class="kn">import</span> <span class="n">dialog</span>
+
+<span class="c1"># Returns an integer</span>
+<span class="n">dialog</span><span class="o">.</span><span class="n">prompt_int</span><span class="p">(</span><span class="s2">&quot;Title&quot;</span><span class="p">,</span> <span class="s2">&quot;Question?&quot;</span><span class="p">,</span> <span class="n">minimum</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">maximum</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Returns a floating-point number</span>
+<span class="n">dialog</span><span class="o">.</span><span class="n">prompt_float</span><span class="p">(</span><span class="s2">&quot;Title&quot;</span><span class="p">,</span> <span class="s2">&quot;Question?&quot;</span><span class="p">,</span> <span class="n">minimum</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">maximum</span><span class="o">=</span><span class="mf">9.5</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">2.2</span><span class="p">)</span>
+
+<span class="c1"># Returns a text string</span>
+<span class="n">dialog</span><span class="o">.</span><span class="n">prompt_str</span><span class="p">(</span><span class="s2">&quot;Title&quot;</span><span class="p">,</span> <span class="s2">&quot;Question?&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;Default answer&quot;</span><span class="p">)</span>
+
+<span class="c1"># Returns 1, 2 or 3</span>
+<span class="n">dialog</span><span class="o">.</span><span class="n">prompt_options</span><span class="p">(</span><span class="s2">&quot;Title&quot;</span><span class="p">,</span> <span class="s2">&quot;Question?&quot;</span><span class="p">,</span> <span class="n">option_1</span><span class="o">=</span><span class="s2">&quot;Answer 1&quot;</span><span class="p">,</span> <span class="n">option_2</span><span class="o">=</span><span class="s2">&quot;Answer 2&quot;</span><span class="p">,</span> <span class="n">option_3</span><span class="o">=</span><span class="s2">&quot;Answer 3&quot;</span><span class="p">)</span>
+
+<span class="c1"># Returns a Color instance</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.core</span> <span class="kn">import</span> <span class="n">Color</span>
+<span class="n">dialog</span><span class="o">.</span><span class="n">prompt_color</span><span class="p">(</span><span class="s2">&quot;Title&quot;</span><span class="p">,</span> <span class="n">default_color</span><span class="o">=</span><span class="n">Color</span><span class="o">.</span><span class="n">white</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>All the above dialog functions will return <code class="docutils literal notranslate"><span class="pre">None</span></code> if the user pressed Cancel, so please account for that in your code.</p>
+<p>Note: storing a color is a bit less straightforward, since you cannot store this object directly. So you need to convert it to a list of numbers first, and then convert it back later when you are retrieving the data.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.core</span> <span class="kn">import</span> <span class="n">Color</span>
+
+<span class="n">color</span> <span class="o">=</span> <span class="n">Color</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+
+<span class="c1"># Storing a color object</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">global_data</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="s2">&quot;some_color&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">color</span><span class="o">.</span><span class="n">red</span><span class="p">,</span> <span class="n">color</span><span class="o">.</span><span class="n">green</span><span class="p">,</span> <span class="n">color</span><span class="o">.</span><span class="n">blue</span><span class="p">])</span>
+
+<span class="c1"># Retrieving it again</span>
+<span class="n">color_rgb</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">global_data</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s2">&quot;some_color&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">color_rgb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="n">Color</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">color_rgb</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">color_rgb</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">color_rgb</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="metadata-for-individual-positions">
+<h2>Metadata for individual positions<a class="headerlink" href="#metadata-for-individual-positions" title="Permalink to this heading"></a></h2>
+<p>Applying metadata to individual positions is a little more complex, since you need to decide to which positions it should apply. Once you’ve got a position, it is straightforward though:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.position</span> <span class="kn">import</span> <span class="n">Position</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+
+<span class="c1"># Replace this with an actual position</span>
+<span class="n">position</span> <span class="o">=</span> <span class="n">Position</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">time_point_number</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># How to store and retrieve metadata</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="o">.</span><span class="n">set_position_data</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="s2">&quot;some_key&quot;</span><span class="p">,</span> <span class="s2">&quot;some_value&quot;</span><span class="p">)</span>
+<span class="n">the_value</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="o">.</span><span class="n">get_position_data</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="s2">&quot;some_key&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can store exactly the same types of position metadata as you could for <code class="docutils literal notranslate"><span class="pre">experiment.global_data</span></code>. So you can store strings, ints, floats, booleans and lists of those.</p>
+<section id="making-position-metadata-available-to-the-end-user">
+<h3>Making position metadata available to the end user<a class="headerlink" href="#making-position-metadata-available-to-the-end-user" title="Permalink to this heading"></a></h3>
+<p>Just like for metadata that applied to the entire experiment, for position metadata we will need to write a plugin that allows the user to view and modify the data. In this example, we are going to allow the user to store a number for each position. Let’s assume that this number represents some abstract activity of the cell.</p>
+<p>The code is going to be a bit longer this time, since we will need to create a separate screen that allows the user to view and modify the metadata. If you’ve ever opened the data editor, you have already seen such a screen.</p>
+<p>In OrganoidTracker, all screens are classes that inherit from the <code class="docutils literal notranslate"><span class="pre">Visualizer</span></code> class. The base visualizer just shows an empty Matplotlib plot. OrganoidTracker has a built-in <code class="docutils literal notranslate"><span class="pre">ExitableImageVisualizer</span></code> class, which shows images from the experiment (like you would expect), and also returns to the main screen once you press Escape or click the Home button. If you design a custom screen, it is recommended to inherit from <code class="docutils literal notranslate"><span class="pre">ExitableImageVisualizer</span></code>.</p>
+<p>The plugin consists of the following code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plugin file - save this as plugin_whatever.py in the plugins folder.</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">matplotlib.backend_bases</span> <span class="kn">import</span> <span class="n">MouseEvent</span>
+
+<span class="kn">from</span> <span class="nn">organoid_tracker.gui</span> <span class="kn">import</span> <span class="n">dialog</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.gui.window</span> <span class="kn">import</span> <span class="n">Window</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.visualizer</span> <span class="kn">import</span> <span class="n">activate</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.visualizer.exitable_image_visualizer</span> <span class="kn">import</span> <span class="n">ExitableImageVisualizer</span>
+
+
+<span class="c1"># This adds a menu option that calls _set_cell_activity</span>
+<span class="k">def</span> <span class="nf">get_menu_items</span><span class="p">(</span><span class="n">window</span><span class="p">:</span> <span class="n">Window</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">{</span>
+         <span class="s2">&quot;Edit//Set cell activity...&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">_set_cell_activity</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
+    <span class="p">}</span>
+
+
+<span class="c1"># This class creates a new screen</span>
+<span class="k">class</span> <span class="nc">_CellActivitySetter</span><span class="p">(</span><span class="n">ExitableImageVisualizer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Double-click a cell to set its activity.&quot;&quot;&quot;</span>
+    <span class="c1"># The message above is displayed in the status bar.</span>
+    
+    <span class="k">def</span> <span class="nf">_on_mouse_click</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">MouseEvent</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">event</span><span class="o">.</span><span class="n">dblclick</span><span class="p">:</span>
+            <span class="k">return</span>  <span class="c1"># Didn&#39;t double-click</span>
+        <span class="n">position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_position_at</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">xdata</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">ydata</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">position</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>  <span class="c1"># Didn&#39;t click on a position</span>
+        
+        <span class="c1"># Get old activity</span>
+        <span class="n">old_activity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_experiment</span><span class="o">.</span><span class="n">position_data</span><span class="o">.</span><span class="n">get_position_data</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="s2">&quot;activity&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">old_activity</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">old_activity</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="c1"># Ask for new activity</span>
+        <span class="n">activity</span> <span class="o">=</span> <span class="n">dialog</span><span class="o">.</span><span class="n">prompt_float</span><span class="p">(</span><span class="s2">&quot;Activity&quot;</span><span class="p">,</span> <span class="s2">&quot;Please set the activity&quot;</span><span class="p">,</span> <span class="n">minimum</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">maximum</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">old_activity</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">activity</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>  <span class="c1"># User pressed cancel</span>
+        
+        <span class="c1"># Store</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_experiment</span><span class="o">.</span><span class="n">position_data</span><span class="o">.</span><span class="n">set_position_data</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="s2">&quot;activity&quot;</span><span class="p">,</span> <span class="n">activity</span><span class="p">)</span>
+
+
+<span class="c1"># This function simply opens the activity setting screen</span>
+<span class="k">def</span> <span class="nf">_set_cell_activity</span><span class="p">(</span><span class="n">window</span><span class="p">:</span> <span class="n">Window</span><span class="p">):</span>
+    <span class="n">activate</span><span class="p">(</span><span class="n">_CellActivitySetter</span><span class="p">(</span><span class="n">window</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Now the user can view and write down the activity of every cell. You could also expand the code to set the activity in multiple time points at once. See the <a class="reference internal" href="API.html"><span class="doc std std-doc">API</span></a> document for how to retrieve the position of the same cell in other time points.</p>
+</section>
+<section id="special-case-cell-types">
+<h3>Special case: cell types<a class="headerlink" href="#special-case-cell-types" title="Permalink to this heading"></a></h3>
+<p>There is one type of position metadata that OrganoidTracker has nice in-built support for: cell types. In principle, the position metadata is just stored with the key <code class="docutils literal notranslate"><span class="pre">&quot;type&quot;</span></code>, and the value being something like <code class="docutils literal notranslate"><span class="pre">&quot;PANETH&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;STEM&quot;</span></code>. Nothing is stopping you from treating the cell type as any other piece of metadata.</p>
+<p>However, if you register your cell type with OrganoidTracker, then it will perform the following actions:</p>
+<ul class="simple">
+<li><p>In the editor, you can select the cell type. OrganoidTracker will then update the position metadata for you.</p></li>
+<li><p>If you look at the border of the position marker of a position with the cell type, you will notice that it receives special coloring.</p></li>
+<li><p>The same color is also used when drawing the cell in a lineage tree.</p></li>
+</ul>
+<p><img alt="Cell type annotation" src="_images/annotated_cell_type.png" /><br />
+<em>Example of a cell having a cell type. Note the marker with the wider border and the different color.</em></p>
+<p>You register a cell type by adding a <code class="docutils literal notranslate"><span class="pre">get_markers</span></code> function to your plugin. Like the <code class="docutils literal notranslate"><span class="pre">get_menu_items</span></code> function, this function is automatically called by OrganoidTracker:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Store this file as plugin_whatever.py</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.core.marker</span> <span class="kn">import</span> <span class="n">Marker</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.core.position</span> <span class="kn">import</span> <span class="n">Position</span>
+
+<span class="k">def</span> <span class="nf">get_markers</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">Marker</span><span class="p">([</span><span class="n">Position</span><span class="p">],</span> <span class="s2">&quot;STEM&quot;</span><span class="p">,</span> <span class="s2">&quot;stem cell&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">182</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+        <span class="n">Marker</span><span class="p">([</span><span class="n">Position</span><span class="p">],</span> <span class="s2">&quot;GOBLET&quot;</span><span class="p">,</span> <span class="s2">&quot;goblet cell&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">126</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">64</span><span class="p">))</span>
+    <span class="p">]</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">get_markers</span></code> method must return a list of <code class="docutils literal notranslate"><span class="pre">Marker</span></code>s. Each marker provides what it is targeting (<code class="docutils literal notranslate"><span class="pre">Position</span></code> for cell types), the name under which it is saved to the data files, a display name and a display color. The color is used for the border of the position markers and for the lineage trees.</p>
+<p>Finally, we would like to point you to the <code class="docutils literal notranslate"><span class="pre">position_markers</span></code> module. This module contains a few useful functions for working with cell types.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.core.position</span> <span class="kn">import</span> <span class="n">Position</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.position_analysis</span> <span class="kn">import</span> <span class="n">position_markers</span>
+
+<span class="c1"># Replace these with real values</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+<span class="n">position</span> <span class="o">=</span> <span class="n">Position</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">time_point_number</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># This method returns the &quot;type&quot; metadata of a position,</span>
+<span class="c1"># and converts it to UPPERCASE if it isn&#39;t already</span>
+<span class="n">position_markers</span><span class="o">.</span><span class="n">get_position_type</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>
+
+<span class="c1"># This method sets the &quot;type&quot; metadata of a position,</span>
+<span class="c1"># after converting the type to UPPERCASE if it isn&#39;t already</span>
+<span class="n">position_markers</span><span class="o">.</span><span class="n">set_position_type</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="s2">&quot;PANETH&quot;</span><span class="p">)</span>
+
+<span class="c1"># This method returns an iterable of all positions of the type &quot;PANETH&quot;.</span>
+<span class="c1"># Note that if a single Paneth cell has 100 positions over time,</span>
+<span class="c1"># then this method will return all 100 positions of that Paneth cell.</span>
+<span class="n">paneth_positions</span> <span class="o">=</span> <span class="n">position_markers</span><span class="o">.</span><span class="n">get_positions_of_type</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="p">,</span> <span class="s2">&quot;PANETH&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="metadata-for-individual-links">
+<h2>Metadata for individual links<a class="headerlink" href="#metadata-for-individual-links" title="Permalink to this heading"></a></h2>
+<p>Links are used to connect two positions at subsequent time points, to establish that both positions are of the same cell. The links themselves can also have metadata attached to them. You can set it as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span> <span class="nn">organoid_tracker.core.position</span> <span class="kn">import</span> <span class="n">Position</span>
+
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+<span class="n">position_1</span> <span class="o">=</span> <span class="n">Position</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">time_point_number</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">position_2</span> <span class="o">=</span> <span class="n">Position</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">time_point_number</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">value</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">link_data</span><span class="o">.</span><span class="n">get_link_data</span><span class="p">(</span><span class="n">position_1</span><span class="p">,</span> <span class="n">position_2</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">link_data</span><span class="o">.</span><span class="n">set_link_data</span><span class="p">(</span><span class="n">position_1</span><span class="p">,</span> <span class="n">position_2</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Allowed data types are the same as for other metadata.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020-2024, Jeroen van Zon Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
