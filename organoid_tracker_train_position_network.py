@@ -7,6 +7,8 @@ import random
 from functools import partial
 from typing import Set, Tuple
 
+from matplotlib import pyplot as plt
+
 os.environ["KERAS_BACKEND"] = "torch"
 import keras
 import keras.callbacks
@@ -108,18 +110,18 @@ experiment_provider = (params.to_experiment() for params in per_experiment_param
 image_with_positions_list = create_image_with_positions_list(experiment_provider)
 
 # shuffle training/validation data
-random.seed("using a fixed seed to ensure reproducibility")
+seed = 42
+random = random.Random(seed)
 random.shuffle(image_with_positions_list)
 
 # create datasets that generate the data
-training_dataset = training_data_creator_from_raw(image_with_positions_list, time_window=time_window,
+training_dataset = training_data_creator_from_raw(image_with_positions_list, time_window=time_window, seed=seed,
                                                   patch_shape=patch_shape_zyx, batch_size=batch_size, mode='train',
-                                                  split_proportion=0.8)
-validation_dataset = training_data_creator_from_raw(image_with_positions_list, time_window=time_window,
+                                                  split_proportion=0.8, crop=True)
+validation_dataset = training_data_creator_from_raw(image_with_positions_list, time_window=time_window, seed=seed,
                                                     patch_shape=patch_shape_zyx, batch_size=batch_size,
-                                                    mode='validation', split_proportion=0.8)
+                                                    mode='validation', split_proportion=0.8, crop=True)
 
-sample = next(iter(training_dataset))
 
 print("Defining model...")
 model = build_model(shape=(patch_shape_zyx[0], None, None, time_window[1] - time_window[0] + 1), batch_size=None)
