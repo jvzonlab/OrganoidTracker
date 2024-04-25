@@ -4,15 +4,11 @@
 import json
 import os
 import random
-from functools import partial
-from typing import Set, Tuple
+from typing import Set
 
 os.environ["KERAS_BACKEND"] = "torch"
-import keras
 import keras.callbacks
 import keras.models
-import tifffile
-from torch import Tensor
 
 from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int
 from organoid_tracker.core.experiment import Experiment
@@ -20,7 +16,6 @@ from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 from organoid_tracker.imaging import io
 from organoid_tracker.neural_network.position_detection_cnn.convolutional_neural_network import build_model
-from organoid_tracker.neural_network.position_detection_cnn.custom_filters import distance_map
 from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import \
     create_image_with_positions_list
 from organoid_tracker.neural_network.position_detection_cnn.training_dataset import training_data_creator_from_raw
