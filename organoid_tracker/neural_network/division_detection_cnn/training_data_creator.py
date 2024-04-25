@@ -38,13 +38,13 @@ from organoid_tracker.neural_network.position_detection_cnn import _ImageWithPos
 
 # ImageWithDivisions extends ImageWithositions to include division data
 class _ImageWithDivisions(_ImageWithPositions):
-    _dividing = List[bool]
+    dividing = List[bool]
 
     def __init__(self, experiment_name: str, images: Images, time_point: TimePoint, xyz_positions: ndarray,
                  dividing: List[bool]):
         # dividing: List of booleans that indictae if a cell is about to divide (TRUE) or not (FALSE)
         super().__init__(experiment_name, images, time_point, xyz_positions)
-        self._dividing = dividing
+        self.dividing = dividing
 
 
 # Creates list of ImagesWithDivisions from experiments

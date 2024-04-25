@@ -21,7 +21,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
+import random
 from typing import List, Iterable, Tuple
 
 import numpy
@@ -38,13 +38,13 @@ from organoid_tracker.neural_network.position_detection_cnn.training_data_creato
 class _ImageWithLinks(ImageWithPositions):
     target_xyz_positions: ndarray
     distances: ndarray
-    _linked: List[bool]
+    linked: List[bool]
 
     def __init__(self, experiment_name: str, images: Images, time_point: TimePoint, xyz_positions: ndarray,
                  target_xyz_positions: ndarray, distances: ndarray, linked: List[bool]):
         # xyz positions: 2D numpy integer array of cell nucleus positions: [ [x,y,z], [x,y,z], ...]
         super().__init__(experiment_name, images, time_point, xyz_positions)
-        self._linked = linked
+        self.linked = linked
         self.target_xyz_positions = target_xyz_positions
         self.distances = distances
 
@@ -99,7 +99,7 @@ def create_image_with_links_list(experiments: Iterable[Experiment], division_mul
 
         for time_point in experiment.positions.time_points():
             # if there is no next timepoint available end the routine
-            if experiment._images.get_image_stack(TimePoint(time_point.time_point_number() + 1)) is None:
+            if experiment.images.get_image_stack(TimePoint(time_point.time_point_number() + 1)) is None:
                 break
 
             # counts if events of interest happen at this timepoint.
@@ -115,8 +115,8 @@ def create_image_with_links_list(experiments: Iterable[Experiment], division_mul
             offset = experiment.images.offsets.of_time_point(time_point)
             future_offset = experiment.images.offsets.of_time_point(TimePoint(time_point.time_point_number() + 1))
 
-            image_shape = experiment._images.get_image_stack(time_point).shape
-            future_image_shape = experiment._images.get_image_stack(TimePoint(time_point.time_point_number() + 1)).shape
+            image_shape = experiment.images.get_image_stack(time_point).shape
+            future_image_shape = experiment.images.get_image_stack(TimePoint(time_point.time_point_number() + 1)).shape
 
             positions_xyz = list()
             target_positions_xyz = list()
@@ -211,14 +211,14 @@ def create_image_with_possible_links_list(experiment: Experiment):
     possible_links = nearest_neighbor_linker.nearest_neighbor(experiment, tolerance=2)
 
     for time_point in experiment.positions.time_points():
-        if experiment._images.get_image_stack(TimePoint(time_point.time_point_number() + 1)) is None:
+        if experiment.images.get_image_stack(TimePoint(time_point.time_point_number() + 1)) is None:
             break
         # read a single time point
         positions = experiment.positions.of_time_point(time_point)
         offset = experiment.images.offsets.of_time_point(time_point)
         future_offset = experiment.images.offsets.of_time_point(TimePoint(time_point.time_point_number() + 1))
-        image_shape = experiment._images.get_image_stack(time_point).shape
-        future_image_shape = experiment._images.get_image_stack(TimePoint(time_point.time_point_number() + 1)).shape
+        image_shape = experiment.images.get_image_stack(time_point).shape
+        future_image_shape = experiment.images.get_image_stack(TimePoint(time_point.time_point_number() + 1)).shape
 
         positions_xyz = list()
         target_positions_xyz = list()
@@ -273,7 +273,7 @@ def create_image_with_possible_links_list(experiment: Experiment):
     return image_with_links_list, predicted_links_list, possible_links
 
 
-def inside_image(position: Position, offset: Images.offsets, image_shape: Tuple[int]):
+def inside_image(position: Position, offset: Images.offsets, image_shape: Tuple[int, ...]):
     inside = False
     if position.x - offset.x < image_shape[2] and position.y - offset.y < image_shape[1] \
             and position.z - offset.z < image_shape[0]:
@@ -285,14 +285,3 @@ def inside_image(position: Position, offset: Images.offsets, image_shape: Tuple[
         inside = False
 
     return inside
-
-
-def remove_random_positions(experiment, rate=0.02):
-    to_remove = []
-    for pos in experiment.positions:
-        if random.random() < rate:
-            to_remove.append(pos)
-
-    experiment.remove_positions(to_remove)
-
-    return experiment

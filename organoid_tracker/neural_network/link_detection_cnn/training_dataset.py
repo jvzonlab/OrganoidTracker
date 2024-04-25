@@ -23,9 +23,9 @@
 # SOFTWARE.
 from typing import List
 
-import tensorflow as tf
-import tensorflow_addons as tfa
 from functools import partial
+
+import keras
 import numpy as np
 
 from organoid_tracker.neural_network.link_detection_cnn.ImageWithLinks_to_tensor_loader import tf_load_images_with_links
@@ -65,7 +65,6 @@ def training_data_creator_from_raw(tf_load_images_with_links_list: List[_ImageWi
     if mode == 'train':
         # generate multiple patches from image
         dataset = dataset.flat_map(partial(generate_patches_links, patch_shape=patch_shape, perturb=True))
-        #dataset = dataset.map(random_flip_z)
         dataset = dataset.map(apply_noise)
         dataset = dataset.map(add_3d_coord)
         # create random batches
@@ -73,10 +72,8 @@ def training_data_creator_from_raw(tf_load_images_with_links_list: List[_ImageWi
         dataset = dataset.batch(batch_size)
 
     elif mode == 'validation':
-        #dataset = dataset.flat_map(partial(repeat, repeats=1))
         dataset = dataset.flat_map(partial(generate_patches_links, patch_shape=patch_shape, perturb=perturb_validation))
         if perturb_validation:
-            #dataset = dataset.map(random_flip_z)
             dataset = dataset.map(apply_noise)
         dataset = dataset.map(add_3d_coord)
         dataset = dataset.batch(batch_size)
@@ -89,8 +86,8 @@ def training_data_creator_from_raw(tf_load_images_with_links_list: List[_ImageWi
 
 # Normalizes image data
 def normalize(image, target_image, label, target_label, distances, linked):
-    image = tf.divide(tf.subtract(image, tf.reduce_min(image)), tf.subtract(tf.reduce_max(image), tf.reduce_min(image)))
-    target_image = tf.divide(tf.subtract(target_image, tf.reduce_min(target_image)), tf.subtract(tf.reduce_max(target_image), tf.reduce_min(target_image)))
+    image = keras.ops.divide(keras.ops.subtract(image, keras.ops.min(image)), keras.ops.subtract(keras.ops.max(image), keras.ops.min(image)))
+    target_image = keras.ops.divide(keras.ops.subtract(target_image, keras.ops.min(target_image)), keras.ops.subtract(keras.ops.max(target_image), keras.ops.min(target_image)))
     return image, target_image, label, target_label, distances, linked
 
 # Repeats
@@ -106,17 +103,17 @@ def format(image, target_image, distances, linked):
 
 
 def pad_to_patch(stacked, patch_shape):
-    stacked_shape = tf.shape(stacked)
+    stacked_shape = keras.ops.shape(stacked)
 
-    pad_z = tf.cond(tf.less(stacked_shape[0], patch_shape[0]), lambda: patch_shape[0] - stacked_shape[0],
+    pad_z = keras.ops.cond(keras.ops.less(stacked_shape[0], patch_shape[0]), lambda: patch_shape[0] - stacked_shape[0],
                     lambda: 0)
-    pad_y = tf.cond(tf.less(stacked_shape[1], patch_shape[1]), lambda: patch_shape[1] - stacked_shape[1],
+    pad_y = keras.ops.cond(keras.ops.less(stacked_shape[1], patch_shape[1]), lambda: patch_shape[1] - stacked_shape[1],
                     lambda: 0)
-    pad_x = tf.cond(tf.less(stacked_shape[2], patch_shape[2]), lambda: patch_shape[2] - stacked_shape[2],
+    pad_x = keras.ops.cond(keras.ops.less(stacked_shape[2], patch_shape[2]), lambda: patch_shape[2] - stacked_shape[2],
                     lambda: 0)
     padding = [[pad_z, 0], [pad_y, 0], [pad_x, 0], [0, 0]]
 
-    return tf.pad(stacked, padding)
+    return keras.ops.pad(stacked, padding)
 
 
 def generate_patches_links(image, target_image, label, target_label, distances, linked, patch_shape, perturb):
@@ -125,8 +122,8 @@ def generate_patches_links(image, target_image, label, target_label, distances, 
                [patch_shape[2], patch_shape[2]],
                [0, 0]]
 
-    image_padded = tf.pad(image, padding)
-    target_image_padded = tf.pad(target_image, padding)
+    image_padded = keras.ops.pad(image, padding)
+    target_image_padded = keras.ops.pad(target_image, padding)
 
     def single_patch(center_points_distance):
         center_point = center_points_distance[:, 0]
@@ -147,27 +144,27 @@ def generate_patches_links(image, target_image, label, target_label, distances, 
 
         if perturb:
             random = tf.random.uniform((1,))
-            combined_init_crops, distance = tf.cond(random<0.99,
+            combined_init_crops, distance = keras.ops.cond(random<0.99,
                                                     lambda: apply_random_flips(combined_init_crops, distance),
                                                     lambda: apply_random_perturbations_stacked(combined_init_crops, distance))
         else:
-            distance = tf.cast(distance, tf.float32)
+            distance = keras.ops.cast(distance, "float32")
 
         # second crop of the center region
         combined_crops = combined_init_crops[:,
-               tf.cast(patch_shape[1] / 2, tf.int32): tf.cast(patch_shape[1] / 2, tf.int32) + patch_shape[1],
-               tf.cast(patch_shape[2] / 2, tf.int32): tf.cast(patch_shape[2] / 2, tf.int32) + patch_shape[2], :]
+               keras.ops.cast(patch_shape[1] / 2, "int32"): keras.ops.cast(patch_shape[1] / 2, "int32") + patch_shape[1],
+               keras.ops.cast(patch_shape[2] / 2, "int32"): keras.ops.cast(patch_shape[2] / 2, "int32") + patch_shape[2], :]
 
         return combined_crops, distance
 
-    distances = tf.cast(distances, tf.int32)
+    distances = keras.ops.cast(distances, "int32")
     both_labels = tf.stack([label, target_label, distances], axis=-1)
-    stacked_combined_crops, distances = tf.map_fn(single_patch, both_labels, parallel_iterations=10, fn_output_signature=(tf.float32, tf.float32))
+    stacked_combined_crops, distances = tf.map_fn(single_patch, both_labels, parallel_iterations=10, fn_output_signature=("float32", "float32"))
 
     #tf.print(distances)
 
-    stacked_crops = stacked_combined_crops[:, :, :, :, :tf.shape(image)[3]]
-    stacked_target_crops = stacked_combined_crops[:, :, :, :, tf.shape(image)[3]:]
+    stacked_crops = stacked_combined_crops[:, :, :, :, :keras.ops.shape(image)[3]]
+    stacked_target_crops = stacked_combined_crops[:, :, :, :, keras.ops.shape(image)[3]:]
 
     dataset = tf.data.Dataset.zip((tf.data.Dataset.from_tensor_slices(stacked_crops),
                                    tf.data.Dataset.from_tensor_slices(stacked_target_crops),
@@ -178,7 +175,7 @@ def generate_patches_links(image, target_image, label, target_label, distances, 
 
 
 def apply_random_perturbations_stacked(stacked, distance):
-    image_shape = tf.cast(tf.shape(stacked), tf.float32)
+    image_shape = keras.ops.cast(keras.ops.shape(stacked), "float32")
 
     transforms = []
     # random rotation in xy
@@ -187,10 +184,10 @@ def apply_random_perturbations_stacked(stacked, distance):
         angle, image_shape[1], image_shape[2])
     transforms.append(transform)
     # random scale 80% to 120% size
-    scale = tf.random.uniform([], 0.8, 1.2, dtype=tf.float32)
+    scale = tf.random.uniform([], 0.8, 1.2, dtype="float32")
     transform = tf.convert_to_tensor([[scale, 0., image_shape[1] / 2 * (1 - scale),
                                        0., scale, image_shape[2] / 2 * (1 - scale), 0.,
-                                       0.]], dtype=tf.float32)
+                                       0.]], dtype="float32")
     transforms.append(transform)
 
     # compose rotation-scale transform
@@ -199,7 +196,7 @@ def apply_random_perturbations_stacked(stacked, distance):
 
     # transform displacement vector
 
-    distance = tf.cast(distance, tf.float32)
+    distance = keras.ops.cast(distance, "float32")
     new_angle = tf.math.atan2(distance[2], distance[1]) + angle
     xy_length = tf.sqrt(tf.square(distance[1])+tf.square(distance[2]))
 
@@ -214,24 +211,24 @@ def apply_random_perturbations_stacked(stacked, distance):
 def apply_random_flips(stacked, distance):
     random = tf.random.uniform((1,))
 
-    stacked = tf.cond(random<0.5, lambda: tf.reverse(stacked, axis=[1]), lambda: stacked)
-    distance = tf.cond(random<0.5, lambda: distance * tf.constant([1, -1, 1]), lambda: distance)
+    stacked = keras.ops.cond(random<0.5, lambda: tf.reverse(stacked, axis=[1]), lambda: stacked)
+    distance = keras.ops.cond(random<0.5, lambda: distance * tf.constant([1, -1, 1]), lambda: distance)
 
     random = tf.random.uniform((1,))
 
-    stacked = tf.cond(random<0.5, lambda: tf.reverse(stacked, axis=[2]), lambda: stacked)
-    distance = tf.cond(random<0.5, lambda: distance * tf.constant([1, 1, -1]), lambda: distance)
+    stacked = keras.ops.cond(random<0.5, lambda: tf.reverse(stacked, axis=[2]), lambda: stacked)
+    distance = keras.ops.cond(random<0.5, lambda: distance * tf.constant([1, 1, -1]), lambda: distance)
 
-    distance = tf.cast(distance, tf.float32)
+    distance = keras.ops.cast(distance, "float32")
 
     return stacked, distance
 
 def random_flip_z(image, target_image, distances, linked):
     random = tf.random.uniform((1,))
 
-    image = tf.cond(random<0.5, lambda: tf.reverse(image, axis=[0]), lambda: image)
-    target_image = tf.cond(random<0.5, lambda: tf.reverse(target_image, axis=[0]), lambda: target_image)
-    distances = tf.cond(random<0.5, lambda: distances * tf.constant([-1., 1., 1.]), lambda: distances)
+    image = keras.ops.cond(random<0.5, lambda: tf.reverse(image, axis=[0]), lambda: image)
+    target_image = keras.ops.cond(random<0.5, lambda: tf.reverse(target_image, axis=[0]), lambda: target_image)
+    distances = keras.ops.cond(random<0.5, lambda: distances * tf.constant([-1., 1., 1.]), lambda: distances)
 
     return image, target_image, distances, linked
 
@@ -246,9 +243,9 @@ def apply_noise(image, target_image, distances, linked):
     #decay = tf.sqrt(tf.random.uniform((1,), minval=0.16, maxval=1))
 
     # let image intensity decay differently
-    #scale = decay + (1-decay) * (1 - tf.range(tf.shape(image)[0], dtype=tf.float32) / tf.cast(tf.shape(image)[0], tf.float32))
-    #image = tf.reshape(scale, shape=(tf.shape(image)[0], 1, 1, 1)) * image
-    #target_image = tf.reshape(scale, shape=(tf.shape(target_image)[0], 1, 1, 1)) * target_image
+    #scale = decay + (1-decay) * (1 - tf.range(keras.ops.shape(image)[0], dtype="float32") / keras.ops.cast(keras.ops.shape(image)[0], "float32"))
+    #image = tf.reshape(scale, shape=(keras.ops.shape(image)[0], 1, 1, 1)) * image
+    #target_image = tf.reshape(scale, shape=(keras.ops.shape(target_image)[0], 1, 1, 1)) * target_image
 
     return image, target_image, distances, linked
 
@@ -261,21 +258,21 @@ def add_3d_coord(image, target_image, distances, linked):
 
 def _add_3d_coord(image, offset, reversable = False):
 
-    im_shape = tf.shape(image)
+    im_shape = keras.ops.shape(image)
     if reversable:
-        z = tf.abs(tf.range(-im_shape[0]//2, im_shape[0]//2, dtype='float32') + tf.cast(offset[0], dtype='float32'))
-        y = tf.abs(tf.range(-im_shape[1]//2, im_shape[1]//2, dtype='float32') + tf.cast(offset[1], dtype='float32'))
-        x = tf.abs(tf.range(-im_shape[2]//2, im_shape[2]//2, dtype='float32') + tf.cast(offset[2], dtype='float32'))
+        z = tf.abs(tf.range(-im_shape[0]//2, im_shape[0]//2, dtype='float32') + keras.ops.cast(offset[0], dtype='float32'))
+        y = tf.abs(tf.range(-im_shape[1]//2, im_shape[1]//2, dtype='float32') + keras.ops.cast(offset[1], dtype='float32'))
+        x = tf.abs(tf.range(-im_shape[2]//2, im_shape[2]//2, dtype='float32') + keras.ops.cast(offset[2], dtype='float32'))
     else:
-        z = tf.abs(tf.range(-im_shape[0]//2, im_shape[0]//2, dtype='float32') - tf.cast(offset[0], dtype='float32'))
-        y = tf.abs(tf.range(-im_shape[1]//2, im_shape[1]//2, dtype='float32') - tf.cast(offset[1], dtype='float32'))
-        x = tf.abs(tf.range(-im_shape[2]//2, im_shape[2]//2, dtype='float32') - tf.cast(offset[2], dtype='float32'))
+        z = tf.abs(tf.range(-im_shape[0]//2, im_shape[0]//2, dtype='float32') - keras.ops.cast(offset[0], dtype='float32'))
+        y = tf.abs(tf.range(-im_shape[1]//2, im_shape[1]//2, dtype='float32') - keras.ops.cast(offset[1], dtype='float32'))
+        x = tf.abs(tf.range(-im_shape[2]//2, im_shape[2]//2, dtype='float32') - keras.ops.cast(offset[2], dtype='float32'))
 
     Z, Y, X = tf.meshgrid(z, y, x, indexing='ij')
 
-    Z = tf.expand_dims(Z, axis=-1)/tf.cast(im_shape[0],  dtype='float32')
-    Y = tf.expand_dims(Y, axis=-1)/tf.cast(im_shape[1],  dtype='float32')
-    X = tf.expand_dims(X, axis=-1)/tf.cast(im_shape[2],  dtype='float32')
+    Z = tf.expand_dims(Z, axis=-1)/keras.ops.cast(im_shape[0],  dtype='float32')
+    Y = tf.expand_dims(Y, axis=-1)/keras.ops.cast(im_shape[1],  dtype='float32')
+    X = tf.expand_dims(X, axis=-1)/keras.ops.cast(im_shape[2],  dtype='float32')
 
     if reversable:
         image = tf.concat([X, Y, Z, image], axis=-1)
@@ -291,15 +288,15 @@ def scale(image, target_image, label, target_label, distances, linked, scale = 1
 
         transform = tf.convert_to_tensor([[scale, 0., 0,
                                            0., scale, 0., 0.,
-                                           0.]], dtype=tf.float32)
+                                           0.]], dtype="float32")
 
-        new_size = [divide_and_round(tf.shape(image)[1], scale),
-                    divide_and_round(tf.shape(image)[2], scale)]
+        new_size = [divide_and_round(keras.ops.shape(image)[1], scale),
+                    divide_and_round(keras.ops.shape(image)[2], scale)]
         image = tfa.image.transform(image, transform, interpolation='BILINEAR',
                                     output_shape=new_size)
 
-        new_size = [divide_and_round(tf.shape(target_image)[1], scale),
-                    divide_and_round(tf.shape(target_image)[2], scale)]
+        new_size = [divide_and_round(keras.ops.shape(target_image)[1], scale),
+                    divide_and_round(keras.ops.shape(target_image)[2], scale)]
         target_image = tfa.image.transform(target_image, transform, interpolation='BILINEAR',
                                            output_shape=new_size)
 
@@ -312,11 +309,6 @@ def scale(image, target_image, label, target_label, distances, linked, scale = 1
 
 
 def divide_and_round(tensor, scale):
-    tensor = tf.divide(tf.cast(tensor, dtype=tf.float32), scale)
+    tensor = keras.ops.divide(keras.ops.cast(tensor, dtype="float32"), scale)
 
-    return tf.cast(tf.round(tensor),  dtype=tf.int32)
-
-
-
-
-
+    return keras.ops.cast(tf.round(tensor),  dtype="int32")

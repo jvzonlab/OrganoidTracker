@@ -1,7 +1,5 @@
 """" Loads images and positions into tensors and can write these tensors into TFR files"""
-import os
 from typing import List
-import tensorflow as tf
 from functools import partial
 
 from organoid_tracker.neural_network.division_detection_cnn.training_data_creator import _ImageWithDivisions
@@ -22,7 +20,7 @@ def load_images_with_divisions(i, image_with_positions_list: List[_ImageWithDivi
         label = image_with_positions.xyz_positions
         label = label[:, [2,1,0]]
     # extract division info
-    dividing = image_with_positions._dividing
+    dividing = image_with_positions.dividing
 
     return image, label, dividing
 
@@ -74,12 +72,3 @@ def tf_load_images_with_positions(i, image_with_positions_list: List[ImageWithPo
     return image, label
 
 
-def serialize_data_image(image, label, dividing):
-    return tf.io.serialize_tensor(image, name='image')
-
-
-def serialize_data_label(image, label, dividing):
-    return tf.io.serialize_tensor(label, name='label')
-
-def serialize_data_dividing(image, label, dividing):
-    return tf.io.serialize_tensor(dividing, name='dividing')
