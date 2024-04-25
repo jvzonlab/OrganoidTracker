@@ -11,7 +11,7 @@ from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking_analysis import cell_fate_finder
 from organoid_tracker.linking_analysis.cell_fate_finder import CellFateType
 from organoid_tracker_plugins.plugin_cell_count_over_time import _plot
-from lifelines import KaplanMeierFitter
+
 import numpy as np
 
 def get_menu_items(window: Window):
@@ -150,6 +150,8 @@ def make_cell_cycle_table(experiment):
 
 
 def _plot_survival_curve(figure, lifetimes_all, divisions_all, names, title):
+    from lifelines import KaplanMeierFitter
+
     axes: Axes = figure.gca()
     kmf = KaplanMeierFitter()
     for lifetimes, divisions, name in zip(lifetimes_all, divisions_all, names):
