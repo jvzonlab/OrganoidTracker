@@ -17,6 +17,7 @@ _TRAINING_PATCH_SHAPE_ZYX: Tuple[int, int, int] = (32, 64, 64)
 _TRAINING_PATCH_SHAPE_ZYX_DIVISION: Tuple[int, int, int] = (8, 32, 32)
 _TRAINING_PATCH_SHAPE_ZYX_LINKING: Tuple[int, int, int] = (8, 32, 32)
 
+
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
         "Tools//Train-Train network for cell detection...": lambda: _generate_position_training_config(window),
@@ -77,7 +78,7 @@ def _create_run_script_no_pause(output_folder: str, script_name: str):
 
 def _popup_confirmation(output_folder: str, script_name: str, ):
     if dialog.prompt_options("Configuration files created", f"The configuration files were created successfully. Please"
-                             f" run the {script_name} script from that directory:\n\n{output_folder}",
+                                                            f" run the {script_name} script from that directory:\n\n{output_folder}",
                              option_1="Open that directory", option_default=DefaultOption.OK) == 1:
         dialog.open_file(output_folder)
 
@@ -144,7 +145,6 @@ def _generate_position_training_config(window: Window):
         config.get_or_default(f"max_time_point_{i}", str(experiment.positions.last_time_point_number()))
         config.get_or_default(f"positions_file_{i}", positions_file)
         # new
-
 
     config.get_or_default(f"images_container_{i + 1}", "<stop>")
     config.save()
@@ -256,7 +256,6 @@ def _generate_division_training_config(window: Window):
         config.get_or_default(f"positions_file_{i}", positions_file)
         # new
 
-
     config.get_or_default(f"images_container_{i + 1}", "<stop>")
     config.save()
     _create_run_script(save_directory, "organoid_tracker_train_division_network")
@@ -365,7 +364,6 @@ def _generate_link_training_config(window: Window):
         config.get_or_default(f"positions_file_{i}", positions_file)
         # new
 
-
     config.get_or_default(f"images_container_{i + 1}", "<stop>")
     config.save()
     _create_run_script(save_directory, "organoid_tracker_train_link_network")
@@ -443,13 +441,12 @@ def _generate_linking_config(window: Window):
     _popup_confirmation(save_directory, "organoid_tracker_create_links")
 
 
-
-
 def _generate_calibrate_marginalization_config(window: Window):
     """For training the neural network."""
     experiments = list(window.get_active_experiments())
     if len(experiments) == 0:
-        raise UserError("No experimental data loaded", "No projects are open. Please load all data that you want to use for calibration.")
+        raise UserError("No experimental data loaded",
+                        "No projects are open. Please load all data that you want to use for calibration.")
 
     if not dialog.popup_message_cancellable("Output folder",
                                             "All projects that are currently open will be used for training. You will"
@@ -531,8 +528,7 @@ def _get_model_folder(model_type: str) -> Optional[str]:
         directory = dialog.prompt_directory("Please choose a model folder")
         if not directory:
             return None  # Cancelled, stop loop
-        if os.path.isfile(os.path.join(directory, "saved_model.pb")):
-
+        if os.path.isfile(os.path.join(directory, "model.keras")):
             if os.path.isfile(os.path.join(directory, "settings.json")):
                 with open(os.path.join(directory, "settings.json")) as file_handle:
                     found_model_type = json.load(file_handle)["type"]
@@ -545,11 +541,14 @@ def _get_model_folder(model_type: str) -> Optional[str]:
                 dialog.popup_error("Not an OrganoidTracker model",
                                    "The selected folder does not contain a `settings.json` file."
                                    "Therefore, this model is not compatible with OrganoidTracker.")
+        elif os.path.isfile(os.path.join(directory, "saved_model.pb")):
+            dialog.popup_error("Old model", "This model was written for Tensorflow 2.7 and is no longer"
+                                            " compatible with OrganoidTracker.")
         else:
             # Unsuccessful
-            dialog.popup_error("Not a model containing folder",
-                               "The selected folder does not contain a trained model; it contains no 'saved_model.pb' file."
-                               " Please select another folder. Typically, this folder is named `trained_model`.")
+            dialog.popup_error("Not a model-containing folder",
+                               "The selected folder does not contain a trained model; it contains no 'model.keras' file."
+                               " Please select another folder. Typically, this folder is named `model_" + model_type + "`.")
 
 
 def _get_all_links_file() -> Optional[str]:
