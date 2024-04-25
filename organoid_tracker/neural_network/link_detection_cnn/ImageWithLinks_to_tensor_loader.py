@@ -1,7 +1,6 @@
 """" Loads images and positions into tensors and can write these tensors into TFR files"""
 import os
 from typing import Tuple, List
-import tensorflow as tf
 from functools import partial
 
 
@@ -28,7 +27,7 @@ def load_images_with_links(i, image_with_positions_list: List[_ImageWithLinks], 
     distances = image_with_positions.distances
     distances = distances[:, [2,1,0]]
 
-    linked = image_with_positions._linked
+    linked = image_with_positions.linked
 
     return image, target_image, label, target_label, distances, linked
 
@@ -42,78 +41,3 @@ def tf_load_images_with_links(i: int, image_with_positions_list: List[_ImageWith
         (tf.float32, tf.float32, tf.int32, tf.int32, tf.float32, tf.bool))
 
     return image, target_image, label, target_label, distances, linked
-
-
-def dataset_writer(image_with_positions_list: List[ImageWithPositions], time_window: List[int], shards: int = 10):
-    dataset = tf.data.Dataset.range(len(image_with_positions_list))
-
-    # load and serialize data
-    dataset = dataset.map(partial(tf_load_images_with_links, image_with_positions_list=image_with_positions_list,
-                                  time_window=time_window), num_parallel_calls=8)
-    #dataset = dataset.map(blur_labels)
-
-    dataset_image = dataset.map(serialize_data_image)
-    dataset_label = dataset.map(serialize_data_label)
-    dataset_target_label = dataset.map(serialize_data_target_label)
-    dataset_linked = dataset.map(serialize_data_linked)
-
-    # will contain the filenames
-    image_files = []
-    label_files = []
-    target_label_files = []
-    linked_files = []
-
-    folder = "TFR_folder"
-    if not os.path.exists(folder):
-        os.mkdir(folder)
-
-    # split data into multiple TFR files, so they can be accessed more efficiently
-    for i in range(shards):
-        dataset_image_shard = dataset_image.shard(shards, i)
-        file_name = folder + "/images{0}".format(i + 1) + '.tfrecord'
-        image_files.append(file_name)
-        writer = tf.data.experimental.TFRecordWriter(file_name)
-        writer.write(dataset_image_shard)
-
-        print('TFR image file {}/{}'.format(i + 1, shards))
-
-        dataset_label_shard = dataset_label.shard(shards, i)
-        file_name = folder + "/labels{0}".format(i + 1) + '.tfrecord'
-        label_files.append(file_name)
-        writer = tf.data.experimental.TFRecordWriter(file_name)
-        writer.write(dataset_label_shard)
-
-        print('TFR labels file {}/{}'.format(i + 1, shards))
-
-        dataset_target_label_shard = dataset_target_label.shard(shards, i)
-        file_name = folder + "/target_labels{0}".format(i + 1) + '.tfrecord'
-        target_label_files.append(file_name)
-        writer = tf.data.experimental.TFRecordWriter(file_name)
-        writer.write(dataset_target_label_shard)
-
-        print('TFR target labels file {}/{}'.format(i + 1, shards))
-
-
-        dataset_linked_shard = dataset_linked.shard(shards, i)
-        file_name = folder + "/linked{0}".format(i + 1) + '.tfrecord'
-        linked_files.append(file_name)
-        writer = tf.data.experimental.TFRecordWriter(file_name)
-        writer.write(dataset_linked_shard)
-
-        print('TFR linked file {}/{}'.format(i + 1, shards))
-
-    return image_files, label_files, linked_files
-
-
-def serialize_data_image(image, label, target_label, linked):
-    return tf.io.serialize_tensor(image, name='image')
-
-
-def serialize_data_label(image, label, target_label,linked):
-    return tf.io.serialize_tensor(label, name='label')
-
-def serialize_data_target_label(image, label, target_label,linked):
-    return tf.io.serialize_tensor(target_label, name='label')
-
-def serialize_data_linked(image, label, target_label, linked):
-    return tf.io.serialize_tensor(linked, name='linked')

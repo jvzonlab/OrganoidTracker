@@ -23,11 +23,13 @@
 # SOFTWARE.
 from typing import List
 
-import tensorflow as tf
-import tensorflow_addons as tfa
+
 from functools import partial
+
+import keras
 import numpy as np
 
+from organoid_tracker.neural_network import image_transforms
 from organoid_tracker.neural_network.link_detection_cnn.ImageWithLinks_to_tensor_loader import tf_load_images_with_links
 from organoid_tracker.neural_network.link_detection_cnn.training_data_creator import _ImageWithLinks
 
@@ -60,29 +62,22 @@ def prediction_data_creator(tf_load_images_with_links_list: List[_ImageWithLinks
 def drop_linked(image, target_image, label, target_label, distances, linked):
     return image, target_image, label, target_label, distances
 
-# Normalizes image data
-#def normalize(image, target_image, label, target_label, distances):
-    #image = tf.divide(tf.subtract(image, tf.reduce_min(image)), tf.subtract(tf.reduce_max(image), tf.reduce_min(image)))
-    #target_image = tf.divide(tf.subtract(target_image, tf.reduce_min(target_image)), tf.subtract(tf.reduce_max(target_image), tf.reduce_min(target_image)))
-    #return image, target_image, label, target_label, distances
-
-
 def format(image, target_image, distances):
     return {'input_1': image, 'input_2': target_image, 'input_distances': distances}
 
 
 def pad_to_patch(stacked, patch_shape):
-    stacked_shape = tf.shape(stacked)
+    stacked_shape = keras.ops.shape(stacked)
 
-    pad_z = tf.cond(tf.less(stacked_shape[0], patch_shape[0]), lambda: patch_shape[0] - stacked_shape[0],
+    pad_z = keras.ops.cond(keras.ops.less(stacked_shape[0], patch_shape[0]), lambda: patch_shape[0] - stacked_shape[0],
                     lambda: 0)
-    pad_y = tf.cond(tf.less(stacked_shape[1], patch_shape[1]), lambda: patch_shape[1] - stacked_shape[1],
+    pad_y = keras.ops.cond(keras.ops.less(stacked_shape[1], patch_shape[1]), lambda: patch_shape[1] - stacked_shape[1],
                     lambda: 0)
-    pad_x = tf.cond(tf.less(stacked_shape[2], patch_shape[2]), lambda: patch_shape[2] - stacked_shape[2],
+    pad_x = keras.ops.cond(keras.ops.less(stacked_shape[2], patch_shape[2]), lambda: patch_shape[2] - stacked_shape[2],
                     lambda: 0)
     padding = [[pad_z, 0], [pad_y, 0], [pad_x, 0], [0, 0]]
 
-    return tf.pad(stacked, padding)
+    return keras.ops.pad(stacked, padding)
 
 
 def generate_patches_links(image, target_image, label, target_label, distances, patch_shape, perturb):
@@ -91,8 +86,8 @@ def generate_patches_links(image, target_image, label, target_label, distances, 
                [patch_shape[2], patch_shape[2]],
                [0, 0]]
 
-    image_padded = tf.pad(image, padding)
-    target_image_padded = tf.pad(target_image, padding)
+    image_padded = keras.ops.pad(image, padding)
+    target_image_padded = keras.ops.pad(target_image, padding)
 
     def single_patch(center_points_distance):
         center_point = center_points_distance[:, 0]
@@ -109,28 +104,28 @@ def generate_patches_links(image, target_image, label, target_label, distances, 
                     target_center_point[1]: target_center_point[1] + 2 * patch_shape[1],
                     target_center_point[2]: target_center_point[2] + 2 * patch_shape[2], :]
 
-        combined_init_crops = tf.concat([init_crop, init_target_crop], axis=-1)
+        combined_init_crops = keras.ops.concatenate([init_crop, init_target_crop], axis=-1)
 
         if perturb:
             combined_init_crops, distance = apply_random_perturbations_stacked(combined_init_crops, distance)
         else:
-            distance = tf.cast(distance, tf.float32)
+            distance = keras.ops.cast(distance, "float32")
 
         # second crop of the center region
         combined_crops = combined_init_crops[:,
-               tf.cast(patch_shape[1] / 2, tf.int32): tf.cast(patch_shape[1] / 2, tf.int32) + patch_shape[1],
-               tf.cast(patch_shape[2] / 2, tf.int32): tf.cast(patch_shape[2] / 2, tf.int32) + patch_shape[2], :]
+               keras.ops.cast(patch_shape[1] / 2, "int32"): keras.ops.cast(patch_shape[1] / 2, "int32") + patch_shape[1],
+               keras.ops.cast(patch_shape[2] / 2, "int32"): keras.ops.cast(patch_shape[2] / 2, "int32") + patch_shape[2], :]
 
         return combined_crops, distance
 
-    distances = tf.cast(distances, tf.int32)
+    distances = keras.ops.cast(distances, "int32")
     both_labels = tf.stack([label, target_label, distances], axis=-1)
-    stacked_combined_crops, distances = tf.map_fn(single_patch, both_labels, parallel_iterations=10, fn_output_signature=(tf.float32, tf.float32))
+    stacked_combined_crops, distances = tf.map_fn(single_patch, both_labels, parallel_iterations=10, fn_output_signature=("float32", "float32"))
 
     #tf.print(distances)
 
-    stacked_crops = stacked_combined_crops[:, :, :, :, :tf.shape(image)[3]]
-    stacked_target_crops = stacked_combined_crops[:, :, :, :, tf.shape(image)[3]:]
+    stacked_crops = stacked_combined_crops[:, :, :, :, :keras.ops.shape(image)[3]]
+    stacked_target_crops = stacked_combined_crops[:, :, :, :, keras.ops.shape(image)[3]:]
 
     dataset = tf.data.Dataset.zip((tf.data.Dataset.from_tensor_slices(stacked_crops),
                                    tf.data.Dataset.from_tensor_slices(stacked_target_crops),
@@ -146,33 +141,35 @@ def add_3d_coord(image, target_image, distances):
 
 
 def apply_random_perturbations_stacked(stacked, distance):
-    image_shape = tf.cast(tf.shape(stacked), tf.float32)
+    image_shape = keras.ops.cast(keras.ops.shape(stacked), "float32")
 
     transforms = []
     # random rotation in xy
-    angle = tf.random.uniform([], -np.pi, np.pi)
-    transform = tfa.image.transform_ops.angles_to_projective_transforms(
+    angle = keras.ops.random.uniform([], -np.pi, np.pi)
+    transform = image_transforms.angles_to_projective_transforms(
         angle, image_shape[1], image_shape[2])
     transforms.append(transform)
     # random scale 80% to 120% size
-    scale = tf.random.uniform([], 0.8, 1.2, dtype=tf.float32)
-    transform = tf.convert_to_tensor([[scale, 0., image_shape[1] / 2 * (1 - scale),
-                                       0., scale, image_shape[2] / 2 * (1 - scale), 0.,
-                                       0.]], dtype=tf.float32)
+    scale = keras.ops.random.uniform([], 0.8, 1.2, dtype="float32")
+    transform = keras.ops.convert_to_tensor([[scale, 0., image_shape[1] / 2 * (1 - scale),
+                                            0., scale, image_shape[2] / 2 * (1 - scale), 0.,
+                                            0.]], dtype="float32")
     transforms.append(transform)
 
     # compose rotation-scale transform
-    compose_transforms = tfa.image.transform_ops.compose_transforms(transforms)
-    stacked = tfa.image.transform(stacked, compose_transforms, interpolation='BILINEAR')
+    compose_transforms = image_transforms.compose_transforms(transforms)
+    # convert 1 x 8 array to Z x 8 array, as every layer should get the same transformation
+    compose_transforms = keras.ops.tile(compose_transforms, [keras.ops.shape(stacked)[0], 1])
+    stacked = keras.ops.image.affine_transform(stacked, compose_transforms, interpolation='bilinear')
 
     # transform displacement vector
-    distance = tf.cast(distance, tf.float32)
-    new_angle = tf.math.atan2(distance[2], distance[1]) + angle
-    xy_length = tf.sqrt(tf.square(distance[1])+tf.square(distance[2]))
+    distance = keras.ops.cast(distance, "float32")
+    new_angle = keras.ops.arctan2(distance[2], distance[1]) + angle
+    xy_length = keras.ops.sqrt(keras.ops.square(distance[1])+keras.ops.square(distance[2]))
 
-    y_dist = xy_length*tf.math.cos(new_angle)/scale
-    x_dist = xy_length*tf.math.sin(new_angle)/scale
+    y_dist = xy_length*keras.ops.cos(new_angle)/scale
+    x_dist = xy_length*keras.ops.sin(new_angle)/scale
 
-    distance_new = tf.concat([distance[0], y_dist, x_dist], axis=0)
+    distance_new = keras.ops.concatenate([distance[0], y_dist, x_dist], axis=0)
 
     return stacked, distance_new
