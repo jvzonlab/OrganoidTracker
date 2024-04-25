@@ -47,14 +47,3 @@ def tf_load_images(i, image_with_positions_list: List[ImageWithPositions], time_
 
     return image
 
-
-def tf_load_images_with_positions(i, image_with_positions_list: List[ImageWithPositions], time_window=(0, 0), crop=True):
-    image, label = tf.py_function(
-        partial(load_images_with_positions, image_with_positions_list=image_with_positions_list,
-                time_window=time_window, crop=crop), [i],
-        (tf.float32, tf.float32))
-    # add channel dimension to labels
-    label = tf.expand_dims(label, axis=-1)
-
-    return image, label
-
