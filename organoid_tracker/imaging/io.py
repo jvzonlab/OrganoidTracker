@@ -599,7 +599,7 @@ def _read_json_from_file(file_name: str) -> Dict[str, Any]:
     except ModuleNotFoundError:
         # Slower, but doesn't need the orjson library
         import json
-        with open(file_name, "r") as handle:
+        with open(file_name, "r", encoding="utf8") as handle:
             return json.load(handle)
 
 
@@ -612,7 +612,7 @@ def _write_json_to_file(file_name: str, data_structure):
     except ModuleNotFoundError:
         # SLower path, but only relies on Python standard library
         import json
-        with open(file_name, 'w') as handle:
+        with open(file_name, 'w', encoding="utf8") as handle:
             json.dump(data_structure, handle)
 
 
