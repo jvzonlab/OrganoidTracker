@@ -21,91 +21,76 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from typing import List
+from typing import List, Tuple, Iterable
 
 from functools import partial
 
 import keras
 import numpy as np
+from torch.utils.data import IterableDataset, DataLoader
 
-from organoid_tracker.neural_network import image_transforms
+from organoid_tracker.neural_network import image_transforms, Tensor
+from organoid_tracker.neural_network.dataset_transforms import ShufflingDataset
 from organoid_tracker.neural_network.division_detection_cnn.image_with_divisions_to_tensor_loader import tf_load_images_with_divisions
 from organoid_tracker.neural_network.division_detection_cnn.training_data_creator import _ImageWithDivisions
+
+
+class _TorchDataset(IterableDataset):
+
+    _image_with_divisions_list: List[_ImageWithDivisions]
+    _time_window: Tuple[int, int]
+    _patch_shape_zyx: Tuple[int, int, int]
+    _perturb: bool
+
+    _calculated_length: int
+
+    def __init__(self, image_with_division_list: List[_ImageWithDivisions], time_window: Tuple[int, int],
+                 patch_shape_zyx: Tuple[int, int, int], perturb: bool):
+        self._image_with_divisions_list = image_with_division_list
+        self._time_window = time_window
+        self._patch_shape_zyx = patch_shape_zyx
+        self._perturb = perturb
+
+        # Calculate the length once, to avoid recalculating it every time __len__ is called
+        self._calculated_length = sum(len(image.dividing) for image in image_with_division_list)
+
+    def __iter__(self) -> Iterable[Tuple[Tensor, bool]]:
+        for image_with_divisions in self._image_with_divisions_list:
+            image = image_with_divisions.load_image_time_stack(self._time_window)
+            label = image_with_divisions.xyz_positions[:, [2, 1, 0]]
+            dividing = image_with_divisions.dividing
+
+            image = normalize(image)
+
+            for crop, division in generate_patches_division(image, label, dividing, self._patch_shape_zyx, self._perturb):
+                if self._perturb:
+                    crop = apply_noise(crop)
+                yield crop, division
+
+    def __len__(self):
+        return self._calculated_length
 
 
 # Creates training and validation data from an image_with_positions_list
 def training_data_creator_from_raw(image_with_divisions_list: List[_ImageWithDivisions], time_window, patch_shape,
                                    batch_size: int, mode, split_proportion: float = 0.8, perturb=True):
-    dataset = tf.data.Dataset.range(len(image_with_divisions_list))
-    len_dataset = len(dataset)
+    if mode == "train":
+        image_with_divisions_list = image_with_divisions_list[:round(split_proportion * len(image_with_divisions_list))]
+    elif mode == "validation":
+        image_with_divisions_list = image_with_divisions_list[round(split_proportion * len(image_with_divisions_list)):]
 
-    # split dataset in validation and training part
-    if mode == 'train':
-        dataset = dataset.take(round(split_proportion * len(dataset)))
-        #dataset = dataset.shuffle(round(split_proportion * len(dataset))) #, reshuffle_each_iteration=True)
-        dataset = dataset.repeat()
-        dataset = dataset.shuffle(round(0.1*len_dataset))
-    elif mode == 'validation':
-        dataset = dataset.skip(round(split_proportion * len(dataset)))
-        #dataset = dataset.repeat()
+    dataset = _TorchDataset(image_with_divisions_list, time_window=time_window, patch_shape_zyx=patch_shape, perturb=perturb)
 
-    # Load data
-    dataset = dataset.map(partial(tf_load_images_with_divisions, image_with_positions_list=image_with_divisions_list,
-                                  time_window=time_window, create_labels=False), num_parallel_calls=12)
-
-    # Normalize images
-    dataset = dataset.map(normalize)
-
-    # Repeat images (as perturbations will be made)
-    dataset = dataset.flat_map(partial(repeat, repeats=1))
-
-    if mode == 'train':
-        # generate multiple patches from image
-        dataset = dataset.flat_map(partial(generate_patches_division, patch_shape=patch_shape, perturb=perturb))
-        if perturb:
-            dataset = dataset.map(apply_noise)
-        # create random batches
-        dataset = dataset.shuffle(buffer_size=10000)
-        dataset = dataset.batch(batch_size)
-
-    elif mode == 'validation':
-        dataset = dataset.flat_map(partial(generate_patches_division, patch_shape=patch_shape, perturb=perturb))
-        if perturb:
-            dataset = dataset.map(apply_noise)
-        dataset = dataset.shuffle(buffer_size=10)
-        dataset = dataset.batch(batch_size)
-
-    dataset.prefetch(1)
-
-    return dataset
+    if mode == "train":
+        dataset = ShufflingDataset(dataset, buffer_size=batch_size * 100)
+    return DataLoader(dataset, batch_size=batch_size)
 
 
 # Normalizes image data
-def normalize(image, label, dividing):
+def normalize(image):
     image = keras.ops.divide(keras.ops.subtract(image, keras.ops.min(image)), keras.ops.subtract(keras.ops.max(image), keras.ops.min(image)))
-    return image, label, dividing
+    return image
 
-# pads image if smaller than the patch size
-def pad_to_patch(stacked, patch_shape):
-    stacked_shape = keras.ops.shape(stacked)
-
-    pad_z = keras.ops.cond(keras.ops.less(stacked_shape[0], patch_shape[0]), lambda: patch_shape[0] - stacked_shape[0],
-                    lambda: 0)
-    pad_y = keras.ops.cond(keras.ops.less(stacked_shape[1], patch_shape[1]), lambda: patch_shape[1] - stacked_shape[1],
-                    lambda: 0)
-    pad_x = keras.ops.cond(keras.ops.less(stacked_shape[2], patch_shape[2]), lambda: patch_shape[2] - stacked_shape[2],
-                    lambda: 0)
-    padding = [[pad_z, 0], [pad_y, 0], [pad_x, 0], [0, 0]]
-
-    return keras.ops.pad(stacked, padding)
-
-
-# Repeats
-def repeat(image, label, dividing, repeats=5):
-    dataset = tf.data.Dataset.from_tensors((image, label, dividing))
-    dataset = dataset.repeat(repeats)
-
-    return dataset
 
 # generates multiple perturbed patches
 def generate_patches_division(image, label, dividing, patch_shape, perturb):
@@ -120,7 +105,7 @@ def generate_patches_division(image, label, dividing, patch_shape, perturb):
 
     # Extracts single patch
     def single_patch(center_point):
-        # first crop
+        # first, crop to larger region
         init_crop = image_padded[center_point[0]: center_point[0] + patch_shape[0],
                           center_point[1]: center_point[1] + 2*patch_shape[1],
                           center_point[2]: center_point[2] + 2*patch_shape[2], :]
@@ -135,21 +120,17 @@ def generate_patches_division(image, label, dividing, patch_shape, perturb):
 
             #init_crop = black_out(init_crop)
 
-        # second crop of the center region
+        # second, crop to the center region
         crop = init_crop[:,
                keras.ops.cast(patch_shape[1] / 2, "int32"): keras.ops.cast(patch_shape[1] / 2, "int32") + patch_shape[1],
                keras.ops.cast(patch_shape[2] / 2, "int32"): keras.ops.cast(patch_shape[2] / 2, "int32") + patch_shape[2], :]
 
-        return(crop)
+        return crop
 
     # create stack of crops centered around positions
-    stacked_crops = tf.map_fn(single_patch, label, parallel_iterations=10, fn_output_signature="float32")
-
-    # creates tf.dataset from stack of crops and associated division labels
-    dataset = tf.data.Dataset.zip((tf.data.Dataset.from_tensor_slices(stacked_crops),
-                        tf.data.Dataset.from_tensor_slices(dividing)))
-
-    return dataset
+    for single_label, single_division in zip(label, dividing):
+        crop = single_patch(single_label)
+        yield crop, single_division
 
 
 def apply_random_perturbations_stacked(stacked):
@@ -189,11 +170,11 @@ def apply_random_flips(stacked):
     return stacked
 
 
-def apply_noise(image, dividing):
+def apply_noise(image):
     # add noise
     # take power of image to increase or reduce contrast
     image = keras.ops.power(image, keras.ops.random.uniform((1,), minval=0.3, maxval=1.7))
 
-    return image, dividing
+    return image
 
 

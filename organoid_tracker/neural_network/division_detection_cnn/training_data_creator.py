@@ -33,12 +33,12 @@ from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.images import Images
 from organoid_tracker.core.position import Position
 from organoid_tracker.linking import cell_division_finder
-from organoid_tracker.neural_network.position_detection_cnn import _ImageWithPositions
+from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import ImageWithPositions
 
 
-# ImageWithDivisions extends ImageWithositions to include division data
-class _ImageWithDivisions(_ImageWithPositions):
-    dividing = List[bool]
+# ImageWithDivisions extends ImageWithPositions to include division data
+class _ImageWithDivisions(ImageWithPositions):
+    dividing: List[bool]
 
     def __init__(self, experiment_name: str, images: Images, time_point: TimePoint, xyz_positions: ndarray,
                  dividing: List[bool]):
