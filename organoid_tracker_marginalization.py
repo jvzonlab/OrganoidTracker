@@ -1,7 +1,7 @@
 """Predictions particle positions using an already-trained convolutional neural network."""
 
 from organoid_tracker.core.position import Position
-from organoid_tracker.config import ConfigFile
+from organoid_tracker.config import ConfigFile, config_type_bool
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.imaging import io
 from organoid_tracker.image_loading import general_image_loader
@@ -27,8 +27,8 @@ _steps = int(config.get_or_default("size subset (steps away from link of interes
 _temperature = float(config.get_or_default("temperature (to account for shared information)", str(1.5)))
 _filter_cut_off = float(config.get_or_default("maximum error rate", str(0.01)))
 
-_reviewed = bool(config.get_or_default("is the data (partially) reviewed?", str(False)))
-_fully_reviewed = bool(config.get_or_default("are all (dis)appearances reviewed?", str(False)))
+_reviewed = config.get_or_default("is the data (partially) reviewed?", str(False), type=config_type_bool)
+_fully_reviewed = config.get_or_default("are all (dis)appearances reviewed?", str(False), type=config_type_bool)
 
 # Load experiments
 experiment = io.load_data_file(_experiment_file, _min_time_point, _max_time_point)

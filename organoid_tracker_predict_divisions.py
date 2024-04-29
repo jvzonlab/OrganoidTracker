@@ -6,6 +6,7 @@ from typing import Tuple
 from organoid_tracker.config import ConfigFile, config_type_bool
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 from organoid_tracker.imaging import io
 from organoid_tracker.image_loading import general_image_loader
@@ -35,9 +36,28 @@ _positions_file = config.get_or_default("positions_file",
 _min_time_point = int(config.get_or_default("min_time_point", str(1), store_in_defaults=True))
 _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_in_defaults=True))
 
+_pixel_size_x_um = config.get_or_default("pixel_size_x_um", "",
+                                         comment="Resolution of the images. Only used if the image files and"
+                                                 " tracking files don't provide a resolution.", store_in_defaults=True)
+_pixel_size_y_um = config.get_or_default("pixel_size_y_um", "", store_in_defaults=True)
+_pixel_size_z_um = config.get_or_default("pixel_size_z_um", "", store_in_defaults=True)
+_time_point_duration_m = config.get_or_default("time_point_duration_m", "", store_in_defaults=True)
+if _pixel_size_x_um and _pixel_size_y_um and _pixel_size_z_um and _time_point_duration_m:
+    fallback_resolution = ImageResolution(float(_pixel_size_x_um), float(_pixel_size_y_um), float(_pixel_size_z_um),
+                                          float(_time_point_duration_m))
+else:
+    fallback_resolution = None
+
 experiment = io.load_data_file(_positions_file, _min_time_point, _max_time_point)
 general_image_loader.load_images(experiment, _images_folder, _images_format,
                                  min_time_point=_min_time_point, max_time_point=_max_time_point)
+
+# Try to fix missing resolution (this allows running all scripts in sequence)
+if experiment.images.resolution(allow_incomplete=True).is_incomplete():
+    if fallback_resolution is None:
+        print("Please provide a resolution in the tracking data file, or in the configuration file.")
+        exit(1)
+    experiment.images.set_resolution(fallback_resolution)
 
 _patch_shape_z = int(config.get_or_default("patch_shape_z", str(30), store_in_defaults=True))
 _patch_shape_y = int(config.get_or_default("patch_shape_y", str(240), store_in_defaults=True))
@@ -154,6 +174,13 @@ for position in experiment.positions:
                                     time_point=position.time_point())
                 to_add.append(add_position)
 
+                print('remove:')
+                print(position)
+                print('remove:')
+                print(neighbor)
+                print('add:')
+                print(add_position)
+
                 experiment.position_data.set_position_data(add_position, 'division_probability',
                                                            max(experiment.position_data.get_position_data(position,
                                                                                                           data_name="division_probability"),
@@ -164,6 +191,7 @@ for position in experiment.positions:
                                                                                                           data_name="division_penalty"),
                                                                experiment.position_data.get_position_data(neighbor,
                                                                                                           data_name="division_penalty")))
+                #print(position)
                 to_remove = to_remove + [position, neighbor]
 
         # find closest neighbors at previous timepoint
@@ -182,7 +210,8 @@ for position in experiment.positions:
 
             # remove oversegmentation in previous frame
             if (distance < _min_distance_dividing) and (neighbor != closest_neighbor):
-                to_remove.append(neighbor)
+                print(neighbor)
+                to_remove = to_remove + [neighbor]
 
 # adapt positions
 experiment.remove_positions(to_remove)
