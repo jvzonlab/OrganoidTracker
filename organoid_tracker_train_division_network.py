@@ -7,15 +7,14 @@ import random
 from functools import partial
 from typing import Set, Tuple
 
-import tensorflow as tf
+import keras.callbacks
 import numpy as np
-from tensorflow.python.data import Dataset
 import tifffile
 
 from organoid_tracker.linear_models.logistic_regression import platt_scaling
 from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int, config_type_bool
 from organoid_tracker.core.experiment import Experiment
-from organoid_tracker.neural_network.division_detection_cnn.convolutional_neural_network import build_model, tensorboard_callback
+from organoid_tracker.neural_network.division_detection_cnn.convolutional_neural_network import build_model
 from organoid_tracker.neural_network.division_detection_cnn.image_with_divisions_to_tensor_loader import dataset_writer
 from organoid_tracker.neural_network.division_detection_cnn.training_data_creator import create_image_with_divisions_list
 from organoid_tracker.neural_network.division_detection_cnn.training_dataset import training_data_creator_from_raw
@@ -139,16 +138,17 @@ model.summary()
 print("Training...")
 history = model.fit(training_dataset,
                     epochs=epochs,
-                    steps_per_epoch=round(0.8 * len(image_with_divisions_list) * number_of_postions * 1 / batch_size),
+                    steps_per_epoch=len(training_dataset),
                     validation_data=validation_dataset,
-                    validation_steps=round(0.2 * len(image_with_divisions_list) * number_of_postions * 1 / batch_size),
-                    callbacks=[tensorboard_callback,
-                               tf.keras.callbacks.EarlyStopping(patience=2, restore_best_weights=True)])
+                    validation_steps=len(validation_dataset),
+                    callbacks=[keras.callbacks.CSVLogger(os.path.join(logging_folder, "logging.csv"), separator=",", append=False),
+                               keras.callbacks.EarlyStopping(patience=2, restore_best_weights=True)])
 
 # save model
 print("Saving model...")
 trained_model_folder = os.path.join(output_folder, "model_divisions")
 tf.keras.models.save_model(model, trained_model_folder)
+
 
 # Perform Platt scaling
 def predict(image, dividing, model: tf.keras.Model) -> Tuple[tf.Tensor, tf.Tensor]:
@@ -169,7 +169,7 @@ for i in list_for_platt_scaling:
 callibration_dataset = training_data_creator_from_raw(list_for_platt_scaling_val, time_window=time_window,
                                                       patch_shape=patch_shape_zyx, batch_size=batch_size,
                                                       mode='validation', split_proportion=0.0, perturb=False)
-quick_dataset: Dataset = callibration_dataset.take(5000)  #
+quick_dataset: Dataset = callibration_dataset.take(5000)
 predictions = quick_dataset.map(partial(predict, model=model)).take(2000)
 
 prediction = []

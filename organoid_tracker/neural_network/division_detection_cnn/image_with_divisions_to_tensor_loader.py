@@ -7,18 +7,13 @@ from organoid_tracker.neural_network.position_detection_cnn.training_data_creato
 
 
 # Loads images with position and division information
-def load_images_with_divisions(i, image_with_positions_list: List[_ImageWithDivisions], time_window=[0, 0], create_labels=False):
-
-    image_with_positions = image_with_positions_list[i]
-
+def load_images_with_divisions(image_with_positions: _ImageWithDivisions, time_window=(0, 0), create_labels=False):
     image = image_with_positions.load_image_time_stack(time_window)
-    # change positions in to label image (pixels in image)
-    if create_labels:
-        label = image_with_positions.create_labels(image.shape[0:3])
-    # reorder the position information to zyx
-    else:
-        label = image_with_positions.xyz_positions
-        label = label[:, [2,1,0]]
+
+    # change positions into label image (pixels in image)
+    label = image_with_positions.xyz_positions
+    label = label[:, [2,1,0]]
+
     # extract division info
     dividing = image_with_positions.dividing
 
