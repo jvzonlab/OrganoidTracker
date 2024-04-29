@@ -83,7 +83,6 @@ def get_error(experiment: Experiment, position: Position, marginalization = Fals
         link_probability = link_data.get_link_data(past_position, position, data_name="marginal_probability")
         if link_probability is not None and link_probability < warning_limits.min_marginal_probability\
                 and linking_markers.is_live(position_data, position):
-            print('low_link_score')
             return Error.LOW_LINK_SCORE
     else:
         past_position = past_positions.pop()

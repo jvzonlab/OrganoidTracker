@@ -213,11 +213,11 @@ for (position1, position2), marginal_probability in experiment.link_data.find_al
                     experiment_filtered.links.remove_link(position1, next_position)
 
     # if the division probability is high, but no division is assigned, we add one to avoid misinterpretation
-    division_probability = experiment.position_data.get_position_data(position1, 'division_probability')
-    if division_probability is None:
-        print('no available division probability')
+    division_penalty = experiment.position_data.get_position_data(position1, 'division_penalty')
+    if division_penalty is None:
+        print('no available division penalty')
     else:
-        if (division_probability > 0.99) and (position2 not in mothers) and (position1 not in mothers):
+        if (division_penalty < -2) and (position2 not in mothers) and (position1 not in mothers):
             add_position = Position(x=position2.x +1,
                                         y=position2.y +1,
                                         z=position2.z,
