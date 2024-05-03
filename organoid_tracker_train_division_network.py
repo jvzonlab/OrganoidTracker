@@ -7,15 +7,15 @@ import random
 from functools import partial
 from typing import Set, Tuple
 
+os.environ["KERAS_BACKEND"] = "torch"
 import keras.callbacks
 import numpy as np
 import tifffile
 
 from organoid_tracker.linear_models.logistic_regression import platt_scaling
-from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int, config_type_bool
+from organoid_tracker.config import ConfigFile, config_type_image_shape_xyz_to_zyx, config_type_int
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.neural_network.division_detection_cnn.convolutional_neural_network import build_model
-from organoid_tracker.neural_network.division_detection_cnn.image_with_divisions_to_tensor_loader import dataset_writer
 from organoid_tracker.neural_network.division_detection_cnn.training_data_creator import create_image_with_divisions_list
 from organoid_tracker.neural_network.division_detection_cnn.training_dataset import training_data_creator_from_raw
 from organoid_tracker.image_loading import general_image_loader
@@ -58,7 +58,7 @@ while True:
     params.images_container = config.get_or_prompt(f"images_container_{i}",
                                                    "If you have a folder of image files, please paste the folder"
                                                    " path here. Else, if you have a LIF file, please paste the path to that file"
-                                                   " here.")
+                                                   " here. (Or type <stop> to stop adding experiments)")
     if params.images_container == "<stop>":
         break
 
@@ -82,10 +82,10 @@ full_window = bool(config.get_or_default(f"identify full division window", 'True
 time_window = [int(config.get_or_default(f"time_window_before", str(-1))),
                int(config.get_or_default(f"time_window_after", str(1)))]
 
-patch_shape_zyx = list(
+patch_shape_zyx = \
     config.get_or_default("patch_shape", "32, 32, 16", comment="Size in pixels (x, y, z) of the patches used"
                                                                " to train the network.",
-                          type=config_type_image_shape))
+                          type=config_type_image_shape_xyz_to_zyx)
 
 output_folder = config.get_or_default("output_folder", "training_output_folder", comment="Folder that will contain the"
                                                                                          " trained model.")
@@ -136,6 +136,9 @@ model.summary()
 
 # train model
 print("Training...")
+logging_folder = os.path.join(output_folder, "training_logging")
+os.makedirs(logging_folder, exist_ok=True)
+
 history = model.fit(training_dataset,
                     epochs=epochs,
                     steps_per_epoch=len(training_dataset),
@@ -147,7 +150,8 @@ history = model.fit(training_dataset,
 # save model
 print("Saving model...")
 trained_model_folder = os.path.join(output_folder, "model_divisions")
-tf.keras.models.save_model(model, trained_model_folder)
+os.makedirs(trained_model_folder, exist_ok=True)
+model.save(os.path.join(trained_model_folder, "model.keras"))
 
 
 # Perform Platt scaling

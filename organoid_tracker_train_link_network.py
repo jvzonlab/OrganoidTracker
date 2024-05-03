@@ -7,17 +7,19 @@ import random
 from functools import partial
 from typing import Set, Tuple
 
+os.environ["KERAS_BACKEND"] = "torch"
+import keras.callbacks
 import numpy as np
-import tensorflow as tf
 import tifffile
-from tensorflow.python.data import Dataset
+from torch.utils.data import DataLoader
 
 from organoid_tracker.linear_models.logistic_regression import platt_scaling
-from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int, config_type_bool
+from organoid_tracker.config import ConfigFile, config_type_image_shape_xyz_to_zyx, config_type_int, config_type_bool
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 from organoid_tracker.imaging import io
+from organoid_tracker.neural_network.dataset_transforms import LimitingDataset
 from organoid_tracker.neural_network.link_detection_cnn.convolutional_neural_network import build_model
 from organoid_tracker.neural_network.link_detection_cnn.training_data_creator import create_image_with_links_list
 from organoid_tracker.neural_network.link_detection_cnn.training_dataset import training_data_creator_from_raw
@@ -75,13 +77,13 @@ while True:
     per_experiment_params.append(params)
     i += 1
 
-time_window = [int(config.get_or_default(f"time_window_before", str(-1))),
-               int(config.get_or_default(f"time_window_after", str(1)))]
+time_window = (int(config.get_or_default(f"time_window_before", str(-1))),
+               int(config.get_or_default(f"time_window_after", str(1))))
 
-patch_shape_zyx = list(
-    config.get_or_default("patch_shape", "16, 32, 32", comment="Size in pixels (x, y, z) of the patches used"
+patch_shape_zyx = tuple(
+    config.get_or_default("patch_shape", "32, 32, 16", comment="Size in pixels (x, y, z) of the patches used"
                                                                " to train the network.",
-                          type=config_type_image_shape))
+                          type=config_type_image_shape_xyz_to_zyx))
 print(patch_shape_zyx)
 output_folder = config.get_or_default("output_folder", "training_output_folder", comment="Folder that will contain the"
                                                                                          " trained model.")
@@ -121,7 +123,7 @@ for image_with_links in image_with_links_list:
     number_of_postions.append(image_with_links.xyz_positions.shape[0])
 number_of_postions = np.mean(number_of_postions)
 
-# create tf.datasets that generate the data
+# create datasets that generate the data
 
 training_dataset = training_data_creator_from_raw(image_with_links_list, time_window=time_window,
                                                   patch_shape=patch_shape_zyx, batch_size=batch_size, mode='train',
@@ -129,6 +131,9 @@ training_dataset = training_data_creator_from_raw(image_with_links_list, time_wi
 validation_dataset = training_data_creator_from_raw(image_with_links_list, time_window=time_window,
                                                     patch_shape=patch_shape_zyx, batch_size=batch_size,
                                                     mode='validation', split_proportion=0.8)
+
+debug_sample = next(iter(training_dataset))
+print(debug_sample)
 
 model = build_model(
     shape=(patch_shape_zyx[0], patch_shape_zyx[1], patch_shape_zyx[2], time_window[1] - time_window[0] + 1),
@@ -139,11 +144,11 @@ print("Training...")
 print(training_dataset)
 history = model.fit(training_dataset,
                     epochs=epochs,
-                    steps_per_epoch=round(0.8 * len(image_with_links_list) * 1 * number_of_postions / batch_size),
+                    steps_per_epoch=len(training_dataset),
                     validation_data=validation_dataset,
-                    validation_steps=round(0.2 * len(image_with_links_list) * 0.9 * number_of_postions / batch_size),
+                    validation_steps=len(validation_dataset),
                     callbacks=[
-                        tf.keras.callbacks.EarlyStopping(patience=1, min_delta=0.001, restore_best_weights=True)])
+                        keras.callbacks.EarlyStopping(patience=1, min_delta=0.001, restore_best_weights=True)])
 
 print("Saving model...")
 trained_model_folder = os.path.join(output_folder, "model_links")
@@ -175,9 +180,8 @@ random.shuffle(list_for_platt_scaling_val)
 
 callibration_dataset = training_data_creator_from_raw(list_for_platt_scaling_val, time_window=time_window,
                                                       patch_shape=patch_shape_zyx, batch_size=batch_size,
-                                                      mode='validation', split_proportion=0.0, perturb_validation=False)
-quick_dataset: Dataset = callibration_dataset.take(
-    round(0.2 * len(image_with_links_list) * 1 * number_of_postions / batch_size))
+                                                      mode='validation', split_proportion=0.0, perturb=False)
+quick_dataset = DataLoader(LimitingDataset(callibration_dataset.dataset, round(0.2 * len(image_with_links_list) * 1 * number_of_postions)), batch_size=batch_size)
 
 outputs = quick_dataset.map(partial(predict, model=model))
 
@@ -217,7 +221,7 @@ def predict_with_input(inputs, linked, model: tf.keras.Model) -> Tuple[
 # Generate examples
 os.makedirs(os.path.join(output_folder, "examples"), exist_ok=True)
 
-quick_dataset: Dataset = validation_dataset.unbatch().take(1000).batch(1)
+quick_dataset = DataLoader(LimitingDataset(validation_dataset.dataset, 1000), batch_size=1)
 
 predictions = quick_dataset.map(partial(predict_with_input, model=model))
 

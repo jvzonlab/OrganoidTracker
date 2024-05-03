@@ -51,11 +51,11 @@ def build_model(shape: Tuple, batch_size):
 def conv_block(n_conv, layer, filters, kernel=3, pool_size=2, pool_strides=2, name=None):
     for index in range(n_conv):
         layer = keras.layers.Conv3D(filters=filters, kernel_size=kernel, padding='same', activation='relu',
-                                       name=name + '/conv{0}'.format(index + 1))(
+                                       name=name + '>conv{0}'.format(index + 1))(
             layer)
         # layer = keras.layers.BatchNormalization()(layer)
 
     layer = keras.layers.MaxPooling3D(pool_size=pool_size, strides=pool_strides, padding='same',
-                                         name=name + '/pool')(layer)
+                                         name=name + '>pool')(layer)
 
     return layer

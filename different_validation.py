@@ -9,7 +9,7 @@ from typing import Set
 import tensorflow as tf
 from tifffile import tifffile
 
-from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int
+from organoid_tracker.config import ConfigFile, config_type_image_shape_xyz_to_zyx, config_type_int
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
@@ -92,7 +92,7 @@ use_TFR = bool(use_TFR == "True")
 patch_shape = list(
     config.get_or_default("patch_shape", "64, 64, 32", comment="Size in pixels (x, y, z) of the patches used"
                                                                " to train the network.",
-                          type=config_type_image_shape))
+                          type=config_type_image_shape_xyz_to_zyx))
 
 output_folder = config.get_or_default("output_folder", "training_output_folder", comment="Folder that will contain the"
                                                                                          " trained model.")
