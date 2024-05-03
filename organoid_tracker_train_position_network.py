@@ -10,7 +10,7 @@ os.environ["KERAS_BACKEND"] = "torch"
 import keras.callbacks
 import keras.models
 
-from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int
+from organoid_tracker.config import ConfigFile, config_type_image_shape_xyz_to_zyx, config_type_int
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
@@ -81,9 +81,9 @@ time_window = (int(config.get_or_default(f"time_window_before", str(-1))),
                int(config.get_or_default(f"time_window_after", str(1))))
 
 patch_shape_zyx = list(
-    config.get_or_default("patch_shape", "32, 64, 64", comment="Size in pixels (z, y, x) of the patches used"
+    config.get_or_default("patch_shape", "64, 64, 32", comment="Size in pixels (x, y, z) of the patches used"
                                                                " to train the network.",
-                          type=config_type_image_shape))
+                          type=config_type_image_shape_xyz_to_zyx))
 
 output_folder = config.get_or_default("output_folder", "training_output_folder", comment="Folder that will contain the"
                                                                                          " trained model.")

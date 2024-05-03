@@ -23,6 +23,28 @@ class RepeatingDataset(IterableDataset):
         return len(self._internal_dataset)
 
 
+class LimitingDataset(IterableDataset):
+    """Wraps an IterableDataset and limits the number of samples that are yielded."""
+
+    _internal_dataset: IterableDataset
+    _max_samples: int
+
+    def __init__(self, dataset: IterableDataset, max_samples: int):
+        self._internal_dataset = dataset
+        self._max_samples = max_samples
+
+    def __iter__(self) -> Iterable[Any]:
+        for i, sample in enumerate(self._internal_dataset):
+            if i >= self._max_samples:
+                break
+            yield sample
+
+    def __len__(self) -> int:
+        # Will throw a TypeError if the internal dataset doesn't have a __len__ method
+        # noinspection PyTypeChecker
+        return min(len(self._internal_dataset), self._max_samples)
+
+
 class ShufflingDataset(IterableDataset):
     """Data loading works best when images are read in sequence, i.e. that we don't read random patches spread over
     all kinds of imaging files. Neural networks on the other hand need a random order of the data for most optimized

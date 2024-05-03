@@ -10,6 +10,7 @@ dependencies:
   - matplotlib-base
   - tifffile
   - scikit-image
+  - scikit-learn
   - scipy
   - nd2reader
   - pyside6
