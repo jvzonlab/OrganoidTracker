@@ -513,6 +513,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Experiment-Edit beacons... [B]": self._show_beacon_editor,
             "Edit//Experiment-Edit image offsets... [O]": self._show_offset_editor,
             "Edit//Batch-Delete selected positions [Ctrl+Delete]": self._try_delete_all_selected,
+            "Edit//Batch-Delete all unselected positions": self._try_delete_all_unselected,
             "Edit//Batch-Delete connections of selected positions": self._try_delete_connections_of_all_selected,
             "Edit//Batch-Batch deletion//Delete all tracks with errors...": self._delete_tracks_with_errors,
             "Edit//Batch-Batch deletion//Delete short lineages...": self._delete_short_lineages,
@@ -707,6 +708,20 @@ class LinkAndPositionEditor(AbstractEditor):
             self.update_status("No positions selected - cannot delete anything.")
             return
         snapshots = [FullPositionSnapshot.from_position(self._experiment, position) for position in self._selected]
+        self._perform_action(_DeletePositionsAction(snapshots))
+
+    def _try_delete_all_unselected(self):
+        if len(self._selected) == 0:
+            self.update_status("No positions selected - nothing will remain.")
+            return
+
+        unselected = []
+
+        for pos in self._experiment.positions:
+            if pos not in self._selected:
+                unselected.append(pos)
+
+        snapshots = [FullPositionSnapshot.from_position(self._experiment, position) for position in unselected]
         self._perform_action(_DeletePositionsAction(snapshots))
 
     def _try_delete_connections_of_all_selected(self):
