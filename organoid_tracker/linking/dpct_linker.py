@@ -53,7 +53,8 @@ def _to_links(position_ids: _PositionToId, results: Dict) -> Links:
 
 def run(positions: PositionCollection, position_data: PositionData, starting_links: Links, link_data: LinkData,
             *, link_weight: int, detection_weight: int, division_weight: int, appearance_weight: int,
-            dissappearance_weight: int, method = 'FlowBased') -> Tuple[Links, Links]:
+            dissappearance_weight: int, method = 'FlowBased', penalty_difference_cut_off = 3.0,
+            penalty_abs_cut_off = 3.0) -> Tuple[Links, Links]:
     """
     Calculates the optimal links, based on the given starting points and weights.
     :param positions: The positions.
@@ -70,7 +71,9 @@ def run(positions: PositionCollection, position_data: PositionData, starting_lin
     """
     position_ids = _PositionToId()
     input, has_possible_divisions, naive_links = _create_dpct_graph(position_ids, starting_links, position_data, link_data,
-                                        positions.first_time_point_number(), positions.last_time_point_number())
+                                        positions.first_time_point_number(), positions.last_time_point_number(),
+                                                                    penalty_difference_cut_off = penalty_difference_cut_off,
+                                                                    penalty_abs_cut_off = penalty_abs_cut_off)
 
     if has_possible_divisions:
         weights = {"weights": [link_weight, detection_weight, division_weight, appearance_weight, dissappearance_weight]}
@@ -229,11 +232,11 @@ def calculate_appearance_penalty(experiment, min_appearance_probability, name='a
         for position in positions:
             # get distances to the image edges in x, y and z
             if only_top:
-                distances = [(image_shape[2] - position.x - 1 + offset.x) * resolution.pixel_size_x_um,
-                             (image_shape[1] - position.y - 1 + offset.y) * resolution.pixel_size_y_um,
-                             (image_shape[0] - position.z - 1 + offset.z) * resolution.pixel_size_z_um,
-                             (position.x + 1 - offset.x) * resolution.pixel_size_x_um,
-                             (position.y + 1 - offset.y) * resolution.pixel_size_y_um]
+                distances = [(image_shape[2] - position.x - 1 + offset.x + 1) * resolution.pixel_size_x_um,
+                             (image_shape[1] - position.y - 1 + offset.y + 1) * resolution.pixel_size_y_um,
+                             (image_shape[0] - position.z - 1 + offset.z + 1) * resolution.pixel_size_z_um,
+                             (position.x + 1 - offset.x + 1) * resolution.pixel_size_x_um,
+                             (position.y + 1 - offset.y + 1) * resolution.pixel_size_y_um]
             else:
                 distances = [(image_shape[2] - position.x - 1 + offset.x) * resolution.pixel_size_x_um,
                              (image_shape[1] - position.y - 1 + offset.y) * resolution.pixel_size_y_um,
@@ -247,7 +250,9 @@ def calculate_appearance_penalty(experiment, min_appearance_probability, name='a
 
             # calculate (dis)appearance probability
             if min_distance < buffer_distance:
-                appearance_probability = 0.1 * (1 - min_distance/buffer_distance) + min_appearance_probability
+                if (image_shape[0] - position.z - 1 + offset.z) * resolution.pixel_size_z_um == min_distance:
+                    print(min_distance)
+                appearance_probability = 0.5 * (1 - min_distance/buffer_distance) + min_appearance_probability
             else:
                 appearance_probability = min_appearance_probability
 
