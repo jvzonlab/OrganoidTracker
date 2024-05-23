@@ -3,7 +3,7 @@ experiments are stored in an autlist file. This module contains functions to sav
 
 import json
 import os
-from typing import List, Iterable, Dict, Any
+from typing import List, Iterable, Dict, Any, Optional
 
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.image_loading import general_image_loader
@@ -79,29 +79,37 @@ def count_experiments_in_list_file(open_files_list_file: str) -> int:
         return len(experiments_json)
 
 
-def save_experiment_list_file(experiments: List[Experiment], json_file_name: str):
-    """Saves references to the given experiments to a file. The file will contain the paths to the last saved file of
-    the experiment. Note: this method does not check for unsaved changes in the experiments, so make sure that all files
-    are saved.
+def save_experiment_list_file(experiments: List[Experiment], json_file_name: str, *,
+                              tracking_files_folder: Optional[str] = None):
+    """Saves references to the given experiments to a file.
 
-    Raises ValueError if the experiment contains positions or splines, but no value for experiment.last_save_file.
+    If a folder has been specified for tracking_files_folder, the experiments will be saved to that folder.
 
-    For an interactive version where the user is prompted to save unsaved changes, see
-    `action.to_experiment_list_file_structure(...)`.
+    Otherwise, the file will reference the current location where the tracking files are stored, taken from
+    experiment.last_save_file. This method does not check for unsaved changes in the experiments. Raises ValueError if
+    the experiment contains positions or splines, but no value for experiment.last_save_file. For an interactive version
+    where the user is prompted to save unsaved changes, see `action.to_experiment_list_file_structure(...)`.
     """
     save_base_folder = os.path.dirname(os.path.abspath(json_file_name))
 
     experiments_json = []
-    for experiment in experiments:
+    for i, experiment in enumerate(experiments):
         experiment_json = dict()
 
         # Store experiment file
-        if experiment.last_save_file is not None:
-            # Make last_save_file relative to save_base_folder
-            experiment_json["experiment_file"] = os.path.relpath(experiment.last_save_file, start=save_base_folder)
+        if tracking_files_folder is not None:
+            # Save file to designated folder
+            file_name = os.path.join(tracking_files_folder, f"{i + 1}. {experiment.name.get_save_name()}." + io.FILE_EXTENSION)
+            io.save_data_to_json(experiment, file_name)
+            experiment_json["experiment_file"] = os.path.relpath(file_name, start=save_base_folder)
         else:
-            if experiment.positions.has_positions() or experiment.splines.has_splines():
-                raise ValueError(f"The experiment \"{experiment.name}\" has not been saved to disk.")
+            # Just enter the location where the file is currently saved
+            if experiment.last_save_file is not None:
+                # Make last_save_file relative to save_base_folder
+                experiment_json["experiment_file"] = os.path.relpath(experiment.last_save_file, start=save_base_folder)
+            else:
+                if experiment.positions.has_positions() or experiment.splines.has_splines():
+                    raise ValueError(f"The experiment \"{experiment.name}\" has not been saved to disk.")
 
         # Store images
         experiment_json.update(experiment.images.image_loader().serialize_to_dictionary())

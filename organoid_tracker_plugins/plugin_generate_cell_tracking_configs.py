@@ -10,7 +10,7 @@ from organoid_tracker.core import UserError
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.dialog import DefaultOption
 from organoid_tracker.gui.window import Window
-from organoid_tracker.imaging import io
+from organoid_tracker.imaging import io, list_io
 from organoid_tracker.linking_analysis import linking_markers
 
 _TRAINING_PATCH_SHAPE_ZYX: Tuple[int, int, int] = (32, 64, 64)
@@ -154,11 +154,12 @@ def _generate_position_training_config(window: Window):
 
 def _generate_position_detection_config(window: Window):
     """For applying an already trained network on new images."""
-    experiment = window.get_experiment()
-    image_loader = experiment.images.image_loader()
-    if not image_loader.has_images():
-        raise UserError("No images", "No images were loaded, so no cells can be detected. Please load some images"
-                                     " first.")
+    experiments = list(window.get_active_experiments())
+    for experiment in experiments:
+        image_loader = experiment.images.image_loader()
+        if not image_loader.has_images():
+            raise UserError("No images", f"No images were loaded in the experiment \"{experiment.name}\","
+                            f" so no cells can be detected. Please load some images first.")
 
     model_folder = _get_model_folder("positions")
     if model_folder is None:
@@ -171,13 +172,15 @@ def _generate_position_detection_config(window: Window):
     if save_directory is None:
         return
 
+    tracking_files_folder = os.path.join(save_directory, "Input files")
+    os.makedirs(tracking_files_folder, exist_ok=True)
+    list_io.save_experiment_list_file(experiments, os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
+                                      tracking_files_folder=tracking_files_folder)
+
     config = ConfigFile("predict_positions", folder_name=save_directory)
-    config.get_or_default("images_container", image_loader.serialize_to_config()[0], store_in_defaults=True)
-    config.get_or_default("images_pattern", image_loader.serialize_to_config()[1], store_in_defaults=True)
-    config.get_or_default("min_time_point", str(image_loader.first_time_point_number()), store_in_defaults=True)
-    config.get_or_default("max_time_point", str(image_loader.last_time_point_number()), store_in_defaults=True)
+    config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
     config.get_or_default("model_folder", model_folder)
-    config.get_or_default("predictions_output_folder", "out")
+    config.get_or_default("predictions_output_folder", "Nucleus center predictions")
 
     config.get_or_default("patch_shape_y", str(240))
     config.get_or_default("patch_shape_x", str(240))
