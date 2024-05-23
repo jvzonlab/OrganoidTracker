@@ -54,7 +54,8 @@ def load_from_lif_reader(experiment: Experiment, file: str, reader: _lif.Reader,
     file_name = os.path.basename(file)
     if file_name.lower().endswith(".lif"):
         file_name = file_name[:-4]
-    experiment.name.provide_automatic_name(file_name + "_" + serie_header.getName())
+    automatic_name = [file_name] + _get_series_name_parts(serie_header)
+    experiment.name.provide_automatic_name(" » ".join(automatic_name))
 
 
 def get_series_display_names(reader: _lif.Reader) -> List[str]:
@@ -63,23 +64,27 @@ def get_series_display_names(reader: _lif.Reader) -> List[str]:
 
     # Collect name parts
     for header in reader.getSeriesHeaders():
-        name = [header.getName()]
-        parent_node = header.root.parentNode
-        while isinstance(parent_node, Element):
-            parent_name = parent_node.getAttribute("Name")
-            if parent_name and parent_node.parentNode and parent_node.parentNode.parentNode \
-                    and parent_node.parentNode.parentNode.parentNode:
-                # Only add the name if it's not the name of the root file
-                name.insert(0, parent_name)
-
-            parent_node = parent_node.parentNode
-        name_list.append(name)
+        name_list.append(_get_series_name_parts(header))
 
     if len(name_list) == 0:
         return []
 
     # Join the names
     return [" » ".join(name_parts) for name_parts in name_list]
+
+
+def _get_series_name_parts(header: _lif.SerieHeader) -> List[str]:
+    name = [header.getName()]
+    parent_node = header.root.parentNode
+    while isinstance(parent_node, Element):
+        parent_name = parent_node.getAttribute("Name")
+        if parent_name and parent_node.parentNode and parent_node.parentNode.parentNode \
+                and parent_node.parentNode.parentNode.parentNode:
+            # Only add the name if it's not the name of the root file
+            name.insert(0, parent_name)
+
+        parent_node = parent_node.parentNode
+    return name
 
 
 def _dimensions_to_resolution(dimensions: List[Element]) -> ImageResolution:
