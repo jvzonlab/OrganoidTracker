@@ -128,16 +128,20 @@ class _Nd2ImageLoader(ImageLoader):
 
         frame_number = time_point.time_point_number()
         depth, height, width = self.get_image_size_zyx()
-        image = None
-        for z in range(depth):
-            # Using "location - 1": Nikon NIS-Elements GUI is one-indexed, but save format is zero-indexed
-            with self._nd2_lock:
-                frame = self._nd2_parser.get_image_by_attributes(frame_number, self._location - 1, image_channel.index_zero, z, height, width)
-            if image is None:
-                image = numpy.zeros((depth, height, width), dtype=frame.dtype)
-            if len(frame) > 0:
-                image[z] = frame
-        return image
+        try:
+            image = None
+            for z in range(depth):
+                # Using "location - 1": Nikon NIS-Elements GUI is one-indexed, but save format is zero-indexed
+                with self._nd2_lock:
+                    frame = self._nd2_parser.get_image_by_attributes(frame_number, self._location - 1,
+                                                                     image_channel.index_zero, z, height, width)
+                if image is None:
+                    image = numpy.zeros((depth, height, width), dtype=frame.dtype)
+                if len(frame) > 0:
+                    image[z] = frame
+            return image
+        except OSError:
+            return None  # Failed to read image
 
     def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
         if image_channel.index_zero >= len(self._channels):
@@ -154,7 +158,11 @@ class _Nd2ImageLoader(ImageLoader):
         channel_index = self._channels.index(image_channel)
         # Using "location - 1": Nikon NIS-Elements GUI is one-indexed, but save format is zero-indexed
         with self._nd2_lock:
-            image = self._nd2_parser.get_image_by_attributes(frame_number, self._location - 1, channel_index, image_z, height, width)
+            try:
+                image = self._nd2_parser.get_image_by_attributes(frame_number, self._location - 1, channel_index,
+                                                                 image_z, height, width)
+            except OSError:
+                return None  # Failed to read image
         if len(image.shape) != 2:
             return None
         return image
