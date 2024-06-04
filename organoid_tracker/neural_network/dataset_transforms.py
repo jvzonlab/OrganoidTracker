@@ -1,5 +1,5 @@
 from random import Random
-from typing import List, Any, Iterable, Optional
+from typing import List, Any, Iterable, Optional, Iterator
 
 from torch.utils.data import IterableDataset
 
@@ -23,6 +23,22 @@ class RepeatingDataset(IterableDataset):
         return len(self._internal_dataset)
 
 
+class _LimitingIterator(Iterator):
+    _i: int = 0
+    _max_samples: int
+    _internal_iterator: Iterator[Any]
+
+    def __init__(self, internal_iterator: Iterator[Any], max_samples: int):
+        self._internal_iterator = internal_iterator
+        self._max_samples = max_samples
+
+    def __next__(self) -> Any:
+        self._i += 1
+        if self._i > self._max_samples:
+            raise StopIteration
+        return next(self._internal_iterator)
+
+
 class LimitingDataset(IterableDataset):
     """Wraps an IterableDataset and limits the number of samples that are yielded."""
 
@@ -33,11 +49,9 @@ class LimitingDataset(IterableDataset):
         self._internal_dataset = dataset
         self._max_samples = max_samples
 
-    def __iter__(self) -> Iterable[Any]:
-        for i, sample in enumerate(self._internal_dataset):
-            if i >= self._max_samples:
-                break
-            yield sample
+    def __iter__(self) -> Iterator[Any]:
+        return _LimitingIterator(iter(self._internal_dataset), self._max_samples)
+
 
     def __len__(self) -> int:
         # Will throw a TypeError if the internal dataset doesn't have a __len__ method
