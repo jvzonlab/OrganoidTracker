@@ -80,11 +80,10 @@ while True:
 time_window = (int(config.get_or_default(f"time_window_before", str(-1))),
                int(config.get_or_default(f"time_window_after", str(1))))
 
-patch_shape_zyx = tuple(
+patch_shape_zyx: Tuple[int, int, int] = tuple(
     config.get_or_default("patch_shape", "32, 32, 16", comment="Size in pixels (x, y, z) of the patches used"
                                                                " to train the network.",
                           type=config_type_image_shape_xyz_to_zyx))
-print(patch_shape_zyx)
 output_folder = config.get_or_default("output_folder", "training_output_folder", comment="Folder that will contain the"
                                                                                          " trained model.")
 batch_size = config.get_or_default("batch_size", "64", comment="How many patches are used for training at once. A"
@@ -183,7 +182,7 @@ callibration_dataset = training_data_creator_from_raw(list_for_platt_scaling_val
                                                       mode='validation', split_proportion=0.0, perturb=False)
 quick_dataset = DataLoader(LimitingDataset(callibration_dataset.dataset, round(0.2 * len(image_with_links_list) * 1 * number_of_postions)), batch_size=batch_size)
 
-outputs = quick_dataset.map(partial(predict, model=model))
+outputs = model.predict(quick_dataset)
 
 prediction = []
 linked = []
@@ -208,14 +207,14 @@ with open(os.path.join(trained_model_folder, "settings.json"), "w") as file_hand
 
 
 # # generate examples for reality check
-def predict_with_input(inputs, linked, model: tf.keras.Model) -> Tuple[
-    tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
-    image = inputs['input_1']
-    target_image = inputs['input_2']
-    distance = inputs['input_distances']
-
-    linked = linked['out']
-    return model(inputs, training=False), linked, image, target_image, distance
+# def predict_with_input(inputs, linked, model: tf.keras.Model) -> Tuple[
+#     tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
+#     image = inputs['input_1']
+#     target_image = inputs['input_2']
+#     distance = inputs['input_distances']
+#
+#     linked = linked['out']
+#     return model(inputs, training=False), linked, image, target_image, distance
 
 
 # Generate examples
@@ -223,7 +222,7 @@ os.makedirs(os.path.join(output_folder, "examples"), exist_ok=True)
 
 quick_dataset = DataLoader(LimitingDataset(validation_dataset.dataset, 1000), batch_size=1)
 
-predictions = quick_dataset.map(partial(predict_with_input, model=model))
+predictions = model.predict(quick_dataset)
 
 correct_examples = 0
 incorrect_examples = 0
