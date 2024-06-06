@@ -14,9 +14,10 @@ from organoid_tracker.visualizer.position_list_visualizer import PositionListVis
 
 class ErrorsVisualizer(PositionListVisualizer):
     """Shows all errors and warnings in the experiment.
-    Press Left/Right to view the previous/next error.
+    Press Up/Down to go to the next/previous lineage with errors.
+    Press Left/Right to go to the next/previous error in same lineage.
     Press Delete or Backspace to delete (suppress) the shown error.
-    Press C to change (fix) the data and press E to exit this view.
+    Press C to change (fix) the data and press E or Escape to exit this view.
     """
 
     _problematic_lineages: List[LineageWithErrors]
@@ -180,8 +181,8 @@ class ErrorsVisualizer(PositionListVisualizer):
 
         return f"{type} {current_position_index + 1} / {len(position_list)} "\
                f" of lineage {self._current_lineage_index + 1} / {len(self._problematic_lineages)} " \
-               f"  ({self._total_number_of_warnings} warnings in total)" +\
-               "\n" + message + "\n" + str(position)
+               f"  ({self._total_number_of_warnings} warnings in total) - time point {position.time_point_number()}" +\
+               "\n" + message
 
     def _on_command(self, command: str) -> bool:
         if command == "recheck":
