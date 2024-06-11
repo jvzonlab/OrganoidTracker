@@ -1,4 +1,5 @@
 import queue
+from abc import ABC
 from queue import Queue
 from threading import Thread
 from typing import Optional, Any
@@ -10,8 +11,14 @@ from organoid_tracker.core import UserError
 from organoid_tracker.core.concurrent import ConcurrentSet
 
 
-class Task:
-    """A long-running task. run() will be called on a worker thread, on_Finished() and on_error() on the GUI thread."""
+class Task(ABC):
+    """A long-running task. run() will be called on a worker thread, on_finished() and on_error() on the GUI thread.
+
+    Note: this class is kind of low-level. If you have a task that needs to process Experiment objects in some way,
+    consider using the higher-level WorkerJob class instead. This class greatly simplifies running any task on all
+    active experiments.
+    """
+
     def compute(self) -> Any:
         raise NotImplementedError()
 
@@ -86,7 +93,7 @@ class Scheduler(Thread):
             dialog.popup_exception(e)
 
     def run(self):
-        """Long running method that processes pending tasks. Do not call, let Python call it."""
+        """Long-running method that processes pending tasks. Do not call, let Python call it."""
         while True:
             task: Task = self._task_queue.get(block=True, timeout=None)
             self._running_tasks.add(task)
