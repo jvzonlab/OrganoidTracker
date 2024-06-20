@@ -143,7 +143,7 @@ and the task will be executed on a worker thread.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.gui.threading.Scheduler.run">
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.threading.Scheduler.run" title="Permalink to this definition"></a></dt>
-<dd><p>Long running method that processes pending tasks. Do not call, let Python call it.</p>
+<dd><p>Long-running method that processes pending tasks. Do not call, let Python call it.</p>
 </dd></dl>
 
 </dd></dl>
@@ -151,8 +151,11 @@ and the task will be executed on a worker thread.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="organoid_tracker.gui.threading.Task">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.threading.</span></span><span class="sig-name descname"><span class="pre">Task</span></span><a class="headerlink" href="#organoid_tracker.gui.threading.Task" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>A long-running task. run() will be called on a worker thread, on_Finished() and on_error() on the GUI thread.</p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
+<p>A long-running task. run() will be called on a worker thread, on_finished() and on_error() on the GUI thread.</p>
+<p>Note: this class is kind of low-level. If you have a task that needs to process Experiment objects in some way,
+consider using the higher-level WorkerJob class instead. This class greatly simplifies running any task on all
+active experiments.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.gui.threading.Task.compute">
 <span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.threading.Task.compute" title="Permalink to this definition"></a></dt>

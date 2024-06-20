@@ -20,6 +20,7 @@ Submodules
    organoid_tracker.gui.toolbar
    organoid_tracker.gui.undo_redo
    organoid_tracker.gui.window
+   organoid_tracker.gui.worker_job
 
 Module contents
 ---------------

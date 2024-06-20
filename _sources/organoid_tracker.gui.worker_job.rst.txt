@@ -1,0 +1,7 @@
+organoid\_tracker.gui.worker\_job module
+========================================
+
+.. automodule:: organoid_tracker.gui.worker_job
+   :members:
+   :undoc-members:
+   :show-inheritance:
