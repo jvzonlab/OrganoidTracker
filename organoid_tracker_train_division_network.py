@@ -4,10 +4,7 @@
 import json
 import os
 import random
-from functools import partial
-from typing import Set, Tuple
-
-from organoid_tracker.neural_network.dataset_transforms import LimitingDataset
+from typing import Set
 
 os.environ["KERAS_BACKEND"] = "torch"
 import keras.callbacks
@@ -16,15 +13,17 @@ import numpy as np
 import tifffile
 from torch.utils.data import DataLoader
 
-from organoid_tracker.linear_models.logistic_regression import platt_scaling
 from organoid_tracker.config import ConfigFile, config_type_image_shape_xyz_to_zyx, config_type_int
 from organoid_tracker.core.experiment import Experiment
-from organoid_tracker.neural_network.division_detection_cnn.convolutional_neural_network import build_model
-from organoid_tracker.neural_network.division_detection_cnn.training_data_creator import create_image_with_divisions_list
-from organoid_tracker.neural_network.division_detection_cnn.training_dataset import training_data_creator_from_raw
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 from organoid_tracker.imaging import io
+from organoid_tracker.linear_models.logistic_regression import platt_scaling
+from organoid_tracker.neural_network.dataset_transforms import LimitingDataset
+from organoid_tracker.neural_network.division_detection_cnn.convolutional_neural_network import build_model
+from organoid_tracker.neural_network.division_detection_cnn.training_data_creator import \
+    create_image_with_divisions_list
+from organoid_tracker.neural_network.division_detection_cnn.training_dataset import training_data_creator_from_raw
 
 
 # PARAMETERS
@@ -152,6 +151,7 @@ os.makedirs(trained_model_folder, exist_ok=True)
 model.save(os.path.join(trained_model_folder, "model.keras"))
 
 # Perform Platt scaling
+print("Performing Platt scaling...")
 
 # new list without any upsampling, based on validation list
 experiment_provider = (params.to_experiment() for params in per_experiment_params)
@@ -181,9 +181,7 @@ predicted_chances_all = np.array(predicted_chances_all)
 ground_truth_dividing = np.array(ground_truth_dividing)
 
 (intercept, scaling, scaling_no_intercept) = platt_scaling(predicted_chances_all, ground_truth_dividing)
-print('platt_scaling')
-print(intercept)
-print(scaling)
+print(f'Result: y = 1 / (1 + exp(-({scaling:.2f} * x + {intercept:.2f})))')
 
 # save metadata
 with open(os.path.join(trained_model_folder, "settings.json"), "w") as file_handle:
@@ -195,7 +193,8 @@ with open(os.path.join(output_folder, "validation_list.json"), "w") as file_hand
     json.dump(validation_list, file_handle, indent=4)
 
 # Generate examples for sanity check
-os.makedirs(os.path.join(output_folder, "examples"), exist_ok=True)
+print("Generating examples for sanity check...")
+os.makedirs(os.path.join(output_folder, "division_examples"), exist_ok=True)
 
 
 quick_dataset: DataLoader = DataLoader(validation_dataset.dataset, batch_size=1)
@@ -215,10 +214,11 @@ for i, element in enumerate(quick_dataset):
     image = keras.ops.convert_to_numpy(element[0])
     image = image[0, :, :, :, :]
 
-    print(image.shape)
+    # Order is now Z, Y, X, T, so move T to the start
+    image = np.moveaxis(image, source=-1, destination=0)
 
     if ((ground_truth_dividing * score) < 0) and (correct_examples < 10):
-        tifffile.imwrite(os.path.join(output_folder, "examples",
+        tifffile.imwrite(os.path.join(output_folder, "division_examples",
                                       "CORRECT_example_input" + str(i) + '_score_' +
                                       "{:.2f}".format(float(score)) + ".ome.tiff"), image, imagej=True,
                          metadata={'axes': 'TZYX'})
@@ -226,7 +226,7 @@ for i, element in enumerate(quick_dataset):
         correct_examples = correct_examples + 1
 
     if ((ground_truth_dividing * score) > 0) and (incorrect_examples < 10):
-        tifffile.imwrite(os.path.join(output_folder, "examples",
+        tifffile.imwrite(os.path.join(output_folder, "division_examples",
                                       "INCORRECT_example_input" + str(i) + '_score_' +
                                       "{:.2f}".format(float(score)) + ".ome.tiff"), image, imagej=True,
                          metadata={'axes': 'TZYX'})

@@ -31,12 +31,12 @@ def load_images_with_links(image_with_links: _ImageWithLinks, time_window=[0, 0]
     return image, target_image, label, target_label, distances, linked
 
 
-def tf_load_images_with_links(i: int, image_with_positions_list: List[_ImageWithLinks], time_window: List[int]
-                              ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
-
-    image, target_image, label, target_label, distances, linked = tf.py_function(
-        partial(load_images_with_links, image_with_positions_list=image_with_positions_list,
-        time_window=time_window), [i],
-        (tf.float32, tf.float32, tf.int32, tf.int32, tf.float32, tf.bool))
-
-    return image, target_image, label, target_label, distances, linked
+# def tf_load_images_with_links(i: int, image_with_positions_list: List[_ImageWithLinks], time_window: List[int]
+#                               ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
+#
+#     image, target_image, label, target_label, distances, linked = tf.py_function(
+#         partial(load_images_with_links, image_with_positions_list=image_with_positions_list,
+#         time_window=time_window), [i],
+#         (tf.float32, tf.float32, tf.int32, tf.int32, tf.float32, tf.bool))
+#
+#     return image, target_image, label, target_label, distances, linked
