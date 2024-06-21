@@ -269,6 +269,7 @@ def _generate_division_detection_config(window: Window):
     if not image_loader.has_images():
         raise UserError("No images", "No images were loaded, so no cells can be detected. Please load some images"
                                      " first.")
+    experiment.images.resolution()  # Check for resolution
 
     checkpoint_directory = _get_model_folder("divisions")
     if checkpoint_directory is None:

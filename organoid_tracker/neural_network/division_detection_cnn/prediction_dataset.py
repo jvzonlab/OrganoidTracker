@@ -23,15 +23,10 @@
 # SOFTWARE.
 from typing import List, Tuple, Iterable
 
-from functools import partial
-
 import keras
-from torch.utils.data import IterableDataset
+from torch.utils.data import IterableDataset, DataLoader
 
 from organoid_tracker.neural_network import Tensor
-from organoid_tracker.neural_network.division_detection_cnn.image_with_divisions_to_tensor_loader import \
-    tf_load_images_with_positions
-from organoid_tracker.neural_network.link_detection_cnn.training_dataset import divide_and_round
 from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import ImageWithPositions
 
 
@@ -39,29 +34,26 @@ class _TorchDataset(IterableDataset):
     _image_with_divisions_list: List[ImageWithPositions]
     _time_window: Tuple[int, int]
     _patch_shape_zyx: Tuple[int, int, int]
-    _perturb: bool
 
     _calculated_length: int
 
     def __init__(self, image_with_division_list: List[ImageWithPositions], time_window: Tuple[int, int],
-                 patch_shape_zyx: Tuple[int, int, int], perturb: bool):
+                 patch_shape_zyx: Tuple[int, int, int]):
         self._image_with_divisions_list = image_with_division_list
         self._time_window = time_window
         self._patch_shape_zyx = patch_shape_zyx
-        self._perturb = perturb
 
         # Calculate the length once, to avoid recalculating it every time __len__ is called
         self._calculated_length = sum(len(image.xyz_positions) for image in image_with_division_list)
 
-    def __iter__(self) -> Iterable[Tuple[Tensor, bool]]:
+    def __iter__(self) -> Iterable[Tensor]:
         for image_with_divisions in self._image_with_divisions_list:
             image = image_with_divisions.load_image_time_stack(self._time_window)
             label = image_with_divisions.xyz_positions[:, [2, 1, 0]]
 
             image = normalize(image)
 
-            for crop, division in generate_patches_division(image, label, self._patch_shape_zyx):
-                yield crop, division
+            yield from generate_patches_division(image, label, self._patch_shape_zyx)
 
     def __len__(self) -> int:
         return self._calculated_length
@@ -69,22 +61,8 @@ class _TorchDataset(IterableDataset):
 
 # Creates training and validation data from an image_with_positions_list
 def prediction_data_creator(image_with_positions_list: List[ImageWithPositions], time_window, patch_shape):
-    dataset = tf.data.Dataset.range(len(image_with_positions_list))
-
-    # Load data
-    dataset = dataset.map(partial(tf_load_images_with_positions, image_with_positions_list=image_with_positions_list,
-                                  time_window=time_window), num_parallel_calls=1)
-
-    # Normalize images
-    #dataset = dataset.map(partial(scale, scale=1.33))
-    dataset = dataset.map(normalize)
-
-    dataset = dataset.flat_map(partial(generate_patches_division, patch_shape=patch_shape))
-    dataset = dataset.batch(1)
-
-    dataset.prefetch(20)
-
-    return dataset
+    dataset = _TorchDataset(image_with_positions_list, time_window, patch_shape)
+    return DataLoader(dataset, batch_size=1)
 
 
 # Normalizes image data
@@ -92,37 +70,6 @@ def normalize(image):
     image = keras.ops.divide(keras.ops.subtract(image, keras.ops.min(image)),
                              keras.ops.subtract(keras.ops.max(image), keras.ops.min(image)))
     return image
-
-
-def scale(image, label, scale=1):
-    if scale != 1:
-        transform = tf.convert_to_tensor([[scale, 0., 0,
-                                           0., scale, 0., 0.,
-                                           0.]], dtype=tf.float32)
-
-        new_size = [divide_and_round(tf.shape(image)[1], scale),
-                    divide_and_round(tf.shape(image)[2], scale)]
-        image = tfa.image.transform(image, transform, interpolation='BILINEAR',
-                                    output_shape=new_size)
-
-        position_scaling = [1, scale, scale]
-        label = divide_and_round(label, position_scaling)
-
-    return image, label
-
-
-def pad_to_patch(stacked, patch_shape):
-    stacked_shape = tf.shape(stacked)
-
-    pad_z = tf.cond(tf.less(stacked_shape[0], patch_shape[0]), lambda: patch_shape[0] - stacked_shape[0],
-                    lambda: 0)
-    pad_y = tf.cond(tf.less(stacked_shape[1], patch_shape[1]), lambda: patch_shape[1] - stacked_shape[1],
-                    lambda: 0)
-    pad_x = tf.cond(tf.less(stacked_shape[2], patch_shape[2]), lambda: patch_shape[2] - stacked_shape[2],
-                    lambda: 0)
-    padding = [[pad_z, 0], [pad_y, 0], [pad_x, 0], [0, 0]]
-
-    return tf.pad(stacked, padding)
 
 
 # generates multiple patches for prediction adapted from similar taring_data version (IMPOROVE/MERGE!!!)
@@ -149,6 +96,6 @@ def generate_patches_division(image, label, patch_shape):
         return crop
 
     # create stack of crops centered around positions
-    for single_label, single_division in zip(label, dividing):
+    for single_label in label:
         crop = single_patch(single_label)
-        yield crop, single_division
+        yield crop
