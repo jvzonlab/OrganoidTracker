@@ -190,7 +190,7 @@ def create_image_with_positions_list(experiment: Experiment):
         # read a single time point
         positions = experiment.positions.of_time_point(time_point)
         offset = experiment.images.offsets.of_time_point(time_point)
-        image_shape = experiment._images.get_image_stack(time_point).shape
+        image_shape = experiment.images.get_image_stack(time_point).shape
 
         # read positions to numpy array
         positions_xyz = list()
@@ -222,7 +222,7 @@ def create_image_with_positions_list(experiment: Experiment):
 
         # Add ImageWithPositions for that time_point
         image_with_positions_list.append(
-            _ImageWithPositions(str(experiment.name), experiment.images, time_point, positions_xyz))
+            ImageWithPositions(str(experiment.name), experiment.images, time_point, positions_xyz))
 
         # add positions as list for single time_point
         positions_per_frame_list.append(positions_list)

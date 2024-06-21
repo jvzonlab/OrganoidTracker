@@ -19,21 +19,6 @@ def load_images_with_divisions(image_with_positions: _ImageWithDivisions, time_w
 
     return image, label, dividing
 
-# tensorflow wrapper to laod image + division data
-def tf_load_images_with_divisions(i, image_with_positions_list: List[ImageWithPositions], time_window=[0, 0], create_labels=False):
-    if create_labels:
-        image, label, dividing = tf.py_function(
-            partial(load_images_with_divisions, image_with_positions_list=image_with_positions_list,
-                time_window=time_window, create_labels=create_labels), [i],
-            (tf.float32, tf.float32, tf.bool))
-    else:
-        image, label, dividing = tf.py_function(
-            partial(load_images_with_divisions, image_with_positions_list=image_with_positions_list,
-                time_window=time_window, create_labels=create_labels), [i],
-            (tf.float32, tf.int32, tf.bool))
-
-    return image, label, dividing
-
 
 def load_images_with_positions(i, image_with_positions_list: List[_ImageWithDivisions], time_window=[0, 0], create_labels=False):
 
@@ -48,21 +33,6 @@ def load_images_with_positions(i, image_with_positions_list: List[_ImageWithDivi
 
         label = image_with_positions.xyz_positions
         label = label[:, [2,1,0]]
-
-    return image, label
-
-# tensorflow wrapper to laod image + positions
-def tf_load_images_with_positions(i, image_with_positions_list: List[ImageWithPositions], time_window=[0, 0], create_labels=False):
-    if create_labels:
-        image, label = tf.py_function(
-            partial(load_images_with_positions, image_with_positions_list=image_with_positions_list,
-                time_window=time_window, create_labels=create_labels), [i],
-            (tf.float32, tf.float32))
-    else:
-        image, label = tf.py_function(
-            partial(load_images_with_positions, image_with_positions_list=image_with_positions_list,
-                time_window=time_window, create_labels=create_labels), [i],
-            (tf.float32, tf.int32))
 
     return image, label
 

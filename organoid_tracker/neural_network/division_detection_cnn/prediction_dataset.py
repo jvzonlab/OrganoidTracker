@@ -21,18 +21,54 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from typing import List
+from typing import List, Tuple, Iterable
 
 from functools import partial
 
-from organoid_tracker.neural_network.division_detection_cnn.image_with_divisions_to_tensor_loader import tf_load_images_with_positions
+import keras
+from torch.utils.data import IterableDataset
+
+from organoid_tracker.neural_network import Tensor
+from organoid_tracker.neural_network.division_detection_cnn.image_with_divisions_to_tensor_loader import \
+    tf_load_images_with_positions
 from organoid_tracker.neural_network.link_detection_cnn.training_dataset import divide_and_round
 from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import ImageWithPositions
 
 
+class _TorchDataset(IterableDataset):
+    _image_with_divisions_list: List[ImageWithPositions]
+    _time_window: Tuple[int, int]
+    _patch_shape_zyx: Tuple[int, int, int]
+    _perturb: bool
+
+    _calculated_length: int
+
+    def __init__(self, image_with_division_list: List[ImageWithPositions], time_window: Tuple[int, int],
+                 patch_shape_zyx: Tuple[int, int, int], perturb: bool):
+        self._image_with_divisions_list = image_with_division_list
+        self._time_window = time_window
+        self._patch_shape_zyx = patch_shape_zyx
+        self._perturb = perturb
+
+        # Calculate the length once, to avoid recalculating it every time __len__ is called
+        self._calculated_length = sum(len(image.xyz_positions) for image in image_with_division_list)
+
+    def __iter__(self) -> Iterable[Tuple[Tensor, bool]]:
+        for image_with_divisions in self._image_with_divisions_list:
+            image = image_with_divisions.load_image_time_stack(self._time_window)
+            label = image_with_divisions.xyz_positions[:, [2, 1, 0]]
+
+            image = normalize(image)
+
+            for crop, division in generate_patches_division(image, label, self._patch_shape_zyx):
+                yield crop, division
+
+    def __len__(self) -> int:
+        return self._calculated_length
+
+
 # Creates training and validation data from an image_with_positions_list
 def prediction_data_creator(image_with_positions_list: List[ImageWithPositions], time_window, patch_shape):
-
     dataset = tf.data.Dataset.range(len(image_with_positions_list))
 
     # Load data
@@ -50,15 +86,16 @@ def prediction_data_creator(image_with_positions_list: List[ImageWithPositions],
 
     return dataset
 
+
 # Normalizes image data
-def normalize(image, label):
-    image = tf.divide(tf.subtract(image, tf.reduce_min(image)), tf.subtract(tf.reduce_max(image), tf.reduce_min(image)))
-    return image, label
+def normalize(image):
+    image = keras.ops.divide(keras.ops.subtract(image, keras.ops.min(image)),
+                             keras.ops.subtract(keras.ops.max(image), keras.ops.min(image)))
+    return image
 
 
-def scale(image, label, scale = 1):
+def scale(image, label, scale=1):
     if scale != 1:
-
         transform = tf.convert_to_tensor([[scale, 0., 0,
                                            0., scale, 0., 0.,
                                            0.]], dtype=tf.float32)
@@ -96,26 +133,22 @@ def generate_patches_division(image, label, patch_shape):
                [patch_shape[2], patch_shape[2]],
                [0, 0]]
 
-    image_padded = tf.pad(image, padding)
+    image_padded = keras.ops.pad(image, padding)
 
     def single_patch(center_point):
-        # first crop
+        # first, crop to larger region
         init_crop = image_padded[center_point[0]: center_point[0] + patch_shape[0],
                           center_point[1]: center_point[1] + 2*patch_shape[1],
                           center_point[2]: center_point[2] + 2*patch_shape[2], :]
 
-        # second crop of the center region
+        # second, crop to the center region
         crop = init_crop[:,
-               tf.cast(patch_shape[1] / 2, tf.int32): tf.cast(patch_shape[1] / 2, tf.int32) + patch_shape[1],
-               tf.cast(patch_shape[2] / 2, tf.int32): tf.cast(patch_shape[2] / 2, tf.int32) + patch_shape[2], :]
-        #tf.print(center_point)
-        #tf.print(tf.shape(crop))
-        return(crop)
+               keras.ops.cast(patch_shape[1] / 2, "int32"): keras.ops.cast(patch_shape[1] / 2, "int32") + patch_shape[1],
+               keras.ops.cast(patch_shape[2] / 2, "int32"): keras.ops.cast(patch_shape[2] / 2, "int32") + patch_shape[2], :]
 
-    stacked_crops = tf.map_fn(single_patch, label, parallel_iterations=10, fn_output_signature=tf.float32)
-    dataset = tf.data.Dataset.from_tensor_slices(stacked_crops)
+        return crop
 
-    return dataset
-
-
-
+    # create stack of crops centered around positions
+    for single_label, single_division in zip(label, dividing):
+        crop = single_patch(single_label)
+        yield crop, single_division

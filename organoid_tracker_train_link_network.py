@@ -4,17 +4,19 @@
 import json
 import os
 import random
-from functools import partial
 from typing import Set, Tuple
+
+import numpy
 
 os.environ["KERAS_BACKEND"] = "torch"
 import keras.callbacks
+import keras.saving
 import numpy as np
 import tifffile
 from torch.utils.data import DataLoader
 
 from organoid_tracker.linear_models.logistic_regression import platt_scaling
-from organoid_tracker.config import ConfigFile, config_type_image_shape_xyz_to_zyx, config_type_int, config_type_bool
+from organoid_tracker.config import ConfigFile, config_type_image_shape_xyz_to_zyx, config_type_int
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
@@ -139,7 +141,7 @@ model = build_model(
     batch_size=None)
 model.summary()
 
-print("Training...")
+# print("Training...")
 print(training_dataset)
 history = model.fit(training_dataset,
                     epochs=epochs,
@@ -156,13 +158,9 @@ model.save(os.path.join(trained_model_folder, "model.keras"))
 
 
 # Perform Platt scaling
-def predict(inputs, linked, model: tf.keras.Model) -> Tuple[tf.Tensor, tf.Tensor]:
-    linked = linked['out']
+print("Performing Platt scaling...")
 
-    return model(inputs, training=False), linked
-
-
-# create list with links without upsampling
+# new list without any upsampling, based on validation list
 experiment_provider = (params.to_experiment() for params in per_experiment_params)
 list_for_platt_scaling = create_image_with_links_list(experiment_provider, division_multiplier=1,
                                                       mid_distance_multiplier=1)
@@ -177,27 +175,23 @@ for i in list_for_platt_scaling:
 
 random.shuffle(list_for_platt_scaling_val)
 
-callibration_dataset = training_data_creator_from_raw(list_for_platt_scaling_val, time_window=time_window,
-                                                      patch_shape=patch_shape_zyx, batch_size=batch_size,
-                                                      mode='validation', split_proportion=0.0, perturb=False)
-quick_dataset = DataLoader(LimitingDataset(callibration_dataset.dataset, round(0.2 * len(image_with_links_list) * 1 * number_of_postions)), batch_size=batch_size)
+calibration_dataset = training_data_creator_from_raw(list_for_platt_scaling_val, time_window=time_window,
+                                                     patch_shape=patch_shape_zyx, batch_size=batch_size,
+                                                     mode='validation', split_proportion=0.0, perturb=False)
+calibration_dataset = DataLoader(LimitingDataset(calibration_dataset.dataset, round(0.2 * len(image_with_links_list) * 1 * number_of_postions)), batch_size=batch_size)
 
-outputs = model.predict(quick_dataset)
+predicted_chances_all = []
+ground_truth_linked = []
+for sample in calibration_dataset:
+    output_element = model.predict(sample[0], verbose=0)
+    predicted_chances_all += np.squeeze(output_element).tolist()
+    ground_truth_linked += keras.ops.convert_to_numpy(sample[1]).tolist()
 
-prediction = []
-linked = []
-for i, element in enumerate(outputs):
-    if len(element[0] > 1):
-        prediction = prediction + element[0].numpy().tolist()
-        linked = linked + element[1].numpy().tolist()
+predicted_chances_all = np.array(predicted_chances_all)
+ground_truth_linked = np.array(ground_truth_linked)
 
-prediction = np.array(prediction)
-linked = np.array(linked)
-
-(intercept, scaling, scaling_no_intercept) = platt_scaling(prediction, linked)
-print('platt_scaling')
-print(intercept)
-print(scaling)
+(intercept, scaling, scaling_no_intercept) = platt_scaling(predicted_chances_all, ground_truth_linked)
+print(f'Result: y = 1 / (1 + exp(-({scaling:.2f} * x + {intercept:.2f})))')
 
 # save metadata model
 with open(os.path.join(trained_model_folder, "settings.json"), "w") as file_handle:
@@ -206,19 +200,8 @@ with open(os.path.join(trained_model_folder, "settings.json"), "w") as file_hand
                }, file_handle, indent=4)
 
 
-# # generate examples for reality check
-# def predict_with_input(inputs, linked, model: tf.keras.Model) -> Tuple[
-#     tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
-#     image = inputs['input_1']
-#     target_image = inputs['input_2']
-#     distance = inputs['input_distances']
-#
-#     linked = linked['out']
-#     return model(inputs, training=False), linked, image, target_image, distance
-
-
 # Generate examples
-os.makedirs(os.path.join(output_folder, "examples"), exist_ok=True)
+os.makedirs(os.path.join(output_folder, "link_examples"), exist_ok=True)
 
 quick_dataset = DataLoader(LimitingDataset(validation_dataset.dataset, 1000), batch_size=1)
 
@@ -227,52 +210,49 @@ predictions = model.predict(quick_dataset)
 correct_examples = 0
 incorrect_examples = 0
 
-for i, element in enumerate(predictions):
+for sample in quick_dataset:
+    # We use a batch size of 1, so we can just take the first element
+    input_element = sample[0]
+    output_element = model.predict(input_element, verbose=0)
+
+    predicted_chance = numpy.squeeze(output_element)
 
     eps = 10 ** -10
-    prediction = element[0]
-    score = -np.log10(prediction + eps) + np.log10(1 - prediction + eps)
+    score = -np.log10(predicted_chance + eps) + np.log10(1 - predicted_chance + eps)
 
-    linked = 2 * element[1].numpy() - 1
+    ground_truth_linked = 2 * keras.ops.convert_to_numpy(sample[1]) - 1
 
-    image = element[2].numpy()
+    image = keras.ops.convert_to_numpy(input_element[0])
     image = image[0, :, :, :, :]
-    #image = np.swapaxes(image, 0, -1)
     image = np.swapaxes(image, 1, -1)
 
-    target_image = element[3].numpy()
+    target_image = keras.ops.convert_to_numpy(input_element[1])
     target_image = target_image[0, :, :, :, :]
-    #target_image = np.swapaxes(target_image, 0, 2)
-    #target_image = np.swapaxes(target_image, 0, -1)
     target_image = np.swapaxes(target_image, 1, -1)
 
-    print(target_image.shape)
-
-    if ((linked * score) < 0) and (correct_examples < 20):
-        tifffile.imwrite(os.path.join(output_folder, "examples",
+    if ((ground_truth_linked * score) < 0) and (correct_examples < 20):
+        tifffile.imwrite(os.path.join(output_folder, "link_examples",
                                       "CORRECT_example_input" + str(i) + '_score_' +
                                       "{:.2f}".format(float(score)) + ".ome.tiff"), image, imagej=True,
-                         metadata={'axes': 'TZXY'})
-        print(element[4])
-        tifffile.imwrite(os.path.join(output_folder, "examples",
+                         metadata={'axes': 'TZYX'})
+        tifffile.imwrite(os.path.join(output_folder, "link_examples",
                                       "CORRECT_example_target_input" + str(i) + '_score_' +
                                       "{:.2f}".format(float(score)) + ".ome.tiff"), target_image, imagej=True,
-                         metadata={'axes': 'TZXY'})
+                         metadata={'axes': 'TZYX'})
         correct_examples = correct_examples + 1
 
-    if ((linked * score) > 0) and (incorrect_examples < 20):
-        tifffile.imwrite(os.path.join(output_folder, "examples",
+    if ((ground_truth_linked * score) > 0) and (incorrect_examples < 20):
+        tifffile.imwrite(os.path.join(output_folder, "link_examples",
                                       "INCORRECT_example_input" + str(i) + '_score_' +
                                       "{:.2f}".format(float(score)) + ".ome.tiff"), image, imagej=True,
-                         metadata={'axes': 'TZXY'})
-        print(element[4])
-        distance = element[4].numpy()[0, :]
-        tifffile.imwrite(os.path.join(output_folder, "examples",
+                         metadata={'axes': 'TZYX'})
+        distance = keras.ops.convert_to_numpy(input_element[2])[0, :]
+        tifffile.imwrite(os.path.join(output_folder, "link_examples",
                                       "INCORRECT_example_target_input" + str(i) + '_score_' +
                                       "{:.2f}".format(float(score))
                                       + '_x_' + "{:.2f}".format(float(distance[1]))
                                       + '_y_' + "{:.2f}".format(float(distance[2])) + ".ome.tiff"),
-                         target_image, imagej=True, metadata={'axes': 'TZXY'})
+                         target_image, imagej=True, metadata={'axes': 'TZYX'})
         incorrect_examples = incorrect_examples + 1
     if (incorrect_examples == 10) and (correct_examples == 10):
         break
