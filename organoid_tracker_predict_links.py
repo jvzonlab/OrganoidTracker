@@ -2,6 +2,9 @@
 import json
 import os
 
+os.environ["KERAS_BACKEND"] = "torch"
+import keras.saving
+
 from organoid_tracker.config import ConfigFile
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
@@ -10,7 +13,6 @@ from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.core.position_collection import PositionCollection
 
 from organoid_tracker.neural_network.link_detection_cnn.prediction_dataset import prediction_data_creator
-import tensorflow as tf
 import numpy as np
 
 from organoid_tracker.neural_network.link_detection_cnn.training_data_creator import create_image_with_possible_links_list
@@ -99,7 +101,7 @@ with open(os.path.join(_model_folder, "settings.json")) as file_handle:
 
 # load models
 print("Loading model...")
-model = tf.keras.models.load_model(_model_folder)
+model = keras.saving.load_model(os.path.join(_model_folder, "model.keras"))
 if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
     print("Error: no settings.json found in model folder.")
     exit(1)
@@ -130,8 +132,6 @@ for i in range(len(image_with_links_list)):
         likelihood = intercept+scaling*float(np.log10(prediction+eps)-np.log10(1-prediction+eps))
         scaled_prediction = (10**likelihood)/(1+10**likelihood)
 
-        #experiment.link_data.set_link_data(predicted_link[0], predicted_link[1], data_name="link_probability",
-                                         #  value=float(scaled_prediction))
         experiment.link_data.set_link_data(predicted_link[0], predicted_link[1], data_name="link_probability",
                                            value=float(scaled_prediction))
         experiment.link_data.set_link_data(predicted_link[0], predicted_link[1], data_name="link_penalty",

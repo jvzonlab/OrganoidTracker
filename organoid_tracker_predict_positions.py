@@ -10,10 +10,8 @@ from skimage.feature import peak_local_max
 import tifffile
 
 from organoid_tracker.config import ConfigFile, config_type_int
-from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
-from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 from organoid_tracker.imaging import io, list_io
 from organoid_tracker.neural_network.position_detection_cnn.loss_functions import loss, position_precision, overcount, \
@@ -109,7 +107,7 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
     image_list = create_image_list_without_positions(experiment)
 
     # set relevant parameters
-    _patch_shape_z = model.layers[0].input_shape[0][1] - _buffer_z * 2  # All models have a fixed z-shape
+    _patch_shape_z = model.layers[0].batch_shape[1] - _buffer_z * 2  # All models have a fixed z-shape
     patch_shape_zyx = [_patch_shape_z, _patch_shape_y, _patch_shape_x]
     buffer = np.array([[_buffer_z, _buffer_z], [_buffer_y, _buffer_y], [_buffer_x, _buffer_x]])
 

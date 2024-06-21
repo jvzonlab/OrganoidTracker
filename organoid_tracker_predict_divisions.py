@@ -1,26 +1,25 @@
 """Predictions particle positions using an already-trained convolutional neural network."""
 import json
 import os
-from typing import Tuple
-
-from organoid_tracker.config import ConfigFile, config_type_bool
-from organoid_tracker.core import TimePoint
-from organoid_tracker.core.position import Position
-from organoid_tracker.core.resolution import ImageResolution
-from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
-from organoid_tracker.imaging import io
-from organoid_tracker.image_loading import general_image_loader
-from organoid_tracker.core.position_collection import PositionCollection
-
-from organoid_tracker.neural_network.division_detection_cnn.prediction_dataset import prediction_data_creator
-from organoid_tracker.neural_network.division_detection_cnn.training_data_creator import create_image_with_positions_list
 
 os.environ["KERAS_BACKEND"] = "torch"
 import keras.saving
 import numpy as np
 
-# PARAMETERS
+from organoid_tracker.config import ConfigFile
+from organoid_tracker.core import TimePoint
+from organoid_tracker.core.position import Position
+from organoid_tracker.core.position_collection import PositionCollection
+from organoid_tracker.core.resolution import ImageResolution
+from organoid_tracker.image_loading import general_image_loader
+from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
+from organoid_tracker.imaging import io
 from organoid_tracker.linking.nearby_position_finder import find_closest_n_positions
+from organoid_tracker.neural_network.division_detection_cnn.prediction_dataset import prediction_data_creator
+from organoid_tracker.neural_network.division_detection_cnn.training_data_creator import \
+    create_image_with_positions_list
+
+# PARAMETERS
 
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("predict_divisions")
@@ -30,9 +29,8 @@ _images_folder = config.get_or_prompt("images_container", "If you have a folder 
 _images_format = config.get_or_prompt("images_pattern", "What are the image file names? (Use {time:03} for three digits"
                                       " representing the time point, use {channel} for the channel)",
                                       store_in_defaults=True)
-_positions_file = config.get_or_default("positions_file",
-                                            "Where are the cell postions saved?",
-                                            comment="What are the detected positions for those images?")
+_positions_file = config.get_or_prompt("positions_file",
+                                       "Where are the cell positions saved?")
 
 _min_time_point = int(config.get_or_default("min_time_point", str(1), store_in_defaults=True))
 _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_in_defaults=True))
@@ -125,9 +123,6 @@ number_of_positions_done = 0
 # predict for every time point
 for i in range(len(image_with_positions_list)):
     image_with_positions = image_with_positions_list[i]
-
-    print("predict image {}/{}".format(i, len(image_with_positions_list)))
-
     set_size = len(positions_list[i])
 
     # Extract relevant data
@@ -137,16 +132,16 @@ for i in range(len(image_with_positions_list)):
     # get positions
     positions = positions_list[i]
 
-    for positions, prediction in zip(positions, predictions):
+    for position, prediction in zip(positions, predictions):
         eps = 10 ** -10
         likelihood = intercept + scaling * float(np.log10(prediction + eps) - np.log10(1 - prediction + eps))
         scaled_prediction = (10**likelihood) / (1 + 10**likelihood)
 
         # add division prediction to the data
-        experiment.position_data.set_position_data(positions, data_name="division_probability", value=float(scaled_prediction))
+        experiment.position_data.set_position_data(position, data_name="division_probability", value=float(scaled_prediction))
         # add division penalty (log-likelihood) to the data
         eps = 10 ** -10
-        experiment.position_data.set_position_data(positions, data_name="division_penalty", value=float(-likelihood))
+        experiment.position_data.set_position_data(position, data_name="division_penalty", value=float(-likelihood))
 
 # Remove oversegmentation for dividing cells by setting a minimal distance for dividing cells
 to_remove = []
