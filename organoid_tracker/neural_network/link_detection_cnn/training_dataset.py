@@ -29,10 +29,10 @@ import keras
 import numpy as np
 from torch.utils.data import IterableDataset, DataLoader
 
-from organoid_tracker.neural_network import Tensor
+from organoid_tracker.neural_network import Tensor, image_transforms
 from organoid_tracker.neural_network.dataset_transforms import ShufflingDataset, RepeatingDataset
 from organoid_tracker.neural_network.link_detection_cnn.ImageWithLinks_to_tensor_loader import \
-    tf_load_images_with_links, load_images_with_links
+    load_images_with_links
 from organoid_tracker.neural_network.link_detection_cnn.training_data_creator import _ImageWithLinks
 
 
@@ -55,10 +55,11 @@ class _TorchDataset(IterableDataset):
         # Calculate the length once, to avoid recalculating it every time __len__ is called
         self._calculated_length = sum(len(image.distances) for image in image_with_division_list)
 
-    def __iter__(self) -> Iterable[Tuple[Tensor, bool]]:
-        for image_with_divisions in self._image_with_divisions_list:
+    def __iter__(self) -> Iterable[Tuple[List[Tensor], bool]]:
+        # Output shape is iterable of (crops, target_crops, distances) -> linked
+        for image_with_links in self._image_with_divisions_list:
             image, target_image, label, target_label, distances, linked =\
-                load_images_with_links(image_with_divisions, self._time_window)
+                load_images_with_links(image_with_links, self._time_window)
 
             image = normalize(image)
             target_image = normalize(target_image)
@@ -68,7 +69,7 @@ class _TorchDataset(IterableDataset):
                 if self._perturb:
                     crops, target_crops = apply_noise(crops, target_crops)
                 crops, target_crops = add_3d_coord(crops, target_crops, distances)
-                yield crops, target_crops, distances, linked
+                yield [crops, target_crops, distances], linked
 
     def __len__(self) -> int:
         return self._calculated_length
@@ -154,7 +155,7 @@ def apply_random_perturbations_stacked(stacked, distance):
     transforms = []
     # random rotation in xy
     angle = keras.ops.random.uniform([], -np.pi, np.pi)
-    transform = tfa.image.transform_ops.angles_to_projective_transforms(
+    transform = image_transforms.angles_to_projective_transforms(
         angle, image_shape[1], image_shape[2])
     transforms.append(transform)
     # random scale 80% to 120% size
@@ -165,19 +166,27 @@ def apply_random_perturbations_stacked(stacked, distance):
     transforms.append(transform)
 
     # compose rotation-scale transform
-    compose_transforms = tfa.image.transform_ops.compose_transforms(transforms)
-    stacked = tfa.image.transform(stacked, compose_transforms, interpolation='BILINEAR')
+    compose_transforms = image_transforms.compose_transforms(transforms)
+    # convert 1 x 8 array to Z x 8 array, as every layer should get the same transformation
+    compose_transforms = keras.ops.tile(compose_transforms, [keras.ops.shape(stacked)[0], 1])
+
+    stacked = keras.ops.image.affine_transform(stacked, compose_transforms, interpolation='bilinear', data_format='channels_last')
 
     # transform displacement vector
 
     distance = keras.ops.cast(distance, "float32")
-    new_angle = keras.ops.math.atan2(distance[2], distance[1]) + angle
+    new_angle = keras.ops.arctan2(distance[2], distance[1]) + angle
     xy_length = keras.ops.sqrt(keras.ops.square(distance[1])+keras.ops.square(distance[2]))
 
-    y_dist = xy_length*keras.ops.math.cos(new_angle)/scale
-    x_dist = xy_length*keras.ops.math.sin(new_angle)/scale
+    y_dist = xy_length*keras.ops.cos(new_angle)/scale
+    x_dist = xy_length*keras.ops.sin(new_angle)/scale
 
-    distance_new = keras.ops.concat([distance[0], y_dist, x_dist], axis=0)
+    # Convert from zero-dim tensor into 1-dim tensor (otherwise keras.ops.concatenate will fail on the PyTorch backend)
+    distance_0 = keras.ops.reshape(distance[0], newshape=(1,))
+    y_dist = keras.ops.reshape(y_dist, newshape=(1,))
+    x_dist = keras.ops.reshape(x_dist, newshape=(1,))
+
+    distance_new = keras.ops.concatenate([distance_0, y_dist, x_dist], axis=0)
     #keras.ops.print(distance_new)
 
     return stacked, distance_new
@@ -185,13 +194,13 @@ def apply_random_perturbations_stacked(stacked, distance):
 def apply_random_flips(stacked, distance):
     random = keras.ops.random.uniform((1,))
 
-    stacked = keras.ops.cond(random<0.5, lambda: keras.ops.reverse(stacked, axis=[1]), lambda: stacked)
-    distance = keras.ops.cond(random<0.5, lambda: distance * keras.ops.constant([1, -1, 1]), lambda: distance)
+    stacked = keras.ops.cond(random<0.5, lambda: keras.ops.flip(stacked, axis=[1]), lambda: stacked)
+    distance = keras.ops.cond(random<0.5, lambda: distance * keras.ops.flip([1, -1, 1]), lambda: distance)
 
     random = keras.ops.random.uniform((1,))
 
-    stacked = keras.ops.cond(random<0.5, lambda: keras.ops.reverse(stacked, axis=[2]), lambda: stacked)
-    distance = keras.ops.cond(random<0.5, lambda: distance * keras.ops.constant([1, 1, -1]), lambda: distance)
+    stacked = keras.ops.cond(random<0.5, lambda: keras.ops.flip(stacked, axis=[2]), lambda: stacked)
+    distance = keras.ops.cond(random<0.5, lambda: distance * keras.ops.flip([1, 1, -1]), lambda: distance)
 
     distance = keras.ops.cast(distance, "float32")
 
@@ -200,9 +209,9 @@ def apply_random_flips(stacked, distance):
 def random_flip_z(image, target_image, distances, linked):
     random = keras.ops.random.uniform((1,))
 
-    image = keras.ops.cond(random<0.5, lambda: keras.ops.reverse(image, axis=[0]), lambda: image)
-    target_image = keras.ops.cond(random<0.5, lambda: keras.ops.reverse(target_image, axis=[0]), lambda: target_image)
-    distances = keras.ops.cond(random<0.5, lambda: distances * keras.ops.constant([-1., 1., 1.]), lambda: distances)
+    image = keras.ops.cond(random<0.5, lambda: keras.ops.flip(image, axis=[0]), lambda: image)
+    target_image = keras.ops.cond(random<0.5, lambda: keras.ops.flip(target_image, axis=[0]), lambda: target_image)
+    distances = keras.ops.cond(random<0.5, lambda: distances * keras.ops.convert_to_tensor([-1., 1., 1.]), lambda: distances)
 
     return image, target_image, distances, linked
 
@@ -210,8 +219,8 @@ def random_flip_z(image, target_image, distances, linked):
 def apply_noise(image, target_image):
     # take power of image to increase or reduce contrast
     random_mul = keras.ops.random.uniform((1,), minval=0.7, maxval=1.3)
-    image = keras.ops.pow(image, random_mul)
-    target_image = keras.ops.pow(target_image, random_mul)
+    image = keras.ops.power(image, random_mul)
+    target_image = keras.ops.power(target_image, random_mul)
 
     # take a random decay constant (biased to 1 by taking the root)
     #decay = keras.ops.sqrt(keras.ops.random.uniform((1,), minval=0.16, maxval=1))

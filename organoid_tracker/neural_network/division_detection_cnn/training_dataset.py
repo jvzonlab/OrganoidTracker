@@ -23,15 +23,12 @@
 # SOFTWARE.
 from typing import List, Tuple, Iterable
 
-from functools import partial
-
 import keras
 import numpy as np
 from torch.utils.data import IterableDataset, DataLoader
 
 from organoid_tracker.neural_network import image_transforms, Tensor
 from organoid_tracker.neural_network.dataset_transforms import ShufflingDataset, RepeatingDataset
-from organoid_tracker.neural_network.division_detection_cnn.image_with_divisions_to_tensor_loader import tf_load_images_with_divisions
 from organoid_tracker.neural_network.division_detection_cnn.training_data_creator import _ImageWithDivisions
 
 

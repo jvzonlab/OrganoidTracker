@@ -15,7 +15,8 @@ from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.neural_network.division_detection_cnn.prediction_dataset import prediction_data_creator
 from organoid_tracker.neural_network.division_detection_cnn.training_data_creator import create_image_with_positions_list
 
-import tensorflow as tf
+os.environ["KERAS_BACKEND"] = "torch"
+import keras.saving
 import numpy as np
 
 # PARAMETERS
@@ -106,7 +107,7 @@ with open(os.path.join(_model_folder, "settings.json")) as file_handle:
 
 # load model
 print("Loading model...")
-model = tf.keras.models.load_model(_model_folder)
+model = keras.saving.load_model(os.path.join(_model_folder, "model.keras"))
 if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
     print("Error: no settings.json found in model folder.")
     exit(1)

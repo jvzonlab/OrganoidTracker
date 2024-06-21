@@ -88,22 +88,12 @@ def conv_block(n_conv, filters, kernel=3, pool_size=2, pool_strides=2, name=None
     layers = []
     for index in range(n_conv):
         layer = keras.layers.Conv3D(filters=filters, kernel_size=kernel, padding='same', activation='relu',
-                                    name=name + '/conv{0}'.format(index + 1))
+                                    name=name + '>conv{0}'.format(index + 1))
         layers.append(layer)
 
     layer = keras.layers.MaxPooling3D(pool_size=pool_size, strides=pool_strides, padding='same',
-                                      name=name + '/pool')
+                                      name=name + '>pool')
     layers.append(layer)
 
     return layers
 
-
-# calculates pixel-wise correlation between images without mixing batches (first dimension)
-def correlate(tensor_1, tensor_2):
-    mu_1 = keras.ops.mean(tensor_1, axis=[1, 2, 3, 4], keepdims=True)
-    mu_2 = keras.ops.mean(tensor_2, axis=[1, 2, 3, 4], keepdims=True)
-    se_1 = keras.ops.sqrt(keras.ops.sum(tf.square(tensor_1 - mu_1), axis=[1, 2, 3, 4]))
-    se_2 = keras.ops.sqrt(keras.ops.sum(tf.square(tensor_2 - mu_2), axis=[1, 2, 3, 4]))
-    correlation = keras.ops.sum(keras.ops.multiply(tensor_1 - mu_1, tensor_2 - mu_2), axis=[1, 2, 3, 4])
-    correlation = keras.ops.divide(correlation, keras.ops.multiply(se_1, se_2))
-    return correlation
