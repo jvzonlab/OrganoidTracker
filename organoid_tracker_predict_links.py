@@ -36,10 +36,7 @@ if _pixel_size_x_um and _pixel_size_y_um and _pixel_size_z_um and _time_point_du
 else:
     fallback_resolution = None
 
-_positions_file = config.get_or_default("positions_file",
-                                            "Where are the cell postions saved?",
-                                            comment="What are the detected positions for those images?")
-
+_positions_file = config.get_or_prompt("positions_file", "Where are the cell positions saved?")
 _min_time_point = int(config.get_or_default("min_time_point", str(1), store_in_defaults=True))
 _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_in_defaults=True))
 
