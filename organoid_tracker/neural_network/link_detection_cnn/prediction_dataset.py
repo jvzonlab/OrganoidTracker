@@ -30,6 +30,7 @@ import numpy as np
 from torch.utils.data import IterableDataset, DataLoader
 
 from organoid_tracker.neural_network import image_transforms, Tensor
+from organoid_tracker.neural_network.dataset_transforms import PrefetchingDataset
 from organoid_tracker.neural_network.link_detection_cnn.ImageWithLinks_to_tensor_loader import load_images_with_links
 from organoid_tracker.neural_network.link_detection_cnn.training_data_creator import _ImageWithLinks
 
@@ -74,7 +75,9 @@ class _TorchDataset(IterableDataset):
 
 def prediction_data_creator(load_images_with_links_list: List[_ImageWithLinks], time_window: Tuple[int, int],
                             patch_shape_zyx: Tuple[int, int, int]):
-    return DataLoader(_TorchDataset(load_images_with_links_list, time_window, patch_shape_zyx), batch_size=50)
+    dataset = _TorchDataset(load_images_with_links_list, time_window, patch_shape_zyx)
+    dataset = PrefetchingDataset(dataset, 100)
+    return DataLoader(dataset, batch_size=50)
 
 
 def generate_patches_links(image, target_image, label, target_label, distances, patch_shape):
