@@ -21,6 +21,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import threading
 from typing import List, Tuple, Iterable
 
 import keras
@@ -32,7 +33,7 @@ from organoid_tracker.neural_network import image_transforms, Tensor
 from organoid_tracker.neural_network.position_detection_cnn.image_with_positions_to_tensor_loader import \
     load_images_with_positions
 from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import ImageWithPositions
-from organoid_tracker.neural_network.dataset_transforms import ShufflingDataset, RepeatingDataset
+from organoid_tracker.neural_network.dataset_transforms import ShufflingDataset, RepeatingDataset, PrefetchingDataset
 
 
 class _TorchDataset(IterableDataset):
@@ -88,6 +89,7 @@ def training_data_creator_from_raw(image_with_positions_list: List[ImageWithPosi
         image_with_positions_list = image_with_positions_list[round(split_proportion * len(image_with_positions_list)):]
 
     dataset = _TorchDataset(image_with_positions_list, time_window, patch_shape, mode == "train", crop)
+    dataset = PrefetchingDataset(dataset, buffer_size=100)
     if mode == "train":
         dataset = ShufflingDataset(dataset, buffer_size=batch_size * 100, seed=seed)
     return DataLoader(RepeatingDataset(dataset), batch_size=batch_size, num_workers=0, drop_last=True)
