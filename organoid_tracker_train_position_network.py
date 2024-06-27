@@ -122,7 +122,8 @@ model = build_model(shape=(patch_shape_zyx[0], None, None, time_window[1] - time
 model.summary()
 
 print("Training...")
-logging_folder = os.path.join(output_folder, "training_logging")
+trained_model_folder = os.path.join(output_folder, "model_positions")
+logging_folder = os.path.join(trained_model_folder, "training_logging")
 os.makedirs(logging_folder, exist_ok=True)
 example_x, example_y_true = next(iter(validation_dataset))
 example_dataset = ExampleDataset(input=keras.ops.convert_to_numpy(example_x), y_true=keras.ops.convert_to_numpy(example_y_true))
@@ -140,7 +141,6 @@ history = model.fit(training_dataset,
 
 
 print("Saving model...")
-trained_model_folder = os.path.join(output_folder, "model_positions")
 os.makedirs(trained_model_folder, exist_ok=True)
 model.save(os.path.join(trained_model_folder, "model.keras"))
 with open(os.path.join(trained_model_folder, "settings.json"), "w") as file_handle:

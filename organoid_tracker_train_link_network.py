@@ -141,18 +141,19 @@ model = build_model(
     batch_size=None)
 model.summary()
 
-# print("Training...")
-print(training_dataset)
+print("Training...")
+trained_model_folder = os.path.join(output_folder, "model_links")
+logging_folder = os.path.join(trained_model_folder, "training_logging")
 history = model.fit(training_dataset,
                     epochs=epochs,
                     steps_per_epoch=len(training_dataset),
                     validation_data=validation_dataset,
                     validation_steps=len(validation_dataset),
                     callbacks=[
+                        keras.callbacks.CSVLogger(os.path.join(logging_folder, "logging.csv"), separator=",", append=False),
                         keras.callbacks.EarlyStopping(patience=1, min_delta=0.001, restore_best_weights=True)])
 
 print("Saving model...")
-trained_model_folder = os.path.join(output_folder, "model_links")
 os.makedirs(trained_model_folder, exist_ok=True)
 model.save(os.path.join(trained_model_folder, "model.keras"))
 
@@ -231,23 +232,23 @@ for sample in quick_dataset:
     target_image = np.swapaxes(target_image, 1, -1)
 
     if ((ground_truth_linked * score) < 0) and (correct_examples < 20):
-        tifffile.imwrite(os.path.join(output_folder, "link_examples",
+        tifffile.imwrite(os.path.join(trained_model_folder, "link_examples",
                                       "CORRECT_example_input" + str(i) + '_score_' +
                                       "{:.2f}".format(float(score)) + ".ome.tiff"), image, imagej=True,
                          metadata={'axes': 'TZYX'})
-        tifffile.imwrite(os.path.join(output_folder, "link_examples",
+        tifffile.imwrite(os.path.join(trained_model_folder, "link_examples",
                                       "CORRECT_example_target_input" + str(i) + '_score_' +
                                       "{:.2f}".format(float(score)) + ".ome.tiff"), target_image, imagej=True,
                          metadata={'axes': 'TZYX'})
         correct_examples = correct_examples + 1
 
     if ((ground_truth_linked * score) > 0) and (incorrect_examples < 20):
-        tifffile.imwrite(os.path.join(output_folder, "link_examples",
+        tifffile.imwrite(os.path.join(trained_model_folder, "link_examples",
                                       "INCORRECT_example_input" + str(i) + '_score_' +
                                       "{:.2f}".format(float(score)) + ".ome.tiff"), image, imagej=True,
                          metadata={'axes': 'TZYX'})
         distance = keras.ops.convert_to_numpy(input_element[2])[0, :]
-        tifffile.imwrite(os.path.join(output_folder, "link_examples",
+        tifffile.imwrite(os.path.join(trained_model_folder, "link_examples",
                                       "INCORRECT_example_target_input" + str(i) + '_score_' +
                                       "{:.2f}".format(float(score))
                                       + '_x_' + "{:.2f}".format(float(distance[1]))

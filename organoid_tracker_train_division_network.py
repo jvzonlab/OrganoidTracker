@@ -133,7 +133,8 @@ model.summary()
 
 # train model
 print("Training...")
-logging_folder = os.path.join(output_folder, "training_logging")
+trained_model_folder = os.path.join(output_folder, "model_divisions")
+logging_folder = os.path.join(trained_model_folder, "training_logging")
 os.makedirs(logging_folder, exist_ok=True)
 
 history = model.fit(training_dataset,
@@ -146,7 +147,6 @@ history = model.fit(training_dataset,
 
 # save model
 print("Saving model...")
-trained_model_folder = os.path.join(output_folder, "model_divisions")
 os.makedirs(trained_model_folder, exist_ok=True)
 model.save(os.path.join(trained_model_folder, "model.keras"))
 
@@ -218,7 +218,7 @@ for i, element in enumerate(quick_dataset):
     image = np.moveaxis(image, source=-1, destination=0)
 
     if ((ground_truth_dividing * score) < 0) and (correct_examples < 10):
-        tifffile.imwrite(os.path.join(output_folder, "division_examples",
+        tifffile.imwrite(os.path.join(trained_model_folder, "division_examples",
                                       "CORRECT_example_input" + str(i) + '_score_' +
                                       "{:.2f}".format(float(score)) + ".ome.tiff"), image, imagej=True,
                          metadata={'axes': 'TZYX'})
@@ -226,7 +226,7 @@ for i, element in enumerate(quick_dataset):
         correct_examples = correct_examples + 1
 
     if ((ground_truth_dividing * score) > 0) and (incorrect_examples < 10):
-        tifffile.imwrite(os.path.join(output_folder, "division_examples",
+        tifffile.imwrite(os.path.join(trained_model_folder, "division_examples",
                                       "INCORRECT_example_input" + str(i) + '_score_' +
                                       "{:.2f}".format(float(score)) + ".ome.tiff"), image, imagej=True,
                          metadata={'axes': 'TZYX'})
