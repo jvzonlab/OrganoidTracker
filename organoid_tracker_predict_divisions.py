@@ -110,7 +110,7 @@ if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
     print("Error: no settings.json found in model folder.")
     exit(1)
 
-print("start predicting...")
+print("Start predicting...")
 
 # create PositionCollection to store positions with division scores
 all_positions = PositionCollection()
@@ -170,13 +170,6 @@ for position in experiment.positions:
                                     time_point=position.time_point())
                 to_add.append(add_position)
 
-                print('remove:')
-                print(position)
-                print('remove:')
-                print(neighbor)
-                print('add:')
-                print(add_position)
-
                 experiment.position_data.set_position_data(add_position, 'division_probability',
                                                            max(experiment.position_data.get_position_data(position,
                                                                                                           data_name="division_probability"),
@@ -206,15 +199,13 @@ for position in experiment.positions:
 
             # remove oversegmentation in previous frame
             if (distance < _min_distance_dividing) and (neighbor != closest_neighbor):
-                print(neighbor)
                 to_remove = to_remove + [neighbor]
 
 # adapt positions
 experiment.remove_positions(to_remove)
 experiment.positions.add_positions(PositionCollection(to_add))
 
-print('division oversegmentations removed:')
-print(len(to_remove))
+print(f'Division oversegmentations removed: {len(to_remove)}')
 
 print("Saving file...")
 io.save_data_to_json(experiment, _output_file)

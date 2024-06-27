@@ -27,6 +27,7 @@ import keras
 from torch.utils.data import IterableDataset, DataLoader
 
 from organoid_tracker.neural_network import Tensor
+from organoid_tracker.neural_network.dataset_transforms import PrefetchingDataset
 from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import ImageWithPositions
 
 
@@ -62,6 +63,7 @@ class _TorchDataset(IterableDataset):
 # Creates training and validation data from an image_with_positions_list
 def prediction_data_creator(image_with_positions_list: List[ImageWithPositions], time_window, patch_shape):
     dataset = _TorchDataset(image_with_positions_list, time_window, patch_shape)
+    dataset = PrefetchingDataset(dataset, 100)
     return DataLoader(dataset, batch_size=1)
 
 

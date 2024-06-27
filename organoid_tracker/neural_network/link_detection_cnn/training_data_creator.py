@@ -247,14 +247,9 @@ def create_image_with_possible_links_list(experiment: Experiment):
 
                         predicted_links.append((position, future_possibility))
 
-        print(time_point)
-
         # read positions to numpy array
         max_size = 1000
         while len(positions_xyz) > 0:
-            print(len(positions_xyz))
-            if len(positions_xyz) > max_size:
-                print('split link list')
             image_with_links_list.append(
                 _ImageWithLinks(str(experiment.name), experiment.images, time_point,
                                 numpy.array(positions_xyz[:max_size], dtype=numpy.int32),

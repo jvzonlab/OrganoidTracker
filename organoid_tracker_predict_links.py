@@ -75,6 +75,7 @@ if _images_channels != {1}:
     experiment.images.image_loader(channel_merging_image_loader)
 
 # create image_list from experiment
+print("Building link list...")
 image_with_links_list, predicted_links_list, possible_links = create_image_with_possible_links_list(experiment)
 
 # set relevant parameters
@@ -104,7 +105,7 @@ if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
     exit(1)
 
 
-print("start predicting...")
+print("Start predicting...")
 all_positions = PositionCollection()
 
 prediction_dataset_all = prediction_data_creator(image_with_links_list, time_window, patch_shape_zyx)
@@ -112,16 +113,14 @@ predictions_all = model.predict(prediction_dataset_all)
 
 number_of_links_done = 0
 
+print("Storing predictions in experiment...")
 for i in range(len(image_with_links_list)):
-    print("predict image {}/{}".format(i, len(image_with_links_list)))
-
     set_size = len(predicted_links_list[i])
 
     # create dataset and predict
     predictions = predictions_all[number_of_links_done : (number_of_links_done+set_size)]
     number_of_links_done = number_of_links_done + set_size
 
-    #predictions = model.predict(prediction_dataset)
     predicted_links = predicted_links_list[i]
 
     for predicted_link, prediction in zip(predicted_links, predictions):
