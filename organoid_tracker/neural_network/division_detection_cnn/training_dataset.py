@@ -28,7 +28,7 @@ import numpy as np
 from torch.utils.data import IterableDataset, DataLoader
 
 from organoid_tracker.neural_network import image_transforms, Tensor
-from organoid_tracker.neural_network.dataset_transforms import ShufflingDataset, RepeatingDataset
+from organoid_tracker.neural_network.dataset_transforms import ShufflingDataset, RepeatingDataset, PrefetchingDataset
 from organoid_tracker.neural_network.division_detection_cnn.training_data_creator import _ImageWithDivisions
 
 
@@ -77,7 +77,7 @@ def training_data_creator_from_raw(image_with_divisions_list: List[_ImageWithDiv
         image_with_divisions_list = image_with_divisions_list[round(split_proportion * len(image_with_divisions_list)):]
 
     dataset = _TorchDataset(image_with_divisions_list, time_window=time_window, patch_shape_zyx=patch_shape, perturb=perturb)
-
+    dataset = PrefetchingDataset(dataset, buffer_size=100)
     if mode == "train":
         dataset = ShufflingDataset(dataset, buffer_size=batch_size * 100)
     dataset = RepeatingDataset(dataset)

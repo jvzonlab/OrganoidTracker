@@ -30,7 +30,7 @@ import numpy as np
 from torch.utils.data import IterableDataset, DataLoader
 
 from organoid_tracker.neural_network import Tensor, image_transforms
-from organoid_tracker.neural_network.dataset_transforms import ShufflingDataset, RepeatingDataset
+from organoid_tracker.neural_network.dataset_transforms import ShufflingDataset, RepeatingDataset, PrefetchingDataset
 from organoid_tracker.neural_network.link_detection_cnn.ImageWithLinks_to_tensor_loader import \
     load_images_with_links
 from organoid_tracker.neural_network.link_detection_cnn.training_data_creator import _ImageWithLinks
@@ -87,7 +87,7 @@ def training_data_creator_from_raw(images_with_links_list: List[_ImageWithLinks]
         images_with_links_list = images_with_links_list[round(split_proportion * len(images_with_links_list)):]
 
     dataset = _TorchDataset(images_with_links_list, time_window, patch_shape, perturb)
-
+    dataset = PrefetchingDataset(dataset, buffer_size=100)
     if mode == "train":
         dataset = ShufflingDataset(dataset, buffer_size=buffer)
     dataset = RepeatingDataset(dataset)

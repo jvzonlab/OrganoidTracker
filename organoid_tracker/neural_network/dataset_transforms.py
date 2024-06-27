@@ -1,5 +1,7 @@
+import threading
+from queue import Queue
 from random import Random
-from typing import List, Any, Iterable, Optional, Iterator
+from typing import Any, Iterable, Iterator
 
 from torch.utils.data import IterableDataset
 
@@ -18,6 +20,46 @@ class RepeatingDataset(IterableDataset):
 
     def __len__(self) -> int:
         """We still return the length of the internal dataset, so that the user knows how long an epoch should be."""
+        # Will throw a TypeError if the internal dataset doesn't have a __len__ method
+        # noinspection PyTypeChecker
+        return len(self._internal_dataset)
+
+
+class PrefetchingDataset(IterableDataset):
+    """Wraps an IterableDataset and prefetches samples into a buffer. The prefetching is done in a separate thread.
+
+    The advantage of using multithreading instead of multiprocessing is that we can use the same memory space for the
+    buffer, so we don't need to copy things and use more (V)RAM. The downside is that we can't use multiple CPU cores,
+    but that's not really a problem here since the bottleneck in our case is the disk I/O.
+    """
+
+    _LAST_ELEMENT = "~~~LAST_ELEMENT~~~"
+
+    _internal_dataset: IterableDataset
+    _prefetch_buffer: Queue
+
+    def __init__(self, dataset: IterableDataset, buffer_size: int = 5):
+        self._internal_dataset = dataset
+        self._prefetch_buffer = Queue(maxsize=buffer_size)
+
+    def _run(self):
+        """Starts prefetching samples from the internal dataset. This method should be called from a separate thread."""
+        for sample in self._internal_dataset:
+            qsize = self._prefetch_buffer.qsize()
+            self._prefetch_buffer.put(sample, block=True)
+        self._prefetch_buffer.put(self._LAST_ELEMENT)
+
+    def __iter__(self) -> Iterable[Any]:
+        threading.Thread(target=self._run, daemon=True).start()
+
+        while True:
+            element = self._prefetch_buffer.get(block=True)
+            if element == self._LAST_ELEMENT:
+                break
+
+            yield element
+
+    def __len__(self) -> int:
         # Will throw a TypeError if the internal dataset doesn't have a __len__ method
         # noinspection PyTypeChecker
         return len(self._internal_dataset)
@@ -81,17 +123,20 @@ class ShufflingDataset(IterableDataset):
 
     def __iter__(self) -> Iterable[Any]:
         buffer = list()
-        for sample in self._internal_dataset:
-            # Keep on collecting samples until buffer is full
-            buffer.append(sample)
+        for incoming_sample in self._internal_dataset:
+            if len(buffer) < self._buffer_size:
+                # Keep on collecting samples until buffer is full
+                buffer.append(incoming_sample)
+            else:
+                # Buffer is now full, we can start yielding random samples
+                # Every time, we pick one random position, and yield the existing sample in that position,
+                # and put the incoming sample in that place
+                picked_index = self._random.randint(0, len(buffer) - 1)
+                picked_sample = buffer[picked_index]
+                buffer[picked_index] = incoming_sample
+                yield picked_sample
 
-            if len(buffer) >= self._buffer_size:
-                # Time to shuffle buffer and yield all samples
-                self._random.shuffle(buffer)
-                yield from buffer
-                buffer.clear()
-
-        # Yield the remaining samples
+        # No more incoming samples, yield the remaining samples in the buffer
         self._random.shuffle(buffer)
         yield from buffer
 
