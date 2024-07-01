@@ -74,11 +74,12 @@ def load_images_from_dictionary(experiment: Experiment, dictionary: Dict[str, An
     if "images_time_appending" in dictionary:
         image_loaders = list()
         for image_dict in dictionary["images_time_appending"]:
-            load_images_from_dictionary(experiment, image_dict, min_time_point, max_time_point)
+            # We don't pass on the min and max time point, since time will be shifted for each image loader
+            load_images_from_dictionary(experiment, image_dict)
             image_loaders.append(experiment.images.image_loader())
 
         from organoid_tracker.image_loading import builtin_merging_image_loaders
-        experiment.images.image_loader(builtin_merging_image_loaders.TimeAppendingImageLoader(image_loaders))
+        experiment.images.image_loader(builtin_merging_image_loaders.TimeAppendingImageLoader(image_loaders, min_time_point, max_time_point))
         return
 
     if "images_container" in dictionary and "images_pattern" in dictionary:
