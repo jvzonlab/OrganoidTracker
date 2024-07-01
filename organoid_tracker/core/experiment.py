@@ -132,14 +132,14 @@ class Experiment:
 
     def first_time_point_number(self) -> Optional[int]:
         """Gets the first time point of the experiment where there is data (images, splines and/or positions)."""
-        return min_none(self._images.image_loader().first_time_point_number(),
+        return min_none(self._images.first_time_point_number(),
                         self._positions.first_time_point_number(),
                         self.splines.first_time_point_number())
 
     def last_time_point_number(self) -> Optional[int]:
         """Gets the last time point (inclusive) of the experiment where there is data (images, splines and/or
          positions)."""
-        return max_none(self._images.image_loader().last_time_point_number(),
+        return max_none(self._images.last_time_point_number(),
                         self._positions.last_time_point_number(),
                         self.splines.last_time_point_number())
 

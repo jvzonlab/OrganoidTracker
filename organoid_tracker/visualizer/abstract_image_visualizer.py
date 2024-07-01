@@ -772,7 +772,7 @@ class AbstractImageVisualizer(Visualizer):
 
     def _clamp_channel(self):
         """Makes sure a valid channel is selected. Changes the channel if not."""
-        available_channels = self._experiment.images.image_loader().get_channels()
+        available_channels = self._experiment.images.get_channels()
 
         # Handle the case where no channels are available
         if len(available_channels) == 0:
