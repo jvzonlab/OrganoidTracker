@@ -91,7 +91,7 @@ def training_data_creator_from_raw(image_with_positions_list: List[ImageWithPosi
     dataset = _TorchDataset(image_with_positions_list, time_window, patch_shape, mode == "train", crop)
     dataset = PrefetchingDataset(dataset, buffer_size=100)
     if mode == "train":
-        dataset = ShufflingDataset(dataset, buffer_size=batch_size * 100, seed=seed)
+        dataset = ShufflingDataset(dataset, buffer_size=batch_size * 10, seed=seed)
     return DataLoader(RepeatingDataset(dataset), batch_size=batch_size, num_workers=0, drop_last=True)
 
 
