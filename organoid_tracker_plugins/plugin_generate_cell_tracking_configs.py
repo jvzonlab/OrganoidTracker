@@ -106,6 +106,7 @@ def _generate_position_training_config(window: Window):
 
     config = ConfigFile("train_position_network", folder_name=save_directory)
 
+    config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
     config.get_or_default("epochs", "50")
     config.get_or_default("patch_shape",
                           f"{_TRAINING_PATCH_SHAPE_ZYX[2]}, {_TRAINING_PATCH_SHAPE_ZYX[1]}, {_TRAINING_PATCH_SHAPE_ZYX[0]}")
@@ -115,10 +116,13 @@ def _generate_position_training_config(window: Window):
     config.get_or_default(f"time_window_before", str(-1))
     config.get_or_default(f"time_window_after", str(1))
 
-    config.get_or_default(f"use_tfrecords", str(True))
+    tracking_files_folder = os.path.join(save_directory, "Position files")
+    os.makedirs(tracking_files_folder, exist_ok=True)
+    list_io.save_experiment_list_file(experiments, os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
+                                      tracking_files_folder=tracking_files_folder)
 
-    i = 0
-    for index, experiment in enumerate(experiments):
+    # Validate that all experiments are suitable for training
+    for experiment in experiments:
         image_loader = experiment.images.image_loader()
         if not image_loader.has_images():
             raise UserError("No images", f"No images were loaded in project {experiment.name}, so it cannot be used"
@@ -126,27 +130,11 @@ def _generate_position_training_config(window: Window):
         if not experiment.positions.has_positions():
             raise UserError("No positions", f"No tracking data was found in project {experiment.name}, so it cannot be"
                                             f" used for training. Please make sure that all open projects are suitable for training.")
+        image_size_zyx = image_loader.get_image_size_zyx()
+        if image_size_zyx is None:
+            raise UserError("Image size is not constant", f"No constant size is specified for the loaded images of"
+                                                          f" project {experiment.name}. Cannot use the project for training.")
 
-        if index == 0:
-            # Save expected image shape
-            image_size_zyx = image_loader.get_image_size_zyx()
-            if image_size_zyx is None:
-                raise UserError("Image size is not constant", f"No constant size is specified for the loaded images of"
-                                                              f" project {experiment.name}. Cannot use the project for training.")
-
-        i = index + 1
-        positions_file = f"ground_truth_positions/positions_{i}.aut"
-        io.save_data_to_json(experiment, os.path.join(save_directory, positions_file))
-
-        config.get_or_default(f"images_container_{i}", image_loader.serialize_to_config()[0])
-        config.get_or_default(f"images_pattern_{i}", image_loader.serialize_to_config()[1])
-        config.get_or_default(f"images_channels_{i}", "1")
-        config.get_or_default(f"min_time_point_{i}", str(experiment.positions.first_time_point_number()))
-        config.get_or_default(f"max_time_point_{i}", str(experiment.positions.last_time_point_number()))
-        config.get_or_default(f"positions_file_{i}", positions_file)
-        # new
-
-    config.get_or_default(f"images_container_{i + 1}", "<stop>")
     config.save()
     _create_run_script(save_directory, "organoid_tracker_train_position_network")
     _popup_confirmation(save_directory, "organoid_tracker_train_position_network")
