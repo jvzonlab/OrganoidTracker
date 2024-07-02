@@ -3,10 +3,11 @@ import json
 import os
 import sys
 import shlex
-from typing import Dict, Optional, Any, Tuple
+from typing import Dict, Optional, Any, Tuple, List
 
 from organoid_tracker.config import ConfigFile
 from organoid_tracker.core import UserError
+from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.dialog import DefaultOption
 from organoid_tracker.gui.window import Window
@@ -86,6 +87,7 @@ def _popup_confirmation(output_folder: str, script_name: str, ):
 def _generate_position_training_config(window: Window):
     """For training the neural network."""
     experiments = list(window.get_active_experiments())
+    _validate_experiments_for_training(experiments)
     if len(experiments) == 0:
         raise UserError("No experimental data loaded", "No projects are open. Please load all data (images and"
                                                        " tracking data) that you want to use for training.")
@@ -116,12 +118,19 @@ def _generate_position_training_config(window: Window):
     config.get_or_default(f"time_window_before", str(-1))
     config.get_or_default(f"time_window_after", str(1))
 
-    tracking_files_folder = os.path.join(save_directory, "Position files")
+    tracking_files_folder = os.path.join(save_directory, "Ground truth files")
     os.makedirs(tracking_files_folder, exist_ok=True)
     list_io.save_experiment_list_file(experiments, os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
                                       tracking_files_folder=tracking_files_folder)
 
-    # Validate that all experiments are suitable for training
+    config.save()
+    _create_run_script(save_directory, "organoid_tracker_train_position_network")
+    _popup_confirmation(save_directory, "organoid_tracker_train_position_network")
+
+
+def _validate_experiments_for_training(experiments: List[Experiment]):
+    """Raises UserError if the experiments are not suitable for training, because they are missing images, positions
+    or a resolution."""
     for experiment in experiments:
         image_loader = experiment.images.image_loader()
         if not image_loader.has_images():
@@ -134,10 +143,7 @@ def _generate_position_training_config(window: Window):
         if image_size_zyx is None:
             raise UserError("Image size is not constant", f"No constant size is specified for the loaded images of"
                                                           f" project {experiment.name}. Cannot use the project for training.")
-
-    config.save()
-    _create_run_script(save_directory, "organoid_tracker_train_position_network")
-    _popup_confirmation(save_directory, "organoid_tracker_train_position_network")
+        experiment.images.resolution()  # Forces resolution check
 
 
 def _generate_position_detection_config(window: Window):
@@ -185,10 +191,15 @@ def _generate_position_detection_config(window: Window):
 def _generate_division_training_config(window: Window):
     """For training the neural network."""
     experiments = list(window.get_active_experiments())
+    _validate_experiments_for_training(experiments)
     if len(experiments) == 0:
         raise UserError("No experimental data loaded", "No projects are open. Please load all data (images and"
                                                        " tracking data) that you want to use for training.")
-
+    if len(experiments) == 1:
+        if not dialog.prompt_yes_no("Experiments", "Only one project is open. Training on a single data set is not"
+                                                   " recommended. For a quick test it's fine, but ideally you should have a more"
+                                                   " data sets loaded.\n\nDo you want to continue with just this data set?"):
+            return
     if not dialog.popup_message_cancellable("Output folder",
                                             "All projects that are currently open will be used for training. You will"
                                             " be asked to select an output folder for training."):
@@ -197,54 +208,26 @@ def _generate_division_training_config(window: Window):
     if save_directory is None:
         return
 
-    config = ConfigFile("train_division_network", folder_name=save_directory)
-    if len(experiments) == 1:
-        if not dialog.prompt_yes_no("Experiments", "Only one project is open. Training on a single data set is not"
-                                                   " recommended. For a quick test it's fine, but ideally you should have a more"
-                                                   " data sets loaded.\n\nDo you want to continue with just this data set?"):
-            return
+    # Save tracking data files
+    tracking_files_folder = os.path.join(save_directory, "Ground truth files")
+    os.makedirs(tracking_files_folder, exist_ok=True)
+    list_io.save_experiment_list_file(experiments, os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
+                                      tracking_files_folder=tracking_files_folder)
 
+    # Save configuration file
+    config = ConfigFile("train_division_network", folder_name=save_directory)
+
+    config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
     config.get_or_default("epochs", "50")
     config.get_or_default("patch_shape",
                           f"{_TRAINING_PATCH_SHAPE_ZYX_DIVISION[2]}, {_TRAINING_PATCH_SHAPE_ZYX_DIVISION[1]}, {_TRAINING_PATCH_SHAPE_ZYX_DIVISION[0]}")
     config.get_or_default("output_folder", "./output")
     config.get_or_default("batch_size", "30")
-
     config.get_or_default(f"time_window_before", str(-1))
     config.get_or_default(f"time_window_after", str(1))
 
-    config.get_or_default(f"use_tfrecords", str(False))
 
-    i = 0
-    for index, experiment in enumerate(experiments):
-        image_loader = experiment.images.image_loader()
-        if not image_loader.has_images():
-            raise UserError("No images", f"No images were loaded in project {experiment.name}, so it cannot be used"
-                                         f" for training. Please make sure that all open projects are suitable for training.")
-        if not experiment.positions.has_positions():
-            raise UserError("No positions", f"No tracking data was found in project {experiment.name}, so it cannot be"
-                                            f" used for training. Please make sure that all open projects are suitable for training.")
 
-        if index == 0:
-            # Save expected image shape
-            image_size_zyx = image_loader.get_image_size_zyx()
-            if image_size_zyx is None:
-                raise UserError("Image size is not constant", f"No constant size is specified for the loaded images of"
-                                                              f" project {experiment.name}. Cannot use the project for training.")
-
-        i = index + 1
-        positions_file = f"ground_truth_positions/positions_{i}.aut"
-        io.save_data_to_json(experiment, os.path.join(save_directory, positions_file))
-
-        config.get_or_default(f"images_container_{i}", image_loader.serialize_to_config()[0])
-        config.get_or_default(f"images_pattern_{i}", image_loader.serialize_to_config()[1])
-        config.get_or_default(f"images_channels_{i}", "1")
-        config.get_or_default(f"min_time_point_{i}", str(experiment.positions.first_time_point_number()))
-        config.get_or_default(f"max_time_point_{i}", str(experiment.positions.last_time_point_number()))
-        config.get_or_default(f"positions_file_{i}", positions_file)
-        # new
-
-    config.get_or_default(f"images_container_{i + 1}", "<stop>")
     config.save()
     _create_run_script(save_directory, "organoid_tracker_train_division_network")
     _popup_confirmation(save_directory, "organoid_tracker_train_division_network")
@@ -292,11 +275,16 @@ def _generate_division_detection_config(window: Window):
 def _generate_link_training_config(window: Window):
     """For training the neural network."""
     experiments = list(window.get_active_experiments())
-    for experiment in experiments:
-        experiment.images.resolution()  # Forces all experiments to have a resolution set
+    _validate_experiments_for_training(experiments)
+
     if len(experiments) == 0:
         raise UserError("No experimental data loaded", "No projects are open. Please load all data (images and"
                                                        " tracking data) that you want to use for training.")
+    if len(experiments) == 1:
+        if not dialog.prompt_yes_no("Experiments", "Only one project is open. Training on a single data set is not"
+                                                   " recommended. For a quick test it's fine, but ideally you should have a more"
+                                                   " data sets loaded.\n\nDo you want to continue with just this data set?"):
+            return
 
     if not dialog.popup_message_cancellable("Output folder",
                                             "All projects that are currently open will be used for training. You will"
@@ -306,54 +294,24 @@ def _generate_link_training_config(window: Window):
     if save_directory is None:
         return
 
-    config = ConfigFile("train_link_network", folder_name=save_directory)
-    if len(experiments) == 1:
-        if not dialog.prompt_yes_no("Experiments", "Only one project is open. Training on a single data set is not"
-                                                   " recommended. For a quick test it's fine, but ideally you should have a more"
-                                                   " data sets loaded.\n\nDo you want to continue with just this data set?"):
-            return
+    # Save ground truth tracking data files
+    tracking_files_folder = os.path.join(save_directory, "Ground truth files")
+    os.makedirs(tracking_files_folder, exist_ok=True)
+    list_io.save_experiment_list_file(experiments, os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
+                                      tracking_files_folder=tracking_files_folder)
 
+    config = ConfigFile("train_link_network", folder_name=save_directory)
+    config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
     config.get_or_default("epochs", "50")
     config.get_or_default("patch_shape",
                           f"{_TRAINING_PATCH_SHAPE_ZYX_LINKING[2]}, {_TRAINING_PATCH_SHAPE_ZYX_LINKING[1]}, {_TRAINING_PATCH_SHAPE_ZYX_LINKING[0]}")
     config.get_or_default("output_folder", "./output")
     config.get_or_default("batch_size", "120")
+    config.get_or_default("time_window_before", str(0))
+    config.get_or_default("time_window_after", str(0))
 
-    config.get_or_default(f"time_window_before", str(0))
-    config.get_or_default(f"time_window_after", str(0))
 
-    config.get_or_default(f"use_TFRecords", str(False))
 
-    i = 0
-    for index, experiment in enumerate(experiments):
-        image_loader = experiment.images.image_loader()
-        if not image_loader.has_images():
-            raise UserError("No images", f"No images were loaded in project {experiment.name}, so it cannot be used"
-                                         f" for training. Please make sure that all open projects are suitable for training.")
-        if not experiment.positions.has_positions():
-            raise UserError("No positions", f"No tracking data was found in project {experiment.name}, so it cannot be"
-                                            f" used for training. Please make sure that all open projects are suitable for training.")
-
-        if index == 0:
-            # Save expected image shape
-            image_size_zyx = image_loader.get_image_size_zyx()
-            if image_size_zyx is None:
-                raise UserError("Image size is not constant", f"No constant size is specified for the loaded images of"
-                                                              f" project {experiment.name}. Cannot use the project for training.")
-
-        i = index + 1
-        positions_file = f"ground_truth_positions/positions_{i}.aut"
-        io.save_data_to_json(experiment, os.path.join(save_directory, positions_file))
-
-        config.get_or_default(f"images_container_{i}", image_loader.serialize_to_config()[0])
-        config.get_or_default(f"images_pattern_{i}", image_loader.serialize_to_config()[1])
-        config.get_or_default(f"images_channels_{i}", "1")
-        config.get_or_default(f"min_time_point_{i}", str(experiment.positions.first_time_point_number()))
-        config.get_or_default(f"max_time_point_{i}", str(experiment.positions.last_time_point_number()))
-        config.get_or_default(f"positions_file_{i}", positions_file)
-        # new
-
-    config.get_or_default(f"images_container_{i + 1}", "<stop>")
     config.save()
     _create_run_script(save_directory, "organoid_tracker_train_link_network")
     _popup_confirmation(save_directory, "organoid_tracker_train_link_network")

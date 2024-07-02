@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-"""Script used to train the convolutional neural network, so that it can recognize nuclei in 3D images."""
+"""Script used to train the convolutional neural network, so that it can recognize the same nucleus across time points.
+"""
 import json
 import os
 import random
-from typing import Set, Tuple
+from typing import Tuple
 
 import numpy
 
@@ -17,10 +18,7 @@ from torch.utils.data import DataLoader
 
 from organoid_tracker.linear_models.logistic_regression import platt_scaling
 from organoid_tracker.config import ConfigFile, config_type_image_shape_xyz_to_zyx, config_type_int
-from organoid_tracker.core.experiment import Experiment
-from organoid_tracker.image_loading import general_image_loader
-from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
-from organoid_tracker.imaging import io
+from organoid_tracker.imaging import list_io
 from organoid_tracker.neural_network.dataset_transforms import LimitingDataset
 from organoid_tracker.neural_network.link_detection_cnn.convolutional_neural_network import build_model
 from organoid_tracker.neural_network.link_detection_cnn.training_data_creator import create_image_with_links_list
@@ -28,57 +26,11 @@ from organoid_tracker.neural_network.link_detection_cnn.training_dataset import 
 
 
 # PARAMETERS
-
-class _PerExperimentParameters:
-    images_container: str
-    images_pattern: str
-    images_channels: Set[int]
-    min_time_point: int
-    max_time_point: int
-    training_positions_file: str
-
-    def to_experiment(self) -> Experiment:
-        experiment = io.load_data_file(self.training_positions_file, self.min_time_point, self.max_time_point)
-        general_image_loader.load_images(experiment, self.images_container, self.images_pattern,
-                                         min_time_point=self.min_time_point, max_time_point=self.max_time_point)
-        if self.images_channels != {1}:
-            # Replace the first channel
-            old_channels = experiment.images.get_channels()
-            new_channels = [old_channels[index - 1] for index in self.images_channels]
-            channel_merging_image_loader = ChannelSummingImageLoader(experiment.images.image_loader(), [new_channels])
-            experiment.images.image_loader(channel_merging_image_loader)
-        return experiment
-
-
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("train_link_network")
-
-per_experiment_params = []
-i = 1
-while True:
-    params = _PerExperimentParameters()
-    params.images_container = config.get_or_prompt(f"images_container_{i}",
-                                                   "If you have a folder of image files, please paste the folder"
-                                                   " path here. Else, if you have a LIF file, please paste the path to that file"
-                                                   " here.")
-    if params.images_container == "<stop>":
-        break
-
-    params.images_pattern = config.get_or_prompt(f"images_pattern_{i}",
-                                                 "What are the image file names? (Use {time:03} for three digits"
-                                                 " representing the time point, use {channel} for the channel)")
-    channels_str = config.get_or_default(f"images_channels_{i}", "1", comment="What image channels are used? For"
-                                                                              " example, use 1,2,4 to train on the sum of the 1st, 2nd and 4th channel.")
-    params.images_channels = {int(part) for part in channels_str.split(",")}
-    params.training_positions_file = config.get_or_default(f"positions_file_{i}",
-                                                           f"positions_{i}.{io.FILE_EXTENSION}",
-                                                           comment="What are the detected positions for those images?")
-    params.min_time_point = int(config.get_or_default(f"min_time_point_{i}", str(0)))
-    params.max_time_point = int(config.get_or_default(f"max_time_point_{i}", str(9999)))
-
-    per_experiment_params.append(params)
-    i += 1
-
+dataset_file = config.get_or_prompt("dataset_file", "Please paste the path here to the dataset file."
+                                     " You can generate such a file from OrganoidTracker using File -> Tabs -> "
+                                     " all tabs.", store_in_defaults=True)
 time_window = (int(config.get_or_default(f"time_window_before", str(-1))),
                int(config.get_or_default(f"time_window_after", str(1))))
 
@@ -101,7 +53,7 @@ config.save_and_exit_if_changed()
 
 print('creating list of links')
 # Create a generator that will load the experiments on demand
-experiment_provider = (params.to_experiment() for params in per_experiment_params)
+experiment_provider = list_io.load_experiment_list_file(dataset_file)
 
 # Create a list of images and annotated positions
 image_with_links_list = create_image_with_links_list(experiment_provider)
@@ -111,6 +63,7 @@ random.seed("using a fixed seed to ensure reproducibility")
 random.shuffle(image_with_links_list)
 
 # save which frames will be used for validation so that we can do the platt scaling on these
+os.makedirs(output_folder, exist_ok=True)
 validation_list = []
 for image_with_links in image_with_links_list[-round(0.2 * len(image_with_links_list)):]:
     validation_list.append((image_with_links.experiment_name, image_with_links.time_point.time_point_number()))
@@ -144,6 +97,7 @@ model.summary()
 print("Training...")
 trained_model_folder = os.path.join(output_folder, "model_links")
 logging_folder = os.path.join(trained_model_folder, "training_logging")
+os.makedirs(logging_folder, exist_ok=True)
 history = model.fit(training_dataset,
                     epochs=epochs,
                     steps_per_epoch=len(training_dataset),
@@ -162,7 +116,7 @@ model.save(os.path.join(trained_model_folder, "model.keras"))
 print("Performing Platt scaling...")
 
 # new list without any upsampling, based on validation list
-experiment_provider = (params.to_experiment() for params in per_experiment_params)
+experiment_provider = list_io.load_experiment_list_file(dataset_file)
 list_for_platt_scaling = create_image_with_links_list(experiment_provider, division_multiplier=1,
                                                       mid_distance_multiplier=1)
 
