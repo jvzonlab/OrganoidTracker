@@ -1,6 +1,8 @@
 """" Loads images and positions into tensors and can write these tensors into TFR files"""
 import os
 from typing import Tuple, List
+
+import numpy
 import numpy as np
 from functools import partial
 
@@ -28,7 +30,22 @@ def load_images_with_positions(image_with_positions: ImageWithPositions, time_wi
         if max_coords[2] < image.shape[0] - 2:
             image[max_coords[2] + 1:].fill(0)
 
+    # The dtype uint16 is not supported by PyTorch, so we convert it to int16 or int32, depending on the max value
+    image = _prevent_uint16_dtype(image)
+    label = _prevent_uint16_dtype(label)
+
     return image, label
+
+
+def _prevent_uint16_dtype(array: numpy.ndarray) -> numpy.ndarray:
+    """Converts uint16 arrays to int16 or int32, depending on the maximum value. This is necessary because PyTorch
+    does not support uint16."""
+    if array.dtype == numpy.uint16:
+        if array.max() <= 2 ** 15:
+            array = array.astype(numpy.int16)
+        else:
+            array = array.astype(numpy.int32)
+    return array
 
 
 def load_images(i, image_with_positions_list: List[ImageWithPositions], time_window=(0, 0)):
@@ -37,13 +54,3 @@ def load_images(i, image_with_positions_list: List[ImageWithPositions], time_win
     image = image_with_positions.load_image_time_stack(time_window)
 
     return image
-
-
-def tf_load_images(i, image_with_positions_list: List[ImageWithPositions], time_window=[0, 0]):
-    image = tf.py_function(
-        partial(load_images, image_with_positions_list=image_with_positions_list,
-                time_window=time_window), [i],
-        tf.float32)
-
-    return image
-
