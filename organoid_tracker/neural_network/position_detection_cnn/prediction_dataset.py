@@ -3,7 +3,6 @@ from typing import List
 
 import keras.ops
 
-from organoid_tracker.neural_network.position_detection_cnn.image_with_positions_to_tensor_loader import tf_load_images
 from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import ImageWithPositions
 from organoid_tracker.neural_network.position_detection_cnn.training_dataset import pad_to_patch
 
