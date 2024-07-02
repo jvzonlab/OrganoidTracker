@@ -52,7 +52,15 @@ class ImageWithPositions:
 
     def load_image(self, dt: int = 0) -> Optional[ndarray]:
         time_point = TimePoint(self.time_point.time_point_number() + dt)
-        return self._images.get_image_stack(time_point)
+        image_stack = self._images.get_image_stack(time_point)
+        if image_stack is not None and image_stack.dtype == numpy.uint16:
+            # The dtype uint16 is not supported by PyTorch, so we convert it to int16 or int32, depending on what
+            # will fit the data
+            if image_stack.max() <= 2 ** 15:
+                image_stack = image_stack.astype(numpy.int16)
+            else:
+                image_stack = image_stack.astype(numpy.int32)
+        return image_stack
 
     def get_image_size_zyx(self, dt: int = 0) -> Tuple[int, int, int]:
         """Gets the shape of the image. This method tries to avoid loading the actual image data to find it out."""
