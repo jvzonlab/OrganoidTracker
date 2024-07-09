@@ -1,7 +1,7 @@
 # Manual tracking and error correction
 [← Back to main page](index.md)
 
-You cannot edit tracking data from the main screen. Instead, you need to use `Edit` -> `Manually change data...` to open the data editor (or just press `C`). In this editor, you can select up to two cells at once by double-clicking them. Using the Insert, Shift and Delete keys, you can insert, shift or delete cells or links. Press `C` again to exit the view.
+You cannot edit tracking data from the main screen. Instead, you need to use `Edit` -> `Manually change data...` to open the data editor (or just press `C`). In this editor, you can select up to two cells at once by clicking them. Using the Insert, Shift and Delete keys, you can insert, shift or delete cells or links. Press `C` again to exit the view.
 
 ### Working with (cell) positions
 To insert positions, make sure you have no cell selected, and then press the Insert key. To delete that cell position again, make sure that you have only selected that cell, and press the Delete key.
