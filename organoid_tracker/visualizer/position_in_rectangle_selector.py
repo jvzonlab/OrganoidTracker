@@ -40,10 +40,7 @@ class PositionsInRectangleSelector(AbstractEditor):
             "Select//Select-Select all inside [Return]": lambda: self._select_positions(inside=True),
         }
 
-    def _on_mouse_click(self, event: MouseEvent):
-        if event.dblclick:
-            return
-
+    def _on_mouse_single_click(self, event: MouseEvent):
         clicked_position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
         if (self._min_position is None and self._max_position is None) \
                 or (self._min_position is not None and self._max_position is not None):

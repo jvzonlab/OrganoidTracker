@@ -28,13 +28,13 @@ class StandardImageVisualizer(AbstractImageVisualizer):
     Moving: left/right moves in time, up/down or scroll in the z-direction, type '/t30' + ENTER to jump to time
     point 30 and type '/z10' + ENTER to jump to z-layer 10."""
 
-    def _on_mouse_click(self, event: MouseEvent):
-        if event.button == 1 and event.dblclick:
+    def _on_mouse_double_click(self, event: MouseEvent):
+        if event.button == 1:
             position = self._get_position_at(event.xdata, event.ydata)
             if position is not None:
                 dialog.popup_rich_text(PositionPopup(self._window, position))
         else:
-            super()._on_mouse_click(event)
+            super()._on_mouse_single_click(event)
 
     def get_extra_menu_options(self):
         return {

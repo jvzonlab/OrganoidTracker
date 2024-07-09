@@ -58,7 +58,7 @@ class _ReplaceImageTimingsAction(UndoableAction):
 
 class _TimingsVisualizer(Visualizer):
     """Shows a timeline, visualizing the time points of the experiment. The user can select a range of time points by
-    selecting two points on the timeline (using double-clicking). The selected range can then be used to set a new time
+    selecting two points on the timeline (using clicking). The selected range can then be used to set a new time
     resolution."""
 
     _min_selected_time_h: Optional[float] = None
@@ -187,8 +187,8 @@ class _TimingsVisualizer(Visualizer):
         self._ax.set_ylim(*self._Y_LIMITS)
         self._fig.canvas.draw()
 
-    def _on_mouse_click(self, event: MouseEvent):
-        if event.button == MouseButton.RIGHT and event.dblclick:
+    def _on_mouse_single_click(self, event: MouseEvent):
+        if event.button == MouseButton.RIGHT:
             # Right click
             self._min_selected_time_h = None
             self._max_selected_time_h = None
@@ -196,7 +196,7 @@ class _TimingsVisualizer(Visualizer):
             self.update_status("Selection cleared.")
             return
 
-        if event.button == MouseButton.LEFT and event.dblclick and event.xdata is not None:
+        if event.button == MouseButton.LEFT and event.xdata is not None:
             # Selecting a time range
             if self._min_selected_time_h is None or \
                     (self._min_selected_time_h is not None and self._max_selected_time_h is not None):
@@ -204,7 +204,7 @@ class _TimingsVisualizer(Visualizer):
                 self._max_selected_time_h = None
                 self.draw_view()
                 self.update_status(
-                    f"Clicked at {self._min_selected_time_h:.2f}h. Double-click a second point to complete"
+                    f"Clicked at {self._min_selected_time_h:.2f}h. Click a second point to complete"
                     f" the selection.")
             elif self._max_selected_time_h is None:
                 old_x = self._min_selected_time_h
@@ -216,7 +216,7 @@ class _TimingsVisualizer(Visualizer):
                                    f" {self._max_selected_time_h:.2f}h.")
             return
 
-        super()._on_mouse_click(event)
+        super()._on_mouse_single_click(event)
 
     def _get_selected_time_points(self) -> Optional[Tuple[TimePoint, TimePoint]]:
         """Gets the time points that are selected in the current view. Returns None if one or zero time points are

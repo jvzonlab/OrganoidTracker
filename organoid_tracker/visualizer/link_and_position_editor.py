@@ -465,12 +465,11 @@ class LinkAndPositionEditor(AbstractEditor):
         else:
             super()._exit_view()
 
-    def _on_mouse_click(self, event: MouseEvent):
-        if not event.dblclick:
-            return
+    def _on_mouse_single_click(self, event: MouseEvent):
         new_selection = self._get_position_at(event.xdata, event.ydata)
         if new_selection is None:
-            self.update_status("Cannot find a cell here.\n(To unselect all cells, press Escape or Ctrl+D.)")
+            self.update_status("Cannot find a cell here."
+                               "\n(To unselect all cells, double-click an empty location, or press Escape or Ctrl+D.)")
             return
 
         if new_selection in self._selected:
@@ -486,7 +485,15 @@ class LinkAndPositionEditor(AbstractEditor):
                                "\n        " + self._position_string(selected_first) +
                                "\n        " + self._position_string(selected_second))
         else:
-            self.update_status(f"Selected: {len(self._selected)} positions. Press Escape or Ctrl+D to deselect all.")
+            self.update_status(f"Selected: {len(self._selected)} positions. To deselect all cells, double-click an empty location, or press Escape or Ctrl+D.")
+
+    def _on_mouse_double_click(self, event: MouseEvent):
+        new_selection = self._get_position_at(event.xdata, event.ydata)
+        if new_selection is None:
+            self._selected.clear()
+            self.draw_view()
+            self.update_status("Unselected all cells.")
+            return
 
     def _position_string(self, position: Optional[Position]) -> str:
         """Gets a somewhat compact representation of the position. This will return its x, y, z, time point and some

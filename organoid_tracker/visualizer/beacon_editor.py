@@ -81,9 +81,9 @@ class BeaconEditor(AbstractEditor):
         background_color = (1, 1, 1, 0.8) if is_selected else (0, 1, 0, 0.8)
         self._draw_annotation(position, f"{beacon.distance_um:.1f} μm", background_color=background_color)
 
-    def _on_mouse_click(self, event: MouseEvent):
-        if not event.dblclick or event.xdata is None or event.ydata is None:
-            super()._on_mouse_click(event)
+    def _on_mouse_single_click(self, event: MouseEvent):
+        if event.xdata is None or event.ydata is None:
+            super()._on_mouse_single_click(event)
             return
 
         clicked_position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)

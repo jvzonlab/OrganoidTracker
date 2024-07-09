@@ -126,17 +126,16 @@ class SplineEditor(AbstractEditor):
         self._draw_spline_positions = not self._draw_spline_positions
         self.draw_view()
 
-    def _on_mouse_click(self, event: MouseEvent):
-        if event.dblclick:
-            # Select path
-            links = self._experiment.links
-            position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
-            spline_position = self._experiment.splines.to_position_on_spline(position)
-            if spline_position is None or spline_position.distance > 10 or spline_position.spline_id == self._selected_spline_id:
-                self._selected_spline_id = None
-            else:
-                self._selected_spline_id = spline_position.spline_id
-            self.draw_view()
+    def _on_mouse_single_click(self, event: MouseEvent):
+        # Select path
+        links = self._experiment.links
+        position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
+        spline_position = self._experiment.splines.to_position_on_spline(position)
+        if spline_position is None or spline_position.distance > 10 or spline_position.spline_id == self._selected_spline_id:
+            self._selected_spline_id = None
+        else:
+            self._selected_spline_id = spline_position.spline_id
+        self.draw_view()
 
     def _get_figure_title(self) -> str:
         return "Editing splines in time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"

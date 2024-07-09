@@ -386,9 +386,7 @@ class LineageTreeVisualizer(Visualizer):
 
         self._fig.canvas.draw()
 
-    def _on_mouse_click(self, event: MouseEvent):
-        if not event.dblclick:
-            return
+    def _on_mouse_single_click(self, event: MouseEvent):
         if self._location_map is None:
             return
         position: Optional[Position] = self._location_map.get_nearby(event.xdata, event.ydata)

@@ -1,24 +1,19 @@
 from typing import Optional, List, Set
 
 import matplotlib.cm
+from matplotlib.axes import Axes
 from matplotlib.backend_bases import KeyEvent, MouseEvent
-from matplotlib.figure import Figure, Axes
+from matplotlib.figure import Figure
 
 from organoid_tracker.coordinate_system import orientation_spline_adder, sphere_representer
-from organoid_tracker.coordinate_system.orientation_spline_adder import ColoredTrackAdder
 from organoid_tracker.coordinate_system.sphere_representer import SphereRepresentation
-from organoid_tracker.core import UserError, TimePoint, Color
+from organoid_tracker.core import UserError, Color
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import Links, LinkingTrack
 from organoid_tracker.core.position import Position
-from organoid_tracker.core.position_collection import PositionCollection
-from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.resolution import ImageResolution
-from organoid_tracker.core.typing import MPLColor
 from organoid_tracker.gui import dialog
-from organoid_tracker.gui.window import Window, DisplaySettings
-from organoid_tracker.linking_analysis import linking_markers
-from organoid_tracker.linking_analysis.lineage_drawing import LineageDrawing
+from organoid_tracker.gui.window import Window
 from organoid_tracker.util.mpl_helper import SANDER_APPROVED_COLORS
 from organoid_tracker.visualizer.exitable_image_visualizer import ExitableImageVisualizer
 from organoid_tracker.visualizer.lineage_tree_visualizer import LineageTreeVisualizer
@@ -262,10 +257,7 @@ class TrackVisualizer(ExitableImageVisualizer):
         else:
             super()._on_key_press(event)
 
-    def _on_mouse_click(self, event: MouseEvent):
-        if not event.dblclick:
-            return
-
+    def _on_mouse_single_click(self, event: MouseEvent):
         links = self._experiment.links
         if not links.has_links():
             self.update_status("No links found. Is the linking data missing?")

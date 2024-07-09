@@ -88,9 +88,9 @@ class ImageSliceViewer(ExitableImageVisualizer):
             self._right_axes.set_xlim(offset.z, offset.z + self._time_point_images.shape[0])
             self._bottom_axes.set_ylim(offset.z, offset.z + self._time_point_images.shape[0])
 
-    def _on_mouse_click(self, event: MouseEvent):
-        if event.xdata is None or event.ydata is None or not event.dblclick:
-            super()._on_mouse_click(event)
+    def _on_mouse_double_click(self, event: MouseEvent):
+        if event.xdata is None or event.ydata is None:
+            super()._on_mouse_single_click(event)
             return
 
         if event.inaxes == self._ax:
@@ -104,7 +104,7 @@ class ImageSliceViewer(ExitableImageVisualizer):
             self._y = int(event.ydata)
             self._move_to_z(int(event.xdata))
         else:
-            super()._on_mouse_click(event)
+            super()._on_mouse_single_click(event)
 
     def _has_default_axes_limit(self, axes: Axes) -> bool:
         """If one of the axis has a length equal or smaller than 1, it's just the default value."""

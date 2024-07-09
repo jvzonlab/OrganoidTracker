@@ -139,7 +139,7 @@ class _CellsColoredByLineageVisualizer(AbstractEditor):
     def _randomize_dividing_colors(self):
         self._perform_action(_GiveRandomLineageColor(color_only_if_dividing=True))
 
-    def _on_mouse_click(self, event: MouseEvent):
+    def _on_mouse_single_click(self, event: MouseEvent):
         if event.xdata is None or event.ydata is None:
             return
 
@@ -157,14 +157,9 @@ class _CellsColoredByLineageVisualizer(AbstractEditor):
             return
 
         color = lineage_markers.get_color(links, track)
-        if event.dblclick:
-            new_color = dialog.prompt_color("Choose a new color for the lineage", color)
-            if new_color is not None:
-                self._perform_action(_SetLineageColor(track, color, new_color))
-        else:
-            color_str = str(color) if not color.is_black() else "not specified"
-            self.update_status(f"Lineage id of {position} is {lineage_id}. The color is {color_str}, double-click to"
-                               f" edit.")
+        new_color = dialog.prompt_color("Choose a new color for the lineage", color)
+        if new_color is not None:
+            self._perform_action(_SetLineageColor(track, color, new_color))
 
     def _on_position_draw(self, position: Position, color: str, dz: int, dt: int):
         from organoid_tracker.linking_analysis import lineage_id_creator

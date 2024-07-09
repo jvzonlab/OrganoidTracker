@@ -25,7 +25,8 @@ from typing import Iterable, Optional, Union, Dict, Any, List, Callable
 
 import numpy
 from matplotlib.backend_bases import KeyEvent, MouseEvent
-from matplotlib.figure import Figure, Axes
+from matplotlib.figure import Figure
+from matplotlib.axes import Axes
 from numpy import ndarray
 
 from organoid_tracker import core
@@ -38,9 +39,8 @@ from organoid_tracker.gui import dialog
 from organoid_tracker.gui.threading import Task
 from organoid_tracker.gui.window import Window, DisplaySettings
 from organoid_tracker.imaging import cropper
-from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking.nearby_position_finder import find_closest_position
-from organoid_tracker.linking_analysis import linking_markers
+from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.util import mpl_helper
 
 
@@ -51,6 +51,10 @@ class Visualizer:
     _ax: Axes
     _axes: List[Axes]
     _display_settings: DisplaySettings
+
+    # Used to detect whether a mouse moved while pressed, so that dragging can be detected
+    _mouse_press_x: Optional[float] = None
+    _mouse_press_y: Optional[float] = None
 
     def __init__(self, window: Window):
         self._window = window
@@ -165,8 +169,36 @@ class Visualizer:
     def _on_command(self, text: str) -> bool:
         return False
 
-    def _on_mouse_click(self, event: MouseEvent):
+    def _on_mouse_single_click(self, event: MouseEvent):
+        """Called at mouse release, if no drag or double-click was detected."""
         pass
+
+    def _on_mouse_double_click(self, event: MouseEvent):
+        """Called at mouse double click."""
+        pass
+
+    def _on_mouse_press_raw(self, event: MouseEvent):
+        if event.dblclick:
+            # Perform double-click event
+            self._on_mouse_double_click(event)
+            self._mouse_press_x = None
+            self._mouse_press_y = None
+        else:
+            # Record mouse position for release event later on
+            self._mouse_press_x = event.x
+            self._mouse_press_y = event.y
+
+    def _on_mouse_release_raw(self, event: MouseEvent):
+        """Called when the mouse is released. If the mouse was not moved, then _on_mouse_click is called."""
+        if self._mouse_press_x is None or self._mouse_press_y is None:
+            return  # No mouse press event was recorded
+
+        distance_squared = (event.x - self._mouse_press_x) ** 2 + (event.y - self._mouse_press_y) ** 2
+        if distance_squared < 3 and not event.dblclick:
+            self._on_mouse_single_click(event)
+        self._mouse_press_x = None
+        self._mouse_press_y = None
+
 
     def _on_scroll(self, event: MouseEvent):
         """Called when scrolling. event.button will be "up" or "down"."""
@@ -175,7 +207,8 @@ class Visualizer:
     def attach(self):
         """Attaches all event handlers."""
         self._window.register_event_handler("key_press_event", self._on_key_press_raw)
-        self._window.register_event_handler("button_press_event", self._on_mouse_click)
+        self._window.register_event_handler("button_press_event", self._on_mouse_press_raw)
+        self._window.register_event_handler("button_release_event", self._on_mouse_release_raw)
         self._window.register_event_handler("data_updated_event", self.refresh_data)
         self._window.register_event_handler("any_updated_event", self.refresh_all)
         self._window.register_event_handler("command_event", self._on_command_raw)
