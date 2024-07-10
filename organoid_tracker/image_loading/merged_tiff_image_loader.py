@@ -5,7 +5,7 @@ from typing import Tuple, Any, List, Optional
 import numpy
 import tifffile
 from numpy.core.multiarray import ndarray
-from tifffile import TiffFile, TiffPageSeries
+from tifffile import TiffFile, TiffPageSeries, TiffTags
 
 from organoid_tracker.core import TimePoint, max_none, min_none, UserError
 from organoid_tracker.core.experiment import Experiment

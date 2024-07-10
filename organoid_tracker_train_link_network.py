@@ -156,7 +156,8 @@ with open(os.path.join(trained_model_folder, "settings.json"), "w") as file_hand
 
 
 # Generate examples
-os.makedirs(os.path.join(output_folder, "link_examples"), exist_ok=True)
+link_examples_folder = os.path.join(output_folder, "link_examples")
+os.makedirs(link_examples_folder, exist_ok=True)
 
 quick_dataset = DataLoader(LimitingDataset(validation_dataset.dataset, 1000), batch_size=1)
 
@@ -186,23 +187,23 @@ for sample in quick_dataset:
     target_image = np.swapaxes(target_image, 1, -1)
 
     if ((ground_truth_linked * score) < 0) and (correct_examples < 20):
-        tifffile.imwrite(os.path.join(trained_model_folder, "link_examples",
+        tifffile.imwrite(os.path.join(link_examples_folder,
                                       "CORRECT_example_input" + str(i) + '_score_' +
                                       "{:.2f}".format(float(score)) + ".ome.tiff"), image, imagej=True,
                          metadata={'axes': 'TZYX'})
-        tifffile.imwrite(os.path.join(trained_model_folder, "link_examples",
+        tifffile.imwrite(os.path.join(link_examples_folder,
                                       "CORRECT_example_target_input" + str(i) + '_score_' +
                                       "{:.2f}".format(float(score)) + ".ome.tiff"), target_image, imagej=True,
                          metadata={'axes': 'TZYX'})
         correct_examples = correct_examples + 1
 
     if ((ground_truth_linked * score) > 0) and (incorrect_examples < 20):
-        tifffile.imwrite(os.path.join(trained_model_folder, "link_examples",
+        tifffile.imwrite(os.path.join(link_examples_folder,
                                       "INCORRECT_example_input" + str(i) + '_score_' +
                                       "{:.2f}".format(float(score)) + ".ome.tiff"), image, imagej=True,
                          metadata={'axes': 'TZYX'})
         distance = keras.ops.convert_to_numpy(input_element[2])[0, :]
-        tifffile.imwrite(os.path.join(trained_model_folder, "link_examples",
+        tifffile.imwrite(os.path.join(link_examples_folder,
                                       "INCORRECT_example_target_input" + str(i) + '_score_' +
                                       "{:.2f}".format(float(score))
                                       + '_x_' + "{:.2f}".format(float(distance[1]))
