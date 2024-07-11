@@ -43,6 +43,10 @@ class ImageSliceViewer(ExitableImageVisualizer):
         # Disabled, as we need to work with 3d images here
         self._image_slice_2d = None
 
+    def _draw_legend(self):
+        # Legend doesn't draw correctly in this view
+        pass
+
     def _calculate_time_point_metadata(self):
         # We need to load the full 3D image
         self._time_point_images = self._experiment.images.get_image_stack(self._time_point,
@@ -90,7 +94,7 @@ class ImageSliceViewer(ExitableImageVisualizer):
 
     def _on_mouse_double_click(self, event: MouseEvent):
         if event.xdata is None or event.ydata is None:
-            super()._on_mouse_single_click(event)
+            super()._on_mouse_double_click(event)
             return
 
         if event.inaxes == self._ax:
@@ -104,7 +108,7 @@ class ImageSliceViewer(ExitableImageVisualizer):
             self._y = int(event.ydata)
             self._move_to_z(int(event.xdata))
         else:
-            super()._on_mouse_single_click(event)
+            super()._on_mouse_double_click(event)
 
     def _has_default_axes_limit(self, axes: Axes) -> bool:
         """If one of the axis has a length equal or smaller than 1, it's just the default value."""

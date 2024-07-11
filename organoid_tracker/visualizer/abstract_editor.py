@@ -24,7 +24,8 @@ class AbstractEditor(ExitableImageVisualizer):
             super()._on_key_press(event)
 
     def _get_figure_title(self) -> str:
-        return "Editing time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
+        return ("Editing time point " + str(self._time_point.time_point_number())
+                + "    (z=" + self._get_figure_title_z_str() + ")")
 
     def _get_window_title(self) -> str:
         return "Manual data editing"

@@ -425,8 +425,8 @@ class LinkAndPositionEditor(AbstractEditor):
             return super()._get_position_edge(position)
 
     def _get_figure_title(self) -> str:
-        title_start = "Editing time point " + str(self._time_point.time_point_number()) + "    (z=" + str(
-            self._z) + ")\n"
+        title_start = "Editing time point " + str(self._time_point.time_point_number()) + "    (z=" +\
+                       self._get_figure_title_z_str() + ")\n"
         if len(self._selected) == 1:
             return title_start + "1 position selected"
         elif len(self._selected) > 1:

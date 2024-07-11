@@ -25,8 +25,8 @@ class PositionsInRectangleSelector(AbstractEditor):
         self.MAX_Z_DISTANCE = 0
 
     def _get_figure_title(self) -> str:
-        return "Selecting positions, viewing time point " \
-               + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
+        return ("Selecting positions, viewing time point " + str(self._time_point.time_point_number())
+                + " (z=" + self._get_figure_title_z_str() + ")")
 
     def _exit_view(self):
         from organoid_tracker.visualizer.link_and_position_editor import LinkAndPositionEditor
@@ -81,8 +81,11 @@ class PositionsInRectangleSelector(AbstractEditor):
         return True
 
     def _get_selected_positions(self, inside: bool = True) -> Iterable[Position]:
-        """Gets all positions that are inside or outside the selected rectangle. Throws an exception if the two
+        """Gets all positions that are inside or outside the selected cuboid. Throws an exception if the two
         positions defining the rectangle haven't been defined yet."""
+        if self._display_settings.max_intensity_projection:
+            return self._get_selected_positions_2d(inside)
+
         for time_point_number in range(self._min_position.time_point_number(),
                                        self._max_position.time_point_number() + 1):
             time_point = TimePoint(time_point_number)
@@ -93,6 +96,21 @@ class PositionsInRectangleSelector(AbstractEditor):
                     position_is_inside = False
                 elif position.x > self._max_position.x or position.y > self._max_position.y \
                         or position.z > self._max_position.z:
+                    position_is_inside = False
+                if position_is_inside == inside:
+                    yield position
+
+    def _get_selected_positions_2d(self, inside: bool = True) -> Iterable[Position]:
+        """Gets all positions that are inside or outside the selected rectangle, ignoring z. Throws an exception if the
+        two positions defining the rectangle haven't been defined yet."""
+        for time_point_number in range(self._min_position.time_point_number(),
+                                       self._max_position.time_point_number() + 1):
+            time_point = TimePoint(time_point_number)
+            for position in self._experiment.positions.of_time_point(time_point):
+                position_is_inside = True
+                if position.x < self._min_position.x or position.y < self._min_position.y:
+                    position_is_inside = False
+                elif position.x > self._max_position.x or position.y > self._max_position.y:
                     position_is_inside = False
                 if position_is_inside == inside:
                     yield position

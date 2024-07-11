@@ -14,10 +14,21 @@ class ImageChannel:
 
     index_zero: int  # Note: first channel starts at 0
 
-    def __init__(self, *, index_zero: int):
-        if index_zero < 0:
-            raise ValueError(f"Negative indices are not allowed (index_zero={index_zero})")
-        self.index_zero = index_zero
+    def __init__(self, *, index_zero: Optional[int] = None, index_one: Optional[int] = None):
+        if index_one is None:
+            # Using index_zero
+            if index_zero is None:
+                raise ValueError("Either index_zero or index_one must be provided")
+            if index_zero < 0:
+                raise ValueError(f"Negative indices are not allowed (index_zero={index_zero})")
+            self.index_zero = index_zero
+        else:
+            # Using index_one
+            if index_zero is not None:
+                raise ValueError("Only one of index_zero or index_one must be provided")
+            if index_one < 1:
+                raise ValueError(f"Index must be at least 1 (index_one={index_one})")
+            self.index_zero = index_one - 1
 
     @property
     def index_one(self) -> int:

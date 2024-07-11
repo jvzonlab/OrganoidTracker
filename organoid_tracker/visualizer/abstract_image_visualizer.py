@@ -61,6 +61,13 @@ class AbstractImageVisualizer(Visualizer):
             return
 
         self._clamp_channel()
+
+        if self._display_settings.max_intensity_projection:
+            # Handle max intensity projection
+            image_3d = self._return_3d_image()
+            self._image_slice_2d = image_3d.max(axis=0) if image_3d is not None else None
+            return
+
         image_2d = None
         if self._display_settings.show_images:
             image_2d = self.load_image(self._time_point, self._z, self._display_settings.show_next_time_point)
@@ -236,12 +243,19 @@ class AbstractImageVisualizer(Visualizer):
 
         line_infinite(self._ax, start.x, start.y, end.x, end.y, linewidth=line_width, color=color)
 
+    def _get_figure_title_z_str(self) -> str:
+        z_str = str(self._z)
+        if self._display_settings.max_intensity_projection:
+            z_str = "m.i.p."
+        return z_str
+
     def _get_figure_title(self) -> str:
         timing = ""
         if self._experiment.images.has_timings():
             time_m = self._experiment.images.timings().get_time_m_since_start(self._time_point)
             timing = f", t={time_m:.1f}m" if time_m < 90 else f", t={time_m/60:.1f}h"
-        return f"Time point {self._time_point.time_point_number()}    (z={self._z}, " \
+
+        return f"Time point {self._time_point.time_point_number()}    (z={self._get_figure_title_z_str()}, " \
                f"c={self._display_settings.image_channel.index_one}{timing})"
 
     def _draw_extra(self):
@@ -291,12 +305,15 @@ class AbstractImageVisualizer(Visualizer):
         position_data = self._experiment.position_data
         dt = time_point.time_point_number() - self._time_point.time_point_number()
         show_errors = self._display_settings.show_errors
+        max_intensity_projection = self._display_settings.max_intensity_projection
 
         positions_x_list, positions_y_list, positions_edge_colors, positions_edge_widths, positions_marker_sizes =\
             list(), list(), list(), list(), list()
         crosses_x_list, crosses_y_list = list(), list()
 
         min_z, max_z = self._z - self.MAX_Z_DISTANCE, self._z + self.MAX_Z_DISTANCE
+        if max_intensity_projection:
+            min_z, max_z = None, None
         for position in self._experiment.positions.of_time_point_and_z(time_point, min_z, max_z):
             dz = self._z - round(position.z)
 
@@ -316,7 +333,7 @@ class AbstractImageVisualizer(Visualizer):
             positions_y_list.append(position.y)
             positions_edge_colors.append(edge_color)
             positions_edge_widths.append(edge_width)
-            dz_penalty = 0 if dz == 0 else abs(dz) + 1
+            dz_penalty = 0 if dz == 0 or max_intensity_projection else abs(dz) + 1
             positions_marker_sizes.append(max(1, 7 - dz_penalty - dt + edge_width) ** 2)
 
         self._ax.scatter(crosses_x_list, crosses_y_list, marker='X', facecolor='black', edgecolors="white",
@@ -341,13 +358,15 @@ class AbstractImageVisualizer(Visualizer):
         """Draws all connections. A connection indicates that two positions are not the same, but are related."""
         if not self._display_settings.show_links_and_connections:
             return
+        max_intensity_projection = self._display_settings.max_intensity_projection
 
         lines = []
         for position1, position2 in self._experiment.connections.of_time_point(self._time_point):
-            min_display_z = min(position1.z, position2.z) - self.MAX_Z_DISTANCE
-            max_display_z = max(position1.z, position2.z) + self.MAX_Z_DISTANCE
-            if self._z < min_display_z or self._z > max_display_z:
-                continue
+            if not max_intensity_projection:
+                min_display_z = min(position1.z, position2.z) - self.MAX_Z_DISTANCE
+                max_display_z = max(position1.z, position2.z) + self.MAX_Z_DISTANCE
+                if self._z < min_display_z or self._z > max_display_z:
+                    continue
 
             line = (position1.x, position1.y), (position2.x, position2.y)
             lines.append(line)
@@ -360,14 +379,16 @@ class AbstractImageVisualizer(Visualizer):
         """Draws all links. A link indicates that one position is the same a another position in another time point."""
         if not self._display_settings.show_links_and_connections:
             return
+        max_intensity_projection = self._display_settings.max_intensity_projection
 
         lines = []
         colors = []
         for position1, position2 in self._experiment.links.of_time_point(self._time_point):
-            min_display_z = min(position1.z, position2.z) - self.MAX_Z_DISTANCE
-            max_display_z = max(position1.z, position2.z) + self.MAX_Z_DISTANCE
-            if self._z < min_display_z or self._z > max_display_z:
-                continue
+            if not max_intensity_projection:
+                min_display_z = min(position1.z, position2.z) - self.MAX_Z_DISTANCE
+                max_display_z = max(position1.z, position2.z) + self.MAX_Z_DISTANCE
+                if self._z < min_display_z or self._z > max_display_z:
+                    continue
 
             line = (position1.x, position1.y), (position2.x, position2.y)
             lines.append(line)
@@ -415,6 +436,8 @@ class AbstractImageVisualizer(Visualizer):
         """Wrapper of get_closest_position that makes use of the fact that we can lookup all positions ourselves."""
         min_z = self._z - self.MAX_Z_DISTANCE
         max_z = self._z + self.MAX_Z_DISTANCE
+        if self._display_settings.max_intensity_projection:
+            min_z, max_z = None, None
 
         # Find all drawn positions
         selectable_positions = set(self._experiment.positions.of_time_point_and_z(self._time_point, min_z, max_z))
@@ -458,6 +481,7 @@ class AbstractImageVisualizer(Visualizer):
                 self._toggle_showing_next_time_point,
             "View//Toggle-Toggle showing images [" + DisplaySettings.KEY_SHOW_IMAGES.upper() + "]":
                 self._toggle_showing_images,
+            "View//Toggle-Toggle showing max intensity projection [Z]": self._toggle_showing_max_intensity_projection,
             "View//Toggle-Toggle showing splines": self._toggle_showing_splines,
             "View//Toggle-Toggle showing position markers [P]": self._toggle_showing_position_markers,
             "View//Toggle-Toggle showing link and connection markers": self._toggle_showing_links_and_connections,
@@ -637,6 +661,10 @@ class AbstractImageVisualizer(Visualizer):
         self._display_settings.show_images = not self._display_settings.show_images
         self._move_in_time(0)  # Refreshes image
 
+    def _toggle_showing_max_intensity_projection(self):
+        self._display_settings.max_intensity_projection = not self._display_settings.max_intensity_projection
+        self._move_in_time(0)  # Refreshes image
+
     def _toggle_showing_splines(self):
         self._display_settings.show_splines = not self._display_settings.show_splines
         self.draw_view()
@@ -698,20 +726,14 @@ class AbstractImageVisualizer(Visualizer):
         """Makes sure a valid channel is selected. Changes the channel if not."""
         available_channels = self._experiment.images.image_loader().get_channels()
 
-        # Handle 1 or 0 channels
-        if len(available_channels) == 1:
-            self._display_settings.image_channel = available_channels[0]
-            return
+        # Handle the case where no channels are available
         if len(available_channels) == 0:
             self._display_settings.image_channel = ImageChannel(index_zero=0)
             return
 
-        # Handle two or more channels
-        try:
-            available_channels.index(self._display_settings.image_channel)
-        except ValueError:
-            # Didn't select a valid channel, switch to first one
-            self._display_settings.image_channel = available_channels[0]
+        # If there are channels available, make sure the selected channel is within the range
+        if self._display_settings.image_channel.index_zero >= len(available_channels):
+            self._display_settings.image_channel = ImageChannel(index_one=len(available_channels))
 
     def _move_to_time(self, new_time_point_number: int) -> bool:
         """Switches to another time point: loads the data for that time point, updates the displayed images and redraws
@@ -784,18 +806,15 @@ class AbstractImageVisualizer(Visualizer):
 
     def _move_in_channel(self, dc: int):
         channels = self._experiment.images.image_loader().get_channels()
-        if len(channels) < 2:
+        if len(channels) <= 1:
             # Nothing to choose, just use the default
             self._display_settings.image_channel = ImageChannel(index_zero=0)
             self.update_status("There is only one image channel available, so we cannot switch channels.")
             return
 
-        try:
-            old_index = channels.index(self._display_settings.image_channel)
-        except ValueError:
-            old_index = 0
+        old_index = self._display_settings.image_channel.index_zero
         new_index = (old_index + dc) % len(channels)
-        self._display_settings.image_channel = channels[new_index]
+        self._display_settings.image_channel = ImageChannel(index_zero=new_index)
 
         try:
             self._load_2d_image()  # Reload image

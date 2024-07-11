@@ -138,7 +138,8 @@ class SplineEditor(AbstractEditor):
         self.draw_view()
 
     def _get_figure_title(self) -> str:
-        return "Editing splines in time point " + str(self._time_point.time_point_number()) + "    (z=" + str(self._z) + ")"
+        return ("Editing splines in time point " + str(self._time_point.time_point_number())
+                + "    (z=" + self._get_figure_title_z_str() + ")")
 
     def _get_window_title(self) -> str:
         return "Manual data editing"
