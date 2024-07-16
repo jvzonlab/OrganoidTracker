@@ -292,3 +292,22 @@ def to_experiment_list_file_structure(tabs: Iterable[SingleGuiTab]) -> Optional[
             experiments_json.append(experiment_json)
     return experiments_json
 
+
+def switch_experiment_tab_relative(window: Window, relative_index: int):
+    """Switches to the tab that is relative to the currently open tab. If that tab doesn't exist, an error message is
+    shown to the user."""
+    gui_experiment = window.get_gui_experiment()
+    tabs = gui_experiment.get_all_tabs()
+    if len(tabs) == 1:
+        window.set_status("Only one experiment is selected. Cannot switch to another tab.")
+        return
+    current_tab = gui_experiment.get_open_tab()
+    index = tabs.index(current_tab)
+    if index + relative_index < 0:
+        window.set_status("You're already in the first tab.")
+        return
+    if index + relative_index >= len(tabs):
+        window.set_status("You're already in the last tab.")
+        return
+    gui_experiment.select_experiment(index + relative_index)
+    window.set_status(f"Switched to experiment \"{gui_experiment.get_open_tab().experiment.name}\" (tab {index + relative_index + 1}/{len(tabs)}).")

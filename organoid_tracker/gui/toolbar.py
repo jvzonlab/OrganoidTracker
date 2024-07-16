@@ -28,6 +28,8 @@ class Toolbar(NavigationToolbar2QT):
     load_handler = lambda e: ...
     image_handler= lambda e: ...
     home_handler = lambda e: ...
+    next_experiment_handler = lambda e: ...
+    previous_experiment_handler = lambda e: ...
     experiment_select_handler = lambda e, experiment_number: ...
 
     _experiment_selector_box: QComboBox
@@ -42,7 +44,10 @@ class Toolbar(NavigationToolbar2QT):
             lambda index: self._call(lambda: self.experiment_select_handler(index) if index != -1 else ...))
         self.update_selectable_experiments([], 0)
         self.addSeparator()
+        self.addAction(get_icon("experiment_previous.png"), "Previous experiment", lambda *e: self._call(self.previous_experiment_handler))
         self.addWidget(self._experiment_selector_box)
+        self.addAction(get_icon("experiment_next.png"), "Next experiment", lambda *e: self._call(self.next_experiment_handler))
+        self.addSeparator()
         self.addAction(get_icon("file_new.png"), "New", lambda *e: self._call(self.new_handler))
         self.addAction(get_icon("file_close.png"), "Close", lambda *e: self._call(self.close_handler))
 

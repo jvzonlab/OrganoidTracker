@@ -219,6 +219,12 @@ def _connect_toolbar_actions(toolbar: Toolbar, window: Window):
         action.load_images(window)
     def experiment(index):
         window.get_gui_experiment().select_experiment(index)
+    def previous_experiment():
+        from organoid_tracker.gui import action
+        action.switch_experiment_tab_relative(window, -1)
+    def next_experiment():
+        from organoid_tracker.gui import action
+        action.switch_experiment_tab_relative(window, 1)
     def update_experiment_list(*args):
         # Update the list of experiment names in the top right corner, in case experiment.name has changed
         selected_index = 0
@@ -234,6 +240,8 @@ def _connect_toolbar_actions(toolbar: Toolbar, window: Window):
     toolbar.save_handler = save
     toolbar.load_handler = load
     toolbar.image_handler = image
+    toolbar.next_experiment_handler = next_experiment
+    toolbar.previous_experiment_handler = previous_experiment
     toolbar.experiment_select_handler = experiment
     window.get_gui_experiment().register_event_handler("any_updated_event", "toolbar", update_experiment_list)
     window.get_gui_experiment().register_event_handler("data_updated_event", "toolbar", update_experiment_list)
