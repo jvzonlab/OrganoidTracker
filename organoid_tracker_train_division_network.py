@@ -142,7 +142,8 @@ with open(os.path.join(output_folder, "validation_list.json"), "w") as file_hand
 
 # Generate examples for sanity check
 print("Generating examples for sanity check...")
-os.makedirs(os.path.join(output_folder, "division_examples"), exist_ok=True)
+divisions_example_folder = os.path.join(output_folder, "division_examples")
+os.makedirs(divisions_example_folder, exist_ok=True)
 
 
 quick_dataset: DataLoader = DataLoader(validation_dataset.dataset, batch_size=1)
@@ -166,7 +167,7 @@ for i, element in enumerate(quick_dataset):
     image = np.moveaxis(image, source=-1, destination=0)
 
     if ((ground_truth_dividing * score) < 0) and (correct_examples < 10):
-        tifffile.imwrite(os.path.join(trained_model_folder, "division_examples",
+        tifffile.imwrite(os.path.join(divisions_example_folder,
                                       "CORRECT_example_input" + str(i) + '_score_' +
                                       "{:.2f}".format(float(score)) + ".ome.tiff"), image, imagej=True,
                          metadata={'axes': 'TZYX'})
@@ -174,7 +175,7 @@ for i, element in enumerate(quick_dataset):
         correct_examples = correct_examples + 1
 
     if ((ground_truth_dividing * score) > 0) and (incorrect_examples < 10):
-        tifffile.imwrite(os.path.join(trained_model_folder, "division_examples",
+        tifffile.imwrite(os.path.join(divisions_example_folder,
                                       "INCORRECT_example_input" + str(i) + '_score_' +
                                       "{:.2f}".format(float(score)) + ".ome.tiff"), image, imagej=True,
                          metadata={'axes': 'TZYX'})
