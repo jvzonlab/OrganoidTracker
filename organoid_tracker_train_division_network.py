@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 """Script used to train the convolutional neural network, so that it can recognize nuclei in 3D images."""
+import _keras_environment
+_keras_environment.activate()
+
 import json
 import os
 import random
 
-os.environ["KERAS_BACKEND"] = "torch"
 import keras.callbacks
 import keras.saving
 import numpy as np
@@ -20,7 +22,6 @@ from organoid_tracker.neural_network.division_detection_cnn.convolutional_neural
 from organoid_tracker.neural_network.division_detection_cnn.training_data_creator import \
     create_image_with_divisions_list
 from organoid_tracker.neural_network.division_detection_cnn.training_dataset import training_data_creator_from_raw
-
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)

@@ -2,35 +2,35 @@
 
 """Script used to train the convolutional neural network, so that it can recognize the same nucleus across time points.
 """
+import _keras_environment
+_keras_environment.activate()
+
 import json
 import os
 import random
 from typing import Tuple
 
-import numpy
-
-os.environ["KERAS_BACKEND"] = "torch"
 import keras.callbacks
 import keras.saving
+import numpy
 import numpy as np
 import tifffile
 from torch.utils.data import DataLoader
 
-from organoid_tracker.linear_models.logistic_regression import platt_scaling
 from organoid_tracker.config import ConfigFile, config_type_image_shape_xyz_to_zyx, config_type_int
 from organoid_tracker.imaging import list_io
+from organoid_tracker.linear_models.logistic_regression import platt_scaling
 from organoid_tracker.neural_network.dataset_transforms import LimitingDataset
 from organoid_tracker.neural_network.link_detection_cnn.convolutional_neural_network import build_model
 from organoid_tracker.neural_network.link_detection_cnn.training_data_creator import create_image_with_links_list
 from organoid_tracker.neural_network.link_detection_cnn.training_dataset import training_data_creator_from_raw
 
-
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("train_link_network")
 dataset_file = config.get_or_prompt("dataset_file", "Please paste the path here to the dataset file."
-                                     " You can generate such a file from OrganoidTracker using File -> Tabs -> "
-                                     " all tabs.", store_in_defaults=True)
+                                                    " You can generate such a file from OrganoidTracker using File -> Tabs -> "
+                                                    " all tabs.", store_in_defaults=True)
 time_window = (int(config.get_or_default(f"time_window_before", str(-1))),
                int(config.get_or_default(f"time_window_after", str(1))))
 
@@ -104,13 +104,13 @@ history = model.fit(training_dataset,
                     validation_data=validation_dataset,
                     validation_steps=len(validation_dataset),
                     callbacks=[
-                        keras.callbacks.CSVLogger(os.path.join(logging_folder, "logging.csv"), separator=",", append=False),
+                        keras.callbacks.CSVLogger(os.path.join(logging_folder, "logging.csv"), separator=",",
+                                                  append=False),
                         keras.callbacks.EarlyStopping(patience=1, min_delta=0.001, restore_best_weights=True)])
 
 print("Saving model...")
 os.makedirs(trained_model_folder, exist_ok=True)
 model.save(os.path.join(trained_model_folder, "model.keras"))
-
 
 # Perform Platt scaling
 print("Performing Platt scaling...")
@@ -133,7 +133,9 @@ random.shuffle(list_for_platt_scaling_val)
 calibration_dataset = training_data_creator_from_raw(list_for_platt_scaling_val, time_window=time_window,
                                                      patch_shape=patch_shape_zyx, batch_size=batch_size,
                                                      mode='validation', split_proportion=0.0, perturb=False)
-calibration_dataset = DataLoader(LimitingDataset(calibration_dataset.dataset, round(0.2 * len(image_with_links_list) * 1 * number_of_postions)), batch_size=batch_size)
+calibration_dataset = DataLoader(
+    LimitingDataset(calibration_dataset.dataset, round(0.2 * len(image_with_links_list) * 1 * number_of_postions)),
+    batch_size=batch_size)
 
 predicted_chances_all = []
 ground_truth_linked = []
@@ -153,7 +155,6 @@ with open(os.path.join(trained_model_folder, "settings.json"), "w") as file_hand
     json.dump({"type": "links", "time_window": time_window, "patch_shape_zyx": patch_shape_zyx,
                "platt_intercept": intercept, "platt_scaling": scaling
                }, file_handle, indent=4)
-
 
 # Generate examples
 link_examples_folder = os.path.join(output_folder, "link_examples")

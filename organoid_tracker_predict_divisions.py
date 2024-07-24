@@ -1,8 +1,10 @@
 """Predictions particle positions using an already-trained convolutional neural network."""
+import _keras_environment
+_keras_environment.activate()
+
 import json
 import os
 
-os.environ["KERAS_BACKEND"] = "torch"
 import keras.saving
 import numpy as np
 

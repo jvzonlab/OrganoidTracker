@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 """Script used to train the convolutional neural network, so that it can recognize nuclei in 3D images."""
+import _keras_environment
+_keras_environment.activate()
+
 import json
 import os
 import random
 
-os.environ["KERAS_BACKEND"] = "torch"
 import keras.callbacks
 import keras.models
 

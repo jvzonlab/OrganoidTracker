@@ -1,21 +1,22 @@
 """Predictions particle positions using an already-trained convolutional neural network."""
+import _keras_environment
+_keras_environment.activate()
+
 import json
 import os
 
-os.environ["KERAS_BACKEND"] = "torch"
 import keras.saving
-
-from organoid_tracker.config import ConfigFile
-from organoid_tracker.core.resolution import ImageResolution
-from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
-from organoid_tracker.imaging import io
-from organoid_tracker.image_loading import general_image_loader
-from organoid_tracker.core.position_collection import PositionCollection
-
-from organoid_tracker.neural_network.link_detection_cnn.prediction_dataset import prediction_data_creator
 import numpy as np
 
-from organoid_tracker.neural_network.link_detection_cnn.training_data_creator import create_image_with_possible_links_list
+from organoid_tracker.config import ConfigFile
+from organoid_tracker.core.position_collection import PositionCollection
+from organoid_tracker.core.resolution import ImageResolution
+from organoid_tracker.image_loading import general_image_loader
+from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
+from organoid_tracker.imaging import io
+from organoid_tracker.neural_network.link_detection_cnn.prediction_dataset import prediction_data_creator
+from organoid_tracker.neural_network.link_detection_cnn.training_data_creator import \
+    create_image_with_possible_links_list
 
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("predict_links")
