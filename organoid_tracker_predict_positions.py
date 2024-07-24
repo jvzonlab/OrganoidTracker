@@ -1,13 +1,15 @@
 """Predicts cell positions using an already-trained convolutional neural network."""
+import _keras_environment
+_keras_environment.activate()
+
 import json
 import math
 import os
 
-os.environ["KERAS_BACKEND"] = "torch"
 import keras.saving
 import numpy as np
-from skimage.feature import peak_local_max
 import tifffile
+from skimage.feature import peak_local_max
 
 from organoid_tracker.config import ConfigFile, config_type_int
 from organoid_tracker.core.position import Position
