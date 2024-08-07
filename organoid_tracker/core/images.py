@@ -99,6 +99,7 @@ class _CachedImageLoader(ImageLoader):
         return self._internal.serialize_to_dictionary()
 
     def close(self):
+        self._image_cache.clear()
         self._internal.close()
 
 
