@@ -27,7 +27,7 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
         "Tools//Use-Detect cells in images...": lambda: _generate_position_detection_config(window),
         "Tools//Use-Detect dividing cells...": lambda: _generate_division_detection_config(window),
         "Tools//Use-Detect link likelihoods...": lambda: _generate_link_detection_config(window),
-        "Tools//Use-Create links between time points...": lambda: _generate_linking_config(window),
+        "Tools//Use-Create tracks...": lambda: _generate_tracks_config(window),
         "Tools//Error rates-Find scaling temperature": lambda: _generate_calibrate_marginalization_config(window),
         "Tools//Error rates-Compute marginalized error rates": lambda: _generate_marginalization_config(window)
     }
@@ -235,15 +235,16 @@ def _generate_division_training_config(window: Window):
 
 def _generate_division_detection_config(window: Window):
     """For applying an already trained network on new images."""
-    experiment = window.get_experiment()
-    image_loader = experiment.images.image_loader()
-    if not image_loader.has_images():
-        raise UserError("No images", "No images were loaded, so no cells can be detected. Please load some images"
-                                     " first.")
-    experiment.images.resolution()  # Check for resolution
+    experiments = list(window.get_active_experiments())
+    for experiment in experiments:
+        image_loader = experiment.images.image_loader()
+        if not image_loader.has_images():
+            raise UserError("No images", f"No images were loaded in the experiment \"{experiment.name}\","
+                                         f" so no cells can be detected. Please load some images first.")
+        experiment.images.resolution()  # Check for resolution
 
-    checkpoint_directory = _get_model_folder("divisions")
-    if checkpoint_directory is None:
+    model_folder = _get_model_folder("divisions")
+    if model_folder is None:
         return
 
     if not dialog.popup_message_cancellable("Out folder",
@@ -253,18 +254,16 @@ def _generate_division_detection_config(window: Window):
     if save_directory is None:
         return
 
-    positions_file = "Input positions.aut"
-    io.save_data_to_json(experiment, os.path.join(save_directory, positions_file))
+    tracking_files_folder = os.path.join(save_directory, "Input files")
+    os.makedirs(tracking_files_folder, exist_ok=True)
+    list_io.save_experiment_list_file(experiments,
+                                      os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
+                                      tracking_files_folder=tracking_files_folder)
 
     config = ConfigFile("predict_divisions", folder_name=save_directory)
-    config.get_or_default("images_container", image_loader.serialize_to_config()[0], store_in_defaults=True)
-    config.get_or_default("images_pattern", image_loader.serialize_to_config()[1], store_in_defaults=True)
-    config.get_or_default("positions_file", positions_file)
-    config.get_or_default("min_time_point", str(image_loader.first_time_point_number()), store_in_defaults=True)
-    config.get_or_default("max_time_point", str(image_loader.last_time_point_number()), store_in_defaults=True)
-    config.get_or_default("checkpoint_folder", checkpoint_directory)
-    config.get_or_default("predictions_output_folder", "out")
-    config.get_or_default("save_video_ram", "true")
+    config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
+    config.get_or_default("model_folder", model_folder)
+    config.get_or_default("predictions_output_folder", "Division predictions")
     config.get_or_default("images_channels", str(window.display_settings.image_channel.index_one))
 
     config.save()
@@ -319,18 +318,16 @@ def _generate_link_training_config(window: Window):
 
 def _generate_link_detection_config(window: Window):
     """For applying an already trained network on new images."""
-    experiment = window.get_experiment()
+    experiments = list(window.get_active_experiments())
+    for experiment in experiments:
+        image_loader = experiment.images.image_loader()
+        if not image_loader.has_images():
+            raise UserError("No images", f"No images were loaded in the experiment \"{experiment.name}\","
+                                         f" so no cells can be detected. Please load some images first.")
+        experiment.images.resolution()  # Check for resolution
 
-    # Make sure that a resolution is stored
-    experiment.images.resolution()
-
-    image_loader = experiment.images.image_loader()
-    if not image_loader.has_images():
-        raise UserError("No images", "No images were loaded, so no cells can be detected. Please load some images"
-                                     " first.")
-
-    checkpoint_directory = _get_model_folder("links")
-    if checkpoint_directory is None:
+    model_folder = _get_model_folder("links")
+    if model_folder is None:
         return
 
     if not dialog.popup_message_cancellable("Out folder",
@@ -340,18 +337,16 @@ def _generate_link_detection_config(window: Window):
     if save_directory is None:
         return
 
-    positions_file = "Input positions.aut"
-    io.save_data_to_json(experiment, os.path.join(save_directory, positions_file))
+    tracking_files_folder = os.path.join(save_directory, "Input files")
+    os.makedirs(tracking_files_folder, exist_ok=True)
+    list_io.save_experiment_list_file(experiments,
+                                      os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
+                                      tracking_files_folder=tracking_files_folder)
 
     config = ConfigFile("predict_links", folder_name=save_directory)
-    config.get_or_default("images_container", image_loader.serialize_to_config()[0], store_in_defaults=True)
-    config.get_or_default("images_pattern", image_loader.serialize_to_config()[1], store_in_defaults=True)
-    config.get_or_default("positions_file", positions_file)
-    config.get_or_default("min_time_point", str(image_loader.first_time_point_number()), store_in_defaults=True)
-    config.get_or_default("max_time_point", str(image_loader.last_time_point_number()), store_in_defaults=True)
-    config.get_or_default("checkpoint_folder", checkpoint_directory)
-    config.get_or_default("predictions_output_folder", "out")
-    config.get_or_default("save_video_ram", "true")
+    config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
+    config.get_or_default("model_folder", model_folder)
+    config.get_or_default("predictions_output_folder", "Link predictions")
     config.get_or_default("images_channels", str(window.display_settings.image_channel.index_one))
 
     config.save()
@@ -359,33 +354,35 @@ def _generate_link_detection_config(window: Window):
     _popup_confirmation(save_directory, "organoid_tracker_predict_links")
 
 
-def _generate_linking_config(window: Window):
-    experiment = window.get_experiment()
-    image_loader = experiment.images.image_loader()
-    if not image_loader.has_images():
-        raise UserError("No images", "No images were loaded, so we cannot use various heuristics to see how likely a"
-                                     " cell is a dividing cell. Please load some images first.")
-    if not experiment.positions.has_positions():
-        raise UserError("No positions found", "No cell positions loaded. The linking algorithm links existing cell"
-                                              " positions together. You can obtain cell positions using a neural"
-                                              " network, see the manual.")
-    experiment.images.resolution()  # Check for resolution
+def _generate_tracks_config(window: Window):
+    experiments = list(window.get_active_experiments())
+    for experiment in experiments:
+        image_loader = experiment.images.image_loader()
+        if not image_loader.has_images():
+            raise UserError("No images", f"No images were loaded in the experiment \"{experiment.name}\","
+                                         f" so no cells can be detected. Please load some images first.")
+        if not experiment.links.has_links():
+            raise UserError("No links", f"No tracking data was found in project {experiment.name}. Did you"
+                                        f"run all the previous tracking steps?")
+        experiment.images.resolution()  # Check for resolution
 
     save_directory = dialog.prompt_save_file("Output directory", [("Folder", "*")])
     if save_directory is None:
         return
-    positions_file = "positions." + io.FILE_EXTENSION
-    io.save_data_to_json(experiment, os.path.join(save_directory, positions_file))
-    config = ConfigFile("create_links", folder_name=save_directory)
-    config.get_or_default("images_container", image_loader.serialize_to_config()[0], store_in_defaults=True)
-    config.get_or_default("images_pattern", image_loader.serialize_to_config()[1], store_in_defaults=True)
-    config.get_or_default("min_time_point", str(image_loader.first_time_point_number()), store_in_defaults=True)
-    config.get_or_default("max_time_point", str(image_loader.last_time_point_number()), store_in_defaults=True)
-    config.get_or_default("positions_file", "./" + positions_file)
-    config.get_or_default("output_file", "./Automatic links." + io.FILE_EXTENSION)
+
+    tracking_files_folder = os.path.join(save_directory, "Input files")
+    os.makedirs(tracking_files_folder, exist_ok=True)
+    list_io.save_experiment_list_file(experiments,
+                                      os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
+                                      tracking_files_folder=tracking_files_folder)
+
+    config = ConfigFile("create_tracks", folder_name=save_directory)
+    config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
+    config.get_or_default("output_folder", "Output tracks")
+
     config.save()
-    _create_run_script(save_directory, "organoid_tracker_create_links")
-    _popup_confirmation(save_directory, "organoid_tracker_create_links")
+    _create_run_script(save_directory, "organoid_tracker_create_tracks")
+    _popup_confirmation(save_directory, "organoid_tracker_create_tracks")
 
 
 def _generate_calibrate_marginalization_config(window: Window):
