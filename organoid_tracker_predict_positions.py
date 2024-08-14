@@ -173,9 +173,9 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
             # remove channel dimension
             prediction = np.squeeze(prediction, axis=-1)
 
-            if _debug_folder is not None:
+            if debug_folder_experiment is not None:
                 image_name = "image_" + str(time_point.time_point_number())
-                tifffile.imwrite(os.path.join(_debug_folder, '{}.tif'.format(image_name)), prediction)
+                tifffile.imwrite(os.path.join(debug_folder_experiment, '{}.tif'.format(image_name)), prediction)
 
             del prediction_batch
 
