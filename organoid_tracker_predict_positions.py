@@ -47,7 +47,7 @@ _mid_layers = int(config.get_or_default("mid_layers", str(5), comment="Number of
                                                                       " z-planes. Used to improve peak finding."))
 _peak_min_distance_px = int(config.get_or_default("peak_min_distance_px", str(9), comment="Minimum distance in pixels"
                                                                                           " between detected positions."))
-_threshold = float(config.get_or_default("threshold", str(0.1), comment="Minimum peak intensity"))
+_threshold = float(config.get_or_default("threshold", str(0.1), comment="Minimum peak intensity, relative to the maximum in the time point"))
 
 _debug_folder = config.get_or_default("predictions_output_folder", "",
                                       comment="If you want to see the raw prediction images, paste the path to a folder here. In that folder, a prediction image will be placed for each time point.")
@@ -185,7 +185,7 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
 
             # Comparison between image_max and im to find the coordinates of local maxima
             #im = erosion(im, np.ones((7,7,7)))
-            coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=im.max() / 10,
+            coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=im.max() * _threshold,
                                         exclude_border=False)  #, footprint=prediction_mask)
 
             for coordinate in coordinates:
