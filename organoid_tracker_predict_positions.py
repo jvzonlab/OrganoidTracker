@@ -30,14 +30,14 @@ config = ConfigFile("predict_positions")
 _dataset_file = config.get_or_prompt("dataset_file", "Please paste the path here to the dataset file."
                                      " You can generate such a file from OrganoidTracker using File -> Tabs -> "
                                      " all tabs.", store_in_defaults=True)
-_patch_shape_y = config.get_or_default("patch_shape_y", str(240), type=config_type_int, comment="Maximum patch size to use for predictions."
+_patch_shape_y = config.get_or_default("patch_shape_y", str(232), type=config_type_int, comment="Maximum patch size to use for predictions."
                                        " Make this smaller if you run out of video card memory.")
-_patch_shape_x = config.get_or_default("patch_shape_x", str(240), type=config_type_int)
+_patch_shape_x = config.get_or_default("patch_shape_x", str(232), type=config_type_int)
 
 _buffer_z = config.get_or_default("buffer_z", str(1), comment="Buffer space to use when stitching multiple patches"
                                                               " together", type=config_type_int)
-_buffer_y = config.get_or_default("buffer_y", str(8), type=config_type_int)
-_buffer_x = config.get_or_default("buffer_x", str(8), type=config_type_int)
+_buffer_y = config.get_or_default("buffer_y", str(12), type=config_type_int, comment="buffer_y * 2 + patch_shape_y needs to be a multiple of 32")
+_buffer_x = config.get_or_default("buffer_x", str(12), type=config_type_int, comment="Same for buffer_x")
 
 _model_folder = config.get_or_prompt("model_folder", "Please paste the path here to the \"trained_model\" folder containing the trained model.")
 _output_folder = config.get_or_default("positions_output_folder", "Automatic positions", comment="Output folder for the positions, can be viewed using the visualizer program.")
