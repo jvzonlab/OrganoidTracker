@@ -122,8 +122,9 @@ class Name:
         return self._name
 
     def get_save_name(self) -> str:
-        """Gets a name that is safe for file saving. It does not contain characters like / or \\."""
-        return re.sub(r'[^A-Za-z0-9_\- ]+', '_', str(self))
+        """Gets a name that is safe for file saving. It does not contain characters like / or \\, and no whitespace at
+        the start or end."""
+        return re.sub(r'[^A-Za-z0-9_\- ]+', '_', str(self)).strip()
 
     def __hash__(self) -> int:
         return hash(str(self))
