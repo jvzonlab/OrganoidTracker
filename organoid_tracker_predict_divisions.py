@@ -131,12 +131,12 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
 
                 # check if neighbor is also dividing and if the neighbor is within the range
                 if experiment.position_data.get_position_data(neighbor, data_name="division_probability") > 0.5:
-                    range = 1.5*_min_distance_dividing
+                    detection_range = 1.5*_min_distance_dividing
                 else:
-                    range = _min_distance_dividing
+                    detection_range = _min_distance_dividing
 
                 # if the division is oversegmented rpelace by one position in the middle
-                if (position.distance_um(neighbor, resolution=experiment.images.resolution()) < range):
+                if (position.distance_um(neighbor, resolution=experiment.images.resolution()) < detection_range):
                     add_position = Position(x=(position.x + neighbor.x)//2,
                                         y=(position.y + neighbor.y)//2,
                                         z=(position.z + neighbor.z)//2,
