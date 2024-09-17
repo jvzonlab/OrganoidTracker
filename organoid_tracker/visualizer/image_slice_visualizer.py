@@ -39,7 +39,7 @@ class ImageSliceViewer(ExitableImageVisualizer):
             "gridspec_kw":  {"width_ratios": [3, 1], "height_ratios": [3, 1]}
         }
 
-    def _load_2d_image(self):
+    def _refresh_2d_image(self):
         # Disabled, as we need to work with 3d images here
         self._image_slice_2d = None
 

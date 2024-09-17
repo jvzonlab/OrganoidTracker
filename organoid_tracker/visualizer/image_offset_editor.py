@@ -47,6 +47,11 @@ class ImageOffsetEditor(ExitableImageVisualizer):
 
         self._previous_offsets = self._experiment.images.offsets.copy()
 
+    def _get_figure_title(self) -> str:
+        return (f"Editing image offsets\n"
+                f"Time points {self._time_point.time_point_number()} (green) - {self._time_point.time_point_number() + 1} (purple)"
+                f"    (z={self._get_figure_title_z_str()}, c={self._display_settings.image_channel.index_one})")
+
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
             **super().get_extra_menu_options(),
@@ -89,8 +94,7 @@ class ImageOffsetEditor(ExitableImageVisualizer):
             self._experiment.images.offsets.update_offset(*offset, self._time_point.time_point_number() + 1,
                                                           self._experiment.last_time_point_number())
             self._regenerate_image()
-            new_offset = self._experiment.images.offsets.of_time_point(
-                self._experiment.get_next_time_point(self._time_point))
+            new_offset = self._experiment.images.offsets.of_time_point(self._time_point + 1)
             self.update_status("Updated the offset for this and all following time points. Offset of this time point"
                                " is now " + str((new_offset.x, new_offset.y, new_offset.z)))
         else:
@@ -98,7 +102,7 @@ class ImageOffsetEditor(ExitableImageVisualizer):
 
     def _regenerate_image(self):
         self._display_settings.show_next_time_point = True
-        self._load_2d_image()
+        self._refresh_2d_image()
         self.draw_view()
 
     def _exit_view(self):

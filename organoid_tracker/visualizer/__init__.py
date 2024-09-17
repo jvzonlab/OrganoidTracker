@@ -32,6 +32,7 @@ from numpy import ndarray
 from organoid_tracker import core
 from organoid_tracker.core import TimePoint, UserError
 from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.core.typing import MPLColor
@@ -234,37 +235,67 @@ class Visualizer:
         update_status to set a special status."""
         return str(self.__doc__)
 
-    def load_image(self, time_point: TimePoint, z: int, show_next_time_point: bool) -> Optional[ndarray]:
-        """Creates an image suitable for display purposes. IF show_next_time_point is set to True, then then a color
-        image will be created with the next image in red, and the current image in green."""
-        channel = self._display_settings.image_channel
+    def _return_2d_image(self, time_point: TimePoint, z: int, channel: ImageChannel, show_next_time_point: bool) -> Optional[ndarray]:
+        """Returns the 2D image slice for the given time point, Z and channel. Ignores any current display settings,
+        and only uses the settings provided as method arguments. If show_next_time_point is True, then the next time
+        point is included in the image as well in red+blue, while the current time point is green."""
         time_point_image = self._experiment.images.get_image_slice_2d(time_point, channel, z)
         if time_point_image is None:
             return None
         if show_next_time_point:
             image_shape = time_point_image.shape
 
-            rgb_images = numpy.zeros((image_shape[0], image_shape[1], 3), dtype='float')
+            rgb_images = numpy.zeros((image_shape[0], image_shape[1], 3), dtype=numpy.float32)
             rgb_images[:, :, 1] = time_point_image  # Green channel is current image
             rgb_images[:, :, 1] /= max(1, rgb_images[:, :, 1].max())  # Normalize the green channel
-            try:
-                next_time_point = self._experiment.get_next_time_point(time_point)
-                next_time_point_image = self._experiment.images.get_image_slice_2d(next_time_point, channel, z)
-                if next_time_point_image is None:
-                    next_time_point_image = numpy.zeros_like(time_point_image)
+            next_time_point_image = self._experiment.images.get_image_slice_2d(time_point + 1, channel, z)
+            if next_time_point_image is None:
+                next_time_point_image = numpy.zeros_like(time_point_image)
 
-                # Check if we need to translate the next image
-                offsets = self._experiment.images.offsets
-                relative_offset = offsets.of_time_point(time_point) - offsets.of_time_point(next_time_point)
-                if relative_offset.x != 0 or relative_offset.y != 0 or relative_offset.z != 0:
-                    original_images = next_time_point_image
-                    next_time_point_image = numpy.zeros_like(original_images)
-                    cropper.crop_2d(original_images, int(relative_offset.x), int(relative_offset.y),
-                                    output=next_time_point_image)
-                rgb_images[:, :, 0] = next_time_point_image  # Red channel is next image
-                rgb_images[:, :, 0] /= max(1, rgb_images[:, :, 0].max())  # Normalize the red channel
-            except ValueError:
-                pass  # There is no next time point, ignore
+            # Check if we need to translate the next image
+            offsets = self._experiment.images.offsets
+            relative_offset = offsets.of_time_point(time_point) - offsets.of_time_point(time_point + 1)
+            if relative_offset.x != 0 or relative_offset.y != 0 or relative_offset.z != 0:
+                original_images = next_time_point_image
+                next_time_point_image = numpy.zeros_like(original_images)
+                cropper.crop_2d(original_images, int(relative_offset.x), int(relative_offset.y),
+                                output=next_time_point_image)
+            rgb_images[:, :, 0] = next_time_point_image  # Red channel is next image
+            rgb_images[:, :, 0] /= max(1, rgb_images[:, :, 0].max())  # Normalize the red channel
+            rgb_images[:, :, 2] = rgb_images[:, :, 0]  # Blue channel is the same as red channel, to create purple
+
+            time_point_image = rgb_images
+        return time_point_image
+
+    def _return_3d_image(self, time_point: TimePoint, channel: ImageChannel, show_next_time_point: bool) -> Optional[ndarray]:
+        """Returns the full image stack for the given time pointand channel. Ignores any current display settings,
+        and only uses the settings provided as method arguments. If show_next_time_point is True, then the next time
+        point is included in the image as well in red+blue, while the current time point is green."""
+        time_point_image = self._experiment.images.get_image_stack(time_point, channel)
+        if time_point_image is None:
+            return None
+        if show_next_time_point:
+            image_shape = time_point_image.shape
+
+            rgb_images = numpy.zeros((image_shape[0], image_shape[1], image_shape[2], 3), dtype=numpy.float32)
+            rgb_images[:, :, :, 1] = time_point_image  # Green channel is current image
+            rgb_images[:, :, :, 1] /= max(1, rgb_images[:, :, :, 1].max())  # Normalize the green channel
+
+            next_time_point_image = self._experiment.images.get_image_stack(time_point + 1, channel)
+            if next_time_point_image is None:
+                next_time_point_image = numpy.zeros_like(time_point_image)
+
+            # Check if we need to translate the next image
+            offsets = self._experiment.images.offsets
+            relative_offset = offsets.of_time_point(time_point) - offsets.of_time_point(time_point + 1)
+            if relative_offset.x != 0 or relative_offset.y != 0 or relative_offset.z != 0:
+                original_images = next_time_point_image
+                next_time_point_image = numpy.zeros_like(original_images)
+                cropper.crop_3d(original_images, int(relative_offset.x), int(relative_offset.y), int(relative_offset.z),
+                                output=next_time_point_image)
+            rgb_images[:, :, :, 0] = next_time_point_image  # Red channel is next image
+            rgb_images[:, :, :, 0] /= max(1, rgb_images[:, :, :, 0].max())  # Normalize the red channel
+            rgb_images[:, :, :, 2] = rgb_images[:, :, :, 0]  # Blue channel is the same as red channel, to create purple
 
             time_point_image = rgb_images
         return time_point_image

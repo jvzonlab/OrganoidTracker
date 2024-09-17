@@ -51,8 +51,9 @@ class AbstractImageVisualizer(Visualizer):
         warnings, will override this method to check when that is the case."""
         pass
 
-    def _load_2d_image(self):
-        """Loads the images and other data of the time point."""
+    def _refresh_2d_image(self):
+        """Loads the currently displayed 2D image slice into self._image_slice_2d, based on the display settings.
+        Modifies the currently displayed channel and z if the current settings are out of bounds."""
         if self._experiment.first_time_point_number() is None or \
                 self._time_point.time_point_number() < self._experiment.first_time_point_number() or \
                 self._time_point.time_point_number() > self._experiment.last_time_point_number():
@@ -64,13 +65,14 @@ class AbstractImageVisualizer(Visualizer):
 
         if self._display_settings.max_intensity_projection:
             # Handle max intensity projection
-            image_3d = self._return_3d_image()
+            image_3d = self._return_displayed_3d_image()
             self._image_slice_2d = image_3d.max(axis=0) if image_3d is not None else None
             return
 
         image_2d = None
         if self._display_settings.show_images:
-            image_2d = self.load_image(self._time_point, self._z, self._display_settings.show_next_time_point)
+            image_2d = self._return_2d_image(self._time_point, self._z, self._display_settings.image_channel,
+                                             self._display_settings.show_next_time_point)
         if self.should_show_image_reconstruction():
             if image_2d is not None:
                 # Create background based on time point images
@@ -88,7 +90,7 @@ class AbstractImageVisualizer(Visualizer):
                 rgb_image_2d.clip(0, 0.25, out=rgb_image_2d)
             else:
                 # No images - create empty background
-                image_for_shape = self.load_image(self._time_point, self._z, show_next_time_point=False)
+                image_for_shape = self._return_2d_image(self._time_point, self._z, self._display_settings.image_channel, show_next_time_point=False)
                 image_shape = image_for_shape.shape[0:2] + (3,) if image_for_shape is not None else self.DEFAULT_SIZE[1:] + (3,)
                 rgb_image_2d = numpy.zeros(image_shape, dtype=numpy.float32)
 
@@ -99,40 +101,49 @@ class AbstractImageVisualizer(Visualizer):
         self._image_slice_2d = image_2d
         self._clamp_z()
 
-    def _return_3d_image(self) -> ndarray:
+    def _return_displayed_3d_image(self) -> Optional[ndarray]:
         """Just returns the full 3D image. Likely requites loading additional images from disk."""
-        image_3d = self._experiment.images.get_image_stack(self._display_settings.time_point,
-                                                           self._display_settings.image_channel)
-        if not self.should_show_image_reconstruction():
-            return image_3d  # Done, just return the image
+        image_3d = None
+        if self._display_settings.show_images:
+            image_3d = self._return_3d_image(self._time_point, self._display_settings.image_channel,
+                                             self._display_settings.show_next_time_point)
+        if self.should_show_image_reconstruction():
+            if image_3d is not None:
+                # Create background based on time point images
+                image_shape = image_3d.shape[0:3] + (3,)
+                rgb_image_3d = numpy.zeros(image_shape, dtype=numpy.float32)
 
-        # Create reconstruction
-        image_shape_rgb = image_3d.shape[0:3] + (3,) if image_3d is not None else self.DEFAULT_SIZE + (3,)
-        rgb_image_3d = numpy.zeros(image_shape_rgb, dtype=numpy.float32)
-
-        if self._display_settings.show_images and image_3d is not None:
-            # Create background based on microscopy images
-            if len(image_3d.shape) == 3:
-                rgb_image_3d[...] = image_3d
+                # Convert to colored float
+                if len(image_3d.shape) == 4:
+                    rgb_image_3d[...] = image_3d
+                else:
+                    rgb_image_3d[:, :, 0] = image_3d
+                    rgb_image_3d[:, :, 1] = image_3d
+                    rgb_image_3d[:, :, 2] = image_3d
+                rgb_image_3d /= (rgb_image_3d.max() * 2)
+                rgb_image_3d.clip(0, 0.25, out=rgb_image_3d)
             else:
-                rgb_image_3d[:, :, :, 0] = image_3d
-                rgb_image_3d[:, :, :, 1] = image_3d
-                rgb_image_3d[:, :, :, 2] = image_3d
-            rgb_image_3d /= (rgb_image_3d.max() * 2)
-            rgb_image_3d.clip(0, 0.25, out=rgb_image_3d)
+                # No images - create empty background
+                image_for_shape = self._return_3d_image(self._time_point,self._display_settings.image_channel,
+                                                        show_next_time_point=False)
+                image_shape = image_for_shape.shape[0:3] + (3,) if image_for_shape is not None else self.DEFAULT_SIZE + (3,)
+                rgb_image_3d = numpy.zeros(image_shape, dtype=numpy.float32)
 
-        self.reconstruct_image_3d(self._time_point, rgb_image_3d)
-        return rgb_image_3d
+            # Create reconstruction
+            self.reconstruct_image_3d(self._time_point, rgb_image_3d)
+            image_3d = rgb_image_3d
+
+        return image_3d
 
     def refresh_data(self):
         self._calculate_time_point_metadata()
         if self.should_show_image_reconstruction():
-            self._load_2d_image()  # Reload image, as image is a reconstruction of the data
+            self._refresh_2d_image()  # Reload image, as image is a reconstruction of the data
         super().refresh_data()
 
     def refresh_all(self):
         self._calculate_time_point_metadata()
-        self._load_2d_image()  # Reload image
+        self._refresh_2d_image()  # Reload image
         super().refresh_all()
 
     def draw_view(self):
@@ -624,7 +635,7 @@ class AbstractImageVisualizer(Visualizer):
         return False
 
     def _export_3d_image(self):
-        image_3d = self._return_3d_image()
+        image_3d = self._return_displayed_3d_image()
         if image_3d is None:
             raise core.UserError("No images loaded", "Saving images failed: there are no images loaded.")
         file = dialog.prompt_save_file("Save 3D file as...", [("TIF file", "*.tif")])
@@ -699,7 +710,7 @@ class AbstractImageVisualizer(Visualizer):
             return False
 
         if self._display_settings.z != old_z:
-            self._load_2d_image()
+            self._refresh_2d_image()
             self.draw_view()
         return True
 
@@ -745,7 +756,7 @@ class AbstractImageVisualizer(Visualizer):
         else:
             self._display_settings.time_point = time_point
             self._clamp_z()
-            self._load_2d_image()
+            self._refresh_2d_image()
             self._calculate_time_point_metadata()
             self.draw_view()
             self.update_status("Moved to time point " + str(new_time_point_number) + "!")
@@ -780,7 +791,7 @@ class AbstractImageVisualizer(Visualizer):
             self._display_settings.time_point = time_point
             self._display_settings.z = round(position.z)
             self._clamp_z()
-            self._load_2d_image()
+            self._refresh_2d_image()
             self._calculate_time_point_metadata()
             self._ax.set_xlim(position.x - 50, position.x + 50)
             self._ax.set_ylim(position.y + 50, position.y - 50)
@@ -799,7 +810,7 @@ class AbstractImageVisualizer(Visualizer):
         else:
             self._display_settings.time_point = time_point
             self._clamp_z()
-            self._load_2d_image()
+            self._refresh_2d_image()
             self._calculate_time_point_metadata()
             self.draw_view()
             self.update_status(self.get_default_status())
@@ -817,7 +828,7 @@ class AbstractImageVisualizer(Visualizer):
         self._display_settings.image_channel = ImageChannel(index_zero=new_index)
 
         try:
-            self._load_2d_image()  # Reload image
+            self._refresh_2d_image()  # Reload image
             self.draw_view()
             self.update_status(f"Switched to channel {new_index + 1} of {len(channels)}")
         except ValueError:
