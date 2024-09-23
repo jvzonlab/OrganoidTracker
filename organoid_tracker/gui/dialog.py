@@ -76,17 +76,15 @@ def prompt_options(title: str, question: str, *, option_1: str, option_2: Option
     (either Cancel or Ok) was pressed, returns a number (1, 2 or 3, depending on the picked option) otherwise."""
 
     # Set up window
+    button_1, button_2, button_3 = None, None, None
     box = QMessageBox(_window())
     box.setWindowTitle(title)
     box.setText(question)
-    button_count = 1
-    box.addButton(option_1, QMessageBox.ActionRole)
+    button_1 = box.addButton(option_1, QMessageBox.ActionRole)
     if option_2 is not None:
-        button_count += 1
-        box.addButton(option_2, QMessageBox.ActionRole)
+        button_2 = box.addButton(option_2, QMessageBox.ActionRole)
         if option_3 is not None:
-            button_count += 1
-            box.addButton(option_3, QMessageBox.ActionRole)
+            button_3 = box.addButton(option_3, QMessageBox.ActionRole)
     if option_default == DefaultOption.OK:
         box.addButton(QMessageBox.Ok)
     else:
@@ -94,9 +92,16 @@ def prompt_options(title: str, question: str, *, option_1: str, option_2: Option
 
     result = box.exec_()
     if result == QMessageBox.Cancel or result == QMessageBox.Ok:
-        # Clicked the last button, which is always Cancel
+        # Clicked one of these standard buttons
         return None
-    return result + 1  # + 1 to make it correspond to the numbering of option_1, option_2, etc.
+    clicked_button = box.clickedButton()
+    if clicked_button == button_1:
+        return 1
+    if button_2 is not None and clicked_button == button_2:
+        return 2
+    if button_3 is not None and clicked_button == button_3:
+        return 3
+    return None  # Don't know what was clicked
 
 
 def prompt_save_file(title: str, file_types: List[Tuple[str, str]], suggested_name: Optional[Name] = None
