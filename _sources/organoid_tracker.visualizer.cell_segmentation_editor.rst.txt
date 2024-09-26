@@ -1,0 +1,7 @@
+organoid\_tracker.visualizer.cell\_segmentation\_editor module
+==============================================================
+
+.. automodule:: organoid_tracker.visualizer.cell_segmentation_editor
+   :members:
+   :undoc-members:
+   :show-inheritance:

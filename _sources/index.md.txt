@@ -8,6 +8,7 @@ Tutorials
 * [Tutorial for semi-automated tracking](AUTOMATIC_TRACKING.md)
 * [Tutorial for writing a plugin for OrganoidTracker](PLUGIN_TUTORIAL.md)
 * [Tutorial for training a neural network](TRAINING_THE_NETWORK.md)
+* [Tutorial for using the segmentation editor](SEGMENTATION_EDITOR.md)
 * [Tutorial for using Jupyter Notebooks with OrganoidTracker](JUPYTER_NOTEBOOK.md)
 * [Tutorial for working with custom metadata](WORKING_WITH_CUSTOM_METADATA.md)
 * [Tutorial for replacing the tracking scripts with custom scripts](CUSTOM_TRACKING_SCRIPTS.md)
@@ -41,6 +42,8 @@ For data analysis, you can write your own Python scripts that make use of the [O
 
 Want to measure the migration of a cell? You can of course track the x, y and z position of a cell, but you can also [draw a (curved) axis yourself](DATA_AXES.md) and measure the position of a cell along that axis.
 
+The program cannot segment nuclei/cells on its own, but it can view and edit existing segmentations. You can find more information about this in the [segmentation editor tutorial](SEGMENTATION_EDITOR.md).
+
 
 :::{eval-rst}
 .. Hidden TOCs
@@ -56,6 +59,7 @@ Want to measure the migration of a cell? You can of course track the x, y and z 
    TRAINING_THE_NETWORK
    JUPYTER_NOTEBOOK
    WORKING_WITH_CUSTOM_METADATA
+   SEGMENTATION_EDITOR
 
 .. toctree::
    :caption: For reference

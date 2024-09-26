@@ -16,6 +16,7 @@ Submodules
    organoid_tracker.visualizer.cell_division_visualizer
    organoid_tracker.visualizer.cell_fate_visualizer
    organoid_tracker.visualizer.cell_movement_visualizer
+   organoid_tracker.visualizer.cell_segmentation_editor
    organoid_tracker.visualizer.debug_image_visualizer
    organoid_tracker.visualizer.division_score_visualizer
    organoid_tracker.visualizer.empty_visualizer

@@ -46,6 +46,7 @@
 <li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
 <li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SEGMENTATION_EDITOR.html">Segmentation masks editor</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">For reference</span></p>
 <ul>
@@ -135,6 +136,7 @@
 <li class="toctree-l1"><a class="reference internal" href="organoid_tracker.visualizer.cell_division_visualizer.html">organoid_tracker.visualizer.cell_division_visualizer module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="organoid_tracker.visualizer.cell_fate_visualizer.html">organoid_tracker.visualizer.cell_fate_visualizer module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="organoid_tracker.visualizer.cell_movement_visualizer.html">organoid_tracker.visualizer.cell_movement_visualizer module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.visualizer.cell_segmentation_editor.html">organoid_tracker.visualizer.cell_segmentation_editor module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="organoid_tracker.visualizer.debug_image_visualizer.html">organoid_tracker.visualizer.debug_image_visualizer module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="organoid_tracker.visualizer.division_score_visualizer.html">organoid_tracker.visualizer.division_score_visualizer module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="organoid_tracker.visualizer.empty_visualizer.html">organoid_tracker.visualizer.empty_visualizer module</a></li>
@@ -223,13 +225,6 @@ update_status to set a special status.</p>
 <dt class="sig sig-object py" id="organoid_tracker.visualizer.Visualizer.get_window">
 <span class="sig-name descname"><span class="pre">get_window</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window" title="organoid_tracker.gui.window.Window"><span class="pre">Window</span></a></span></span><a class="headerlink" href="#organoid_tracker.visualizer.Visualizer.get_window" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.visualizer.Visualizer.load_image">
-<span class="sig-name descname"><span class="pre">load_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_next_time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.visualizer.Visualizer.load_image" title="Permalink to this definition"></a></dt>
-<dd><p>Creates an image suitable for display purposes. IF show_next_time_point is set to True, then then a color
-image will be created with the next image in red, and the current image in green.</p>
-</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.visualizer.Visualizer.reconstruct_image">

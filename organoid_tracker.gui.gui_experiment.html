@@ -46,6 +46,7 @@
 <li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
 <li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SEGMENTATION_EDITOR.html">Segmentation masks editor</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">For reference</span></p>
 <ul>
@@ -131,7 +132,7 @@
 need to be saved.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="organoid_tracker.gui.gui_experiment.GuiExperiment.KNOWN_EVENTS">
-<span class="sig-name descname"><span class="pre">KNOWN_EVENTS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'any_updated_event',</span> <span class="pre">'command_event',</span> <span class="pre">'data_updated_event',</span> <span class="pre">'tab_list_updated_event'}</span></em><a class="headerlink" href="#organoid_tracker.gui.gui_experiment.GuiExperiment.KNOWN_EVENTS" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">KNOWN_EVENTS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'any_updated_event',</span> <span class="pre">'command_event',</span> <span class="pre">'data_updated_event',</span> <span class="pre">'program_close_event',</span> <span class="pre">'tab_list_updated_event'}</span></em><a class="headerlink" href="#organoid_tracker.gui.gui_experiment.GuiExperiment.KNOWN_EVENTS" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -205,6 +206,12 @@ been selected, this returns all tabs.</p>
 <dt class="sig sig-object py" id="organoid_tracker.gui.gui_experiment.GuiExperiment.is_selected">
 <span class="sig-name descname"><span class="pre">is_selected</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">select_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.gui_experiment.GuiExperiment.is_selected" title="Permalink to this definition"></a></dt>
 <dd><p>Checks if the select_index is of the currently selected experiment.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.gui_experiment.GuiExperiment.program_closing">
+<span class="sig-name descname"><span class="pre">program_closing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.gui_experiment.GuiExperiment.program_closing" title="Permalink to this definition"></a></dt>
+<dd><p>Called when the program is closed (so after saving the data - the user cannot cancel anymore at this point).</p>
 </dd></dl>
 
 <dl class="py method">

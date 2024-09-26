@@ -45,6 +45,7 @@
 <li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
 <li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SEGMENTATION_EDITOR.html">Segmentation masks editor</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">For reference</span></p>
 <ul>
@@ -96,6 +97,7 @@
 <li><p><a class="reference internal" href="AUTOMATIC_TRACKING.html"><span class="doc std std-doc">Tutorial for semi-automated tracking</span></a></p></li>
 <li><p><a class="reference internal" href="PLUGIN_TUTORIAL.html"><span class="doc std std-doc">Tutorial for writing a plugin for OrganoidTracker</span></a></p></li>
 <li><p><a class="reference internal" href="TRAINING_THE_NETWORK.html"><span class="doc std std-doc">Tutorial for training a neural network</span></a></p></li>
+<li><p><a class="reference internal" href="SEGMENTATION_EDITOR.html"><span class="doc std std-doc">Tutorial for using the segmentation editor</span></a></p></li>
 <li><p><a class="reference internal" href="JUPYTER_NOTEBOOK.html"><span class="doc std std-doc">Tutorial for using Jupyter Notebooks with OrganoidTracker</span></a></p></li>
 <li><p><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html"><span class="doc std std-doc">Tutorial for working with custom metadata</span></a></p></li>
 <li><p><a class="reference internal" href="CUSTOM_TRACKING_SCRIPTS.html"><span class="doc std std-doc">Tutorial for replacing the tracking scripts with custom scripts</span></a></p></li>
@@ -124,6 +126,7 @@ The toolbar of the program.</p>
 <p>It’s best to start with <a class="reference internal" href="MANUAL_TRACKING.html"><span class="doc std std-doc">manual tracking</span></a>, to make sure that you understand the program. After tracking a few cells, you can start with <a class="reference internal" href="AUTOMATIC_TRACKING.html"><span class="doc std std-doc">automated tracking</span></a>.</p>
 <p>For data analysis, you can write your own Python scripts that make use of the <a class="reference internal" href="API.html"><span class="doc std std-doc">OrganoidTracker API</span></a>. This is useful, as then you don’t need to write your own functions to find dividing cells, dead cells, etc. You can use the API from standalone scripts or from <a class="reference internal" href="JUPYTER_NOTEBOOK.html"><span class="doc std std-doc">Jupyter Notebooks</span></a>. You can even extend the graphical user interface by <a class="reference internal" href="PLUGIN_TUTORIAL.html"><span class="doc std std-doc">writing plugins</span></a>. For that, you just need to place a Python file in the correct directory. You can use plugins to add additional cell types and menu options.</p>
 <p>Want to measure the migration of a cell? You can of course track the x, y and z position of a cell, but you can also <a class="reference internal" href="DATA_AXES.html"><span class="doc std std-doc">draw a (curved) axis yourself</span></a> and measure the position of a cell along that axis.</p>
+<p>The program cannot segment nuclei/cells on its own, but it can view and edit existing segmentations. You can find more information about this in the <a class="reference internal" href="SEGMENTATION_EDITOR.html"><span class="doc std std-doc">segmentation editor tutorial</span></a>.</p>
 <div class="toctree-wrapper compound">
 </div>
 <div class="toctree-wrapper compound">

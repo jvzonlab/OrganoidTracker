@@ -43,6 +43,7 @@
 <li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
 <li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SEGMENTATION_EDITOR.html">Segmentation masks editor</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">For reference</span></p>
 <ul>
@@ -303,6 +304,16 @@
 </li>
       <li><a href="organoid_tracker.comparison.report.html#organoid_tracker.comparison.report.ComparisonReport.calculate_z_statistics">calculate_z_statistics() (organoid_tracker.comparison.report.ComparisonReport method)</a>
 </li>
+      <li><a href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageLoader.can_save_images">can_save_images() (organoid_tracker.core.image_loader.ImageLoader method)</a>
+
+      <ul>
+        <li><a href="organoid_tracker.image_loading.builtin_merging_image_loaders.html#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.can_save_images">(organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader method)</a>
+</li>
+        <li><a href="organoid_tracker.image_loading.builtin_merging_image_loaders.html#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.can_save_images">(organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader method)</a>
+</li>
+        <li><a href="organoid_tracker.image_loading.folder_image_loader.html#organoid_tracker.image_loading.folder_image_loader.FolderImageLoader.can_save_images">(organoid_tracker.image_loading.folder_image_loader.FolderImageLoader method)</a>
+</li>
+      </ul></li>
       <li><a href="organoid_tracker.gui.dialog.html#organoid_tracker.gui.dialog.DefaultOption.CANCEL">CANCEL (organoid_tracker.gui.dialog.DefaultOption attribute)</a>
 </li>
       <li><a href="organoid_tracker.comparison.report.html#organoid_tracker.comparison.report.Category">Category (class in organoid_tracker.comparison.report)</a>
@@ -325,11 +336,17 @@
 </li>
       <li><a href="organoid_tracker.visualizer.cell_movement_visualizer.html#organoid_tracker.visualizer.cell_movement_visualizer.CellMovementVisualizer">CellMovementVisualizer (class in organoid_tracker.visualizer.cell_movement_visualizer)</a>
 </li>
+      <li><a href="organoid_tracker.visualizer.cell_segmentation_editor.html#organoid_tracker.visualizer.cell_segmentation_editor.CellSegmentationEditor">CellSegmentationEditor (class in organoid_tracker.visualizer.cell_segmentation_editor)</a>
+</li>
       <li><a href="organoid_tracker.visualizer.cell_death_visualizer.html#organoid_tracker.visualizer.cell_death_visualizer.CellTrackEndVisualizer">CellTrackEndVisualizer (class in organoid_tracker.visualizer.cell_death_visualizer)</a>
 </li>
       <li><a href="organoid_tracker.core.mask.html#organoid_tracker.core.mask.Mask.center_around">center_around() (organoid_tracker.core.mask.Mask method)</a>
 </li>
+      <li><a href="organoid_tracker.core.images.html#organoid_tracker.core.images.ChannelDescription.channel_name">channel_name (organoid_tracker.core.images.ChannelDescription attribute)</a>
+</li>
       <li><a href="organoid_tracker.image_loading.builtin_merging_image_loaders.html#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader">ChannelAppendingImageLoader (class in organoid_tracker.image_loading.builtin_merging_image_loaders)</a>
+</li>
+      <li><a href="organoid_tracker.core.images.html#organoid_tracker.core.images.ChannelDescription">ChannelDescription (class in organoid_tracker.core.images)</a>
 </li>
       <li><a href="organoid_tracker.image_loading.builtin_merging_image_loaders.html#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader">ChannelSummingImageLoader (class in organoid_tracker.image_loading.builtin_merging_image_loaders)</a>
 </li>
@@ -381,6 +398,8 @@
 </li>
       <li><a href="organoid_tracker.coordinate_system.orientation_spline_adder.html#organoid_tracker.coordinate_system.orientation_spline_adder.ColoredTrackAdder">ColoredTrackAdder (class in organoid_tracker.coordinate_system.orientation_spline_adder)</a>
 </li>
+      <li><a href="organoid_tracker.core.images.html#organoid_tracker.core.images.ChannelDescription.colormap">colormap (organoid_tracker.core.images.ChannelDescription attribute)</a>
+</li>
       <li><a href="organoid_tracker.local_marginalization.local_marginalization_functions.html#organoid_tracker.local_marginalization.local_marginalization_functions.combine_events">combine_events() (in module organoid_tracker.local_marginalization.local_marginalization_functions)</a>
 </li>
       <li><a href="organoid_tracker.gui.undo_redo.html#organoid_tracker.gui.undo_redo.CombinedAction">CombinedAction (class in organoid_tracker.gui.undo_redo)</a>
@@ -415,6 +434,8 @@
 </li>
       <li><a href="organoid_tracker.config.html#organoid_tracker.config.config_type_json_file">config_type_json_file() (in module organoid_tracker.config)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="organoid_tracker.config.html#organoid_tracker.config.config_type_str">config_type_str() (in module organoid_tracker.config)</a>
 </li>
       <li><a href="organoid_tracker.config.html#organoid_tracker.config.ConfigFile">ConfigFile (class in organoid_tracker.config)</a>
@@ -423,8 +444,6 @@
 </li>
       <li><a href="organoid_tracker.core.connections.html#organoid_tracker.core.connections.Connections">Connections (class in organoid_tracker.core.connections)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment.connections">connections (organoid_tracker.core.experiment.Experiment property)</a>
 
       <ul>
@@ -1095,6 +1114,8 @@
         <li><a href="organoid_tracker.image_loading.folder_image_loader.html#organoid_tracker.image_loading.folder_image_loader.FolderImageLoader.get_channel_count">(organoid_tracker.image_loading.folder_image_loader.FolderImageLoader method)</a>
 </li>
       </ul></li>
+      <li><a href="organoid_tracker.core.images.html#organoid_tracker.core.images.Images.get_channel_description">get_channel_description() (organoid_tracker.core.images.Images method)</a>
+</li>
       <li><a href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageLoader.get_channels">get_channels() (organoid_tracker.core.image_loader.ImageLoader method)</a>
 
       <ul>
@@ -1104,6 +1125,8 @@
       <li><a href="organoid_tracker.visualizer.html#organoid_tracker.visualizer.Visualizer.get_closest_position">get_closest_position() (organoid_tracker.visualizer.Visualizer static method)</a>
 </li>
       <li><a href="organoid_tracker.linking_analysis.lineage_markers.html#organoid_tracker.linking_analysis.lineage_markers.get_color">get_color() (in module organoid_tracker.linking_analysis.lineage_markers)</a>
+</li>
+      <li><a href="organoid_tracker.core.image_coloring.html#organoid_tracker.core.image_coloring.get_colormap">get_colormap() (in module organoid_tracker.core.image_coloring)</a>
 </li>
       <li><a href="organoid_tracker.plugin.instance.html#organoid_tracker.plugin.instance.Plugin.get_commands">get_commands() (organoid_tracker.plugin.instance.Plugin method)</a>
 </li>
@@ -1147,6 +1170,8 @@
         <li><a href="organoid_tracker.visualizer.abstract_image_visualizer.html#organoid_tracker.visualizer.abstract_image_visualizer.AbstractImageVisualizer.get_extra_menu_options">(organoid_tracker.visualizer.abstract_image_visualizer.AbstractImageVisualizer method)</a>
 </li>
         <li><a href="organoid_tracker.visualizer.beacon_editor.html#organoid_tracker.visualizer.beacon_editor.BeaconEditor.get_extra_menu_options">(organoid_tracker.visualizer.beacon_editor.BeaconEditor method)</a>
+</li>
+        <li><a href="organoid_tracker.visualizer.cell_segmentation_editor.html#organoid_tracker.visualizer.cell_segmentation_editor.CellSegmentationEditor.get_extra_menu_options">(organoid_tracker.visualizer.cell_segmentation_editor.CellSegmentationEditor method)</a>
 </li>
         <li><a href="organoid_tracker.visualizer.errors_visualizer.html#organoid_tracker.visualizer.errors_visualizer.ErrorsVisualizer.get_extra_menu_options">(organoid_tracker.visualizer.errors_visualizer.ErrorsVisualizer method)</a>
 </li>
@@ -1241,10 +1266,10 @@
       </ul></li>
       <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.SplineCollection.get_marker_name">get_marker_name() (organoid_tracker.core.spline.SplineCollection method)</a>
 </li>
-      <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.SplineCollection.get_marker_names">get_marker_names() (organoid_tracker.core.spline.SplineCollection method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.SplineCollection.get_marker_names">get_marker_names() (organoid_tracker.core.spline.SplineCollection method)</a>
+</li>
       <li><a href="organoid_tracker.plugin.instance.html#organoid_tracker.plugin.instance.Plugin.get_markers">get_markers() (organoid_tracker.plugin.instance.Plugin method)</a>
 </li>
       <li><a href="organoid_tracker.core.mask.html#organoid_tracker.core.mask.Mask.get_mask_array">get_mask_array() (organoid_tracker.core.mask.Mask method)</a>
@@ -1396,6 +1421,8 @@
       <li><a href="organoid_tracker.core.html#organoid_tracker.core.Name.get_save_name">get_save_name() (organoid_tracker.core.Name method)</a>
 </li>
       <li><a href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window.get_scheduler">get_scheduler() (organoid_tracker.gui.window.Window method)</a>
+</li>
+      <li><a href="organoid_tracker.core.image_coloring.html#organoid_tracker.core.image_coloring.get_segmentation_colormap">get_segmentation_colormap() (in module organoid_tracker.core.image_coloring)</a>
 </li>
       <li><a href="organoid_tracker.gui.gui_experiment.html#organoid_tracker.gui.gui_experiment.GuiExperiment.get_selectable_experiments">get_selectable_experiments() (organoid_tracker.gui.gui_experiment.GuiExperiment method)</a>
 </li>
@@ -1803,8 +1830,6 @@
 </li>
       <li><a href="organoid_tracker.gui.toolbar.html#organoid_tracker.gui.toolbar.Toolbar.load_handler">load_handler() (organoid_tracker.gui.toolbar.Toolbar method)</a>
 </li>
-      <li><a href="organoid_tracker.visualizer.html#organoid_tracker.visualizer.Visualizer.load_image">load_image() (organoid_tracker.visualizer.Visualizer method)</a>
-</li>
       <li><a href="organoid_tracker.image_loading.nd2file_image_loader.html#organoid_tracker.image_loading.nd2file_image_loader.load_image_series">load_image_series() (in module organoid_tracker.image_loading.nd2file_image_loader)</a>
 </li>
       <li><a href="organoid_tracker.image_loading.nd2file_image_loader.html#organoid_tracker.image_loading.nd2file_image_loader.load_image_series_from_config">load_image_series_from_config() (in module organoid_tracker.image_loading.nd2file_image_loader)</a>
@@ -1994,6 +2019,8 @@
         <li><a href="organoid_tracker.core.full_position_snapshot.html#module-organoid_tracker.core.full_position_snapshot">organoid_tracker.core.full_position_snapshot</a>
 </li>
         <li><a href="organoid_tracker.core.global_data.html#module-organoid_tracker.core.global_data">organoid_tracker.core.global_data</a>
+</li>
+        <li><a href="organoid_tracker.core.image_coloring.html#module-organoid_tracker.core.image_coloring">organoid_tracker.core.image_coloring</a>
 </li>
         <li><a href="organoid_tracker.core.image_filters.html#module-organoid_tracker.core.image_filters">organoid_tracker.core.image_filters</a>
 </li>
@@ -2260,6 +2287,8 @@
         <li><a href="organoid_tracker.visualizer.cell_fate_visualizer.html#module-organoid_tracker.visualizer.cell_fate_visualizer">organoid_tracker.visualizer.cell_fate_visualizer</a>
 </li>
         <li><a href="organoid_tracker.visualizer.cell_movement_visualizer.html#module-organoid_tracker.visualizer.cell_movement_visualizer">organoid_tracker.visualizer.cell_movement_visualizer</a>
+</li>
+        <li><a href="organoid_tracker.visualizer.cell_segmentation_editor.html#module-organoid_tracker.visualizer.cell_segmentation_editor">organoid_tracker.visualizer.cell_segmentation_editor</a>
 </li>
         <li><a href="organoid_tracker.visualizer.debug_image_visualizer.html#module-organoid_tracker.visualizer.debug_image_visualizer">organoid_tracker.visualizer.debug_image_visualizer</a>
 </li>
@@ -2647,6 +2676,13 @@
 
       <ul>
         <li><a href="organoid_tracker.core.global_data.html#module-organoid_tracker.core.global_data">module</a>
+</li>
+      </ul></li>
+      <li>
+    organoid_tracker.core.image_coloring
+
+      <ul>
+        <li><a href="organoid_tracker.core.image_coloring.html#module-organoid_tracker.core.image_coloring">module</a>
 </li>
       </ul></li>
       <li>
@@ -3583,6 +3619,13 @@
 </li>
       </ul></li>
       <li>
+    organoid_tracker.visualizer.cell_segmentation_editor
+
+      <ul>
+        <li><a href="organoid_tracker.visualizer.cell_segmentation_editor.html#module-organoid_tracker.visualizer.cell_segmentation_editor">module</a>
+</li>
+      </ul></li>
+      <li>
     organoid_tracker.visualizer.debug_image_visualizer
 
       <ul>
@@ -3825,6 +3868,8 @@
 </li>
       <li><a href="organoid_tracker.local_marginalization.local_marginalization_functions.html#organoid_tracker.local_marginalization.local_marginalization_functions.prob_to_energy">prob_to_energy() (in module organoid_tracker.local_marginalization.local_marginalization_functions)</a>
 </li>
+      <li><a href="organoid_tracker.gui.gui_experiment.html#organoid_tracker.gui.gui_experiment.GuiExperiment.program_closing">program_closing() (organoid_tracker.gui.gui_experiment.GuiExperiment method)</a>
+</li>
       <li><a href="organoid_tracker.gui.dialog.html#organoid_tracker.gui.dialog.prompt_color">prompt_color() (in module organoid_tracker.gui.dialog)</a>
 </li>
       <li><a href="organoid_tracker.gui.dialog.html#organoid_tracker.gui.dialog.prompt_confirmation">prompt_confirmation() (in module organoid_tracker.gui.dialog)</a>
@@ -4021,6 +4066,18 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="organoid_tracker.config.html#organoid_tracker.config.ConfigFile.save">save() (organoid_tracker.config.ConfigFile method)</a>
 </li>
+      <li><a href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageLoader.save_3d_image_array">save_3d_image_array() (organoid_tracker.core.image_loader.ImageLoader method)</a>
+
+      <ul>
+        <li><a href="organoid_tracker.core.images.html#organoid_tracker.core.images.Images.save_3d_image_array">(organoid_tracker.core.images.Images method)</a>
+</li>
+        <li><a href="organoid_tracker.image_loading.builtin_merging_image_loaders.html#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.save_3d_image_array">(organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader method)</a>
+</li>
+        <li><a href="organoid_tracker.image_loading.builtin_merging_image_loaders.html#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.save_3d_image_array">(organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader method)</a>
+</li>
+        <li><a href="organoid_tracker.image_loading.folder_image_loader.html#organoid_tracker.image_loading.folder_image_loader.FolderImageLoader.save_3d_image_array">(organoid_tracker.image_loading.folder_image_loader.FolderImageLoader method)</a>
+</li>
+      </ul></li>
       <li><a href="organoid_tracker.config.html#organoid_tracker.config.ConfigFile.save_and_exit_if_changed">save_and_exit_if_changed() (organoid_tracker.config.ConfigFile method)</a>
 </li>
       <li><a href="organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.html#organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.save_axes_list">save_axes_list() (in module organoid_tracker.guizela_tracker_compatibility.axis_lib_v2)</a>
@@ -4054,6 +4111,8 @@
       <li><a href="organoid_tracker.gui.threading.html#organoid_tracker.gui.threading.Scheduler">Scheduler (class in organoid_tracker.gui.threading)</a>
 </li>
       <li><a href="organoid_tracker.core.beacon_collection.html#organoid_tracker.core.beacon_collection.ClosestBeacon.search_position">search_position (organoid_tracker.core.beacon_collection.ClosestBeacon attribute)</a>
+</li>
+      <li><a href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.DisplaySettings.segmentation_channel">segmentation_channel (organoid_tracker.gui.window.DisplaySettings attribute)</a>
 </li>
       <li><a href="organoid_tracker.gui.gui_experiment.html#organoid_tracker.gui.gui_experiment.GuiExperiment.select_experiment">select_experiment() (organoid_tracker.gui.gui_experiment.GuiExperiment method)</a>
 </li>
@@ -4097,6 +4156,8 @@
 </li>
       <li><a href="organoid_tracker.core.mask.html#organoid_tracker.core.mask.Mask.set_bounds_exact">set_bounds_exact() (organoid_tracker.core.mask.Mask method)</a>
 </li>
+      <li><a href="organoid_tracker.core.images.html#organoid_tracker.core.images.Images.set_channel_description">set_channel_description() (organoid_tracker.core.images.Images method)</a>
+</li>
       <li><a href="organoid_tracker.linking_analysis.lineage_markers.html#organoid_tracker.linking_analysis.lineage_markers.set_color">set_color() (in module organoid_tracker.linking_analysis.lineage_markers)</a>
 </li>
       <li><a href="organoid_tracker.core.global_data.html#organoid_tracker.core.global_data.GlobalData.set_data">set_data() (organoid_tracker.core.global_data.GlobalData method)</a>
@@ -4135,6 +4196,8 @@
         <li><a href="organoid_tracker.position_analysis.position_markers.html#organoid_tracker.position_analysis.position_markers.set_raw_intensities">(in module organoid_tracker.position_analysis.position_markers)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="organoid_tracker.core.images.html#organoid_tracker.core.images.Images.set_resolution">set_resolution() (organoid_tracker.core.images.Images method)</a>
 </li>
       <li><a href="organoid_tracker.gui.launcher.html#organoid_tracker.gui.launcher.MainWindow.set_status">set_status() (organoid_tracker.gui.launcher.MainWindow method)</a>
@@ -4143,8 +4206,6 @@
         <li><a href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window.set_status">(organoid_tracker.gui.window.Window method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="organoid_tracker.core.images.html#organoid_tracker.core.images.Images.set_timings">set_timings() (organoid_tracker.core.images.Images method)</a>
 </li>
       <li><a href="organoid_tracker.linking_analysis.linking_markers.html#organoid_tracker.linking_analysis.linking_markers.set_track_end_marker">set_track_end_marker() (in module organoid_tracker.linking_analysis.linking_markers)</a>
@@ -4499,13 +4560,15 @@
 </li>
       <li><a href="organoid_tracker.linking_analysis.cell_fate_finder.html#organoid_tracker.linking_analysis.cell_fate_finder.CellFateType.WILL_DIVIDE">WILL_DIVIDE (organoid_tracker.linking_analysis.cell_fate_finder.CellFateType attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="organoid_tracker.core.links.html#organoid_tracker.core.links.LinkingTrack.will_divide">will_divide() (organoid_tracker.core.links.LinkingTrack method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="organoid_tracker.linking_analysis.cell_fate_finder.html#organoid_tracker.linking_analysis.cell_fate_finder.CellFateType.WILL_SHED">WILL_SHED (organoid_tracker.linking_analysis.cell_fate_finder.CellFateType attribute)</a>
 </li>
       <li><a href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window">Window (class in organoid_tracker.gui.window)</a>
+</li>
+      <li><a href="organoid_tracker.core.images.html#organoid_tracker.core.images.ChannelDescription.with_colormap">with_colormap() (organoid_tracker.core.images.ChannelDescription method)</a>
 </li>
       <li><a href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position.with_offset">with_offset() (organoid_tracker.core.position.Position method)</a>
 </li>

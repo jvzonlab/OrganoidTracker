@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Segmentation masks editor &mdash; OrganoidTracker 2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API reference" href="API.html" />
+    <link rel="prev" title="Working with custom metadata" href="WORKING_WITH_CUSTOM_METADATA.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> OrganoidTracker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Segmentation masks editor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#opening-the-segmentation-editor">Opening the segmentation editor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#making-changes-to-the-segmentation-masks">Making changes to the segmentation masks</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OrganoidTracker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Segmentation masks editor</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/SEGMENTATION_EDITOR.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="segmentation-masks-editor">
+<h1>Segmentation masks editor<a class="headerlink" href="#segmentation-masks-editor" title="Permalink to this heading"></a></h1>
+<p><a class="reference internal" href="index.html"><span class="doc std std-doc">← Back to main page</span></a></p>
+<p>OrganoidTracker cannot segment nuclei/cells/etc. on its own, but it can view and edit existing segmentations.</p>
+<section id="opening-the-segmentation-editor">
+<h2>Opening the segmentation editor<a class="headerlink" href="#opening-the-segmentation-editor" title="Permalink to this heading"></a></h2>
+<p>OrganoidTracker expect segmentations to be stored as labeled images. These are images with an integer dtype, where all
+background pixels are 0, the first object with label 1, the second object with label 2, and so on. If you want to
+create such segmentations programmatically, then <a class="reference external" href="https://scikit-image.org/docs/stable/user_guide/tutorial_segmentation.html">this tutorial of scikit-image</a> explains how to create such
+segmentations for images of coins. Many segmentation algorithms (CellPose, StarDist, etc.) are able to produce images in
+this format.</p>
+<p>To load these labeled images together with the raw data, first load your images as usual, and then use the
+<code class="docutils literal notranslate"><span class="pre">Append</span> <span class="pre">image</span> <span class="pre">channel...</span></code> button in the <code class="docutils literal notranslate"><span class="pre">Edit</span></code> menu. In the <code class="docutils literal notranslate"><span class="pre">View</span></code> menu, you can change the colormap
+(<code class="docutils literal notranslate"><span class="pre">Set</span> <span class="pre">channel</span> <span class="pre">colormap</span></code>) of the segmentation channel to <code class="docutils literal notranslate"><span class="pre">Segmentation</span></code> to make it easier to see the labels.</p>
+<p>After you’ve loaded the segmentation, you can open the segmentation editor. The segmentation editor is available in the
+data editor. To open the segmentation editor, in the main screen first open the data editor
+(<code class="docutils literal notranslate"><span class="pre">Edit</span> <span class="pre">-&gt;</span> <span class="pre">Manually</span> <span class="pre">change</span> <span class="pre">data</span></code> or press <code class="docutils literal notranslate"><span class="pre">C</span></code>) and then open the segmentation editor (<code class="docutils literal notranslate"><span class="pre">Edit</span> <span class="pre">-&gt;</span> <span class="pre">Edit</span> <span class="pre">segmentation</span> <span class="pre">masks</span></code>).</p>
+<p>In this screen, first set which channel you want to use as the segmentation channel. This is done using
+<code class="docutils literal notranslate"><span class="pre">Edit</span> <span class="pre">&gt;</span> <span class="pre">Set</span> <span class="pre">segmentation</span> <span class="pre">image</span> <span class="pre">channel</span></code>. Your segmentation images need to be writable for this to work. If they are not,
+that program will tell you that you need to convert your segmentation images to a folder of images, with one TIFF file
+per time point (3D images) or one PNG file per time point (2D images).</p>
+</section>
+<section id="making-changes-to-the-segmentation-masks">
+<h2>Making changes to the segmentation masks<a class="headerlink" href="#making-changes-to-the-segmentation-masks" title="Permalink to this heading"></a></h2>
+<p>Make sure the segmentation editor is open and that you have selected the correct channel as the segmentation channel.
+Then, switch to the channel with the microscopy images on which the segmentation is based. (Channel switching is done
+using the <code class="docutils literal notranslate"><span class="pre">Navigate</span></code> menu or the <code class="docutils literal notranslate"><span class="pre">,</span></code> and <code class="docutils literal notranslate"><span class="pre">.</span></code> keys.)</p>
+<p>Double-click the annotation point (the green square) of the cell of which you want to edit the mask. This should
+highlight the current segmentation:</p>
+<p><img alt="Segmentation editor" src="_images/segmentation_editor.png" /></p>
+<p>If the cell doesn’t yet have a segmentation mask, nothing will be highlighted yet until you draw something. The
+segmentation mask is needs to intersect with the annotation point, as otherwise the program does not recognize the mask
+as belonging to the cell.</p>
+<p>You can now edit the segmentation mask. Editing is done by drawing shapes (polygons). Polygons look like this:</p>
+<p><img alt="Polygon" src="_images/segmentation_editor_polygons.png" /></p>
+<p>You can draw a new polygon by single-clicking on somewhere the image. A red dot will appear. Then, move the mouse to the
+next point of the polygon and single-click again. Repeat this until you have drawn the polygon you want, like in the
+image above. Then press Insert or Enter, and the polygon will be converted to pixels and added to the segmentation mask.</p>
+<p>Polygons are 2D shapes, so you can only draw them on the current slice. To draw a 3D shape, draw the mask layer by
+layer.</p>
+<p>To delete part of the segmentation mask, draw a polygon like before, but then press Delete or Backspace at the end. To
+delete an entire object, double-click the cell and press Shift+Delete.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="WORKING_WITH_CUSTOM_METADATA.html" class="btn btn-neutral float-left" title="Working with custom metadata" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="API.html" class="btn btn-neutral float-right" title="API reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020-2024, Jeroen van Zon Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

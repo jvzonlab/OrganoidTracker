@@ -46,6 +46,7 @@
 <li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
 <li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SEGMENTATION_EDITOR.html">Segmentation masks editor</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">For reference</span></p>
 <ul>
@@ -123,6 +124,31 @@
              
   <section id="module-organoid_tracker.core.images">
 <span id="organoid-tracker-core-images-module"></span><h1>organoid_tracker.core.images module<a class="headerlink" href="#module-organoid_tracker.core.images" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.core.images.ChannelDescription">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.core.images.</span></span><span class="sig-name descname"><span class="pre">ChannelDescription</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.Colormap.html#matplotlib.colors.Colormap" title="(in Matplotlib v3.9.2)"><span class="pre">Colormap</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.images.ChannelDescription" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.NamedTuple" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></a></p>
+<p>Describes a channel in an image. What name did the user give it, and what colormap is used to display it?</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.core.images.ChannelDescription.channel_name">
+<span class="sig-name descname"><span class="pre">channel_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></em><a class="headerlink" href="#organoid_tracker.core.images.ChannelDescription.channel_name" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.core.images.ChannelDescription.colormap">
+<span class="sig-name descname"><span class="pre">colormap</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.Colormap.html#matplotlib.colors.Colormap" title="(in Matplotlib v3.9.2)"><span class="pre">Colormap</span></a></em><a class="headerlink" href="#organoid_tracker.core.images.ChannelDescription.colormap" title="Permalink to this definition"></a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.images.ChannelDescription.with_colormap">
+<span class="sig-name descname"><span class="pre">with_colormap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">colormap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.Colormap.html#matplotlib.colors.Colormap" title="(in Matplotlib v3.9.2)"><span class="pre">Colormap</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.core.images.ChannelDescription" title="organoid_tracker.core.images.ChannelDescription"><span class="pre">ChannelDescription</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.images.ChannelDescription.with_colormap" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a new ChannelDescription with the same channel name, but a different colormap.</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="organoid_tracker.core.images.Image">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.core.images.</span></span><span class="sig-name descname"><span class="pre">Image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Position(0.00,</span> <span class="pre">0.00,</span> <span class="pre">0)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.images.Image" title="Permalink to this definition"></a></dt>
@@ -295,6 +321,12 @@ images.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.images.Images.get_channel_description">
+<span class="sig-name descname"><span class="pre">get_channel_description</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageChannel" title="organoid_tracker.core.image_loader.ImageChannel"><span class="pre">ImageChannel</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.core.images.ChannelDescription" title="organoid_tracker.core.images.ChannelDescription"><span class="pre">ChannelDescription</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.images.Images.get_channel_description" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the description of the given channel.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.core.images.Images.get_channels">
 <span class="sig-name descname"><span class="pre">get_channels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageChannel" title="organoid_tracker.core.image_loader.ImageChannel"><span class="pre">ImageChannel</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.core.images.Images.get_channels" title="Permalink to this definition"></a></dt>
 <dd><p>Gets all available image channels. These are determined by the image_loader.</p>
@@ -371,6 +403,18 @@ pixels towards the edge of the image.</p>
 <span class="sig-name descname"><span class="pre">resolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allow_incomplete</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.resolution.html#organoid_tracker.core.resolution.ImageResolution" title="organoid_tracker.core.resolution.ImageResolution"><span class="pre">ImageResolution</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.images.Images.resolution" title="Permalink to this definition"></a></dt>
 <dd><p>Gets the image resolution. Raises UserError no spatial resolution has been set. Also raises UserError if
 the data has multiple time points, but no time resolution has been set.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.images.Images.save_3d_image_array">
+<span class="sig-name descname"><span class="pre">save_3d_image_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageChannel" title="organoid_tracker.core.image_loader.ImageChannel"><span class="pre">ImageChannel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.images.Images.save_3d_image_array" title="Permalink to this definition"></a></dt>
+<dd><p>Saves a 3D image to the image loader. Also updates the image cache to have the newest array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.images.Images.set_channel_description">
+<span class="sig-name descname"><span class="pre">set_channel_description</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageChannel" title="organoid_tracker.core.image_loader.ImageChannel"><span class="pre">ImageChannel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.core.images.ChannelDescription" title="organoid_tracker.core.images.ChannelDescription"><span class="pre">ChannelDescription</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.images.Images.set_channel_description" title="Permalink to this definition"></a></dt>
+<dd><p>Sets the description of the given channel.</p>
 </dd></dl>
 
 <dl class="py method">

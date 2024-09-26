@@ -14,6 +14,7 @@ Submodules
    organoid_tracker.core.experiment
    organoid_tracker.core.full_position_snapshot
    organoid_tracker.core.global_data
+   organoid_tracker.core.image_coloring
    organoid_tracker.core.image_filters
    organoid_tracker.core.image_loader
    organoid_tracker.core.images
