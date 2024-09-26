@@ -6,7 +6,7 @@ from numpy import ndarray
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.image_loader import ImageLoader, ImageChannel
 from organoid_tracker.core.experiment import Experiment
-from organoid_tracker.image_loading._simple_image_file_reader import read_image_3d, read_image_2d
+from organoid_tracker.image_loading._simple_image_file_io import read_image_3d, read_image_2d, write_image_3d
 
 
 def _discover_min_time_point_and_channel(folder: str, file_name_format: str, guess_time_point: int) -> Tuple[Optional[int], Optional[int]]:
@@ -139,3 +139,15 @@ class FolderImageLoader(ImageLoader):
 
     def serialize_to_config(self) -> Tuple[str, str]:
         return self._folder, self._file_name_format
+
+    def can_save_images(self, image_channel: ImageChannel) -> bool:
+        return True  # Yes we can!
+
+    def save_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image: ndarray):
+        if len(image.shape) != 3:
+            raise ValueError("Image must be 3D")
+
+        file_name = path.join(self._folder, self._file_name_format.format(
+            time=time_point.time_point_number(),
+            channel=image_channel.index_zero + self._channel_offset))
+        write_image_3d(file_name, image)

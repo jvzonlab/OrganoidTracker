@@ -110,6 +110,24 @@ class ChannelSummingImageLoader(ImageLoader):
     def close(self):
         self._image_loader.close()
 
+    def can_save_images(self, image_channel: ImageChannel) -> bool:
+        # We can only save images if we have one original channel, and the underlying image loader supports it
+
+        if image_channel.index_zero >= len(self._channels):
+            return False  # Don't know this channel
+
+        original_channels = self._channels[image_channel.index_zero]
+        if len(original_channels) != 1:
+            return False
+        return self._image_loader.can_save_images(original_channels[0])
+
+    def save_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image: ndarray):
+        if not self.can_save_images(image_channel):
+            raise ValueError("Cannot save images for this channel")
+        original_channels = self._channels[image_channel.index_zero]
+        self._image_loader.save_3d_image_array(time_point, original_channels[0], image)
+
+
 class ChannelAppendingImageLoader(ImageLoader):
     """Combines multiple image loaders, showing their channels after each other."""
 
@@ -144,7 +162,8 @@ class ChannelAppendingImageLoader(ImageLoader):
         image_channel_index = image_channel.index_zero
         for image_loader in self._unique_loaders:
             if image_channel_index < image_loader.get_channel_count():
-                return image_loader.get_2d_image_array(time_point, ImageChannel(index_zero=image_channel_index), image_z)
+                return image_loader.get_2d_image_array(time_point, ImageChannel(index_zero=image_channel_index),
+                                                       image_z)
             image_channel_index -= image_loader.get_channel_count()
 
         return None
@@ -210,11 +229,35 @@ class ChannelAppendingImageLoader(ImageLoader):
         for internal in self._unique_loaders:
             internal.close()
 
+    def can_save_images(self, image_channel: ImageChannel) -> bool:
+        image_channel_index = image_channel.index_zero
+        for image_loader in self._unique_loaders:
+            if image_channel_index < image_loader.get_channel_count():
+                return image_loader.can_save_images(ImageChannel(index_zero=image_channel_index))
+            image_channel_index -= image_loader.get_channel_count()
+        return False
+
+    def save_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image: ndarray):
+        image_channel_index = image_channel.index_zero
+        for image_loader in self._unique_loaders:
+            if image_channel_index < image_loader.get_channel_count():
+                image_loader.save_3d_image_array(time_point, ImageChannel(index_zero=image_channel_index), image)
+                return
+            image_channel_index -= image_loader.get_channel_count()
+        raise ValueError(f"Cannot save images for this channel: {image_channel}")
+
+
 class TimeAppendingImageLoader(ImageLoader):
     """Combines to image loaders, showing images after each other."""
     _internal: List[ImageLoader]
+    _min_time_point_number: int
+    _max_time_point_number: int
 
-    def __init__(self, image_loaders: List[ImageLoader]):
+    def __init__(self, image_loaders: List[ImageLoader], min_time_point_number: int = -1e9,
+                 max_time_point_number: int = 1e9):
+        # min and max time points are only used to cut the time lapse short. If image_loaders is empty, then
+        # self.first_time_point_number() and self.last_time_point_number() will return None, even if a min and max
+        # time point is set using this constructor.
         self._internal = list()
         for image_loader in image_loaders:
             if not image_loader.has_images():
@@ -225,9 +268,14 @@ class TimeAppendingImageLoader(ImageLoader):
                 self._internal += image_loader._internal
             else:
                 self._internal.append(image_loader)
+        self._min_time_point_number = min_time_point_number
+        self._max_time_point_number = max_time_point_number
 
     def get_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
         if len(self._internal) == 0:
+            return None
+        if (time_point.time_point_number() < self._min_time_point_number
+                or time_point.time_point_number() > self._max_time_point_number):
             return None
 
         time_point_number = time_point.time_point_number()
@@ -259,6 +307,9 @@ class TimeAppendingImageLoader(ImageLoader):
 
     def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
         if len(self._internal) == 0:
+            return None
+        if (time_point.time_point_number() < self._min_time_point_number
+                or time_point.time_point_number() > self._max_time_point_number):
             return None
 
         time_point_number = time_point.time_point_number()
@@ -296,7 +347,7 @@ class TimeAppendingImageLoader(ImageLoader):
     def first_time_point_number(self) -> Optional[int]:
         if len(self._internal) == 0:
             return None
-        return self._internal[0].first_time_point_number()
+        return max(self._min_time_point_number, self._internal[0].first_time_point_number())
 
     def last_time_point_number(self) -> Optional[int]:
         if len(self._internal) == 0:
@@ -309,7 +360,8 @@ class TimeAppendingImageLoader(ImageLoader):
             if new_last is None or new_first is None:
                 return None
             image_count += new_last - new_first + 1
-        return image_count + self._internal[0].first_time_point_number() - 1
+        last_available_time_point_number = image_count + self._internal[0].first_time_point_number() - 1
+        return min(last_available_time_point_number, self._max_time_point_number)
 
     def get_channel_count(self) -> int:
         # Return the highest count for selecting channels, in case multiple time lapses have different numbers of
@@ -338,13 +390,13 @@ class TimeAppendingImageLoader(ImageLoader):
         new_internal = list()
         for internal in self._internal:
             new_internal.append(internal.copy())
-        return TimeAppendingImageLoader(new_internal)
+        return TimeAppendingImageLoader(new_internal, self._min_time_point_number, self._max_time_point_number)
 
     def uncached(self) -> "ImageLoader":
         new_internal = list()
         for internal in self._internal:
             new_internal.append(internal.uncached())
-        return TimeAppendingImageLoader(new_internal)
+        return TimeAppendingImageLoader(new_internal, self._min_time_point_number, self._max_time_point_number)
 
     def close(self):
         for internal in self._internal:

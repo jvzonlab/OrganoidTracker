@@ -25,6 +25,7 @@ from typing import Iterable, Optional, Union, Dict, Any, List, Callable
 
 import numpy
 from matplotlib.backend_bases import KeyEvent, MouseEvent
+from matplotlib.colors import Colormap
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from numpy import ndarray
@@ -100,6 +101,11 @@ class Visualizer:
     @property
     def _display_settings(self) -> DisplaySettings:
         return self._window.display_settings
+
+    def _get_color_map(self) -> Colormap:
+        """Returns the color map to use for the images. Based on the currently displayed channel and the stored
+        colormap for that channel."""
+        return self._experiment.images.get_channel_description(self._display_settings.image_channel).colormap
 
     def _clear_axis(self):
         """Clears the axis, except that zoom settings are preserved"""
@@ -205,6 +211,11 @@ class Visualizer:
         """Called when scrolling. event.button will be "up" or "down"."""
         pass
 
+    def _on_program_close(self):
+        """Called when the program is being closed. The user will already have confirmed the closing, so you cannot
+        block the closing at this point."""
+        pass
+
     def attach(self):
         """Attaches all event handlers."""
         self._window.register_event_handler("key_press_event", self._on_key_press_raw)
@@ -214,6 +225,7 @@ class Visualizer:
         self._window.register_event_handler("any_updated_event", self.refresh_all)
         self._window.register_event_handler("command_event", self._on_command_raw)
         self._window.register_event_handler("scroll_event", self._on_scroll)
+        self._window.register_event_handler("program_close_event", self._on_program_close)
 
     def detach(self):
         """Detaches the event handlers."""

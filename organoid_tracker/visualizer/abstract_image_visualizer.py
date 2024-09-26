@@ -1,3 +1,4 @@
+from functools import partial
 from typing import Optional, Dict, Any, Tuple
 
 import matplotlib.colors
@@ -8,22 +9,48 @@ from matplotlib.collections import LineCollection
 from matplotlib.colors import Colormap
 from matplotlib.patches import Rectangle
 from numpy import ndarray
-from tifffile import tifffile
+import tifffile
 
 from organoid_tracker import core
-from organoid_tracker.core import TimePoint, UserError, COLOR_CELL_CURRENT
+from organoid_tracker.core import TimePoint, UserError, COLOR_CELL_CURRENT, image_coloring
+from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.spline import Spline
 from organoid_tracker.core.typing import MPLColor
-from organoid_tracker.gui import dialog
+from organoid_tracker.gui import dialog, option_choose_dialog
 from organoid_tracker.gui.dialog import prompt_int
+from organoid_tracker.gui.undo_redo import UndoableAction
 from organoid_tracker.gui.window import Window, DisplaySettings
 from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.util import bits
 from organoid_tracker.util.mpl_helper import line_infinite
 from organoid_tracker.visualizer import Visualizer, activate
+
+
+class _ChannelChangeColorAction(UndoableAction):
+    """Changes the color of a channel."""
+
+    _channel: ImageChannel
+    _old_colormap: Colormap
+    _new_colormap: Colormap
+
+    def __init__(self, channel: ImageChannel, old_colormap: Colormap, new_colormap: Colormap):
+        self._channel = channel
+        self._old_colormap = old_colormap
+        self._new_colormap = new_colormap
+
+    def undo(self, experiment: Experiment) -> str:
+        experiment.images.set_channel_description(self._channel, experiment.images.get_channel_description(self._channel)
+                                                  .with_colormap(self._old_colormap))
+        return f"Changed the colormap of channel {self._channel.index_one} back to \"{self._old_colormap.name}\"."
+
+    def do(self, experiment: Experiment) -> str:
+        experiment.images.set_channel_description(self._channel,
+                                                  experiment.images.get_channel_description(self._channel)
+                                                  .with_colormap(self._new_colormap))
+        return f"Changed the colormap of channel {self._channel.index_one} to \"{self._new_colormap.name}\"."
 
 
 class AbstractImageVisualizer(Visualizer):
@@ -35,10 +62,6 @@ class AbstractImageVisualizer(Visualizer):
     _MOUSE_WHEEL_TRANSLATE_SCALE = 8
 
     _image_slice_2d: Optional[ndarray] = None
-
-    # The color map should typically not be transferred when switching to another viewer, so it is not part of the
-    # display_settings property
-    _color_map: Colormap = cm.get_cmap("gray")
 
     def __init__(self, window: Window):
         super().__init__(window)
@@ -166,7 +189,7 @@ class AbstractImageVisualizer(Visualizer):
             offset = self._experiment.images.offsets.of_time_point(self._time_point)
             extent = (offset.x, offset.x + self._image_slice_2d.shape[1],
                       offset.y + self._image_slice_2d.shape[0], offset.y)
-            self._ax.imshow(self._image_slice_2d, cmap=self._color_map, extent=extent)
+            self._ax.imshow(self._image_slice_2d, cmap=self._get_color_map(), extent=extent, interpolation="nearest")
             self._ax.set_aspect("equal", adjustable="datalim")
 
     def _draw_legend(self):
@@ -265,9 +288,10 @@ class AbstractImageVisualizer(Visualizer):
         if self._experiment.images.has_timings():
             time_m = self._experiment.images.timings().get_time_m_since_start(self._time_point)
             timing = f", t={time_m:.1f}m" if time_m < 90 else f", t={time_m/60:.1f}h"
+        channel_name = self._experiment.images.get_channel_description(self._display_settings.image_channel).channel_name
 
         return f"Time point {self._time_point.time_point_number()}    (z={self._get_figure_title_z_str()}, " \
-               f"c={self._display_settings.image_channel.index_one}{timing})"
+               f"c={channel_name}{timing})"
 
     def _draw_extra(self):
         pass  # Subclasses can override this
@@ -485,7 +509,8 @@ class AbstractImageVisualizer(Visualizer):
             if not self._move_to_time(given):
                 raise UserError("Out of range", f"Oops, time point {given} is outside the range {min_value}-"
                                 f"{max_value}.")
-        return {
+
+        menu_options = {
             **super().get_extra_menu_options(),
             "File//Export-Export image//3D TIF stack...": self._export_3d_image,
             "View//Toggle-Toggle showing two time points [" + DisplaySettings.KEY_SHOW_NEXT_IMAGE_ON_TOP.upper() + "]":
@@ -508,6 +533,11 @@ class AbstractImageVisualizer(Visualizer):
             "Navigate//Time-Last time point [L]": self._move_to_last_time_point,
             "Navigate//Time-Other time point... (/t*)": time_point_prompt
         }
+        for list_name, list_values in image_coloring.COLORMAP_LISTS.items():
+            for colormap_name in list_values:
+                menu_options[f"View//Image-Set channel colormap//{list_name}-{colormap_name}"]\
+                    = partial(self._set_channel_color, colormap_name)
+        return menu_options
 
     def _on_scroll(self, event: MouseEvent):
         """Move in z."""
@@ -645,10 +675,10 @@ class AbstractImageVisualizer(Visualizer):
         images: ndarray = bits.image_to_8bit(image_3d)
         image_shape = image_3d.shape
 
-        if len(image_shape) == 3 and isinstance(self._color_map, Colormap):
+        if len(image_shape) == 3:
             # Convert grayscale image to colored using the stored color map
             flat_image = images.ravel()
-            images = self._color_map(flat_image, bytes=True)[:, 0:3]
+            images = self._get_color_map()(flat_image, bytes=True)[:, 0:3]
             new_shape = (image_shape[0], image_shape[1], image_shape[2], 3)
             images = images.reshape(new_shape)
         else:
@@ -695,6 +725,13 @@ class AbstractImageVisualizer(Visualizer):
     def _show_slices(self):
         from organoid_tracker.visualizer.image_slice_visualizer import ImageSliceViewer
         activate(ImageSliceViewer(self._window, self.__class__))
+
+    def _set_channel_color(self, colormap_name: str):
+        current_channel = self._display_settings.image_channel
+        current_colormap = self._experiment.images.get_channel_description(current_channel).colormap
+        new_colormap = image_coloring.get_colormap(colormap_name)
+        self._window.perform_data_action(_ChannelChangeColorAction(current_channel, current_colormap, new_colormap))
+        self.draw_view()
 
     def _move_in_z(self, dz: int) -> bool:
         return self._move_to_z(self._display_settings.z + dz)

@@ -26,6 +26,7 @@ class DisplaySettings:
     z: int
     max_intensity_projection: bool = False
     image_channel: ImageChannel
+    segmentation_channel: Optional[ImageChannel]
     error_correction_min_time_point: Optional[TimePoint] = None
     error_correction_max_time_point: Optional[TimePoint] = None
 
@@ -38,6 +39,7 @@ class DisplaySettings:
         self.show_errors = True
         self.show_links_and_connections = True
         self.image_channel = ImageChannel(index_zero=0)
+        self.segmentation_channel = None
         self.time_point = TimePoint(0)
         self.z = 14
 

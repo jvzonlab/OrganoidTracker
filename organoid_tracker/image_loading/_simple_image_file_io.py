@@ -105,7 +105,15 @@ def _to_grayscale(array: ndarray) -> ndarray:
     return numpy.dot(array[..., :3], [0.299, 0.587, 0.114])
 
 
-
-
-
-
+def write_image_3d(file_name: str, image: ndarray):
+    """Writes a 3D image to a file. The image must be grayscale. The file name must end with .tif or .tiff."""
+    file_name_lower = file_name.lower()
+    if file_name_lower.endswith(".tif") or file_name_lower.endswith(".tiff"):
+        # If we have a TIFF image, save it as such
+        import tifffile
+        tifffile.imwrite(file_name, image, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
+    elif image.shape[0] == 1:
+        # Not a TIFF. If we only have a single z-plane, save as 2D image
+        matplotlib.image.imsave(file_name, image[0, ...], cmap="gray")
+    else:
+        raise ValueError("Only TIFF files are supported for 3D images.")

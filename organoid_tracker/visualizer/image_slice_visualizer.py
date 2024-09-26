@@ -63,7 +63,7 @@ class ImageSliceViewer(ExitableImageVisualizer):
         self._right_axes.set_facecolor(self._ax.get_facecolor())
         image = numpy.flip(numpy.moveaxis(self._time_point_images[:, :, int(self._x - offset.x)], 0, 1), 0)
         extent = (offset.z, offset.z + image.shape[1], offset.y, offset.y + image.shape[0])
-        self._right_axes.imshow(image, cmap=self._color_map, extent=extent, aspect="auto")
+        self._right_axes.imshow(image, cmap=self._get_color_map(), extent=extent, aspect="auto")
         self._right_axes.axvline(self._z, color=SANDER_APPROVED_COLORS[2])
         if self._right_axes.xaxis_inverted():
             self._right_axes.invert_xaxis()
@@ -72,7 +72,7 @@ class ImageSliceViewer(ExitableImageVisualizer):
         self._bottom_axes.set_facecolor(self._ax.get_facecolor())
         image = self._time_point_images[:, int(self._y - offset.y), :]
         extent = (offset.x, offset.x + image.shape[1], offset.z + image.shape[0], offset.z)
-        self._bottom_axes.imshow(image, cmap=self._color_map, extent=extent, aspect="auto")
+        self._bottom_axes.imshow(image, cmap=self._get_color_map(), extent=extent, aspect="auto")
         self._bottom_axes.axhline(self._z, color=SANDER_APPROVED_COLORS[1])
         if self._bottom_axes.yaxis_inverted():
             self._bottom_axes.invert_yaxis()
@@ -81,7 +81,7 @@ class ImageSliceViewer(ExitableImageVisualizer):
         main_axes = self._ax
         main_image = self._time_point_images[int(self._z - offset.z)]
         extent = (offset.x, offset.x + main_image.shape[1], offset.y + main_image.shape[0], offset.y)
-        main_axes.imshow(main_image, cmap=self._color_map, extent=extent, aspect="auto")
+        main_axes.imshow(main_image, cmap=self._get_color_map(), extent=extent, aspect="auto")
         main_axes.axhline(self._y, color=SANDER_APPROVED_COLORS[1])
         main_axes.axvline(self._x, color=SANDER_APPROVED_COLORS[2])
 

@@ -170,6 +170,9 @@ def _window_close(window: Window, event: QCloseEvent):
     if action.ask_save_unsaved_changes(window.get_gui_experiment().get_all_tabs()):
         event.setAccepted(True)
 
+        # Called after event.setAccepted, so that exceptions cannot block shutdown
+        window.get_gui_experiment().program_closing()
+
 
 def launch_window(experiment: Experiment) -> MainWindow:
     """Launches a window with an empty figure. Doesn't start the main loop yet. Use and activate a visualizer to add

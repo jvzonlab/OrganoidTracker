@@ -519,6 +519,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Experiment-Edit splines... [A]": self._show_spline_editor,
             "Edit//Experiment-Edit beacons... [B]": self._show_beacon_editor,
             "Edit//Experiment-Edit image offsets... [O]": self._show_offset_editor,
+            "Edit//Experiment-Edit segmentation masks... [M]": self._show_masks_editor,
             "Edit//Batch-Delete selected positions [Ctrl+Delete]": self._try_delete_all_selected,
             "Edit//Batch-Delete all unselected positions": self._try_delete_all_unselected,
             "Edit//Batch-Delete connections of selected positions": self._try_delete_connections_of_all_selected,
@@ -814,6 +815,12 @@ class LinkAndPositionEditor(AbstractEditor):
         from organoid_tracker.visualizer.image_offset_editor import ImageOffsetEditor
         offset_editor = ImageOffsetEditor(self._window)
         activate(offset_editor)
+
+    def _show_masks_editor(self):
+        from organoid_tracker.visualizer.cell_segmentation_editor import CellSegmentationEditor
+        selected_position = self._selected[0] if len(self._selected) == 1 else None
+        editor = CellSegmentationEditor(self._window, selected_position)
+        activate(editor)
 
     def _show_linking_errors(self, position: Optional[Position] = None):
         from organoid_tracker.visualizer.errors_visualizer import ErrorsVisualizer

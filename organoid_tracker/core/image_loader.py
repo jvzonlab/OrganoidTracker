@@ -141,6 +141,18 @@ class ImageLoader(ABC):
         loader. Closes any file handles."""
         pass
 
+    def can_save_images(self, image_channel: ImageChannel) -> bool:
+        """Returns True if images can be saved for the given channel via self.save_3d_image_array, False otherwise."""
+        return False
+
+    def save_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image: ndarray):
+        """Saves the given 3D image stack to disk. If the image already exists, it will be overwritten.
+
+        Raises ValueError if the image loader does not support saving images. (Check with can_save_images() first.).
+
+        Warning: don't call this method directly from experiment.images.image_loader().save_3d_image_array(...) because
+        then you bypass the caching mechanism. Instead, call it as experiment.images.save_3d_image_array(...)."""
+        raise ValueError("This image loader does not support saving images")
 
 
 class NullImageLoader(ImageLoader):

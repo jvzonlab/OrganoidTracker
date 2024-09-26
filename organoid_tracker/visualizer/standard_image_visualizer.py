@@ -1,14 +1,8 @@
-from typing import Any
-
-from matplotlib import pyplot
 from matplotlib.backend_bases import MouseEvent
-from tifffile import tifffile
 
-from organoid_tracker.core import UserError
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.launcher import launch_window
-from organoid_tracker.gui.threading import Task
 from organoid_tracker.imaging import io
 from organoid_tracker.text_popup.position_popup import PositionPopup
 from organoid_tracker.visualizer import activate

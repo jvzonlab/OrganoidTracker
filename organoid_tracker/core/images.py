@@ -1,6 +1,9 @@
-from typing import Dict, Optional, List, Tuple, Iterable, Union, Any
+from abc import ABC, abstractmethod
+from typing import Dict, Optional, List, Tuple, Iterable, Union, Any, NamedTuple
 
+import matplotlib
 import numpy
+from matplotlib.colors import Colormap
 from numpy import ndarray
 
 from organoid_tracker.core import TimePoint, UserError
@@ -101,6 +104,23 @@ class _CachedImageLoader(ImageLoader):
     def close(self):
         self._image_cache.clear()
         self._internal.close()
+
+    def can_save_images(self, image_channel: ImageChannel) -> bool:
+        return self._internal.can_save_images(image_channel)
+
+    def save_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image: ndarray):
+        # Save the image
+        self._internal.save_3d_image_array(time_point, image_channel, image)
+
+        # Remove the image from the cache (done by keeping only other time points and channels)
+        self._image_cache = [(time_point_number, image_z, channel, array) for time_point_number, image_z, channel, array in self._image_cache
+                                if time_point_number != time_point.time_point_number() or channel != image_channel]
+
+        # Try to add the updated image to the cache
+        if image.shape[0] * 2 < self._CACHE_SIZE:
+            # The 3D image is small enough for cache, so add it
+            for image_z in range(image.shape[0]):
+                self._add_to_cache(time_point.time_point_number(), image_z, image_channel, image[image_z])
 
 
 class ImageOffsets:
@@ -260,6 +280,16 @@ class Image:
         int(position.x - self.offset.x)] = value
 
 
+class ChannelDescription(NamedTuple):
+    """Describes a channel in an image. What name did the user give it, and what colormap is used to display it?"""
+    channel_name: str
+    colormap: Colormap
+
+    def with_colormap(self, colormap: Colormap) -> "ChannelDescription":
+        """Creates a new ChannelDescription with the same channel name, but a different colormap."""
+        return ChannelDescription(self.channel_name, colormap)
+
+
 class Images:
     """Records the images (3D + time), their resolution and their offset."""
 
@@ -267,12 +297,14 @@ class Images:
     _offsets: ImageOffsets
     _resolution: ImageResolution
     _timings: Optional[ImageTimings] = None
+    _channel_descriptions: List[ChannelDescription]
     filters: ImageFilters
 
     def __init__(self):
         self._image_loader = NullImageLoader()
         self._offsets = ImageOffsets()
         self._resolution = ImageResolution(0, 0, 0, 0)
+        self._channel_descriptions = list()
         self.filters = ImageFilters()
 
     @property
@@ -417,6 +449,7 @@ class Images:
         copy._image_loader = self._image_loader.copy()
         copy._resolution = self._resolution  # No copy, as this object is immutable
         copy._offsets = self._offsets.copy()
+        copy._channel_descriptions = self._channel_descriptions.copy()  # Descriptions are immutable, so no deep copy
         if self._timings is not None:
             copy._timings = self._timings.copy()
         copy.filters = self.filters.copy()
@@ -451,6 +484,19 @@ class Images:
         """Gets all available image channels. These are determined by the image_loader."""
         return self._image_loader.get_channels()
 
+    def get_channel_description(self, channel: ImageChannel) -> ChannelDescription:
+        """Gets the description of the given channel."""
+        while len(self._channel_descriptions) <= channel.index_zero:
+            # Keep generating default channel descriptions until we have enough
+            self._channel_descriptions.append(ChannelDescription(f"{len(self._channel_descriptions)}",
+                                                                 matplotlib.cm.gray))
+        return self._channel_descriptions[channel.index_zero]
+
+    def set_channel_description(self, channel: ImageChannel, description: ChannelDescription):
+        """Sets the description of the given channel."""
+        self.get_channel_description(channel)  # Make sure we have enough channel descriptions
+        self._channel_descriptions[channel.index_zero] = description
+
     def close_image_loader(self):
         """Closes the image loader, releasing file system handles, and replacing it with a dummy one that contains no
         images."""
@@ -462,3 +508,7 @@ class Images:
         if self._timings is not None:
             self._timings.move_in_time(time_point_delta)
         self._offsets.move_in_time(time_point_delta)
+
+    def save_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image: ndarray):
+        """Saves a 3D image to the image loader. Also updates the image cache to have the newest array."""
+        self._image_loader.save_3d_image_array(time_point, image_channel, image)

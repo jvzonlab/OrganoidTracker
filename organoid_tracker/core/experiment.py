@@ -1,3 +1,4 @@
+import warnings
 from typing import Optional, Iterable
 
 from numpy import ndarray
@@ -180,7 +181,7 @@ class Experiment:
             current_number += 1
 
     def get_image_stack(self, time_point: TimePoint) -> Optional[ndarray]:
-        """Gets a stack of all images for a time point, one for every z layer. Returns None if there is no image."""
+        warnings.warn("Use experiment.images.get_image_stack instead", DeprecationWarning)
         return self._images.get_image_stack(time_point)
 
     @property

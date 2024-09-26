@@ -58,7 +58,8 @@ class GuiExperiment:
     """Used to store the experiment, along with some data that is only relevant within a GUI app, but that doesn't
     need to be saved."""
 
-    KNOWN_EVENTS = {"data_updated_event", "any_updated_event", "tab_list_updated_event", "command_event"}
+    KNOWN_EVENTS = {"data_updated_event", "any_updated_event", "tab_list_updated_event", "command_event",
+                    "program_close_event"}
 
     _tabs: List[SingleGuiTab]
     _selected_experiment: int  # Index in self._experiments, or equal to len(self._experiments) if all are open.
@@ -166,6 +167,11 @@ class GuiExperiment:
     def execute_command(self, command: str):
         """Calls all registered command handlers with the given argument. Used when a user entered a command."""
         self._event_handlers["command_event"].call_all(command)
+
+    def program_closing(self):
+        """Called when the program is closed (so after saving the data - the user cannot cancel anymore at this point).
+        """
+        self._event_handlers["program_close_event"].call_all()
 
     def goto_position(self, position: Position):
         """Moves the view towards the given position. The position must have a time point set."""
