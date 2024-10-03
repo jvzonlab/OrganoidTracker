@@ -136,8 +136,12 @@ def export_links_ctc(experiment: Experiment):
     if tracks_folder is None:
         return
 
+    radius_um = dialog.prompt_float("Radius of the cells in micrometers", "Since the cell tracker doesn't generate"
+                                    " segmentation masks, we simply draw a sphere around the cell position. What radius"
+                                    " should we use (in micrometers)?", minimum=1, maximum=100, default=5)
+
     from organoid_tracker.imaging import ctc_io
-    ctc_io.save_data_files(experiment, tracks_folder)
+    ctc_io.save_data_files(experiment, tracks_folder, mask_size_um=radius_um)
 
 
 def export_links_trackmate(experiment: Experiment):
