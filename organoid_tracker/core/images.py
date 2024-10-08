@@ -488,7 +488,7 @@ class Images:
         """Gets the description of the given channel."""
         while len(self._channel_descriptions) <= channel.index_zero:
             # Keep generating default channel descriptions until we have enough
-            self._channel_descriptions.append(ChannelDescription(f"{len(self._channel_descriptions)}",
+            self._channel_descriptions.append(ChannelDescription(f"{len(self._channel_descriptions) + 1}",
                                                                  matplotlib.cm.gray))
         return self._channel_descriptions[channel.index_zero]
 
