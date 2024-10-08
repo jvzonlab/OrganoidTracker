@@ -136,11 +136,15 @@ class ConfigFile:
             self._config[self._section_name][key] = _ValueWithComment(value, comment)
         self.made_value_changes = True
 
-    def get_or_default(self, key: str, default_value: str, *, comment: str = "", store_in_defaults: bool = False,
+    def get_or_default(self, key: str, default_value: Any, *, comment: str = "", store_in_defaults: bool = False,
                        type: Callable[[str], Any] = config_type_str) -> Any:
         """Gets a string from the config file for the given key. If no such string exists, the default value is
         stored in the config first. If store_in_defaults is True, then the default value is stored in the DEFAULTS
         section, otherwise the default value is stored in the section given to __init__.
+
+        The default value can be supplied as a string or as the actual type. If it is a string, it will be stored as-is,
+        but ran through the type function before being returned. If it is not a string, it will be stored as
+        `str(default_value)`, and returned as-is.
         """
         if key in self._config[self._section_name]:
             setting = self._config[self._section_name][key]
@@ -159,11 +163,13 @@ class ConfigFile:
 
         # Setting not found, create
         if store_in_defaults:
-            self._config["DEFAULTS"][key] = _ValueWithComment(default_value, comment)
+            self._config["DEFAULTS"][key] = _ValueWithComment(str(default_value), comment)
         else:
-            self._config[self._section_name][key] = _ValueWithComment(default_value, comment)
+            self._config[self._section_name][key] = _ValueWithComment(str(default_value), comment)
         self.made_value_changes = True
-        return type(default_value)
+        if isinstance(default_value, str):
+            return type(default_value)
+        return default_value
 
     def get_or_prompt(self, key: str, question: str, store_in_defaults: bool = False, *,type: Callable[[str], Any] = config_type_str
                       ) -> Any:
