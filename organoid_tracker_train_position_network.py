@@ -18,7 +18,7 @@ from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 from organoid_tracker.imaging import io
-from organoid_tracker.position_detection_cnn.custom_filters import distance_map
+from organoid_tracker.position_detection_cnn.custom_filters import distance_map, blur_labels
 
 from organoid_tracker.position_detection_cnn.image_with_positions_to_tensor_loader import dataset_writer
 from organoid_tracker.position_detection_cnn.convolutional_neural_network import build_model, tensorboard_callback
@@ -167,6 +167,8 @@ def predict(image: tf.Tensor, label: tf.Tensor, model: tf.keras.Model) -> Tuple[
     y_true = tf.where(label > 0.1, peaks, 0)
 
     label, weights = distance_map(y_true)
+
+    label = blur_labels(label, sigma=1.5, kernel_size=4, depth=1, normalize=False)
 
     return image, model(image, training=False), label, weights
 

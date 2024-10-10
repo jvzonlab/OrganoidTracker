@@ -79,7 +79,7 @@ while True:
     per_experiment_params.append(params)
     i += 1
 
-full_window = bool(config.get_or_default(f"identify full division window", 'True'))
+full_window = config.get_or_default(f"identify full division window", str(False), type=config_type_bool)
 
 time_window = [int(config.get_or_default(f"time_window_before", str(-1))),
                int(config.get_or_default(f"time_window_after", str(1)))]

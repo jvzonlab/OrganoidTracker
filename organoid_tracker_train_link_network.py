@@ -117,9 +117,6 @@ validation_list = []
 for image_with_links in image_with_links_list[-round(0.2*len(image_with_links_list)):]:
     validation_list.append((image_with_links.experiment_name, image_with_links.time_point.time_point_number()))
 
-with open(os.path.join(output_folder, "validation_list.json"), "w") as file_handle:
-    json.dump(validation_list, file_handle, indent=4)
-
 # get mean number of positions per timepoint
 number_of_postions = []
 for image_with_links in image_with_links_list:
@@ -158,7 +155,7 @@ history = model.fit(training_dataset,
                     validation_data=validation_dataset,
                     validation_steps=round(0.2 * len(image_with_links_list) * 0.9 * number_of_postions / batch_size),
                     callbacks=[
-                               tf.keras.callbacks.EarlyStopping(patience=1, min_delta= 0.001, restore_best_weights=True)])
+                               tf.keras.callbacks.EarlyStopping(patience=1, restore_best_weights=True)])
 
 print("Saving model...")
 trained_model_folder = os.path.join(output_folder, "model_links")
@@ -174,7 +171,6 @@ def predict(inputs, linked, model: tf.keras.Model) -> Tuple[tf.Tensor, tf.Tensor
 # create list with links without upsampling
 experiment_provider = (params.to_experiment() for params in per_experiment_params)
 list_for_platt_scaling =  create_image_with_links_list(experiment_provider, division_multiplier=1, mid_distance_multiplier=1)
-
 # limit platt scaling to validation set
 list_for_platt_scaling_val = []
 
@@ -212,6 +208,10 @@ with open(os.path.join(trained_model_folder, "settings.json"), "w") as file_hand
     json.dump({"type": "links", "time_window": time_window, "patch_shape_zyx": patch_shape_zyx,
                "platt_intercept": intercept, "platt_scaling": scaling
                }, file_handle, indent=4)
+
+# save validation list
+with open(os.path.join(output_folder, "validation_list.json"), "w") as file_handle:
+    json.dump(validation_list, file_handle, indent=4)
 
 # # generate examples for reality check
 def predict_with_input(inputs, linked, model: tf.keras.Model) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
