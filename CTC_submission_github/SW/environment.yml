@@ -1,0 +1,21 @@
+name: organoid_tracker
+channels:
+  - conda-forge
+  - esri
+  - defaults
+dependencies:
+  - python=3.9
+  - ilastik-forge::dpct
+  - matplotlib-base
+  - numpy=1.21.*  # Newer version not supported by scipy (February 2023)
+  - tifffile
+  - scikit-image
+  - scipy
+  - nd2reader
+  - pyside2
+  - tensorflow-gpu=2.7.*  # Latest available on Anaconda (February 2023)
+  - keras=2.7.*  # Keep in sync with Tensorflow
+  - flask
+  - pip
+  - pip:
+      - tensorflow-addons==0.17.1
