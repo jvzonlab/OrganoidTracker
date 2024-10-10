@@ -69,6 +69,12 @@ def make_cell_cycle_table(experiment):
                 if ((link[0].time_point_number() - track.min_time_point_number() > 6)
                         and (track.max_time_point_number() - link[0].time_point_number() > 6)):
                     experiment.links.remove_link(link[1], next_position)
+            if (division_penalty1 is not None) and (division_penalty2 is not None) and (division_penalty3 is not None):
+                if (division_penalty1 + division_penalty2 + division_penalty3) / 3 < -2.0:
+                    track = experiment.links.get_track(link[0])
+                    if ((link[0].time_point_number() - track.min_time_point_number() > 6)
+                            and (track.max_time_point_number() - link[0].time_point_number() > 6)):
+                        experiment.links.remove_link(link[1], next_position)
 
     lifetimes =[]
     divisions =[]
