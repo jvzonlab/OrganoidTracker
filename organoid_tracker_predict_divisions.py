@@ -168,30 +168,33 @@ for position in experiment.positions:
 
             # if the division is oversegmented rpelace by one position in the middle
             if (position.distance_um(neighbor, resolution=experiment.images.resolution()) < range):
-                add_position = Position(x=(position.x + neighbor.x)//2,
-                                    y=(position.y + neighbor.y)//2,
-                                    z=(position.z + neighbor.z)//2,
-                                    time_point=position.time_point())
-                to_add.append(add_position)
 
-                print('remove:')
-                print(position)
-                print('remove:')
-                print(neighbor)
-                print('add:')
-                print(add_position)
+                if (position not in to_remove) and (neighbor not in to_remove):
+                    add_position = Position(x=(position.x + neighbor.x)//2,
+                                        y=(position.y + neighbor.y)//2,
+                                        z=(position.z + neighbor.z)//2,
+                                        time_point=position.time_point())
+                    to_add.append(add_position)
 
-                experiment.position_data.set_position_data(add_position, 'division_probability',
-                                                           max(experiment.position_data.get_position_data(position,
-                                                                                                          data_name="division_probability"),
-                                                               experiment.position_data.get_position_data(neighbor,
-                                                                                                          data_name="division_probability")))
-                experiment.position_data.set_position_data(add_position, 'division_penalty',
-                                                           min(experiment.position_data.get_position_data(position,
-                                                                                                          data_name="division_penalty"),
-                                                               experiment.position_data.get_position_data(neighbor,
-                                                                                                          data_name="division_penalty")))
-                #print(position)
+                    print('remove:')
+                    print(position)
+                    print('remove:')
+                    print(neighbor)
+                    print('add:')
+                    print(add_position)
+
+                    experiment.position_data.set_position_data(add_position, 'division_probability',
+                                                               max(experiment.position_data.get_position_data(position,
+                                                                                                              data_name="division_probability"),
+                                                                   experiment.position_data.get_position_data(neighbor,
+                                                                                                              data_name="division_probability")))
+                    experiment.position_data.set_position_data(add_position, 'division_penalty',
+                                                               min(experiment.position_data.get_position_data(position,
+                                                                                                              data_name="division_penalty"),
+                                                                   experiment.position_data.get_position_data(neighbor,
+                                                                                                              data_name="division_penalty")))
+                    #print(position)
+
                 to_remove = to_remove + [position, neighbor]
 
         # find closest neighbors at previous timepoint
