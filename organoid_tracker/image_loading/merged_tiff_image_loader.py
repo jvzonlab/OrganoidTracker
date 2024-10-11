@@ -181,7 +181,7 @@ class _MergedTiffImageLoader(ImageLoader):
     def _get_offset(self, t: int, c: int, z: int) -> int:
         """Gets the pixel offset for the given 2D image."""
         offset = self._get_2d_page_number(t, c, z) * self._image_size_zyx[1] * self._image_size_zyx[2]
-        return int(offset + self._tiff_series.offset)
+        return int(offset + self._tiff_series.dataoffset)
 
     def _get_2d_page_number(self, t: int, c: int, z: int) -> int:
         """Gets the page number for the given 2D image.
