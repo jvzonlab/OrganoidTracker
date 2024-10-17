@@ -12,8 +12,8 @@ Features
 * Manual tracking with live error-detection.
 * Automated cell detection using a convolutional neural network based on U-net.
 * Support for automatically linking nuclei over time using a min-cost flow solver ([Haubold, 2016])
-* Supports [TIFF files, TIFF series, Leica LIF files and NIKON nd2 files](manuals/IMAGE_FORMATS.md).
-* [Plugin API with live-reload for fast data analysis](manuals/PLUGIN_TUTORIAL.md)
+* Supports [TIFF files, TIFF series, Leica LIF files, Imaris IMS files, Zeiss CZI files and NIKON nd2 files](https://jvzonlab.github.io/OrganoidTracker/IMAGE_FORMATS.html).
+* [Plugin API with live-reload for fast development](https://jvzonlab.github.io/OrganoidTracker/PLUGIN_TUTORIAL.html)
 
 
 Screenshot
@@ -25,7 +25,7 @@ Screenshot
 Intended workflow
 -----------------
 1. Do some manual tracking to obtain ground truth data and training data.
-2. Train a neural network.
+2. Train the neural networks.
 3. Apply the automated tracker on some new time lapse movie.
 4. Correct the errors in the tracking data of that time lapse movie.
 5. Use the corrected tracking data as additional training data for the neural network.
@@ -42,7 +42,7 @@ OrganoidTracker must be installed using Anaconda. See the [installation] page fo
 
 Running the main program
 ------------------------
-Open an Anaconda Prompt, activate the correct environment and navigate to the 
+Open an Anaconda Prompt, activate the correct environment and navigate to the folder in which you installed OrganoidTracker.
 The `organoid_tracker.py` script starts a graphical program that allows you to visualize and edit your data.
 
 
@@ -52,8 +52,7 @@ After you have installed the software, please have a look at the [manual]. The m
 
 Pre-trained neural networks
 ---------------------------
-1. [The original published network](https://doi.org/10.17026/dans-274-a78v) - for images with low background noise, 0.32 μm/px, z-step 2 μm
-2. [For lower resolution](https://drive.google.com/file/d/1WVGWlR7aHD2w8MWgrGp755MZR6FLPL8V/view?usp=sharing) - for images with low background noise, **0.41 μm/px**, z-step 2 μm
+* [Network trained for OrganoidTracker 2](https://doi.org/10.5281/zenodo.13912686) - trained using confocal data from the Cell Tracking Challenge
 
 API
 ---
@@ -74,9 +73,9 @@ License and reuse
 The [files dealing with the neural network](organoid_tracker/position_detection_cnn) are licensed under the MIT license. This is indicated at the top of those files. Other files are licensed under the [GPL license](LICENSE.txt). Please cite the [publication in PLOS ONE] if you're using this work.
 
 
-[API]: manuals/API.md
-[installation]: manuals/INSTALLATION.md
-[manual]: manuals/INDEX.md
-[Jupyter]: manuals/JUPYTER_NOTEBOOK.md
+[API]: https://jvzonlab.github.io/OrganoidTracker/API.html
+[installation]: https://jvzonlab.github.io/OrganoidTracker/INSTALLATION.html
+[manual]: https://jvzonlab.github.io/OrganoidTracker/
+[Jupyter]: https://jvzonlab.github.io/OrganoidTracker/JUPYTER_NOTEBOOK.html
 [Publication in PLOS ONE]: https://doi.org/10.1371/journal.pone.0240802
 [Haubold, 2016]: https://doi.org/10.1007/978-3-319-46478-7_35
