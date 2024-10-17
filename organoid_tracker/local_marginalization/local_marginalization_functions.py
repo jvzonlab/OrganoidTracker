@@ -79,7 +79,7 @@ def check_completeness(complete_pos, links):
 
 
 
-def get_flows_and_energies(previous_pos, current_pos, local_links, experiment, integrate_ignore_penalty = True, complete_graph=True, ignore_penalty = 2):
+def get_flows_and_energies(previous_pos, current_pos, local_links, experiment, integrate_ignore_penalty = False, complete_graph=True, ignore_penalty = 2):
     """Get the allowed integer flows and associated energies for every element in the subset"""
 
     # for every position generate unique key

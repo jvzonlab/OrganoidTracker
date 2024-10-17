@@ -96,5 +96,5 @@ Step 7: Automated analysis
 
 In step 5 a set of filtered high-confidence tracks is produced. You can choose to analyze these further. Generally for many application, manual corrections are not needed. 
 * If you want to quantify a fluorescence reporter you can take long tracks (`Edit` -> `Manually change data` -> `Batch deletion` -> `Delete short lineages`) and work from there.
-* If you want to quantify tissue flows flawless trajectories are often overkill. Setting a lower threshold should still give you good enough data. 
+* If you want to quantify tissue flows flawless trajectories are often overkill. Setting a lower probability threshold should still give you good enough data. 
 * Analyzing cell cycle dynamics should be done using survival analysis ([See here for how to do this](./SURVIVAL_ANALYSIS.md)) anyway and this can deal with cells that are lost to follow up. 

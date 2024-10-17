@@ -8,17 +8,16 @@ import json
 import os
 import random
 
-import keras.callbacks
 import keras.models
 
-from organoid_tracker.config import ConfigFile, config_type_image_shape_xyz_to_zyx, config_type_int
+from organoid_tracker.config import config_type_image_shape_xyz_to_zyx
 from organoid_tracker.imaging import list_io
-from organoid_tracker.neural_network.position_detection_cnn.convolutional_neural_network import build_model
-from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import \
-    create_image_with_positions_list
-from organoid_tracker.neural_network.position_detection_cnn.training_dataset import training_data_creator_from_raw
 from organoid_tracker.neural_network.position_detection_cnn.training_inspection_callback import WriteExamplesCallback, \
     ExampleDataset
+from organoid_tracker.config import ConfigFile, config_type_int
+from organoid_tracker.neural_network.position_detection_cnn.convolutional_neural_network import build_model
+from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import create_image_with_positions_list
+from organoid_tracker.neural_network.position_detection_cnn.training_dataset import training_data_creator_from_raw
 
 
 # PARAMETERS

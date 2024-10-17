@@ -68,9 +68,6 @@ validation_list = []
 for image_with_links in image_with_links_list[-round(0.2 * len(image_with_links_list)):]:
     validation_list.append((image_with_links.experiment_name, image_with_links.time_point.time_point_number()))
 
-with open(os.path.join(output_folder, "validation_list.json"), "w") as file_handle:
-    json.dump(validation_list, file_handle, indent=4)
-
 # get mean number of positions per timepoint
 number_of_postions = []
 for image_with_links in image_with_links_list:
@@ -155,6 +152,10 @@ with open(os.path.join(trained_model_folder, "settings.json"), "w") as file_hand
     json.dump({"type": "links", "time_window": time_window, "patch_shape_zyx": patch_shape_zyx,
                "platt_intercept": intercept, "platt_scaling": scaling
                }, file_handle, indent=4)
+
+# save validation list
+with open(os.path.join(output_folder, "validation_list.json"), "w") as file_handle:
+    json.dump(validation_list, file_handle, indent=4)
 
 # Generate examples
 link_examples_folder = os.path.join(output_folder, "link_examples")

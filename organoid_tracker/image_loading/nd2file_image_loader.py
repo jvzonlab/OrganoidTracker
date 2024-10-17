@@ -105,9 +105,10 @@ class _Nd2ImageLoader(ImageLoader):
         z_resolution = 0
         depth = len(self._nd2_parser.metadata["z_levels"])
         if depth > 1 and "z_coordinates" in self._nd2_parser.metadata:
-            z_coordinates = self._nd2_parser.metadata["z_coordinates"][0:depth]
-            if len(z_coordinates) >= 2:
-                z_resolution = abs(float(numpy.median(numpy.diff(z_coordinates))))
+            if self._nd2_parser.metadata["z_coordinates"] is not None:
+                z_coordinates = self._nd2_parser.metadata["z_coordinates"][0:depth]
+                if len(z_coordinates) >= 2:
+                    z_resolution = abs(float(numpy.median(numpy.diff(z_coordinates))))
 
         # Calculate time resolution from difference between first and last acquired z plane
         time_resolution_s = 0

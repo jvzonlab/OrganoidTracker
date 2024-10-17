@@ -14,7 +14,7 @@ import numpy as np
 import tifffile
 from torch.utils.data import DataLoader
 
-from organoid_tracker.config import ConfigFile, config_type_image_shape_xyz_to_zyx, config_type_int
+from organoid_tracker.config import ConfigFile, config_type_image_shape_xyz_to_zyx, config_type_int, config_type_bool
 from organoid_tracker.imaging import list_io
 from organoid_tracker.linear_models.logistic_regression import platt_scaling
 from organoid_tracker.neural_network.dataset_transforms import LimitingDataset
@@ -29,7 +29,7 @@ config = ConfigFile("train_division_network")
 dataset_file = config.get_or_prompt("dataset_file", "Please paste the path here to the dataset file."
                                      " You can generate such a file from OrganoidTracker using File -> Tabs -> "
                                      " all tabs.", store_in_defaults=True)
-full_window = bool(config.get_or_default(f"identify full division window", 'True'))
+full_window = config.get_or_default(f"identify full division window", str(False), type=config_type_bool)
 
 time_window = [int(config.get_or_default(f"time_window_before", str(-1))),
                int(config.get_or_default(f"time_window_after", str(1)))]

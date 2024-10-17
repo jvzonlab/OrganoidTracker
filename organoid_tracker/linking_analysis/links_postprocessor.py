@@ -386,6 +386,13 @@ def bridge_gaps(experiment: Experiment, experiment_result: Experiment, miss_pena
                                                   resolution=experiment.images.resolution()))
         neighbors.reverse()
 
+        # always include closest neighbor (adds a scale-free element to it)
+        # Probably better to replace this completely by a more adapative distance threshhold
+        if len(neighbors)==0:
+            neighbors = list(find_closest_n_positions(experiment_result.positions.of_time_point(next_time_point),
+                                                  around=position, max_amount=1,
+                                                  resolution=experiment.images.resolution()))
+
         for neighbor in neighbors:
             distance = position.distance_um(neighbor, resolution=experiment.images.resolution())
 
@@ -455,7 +462,7 @@ def bridge_gaps(experiment: Experiment, experiment_result: Experiment, miss_pena
                                                      around=neighbor, max_amount=6, max_distance_um=7,
                                                      resolution=experiment.images.resolution()))
 
-                        link_probability = 1 - 2 / (len(alternatives) + 2)
+                        link_probability = 0.5  # 1/((len(alternatives)+2)/2 + 1)
                         link_penalty = np.log10((1 - link_probability + 10 ** -10) / (link_probability + 10 ** -10))
 
                         # link
@@ -535,6 +542,11 @@ def bridge_gaps2(experiment: Experiment, experiment_result: Experiment, miss_pen
                         fixed.append(neighbor)
 
                         prev_position = experiment_result.links.find_single_past(position)
+
+                        # sometimes no previous position is found because it was removed during a previous gap closing operation
+                        # (this can happen with tracks that are only two frames long)
+                        if prev_position is None:
+                            continue
 
                         # distinguish between loose ends and potential divisions
                         if len(experiment_result.links.find_futures(position)) == 0:
@@ -642,7 +654,7 @@ def _remove_tracks_too_short(experiment_result: Experiment, experiment: Experime
             for next_track in next_tracks:
                 to_remove = to_remove + list(next_track.positions())
 
-            if len(to_remove) <= min_t:
+            if (len(to_remove) <= min_t) and (track.last_time_point_number()!=experiment.last_time_point_number()):
                 experiment_result.remove_positions(to_remove)
                 experiment.remove_positions(to_remove)
 
