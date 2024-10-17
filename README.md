@@ -9,9 +9,11 @@ Program for tracking cell nuclei in (intestinal) organoids over time. Uses a con
 Features
 --------
 
-* Manual tracking with live error-detection.
-* Automated cell detection using a convolutional neural network based on U-net.
-* Support for automatically linking nuclei over time using a min-cost flow solver ([Haubold, 2016])
+* Manual tracking/correction with live feedback.
+* Automated cell center detection using a convolutional neural network based on U-net.
+* Automated and accurate predictions link and division probabilities using convolutional neural networks. 
+* Automatically finding the most likely tracking solution using a min-cost flow solver ([Haubold, 2016])
+* High confidence, context-aware, error probabilities for every link in a track to indicate the tracking quality. 
 * Supports [TIFF files, TIFF series, Leica LIF files, Imaris IMS files, Zeiss CZI files and NIKON nd2 files](https://jvzonlab.github.io/OrganoidTracker/IMAGE_FORMATS.html).
 * [Plugin API with live-reload for fast development](https://jvzonlab.github.io/OrganoidTracker/PLUGIN_TUTORIAL.html)
 
@@ -52,7 +54,8 @@ After you have installed the software, please have a look at the [manual]. The m
 
 Pre-trained neural networks
 ---------------------------
-* [Network trained for OrganoidTracker 2](https://doi.org/10.5281/zenodo.13912686) - trained using confocal data from the Cell Tracking Challenge
+* [Network trained for OrganoidTracker 2 (C elegans)](https://doi.org/10.5281/zenodo.13912686) - trained using C elegans confocal data from the Cell Tracking Challenge
+* [Network trained for OrganoidTracker 2 (organoid)](https://zenodo.org/records/13946119) - trained using our manually annotated intestinal organoid data
 
 API
 ---
