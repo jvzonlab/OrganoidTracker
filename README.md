@@ -1,7 +1,7 @@
 ![Logo](manuals/images/logo.png) OrganoidTracker
 ================================================
 
-[Publication in PLOS ONE]
+[Publication of OrganoidTracker 1](https://doi.org/10.1371/journal.pone.0240802) [Pre-print of OrganoidTracker 2](https://doi.org/10.1101/2024.10.11.617799)
 
 Program for tracking cell nuclei in (intestinal) organoids over time. Uses a convolutional neural network for nucleus detection, a min-cost flow solver ([Haubold, 2016]) for linking nuclei over time and tools for manual error correction.
 
@@ -70,12 +70,12 @@ Install the program as normal, and then point your Python editor (PyCharm or Vis
 
 License and reuse
 -----------------
-The [files dealing with the neural network](organoid_tracker/position_detection_cnn) are licensed under the MIT license. This is indicated at the top of those files. Other files are licensed under the [GPL license](LICENSE.txt). Please cite the [publication in PLOS ONE] if you're using this work.
+The [files dealing with the neural network](organoid_tracker/position_detection_cnn) are licensed under the MIT license. This is indicated at the top of those files. Other files are licensed under the [GPL license](LICENSE.txt). Please cite the [publication] if you're using this work.
 
 
 [API]: https://jvzonlab.github.io/OrganoidTracker/API.html
 [installation]: https://jvzonlab.github.io/OrganoidTracker/INSTALLATION.html
 [manual]: https://jvzonlab.github.io/OrganoidTracker/
+[publication]: https://doi.org/10.1371/journal.pone.0240802
 [Jupyter]: https://jvzonlab.github.io/OrganoidTracker/JUPYTER_NOTEBOOK.html
-[Publication in PLOS ONE]: https://doi.org/10.1371/journal.pone.0240802
 [Haubold, 2016]: https://doi.org/10.1007/978-3-319-46478-7_35
