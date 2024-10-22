@@ -182,11 +182,11 @@ def _generate_position_detection_config(window: Window):
     config.get_or_default("model_folder", model_folder)
     config.get_or_default("predictions_output_folder", "Nucleus center predictions")
 
-    config.get_or_default("patch_shape_y", str(240))
-    config.get_or_default("patch_shape_x", str(240))
+    config.get_or_default("patch_shape_y", str(320))
+    config.get_or_default("patch_shape_x", str(320))
     config.get_or_default("buffer_z", str(1))
-    config.get_or_default("buffer_y", str(8))
-    config.get_or_default("buffer_x", str(8))
+    config.get_or_default("buffer_y", str(32))
+    config.get_or_default("buffer_x", str(32))
     config.get_or_default("images_channels", str(window.display_settings.image_channel.index_one))
 
     config.save()

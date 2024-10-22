@@ -244,16 +244,16 @@ for i, element in enumerate(predictions):
     if ((dividing * score) < 0) and (correct_examples < 10):
         tifffile.imwrite(os.path.join(output_folder, "examples",
                                       "CORRECT_example_input" + str(i) + '_score_' +
-                                      "{:.2f}".format(float(score)) + ".ome.tiff"), image, imagej=True,
-                         metadata={'axes': 'TZXY'})
+                                      "{:.2f}".format(float(score)) + ".tiff"), image) #, #imagej=True,
+                        # metadata={'axes': 'TZXY'})
 
         correct_examples = correct_examples + 1
 
     if ((dividing * score) > 0) and (incorrect_examples < 10):
         tifffile.imwrite(os.path.join(output_folder, "examples",
                                       "INCORRECT_example_input" + str(i) + '_score_' +
-                                      "{:.2f}".format(float(score)) + ".ome.tiff"), image, imagej=True,
-                         metadata={'axes': 'TZXY'})
+                                      "{:.2f}".format(float(score)) + ".tiff"), image) #, imagej=True,
+                        # metadata={'axes': 'TZXY'})
 
         incorrect_examples = incorrect_examples + 1
 

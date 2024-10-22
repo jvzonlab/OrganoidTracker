@@ -155,7 +155,7 @@ history = model.fit(training_dataset,
                     validation_data=validation_dataset,
                     validation_steps=round(0.2 * len(image_with_links_list) * 0.9 * number_of_postions / batch_size),
                     callbacks=[
-                               tf.keras.callbacks.EarlyStopping(patience=1, restore_best_weights=True)])
+                               tf.keras.callbacks.EarlyStopping(patience=2, restore_best_weights=True)])
 
 print("Saving model...")
 trained_model_folder = os.path.join(output_folder, "model_links")
@@ -257,17 +257,17 @@ for i, element in enumerate(predictions):
     if ((linked * score) < 0) and (correct_examples < 20):
         tifffile.imwrite(os.path.join(output_folder, "examples",
                                       "CORRECT_example_input" + str(i) + '_score_' +
-                                      "{:.2f}".format(float(score)) + ".ome.tiff"), image,imagej=True, metadata={'axes': 'TZXY'})
+                                      "{:.2f}".format(float(score)) + ".ome.tiff"), image,metadata={'axes': 'TZXY'})
         print(element[4])
         tifffile.imwrite(os.path.join(output_folder, "examples",
                                       "CORRECT_example_target_input" + str(i) + '_score_' +
-                                      "{:.2f}".format(float(score)) + ".ome.tiff"), target_image,imagej=True, metadata={'axes': 'TZXY'})
+                                      "{:.2f}".format(float(score)) + ".ome.tiff"), target_image, metadata={'axes': 'TZXY'})
         correct_examples = correct_examples + 1
 
     if ((linked * score) > 0) and (incorrect_examples < 20):
         tifffile.imwrite(os.path.join(output_folder, "examples",
                                       "INCORRECT_example_input" + str(i) + '_score_' +
-                                      "{:.2f}".format(float(score)) + ".ome.tiff"), image,imagej=True, metadata={'axes': 'TZXY'})
+                                      "{:.2f}".format(float(score)) + ".ome.tiff"), image, metadata={'axes': 'TZXY'})
         print(element[4])
         distance = element[4].numpy()[0,:]
         tifffile.imwrite(os.path.join(output_folder, "examples",
@@ -275,7 +275,7 @@ for i, element in enumerate(predictions):
                                       "{:.2f}".format(float(score))
                                       + '_x_' +"{:.2f}".format(float(distance[1]))
                                       + '_y_' +"{:.2f}".format(float(distance[2])) + ".ome.tiff"),
-                         target_image, imagej=True, metadata={'axes': 'TZXY'})
+                         target_image, metadata={'axes': 'TZXY'})
         incorrect_examples = incorrect_examples + 1
     if (incorrect_examples == 10) and (correct_examples ==10):
         break
