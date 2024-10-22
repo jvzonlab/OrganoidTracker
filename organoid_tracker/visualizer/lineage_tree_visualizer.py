@@ -6,6 +6,9 @@ import matplotlib.cm
 import matplotlib.colors
 from matplotlib.backend_bases import MouseEvent
 
+import numpy as np
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 from organoid_tracker.core import Color, UserError
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import LinkingTrack
@@ -61,6 +64,8 @@ class LineageTreeVisualizer(Visualizer):
     _display_track_id: bool = False
     _display_lineage_error_probability: bool = False
     _display_track_error_probability: bool = False
+
+    _cbar: Optional[str] = None
 
     def __init__(self, window: Window):
         super().__init__(window)
@@ -174,8 +179,12 @@ class LineageTreeVisualizer(Visualizer):
             self._uncolor_lineages()
             self._display_error_rates = True
             self.update_status("Now showing error rates; turned off other lineage coloring")
+            # if errors are shown remove warnings
+            self._display_warnings = False
         else:
             self.update_status("No longer showing error rates")
+            # if errors are not shown trigger warnings
+            self._display_warnings = True
         self.draw_view()
 
     def _toggle_custom_colors(self):
@@ -316,6 +325,11 @@ class LineageTreeVisualizer(Visualizer):
     def draw_view(self):
         self._clear_axis()
 
+        # remove colorbar if its there
+        if self._cbar is not None:
+            self._cbar.remove()
+            self._cbar = None
+
         experiment = self._experiment
         try:
             display_timings = experiment.images.timings()
@@ -383,6 +397,31 @@ class LineageTreeVisualizer(Visualizer):
                                display_timings.get_time_h_since_start(experiment.first_time_point_number()) - 1])
             # noinspection PyTypeChecker
             self._ax.set_xlim([-0.1, width + 0.1])
+
+        if self._display_error_rates:
+
+            # defines the probability to color mapping
+            def _forward(x):
+                eps = 10**-10
+                return np.log10(((x+eps)/(1-x+eps)))
+
+            def _inverse(x):
+                likelihood = 10**x
+                return likelihood/(1+likelihood)
+
+            # this is needed so that the colorbar always generates at the same place where the previous one was removed.
+            # otherwise it is generated next to it.
+            divider = make_axes_locatable(self._ax)
+            cax = divider.append_axes("right", size=0.1, pad=0.05)
+
+            # draw colorbar
+            self._cbar = self._fig.colorbar(matplotlib.cm.ScalarMappable(norm=matplotlib.colors.FuncNorm((_forward, _inverse), vmin =0.5, vmax=0.9991),
+                                                            cmap=matplotlib.cm.get_cmap("RdYlGn")),
+                                                            ticks=[0.5, 0.9, 0.99, 0.999],
+                                                            cax= cax,
+                                                            orientation='vertical',
+                                                            label='error probability')
+            self._cbar.ax.set_yticklabels(['>50%', '10%', '1%', '<0.1%'])
 
         self._fig.canvas.draw()
 
