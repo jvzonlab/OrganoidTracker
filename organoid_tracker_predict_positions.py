@@ -43,6 +43,7 @@ _images_channels = {int(part) for part in _channels_str.split(",")}
 _mid_layers = int(config.get_or_default("mid_layers", str(5), comment="Number of layers to interpolate in between"
                                         " z-planes. Used to improve peak finding."))
 _peak_min_distance_px = int(config.get_or_default("peak_min_distance_px", str(9), comment="Minimum distance in pixels"
+_peak_min_distance_px = int(config.get_or_default("peak_min_distance_px", str(6), comment="Minimum distance in pixels"
                                                   " between detected positions."))
 _threshold = float(config.get_or_default("threshold", str(0.1), comment="Minimum peak intensity"))
 
