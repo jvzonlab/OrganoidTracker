@@ -27,6 +27,32 @@ config = ConfigFile("predict_positions")
 _dataset_file = config.get_or_prompt("dataset_file", "Please paste the path here to the dataset file."
                                      " You can generate such a file from OrganoidTracker using File -> Tabs -> "
                                      " all tabs.", store_in_defaults=True)
+
+if _dataset_file != '':
+    experiment_list = list_io.load_experiment_list_file(_dataset_file)
+else:
+    # if not _dataset_file is defined, we look in the defaults for an images folder to construct a single experiment
+    _images_folder = config.get_or_prompt("images_container",
+                                          "If you have a folder of image files, please paste the folder"
+                                          " path here. Else, if you have a LIF file, please paste the path to that file"
+                                          " here.", store_in_defaults=True)
+    _images_format = config.get_or_prompt("images_pattern",
+                                          "What are the image file names? (Use {time:03} for three digits"
+                                          " representing the time point, use {channel} for the channel)",
+                                          store_in_defaults=True)
+
+    _output_file = config.get_or_default("positions_output_file", "Automatic positions.aut",
+                                         comment="Output file for the positions, can be viewed using the visualizer program.")
+
+    _min_time_point = int(config.get_or_default("min_time_point", str(1), store_in_defaults=True))
+    _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_in_defaults=True))
+
+    experiment_list = Experiment()
+    general_image_loader.load_images(experiment_list, _images_folder, _images_format,
+                                     min_time_point=_min_time_point, max_time_point=_max_time_point)
+
+    experiment_list = [experiment_list]
+
 _patch_shape_y = config.get_or_default("patch_shape_y", str(240), type=config_type_int, comment="Maximum patch size to use for predictions."
                                        " Make this smaller if you run out of video card memory.")
 _patch_shape_x = config.get_or_default("patch_shape_x", str(240), type=config_type_int)
@@ -75,11 +101,13 @@ with open(os.path.join(_model_folder, "settings.json")) as file_handle:
 # Make folders
 if _debug_folder is not None:
     os.makedirs(_debug_folder, exist_ok=True)
-os.makedirs(_output_folder, exist_ok=True)
+
+if _dataset_file != '':
+    os.makedirs(_output_folder, exist_ok=True)
 
 # Loop through experiments
 experiments_to_save = list()
-for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(_dataset_file)):
+for experiment_index, experiment in enumerate(experiment_list):
     # Check if images were loaded
     if not experiment.images.image_loader().has_images():
         print(f"No images were found for experiment \"{experiment.name}\". Please check the configuration file and make"
@@ -192,17 +220,21 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
 
     experiment.positions.add_positions(all_positions)
 
+
+
     print("Saving file...")
-    output_file = os.path.join(_output_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}."
-                               + io.FILE_EXTENSION)
-    io.save_data_to_json(experiment, output_file)
+    if _dataset_file != '':
+        output_file = os.path.join(_output_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}."
+                                   + io.FILE_EXTENSION)
+        io.save_data_to_json(experiment, output_file)
+        # Collect for writing AUTLIST file
+        experiment.images.image_loader(original_image_loader)  # Restore original
+        experiment.last_save_file = output_file
+        experiments_to_save.append(experiment)
 
-    # Collect for writing AUTLIST file
-    experiment.images.image_loader(original_image_loader)  # Restore original
-    experiment.last_save_file = output_file
-    experiments_to_save.append(experiment)
+        list_io.save_experiment_list_file(experiments_to_save,
+                                      os.path.join(_output_folder, "_All" + list_io.FILES_LIST_EXTENSION))
+    else:
+        io.save_data_to_json(experiment, _output_file)
 
-
-list_io.save_experiment_list_file(experiments_to_save,
-                                  os.path.join(_output_folder, "_All" + list_io.FILES_LIST_EXTENSION))
 print("Done!")
