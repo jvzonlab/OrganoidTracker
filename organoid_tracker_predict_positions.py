@@ -55,6 +55,7 @@ config.save()
 
 # Load models
 print("Loading model...")
+_model_folder = os.path.abspath(_model_folder)
 model = tf.keras.models.load_model(_model_folder, custom_objects={"loss": loss,
                                                                   "position_precision": position_precision,
                                                                   "position_recall": position_recall,

@@ -106,6 +106,7 @@ with open(os.path.join(_model_folder, "settings.json")) as file_handle:
 
 # load model
 print("Loading model...")
+_model_folder = os.path.abspath(_model_folder)
 model = tf.keras.models.load_model(_model_folder)
 if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
     print("Error: no settings.json found in model folder.")
