@@ -211,7 +211,12 @@ for experiment_index, experiment in enumerate(experiment_list):
 
             # Comparison between image_max and im to find the coordinates of local maxima
             #im = erosion(im, np.ones((7,7,7)))
-            coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=im.max() / 10,  exclude_border=False) #, footprint=prediction_mask)
+
+            if _threshold is None:
+                coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=im.max() / 10,  exclude_border=False) #, footprint=prediction_mask)
+            else:
+                coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=_threshold,
+                                             exclude_border=False)
 
             for coordinate in coordinates:
                 pos = Position(coordinate[2], coordinate[1], coordinate[0] / z_divisor - 1,
