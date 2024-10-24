@@ -11,7 +11,7 @@ Features
 
 * Manual tracking/correction with live feedback.
 * Automated cell center detection using a convolutional neural network based on U-net.
-* Automated and accurate predictions link and division probabilities using convolutional neural networks. 
+* Automated and accurate predictions of link and division probabilities using convolutional neural networks. 
 * Automatically finding the most likely tracking solution using a min-cost flow solver ([Haubold, 2016])
 * High confidence, context-aware, error probabilities for every link in a track to indicate the tracking quality. 
 * Supports [TIFF files, TIFF series, Leica LIF files, Imaris IMS files, Zeiss CZI files and NIKON nd2 files](https://jvzonlab.github.io/OrganoidTracker/IMAGE_FORMATS.html).
@@ -56,6 +56,11 @@ Pre-trained neural networks
 ---------------------------
 * [Network trained for OrganoidTracker 2 (C elegans)](https://doi.org/10.5281/zenodo.13912686) - trained using C elegans confocal data from the Cell Tracking Challenge
 * [Network trained for OrganoidTracker 2 (organoid)](https://zenodo.org/records/13946119) - trained using our manually annotated intestinal organoid data
+
+Example data
+------------
+Example intestinal organoid data is available with associated automated tracking results and can be used to try out the software. We have included the settings and executables used to generate the tracking results.
+* [Example data organoid](https://zenodo.org/records/13982844) - 50 frames of intestinal organoid data
 
 API
 ---
