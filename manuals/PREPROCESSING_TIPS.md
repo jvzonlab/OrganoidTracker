@@ -1,11 +1,11 @@
-# PREPROCESSING TIPS
+# Preprocessing tips
 [← Back to main page](index.md)
 
 This page contains some preprocessing tips.  
 
 Scaling your image
 -----------------------------------
-The neural networks in OrganoidTracker are all convolutional neural networks. This means first of all that they are not scale invariant. The best results are achieved when the nuclei have the same volume (in pixels) as the nuclei in the training data. This match should be rather exact, within a 80% to 120% range. Scaling the data is easily achieved in for instance imageJ. Downscaling in Z can often introduce weird effects if not done by an integer factor, so try to avoid that.  
+The neural networks in OrganoidTracker are all convolutional neural networks. This means first of all that they are not scale invariant. The best results are achieved when the nuclei have the same volume (in pixels) as the nuclei in the training data. For the models trained on intestinal organoid data available [on zenodo](https://zenodo.org/records/13946119), this means that nuclei should be around 25x25x4 (xyz) pixels. This match should be rather exact, within a 80% to 120% range. Scaling the data is easily achieved in for instance imageJ. Downscaling in Z can often introduce weird effects if not done by an integer factor, so try to avoid that.  
 
 Removing your background
 -----------------------------------
