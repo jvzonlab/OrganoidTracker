@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PREPROCESSING TIPS &mdash; OrganoidTracker 2.0 documentation</title>
+  <title>Preprocessing tips &mdash; OrganoidTracker 2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -76,7 +76,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>PREPROCESSING TIPS</li>
+      <li>Preprocessing tips</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/PREPROCESSING_TIPS.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -87,12 +87,12 @@
            <div itemprop="articleBody">
              
   <section id="preprocessing-tips">
-<h1>PREPROCESSING TIPS<a class="headerlink" href="#preprocessing-tips" title="Permalink to this heading"></a></h1>
+<h1>Preprocessing tips<a class="headerlink" href="#preprocessing-tips" title="Permalink to this heading"></a></h1>
 <p><a class="reference internal" href="index.html"><span class="doc std std-doc">← Back to main page</span></a></p>
 <p>This page contains some preprocessing tips.</p>
 <section id="scaling-your-image">
 <h2>Scaling your image<a class="headerlink" href="#scaling-your-image" title="Permalink to this heading"></a></h2>
-<p>The neural networks in OrganoidTracker are all convolutional neural networks. This means first of all that they are not scale invariant. The best results are achieved when the nuclei have the same volume (in pixels) as the nuclei in the training data. This match should be rather exact, within a 80% to 120% range. Scaling the data is easily achieved in for instance imageJ. Downscaling in Z can often introduce weird effects if not done by an integer factor, so try to avoid that.</p>
+<p>The neural networks in OrganoidTracker are all convolutional neural networks. This means first of all that they are not scale invariant. The best results are achieved when the nuclei have the same volume (in pixels) as the nuclei in the training data. For the models trained on intestinal organoid data available <a class="reference external" href="https://zenodo.org/records/13946119">on zenodo</a>, this means that nuclei should be around 25x25x4 (xyz) pixels. This match should be rather exact, within a 80% to 120% range. Scaling the data is easily achieved in for instance imageJ. Downscaling in Z can often introduce weird effects if not done by an integer factor, so try to avoid that.</p>
 </section>
 <section id="removing-your-background">
 <h2>Removing your background<a class="headerlink" href="#removing-your-background" title="Permalink to this heading"></a></h2>

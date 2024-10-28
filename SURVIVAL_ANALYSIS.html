@@ -89,16 +89,16 @@
   <section id="calibrate-marginalization">
 <h1>Calibrate Marginalization<a class="headerlink" href="#calibrate-marginalization" title="Permalink to this heading"></a></h1>
 <p><a class="reference internal" href="index.html"><span class="doc std std-doc">← Back to main page</span></a></p>
-<p>This allows you to replicate the analysis from our most recent paper [link]. It allows you to extract lineage dynamics from uncorrected but filtered data in a statistically rigorous manner using survival analysis.</p>
+<p>This allows you to replicate the analysis from our most recent paper (<a class="reference external" href="https://doi.org/10.1101/2024.10.11.617799">pre-print</a>). It allows you to extract lineage dynamics from uncorrected but filtered data in a statistically rigorous manner using survival analysis.</p>
 <section id="step-1-detect-missed-divisions">
 <h2>Step 1: Detect missed divisions<a class="headerlink" href="#step-1-detect-missed-divisions" title="Permalink to this heading"></a></h2>
 <p>In survival analysis it is key that the chance of the event under study (in our case cell divisions) is independent from the chance of being lost to follow-up. During cell tracking cells are often lost just before division which violates this condition. To break the relationship between cell division and being lost, we need to look a the end of every track fragment and evaluate if it was in the process of dividing.</p>
 <p>We do this with a neural network that detects if the cell is in the division process, defined as three frames before and after the moment of chromosome separation. This network can be trained the same as the normal division detection network by setting <code class="docutils literal notranslate"><span class="pre">full_window</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> in the <code class="docutils literal notranslate"><span class="pre">organoidtracker.ini</span></code>file.</p>
-<p>The first step is thus to run the full window division network on the filtered data.</p>
+<p>The first step is thus to run the full window division network on the filtered data. A pre-trained network trained on organoid data is available here.</p>
 </section>
 <section id="step-2-run-analysis-in-gui">
 <h2>Step 2: Run analysis in GUI<a class="headerlink" href="#step-2-run-analysis-in-gui" title="Permalink to this heading"></a></h2>
-<p>You can now make the survival curves using use <code class="docutils literal notranslate"><span class="pre">Tools</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Cell</span> <span class="pre">cycle</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Survival</span> <span class="pre">curves</span> <span class="pre">...</span></code>. If are in the <code class="docutils literal notranslate"><span class="pre">all_experiments</span></code> tab it will automatically make curves for all organoids.</p>
+<p>You can now make the survival curves using use <code class="docutils literal notranslate"><span class="pre">Tools</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Cell</span> <span class="pre">cycle</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Survival</span> <span class="pre">curves</span> <span class="pre">...</span></code>. If you are in the <code class="docutils literal notranslate"><span class="pre">all_experiments</span></code> tab it will automatically make curves for all organoids.</p>
 </section>
 <section id="step-3-export-data">
 <h2>Step 3: Export data<a class="headerlink" href="#step-3-export-data" title="Permalink to this heading"></a></h2>
