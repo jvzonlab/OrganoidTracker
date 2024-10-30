@@ -19,5 +19,9 @@ def activate():
     from keras.src import api_export
     api_export.REGISTERED_NAMES_TO_OBJS["keras.models.functional.Functional"] = keras.src.models.functional.Functional
     api_export.REGISTERED_NAMES_TO_OBJS["keras.ops.numpy.Concatenate"] = keras.src.ops.numpy.Concatenate
+    api_export.REGISTERED_NAMES_TO_OBJS["keras.ops.numpy.Flip"] = keras.src.ops.numpy.Flip
+    api_export.REGISTERED_NAMES_TO_OBJS["keras.ops.numpy.GetItem"] = keras.src.ops.numpy.GetItem
+    api_export.REGISTERED_NAMES_TO_OBJS["keras.ops.numpy.Stack"] = keras.src.ops.numpy.Stack
+    api_export.REGISTERED_NAMES_TO_OBJS["keras.ops.numpy.Absolute"] = keras.src.ops.numpy.Absolute
     api_export.REGISTERED_NAMES_TO_OBJS["keras.ops.nn.Conv"] = keras.src.ops.nn.Conv
     api_export.REGISTERED_NAMES_TO_OBJS["keras.backend.torch.optimizers.torch_adam.Adam"] = keras.src.optimizers.Adam
