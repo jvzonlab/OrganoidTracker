@@ -103,7 +103,7 @@ history = model.fit(training_dataset,
                     callbacks=[
                         keras.callbacks.CSVLogger(os.path.join(logging_folder, "logging.csv"), separator=",",
                                                   append=False),
-                        keras.callbacks.EarlyStopping(patience=1, min_delta=0.001, restore_best_weights=True)])
+                        keras.callbacks.EarlyStopping(patience=2, restore_best_weights=True)])
 
 print("Saving model...")
 os.makedirs(trained_model_folder, exist_ok=True)
@@ -191,26 +191,26 @@ for sample in quick_dataset:
     if ((ground_truth_linked * score) < 0) and (correct_examples < 20):
         tifffile.imwrite(os.path.join(link_examples_folder,
                                       "CORRECT_example_input" + str(i) + '_score_' +
-                                      "{:.2f}".format(float(score)) + ".ome.tiff"), image, imagej=True,
+                                      "{:.2f}".format(float(score)) + ".tiff"), image,
                          metadata={'axes': 'TZYX'})
         tifffile.imwrite(os.path.join(link_examples_folder,
                                       "CORRECT_example_target_input" + str(i) + '_score_' +
-                                      "{:.2f}".format(float(score)) + ".ome.tiff"), target_image, imagej=True,
+                                      "{:.2f}".format(float(score)) + ".tiff"), target_image,
                          metadata={'axes': 'TZYX'})
         correct_examples = correct_examples + 1
 
     if ((ground_truth_linked * score) > 0) and (incorrect_examples < 20):
         tifffile.imwrite(os.path.join(link_examples_folder,
                                       "INCORRECT_example_input" + str(i) + '_score_' +
-                                      "{:.2f}".format(float(score)) + ".ome.tiff"), image, imagej=True,
+                                      "{:.2f}".format(float(score)) + ".tiff"), image,
                          metadata={'axes': 'TZYX'})
         distance = keras.ops.convert_to_numpy(input_element[2])[0, :]
         tifffile.imwrite(os.path.join(link_examples_folder,
                                       "INCORRECT_example_target_input" + str(i) + '_score_' +
                                       "{:.2f}".format(float(score))
                                       + '_x_' + "{:.2f}".format(float(distance[1]))
-                                      + '_y_' + "{:.2f}".format(float(distance[2])) + ".ome.tiff"),
-                         target_image, imagej=True, metadata={'axes': 'TZYX'})
+                                      + '_y_' + "{:.2f}".format(float(distance[2])) + ".tiff"),
+                         target_image, metadata={'axes': 'TZYX'})
         incorrect_examples = incorrect_examples + 1
     if (incorrect_examples == 10) and (correct_examples == 10):
         break

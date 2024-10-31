@@ -28,6 +28,7 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
         "Tools//Use-Detect dividing cells...": lambda: _generate_division_detection_config(window),
         "Tools//Use-Detect link likelihoods...": lambda: _generate_link_detection_config(window),
         "Tools//Use-Create tracks...": lambda: _generate_tracks_config(window),
+         #"Tools//All-Perform all tracking steps...": lambda : _generate_all_steps_config(window), # Not tested on this branch
         "Tools//Error rates-Find scaling temperature": lambda: _generate_calibrate_marginalization_config(window),
         "Tools//Error rates-Compute marginalized error rates": lambda: _generate_marginalization_config(window)
     }
@@ -175,12 +176,11 @@ def _generate_position_detection_config(window: Window):
     config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
     config.get_or_default("model_folder", model_folder)
     config.get_or_default("predictions_output_folder", "Nucleus center predictions")
-
-    config.get_or_default("patch_shape_y", str(232))
-    config.get_or_default("patch_shape_x", str(232))
+    config.get_or_default("patch_shape_y", str(320))
+    config.get_or_default("patch_shape_x", str(320))
     config.get_or_default("buffer_z", str(1))
-    config.get_or_default("buffer_y", str(12))
-    config.get_or_default("buffer_x", str(12))
+    config.get_or_default("buffer_y", str(32))
+    config.get_or_default("buffer_x", str(32))
     config.get_or_default("images_channels", str(window.display_settings.image_channel.index_one))
 
     config.save()
@@ -462,6 +462,96 @@ def _generate_marginalization_config(window: Window):
     config.save()
     _create_run_script(save_directory, "organoid_tracker_marginalization")
     _popup_confirmation(save_directory, "organoid_tracker_marginalization")
+
+
+def _generate_all_steps_config(window: Window):
+    """For applying an already trained network on new images."""
+    experiments = list(window.get_active_experiments())
+    for experiment in experiments:
+        image_loader = experiment.images.image_loader()
+        if not image_loader.has_images():
+            raise UserError("No images", f"No images were loaded in the experiment \"{experiment.name}\","
+                                         f" so no cells can be detected. Please load some images first.")
+        experiment.images.resolution()  # Check for resolution
+
+    if not dialog.popup_message_cancellable("Out folder",
+                                            "Select an output folder."):
+        return
+    save_directory = dialog.prompt_save_file("Output directory", [("Folder", "*")])
+    if save_directory is None:
+        return
+
+    model_directory = _get_model_folder("positions")
+    if model_directory is None:
+        return
+
+    tracking_files_folder = os.path.join(save_directory, "Input files")
+    os.makedirs(tracking_files_folder, exist_ok=True)
+    list_io.save_experiment_list_file(experiments, os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
+                                      tracking_files_folder=tracking_files_folder)
+
+    config = ConfigFile("predict_positions", folder_name=save_directory)
+
+    _pixel_size_x_um = config.get_or_default("pixel_size_x_um", "",
+                                             comment="Resolution of the images. Only used if the image files and"
+                                                     " tracking files don't provide a resolution.",
+                                             store_in_defaults=True)
+    _pixel_size_y_um = config.get_or_default("pixel_size_y_um", "", store_in_defaults=True)
+    _pixel_size_z_um = config.get_or_default("pixel_size_z_um", "", store_in_defaults=True)
+    _time_point_duration_m = config.get_or_default("time_point_duration_m", "", store_in_defaults=True)
+
+    config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
+    config.get_or_default("model_folder", model_directory)
+    config.get_or_default("predictions_output_folder", "Nuclear center predictions")
+    config.get_or_default("patch_shape_y", str(320))
+    config.get_or_default("patch_shape_x", str(320))
+    config.get_or_default("buffer_z", str(1))
+    config.get_or_default("buffer_y", str(32))
+    config.get_or_default("buffer_x", str(32))
+    config.get_or_default("positions_output_file", "Automatic positions.aut",
+                                         comment="Output file for the positions, can be viewed using the visualizer program.")
+
+    config.save()
+    _create_run_script(save_directory, "organoid_tracker_predict_positions")
+
+    model_directory = _get_model_folder("divisions")
+    if model_directory is None:
+        return
+
+    config = ConfigFile("predict_divisions", folder_name=save_directory)
+    config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
+    config.get_or_default("checkpoint_folder", model_directory)
+    config.get_or_default("positions_output_file", "Automatic divisions.aut",
+                                         comment="Output file for the positions, can be viewed using the visualizer program.")
+    config.save()
+    _create_run_script(save_directory, "organoid_tracker_predict_divisions")
+
+    model_directory = _get_model_folder("links")
+    if model_directory is None:
+        return
+
+    config = ConfigFile("predict_links", folder_name=save_directory)
+    config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
+    config.get_or_default("checkpoint_folder", model_directory)
+    config.get_or_default("positions_output_file", "Automatic links.aut",
+                          comment="Output file for the positions, can be viewed using the visualizer program.")
+    config.save()
+    _create_run_script(save_directory, "organoid_tracker_predict_links")
+
+    config = ConfigFile("create_tracks", folder_name=save_directory)
+    config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
+    config.get_or_default("output_file", "_Automatic links.aut")
+    config.save()
+    _create_run_script(save_directory, "organoid_tracker_create_links")
+
+    config = ConfigFile("marginalisation", folder_name=save_directory)
+    config.get_or_default("solution_links_file", "clean_Automatic links.aut")
+    config.get_or_default("all_links_file", "all_links_clean_Automatic links.aut")
+
+    _create_run_script(save_directory, "organoid_tracker_marginalization")
+
+    config.save()
+    _popup_confirmation(save_directory, "executable")
 
 
 def _get_model_folder(model_type: str) -> Optional[str]:

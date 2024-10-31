@@ -42,6 +42,7 @@ config.save()
 # END OF PARAMETERS
 
 # set relevant parameters
+_model_folder = os.path.abspath(_model_folder)
 with open(os.path.join(_model_folder, "settings.json")) as file_handle:
     json_contents = json.load(file_handle)
     if json_contents["type"] != "divisions":

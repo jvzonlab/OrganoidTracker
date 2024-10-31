@@ -218,6 +218,15 @@ class Links:
             self._tracks = links._tracks
             self._position_to_track = links._position_to_track
 
+    def add_track(self, track: LinkingTrack):
+        """Adds a track to the linking network. This is useful if you have a track that is not linked to the rest of the
+        network yet."""
+        if len(track._previous_tracks) > 0 or len(track._next_tracks) > 0:
+            raise ValueError("Track is already linked to other tracks")
+        self._tracks.append(track)
+        for position in track.positions():
+            self._position_to_track[position] = track
+
     def remove_all_links(self):
         """Removes all links in the experiment."""
         for track in self._tracks:  # Help the garbage collector by removing all the cyclic dependencies

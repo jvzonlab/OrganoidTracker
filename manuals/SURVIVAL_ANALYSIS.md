@@ -1,7 +1,7 @@
 # Calibrate Marginalization
 [← Back to main page](index.md)
 
-This allows you to replicate the analysis from our most recent paper [link]. It allows you to extract lineage dynamics from uncorrected but filtered data in a statistically rigorous manner using survival analysis.
+This allows you to replicate the analysis from our most recent paper ([pre-print](https://doi.org/10.1101/2024.10.11.617799)). It allows you to extract lineage dynamics from uncorrected but filtered data in a statistically rigorous manner using survival analysis.
 
 
 Step 1: Detect missed divisions
@@ -10,12 +10,12 @@ In survival analysis it is key that the chance of the event under study (in our 
 
 We do this with a neural network that detects if the cell is in the division process, defined as three frames before and after the moment of chromosome separation. This network can be trained the same as the normal division detection network by setting `full_window` to `True` in the `organoidtracker.ini`file. 
 
-The first step is thus to run the full window division network on the filtered data.
+The first step is thus to run the full window division network on the filtered data. A pre-trained network trained on organoid data is available here.
 
 
 Step 2: Run analysis in GUI
 -----------------------------------
-You can now make the survival curves using use `Tools` -> `Cell cycle` -> `Survival curves ...`. If are in the `all_experiments` tab it will automatically make curves for all organoids.
+You can now make the survival curves using use `Tools` -> `Cell cycle` -> `Survival curves ...`. If you are in the `all_experiments` tab it will automatically make curves for all organoids.
 
 Step 3: Export data
 -----------------------------------

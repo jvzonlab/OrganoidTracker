@@ -5,7 +5,7 @@ Welcome to the OrganoidTracker manual! This manual will tell you how to do manua
 Tutorials
 ---------
 * [Tutorial for manual tracking and error correction](MANUAL_TRACKING.md)
-* [Tutorial for semi-automated tracking](AUTOMATIC_TRACKING.md)
+* [Tutorial for (semi-)automated tracking](AUTOMATIC_TRACKING.md)
 * [Tutorial for writing a plugin for OrganoidTracker](PLUGIN_TUTORIAL.md)
 * [Tutorial for training a neural network](TRAINING_THE_NETWORK.md)
 * [Tutorial for using the segmentation editor](SEGMENTATION_EDITOR.md)

@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import LinkingTrack
 from organoid_tracker.core.typing import MPLColor
@@ -14,10 +16,8 @@ def color_error_rates(time_point_number: int, track: LinkingTrack, experiment: E
     position = track.find_position_at_time_point_number(time_point_number)
 
     # create window around position
-    prev_positions = experiment.links.iterate_to_past(position)
-    future_positions = experiment.links.iterate_to_future(position)
-    prev_positions = list(prev_positions)[1:3]
-    future_positions = list(future_positions)[1:3]
+    prev_positions = _grab(experiment.links.iterate_to_past(position), start=1, stop=3)
+    future_positions = _grab(experiment.links.iterate_to_future(position), start=1, stop=3)
 
     # iterate to find marginals
     marginals = []
@@ -51,6 +51,17 @@ def color_error_rates(time_point_number: int, track: LinkingTrack, experiment: E
         return 1, 1, 1
 
     return _COLORMAP((intensity) / 3.0)
+
+
+def _grab(iterable: Iterable, start: int, stop: int) -> Iterable:
+    """Grab a slice of an iterable. Like list(iterable)[min_index:max_index] but more efficient, as it doesn't need to
+    unroll the entire iterable and store it in a list."""
+    for i, item in enumerate(iterable):
+        if i < start:
+            continue
+        if i >= stop:
+            break
+        yield item
 
 
 def compute_lineage_error_probability(track: LinkingTrack, experiment: Experiment):

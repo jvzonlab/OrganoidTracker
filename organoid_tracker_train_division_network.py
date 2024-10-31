@@ -170,16 +170,14 @@ for i, element in enumerate(quick_dataset):
     if ((ground_truth_dividing * score) < 0) and (correct_examples < 10):
         tifffile.imwrite(os.path.join(divisions_example_folder,
                                       "CORRECT_example_input" + str(i) + '_score_' +
-                                      "{:.2f}".format(float(score)) + ".ome.tiff"), image, imagej=True,
-                         metadata={'axes': 'TZYX'})
+                                      "{:.2f}".format(float(score)) + ".tiff"), image)
 
         correct_examples = correct_examples + 1
 
     if ((ground_truth_dividing * score) > 0) and (incorrect_examples < 10):
         tifffile.imwrite(os.path.join(divisions_example_folder,
                                       "INCORRECT_example_input" + str(i) + '_score_' +
-                                      "{:.2f}".format(float(score)) + ".ome.tiff"), image, imagej=True,
-                         metadata={'axes': 'TZYX'})
+                                      "{:.2f}".format(float(score)) + ".tiff"), image)
 
         incorrect_examples = incorrect_examples + 1
 

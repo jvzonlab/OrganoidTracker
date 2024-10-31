@@ -85,7 +85,10 @@ def load_tracking_data(window: Window):
         return  # Cancelled
 
     # Replace the existing experiment with one with the same images, but the new data
+    import time
+    start = time.time()
     new_experiment = io.load_data_file(file_name)
+    print("Loading took", time.time() - start, "seconds")
     new_experiment.images.use_image_loader_from(window.get_experiment().images)
     window.get_gui_experiment().replace_selected_experiment(new_experiment)
 

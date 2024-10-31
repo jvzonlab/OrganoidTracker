@@ -1,5 +1,8 @@
 """Predicts cell positions using an already-trained convolutional neural network."""
 import _keras_environment
+from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.image_loading import general_image_loader
+
 _keras_environment.activate()
 
 import json
@@ -30,14 +33,40 @@ config = ConfigFile("predict_positions")
 _dataset_file = config.get_or_prompt("dataset_file", "Please paste the path here to the dataset file."
                                      " You can generate such a file from OrganoidTracker using File -> Tabs -> "
                                      " all tabs.", store_in_defaults=True)
-_patch_shape_y = config.get_or_default("patch_shape_y", str(232), type=config_type_int, comment="Maximum patch size to use for predictions."
+
+if _dataset_file != '':
+    experiment_list = list_io.load_experiment_list_file(_dataset_file)
+else:
+    # if not _dataset_file is defined, we look in the defaults for an images folder to construct a single experiment
+    _images_folder = config.get_or_prompt("images_container",
+                                          "If you have a folder of image files, please paste the folder"
+                                          " path here. Else, if you have a LIF file, please paste the path to that file"
+                                          " here.", store_in_defaults=True)
+    _images_format = config.get_or_prompt("images_pattern",
+                                          "What are the image file names? (Use {time:03} for three digits"
+                                          " representing the time point, use {channel} for the channel)",
+                                          store_in_defaults=True)
+
+    _output_file = config.get_or_default("positions_output_file", "Automatic positions.aut",
+                                         comment="Output file for the positions, can be viewed using the visualizer program.")
+
+    _min_time_point = int(config.get_or_default("min_time_point", str(1), store_in_defaults=True))
+    _max_time_point = int(config.get_or_default("max_time_point", str(9999), store_in_defaults=True))
+
+    experiment_list = Experiment()
+    general_image_loader.load_images(experiment_list, _images_folder, _images_format,
+                                     min_time_point=_min_time_point, max_time_point=_max_time_point)
+
+    experiment_list = [experiment_list]
+
+_patch_shape_y = config.get_or_default("patch_shape_y", str(320), type=config_type_int, comment="Maximum patch size to use for predictions."
                                        " Make this smaller if you run out of video card memory.")
-_patch_shape_x = config.get_or_default("patch_shape_x", str(232), type=config_type_int)
+_patch_shape_x = config.get_or_default("patch_shape_x", str(320), type=config_type_int)
 
 _buffer_z = config.get_or_default("buffer_z", str(1), comment="Buffer space to use when stitching multiple patches"
                                                               " together", type=config_type_int)
-_buffer_y = config.get_or_default("buffer_y", str(12), type=config_type_int, comment="buffer_y * 2 + patch_shape_y needs to be a multiple of 32")
-_buffer_x = config.get_or_default("buffer_x", str(12), type=config_type_int, comment="Same for buffer_x")
+_buffer_y = config.get_or_default("buffer_y", str(32), type=config_type_int, comment="buffer_y * 2 + patch_shape_y needs to be a multiple of 32")
+_buffer_x = config.get_or_default("buffer_x", str(32), type=config_type_int, comment="Same for buffer_x")
 
 _model_folder = config.get_or_prompt("model_folder", "Please paste the path here to the \"trained_model\" folder containing the trained model.")
 _output_folder = config.get_or_default("positions_output_folder", "Automatic positions", comment="Output folder for the positions, can be viewed using the visualizer program.")
@@ -45,7 +74,7 @@ _channels_str = config.get_or_default("images_channels", str(1), comment="Index(
 _images_channels = {int(part) for part in _channels_str.split(",")}
 _mid_layers = int(config.get_or_default("mid_layers", str(5), comment="Number of layers to interpolate in between"
                                                                       " z-planes. Used to improve peak finding."))
-_peak_min_distance_px = int(config.get_or_default("peak_min_distance_px", str(9), comment="Minimum distance in pixels"
+_peak_min_distance_px = int(config.get_or_default("peak_min_distance_px", str(6), comment="Minimum distance in pixels"
                                                                                           " between detected positions."))
 _threshold = float(config.get_or_default("threshold", str(0.1), comment="Minimum peak intensity, relative to the maximum in the time point"))
 
@@ -58,6 +87,7 @@ config.save()
 
 # Load models
 print("Loading model...")
+_model_folder = os.path.abspath(_model_folder)
 model = keras.saving.load_model(os.path.join(_model_folder, "model.keras"),
                                 custom_objects={"loss": loss,
                                                 "position_precision": position_precision,
@@ -78,11 +108,13 @@ with open(os.path.join(_model_folder, "settings.json")) as file_handle:
 # Make folders
 if _debug_folder is not None:
     os.makedirs(_debug_folder, exist_ok=True)
-os.makedirs(_output_folder, exist_ok=True)
+
+if _dataset_file != '':
+    os.makedirs(_output_folder, exist_ok=True)
 
 # Loop through experiments
 experiments_to_save = list()
-for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(_dataset_file)):
+for experiment_index, experiment in enumerate(experiment_list):
     # Check if images were loaded
     if not experiment.images.image_loader().has_images():
         print(f"No images were found for experiment \"{experiment.name}\". Please check the configuration file and make"
@@ -195,17 +227,21 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
 
     experiment.positions.add_positions(all_positions)
 
+
+
     print("Saving file...")
-    output_file = os.path.join(_output_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}."
-                               + io.FILE_EXTENSION)
-    io.save_data_to_json(experiment, output_file)
+    if _dataset_file != '':
+        output_file = os.path.join(_output_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}."
+                                   + io.FILE_EXTENSION)
+        io.save_data_to_json(experiment, output_file)
+        # Collect for writing AUTLIST file
+        experiment.images.image_loader(original_image_loader)  # Restore original
+        experiment.last_save_file = output_file
+        experiments_to_save.append(experiment)
 
-    # Collect for writing AUTLIST file
-    experiment.images.image_loader(original_image_loader)  # Restore original
-    experiment.last_save_file = output_file
-    experiments_to_save.append(experiment)
+        list_io.save_experiment_list_file(experiments_to_save,
+                                      os.path.join(_output_folder, "_All" + list_io.FILES_LIST_EXTENSION))
+    else:
+        io.save_data_to_json(experiment, _output_file)
 
-
-list_io.save_experiment_list_file(experiments_to_save,
-                                  os.path.join(_output_folder, "_All" + list_io.FILES_LIST_EXTENSION))
 print("Done!")

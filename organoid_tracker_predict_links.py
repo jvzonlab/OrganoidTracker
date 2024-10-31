@@ -34,6 +34,7 @@ config.save()
 
 
 # set relevant parameters
+_model_folder = os.path.abspath(_model_folder)
 if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
     print("Error: no settings.json found in model folder.")
     exit(1)
@@ -56,9 +57,6 @@ with open(os.path.join(_model_folder, "settings.json")) as file_handle:
 # load models
 print("Loading model...")
 model = keras.saving.load_model(os.path.join(_model_folder, "model.keras"))
-if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
-    print("Error: no settings.json found in model folder.")
-    exit(1)
 
 # Create output folder
 os.makedirs(_output_folder, exist_ok=True)
