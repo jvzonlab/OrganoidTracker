@@ -15,7 +15,7 @@ from organoid_tracker.core.image_filters import ImageFilters
 from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.core.images import ImageOffsets
 from organoid_tracker.core.link_data import LinkData
-from organoid_tracker.core.links import Links
+from organoid_tracker.core.links import Links, LinkingTrack
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position_data import PositionData
@@ -33,13 +33,14 @@ SUPPORTED_IMPORT_FILES = [
     ("Cell tracking challenge files", "*.txt"),
     ("TrackMate file", "*.xml"),
     ("Guizela's tracking files", "track_00000.p")]
+WRITE_NEW_FORMAT = False  # Default value for the saving function. Reading always supports both formats.
 
 
 def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: str,
                                         min_time_point: int = 0, max_time_point: int = 5000):
     """Loads a JSON file that contains position positions, with or without shape information."""
     time_points = _read_json_from_file(json_file_name)
-    _parse_position_format(experiment, time_points, min_time_point, max_time_point)
+    _parse_simple_position_format(experiment, time_points, min_time_point, max_time_point)
 
 
 def _load_guizela_data_file(experiment: Experiment, file_name: str, min_time_point: int, max_time_point: int):
@@ -86,7 +87,7 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
 def _parse_timings(data: Dict[str, Any], min_time_point: int, max_time_point: int):
     min_time_point_number = data["min_time_point"]
     timings = data["timings_m"]
-    return ImageTimings(min_time_point_number, numpy.array(timings, dtype=numpy.float64))\
+    return ImageTimings(min_time_point_number, numpy.array(timings, dtype=numpy.float64)) \
         .limit_to_time(min_time_point, max_time_point)
 
 
@@ -94,32 +95,44 @@ def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point:
     """Loads any kind of JSON file."""
     data = _read_json_from_file(file_name)
 
+    # Let the experiment overwrite this file upon the next save
+    experiment.last_save_file = file_name
+
     if "version" not in data and "family_scores" not in data:
         # We don't have a general data file, but a specialized one
         if "directed" in data:
             # File is a linking result file
-            _parse_links_format(experiment, data, min_time_point, max_time_point)
+            _parse_d3_links_format(experiment, data, min_time_point, max_time_point)
         else:  # file is a position/shape file
-            _parse_position_format(experiment, data, min_time_point, max_time_point)
+            _parse_simple_position_format(experiment, data, min_time_point, max_time_point)
         return experiment
 
-    if data.get("version", "v1") != "v1":
-        raise ValueError("Unknown data version", "This program is not able to load data of version "
-                         + str(data["version"]) + ".")
+    version = data.get("version", "v1")
 
-    # We have a valid data file
-    # Let the experiment overwrite this file upon the next save
-    experiment.last_save_file = file_name
+    if version == "v1":
+        _load_json_data_file_v1(experiment, data, min_time_point, max_time_point)
+        return
+
+    if version == "v2":
+        _load_json_data_file_v2(experiment, data, min_time_point, max_time_point)
+        return
+
+    raise ValueError("Unknown data version",
+                     f"The version of this program is not able to load data of version {version}.")
+
+
+def _load_json_data_file_v2(experiment: Experiment, data: Dict[str, Any], min_time_point: int, max_time_point: int):
+    """Loads any kind of JSON file."""
 
     if "name" in data:
         is_automatic = bool(data.get("name_is_automatic"))
         experiment.name.set_name(data["name"], is_automatic=is_automatic)
 
-    if "shapes" in data:
-        # Deprecated, nowadays stored in "positions"
-        _parse_position_format(experiment, data["shapes"], min_time_point, max_time_point)
-    elif "positions" in data:
-        _parse_position_format(experiment, data["positions"], min_time_point, max_time_point)
+    if "positions" in data:
+        _parse_positions_and_meta_format(experiment, data["positions"], min_time_point, max_time_point)
+
+    if "tracks" in data:
+        _parse_tracks_and_meta_format(experiment, data["tracks"], min_time_point, max_time_point)
 
     if "data_axes" in data:
         _parse_splines_format(experiment, data["data_axes"], min_time_point, max_time_point)
@@ -135,13 +148,6 @@ def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point:
 
     if "warning_limits" in data:
         experiment.warning_limits = WarningLimits(**data["warning_limits"])
-
-    if "links" in data:
-        _parse_links_format(experiment, data["links"], min_time_point, max_time_point)
-    elif "links_scratch" in data:  # Deprecated, was used back when experiments could hold multiple linking sets
-        _parse_links_format(experiment, data["links_scratch"], min_time_point, max_time_point)
-    elif "links_baseline" in data:  # Deprecated, was used back when experiments could hold multiple linking sets
-        _parse_links_format(experiment, data["links_baseline"], min_time_point, max_time_point)
 
     if "image_resolution" in data:
         x_res = data["image_resolution"]["x_um"]
@@ -167,8 +173,67 @@ def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point:
         experiment.global_data = GlobalData(data["other_data"])
 
 
-def _parse_position_format(experiment: Experiment, json_structure: Dict[str, List], min_time_point: int,
-                           max_time_point: int):
+def _load_json_data_file_v1(experiment: Experiment, data: Dict[str, Any], min_time_point: int, max_time_point: int):
+    """Loads any kind of JSON file."""
+
+    if "name" in data:
+        is_automatic = bool(data.get("name_is_automatic"))
+        experiment.name.set_name(data["name"], is_automatic=is_automatic)
+
+    if "shapes" in data:
+        # Deprecated, nowadays stored in "positions"
+        _parse_simple_position_format(experiment, data["shapes"], min_time_point, max_time_point)
+    elif "positions" in data:
+        _parse_simple_position_format(experiment, data["positions"], min_time_point, max_time_point)
+
+    if "data_axes" in data:
+        _parse_splines_format(experiment, data["data_axes"], min_time_point, max_time_point)
+
+    if "data_axes_meta" in data:
+        _parse_splines_meta_format(experiment, data["data_axes_meta"])
+
+    if "beacons" in data:
+        _parse_beacons_format(experiment, data["beacons"], min_time_point, max_time_point)
+
+    if "connections" in data:
+        _parse_connections_format(experiment, data["connections"], min_time_point, max_time_point)
+
+    if "warning_limits" in data:
+        experiment.warning_limits = WarningLimits(**data["warning_limits"])
+
+    if "links" in data:
+        _parse_d3_links_format(experiment, data["links"], min_time_point, max_time_point)
+    elif "links_scratch" in data:  # Deprecated, was used back when experiments could hold multiple linking sets
+        _parse_d3_links_format(experiment, data["links_scratch"], min_time_point, max_time_point)
+    elif "links_baseline" in data:  # Deprecated, was used back when experiments could hold multiple linking sets
+        _parse_d3_links_format(experiment, data["links_baseline"], min_time_point, max_time_point)
+
+    if "image_resolution" in data:
+        x_res = data["image_resolution"]["x_um"]
+        y_res = data["image_resolution"]["y_um"]
+        z_res = data["image_resolution"]["z_um"]
+        t_res = data["image_resolution"]["t_m"]
+        experiment.images.set_resolution(ImageResolution(x_res, y_res, z_res, t_res))
+
+    if "image_offsets" in data:
+        experiment.images.offsets = ImageOffsets([_parse_position(entry) for entry in data["image_offsets"]])
+
+    if "image_filters" in data:
+        experiment.images.filters = _parse_image_filters(data["image_filters"])
+
+    if "image_timings" in data:
+        experiment.images.set_timings(_parse_timings(data["image_timings"], min_time_point, max_time_point))
+
+    if "color" in data:
+        color = data["color"]
+        experiment.color = Color.from_rgb_floats(color[0], color[1], color[2])
+
+    if "other_data" in data:
+        experiment.global_data = GlobalData(data["other_data"])
+
+
+def _parse_simple_position_format(experiment: Experiment, json_structure: Dict[str, List], min_time_point: int,
+                                  max_time_point: int):
     positions = experiment.positions
 
     for time_point_number, raw_positions in json_structure.items():
@@ -181,7 +246,8 @@ def _parse_position_format(experiment: Experiment, json_structure: Dict[str, Lis
             positions.add(position)
 
 
-def _parse_links_format(experiment: Experiment, links_json: Dict[str, Any], min_time_point: int, max_time_point: int):
+def _parse_d3_links_format(experiment: Experiment, links_json: Dict[str, Any], min_time_point: int,
+                           max_time_point: int):
     """Parses a node_link_graph and adds all links and positions to the experiment."""
     links = experiment.links
     position_data = experiment.position_data
@@ -190,6 +256,89 @@ def _parse_links_format(experiment: Experiment, links_json: Dict[str, Any], min_
     positions = experiment.positions
     for position in links.find_all_positions():
         positions.add(position)
+
+
+def _parse_positions_and_meta_format(experiment: Experiment, positions_json: List[Dict], min_time_point: int,
+                                     max_time_point: int):
+    positions = experiment.positions
+
+    for time_point_json in positions_json:
+        time_point_number = time_point_json["time_point"]
+        if time_point_number < min_time_point or time_point_number > max_time_point:
+            continue
+
+        has_meta = "position_meta" in time_point_json
+        positions_of_time_point = list() if has_meta else None
+        for raw_position in time_point_json["coords_xyz_px"]:
+            position = Position(*raw_position, time_point_number=time_point_number)
+            positions.add(position)
+            if positions_of_time_point is not None:
+                positions_of_time_point.append(position)
+
+        for metadata_key, metadata_values in time_point_json.get("position_meta", {}).items():
+            for i, value in enumerate(metadata_values):
+                if value is None:
+                    continue
+                position = positions_of_time_point[i]
+                experiment.position_data.set_position_data(position, metadata_key, value)
+
+
+def _parse_tracks_and_meta_format(experiment: Experiment, tracks_json: List[Dict], min_time_point: int,
+                                  max_time_point: int):
+    links = experiment.links
+    link_data = experiment.link_data
+
+    # Iterate a first time to add the tracks
+    for track_json in tracks_json:
+        time_point_number_start = track_json["time_point_start"]
+        time_point_number_end = time_point_number_start + len(track_json["coords_xyz_px"]) - 1
+        if time_point_number_end < min_time_point or time_point_number_start > max_time_point:
+            continue  # Can skip this track entirely
+
+        coords_xyz_px = track_json["coords_xyz_px"]
+        positions_of_track = list()
+        for i, raw_position in enumerate(coords_xyz_px):
+            time_point_number = time_point_number_start + i
+            if time_point_number < min_time_point or time_point_number > max_time_point:
+                continue
+            position_previous_track = Position(*raw_position, time_point_number=time_point_number_start + i)
+            positions_of_track.append(position_previous_track)
+        track = LinkingTrack(positions_of_track)
+        links.add_track(track)
+
+        # Handle link metadata
+        if "link_meta" in track_json:
+            for metadata_key, metadata_values in track_json["link_meta"].items():
+                for i, value in enumerate(metadata_values):
+                    if value is None:
+                        continue
+                    link_data.set_link_data(positions_of_track[i], positions_of_track[i + 1], metadata_key, value)
+
+        # Handle lineage metadata
+        if "lineage_meta" in track_json:
+            for metadata_key, metadata_value in track_json["lineage_meta"].items():
+                links.set_lineage_data(track, metadata_key, metadata_value)
+
+    # Iterate again to add connections to previous tracks
+    for track_json in tracks_json:
+        if "coords_xyz_px_before" not in track_json:
+            continue
+        time_point_number_start = track_json["time_point_start"]
+
+        position_first = Position(*track_json["coords_xyz_px"][0], time_point_number=time_point_number_start)
+        metadata = track_json.get("link_meta_before")
+        for i, raw_position in enumerate(track_json["coords_xyz_px_before"]):
+            # Connect the traks
+            position_previous_track = Position(*raw_position, time_point_number=time_point_number_start - 1)
+            links.add_link(position_previous_track, position_first)
+
+            # And add metadata for those links
+            if metadata is not None:
+                for metadata_key, metadata_values in metadata.items():
+                    value = metadata_values[i]
+                    if value is None:
+                        continue
+                    link_data.set_link_data(position_previous_track, position_first, metadata_key, value)
 
 
 def _parse_splines_format(experiment: Experiment, splines_data: List[Dict], min_time_point: int, max_time_point: int):
@@ -416,7 +565,7 @@ def _encode_beacons(beacons: BeaconCollection):
     return data_structure
 
 
-def _encode_positions_and_shapes(positions: PositionCollection, shapes: PositionData):
+def _encode_positions_in_old_format(positions: PositionCollection):
     data_structure = {}
     for time_point in positions.time_points():
         encoded_positions = []
@@ -514,26 +663,143 @@ def _encode_image_filters_to_json(filters: ImageFilters) -> Dict[str, Any]:
     return result_dict
 
 
-def save_data_to_json(experiment: Experiment, json_file_name: str):
+def _encode_positions_and_meta(positions: PositionCollection, position_data: PositionData) -> List[Dict]:
+    """Encodes positions and metadata to a JSON structure."""
+    time_points_json = list()
+    for time_point in positions.time_points():
+        metadata_lists = dict()
+        positions_of_time_point = list()
+        for position in positions.of_time_point(time_point):
+            # Add metadata to the metadata lists
+            for data_name, data_value in position_data.find_all_data_of_position(position):
+                # This data value was not yet found in this time point
+                # Set it to None for all previous positions
+                if data_name not in metadata_lists:
+                    metadata_lists[data_name] = [None] * len(positions_of_time_point)
+
+                metadata_lists[data_name].append(data_value)
+
+            # Make sure all metadata lists are the same length, so append None for missing values
+            for value_list in metadata_lists.values():
+                if len(value_list) < len(positions_of_time_point):
+                    value_list.append(None)
+
+            positions_of_time_point.append([position.x, position.y, position.z])
+        if len(positions_of_time_point) > 0:
+            time_point_json = {
+                "time_point": time_point.time_point_number(),
+                "coords_xyz_px": positions_of_time_point
+            }
+            if len(metadata_lists) > 0:
+                time_point_json["position_meta"] = metadata_lists
+            time_points_json.append(time_point_json)
+    return time_points_json
+
+
+def _encode_tracks_and_meta(links: Links, link_data: LinkData) -> List[Dict]:
+    tracks_json = list()
+    for track in links.find_all_tracks():
+        # Collect last positions of previous tracks, for connecting tracks
+        coords_xyz_px_before = list()
+        link_meta_before = dict()
+        first_position = track.find_first_position()
+        previous_tracks = track.get_previous_tracks()
+        for previous_track in previous_tracks:
+            last_position = previous_track.find_last_position()
+
+            # Add metadata to the metadata lists
+            for data_name, data_value in link_data.find_all_data_of_link(last_position, first_position):
+                # This data value was not yet found in the connections to the previous tracks
+                # Set it to None for all previous positions
+                if data_name not in link_meta_before:
+                    link_meta_before[data_name] = [None] * len(coords_xyz_px_before)
+                link_meta_before[data_name].append(data_value)
+
+            # Make sure all metadata lists are the same length, so append None for missing values
+            for value_list in link_meta_before.values():
+                if len(value_list) < len(coords_xyz_px_before):
+                    value_list.append(None)
+
+            coords_xyz_px_before.append([last_position.x, last_position.y, last_position.z])
+
+        # Collect positions of this track
+        coords_xyz_px = list()
+        # Note that the metadata lists are one shorter than the coords list, since link metadata exists between
+        # two positions
+        link_meta = dict()
+        previous_position = None
+        for position in track.positions():
+            if previous_position is not None:
+                # Add metadata in between current and previous position to the metadata lists
+                for data_name, data_value in link_data.find_all_data_of_link(previous_position, position):
+                    # This data value was not yet found in the connections to the previous tracks
+                    # Set it to None for all previous positions
+                    if data_name not in link_meta:
+                        link_meta[data_name] = [None] * (len(coords_xyz_px) - 1)
+                    link_meta[data_name].append(data_value)
+
+                # Make sure all metadata lists are the same length, so append None for missing values
+                for value_list in link_meta.values():
+                    if len(value_list) < len(coords_xyz_px) - 1:
+                        value_list.append(None)
+
+            coords_xyz_px.append([position.x, position.y, position.z])
+            previous_position = position
+
+        track_json = {
+            "time_point_start": track.first_time_point_number(),
+            "coords_xyz_px": coords_xyz_px
+        }
+        if len(link_meta) > 0:
+            track_json["link_meta"] = link_meta
+        if len(coords_xyz_px_before) > 0:
+            # Connections to previous tracks, so add connections and possibly metadata
+            track_json["coords_xyz_px_before"] = coords_xyz_px_before
+            if len(link_meta_before) > 0:
+                track_json["link_meta_before"] = link_meta_before
+        if len(previous_tracks) == 0 and len(track._lineage_data) > 0:
+            # Start of a lineage, so add lineage metadata
+            track_json["lineage_meta"] = track._lineage_data
+
+        tracks_json.append(track_json)
+    return tracks_json
+
+
+def save_data_to_json(experiment: Experiment, json_file_name: str, *, write_new_format: bool = WRITE_NEW_FORMAT):
     """Saves positions, shapes, scores and links to a JSON file. The file should end with the extension FILE_EXTENSION.
+
+    We can save in the old v1 or the newer v2 format, which stores the positions and tracks in a more efficient way.
+    See TRACKING_FORMATS.md in the manual for more information.
     """
     # Record where file has been saved to
     experiment.last_save_file = json_file_name
 
-    save_data = {"version": "v1"}
+    if write_new_format:
+        save_data = {"version": "v2"}
 
-    if experiment.positions.has_positions():
-        save_data["positions"] = _encode_positions_and_shapes(experiment.positions, experiment.position_data)
+        # Save positions
+        if experiment.positions.has_positions():
+            save_data["positions"] = _encode_positions_and_meta(experiment.positions, experiment.position_data)
+
+        # Save tracks
+        if experiment.links.has_links():
+            save_data["tracks"] = _encode_tracks_and_meta(experiment.links, experiment.link_data)
+    else:
+        save_data = {"version": "v1"}
+
+        # Save positions
+        if experiment.positions.has_positions():
+            save_data["positions"] = _encode_positions_in_old_format(experiment.positions)
+
+        # Save links
+        if experiment.links.has_links() or experiment.position_data.has_position_data():
+            save_data["links"] = _links_to_d3_data(experiment.links, experiment.positions, experiment.position_data,
+                                                   experiment.link_data)
 
     # Save name
     if experiment.name.has_name():
         save_data["name"] = str(experiment.name)
         save_data["name_is_automatic"] = experiment.name.is_automatic()
-
-    # Save links
-    if experiment.links.has_links() or experiment.position_data.has_position_data():
-        save_data["links"] = _links_to_d3_data(experiment.links, experiment.positions, experiment.position_data,
-                                               experiment.link_data)
 
     # Save data axes
     if experiment.splines.has_splines():
