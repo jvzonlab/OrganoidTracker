@@ -1,147 +1,512 @@
-from typing import Dict, Optional, ItemsView, Iterable, Tuple, Union, Set, Type
+import warnings
+from typing import Dict, AbstractSet, Optional, Iterable, Set, List, Any, Type, ItemsView, Tuple, Union
 
+from organoid_tracker.core import TimePoint, min_none, max_none
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.typing import DataType
 
 
-class PositionData:
-    _position_data: Dict[str, Dict[Position, DataType]]
+class _MetadataAtTimepoint:
+    """For every time point, we store for every position a list of the metadata values. These metadata values
+    correspond to the data names that are stored in the same time point (this object)."""
+
+    _positions: Dict[Position, List[Any]]  # Position -> metadata
+    _metadata_names: Dict[str, int]  # Metadata name -> index in metadata list in self._positions
+    _metadata_counts: Dict[str, int]  # Metadata name -> number of times it is used
 
     def __init__(self):
-        self._position_data = dict()
+        self._positions = dict()
+        self._metadata_names = dict()
+        self._metadata_counts = dict()
 
-    def merge_data(self, position_data: "PositionData"):
-        # Merge data
-        for data_name, values in position_data._position_data.items():
-            if data_name not in self._position_data:
-                self._position_data[data_name] = values
-            else:
-                self._position_data[data_name].update(values)
+    def copy(self, ) -> "_MetadataAtTimepoint":
+        """Gets a deep copy of this object. Changes to the returned object will not affect this object, and vice versa.
+        """
+        copy = _MetadataAtTimepoint()
+        for position, metadata in self._positions.items():
+            copy._positions[position] = metadata.copy()
+        copy._metadata_names = self._metadata_names.copy()
+        copy._metadata_counts = self._metadata_counts.copy()
+        return copy
 
-    def remove_position(self, position: Position):
-        """Removes all data for the given position."""
-        for data_set in self._position_data.values():
-            if position in data_set:
-                del data_set[position]
+    def _move_in_time(self, time_point_offset: int):
+        """Must only be called from PositionCollection, otherwise the indexing is wrong."""
+        new_dict = dict()
+        for position, metadata in self._positions.items():
+            new_dict[position.with_time_point_number(position.time_point_number() + time_point_offset)] = metadata
+        self._positions = new_dict
 
     def replace_position(self, old_position: Position, new_position: Position):
-        """Replaces one position with another, such that all data associated with the old position becomes associated
-         with tne nemw."""
-        for data_name, data_dict in self._position_data.items():
-            if old_position in data_dict:
-                old_value = data_dict[old_position]
-                del data_dict[old_position]
-                data_dict[new_position] = old_value
+        """Moves a position if it exists, keeping its metadata. Does nothing if the position is not in this collection.
+        Does not check whether both positions have the same time point."""
+        if new_position in self._positions:
+            raise ValueError("New position already exists")
+        if old_position == new_position:
+            return
+        old_data = self._positions.pop(old_position, None)
+        if old_data is not None:
+            self._positions[new_position] = old_data
+
+    def delete_data_with_name(self, data_name: str):
+        """Deletes the data with the given key, for all positions in the time point. Does nothing if the data name is
+        not found in this time point."""
+        index_of_data_name = self._metadata_names.get(data_name)
+        if index_of_data_name is None:
+            return  # Nothing to delete
+
+        # Remove the data name from the metadata names
+        for data in self._positions.values():
+            if index_of_data_name < len(data):
+                del data[index_of_data_name]
+
+        # Update the indices of metadata names
+        new_metadata_names = dict()
+        for name, index in self._metadata_names.items():
+            if index > index_of_data_name:
+                new_metadata_names[name] = index - 1
+            elif index == index_of_data_name:
+                # Skip this index, we're deleting it
+                continue
+            else:
+                new_metadata_names[name] = index
+        self._metadata_names = new_metadata_names
+
+        # Update the counts
+        del self._metadata_counts[data_name]
+
+    def find_all_positions_with_data(self, data_name: str) -> Iterable[Tuple[Position, DataType]]:
+        index = self._metadata_names.get(data_name)
+        if index is None:
+            return
+
+        for position, metadata in self._positions.items():
+            if index < len(metadata):
+                value = metadata[index]
+                if value is not None:
+                    yield position, value
+
+    def set_position_data_required(self, position: Position, data_name: str, value_required: DataType):
+        if value_required is None:
+            raise ValueError("Use delete_position_data_and_check_if_last to delete data")
+
+        # Get existing position data
+        data_of_position = self._positions.get(position)
+        if data_of_position is None:
+            data_of_position = []
+            self._positions[position] = data_of_position
+
+        # Look up where the data name is stored
+        data_index = self._metadata_names.get(data_name)
+        if data_index is None:
+            # Need to add the data name
+            data_index = len(self._metadata_names)
+            self._metadata_names[data_name] = data_index
+
+        # Modify the data list to insert the data value at the correct index
+        while len(data_of_position) <= data_index:
+            data_of_position.append(None)
+        if data_of_position[data_index] is None:
+            # New data value, increment count
+            self._metadata_counts[data_name] = self._metadata_counts.get(data_name, 0) + 1
+
+        data_of_position[data_index] = value_required
+
+    def delete_position_data_and_check_if_last(self, position: Position, data_name: str) -> bool:
+        # Look up where the data name is stored
+        index_of_data_name = self._metadata_names.get(data_name)
+        if index_of_data_name is None:
+            return False  # Nothing to delete
+
+        # Get existing position data
+        data_of_position = self._positions.get(position)
+        if data_of_position is None:
+            return False  # Nothing to delete
+
+        # Delete the metadata value if it exists
+        if index_of_data_name >= len(data_of_position):
+            return False  # Nothing to delete
+
+        if data_of_position[index_of_data_name] is None:
+            return False  # Nothing to delete
+
+        # Ok, now we're actually deleting something
+        data_of_position[index_of_data_name] = None
+        self._metadata_counts[data_name] -= 1
+        if self._metadata_counts[data_name] == 0:
+            # We deleted the last data of this type, so we can remove the data type from our index
+            self.delete_data_with_name(data_name)
+
+            return True  # Signal that the last data of this type was deleted
+        return False
+
+    def is_empty(self) -> bool:
+        return len(self._positions) == 0
+
+    def remove_position(self, position: Position) -> Union[bool, List[str]]:
+        """Removes a position from this time point.
+        The return value is somewhat complex:
+        - If the position was not found, False is returned.
+        - If the position was found and removed, True is returned.
+        - However, if one or more metadata values were fully depleted by removing the position, a list of the depleted
+          metadata names is returned. The caller can use these to update their own indices.
+        """
+        existing_data = self._positions.pop(position, None)
+        if existing_data is None:
+            return False
+
+        metadata_names_to_delete = None
+        for metadata_name, metadata_index in self._metadata_names.items():
+            if metadata_index < len(existing_data) and existing_data[metadata_index] is not None:
+                # We're deleting some metadata, so we need to decrement the count
+                self._metadata_counts[metadata_name] -= 1
+                if self._metadata_counts[metadata_name] == 0:
+                    # Keep track of depleted metadata
+                    if metadata_names_to_delete is None:
+                        metadata_names_to_delete = []
+                    metadata_names_to_delete.append(metadata_name)
+
+        # Remove metadata names that are now depleted
+        if metadata_names_to_delete is not None:
+            for metadata_name in metadata_names_to_delete:
+                self.delete_data_with_name(metadata_name)
+            return metadata_names_to_delete
+
+        # No metadata was depleted
+        return True
+
+    def merge_data(self, other: "_MetadataAtTimepoint"):
+        """Merges the metadata of another instance into this one. The instances must be of the same time point.
+
+        Note: this method is kind of slow, as it has to check every metadata value for every position.
+        """
+
+        # Add space for any new metadata names
+        for other_metadata_name, other_metadata_index in other._metadata_names.items():
+            if other_metadata_name not in self._metadata_names:
+                self._metadata_names[other_metadata_name] = len(self._metadata_names)
+                self._metadata_counts[other_metadata_name] = 0
+
+        other_metadata_names = other._metadata_names
+        for position, other_metadata_values in other._positions.items():
+            our_metadata_values = self._positions.get(position)
+            if our_metadata_values is None:
+                our_metadata_values = []
+                self._positions[position] = our_metadata_values
+
+            for other_metadata_name, other_metadata_index in other_metadata_names.items():
+                if other_metadata_index >= len(other_metadata_values):
+                    continue
+                other_metadata_value = other_metadata_values[other_metadata_index]
+                if other_metadata_value is None:
+                    continue
+
+                # Need to add a value
+                our_metadata_index = self._metadata_names[other_metadata_name]
+                while len(our_metadata_values) <= our_metadata_index:
+                    our_metadata_values.append(None)
+
+                if our_metadata_values[our_metadata_index] is None:
+                    # New data value, increment count
+                    self._metadata_counts[other_metadata_name] = self._metadata_counts.get(other_metadata_name, 0) + 1
+                our_metadata_values[our_metadata_index] = other_metadata_value
+
+
+
+class PositionData:
+
+    _all_positions: Dict[int, _MetadataAtTimepoint]
+    _min_time_point_number: Optional[int] = None
+    _max_time_point_number: Optional[int] = None
+
+    _data_names_and_types: Dict[str, Type]  # Data name -> type
+
+    def __init__(self, ):
+        """Creates a new positions collection with the given positions already present."""
+        self._all_positions = dict()
+        self._data_names_and_types = dict()
+
+    def _update_min_max_time_points_for_addition(self, new_time_point_number: int):
+        """Bookkeeping: makes sure the min and max time points are updated when a new time point is added"""
+        if self._min_time_point_number is None or new_time_point_number < self._min_time_point_number:
+            self._min_time_point_number = new_time_point_number
+        if self._max_time_point_number is None or new_time_point_number > self._max_time_point_number:
+            self._max_time_point_number = new_time_point_number
+
+    def _recalculate_min_max_time_points(self):
+        """Bookkeeping: recalculates min and max time point if a time point was removed."""
+        # Reset min and max, then repopulate by readding all time points
+        self._min_time_point_number = None
+        self._max_time_point_number = None
+        for time_point_number in self._all_positions.keys():
+            self._update_min_max_time_points_for_addition(time_point_number)
+
+    def remove_position(self, position: Position):
+        """Removes a position from a time point. Does nothing if the position is not in this collection."""
+        positions_at_time_point = self._all_positions.get(position.time_point_number())
+        if positions_at_time_point is None:
+            return
+
+        return_value = positions_at_time_point.remove_position(position)
+        if return_value is False:
+            return  # Position was not found
+
+        # Remove time point entirely if necessary
+        if positions_at_time_point.is_empty():
+            del self._all_positions[position.time_point_number()]
+            self._recalculate_min_max_time_points()
+
+        if return_value is True:
+            return  # Position was found and removed, but no metadata was depleted
+
+        for depleted_metadata_name in return_value:
+            is_in_other_time_points = any(data_of_time_point._metadata_names.get(depleted_metadata_name) is not None
+                                          for data_of_time_point in self._all_positions.values())
+            if not is_in_other_time_points:
+                del self._data_names_and_types[depleted_metadata_name]
+
+    def replace_position(self, old_position: Position, new_position: Position):
+        """Moves a position, keeping its shape. Does nothing if the position is not in this collection. Raises a value
+        error if the time points the provided positions are None or if they do not match."""
+        if old_position.time_point_number() != new_position.time_point_number():
+            raise ValueError("Time points are different")
+
+        time_point_number = old_position.time_point_number()
+        if time_point_number is None:
+            raise ValueError("Position does not have a time point, so it cannot be added")
+
+        positions_at_time_point = self._all_positions.get(time_point_number)
+        if positions_at_time_point is None:
+            return
+        positions_at_time_point.replace_position(old_position, new_position)
+
+    def first_time_point_number(self) -> Optional[int]:
+        """Gets the first time point that contains positions, or None if there are no positions stored."""
+        return self._min_time_point_number
+
+    def last_time_point_number(self) -> Optional[int]:
+        """Gets the last time point (inclusive) that contains positions, or None if there are no positions stored."""
+        return self._max_time_point_number
+
+    def first_time_point(self) -> Optional[TimePoint]:
+        """Gets the first time point that contains positions, or None if there are no positions stored."""
+        return TimePoint(self._min_time_point_number) if self._min_time_point_number is not None else None
+
+    def last_time_point(self) -> Optional[TimePoint]:
+        """Gets the last time point (inclusive) that contains positions, or None if there are no positions stored."""
+        return TimePoint(self._max_time_point_number) if self._max_time_point_number is not None else None
+
+    def merge_data(self, position_data: "PositionData"):
+        """Merges all position data"""
+
+        # Update data names and types
+        self._data_names_and_types.update(position_data._data_names_and_types)
+
+        # Merge all position data
+        for time_point_number, metadata_at_time_point in position_data._all_positions.items():
+            existing_metadata_at_time_point = self._all_positions.get(time_point_number)
+            if existing_metadata_at_time_point is None:
+                # Easy case: just copy the metadata
+                self._all_positions[time_point_number] = metadata_at_time_point.copy()
+            else:
+                # Otherwise, do a merge
+                existing_metadata_at_time_point.merge_data(metadata_at_time_point)
+
+        # Update min and max time points
+        self._min_time_point_number = min_none(self._min_time_point_number, position_data._min_time_point_number)
+        self._max_time_point_number = max_none(self._max_time_point_number, position_data._max_time_point_number)
 
     def has_position_data(self) -> bool:
         """Gets whether there is any position data stored here."""
-        return len(self._position_data) > 0
+        return len(self._data_names_and_types) > 0
 
     def has_position_data_with_name(self, data_name: str) -> bool:
         """Returns whether there is position data stored for the given type."""
-        return data_name in self._position_data
+        return data_name in self._data_names_and_types
 
     def get_position_data(self, position: Position, data_name: str) -> Optional[DataType]:
         """Gets the attribute of the position with the given name. Returns None if not found."""
-        data_of_positions = self._position_data.get(data_name)
-        if data_of_positions is None:
+        data_of_time_point = self._all_positions.get(position.time_point_number())
+        if data_of_time_point is None:
             return None
-        return data_of_positions.get(position)
+        data_of_position = data_of_time_point._positions.get(position)
+        if data_of_position is None:
+            return None
+        data_index = data_of_time_point._metadata_names.get(data_name)
+        if data_index is None or data_index >= len(data_of_position):
+            return None
+        return data_of_position[data_index]
 
     def set_position_data(self, position: Position, data_name: str, value: Optional[DataType]):
         """Adds or overwrites the given attribute for the given position. Set value to None to delete the attribute.
 
-        Note: this is a low-level API. See the linking_markers module for more high-level methods, for example for how
-        to read end markers, error markers, etc.
+        If the data_name is 'id' or starts with "__", a ValueError is raised. This requirement was necessary for the
+        old save system, so as long as OrganoidTracker still supports writing to the old format, this restriction
+        remains in place.
         """
         if data_name == "id":
             raise ValueError("The data_name 'id' is used to store the position itself.")
         if data_name.startswith("__"):
             raise ValueError(f"The data name {data_name} is not allowed: data names must not start with '__'.")
-        data_of_positions = self._position_data.get(data_name)
-        if data_of_positions is None:
-            if value is None:
-                return  # No value was stored already, so no need to change anything
 
-            # Intialize dict for this data type
-            data_of_positions = dict()
-            self._position_data[data_name] = data_of_positions
+        data_of_time_point = self._all_positions.get(position.time_point_number())
+        if data_of_time_point is None:
+            data_of_time_point = _MetadataAtTimepoint()
+            self._all_positions[position.time_point_number()] = data_of_time_point
 
         if value is None:
-            # Delete
-            if position in data_of_positions:
-                del data_of_positions[position]
-                if len(data_of_positions) == 0:
-                    # Remove dict for this data type
-                    del self._position_data[data_name]
+            deleted_last = data_of_time_point.delete_position_data_and_check_if_last(position, data_name)
+            if deleted_last:
+                # If the last data of this type was deleted, we can remove the data type from our index
+                # if it is also not used in any other time point
+                is_in_other_time_points = any(data_of_time_point._metadata_names.get(data_name) is not None
+                                              for data_of_time_point in self._all_positions.values())
+                if not is_in_other_time_points:
+                    del self._data_names_and_types[data_name]
         else:
-            # Store
-            data_of_positions[position] = value
+            data_of_time_point.set_position_data_required(position, data_name, value)
+
+            # Update our data type index
+            if data_name not in self._data_names_and_types:
+                self._data_names_and_types[data_name] = self._guess_data_type(value)
 
     def copy(self) -> "PositionData":
-        copy = PositionData()
-        for data_name, data_value in self._position_data.items():
-            copy._position_data[data_name] = data_value.copy()
-        return copy
+        """Creates a copy of this position metadata collection. Changes made to the copy will not affect this instance
+        and vice versa."""
+        the_copy = PositionData()
+        for key, value in self._all_positions.items():
+            the_copy._all_positions[key] = value.copy()
 
-    def find_all_positions_with_data(self, data_name: str) -> ItemsView[Position, DataType]:
+        the_copy._min_time_point_number = self._min_time_point_number
+        the_copy._max_time_point_number = self._max_time_point_number
+        return the_copy
+
+    def find_all_positions_with_data(self, data_name: str) -> Iterable[Tuple[Position, DataType]]:
         """Gets a dictionary of all positions with the given data marker. Do not modify the returned dictionary."""
-        data_set = self._position_data.get(data_name)
-        if data_set is None:
-            return dict().items()
-        return data_set.items()
+        for data_of_time_point in self._all_positions.values():
+            yield from data_of_time_point.find_all_positions_with_data(data_name)
 
     def find_all_data_of_position(self, position: Position) -> Iterable[Tuple[str, DataType]]:
         """Finds all stored data of a given position."""
-        for data_name, data_values in self._position_data.items():
-            data_value = data_values.get(position)
-            if data_value is not None:
-                yield data_name, data_value
+        data_of_time_point = self._all_positions.get(position.time_point_number())
+        if data_of_time_point is None:
+            return
+        data_of_position = data_of_time_point._positions.get(position)
+        if data_of_position is None:
+            return
+        data_names = data_of_time_point._metadata_names
+        for name, value in zip(data_names.keys(), data_of_position):
+            if value is not None:
+                yield name, value
 
     def add_positions_data(self, data_name: str, data_set: Dict[Position, DataType]):
         """Bulk-addition of position data. Should be much faster that adding everything individually."""
-        existing_data_set = self._position_data.get(data_name)
-        if existing_data_set is None:
-            self._position_data[data_name] = data_set
-        else:
-            existing_data_set.update(data_set)
+        ...  # TODO
 
     def delete_data_with_name(self, data_name: str):
         """Deletes the data with the given key, for all positions in the experiment."""
-        if data_name in self._position_data:
-            del self._position_data[data_name]
+        for positions_at_time_point in self._all_positions.values():
+            positions_at_time_point.delete_data_with_name(data_name)
 
-    def find_all_data_names(self):
+    def find_all_data_names(self) -> Set[str]:
         """Finds all data_names"""
-        return self._position_data.keys()
+        return set(self._data_names_and_types.keys())
 
     def get_data_names_and_types(self) -> Dict[str, Type]:
         """Gets all data names that are currently in use, along with their type. The type will be str, float, bool,
         list, or object. (The type int is never returned, for ints float is returned instead. This is done
         so that users don't have to worry about storing their numbers with the correct type.)"""
-        return_dict = dict()
-        for key, values_by_position in self._position_data.items():
-            if len(values_by_position) == 0:
-                continue
-            example_value = next(iter(values_by_position.values()))
-            if isinstance(example_value, bool):
-                return_dict[key] = bool
-            elif isinstance(example_value, int) or isinstance(example_value, float):
-                return_dict[key] = float
-            elif isinstance(example_value, str):
-                return_dict[key] = str
-            elif isinstance(example_value, list):
-                return_dict[key] = list
-            else:
-                return_dict[key] = object  # Don't know the type
+        return self._data_names_and_types.copy()
 
-        return return_dict
+    def _guess_data_type(self, example_value: Any) -> Type:
+        if isinstance(example_value, bool):
+            return bool
+        elif isinstance(example_value, int) or isinstance(example_value, float):
+            return float
+        elif isinstance(example_value, str):
+            return str
+        elif isinstance(example_value, list):
+            return list
+        else:
+            return object
+
+    def add_data_from_time_point_dict(self, time_point: TimePoint, positions: List[Position], metadata_dict: Dict[str, List[DataType]]):
+        """Adds a time point with positions and metadata. The metadata dictionary must contain lists of the same length
+        as the positions list. The position and metadata lists must be in the same order, and the position list must
+        not contain any duplicates.
+
+        This method is kind of low-level, and is mostly used for loading data from files. It's faster than just calling
+        set_position_data for every position. However, note that for speed reasons, this method does not check the
+        positions list for duplicates.
+
+        You can easily create the metadata dictionary
+        """
+
+        positions_at_time_point = _MetadataAtTimepoint()
+
+        metadata_names = dict()
+        metadata_counts = dict()
+        for index, (metadata_name, metadata_values) in enumerate(metadata_dict.items()):
+            metadata_names[metadata_name] = index
+            metadata_count = 0
+            for value in metadata_values:
+                if value is not None:
+                    metadata_count += 1
+            metadata_counts[metadata_name] = metadata_count
+        positions_at_time_point._metadata_names = metadata_names
+        positions_at_time_point._metadata_counts = metadata_counts
+
+        metadata_values_all = list(metadata_dict.values())
+        for meta_index in range(1, len(metadata_values_all)):
+            if len(metadata_values_all[meta_index]) != len(positions):
+                print(f"All metadata lists must have the same length. However, we have {len(positions)} positions and {metadata_values_all[meta_index]} has length {len(metadata_values_all[meta_index])}")
+
+        for position_index in range(len(positions)):
+            metadata_values_position = [metadata_values_all[meta_index][position_index] for meta_index in range(len(metadata_values_all))]
+            positions_at_time_point._positions[positions[position_index]] = metadata_values_position
+
+        existing_positions_at_time_point = self._all_positions.get(time_point.time_point_number())
+        if existing_positions_at_time_point is not None:
+            # Merge the data (slow, unfortunately)
+            existing_positions_at_time_point.merge_data(positions_at_time_point)
+        else:
+            # Add as new time point
+            self._all_positions[time_point.time_point_number()] = positions_at_time_point
+            self._min_time_point_number = min_none(self._min_time_point_number, time_point.time_point_number())
+            self._max_time_point_number = max_none(self._max_time_point_number, time_point.time_point_number())
+
+    def create_time_point_dict(self, time_point: TimePoint, positions: List[Position]) -> Dict[str, List[Optional[DataType]]]:
+        """Creates a dictionary of metadata lists for a given time point. The metadata lists are empty. This is useful
+        for creating a new time point with the same positions as an existing time point, but with no metadata."""
+        positions_at_time_point = self._all_positions.get(time_point.time_point_number())
+        if positions_at_time_point is None:
+            return dict()
+
+        # Build empty metadata table
+        metadata_dict = dict()
+        for metadata_name in positions_at_time_point._metadata_names.keys():
+            metadata_dict[metadata_name] = [None] * len(positions)
+
+        # Build plain metadata names list, to quickly go from index -> name
+        metadata_names_ordered = [None for _ in range(len(positions_at_time_point._metadata_names))]
+        for metadata_name, metadata_index in positions_at_time_point._metadata_names.items():
+            metadata_names_ordered[metadata_index] = metadata_name
+        if None in metadata_names_ordered:
+            raise ValueError(f"Metadata values did not have consistent 1 to N indexing: {positions_at_time_point._metadata_names}")
+
+        # Fill the dictionary with the metadata values
+        for i, position in enumerate(positions):
+            metadata_values = positions_at_time_point._positions.get(position)
+            if metadata_values is None:
+                continue
+            for metadata_name, metadata_value in zip(metadata_names_ordered, metadata_values):
+                metadata_dict[metadata_name][i] = metadata_value
+
+        return metadata_dict
 
     def move_in_time(self, time_point_delta: int):
         """Moves all data with the given time point delta."""
-        for data_key in list(self._position_data.keys()):
-            values_new = dict()
-            values_old = self._position_data[data_key]
-            for position, value in values_old.items():
-                values_new[position.with_time_point_number(position.time_point_number() + time_point_delta)] = value
-            self._position_data[data_key] = values_new
+        new_positions_dict = dict()
+        for time_point_number, values_old in self._all_positions.items():
+            values_old._move_in_time(time_point_delta)
+            new_positions_dict[time_point_number + time_point_delta] = values_old
+        self._all_positions = new_positions_dict

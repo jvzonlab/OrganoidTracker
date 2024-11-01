@@ -10,6 +10,7 @@ from typing import Dict, List, Tuple
 import dpct
 import numpy as np
 
+from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
@@ -221,7 +222,7 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links,
     }, created_possible_division, naive_links
 
 
-def calculate_appearance_penalty(experiment, min_appearance_probability, name='appearance_penalty', buffer_distance = 5.0, only_top = True):
+def calculate_appearance_penalty(experiment: Experiment, min_appearance_probability, name='appearance_penalty', buffer_distance = 5.0, only_top = True):
     # go over all timepoints
     for time_point in experiment.positions.time_points():
         positions = experiment.positions.of_time_point(time_point)

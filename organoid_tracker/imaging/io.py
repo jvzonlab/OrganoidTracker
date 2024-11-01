@@ -33,7 +33,7 @@ SUPPORTED_IMPORT_FILES = [
     ("Cell tracking challenge files", "*.txt"),
     ("TrackMate file", "*.xml"),
     ("Guizela's tracking files", "track_00000.p")]
-WRITE_NEW_FORMAT = False  # Default value for the saving function. Reading always supports both formats.
+WRITE_NEW_FORMAT = True  # Default value for the saving function. Reading always supports both formats.
 
 
 def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: str,
@@ -117,8 +117,9 @@ def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point:
         _load_json_data_file_v2(experiment, data, min_time_point, max_time_point)
         return
 
-    raise ValueError("Unknown data version",
-                     f"The version of this program is not able to load data of version {version}.")
+    raise UserError("Unknown data version",
+                    f"The version of this program is not able to load data of version {version}."
+                    f" Maybe your version is outdated?")
 
 
 def _load_json_data_file_v2(experiment: Experiment, data: Dict[str, Any], min_time_point: int, max_time_point: int):
@@ -275,12 +276,9 @@ def _parse_positions_and_meta_format(experiment: Experiment, positions_json: Lis
             if positions_of_time_point is not None:
                 positions_of_time_point.append(position)
 
-        for metadata_key, metadata_values in time_point_json.get("position_meta", {}).items():
-            for i, value in enumerate(metadata_values):
-                if value is None:
-                    continue
-                position = positions_of_time_point[i]
-                experiment.position_data.set_position_data(position, metadata_key, value)
+        if has_meta:
+            experiment.position_data.add_data_from_time_point_dict(TimePoint(time_point_number), positions_of_time_point,
+                                                                   time_point_json["position_meta"])
 
 
 def _parse_tracks_and_meta_format(experiment: Experiment, tracks_json: List[Dict], min_time_point: int,
@@ -668,27 +666,14 @@ def _encode_positions_and_meta(positions: PositionCollection, position_data: Pos
     time_points_json = list()
     for time_point in positions.time_points():
         metadata_lists = dict()
-        positions_of_time_point = list()
-        for position in positions.of_time_point(time_point):
-            # Add metadata to the metadata lists
-            for data_name, data_value in position_data.find_all_data_of_position(position):
-                # This data value was not yet found in this time point
-                # Set it to None for all previous positions
-                if data_name not in metadata_lists:
-                    metadata_lists[data_name] = [None] * len(positions_of_time_point)
+        positions_of_time_point = list(positions.of_time_point(time_point))
+        metadata_lists = position_data.create_time_point_dict(time_point, positions_of_time_point)
+        xyz_values = [[position.x, position.y, position.z] for position in positions_of_time_point]
 
-                metadata_lists[data_name].append(data_value)
-
-            # Make sure all metadata lists are the same length, so append None for missing values
-            for value_list in metadata_lists.values():
-                if len(value_list) < len(positions_of_time_point):
-                    value_list.append(None)
-
-            positions_of_time_point.append([position.x, position.y, position.z])
         if len(positions_of_time_point) > 0:
             time_point_json = {
                 "time_point": time_point.time_point_number(),
-                "coords_xyz_px": positions_of_time_point
+                "coords_xyz_px": xyz_values
             }
             if len(metadata_lists) > 0:
                 time_point_json["position_meta"] = metadata_lists
