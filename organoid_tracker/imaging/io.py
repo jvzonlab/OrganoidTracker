@@ -33,7 +33,7 @@ SUPPORTED_IMPORT_FILES = [
     ("Cell tracking challenge files", "*.txt"),
     ("TrackMate file", "*.xml"),
     ("Guizela's tracking files", "track_00000.p")]
-WRITE_NEW_FORMAT = True  # Default value for the saving function. Reading always supports both formats.
+WRITE_NEW_FORMAT = False  # Default value for the saving function. Reading always supports both formats.
 
 
 def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: str,
@@ -326,9 +326,11 @@ def _parse_tracks_and_meta_format(experiment: Experiment, tracks_json: List[Dict
         position_first = Position(*track_json["coords_xyz_px"][0], time_point_number=time_point_number_start)
         metadata = track_json.get("link_meta_before")
         for i, raw_position in enumerate(track_json["coords_xyz_px_before"]):
-            # Connect the traks
+            # Connect the tracks
             position_previous_track = Position(*raw_position, time_point_number=time_point_number_start - 1)
-            links.add_link(position_previous_track, position_first)
+            previous_track = links.get_track(position_previous_track)
+            current_track = links.get_track(position_first)
+            links.connect_tracks(previous=previous_track, next=current_track)
 
             # And add metadata for those links
             if metadata is not None:

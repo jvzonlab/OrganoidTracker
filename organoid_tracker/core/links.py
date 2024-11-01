@@ -859,3 +859,20 @@ class Links:
                 moved_position = position.with_time_point_number(position.time_point_number() + time_point_delta)
                 track._positions_by_time_point[i] = moved_position
                 self._position_to_track[moved_position] = track
+
+    def connect_tracks(self, *, previous: LinkingTrack, next: LinkingTrack):
+        """Connects two tracks. The previous track should end one time point before the next track starts. Raises
+        ValueError if the tracks are not after each other in time or if they are already connected."""
+
+        # Check if after each other in time
+        if previous.last_time_point_number() + 1 != next.first_time_point_number():
+            raise ValueError("Tracks are not after each other in time")
+
+        # Check if not already connected
+        if next in previous._next_tracks:
+            raise ValueError("Tracks are already connected")
+        # As long as the data structure is not corrupted, we don't need to check if previous is in next._previous_tracks
+
+        # Connect the tracks
+        previous._next_tracks.append(next)
+        next._previous_tracks.append(previous)
