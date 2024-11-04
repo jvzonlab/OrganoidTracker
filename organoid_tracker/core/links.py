@@ -1,10 +1,8 @@
 import warnings
-from pprint import pprint
-from typing import Optional, Dict, Iterable, List, Set, Union, Tuple, Any, ItemsView, Callable
+from typing import Optional, Dict, Iterable, List, Set, Tuple, Any
 
-from organoid_tracker.core import TimePoint, Color
+from organoid_tracker.core import TimePoint
 from organoid_tracker.core.position import Position
-from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.typing import DataType
 
 
@@ -202,7 +200,7 @@ class Links:
     no position in the next step, then either the cell died or the cell moved out of the image."""
 
     _tracks: List[LinkingTrack]
-    _position_to_track: Dict[Position, LinkingTrack]
+    _position_to_track: Dict[str, LinkingTrack]
 
     def __init__(self):
         self._tracks = []
@@ -225,7 +223,7 @@ class Links:
             raise ValueError("Track is already linked to other tracks")
         self._tracks.append(track)
         for position in track.positions():
-            self._position_to_track[position] = track
+            self._position_to_track[position.to_dict_key()] = track
 
     def remove_all_links(self):
         """Removes all links in the experiment."""
@@ -237,7 +235,7 @@ class Links:
 
     def remove_links_of_position(self, position: Position):
         """Removes all links from and to the position."""
-        track = self._position_to_track.get(position)
+        track = self._position_to_track.get(position.to_dict_key())
         if track is None:
             return
 
@@ -279,7 +277,7 @@ class Links:
             self._try_remove_if_one_length_track(track)
 
         # Remove from index
-        del self._position_to_track[position]
+        del self._position_to_track[position.to_dict_key()]
 
     def replace_position(self, old_position: Position, position_new: Position):
         """Replaces one position with another. The old position is removed from the graph, the new one is added. All
@@ -288,14 +286,14 @@ class Links:
             raise ValueError("Cannot replace with position at another time point")
 
         # Update in track
-        track = self._position_to_track.get(old_position)
+        track = self._position_to_track.get(old_position.to_dict_key())
         if track is not None:
             track._positions_by_time_point[
                 position_new.time_point_number() - track._min_time_point_number] = position_new
 
             # Update reference to track
-            del self._position_to_track[old_position]
-            self._position_to_track[position_new] = track
+            del self._position_to_track[old_position.to_dict_key()]
+            self._position_to_track[position_new.to_dict_key()] = track
 
     def has_links(self) -> bool:
         """Returns True if at least one link is present."""
@@ -305,7 +303,7 @@ class Links:
         """Returns the positions linked to this position in the next time point. Normally, this will be one position.
         However, if the cell divides between now and the next time point, two positions are returned. And if the cell
         track ends, zero positions are returned."""
-        track = self._position_to_track.get(position)
+        track = self._position_to_track.get(position.to_dict_key())
         if track is None:
             return set()
         return track._find_futures(position.time_point_number())
@@ -321,7 +319,7 @@ class Links:
         """Returns the positions linked to this position in the previous time point. Normally, this will be one
         position. However, the cell track just started, zero positions are returned. In the case of a cell merge,
         multiple positions are returned."""
-        track = self._position_to_track.get(position)
+        track = self._position_to_track.get(position.to_dict_key())
         if track is None:
             return set()
         return track._find_pasts(position.time_point_number())
@@ -365,8 +363,8 @@ class Links:
         if dt < -1:
             raise ValueError(f"Link skipped a time point: {position1} cannot be linked to {position2}")
 
-        track1 = self._position_to_track.get(position1)
-        track2 = self._position_to_track.get(position2)
+        track1 = self._position_to_track.get(position1.to_dict_key())
+        track2 = self._position_to_track.get(position2.to_dict_key())
 
         if track1 is not None and track2 is not None and self.contains_link(position1, position2):
             return  # Already has that link, don't add a second link (this will corrupt the data structure)
@@ -379,18 +377,18 @@ class Links:
                 # It could be handled just fine by the code below, which will create a new track and then merge the
                 # tracks, but this is faster
                 track1._positions_by_time_point.append(position2)
-                self._position_to_track[position2] = track1
+                self._position_to_track[position2.to_dict_key()] = track1
                 return
 
         if track1 is None:  # Create new mini-track
             track1 = LinkingTrack([position1])
             self._tracks.append(track1)
-            self._position_to_track[position1] = track1
+            self._position_to_track[position1.to_dict_key()] = track1
 
         if track2 is None:  # Create new mini-track
             track2 = LinkingTrack([position2])
             self._tracks.append(track2)
-            self._position_to_track[position2] = track2
+            self._position_to_track[position2.to_dict_key()] = track2
 
         if position1.time_point_number() < track1.last_time_point_number():
             # Need to split track 1 so that position1 is at the end
@@ -452,14 +450,15 @@ class Links:
 
     def find_links_of(self, position: Position) -> Set[Position]:
         """Gets all links of a position, both to the past and the future."""
-        track = self._position_to_track.get(position)
+        track = self._position_to_track.get(position.to_dict_key())
         if track is None:
             return set()
         return track._find_futures(position.time_point_number()) | track._find_pasts(position.time_point_number())
 
     def find_all_positions(self) -> Iterable[Position]:
         """Gets all positions in the linking graph. Note that positions without links are not included here."""
-        return self._position_to_track.keys()
+        for track in self._tracks:
+            yield from track.positions()
 
     def remove_link(self, position1: Position, position2: Position):
         """Removes the link between the given positions. Does nothing if there is no link between the positions."""
@@ -469,17 +468,12 @@ class Links:
         if position1.time_point_number() == position2.time_point_number():
             return  # No link can possibly exist
 
-        track1 = self._position_to_track.get(position1)
-        track2 = self._position_to_track.get(position2)
+        track1 = self._position_to_track.get(position1.to_dict_key())
+        track2 = self._position_to_track.get(position2.to_dict_key())
         if track1 is None or track2 is None:
             return  # No link exists
         if track1 == track2:
             # So positions are in the same track
-
-            # Check if there is nothing in between
-            for time_point_number in range(position1.time_point_number() + 1, position2.time_point_number()):
-                if track1.find_position_at_time_point_number(time_point_number) is not None:
-                    return  # There's a position in between, so the specified link doesn't exist
 
             # Split directly after position1
             new_track = self._split_track(track1, position1.time_point_number() + 1 - track1._min_time_point_number)
@@ -539,7 +533,7 @@ class Links:
             return  # Has metadata, don't delete
 
         # Safe to delete
-        del self._position_to_track[track.find_first_position()]
+        del self._position_to_track[track.find_first_position().to_dict_key()]
         self._tracks.remove(track)
 
     def contains_link(self, position1: Position, position2: Position) -> bool:
@@ -554,7 +548,7 @@ class Links:
 
     def contains_position(self, position: Position) -> bool:
         """Returns True if the given position is part of this linking network."""
-        return position in self._position_to_track
+        return position.to_dict_key() in self._position_to_track
 
     def find_all_links(self) -> Iterable[Tuple[Position, Position]]:
         """Gets all available links. The first position is always the earliest in time."""
@@ -593,13 +587,13 @@ class Links:
             copied_track._lineage_data = track._lineage_data.copy()
             copy._tracks.append(copied_track)
             for position in track.positions():
-                copy._position_to_track[position] = copied_track
+                copy._position_to_track[position.to_dict_key()] = copied_track
 
         # We can now re-establish the links between all tracks
         for track in self._tracks:
-            track_copy = copy._position_to_track[track.find_first_position()]
+            track_copy = copy._position_to_track[track.find_first_position().to_dict_key()]
             for next_track in track._next_tracks:
-                next_track_copy = copy._position_to_track[next_track.find_first_position()]
+                next_track_copy = copy._position_to_track[next_track.find_first_position().to_dict_key()]
                 track_copy._next_tracks.append(next_track_copy)
                 next_track_copy._previous_tracks.append(track_copy)
 
@@ -628,7 +622,7 @@ class Links:
         # Update indices for changed tracks
         self._tracks.insert(self._tracks.index(old_track) + 1, track_after_split)
         for position_after_split in positions_after_split:
-            self._position_to_track[position_after_split] = track_after_split
+            self._position_to_track[position_after_split.to_dict_key()] = track_after_split
 
         return track_after_split
 
@@ -653,7 +647,7 @@ class Links:
         first_track._lineage_data.update(second_track._lineage_data)
         self._tracks.remove(second_track)
         for moved_position in second_track.positions():
-            self._position_to_track[moved_position] = first_track
+            self._position_to_track[moved_position.to_dict_key()] = first_track
         first_track._next_tracks = second_track._next_tracks
         for new_next_track in first_track._next_tracks:  # Notify all next tracks that they have a new predecessor
             new_next_track._update_link_to_previous(second_track, first_track)
@@ -681,11 +675,11 @@ class Links:
             if len(track._previous_tracks) > 0 and len(track._lineage_data) > 0:
                 raise ValueError(f"{track} has lineage meta data, even though it is not the start of a lineage")
             for position in track.positions():
-                if position not in self._position_to_track:
+                if position.to_dict_key() not in self._position_to_track:
                     raise ValueError(f"{position} of {track} is not indexed")
-                elif self._position_to_track[position] != track:
+                elif self._position_to_track[position.to_dict_key()] != track:
                     raise ValueError(f"{position} in track {track} is indexed as being in track"
-                                     f" {self._position_to_track[position]}")
+                                     f" {self._position_to_track[position.to_dict_key()]}")
             for previous_track in track._previous_tracks:
                 if previous_track.last_time_point_number() >= track._min_time_point_number:
                     raise ValueError(f"Previous track {previous_track} is not in the past compared to {track}")
@@ -716,7 +710,7 @@ class Links:
 
     def get_track(self, position: Position) -> Optional[LinkingTrack]:
         """Gets the track the given position belong in."""
-        return self._position_to_track.get(position)
+        return self._position_to_track.get(position.to_dict_key())
 
     def sort_tracks_by_x(self):
         """Sorts the tracks, which affects the order in which most find_ functions return data (like
@@ -858,7 +852,7 @@ class Links:
             for i, position in enumerate(track._positions_by_time_point):
                 moved_position = position.with_time_point_number(position.time_point_number() + time_point_delta)
                 track._positions_by_time_point[i] = moved_position
-                self._position_to_track[moved_position] = track
+                self._position_to_track[moved_position.to_dict_key()] = track
 
     def connect_tracks(self, *, previous: LinkingTrack, next: LinkingTrack):
         """Connects two tracks. The previous track should end one time point before the next track starts. Raises
