@@ -1,4 +1,5 @@
 import warnings
+from collections import defaultdict
 from typing import Dict, AbstractSet, Optional, Iterable, Set, List, Any, Type, ItemsView, Tuple, Union
 
 from organoid_tracker.core import TimePoint, min_none, max_none
@@ -86,6 +87,8 @@ class _MetadataAtTimepoint:
                     yield position, value
 
     def set_position_data_required(self, position: Position, data_name: str, value_required: DataType):
+        """Sets the data for a position. If the data already exists, it is overwritten. Note that the position data
+        is *required* here, None is not allowed. To delete data, use delete_position_data_and_check_if_last."""
         if value_required is None:
             raise ValueError("Use delete_position_data_and_check_if_last to delete data")
 
@@ -110,6 +113,37 @@ class _MetadataAtTimepoint:
             self._metadata_counts[data_name] = self._metadata_counts.get(data_name, 0) + 1
 
         data_of_position[data_index] = value_required
+
+    def set_position_data_required_multiple(self, data_name: str, values_required: Dict[Position, DataType]):
+        """Sets the data for a position. If the data already exists, it is overwritten. Note that the position data
+        is *required* here, None is not allowed. To delete data, use delete_position_data_and_check_if_last."""
+
+        # Look up where the data name is stored
+        data_index = self._metadata_names.get(data_name)
+        if data_index is None:
+            # Need to add the data name
+            data_index = len(self._metadata_names)
+            self._metadata_names[data_name] = data_index
+
+        # Add the data values
+        for position, value_required in values_required.items():
+            if value_required is None:
+                raise ValueError("Found None in values_required")
+
+            # Get existing position data
+            data_of_position = self._positions.get(position)
+            if data_of_position is None:
+                data_of_position = []
+                self._positions[position] = data_of_position
+
+            # Modify the data list to insert the data value at the correct index
+            while len(data_of_position) <= data_index:
+                data_of_position.append(None)
+            if data_of_position[data_index] is None:
+                # New data value, increment count
+                self._metadata_counts[data_name] = self._metadata_counts.get(data_name, 0) + 1
+
+            data_of_position[data_index] = value_required
 
     def delete_position_data_and_check_if_last(self, position: Position, data_name: str) -> bool:
         # Look up where the data name is stored
@@ -378,6 +412,7 @@ class PositionData:
 
         the_copy._min_time_point_number = self._min_time_point_number
         the_copy._max_time_point_number = self._max_time_point_number
+        the_copy._data_names_and_types = self._data_names_and_types.copy()
         return the_copy
 
     def find_all_positions_with_data(self, data_name: str) -> Iterable[Tuple[Position, DataType]]:
@@ -399,8 +434,28 @@ class PositionData:
                 yield name, value
 
     def add_positions_data(self, data_name: str, data_set: Dict[Position, DataType]):
-        """Bulk-addition of position data. Should be much faster that adding everything individually."""
-        ...  # TODO
+        """Bulk-addition of position data. Should be faster that adding everything individually."""
+        if len(data_set) == 0:
+            return
+
+        # Split the data by time point
+        by_time_point = defaultdict(dict)
+        for position, value in data_set.items():
+            by_time_point[position.time_point_number()][position] = value
+
+        # Add the data to the time points
+        for time_point_number, data_set_for_time_point in by_time_point.items():
+            data_of_time_point = self._all_positions.get(time_point_number)
+            if data_of_time_point is None:
+                data_of_time_point = _MetadataAtTimepoint()
+                self._all_positions[time_point_number] = data_of_time_point
+
+            data_of_time_point.set_position_data_required_multiple(data_name, data_set_for_time_point)
+
+        # Update our data type index
+        if data_name not in self._data_names_and_types:
+            first_value = next(iter(data_set.values()))
+            self._data_names_and_types[data_name] = self._guess_data_type(first_value)
 
     def delete_data_with_name(self, data_name: str):
         """Deletes the data with the given key, for all positions in the experiment."""
