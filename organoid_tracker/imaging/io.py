@@ -33,7 +33,7 @@ SUPPORTED_IMPORT_FILES = [
     ("Cell tracking challenge files", "*.txt"),
     ("TrackMate file", "*.xml"),
     ("Guizela's tracking files", "track_00000.p")]
-WRITE_NEW_FORMAT = False  # Default value for the saving function. Reading always supports both formats.
+WRITE_NEW_FORMAT = True  # Default value for the saving function. Reading always supports both formats.
 
 
 def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: str,
