@@ -3,7 +3,7 @@ import unittest
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_data import PositionData
-from organoid_tracker.position_analysis import position_markers
+from organoid_tracker.position_analysis import position_markers, intensity_calculator
 
 
 class TestPositionData(unittest.TestCase):
@@ -23,13 +23,13 @@ class TestPositionData(unittest.TestCase):
         position_data.set_position_data(position_2, "intensity_volume", 100)
         position_data.set_position_data(position_3, "intensity_volume", 200)
 
-        position_markers.perform_intensity_normalization(experiment)
-        intensity1 = position_markers.get_normalized_intensity(experiment, position_1)
-        intensity2 = position_markers.get_normalized_intensity(experiment, position_2)
-        intensity3 = position_markers.get_normalized_intensity(experiment, position_3)
+        intensity_calculator.perform_intensity_normalization(experiment)
+        intensity1 = intensity_calculator.get_normalized_intensity(experiment, position_1)
+        intensity2 = intensity_calculator.get_normalized_intensity(experiment, position_2)
+        intensity3 = intensity_calculator.get_normalized_intensity(experiment, position_3)
 
-        # check if median is indeed 100
-        self.assertAlmostEqual(100, sorted([intensity1, intensity2,intensity3])[1], delta=0.0001)
+        # check if median is indeed 1
+        self.assertAlmostEqual(1, sorted([intensity1, intensity2,intensity3])[1], delta=0.0001)
 
         # check if lowest is indeed 0 (background correction)
         self.assertAlmostEqual(0, intensity1, delta=0.0001)
