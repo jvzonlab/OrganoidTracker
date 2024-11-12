@@ -702,12 +702,12 @@ def _encode_tracks_and_meta(links: Links, link_data: LinkData) -> List[Dict]:
                     link_meta_before[data_name] = [None] * len(coords_xyz_px_before)
                 link_meta_before[data_name].append(data_value)
 
-            # Make sure all metadata lists are the same length, so append None for missing values
-            for value_list in link_meta_before.values():
-                if len(value_list) < len(coords_xyz_px_before):
-                    value_list.append(None)
-
             coords_xyz_px_before.append([last_position.x, last_position.y, last_position.z])
+
+        # Make sure all metadata lists are the same length, so append None for missing values
+        for value_list in link_meta_before.values():
+            if len(value_list) < len(coords_xyz_px_before):
+                value_list.append(None)
 
         # Collect positions of this track
         coords_xyz_px = list()
