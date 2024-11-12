@@ -484,7 +484,7 @@ class PositionData:
         else:
             return object
 
-    def add_data_from_time_point_dict(self, time_point: TimePoint, positions: List[Position], metadata_dict: Dict[str, List[DataType]]):
+    def add_data_from_time_point_dict(self, time_point: TimePoint, positions: List[Position], metadata_dict: Dict[str, List[Optional[DataType]]]):
         """Adds a time point with positions and metadata. The metadata dictionary must contain lists of the same length
         as the positions list. The position and metadata lists must be in the same order, and the position list must
         not contain any duplicates.
@@ -528,6 +528,17 @@ class PositionData:
             self._all_positions[time_point.time_point_number()] = positions_at_time_point
             self._min_time_point_number = min_none(self._min_time_point_number, time_point.time_point_number())
             self._max_time_point_number = max_none(self._max_time_point_number, time_point.time_point_number())
+
+        # Update our data type index using the first non-None value of each metadata
+        for data_name, data_values in metadata_dict.items():
+            if data_name in self._data_names_and_types:
+                continue  # Already known
+
+            # Not known yet, so we need to guess the data type based on the first non-None value
+            for some_value in data_values:
+                if some_value is not None:
+                    self._data_names_and_types[data_name] = self._guess_data_type(some_value)
+                    break
 
     def create_time_point_dict(self, time_point: TimePoint, positions: List[Position]) -> Dict[str, List[Optional[DataType]]]:
         """Creates a dictionary of metadata lists for a given time point. The metadata lists are empty. This is useful
