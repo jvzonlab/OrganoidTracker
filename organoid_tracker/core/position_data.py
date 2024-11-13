@@ -303,6 +303,8 @@ class PositionData:
         error if the time points the provided positions are None or if they do not match."""
         if old_position.time_point_number() != new_position.time_point_number():
             raise ValueError("Time points are different")
+        if old_position == new_position:
+            return  # Nothing to do
 
         time_point_number = old_position.time_point_number()
         if time_point_number is None:
