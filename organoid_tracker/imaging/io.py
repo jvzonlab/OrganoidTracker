@@ -6,14 +6,14 @@ from typing import List, Dict, Any, Iterable, Optional
 
 import numpy
 
-from organoid_tracker.core import TimePoint, UserError, Color
+from organoid_tracker.core import TimePoint, UserError, Color, image_coloring
 from organoid_tracker.core.beacon_collection import BeaconCollection
 from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.global_data import GlobalData
 from organoid_tracker.core.image_filters import ImageFilters
 from organoid_tracker.core.image_loader import ImageChannel
-from organoid_tracker.core.images import ImageOffsets
+from organoid_tracker.core.images import ImageOffsets, ChannelDescription
 from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.links import Links, LinkingTrack
 from organoid_tracker.core.position import Position
@@ -91,6 +91,11 @@ def _parse_timings(data: Dict[str, Any], min_time_point: int, max_time_point: in
         .limit_to_time(min_time_point, max_time_point)
 
 
+def _parse_channel_description(data: Dict[str, Any]) -> ChannelDescription:
+    colormap = image_coloring.get_colormap(data["colormap"])
+    return ChannelDescription(channel_name=data["name"], colormap=colormap)
+
+
 def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point: int, max_time_point: int):
     """Loads any kind of JSON file."""
     data = _read_json_from_file(file_name)
@@ -166,6 +171,11 @@ def _load_json_data_file_v2(experiment: Experiment, data: Dict[str, Any], min_ti
     if "image_timings" in data:
         experiment.images.set_timings(_parse_timings(data["image_timings"], min_time_point, max_time_point))
 
+    if "image_channel_descriptions" in data:
+        for channel_index_zero, channel_json in enumerate(data["image_channel_descriptions"]):
+            experiment.images.set_channel_description(ImageChannel(index_zero=channel_index_zero),
+                                                      _parse_channel_description(channel_json))
+
     if "color" in data:
         color = data["color"]
         experiment.color = Color.from_rgb_floats(color[0], color[1], color[2])
@@ -224,6 +234,11 @@ def _load_json_data_file_v1(experiment: Experiment, data: Dict[str, Any], min_ti
 
     if "image_timings" in data:
         experiment.images.set_timings(_parse_timings(data["image_timings"], min_time_point, max_time_point))
+
+    if "image_channel_descriptions" in data:
+        for channel_index_zero, channel_json in enumerate(data["image_channel_descriptions"]):
+            experiment.images.set_channel_description(ImageChannel(index_zero=channel_index_zero),
+                                                      _parse_channel_description(channel_json))
 
     if "color" in data:
         color = data["color"]
@@ -826,6 +841,13 @@ def save_data_to_json(experiment: Experiment, json_file_name: str, *, write_new_
     if experiment.images.has_timings() and not experiment.images.timings().is_simple_multiplication():
         save_data["image_timings"] = {"min_time_point": experiment.images.timings().min_time_point_number(),
                                       "timings_m": list(experiment.images.timings().get_cumulative_timings_array_m())}
+
+    # Save image channel descriptions
+    save_data["image_channel_descriptions"] = []
+    for image_channel in experiment.images.get_channels():
+        channel_description = experiment.images.get_channel_description(image_channel)
+        save_data["image_channel_descriptions"].append({"name": channel_description.channel_name,
+                                                        "colormap": channel_description.colormap.name})
 
     # Save color
     save_data["color"] = list(experiment.color.to_rgb_floats())
