@@ -481,7 +481,8 @@ class Images:
             yield TimePoint(time_point_number)
 
     def get_channels(self) -> List[ImageChannel]:
-        """Gets all available image channels. These are determined by the image_loader."""
+        """Gets all available image channels. These are determined by the image_loader. They will be in order, so
+         with ImageChannel.index_zero matching the position in the list."""
         return self._image_loader.get_channels()
 
     def get_channel_description(self, channel: ImageChannel) -> ChannelDescription:

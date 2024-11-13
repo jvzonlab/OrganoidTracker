@@ -612,8 +612,13 @@ class LinkAndPositionEditor(AbstractEditor):
             else:
                 new_position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
                 old_position = self._selected[0]
-                self._selected.clear()
-                self._perform_action(_MovePositionAction(self._experiment, old_position, new_position))
+                if new_position == old_position:
+                    self.update_status("Position is the same as the old one - nothing to do.")
+                elif self._experiment.positions.contains_position(new_position):
+                    self.update_status("Position already exists - cannot move it there.")
+                else:
+                    self._selected.clear()
+                    self._perform_action(_MovePositionAction(self._experiment, old_position, new_position))
         else:
             super()._on_key_press(event)
 

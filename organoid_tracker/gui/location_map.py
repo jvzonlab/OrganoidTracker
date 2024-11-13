@@ -76,4 +76,4 @@ class LocationMap:
         y_indices, x_indices = numpy.where(self._array == obj)
         if len(x_indices) == 0:
             return None, None
-        return float(x_indices[0] * self._cell_size_x), float(y_indices[0] * self._cell_size_y)
+        return float(numpy.mean(x_indices * self._cell_size_x)), float(numpy.mean(y_indices * self._cell_size_y))

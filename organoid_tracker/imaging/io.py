@@ -6,14 +6,14 @@ from typing import List, Dict, Any, Iterable, Optional
 
 import numpy
 
-from organoid_tracker.core import TimePoint, UserError, Color
+from organoid_tracker.core import TimePoint, UserError, Color, image_coloring
 from organoid_tracker.core.beacon_collection import BeaconCollection
 from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.global_data import GlobalData
 from organoid_tracker.core.image_filters import ImageFilters
 from organoid_tracker.core.image_loader import ImageChannel
-from organoid_tracker.core.images import ImageOffsets
+from organoid_tracker.core.images import ImageOffsets, ChannelDescription
 from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.links import Links, LinkingTrack
 from organoid_tracker.core.position import Position
@@ -33,7 +33,7 @@ SUPPORTED_IMPORT_FILES = [
     ("Cell tracking challenge files", "*.txt"),
     ("TrackMate file", "*.xml"),
     ("Guizela's tracking files", "track_00000.p")]
-WRITE_NEW_FORMAT = False  # Default value for the saving function. Reading always supports both formats.
+WRITE_NEW_FORMAT = True  # Default value for the saving function. Reading always supports both formats.
 
 
 def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: str,
@@ -91,6 +91,11 @@ def _parse_timings(data: Dict[str, Any], min_time_point: int, max_time_point: in
         .limit_to_time(min_time_point, max_time_point)
 
 
+def _parse_channel_description(data: Dict[str, Any]) -> ChannelDescription:
+    colormap = image_coloring.get_colormap(data["colormap"])
+    return ChannelDescription(channel_name=data["name"], colormap=colormap)
+
+
 def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point: int, max_time_point: int):
     """Loads any kind of JSON file."""
     data = _read_json_from_file(file_name)
@@ -117,8 +122,9 @@ def _load_json_data_file(experiment: Experiment, file_name: str, min_time_point:
         _load_json_data_file_v2(experiment, data, min_time_point, max_time_point)
         return
 
-    raise ValueError("Unknown data version",
-                     f"The version of this program is not able to load data of version {version}.")
+    raise UserError("Unknown data version",
+                    f"The version of this program is not able to load data of version {version}."
+                    f" Maybe your version is outdated?")
 
 
 def _load_json_data_file_v2(experiment: Experiment, data: Dict[str, Any], min_time_point: int, max_time_point: int):
@@ -164,6 +170,11 @@ def _load_json_data_file_v2(experiment: Experiment, data: Dict[str, Any], min_ti
 
     if "image_timings" in data:
         experiment.images.set_timings(_parse_timings(data["image_timings"], min_time_point, max_time_point))
+
+    if "image_channel_descriptions" in data:
+        for channel_index_zero, channel_json in enumerate(data["image_channel_descriptions"]):
+            experiment.images.set_channel_description(ImageChannel(index_zero=channel_index_zero),
+                                                      _parse_channel_description(channel_json))
 
     if "color" in data:
         color = data["color"]
@@ -224,6 +235,11 @@ def _load_json_data_file_v1(experiment: Experiment, data: Dict[str, Any], min_ti
     if "image_timings" in data:
         experiment.images.set_timings(_parse_timings(data["image_timings"], min_time_point, max_time_point))
 
+    if "image_channel_descriptions" in data:
+        for channel_index_zero, channel_json in enumerate(data["image_channel_descriptions"]):
+            experiment.images.set_channel_description(ImageChannel(index_zero=channel_index_zero),
+                                                      _parse_channel_description(channel_json))
+
     if "color" in data:
         color = data["color"]
         experiment.color = Color.from_rgb_floats(color[0], color[1], color[2])
@@ -275,12 +291,9 @@ def _parse_positions_and_meta_format(experiment: Experiment, positions_json: Lis
             if positions_of_time_point is not None:
                 positions_of_time_point.append(position)
 
-        for metadata_key, metadata_values in time_point_json.get("position_meta", {}).items():
-            for i, value in enumerate(metadata_values):
-                if value is None:
-                    continue
-                position = positions_of_time_point[i]
-                experiment.position_data.set_position_data(position, metadata_key, value)
+        if has_meta:
+            experiment.position_data.add_data_from_time_point_dict(TimePoint(time_point_number), positions_of_time_point,
+                                                                   time_point_json["position_meta"])
 
 
 def _parse_tracks_and_meta_format(experiment: Experiment, tracks_json: List[Dict], min_time_point: int,
@@ -328,9 +341,11 @@ def _parse_tracks_and_meta_format(experiment: Experiment, tracks_json: List[Dict
         position_first = Position(*track_json["coords_xyz_px"][0], time_point_number=time_point_number_start)
         metadata = track_json.get("link_meta_before")
         for i, raw_position in enumerate(track_json["coords_xyz_px_before"]):
-            # Connect the traks
+            # Connect the tracks
             position_previous_track = Position(*raw_position, time_point_number=time_point_number_start - 1)
-            links.add_link(position_previous_track, position_first)
+            previous_track = links.get_track(position_previous_track)
+            current_track = links.get_track(position_first)
+            links.connect_tracks(previous=previous_track, next=current_track)
 
             # And add metadata for those links
             if metadata is not None:
@@ -668,27 +683,14 @@ def _encode_positions_and_meta(positions: PositionCollection, position_data: Pos
     time_points_json = list()
     for time_point in positions.time_points():
         metadata_lists = dict()
-        positions_of_time_point = list()
-        for position in positions.of_time_point(time_point):
-            # Add metadata to the metadata lists
-            for data_name, data_value in position_data.find_all_data_of_position(position):
-                # This data value was not yet found in this time point
-                # Set it to None for all previous positions
-                if data_name not in metadata_lists:
-                    metadata_lists[data_name] = [None] * len(positions_of_time_point)
+        positions_of_time_point = list(positions.of_time_point(time_point))
+        metadata_lists = position_data.create_time_point_dict(time_point, positions_of_time_point)
+        xyz_values = [[position.x, position.y, position.z] for position in positions_of_time_point]
 
-                metadata_lists[data_name].append(data_value)
-
-            # Make sure all metadata lists are the same length, so append None for missing values
-            for value_list in metadata_lists.values():
-                if len(value_list) < len(positions_of_time_point):
-                    value_list.append(None)
-
-            positions_of_time_point.append([position.x, position.y, position.z])
         if len(positions_of_time_point) > 0:
             time_point_json = {
                 "time_point": time_point.time_point_number(),
-                "coords_xyz_px": positions_of_time_point
+                "coords_xyz_px": xyz_values
             }
             if len(metadata_lists) > 0:
                 time_point_json["position_meta"] = metadata_lists
@@ -715,12 +717,12 @@ def _encode_tracks_and_meta(links: Links, link_data: LinkData) -> List[Dict]:
                     link_meta_before[data_name] = [None] * len(coords_xyz_px_before)
                 link_meta_before[data_name].append(data_value)
 
-            # Make sure all metadata lists are the same length, so append None for missing values
-            for value_list in link_meta_before.values():
-                if len(value_list) < len(coords_xyz_px_before):
-                    value_list.append(None)
-
             coords_xyz_px_before.append([last_position.x, last_position.y, last_position.z])
+
+        # Make sure all metadata lists are the same length, so append None for missing values
+        for value_list in link_meta_before.values():
+            if len(value_list) < len(coords_xyz_px_before):
+                value_list.append(None)
 
         # Collect positions of this track
         coords_xyz_px = list()
@@ -839,6 +841,13 @@ def save_data_to_json(experiment: Experiment, json_file_name: str, *, write_new_
     if experiment.images.has_timings() and not experiment.images.timings().is_simple_multiplication():
         save_data["image_timings"] = {"min_time_point": experiment.images.timings().min_time_point_number(),
                                       "timings_m": list(experiment.images.timings().get_cumulative_timings_array_m())}
+
+    # Save image channel descriptions
+    save_data["image_channel_descriptions"] = []
+    for image_channel in experiment.images.get_channels():
+        channel_description = experiment.images.get_channel_description(image_channel)
+        save_data["image_channel_descriptions"].append({"name": channel_description.channel_name,
+                                                        "colormap": channel_description.colormap.name})
 
     # Save color
     save_data["color"] = list(experiment.color.to_rgb_floats())

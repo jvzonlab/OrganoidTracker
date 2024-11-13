@@ -69,6 +69,9 @@ class Position:
             string += " at time point " + str(self._time_point_number)
         return string
 
+    def to_dict_key(self) -> str:
+        return f"{self._time_point_number} {self.z:.2f} {self.y:.2f} {self.x:.2f}"
+
     def __hash__(self) -> int:
         return int(self.x) ^ hash(self._time_point_number)
 
