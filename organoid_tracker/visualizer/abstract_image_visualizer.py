@@ -535,7 +535,7 @@ class AbstractImageVisualizer(Visualizer):
         }
         for list_name, list_values in image_coloring.COLORMAP_LISTS.items():
             for colormap_name in list_values:
-                menu_options[f"View//Image-Set channel colormap//{list_name}-{colormap_name}"]\
+                menu_options[f"View//Image-Channel colormap//{list_name}-{colormap_name}"]\
                     = partial(self._set_channel_color, colormap_name)
         return menu_options
 
