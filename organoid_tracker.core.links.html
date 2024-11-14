@@ -279,6 +279,20 @@ links.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.links.Links.add_track">
+<span class="sig-name descname"><span class="pre">add_track</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">track</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack" title="organoid_tracker.core.links.LinkingTrack"><span class="pre">LinkingTrack</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.links.Links.add_track" title="Permalink to this definition"></a></dt>
+<dd><p>Adds a track to the linking network. This is useful if you have a track that is not linked to the rest of the
+network yet.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.links.Links.connect_tracks">
+<span class="sig-name descname"><span class="pre">connect_tracks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack" title="organoid_tracker.core.links.LinkingTrack"><span class="pre">LinkingTrack</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">next</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack" title="organoid_tracker.core.links.LinkingTrack"><span class="pre">LinkingTrack</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.links.Links.connect_tracks" title="Permalink to this definition"></a></dt>
+<dd><p>Connects two tracks. The previous track should end one time point before the next track starts. Raises
+ValueError if the tracks are not after each other in time or if they are already connected.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.core.links.Links.contains_link">
 <span class="sig-name descname"><span class="pre">contains_link</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.links.Links.contains_link" title="Permalink to this definition"></a></dt>
 <dd><p>Returns True if the two given positions are linked to each other.</p>

@@ -57,7 +57,10 @@
 <li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
 <li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Supported tracking formats</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Supported tracking formats</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#some-details-of-aut-tracking-format">Some details of AUT tracking format</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
 <ul>
@@ -100,6 +103,86 @@
 <li><p>For other formats you will need to write an importer yourself. Instructions can be found at the <a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html"><span class="doc std std-doc">custom tracking formats</span></a> page.</p></li>
 </ul>
 <p>If you’re writing a Python script for data analysis, I recommend looking at the <a class="reference internal" href="API.html"><span class="doc std std-doc">API</span></a> to see how you can interact with the data files. If you’re using another programming language, you can load the <code class="docutils literal notranslate"><span class="pre">.aut</span></code> file as a JSON file.</p>
+<section id="some-details-of-aut-tracking-format">
+<h2>Some details of AUT tracking format<a class="headerlink" href="#some-details-of-aut-tracking-format" title="Permalink to this heading"></a></h2>
+<p>AUT files are simply JSON files, and the format is mostly self-explanatory. However, for storing the position and links
+two varations exist.</p>
+<p>There is the older “v1” format, in use from 2018-2024. You can recognize these files by the <code class="docutils literal notranslate"><span class="pre">&quot;version&quot;:</span> <span class="pre">&quot;v1&quot;</span></code> entry in
+the root of the file. It stored positions and links, plus their metadata, in a kind of cumbersome and duplicative way:</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// Old format</span>
+<span class="s2">&quot;positions&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w"> </span><span class="s2">&quot;1&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[[</span><span class="mf">56.4</span><span class="p">,</span><span class="w"> </span><span class="mf">54.1</span><span class="p">,</span><span class="w"> </span><span class="mf">4</span><span class="p">],</span><span class="w"> </span><span class="p">...],</span>
+<span class="w"> </span><span class="p">...</span>
+<span class="p">},</span>
+<span class="s2">&quot;links&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// Links i nthe d3js graph format</span>
+<span class="w">    </span><span class="s2">&quot;directed&quot;</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;multigraph&quot;</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;graph&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">    </span><span class="s2">&quot;nodes&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="c1">// All positions again, so that we follow the d3js format</span>
+<span class="w">      </span><span class="c1">// Difference with above is that we now also list position metadata</span>
+<span class="w">      </span><span class="c1">// Note how &quot;_time_point_number&quot; and the metadata keys are repeated over and over,</span>
+<span class="w">      </span><span class="c1">// further bloating file size</span>
+<span class="w">      </span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">136.92842303555807</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">186.91887053353733</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;z&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">12.0</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;_time_point_number&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;blah&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">...}},</span>
+<span class="w">      </span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">157.02603447837174</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">184.34746761541615</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;z&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">12.0</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;_time_point_number&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;blah&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">...}}</span>
+<span class="w">      </span><span class="p">...</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">&quot;links&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">       </span><span class="c1">// All individual links</span>
+<span class="w">       </span><span class="c1">// The save format doesn&#39;t know about tracks, so those are reconstructed when loading tracking data</span>
+<span class="w">       </span><span class="p">{</span>
+<span class="w">         </span><span class="s2">&quot;source&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">132.0952578173535</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">249.18141069746628</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;z&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">12.0</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;_time_point_number&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="p">},</span>
+<span class="w">         </span><span class="s2">&quot;target&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">125.84057341732412</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;y&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">253.73027207930585</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;z&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">12.0</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;_time_point_number&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">2</span><span class="p">},</span>
+<span class="w">         </span><span class="s2">&quot;blah&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">...</span><span class="w">  </span><span class="c1">// Link metadata</span>
+<span class="w">       </span><span class="p">},</span>
+<span class="w">       </span><span class="p">...</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>There is also the newer “v2” format, in use from 2025 onwards. You can recognize these files by the <code class="docutils literal notranslate"><span class="pre">&quot;version&quot;:</span> <span class="pre">&quot;v2&quot;</span></code>
+entry in the root of the file. It directly stores tracks, and also stores metadata in a more efficient way, without
+repeating the metadata keys over and over:</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// New format</span>
+<span class="s2">&quot;positions&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="c1">// Holds all positions and metadata for a single time point</span>
+<span class="w">    </span><span class="s2">&quot;time_point&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;coords_xyz_px&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[[</span><span class="mf">56.4</span><span class="p">,</span><span class="w"> </span><span class="mf">54.1</span><span class="p">,</span><span class="w"> </span><span class="mf">4</span><span class="p">],</span><span class="w"> </span><span class="p">...],</span>
+<span class="w">    </span><span class="s2">&quot;position_meta&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// Position meta now stored among the positions (instead of in the links graph)</span>
+<span class="w">       </span><span class="s2">&quot;blah&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[...]</span><span class="w">  </span><span class="c1">// One entry per position, null if not defined</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">...</span>
+<span class="p">]</span>
+<span class="s2">&quot;tracks&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="c1">// Holds all positions and metadata for a single track</span>
+
+<span class="w">    </span><span class="c1">// Coords of mother cell, in time point 17. Usually one entry, multiple in case of cell merges</span>
+<span class="w">    </span><span class="s2">&quot;coords_xyz_px_before&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[[</span><span class="mf">52.4</span><span class="p">,</span><span class="w"> </span><span class="mf">51.1</span><span class="p">,</span><span class="w"> </span><span class="mf">3</span><span class="p">]],</span><span class="w">  </span>
+<span class="w">    </span><span class="s2">&quot;time_point_start&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">18</span><span class="p">,</span><span class="w">  </span><span class="c1">// Time point of first position of track, 18 in this case</span>
+<span class="w">    </span><span class="c1">// Coords of all positions, first for time point 18, then time point 19, etc.</span>
+<span class="w">    </span><span class="s2">&quot;coords_xyz_px&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[[</span><span class="mf">56.4</span><span class="p">,</span><span class="w"> </span><span class="mf">54.1</span><span class="p">,</span><span class="w"> </span><span class="mf">4</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mf">58.4</span><span class="p">,</span><span class="w"> </span><span class="mf">55.1</span><span class="p">,</span><span class="w"> </span><span class="mf">4</span><span class="p">],</span><span class="w"> </span><span class="p">...],</span><span class="w">  </span>
+<span class="w">    </span><span class="s2">&quot;link_meta&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// Link metadata</span>
+<span class="w">       </span><span class="s2">&quot;blah&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[...],</span>
+<span class="w">       </span><span class="p">...</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="s2">&quot;link_meta_before&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// Link metadata for the links connecting this track to the previous track(s)</span>
+<span class="w">       </span><span class="s2">&quot;blah&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">[...],</span>
+<span class="w">       </span><span class="p">...</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span>
+<span class="w">    </span><span class="c1">// Metadata for the entire lineage (so also daughter tracks), only defined for tracks without a previous track</span>
+<span class="w">    </span><span class="s2">&quot;lineage_meta&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">        </span><span class="s2">&quot;blah&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">...</span><span class="w">  </span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">...</span>
+<span class="p">],</span>
+</pre></div>
+</div>
+</section>
 </section>
 
 

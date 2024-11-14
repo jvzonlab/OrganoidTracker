@@ -329,7 +329,8 @@ images.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.core.images.Images.get_channels">
 <span class="sig-name descname"><span class="pre">get_channels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageChannel" title="organoid_tracker.core.image_loader.ImageChannel"><span class="pre">ImageChannel</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.core.images.Images.get_channels" title="Permalink to this definition"></a></dt>
-<dd><p>Gets all available image channels. These are determined by the image_loader.</p>
+<dd><p>Gets all available image channels. These are determined by the image_loader. They will be in order, so
+with ImageChannel.index_zero matching the position in the list.</p>
 </dd></dl>
 
 <dl class="py method">
