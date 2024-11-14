@@ -60,8 +60,8 @@ def get_colormap(name: Optional[str]) -> Colormap:
     if _CACHED_COLORMAPS is None:
         _CACHED_COLORMAPS = {}
         for sublist in COLORMAP_LISTS.values():
-            for name in sublist:
-                _CACHED_COLORMAPS[name] = _create_colormap(name)
+            for name_to_load in sublist:
+                _CACHED_COLORMAPS[name_to_load] = _create_colormap(name_to_load)
 
     if name not in _CACHED_COLORMAPS:
         # If the name is not in the allowed list, simply return the gray colormap
