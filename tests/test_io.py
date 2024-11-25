@@ -178,7 +178,7 @@ class TestIO(TestCase):
             file = os.path.join(directory, "test." + io.FILE_EXTENSION)
             io.save_data_to_json(experiment, file, write_new_format=True)
 
-            experiment = io.load_data_file(file, min_time_point=2)
+            experiment = io.load_data_file(file, min_time_point=2, max_time_point=3)
             self.assertEqual(2, len(experiment.positions))
             self.assertEqual(1, len(experiment.links))
             self.assertEqual(2, experiment.link_data.get_link_data(position_2, position_3, "test_key"))
