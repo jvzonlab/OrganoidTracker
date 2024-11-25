@@ -160,3 +160,25 @@ class TestIO(TestCase):
             # Link meta
             self.assertEqual(4, experiment.link_data.get_link_data(Position(4, 5, 6, time_point_number=2),
                                                                    Position(7, 8, 9, time_point_number=3), "test_key"))
+
+    def test_loading_with_min_time_point(self):
+        experiment = Experiment()
+        position_1 = Position(1, 2, 3, time_point_number=1)
+        position_2 = Position(4, 5, 6, time_point_number=2)
+        position_3 = Position(7, 8, 9, time_point_number=3)
+        experiment.positions.add(position_1)
+        experiment.positions.add(position_2)
+        experiment.positions.add(position_3)
+        experiment.links.add_link(position_1, position_2)
+        experiment.links.add_link(position_2, position_3)
+        experiment.link_data.set_link_data(position_1, position_2, "test_key", 1)
+        experiment.link_data.set_link_data(position_2, position_3, "test_key", 2)
+
+        with TemporaryDirectory() as directory:
+            file = os.path.join(directory, "test." + io.FILE_EXTENSION)
+            io.save_data_to_json(experiment, file, write_new_format=True)
+
+            experiment = io.load_data_file(file, min_time_point=2)
+            self.assertEqual(2, len(experiment.positions))
+            self.assertEqual(1, len(experiment.links))
+            self.assertEqual(2, experiment.link_data.get_link_data(position_2, position_3, "test_key"))
