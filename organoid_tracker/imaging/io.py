@@ -311,8 +311,8 @@ def _parse_tracks_and_meta_format(experiment: Experiment, tracks_json: List[Dict
         coords_xyz_px = track_json["coords_xyz_px"]
         positions_of_track = list()
         min_index = max(0, min_time_point - time_point_number_start)
-        max_index = min(len(coords_xyz_px), max_time_point - time_point_number_start)
-        for i in range(min_index, max_index):
+        max_index = min(len(coords_xyz_px) - 1, max_time_point - time_point_number_start)
+        for i in range(min_index, max_index + 1):
             position = Position(*coords_xyz_px[i], time_point_number=time_point_number_start + i)
             positions_of_track.append(position)
         track = LinkingTrack(positions_of_track)
@@ -321,7 +321,7 @@ def _parse_tracks_and_meta_format(experiment: Experiment, tracks_json: List[Dict
         # Handle link metadata
         if "link_meta" in track_json:
             for metadata_key, metadata_values in track_json["link_meta"].items():
-                for i in range(min_index, max_index - 1):
+                for i in range(min_index, min(max_index, len(metadata_values))):
                     value = metadata_values[i]
                     if value is None:
                         continue
