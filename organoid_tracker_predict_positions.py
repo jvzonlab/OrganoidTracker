@@ -73,7 +73,7 @@ _output_folder = config.get_or_default("positions_output_folder", "Automatic pos
 _channels_str = config.get_or_default("images_channels", str(1), comment="Index(es) of the channels to use. Use \"3\" to use the third channel for predictions. Use \"1,3,4\" to use the sum of the first, third and fourth channel for predictions.")
 _images_channels = {int(part) for part in _channels_str.split(",")}
 _mid_layers = int(config.get_or_default("mid_layers", str(5), comment="Number of layers to interpolate in between"
-                                                                      " z-planes. Used to improve peak finding."))
+                                        " z-planes. Used to improve peak finding."))
 _peak_min_distance_px = int(config.get_or_default("peak_min_distance_px", str(6), comment="Minimum distance in pixels"
                                                                                           " between detected positions."))
 _threshold = float(config.get_or_default("threshold", str(0.1), comment="Minimum peak intensity, relative to the maximum in the time point"))

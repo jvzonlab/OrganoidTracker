@@ -310,22 +310,23 @@ def _parse_tracks_and_meta_format(experiment: Experiment, tracks_json: List[Dict
 
         coords_xyz_px = track_json["coords_xyz_px"]
         positions_of_track = list()
-        for i, raw_position in enumerate(coords_xyz_px):
-            time_point_number = time_point_number_start + i
-            if time_point_number < min_time_point or time_point_number > max_time_point:
-                continue
-            position_previous_track = Position(*raw_position, time_point_number=time_point_number_start + i)
-            positions_of_track.append(position_previous_track)
+        min_index = max(0, min_time_point - time_point_number_start)
+        max_index = min(len(coords_xyz_px), max_time_point - time_point_number_start)
+        for i in range(min_index, max_index):
+            position = Position(*coords_xyz_px[i], time_point_number=time_point_number_start + i)
+            positions_of_track.append(position)
         track = LinkingTrack(positions_of_track)
         links.add_track(track)
 
         # Handle link metadata
         if "link_meta" in track_json:
             for metadata_key, metadata_values in track_json["link_meta"].items():
-                for i, value in enumerate(metadata_values):
+                for i in range(min_index, max_index - 1):
+                    value = metadata_values[i]
                     if value is None:
                         continue
-                    link_data.set_link_data(positions_of_track[i], positions_of_track[i + 1], metadata_key, value)
+
+                    link_data.set_link_data(positions_of_track[i - min_index], positions_of_track[i - min_index + 1], metadata_key, value)
 
         # Handle lineage metadata
         if "lineage_meta" in track_json:
@@ -337,6 +338,8 @@ def _parse_tracks_and_meta_format(experiment: Experiment, tracks_json: List[Dict
         if "coords_xyz_px_before" not in track_json:
             continue
         time_point_number_start = track_json["time_point_start"]
+        if min_time_point >= time_point_number_start:
+            continue  # Ignore tracks that start at/after the minimum time point - can't add metadata to before
 
         position_first = Position(*track_json["coords_xyz_px"][0], time_point_number=time_point_number_start)
         metadata = track_json.get("link_meta_before")

@@ -5,6 +5,7 @@ from typing import Optional, Dict, Any, Tuple, List
 import PIL.Image
 import PIL.ImageDraw
 import numpy
+import skimage
 from matplotlib.backend_bases import MouseEvent, KeyEvent
 from numpy import ndarray
 
@@ -510,6 +511,8 @@ class CellSegmentationEditor(AbstractEditor):
         menu_options = {
             **super().get_extra_menu_options(),
             "Edit//Labeling-Delete current label [Shift+Delete]": self._delete_current_label,
+            "Edit//Batch-Add positions to masks without positions": self._add_positions_to_orphaned_masks,
+            "Edit//Batch-Remove masks without positions": self._remove_orphaned_masks,
         }
 
         image_loader = self._experiment.images.image_loader()
@@ -531,6 +534,97 @@ class CellSegmentationEditor(AbstractEditor):
                 = partial(self._set_segmentation_image_channel, channel)
 
         return menu_options
+
+    def _add_positions_to_orphaned_masks(self):
+        """Adds a position to the experiment for each mask that has no corresponding position."""
+        if self._display_settings.segmentation_channel is None:
+            dialog.popup_error("No segmentation images selected",
+                               "No segmentation images have been selected yet. Set a channel in the Edit menu.")
+            return
+        if not dialog.prompt_confirmation("Add positions to masks without positions",
+                                          "This will add a position to the experiment for each mask that has no "
+                                          " corresponding position. This cannot be undone. Do you want to continue?"):
+            return
+
+        for time_point in self._experiment.images.time_points():
+            segmentation_stack = self._experiment.images.get_image_stack(time_point, self._display_settings.segmentation_channel)
+            if segmentation_stack is None:
+                continue
+
+            offset = self._experiment.images.offsets.of_time_point(self._time_point)
+
+            # Find which labels already have a corresponding position
+            label_id_to_position = dict()
+            for position in self._experiment.positions.of_time_point(time_point):
+                image_position = position - offset
+                x, y, z = int(round(image_position.x)), int(round(image_position.y)), int(round(image_position.z))
+                if 0 <= x < segmentation_stack.shape[2] and 0 <= y < segmentation_stack.shape[1] and 0 <= z < \
+                        segmentation_stack.shape[0]:
+                    label_id = segmentation_stack[z, y, x]
+                    if label_id != 0:
+                        label_id_to_position[label_id] = position
+
+            # Add a position for each mask that has no corresponding position
+            for segmentation_region in skimage.measure.regionprops(segmentation_stack):
+                label_id = segmentation_region.label
+                if label_id in label_id_to_position:
+                    continue
+                z, y, x = int(round(segmentation_region.centroid[0])), int(round(segmentation_region.centroid[1])), int(round(segmentation_region.centroid[2]))
+                if segmentation_stack[z, y, x] != label_id:
+                    continue  # Skip if the centroid is not in the mask
+
+                new_position = Position(offset.x + x, offset.y + y, offset.z + z, time_point=time_point)
+
+                self._experiment.positions.add(new_position)
+        self.draw_view()
+        self._window.get_undo_redo().clear()
+        dialog.popup_message("Added positions to masks", "Added a position to the experiment for each mask that"
+                                                                  " had no corresponding position.")
+
+    def _remove_orphaned_masks(self):
+        """Adds a position to the experiment for each mask that has no corresponding position."""
+        if self._display_settings.segmentation_channel is None:
+            dialog.popup_error("No segmentation images selected",
+                               "No segmentation images have been selected yet. Set a channel in the Edit menu.")
+            return
+        if not dialog.prompt_confirmation("Remove masks without positions",
+                                          "This remove all masks that have no corresponding position. This cannot"
+                                          " be undone. Do you want to continue?"):
+            return
+
+        for time_point in self._experiment.images.time_points():
+            segmentation_stack = self._get_segmentation_stack_of_time_point(time_point)
+            if segmentation_stack is None:
+                continue
+
+            offset = self._experiment.images.offsets.of_time_point(self._time_point)
+
+            # Find which labels already have a corresponding position
+            label_id_to_position = dict()
+            for position in self._experiment.positions.of_time_point(time_point):
+                image_position = position - offset
+                x, y, z = int(round(image_position.x)), int(round(image_position.y)), int(round(image_position.z))
+                if 0 <= x < segmentation_stack.shape[2] and 0 <= y < segmentation_stack.shape[1] and 0 <= z < \
+                        segmentation_stack.shape[0]:
+                    label_id = segmentation_stack[z, y, x]
+                    if label_id != 0:
+                        label_id_to_position[label_id] = position
+
+            # Remove all masks that have no corresponding position
+            for segmentation_region in skimage.measure.regionprops(segmentation_stack):
+                label_id = segmentation_region.label
+                if label_id in label_id_to_position:
+                    continue
+                segmentation_stack[segmentation_stack == label_id] = 0
+
+            # Save the segmentation image stack
+            self._segmentation_image_experiment.images.save_3d_image_array(time_point, self._segmentation_image_channel,
+                segmentation_stack)
+
+        self.draw_view()
+        self._segmentation_image_undo_redo.mark_everything_saved()
+        dialog.popup_message("Removed masks without positions", "Removed all masks that did not have"
+                                                                " a corresponding position.")
 
     def _delete_current_label(self):
         segmentation_stack, label = self._get_segmentation_stack_and_selected_label()
@@ -586,3 +680,9 @@ class CellSegmentationEditor(AbstractEditor):
         we always return True.
         """
         return self._segmentation_image_undo_redo.has_unsaved_changes()
+
+    def _get_segmentation_stack_of_time_point(self, time_point: TimePoint) -> Optional[ndarray]:
+        """Returns the segmentation stack of the given time point, or None if no segmentation stack is available."""
+        if time_point == self._segmentation_image_time_point:
+            return self._segmentation_image_stack  # Use the one in memory
+        return self._experiment.images.get_image_stack(time_point, self._display_settings.segmentation_channel)
