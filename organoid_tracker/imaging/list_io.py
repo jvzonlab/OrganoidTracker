@@ -12,7 +12,8 @@ from organoid_tracker.imaging import io
 FILES_LIST_EXTENSION = ".autlist"
 
 
-def load_experiment_list_file(open_files_list_file: str, *, load_images: bool = True) -> Iterable[Experiment]:
+def load_experiment_list_file(open_files_list_file: str, *, load_images: bool = True,
+                              min_time_point: int = -100000000, max_time_point: int = 100000000) -> Iterable[Experiment]:
     """Loads all the listed files in the given file.."""
     open_files_list_file = os.path.abspath(open_files_list_file)
 
@@ -28,13 +29,14 @@ def load_experiment_list_file(open_files_list_file: str, *, load_images: bool = 
 
         for experiment_json in experiments_json:
             experiment = Experiment()
-            min_time_point = 0
-            max_time_point = 100000000
+            min_time_point_experiment = min_time_point
+            max_time_point_experiment = max_time_point
 
+            # If min and max time points are specified in the experiment file, restrict the range
             if "min_time_point" in experiment_json:
-                min_time_point = int(experiment_json["min_time_point"])
+                min_time_point_experiment = max(min_time_point, int(experiment_json["min_time_point"]))
             if "max_time_point" in experiment_json:
-                max_time_point = int(experiment_json["max_time_point"])
+                max_time_point_experiment = min(max_time_point, int(experiment_json["max_time_point"]))
 
             loaded_anything = False
             if "experiment_file" in experiment_json:
@@ -44,12 +46,12 @@ def load_experiment_list_file(open_files_list_file: str, *, load_images: bool = 
                 if not os.path.exists(experiment_file):
                     raise ValueError("File \"" + experiment_file + "\" does not exist.")
                 io.load_data_file(experiment_file, experiment=experiment,
-                                  min_time_point=min_time_point, max_time_point=max_time_point)
+                                  min_time_point=min_time_point_experiment, max_time_point=max_time_point_experiment)
                 loaded_anything = True
 
             if load_images and _contains_images(experiment_json):
                 general_image_loader.load_images_from_dictionary(experiment, experiment_json,
-                                                 min_time_point=min_time_point, max_time_point=max_time_point)
+                                                                 min_time_point=min_time_point_experiment, max_time_point=max_time_point_experiment)
                 loaded_anything = True
 
             if not loaded_anything:

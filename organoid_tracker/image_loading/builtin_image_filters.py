@@ -208,3 +208,12 @@ class InterpolatedMinMaxFilter(ImageFilter):
         # We need to remove the interpolators, as they're now outdated
         self._interpolator_minima = None
         self._interpolator_maxima = None
+
+
+def create_min_max_filter(min_value: float, max_value: float) -> ImageFilter:
+    """Creates a filter that sets the min and max pixel values.
+
+    We implement this using the InterpolatedMinMaxFilter. When we supply only one point, it will not interpolate, and
+    works perfectly fine as a simple min-max filter.
+    """
+    return InterpolatedMinMaxFilter({IntensityPoint(TimePoint(0), 0): (min_value, max_value)})

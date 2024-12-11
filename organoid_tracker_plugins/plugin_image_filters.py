@@ -4,6 +4,7 @@ from organoid_tracker.core import UserError
 from organoid_tracker.core.images import Images
 from organoid_tracker.gui import dialog, option_choose_dialog
 from organoid_tracker.gui.window import Window
+from organoid_tracker.image_loading import builtin_image_filters
 from organoid_tracker.image_loading.builtin_image_filters import GaussianBlurFilter, MultiplyPixelsFilter, \
     ThresholdFilter
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
@@ -11,10 +12,11 @@ from organoid_tracker.image_loading.builtin_merging_image_loaders import Channel
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "View//Image-Image filters//Increase brightness...": lambda: _enhance_brightness(window),
-        "View//Image-Image filters//Threshold...": lambda: _threshold(window),
-        "View//Image-Image filters//Gaussian blur...": lambda: _gaussian_blur(window),
-        "View//Image-Image filters//Merge channels...": lambda: _merge_channels(window),
+        "View//Image-Image filters//Filter-Increase brightness...": lambda: _enhance_brightness(window),
+        "View//Image-Image filters//Filter-Set min-max intensity...": lambda: _set_min_max_intensity(window),
+        "View//Image-Image filters//Filter-Threshold...": lambda: _threshold(window),
+        "View//Image-Image filters//Filter-Gaussian blur...": lambda: _gaussian_blur(window),
+        "View//Image-Image filters//Filter-Merge channels...": lambda: _merge_channels(window),
         "View//Image-Image filters//Remove-Remove all filters": lambda: _remove_filters(window)
     }
 
@@ -53,6 +55,20 @@ def _enhance_brightness(window: Window):
     image_channel = window.display_settings.image_channel
     for experiment in window.get_active_experiments():
         experiment.images.filters.add_filter(image_channel, MultiplyPixelsFilter(multiplier))
+    window.get_gui_experiment().redraw_image_and_data()
+
+
+def _set_min_max_intensity(window: Window):
+    min_intensity = dialog.prompt_float("Min intensity", "What should the minimum intensity be?", minimum=0, maximum=1e9)
+    if min_intensity is None:
+        return
+    max_intensity = dialog.prompt_float("Max intensity", "What should the maximum intensity be?", minimum=min_intensity, maximum=1e9)
+    if max_intensity is None:
+        return
+
+    image_channel = window.display_settings.image_channel
+    for experiment in window.get_active_experiments():
+        experiment.images.filters.add_filter(image_channel, builtin_image_filters.create_min_max_filter(min_intensity, max_intensity))
     window.get_gui_experiment().redraw_image_and_data()
 
 
