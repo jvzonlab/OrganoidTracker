@@ -299,6 +299,14 @@ The input array will be modified.</p>
 
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.create_min_max_filter">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.builtin_image_filters.</span></span><span class="sig-name descname"><span class="pre">create_min_max_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.image_filters.html#organoid_tracker.core.image_filters.ImageFilter" title="organoid_tracker.core.image_filters.ImageFilter"><span class="pre">ImageFilter</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.create_min_max_filter" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a filter that sets the min and max pixel values.</p>
+<p>We implement this using the InterpolatedMinMaxFilter. When we supply only one point, it will not interpolate, and
+works perfectly fine as a simple min-max filter.</p>
+</dd></dl>
+
 </section>
 
 
