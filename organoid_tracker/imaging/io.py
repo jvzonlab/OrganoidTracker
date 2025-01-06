@@ -355,6 +355,8 @@ def _parse_tracks_and_meta_format(experiment: Experiment, tracks_json: List[Dict
             # And add metadata for those links
             if metadata is not None:
                 for metadata_key, metadata_values in metadata.items():
+                    if i >= len(metadata_values):
+                        continue
                     value = metadata_values[i]
                     if value is None:
                         continue
