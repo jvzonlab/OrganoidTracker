@@ -10,7 +10,7 @@ from organoid_tracker.linking_analysis import linking_markers, particle_age_find
 from organoid_tracker.linking_analysis.errors import Error
 
 
-def find_errors_in_experiment(experiment: Experiment, marginalization = False) -> Tuple[int, int]:
+def find_errors_in_experiment(experiment: Experiment) -> Tuple[int, int]:
     """Adds errors for all logical inconsistencies in the graph, like cells that spawn out of nowhere, cells that
     merge together and cells that have three or more daughters.
     Returns the amount of errors (excluding positions without links) and the number of positions without links."""
@@ -20,7 +20,18 @@ def find_errors_in_experiment(experiment: Experiment, marginalization = False) -
     warning_count = 0
     no_links_count = 0
     for position in experiment.positions:
-        error = get_error(experiment, position, marginalization=marginalization)
+
+        # check if there is a marginalized probability available
+        next_position = experiment.links.find_single_future(position)
+        if next_position:
+            marginal_probability = experiment.link_data.get_link_data(position, next_position, data_name="marginal_probability")
+            if marginal_probability:
+                error = get_error(experiment, position, marginalization=True)
+            else:
+                error = get_error(experiment, position, marginalization=False)
+        else:
+            error = get_error(experiment, position, marginalization=True)
+
         linking_markers.set_error_marker(position_data, position, error)
         if error is not None:
             if links.contains_position(position):

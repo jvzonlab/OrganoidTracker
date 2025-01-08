@@ -4,9 +4,10 @@ from matplotlib.backend_bases import KeyEvent
 
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.position import Position
-from organoid_tracker.gui import dialog
+from organoid_tracker.gui import dialog, option_choose_dialog
 from organoid_tracker.gui.window import Window
 from organoid_tracker.linking_analysis import linking_markers, lineage_error_finder, cell_error_finder
+from organoid_tracker.linking_analysis.errors import Error
 from organoid_tracker.linking_analysis.lineage_error_finder import LineageWithErrors
 from organoid_tracker.visualizer import activate
 from organoid_tracker.visualizer.position_list_visualizer import PositionListVisualizer
@@ -35,7 +36,8 @@ class ErrorsVisualizer(PositionListVisualizer):
         display_settings = window.display_settings
         self._problematic_lineages = lineage_error_finder.get_problematic_lineages(experiment, crumb_positions,
                                              min_time_point=display_settings.error_correction_min_time_point,
-                                             max_time_point=display_settings.error_correction_max_time_point)
+                                             max_time_point=display_settings.error_correction_max_time_point,
+                                             excluded_errors=display_settings.excluded_errors)
         self._total_number_of_warnings = sum((len(lineage.errored_positions) for lineage in self._problematic_lineages))
 
         super().__init__(window, chosen_position=start_position, all_positions=[])
@@ -70,6 +72,7 @@ class ErrorsVisualizer(PositionListVisualizer):
             "Edit//Error settings-Change minimum marginal probability...": self._change_min_marginal_probability,
             "Edit//Time-Change minimum time point for correction...": self._change_min_time_point,
             "Edit//Time-Change maximum time point for correction...": self._change_max_time_point,
+            "Edit//Types-Only show some types of errors...": self._change_excluded_errors,
             "Navigate//Lineage-Next lineage [Up]": self.__goto_next_lineage,
             "Navigate//Lineage-Previous lineage [Down]": self.__goto_previous_lineage
         }
@@ -149,6 +152,18 @@ class ErrorsVisualizer(PositionListVisualizer):
         self.get_window().display_settings.error_correction_max_time_point = new_max_time_point
         self._recalculate_errors()
         self.update_status("Now checking errors up too and including time point " + str(answer) + ".")
+
+    def _change_excluded_errors(self):
+
+        available_error_names = [error.name for error in Error]
+        answer = option_choose_dialog.prompt_list_multiple("Errors", "Error names", "Error types to ignore:",
+                                                  available_error_names)
+        if answer is None:
+            return
+
+        self.get_window().display_settings.excluded_errors = answer
+        self._recalculate_errors()
+        self.update_status("Now ignoring errors of type " + str(answer) + ".")
 
 
 

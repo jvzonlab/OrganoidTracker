@@ -187,7 +187,7 @@ for (position1, position2) in experiment.links.find_all_links():
 
 # Assign errors based on marginalized scores
 print("Checking results for common errors...")
-warning_count, no_links_count = cell_error_finder.find_errors_in_experiment(experiment, marginalization=True)
+warning_count, no_links_count = cell_error_finder.find_errors_in_experiment(experiment)
 
 print("Saving files...")
 io.save_data_to_json(experiment, _output_file)
