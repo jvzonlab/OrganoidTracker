@@ -144,16 +144,16 @@
 <p>The code used to laod and save files in Guizela’s old tracking format. Necessary so that we can still use the tracking
 data that predates OrganoidTracker.</p>
 <p>To load some data:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.experiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Experiment</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">organoid_tracker.guizela_tracker_compatibility</span> <span class="kn">import</span> <span class="n">guizela_data_importer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.guizela_tracker_compatibility</span><span class="w"> </span><span class="kn">import</span> <span class="n">guizela_data_importer</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">guizela_data_importer</span><span class="o">.</span><span class="n">add_data_to_experiment</span><span class="p">(</span><span class="n">experiment</span><span class="p">,</span> <span class="s2">&quot;path/to/directory&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>And to save the data:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.experiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Experiment</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>  <span class="c1"># Placeholder, replace with actual data</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">organoid_tracker.guizela_tracker_compatibility</span> <span class="kn">import</span> <span class="n">guizela_data_exporter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.guizela_tracker_compatibility</span><span class="w"> </span><span class="kn">import</span> <span class="n">guizela_data_exporter</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">guizela_data_exporter</span><span class="o">.</span><span class="n">export_links</span><span class="p">(</span><span class="n">experiment</span><span class="p">,</span> <span class="s2">&quot;path/to/directory&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -171,7 +171,7 @@ data that predates OrganoidTracker.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2020-2024, Jeroen van Zon Lab.</p>
+    <p>&#169; Copyright 2020-2025, Jeroen van Zon Lab.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

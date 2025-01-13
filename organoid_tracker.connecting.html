@@ -141,9 +141,9 @@ cells in the same time point.)</p>
 represent the same cell.</p>
 <p>You can establish connections by hand in OrganoidTracker, or you can do it automatically. In this example,
 we connect every cell to the 5 closest cells, with a maximum distance of 10 micrometer:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.experiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Experiment</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>  <span class="c1"># Placeholder</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">organoid_tracker.connecting.connector_by_distance</span> <span class="kn">import</span> <span class="n">ConnectorByDistance</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.connecting.connector_by_distance</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConnectorByDistance</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">connector</span> <span class="o">=</span> <span class="n">ConnectorByDistance</span><span class="p">(</span><span class="n">max_distance_um</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">max_number</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">experiment</span><span class="o">.</span><span class="n">connections</span> <span class="o">=</span> <span class="n">connector</span><span class="o">.</span><span class="n">create_connections</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span>
 </pre></div>
@@ -162,7 +162,7 @@ we connect every cell to the 5 closest cells, with a maximum distance of 10 micr
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2020-2024, Jeroen van Zon Lab.</p>
+    <p>&#169; Copyright 2020-2025, Jeroen van Zon Lab.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -143,16 +143,16 @@
 <section id="module-organoid_tracker.image_loading">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-organoid_tracker.image_loading" title="Permalink to this heading"></a></h2>
 <p>Files for loading images. Use general_image_loader to load an arbitrary image/image sequence.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.experiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Experiment</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">organoid_tracker.image_loading</span> <span class="kn">import</span> <span class="n">general_image_loader</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.image_loading</span><span class="w"> </span><span class="kn">import</span> <span class="n">general_image_loader</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">general_image_loader</span><span class="o">.</span><span class="n">load_images</span><span class="p">(</span><span class="n">experiment</span><span class="p">,</span> <span class="s2">&quot;path/to/folder&quot;</span><span class="p">,</span> <span class="s2">&quot;image_t</span><span class="si">{time:003}</span><span class="s2">_c</span><span class="si">{channel}</span><span class="s2">.tif&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Or, in case you need to load something more advanced: (this example append three different channels)</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.experiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Experiment</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">organoid_tracker.image_loading</span> <span class="kn">import</span> <span class="n">general_image_loader</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.image_loading</span><span class="w"> </span><span class="kn">import</span> <span class="n">general_image_loader</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">general_image_loader</span><span class="o">.</span><span class="n">load_images_from_dictionary</span><span class="p">(</span><span class="n">experiment</span><span class="p">,</span> <span class="p">{</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="s2">&quot;images_channel_appending&quot;</span><span class="p">:</span> <span class="p">[</span>
 <span class="gp">&gt;&gt;&gt; </span>           <span class="p">{</span>
@@ -172,8 +172,8 @@
 </pre></div>
 </div>
 <p>Once you have loaded some images, you can retrieve them as follows:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">organoid_tracker.core</span> <span class="kn">import</span> <span class="n">TimePoint</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">organoid_tracker.core.image_loader</span> <span class="kn">import</span> <span class="n">ImageChannel</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimePoint</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.image_loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageChannel</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">array</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">get_image_stack</span><span class="p">(</span><span class="n">TimePoint</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">ImageChannel</span><span class="p">(</span><span class="n">index_zero</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -196,7 +196,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2020-2024, Jeroen van Zon Lab.</p>
+    <p>&#169; Copyright 2020-2025, Jeroen van Zon Lab.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

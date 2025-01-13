@@ -96,10 +96,10 @@
 <p>An alternative approach is to keep using the OrganoidTracker script, but with a custom trained network, so that it works better with your images. See <a class="reference internal" href="TRAINING_THE_NETWORK.html"><span class="doc std std-doc">this page</span></a> for more information.</p>
 <p>This guide is about how to replace the OrganoidTracker script with a custom script. The guide does not explain how to go from images to a list of positions, since that is an extremely broad topic. Instead, we will assume that you have already found some way to detect positions, and simply want to put that in a format that OrganoidTracker understands.</p>
 <p>You can write positions to an <code class="docutils literal notranslate"><span class="pre">.aut</span></code> file as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
-<span class="kn">from</span> <span class="nn">organoid_tracker.core.position</span> <span class="kn">import</span> <span class="n">Position</span>
-<span class="kn">from</span> <span class="nn">organoid_tracker.core.images</span> <span class="kn">import</span> <span class="n">ImageResolution</span>
-<span class="kn">from</span> <span class="nn">organoid_tracker.imaging</span> <span class="kn">import</span> <span class="n">io</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.experiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.position</span><span class="w"> </span><span class="kn">import</span> <span class="n">Position</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.images</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageResolution</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.imaging</span><span class="w"> </span><span class="kn">import</span> <span class="n">io</span>
 
 <span class="c1"># This creates an empty experiment</span>
 <span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
@@ -129,8 +129,8 @@
 </pre></div>
 </div>
 <p>You can specify the set of possible links using the <code class="docutils literal notranslate"><span class="pre">add_link</span></code> function:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.position</span> <span class="kn">import</span> <span class="n">Position</span>
-<span class="kn">from</span> <span class="nn">organoid_tracker.imaging</span> <span class="kn">import</span> <span class="n">io</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.position</span><span class="w"> </span><span class="kn">import</span> <span class="n">Position</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.imaging</span><span class="w"> </span><span class="kn">import</span> <span class="n">io</span>
 
 <span class="c1"># Load some tracking data</span>
 <span class="n">experiment</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">load_data_file</span><span class="p">(</span><span class="s2">&quot;input file.aut&quot;</span><span class="p">)</span>
@@ -149,8 +149,8 @@
 </div>
 <p>There’s a premade function in OrganoidTracker that select the nearest position as the potenial candidate for a link, as well as any other position that is at most twice as far away. In our experience, this criterium works very well to select all possible links.</p>
 <p>You can call that function as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.imaging</span> <span class="kn">import</span> <span class="n">io</span>
-<span class="kn">from</span> <span class="nn">organoid_tracker.linking</span> <span class="kn">import</span> <span class="n">nearest_neighbor_linker</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.imaging</span><span class="w"> </span><span class="kn">import</span> <span class="n">io</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.linking</span><span class="w"> </span><span class="kn">import</span> <span class="n">nearest_neighbor_linker</span>
 
 <span class="c1"># Load some tracking data</span>
 <span class="n">experiment</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">load_data_file</span><span class="p">(</span><span class="s2">&quot;input file.aut&quot;</span><span class="p">)</span>
@@ -159,9 +159,9 @@
 </pre></div>
 </div>
 <p>Now that you have your set of links, you can score each possible link as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.imaging</span> <span class="kn">import</span> <span class="n">io</span>
-<span class="kn">from</span> <span class="nn">organoid_tracker.linking</span> <span class="kn">import</span> <span class="n">nearest_neighbor_linker</span>
-<span class="kn">import</span> <span class="nn">math</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.imaging</span><span class="w"> </span><span class="kn">import</span> <span class="n">io</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.linking</span><span class="w"> </span><span class="kn">import</span> <span class="n">nearest_neighbor_linker</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 
 <span class="c1"># Load the experiment, create possible links</span>
 <span class="n">experiment</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">load_data_file</span><span class="p">(</span><span class="s2">&quot;input file.aut&quot;</span><span class="p">)</span>
@@ -177,8 +177,8 @@
 </pre></div>
 </div>
 <p>For divisions, you would use a very similar approach. You specify, for each nucleus position, the chance of that nucleus having divided into two nuclei in the next time point.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.experiment</span> <span class="kn">import</span> <span class="n">Experiment</span>
-<span class="kn">import</span> <span class="nn">math</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.experiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 
 <span class="c1"># Load the experiment, create possible links</span>
 <span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
@@ -209,7 +209,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2020-2024, Jeroen van Zon Lab.</p>
+    <p>&#169; Copyright 2020-2025, Jeroen van Zon Lab.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

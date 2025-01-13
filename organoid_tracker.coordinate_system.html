@@ -138,9 +138,9 @@
 <p>This package contains code for a “biological” coordinate system for organoids. In this system, organoid are represented
 as a sphere, and cells have polar coordinates on that sphere.</p>
 <p>To go from cartesian coordinates to spherical coordinates:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">organoid_tracker.core.vector</span> <span class="kn">import</span> <span class="n">Vector3</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.vector</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vector3</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">vector3</span> <span class="o">=</span> <span class="n">Vector3</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">organoid_tracker.coordinate_system.spherical_coordinates</span> <span class="kn">import</span> <span class="n">SphericalCoordinate</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.coordinate_system.spherical_coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">SphericalCoordinate</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">vector_spherical_coords</span> <span class="o">=</span> <span class="n">SphericalCoordinate</span><span class="o">.</span><span class="n">from_cartesian</span><span class="p">(</span><span class="n">vector3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">vector_spherical_coords</span><span class="o">.</span><span class="n">radius_um</span><span class="p">,</span> <span class="n">vector_spherical_coords</span><span class="o">.</span><span class="n">phi_degrees</span><span class="p">,</span> <span class="n">vector_spherical_coords</span><span class="o">.</span><span class="n">theta_degrees</span><span class="p">)</span>
 </pre></div>
@@ -161,7 +161,7 @@ You can draw points and tracks on the sphere. The center point is defined by the
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2020-2024, Jeroen van Zon Lab.</p>
+    <p>&#169; Copyright 2020-2025, Jeroen van Zon Lab.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

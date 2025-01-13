@@ -115,9 +115,9 @@
 <p><img alt="Opening the plugin folder" src="images%2Fplugin_creation.png" /></p>
 <p>For you, the path will of course be different. Once you click it, a File Explorer window will open. In this folder, create a new Python file. (You can do this from your favorite Python editor, like PyCharm.) Give the file a name like <code class="docutils literal notranslate"><span class="pre">plugin_some_example.py</span></code>. It’s important that the file name starts with <code class="docutils literal notranslate"><span class="pre">plugin_</span></code>, otherwise OrganoidTracker will not know that it is a plugin.</p>
 <p>Next, fill the file you just created with the following contents: <em>(copy-paste it, and note that every missing space or colon (‘:’) can make your plugin crash)</em></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.gui</span> <span class="kn">import</span> <span class="n">dialog</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.gui</span><span class="w"> </span><span class="kn">import</span> <span class="n">dialog</span>
 
-<span class="k">def</span> <span class="nf">get_menu_items</span><span class="p">(</span><span class="n">window</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_menu_items</span><span class="p">(</span><span class="n">window</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="s2">&quot;My menu item//Count cells in time points...&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">dialog</span><span class="o">.</span><span class="n">popup_message</span><span class="p">(</span><span class="s2">&quot;My plugin&quot;</span><span class="p">,</span> <span class="s2">&quot;Not yet implemented&quot;</span><span class="p">)</span>
     <span class="p">}</span>
@@ -143,14 +143,14 @@
 <section id="counting-the-cells">
 <h2>Counting the cells<a class="headerlink" href="#counting-the-cells" title="Permalink to this heading"></a></h2>
 <p>Replace the text in the plugin file you have previously created with the following:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.gui</span> <span class="kn">import</span> <span class="n">dialog</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.gui</span><span class="w"> </span><span class="kn">import</span> <span class="n">dialog</span>
 
-<span class="k">def</span> <span class="nf">get_menu_items</span><span class="p">(</span><span class="n">window</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_menu_items</span><span class="p">(</span><span class="n">window</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="s2">&quot;My menu item//Count cells in time points...&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">_count_cells</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
     <span class="p">}</span>
 
-<span class="k">def</span> <span class="nf">_count_cells</span><span class="p">(</span><span class="n">window</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_count_cells</span><span class="p">(</span><span class="n">window</span><span class="p">):</span>
     <span class="n">experiment</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">get_experiment</span><span class="p">()</span>
     <span class="n">cell_counts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">time_point</span> <span class="ow">in</span> <span class="n">experiment</span><span class="o">.</span><span class="n">time_points</span><span class="p">():</span>
@@ -166,7 +166,7 @@
 <section id="displaying-a-graph">
 <h2>Displaying a graph<a class="headerlink" href="#displaying-a-graph" title="Permalink to this heading"></a></h2>
 <p>It would be better to display this list as a graph. Fortunately, this is easily done using the widely used Python library Matplotlib. OrganoidTracker has a function to show a Matplotlib figure as a popup window. At the bottom of your plugin file, add the following function:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_display_my_figure</span><span class="p">(</span><span class="n">figure</span><span class="p">,</span> <span class="n">cell_counts</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_display_my_figure</span><span class="p">(</span><span class="n">figure</span><span class="p">,</span> <span class="n">cell_counts</span><span class="p">):</span>
     <span class="n">axis</span> <span class="o">=</span> <span class="n">figure</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>  <span class="c1"># gca is short for &quot;get current axis&quot;</span>
     
     <span class="n">axis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">cell_counts</span><span class="p">)</span>  <span class="c1"># Plots the points</span>
@@ -204,7 +204,7 @@
 </pre></div>
 </div>
 <p>To access other Python files of your plugin, you need to use relative imports. For example, if you want to access a function named <code class="docutils literal notranslate"><span class="pre">do_some_work()</span></code> located in <code class="docutils literal notranslate"><span class="pre">some_other_file_of_this_plugin.py</span></code> from your <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> file, you could do that as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">some_other_file_of_this_plugin</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">some_other_file_of_this_plugin</span>
 <span class="n">some_other_file_of_this_plugin</span><span class="o">.</span><span class="n">do_some_work</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -213,10 +213,10 @@
 <h3>Adding cell types<a class="headerlink" href="#adding-cell-types" title="Permalink to this heading"></a></h3>
 <p>OrganoidTracker has some special support for cell types, like coloring them differently and keeping a list of them for use in the menual data editor. Internally, cell types are stored as position metadata (see the <a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html"><span class="doc std std-doc">metadata tutorial</span></a>).</p>
 <p>You can register cell types as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">organoid_tracker.core.marker</span> <span class="kn">import</span> <span class="n">Marker</span>
-<span class="kn">from</span> <span class="nn">organoid_tracker.core.position</span> <span class="kn">import</span> <span class="n">Position</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.marker</span><span class="w"> </span><span class="kn">import</span> <span class="n">Marker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.position</span><span class="w"> </span><span class="kn">import</span> <span class="n">Position</span>
 
-<span class="k">def</span> <span class="nf">get_markers</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_markers</span><span class="p">():</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">Marker</span><span class="p">([</span><span class="n">Position</span><span class="p">],</span> <span class="s2">&quot;STEM&quot;</span><span class="p">,</span> <span class="s2">&quot;stem cell&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">182</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
             <span class="n">Marker</span><span class="p">([</span><span class="n">Position</span><span class="p">],</span> <span class="s2">&quot;GOBLET&quot;</span><span class="p">,</span> <span class="s2">&quot;goblet cell&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">126</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">64</span><span class="p">))]</span>
 </pre></div>
@@ -228,17 +228,17 @@
 <p>Adding an additional organoid_tracker script (like <code class="docutils literal notranslate"><span class="pre">organoid_tracker_compare_positions.py</span></code>) is not possible from a plugin. Instead, you can use a subcommand of <code class="docutils literal notranslate"><span class="pre">organoid_tracker.py</span></code>. Say you want to add a command named “my_command”, then you could call it like:</p>
 <p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">organoid_tracker.py</span> <span class="pre">my_command</span></code></p>
 <p>To implement this, add the following code to your plugin:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span>
 
 
 <span class="c1"># This method is called by the plugin system</span>
-<span class="k">def</span> <span class="nf">get_commands</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_commands</span><span class="p">():</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="s2">&quot;my_command&quot;</span><span class="p">:</span> <span class="n">_my_command_handler</span>
     <span class="p">}</span>
 
 
-<span class="k">def</span> <span class="nf">_my_command_handler</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_my_command_handler</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello world!&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
     <span class="k">return</span> <span class="mi">0</span>
 </pre></div>
@@ -259,7 +259,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2020-2024, Jeroen van Zon Lab.</p>
+    <p>&#169; Copyright 2020-2025, Jeroen van Zon Lab.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
