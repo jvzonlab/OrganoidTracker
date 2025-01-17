@@ -338,7 +338,7 @@ def _parse_tracks_and_meta_format(experiment: Experiment, tracks_json: List[Dict
         if "coords_xyz_px_before" not in track_json:
             continue
         time_point_number_start = track_json["time_point_start"]
-        if time_point_number_start < min_time_point:
+        if time_point_number_start <= min_time_point:
             continue  # Ignore tracks that start at/after the minimum time point - can't add metadata to before
         if time_point_number_start > max_time_point:
             continue  # Also ignore tracks starting after the maximum time point - the time point before doesn't exist
@@ -728,7 +728,7 @@ def _encode_tracks_and_meta(links: Links, link_data: LinkData) -> List[Dict]:
 
         # Make sure all metadata lists are the same length, so append None for missing values
         for value_list in link_meta_before.values():
-            if len(value_list) < len(coords_xyz_px_before):
+            if len(value_list) < len(coords_xyz_px_before)+1:
                 value_list.append(None)
 
         # Collect positions of this track
@@ -749,7 +749,7 @@ def _encode_tracks_and_meta(links: Links, link_data: LinkData) -> List[Dict]:
 
                 # Make sure all metadata lists are the same length, so append None for missing values
                 for value_list in link_meta.values():
-                    if len(value_list) < len(coords_xyz_px) - 1:
+                    if len(value_list) < len(coords_xyz_px): #mistake - 1:
                         value_list.append(None)
 
             coords_xyz_px.append([position.x, position.y, position.z])

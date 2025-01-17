@@ -20,6 +20,7 @@ from organoid_tracker.gui.window import Window
 from organoid_tracker.linking_analysis import cell_error_finder, linking_markers, track_positions_finder, \
     lineage_markers, lineage_error_finder
 from organoid_tracker.linking_analysis.linking_markers import EndMarker
+from organoid_tracker.linking_analysis.links_postprocessor import _add_out_of_view_markers
 from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.visualizer import activate
 from organoid_tracker.visualizer.abstract_editor import AbstractEditor
@@ -525,6 +526,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//Batch-Delete connections of selected positions": self._try_delete_connections_of_all_selected,
             "Edit//Batch-Batch deletion//Delete all tracks with errors...": self._delete_tracks_with_errors,
             "Edit//Batch-Batch deletion//Delete short lineages...": self._delete_short_lineages,
+            "Edit//Batch-Batch deletion//Delete cells close to the edge...": self._delete_cells_close_to_the_edge,
             "Edit//Batch-Batch deletion//Delete all tracks not in the first time point...": self._delete_tracks_not_in_first_time_point,
             "Edit//Batch-Batch deletion//Delete all positions without links...": self._delete_positions_without_links,
             "Edit//Batch-Batch deletion//Delete all links with low likelihood...": self._delete_unlikely_links,
@@ -926,14 +928,14 @@ class LinkAndPositionEditor(AbstractEditor):
         """Deletes all links with a low score"""
         cutoff = dialog.prompt_float("Deleting unlikely links",
                                      "What is the minimum required likelihood for a link (0% - 100%)?"
-                                     "\nLinks with a lower likelihood, as predicted by the neural network, will be removed.",
+                                     "\nLinks with a lower likelihood, as predicted by context the neural network, will be removed.",
                                      minimum=0, maximum=100, decimals=1, default=10)
         if cutoff is None:
             return  # Cancelled
         cutoff_fraction = cutoff / 100
         to_remove = list()
         link_data = self._experiment.link_data
-        for (position_a, position_b), value in link_data.find_all_links_with_data("link_probability"):
+        for (position_a, position_b), value in link_data.find_all_links_with_data("marginal_probability"):
             if value < cutoff_fraction:
                 to_remove.append((position_a, position_b))
         self._perform_action(_DeleteLinksAction(link_data, to_remove))
@@ -979,6 +981,33 @@ class LinkAndPositionEditor(AbstractEditor):
                 for some_track in track.find_all_descending_tracks(include_self=True):
                     for position in some_track.positions():
                         snapshots_to_delete.append(FullPositionSnapshot.from_position(experiment, position))
+
+        # Perform the deletion
+        self._perform_action(_DeletePositionsAction(snapshots_to_delete))
+
+    def _delete_cells_close_to_the_edge(self):
+        """Deletes all lineages where at least a single error was present."""
+        min_distance = dialog.prompt_int("Deleting cells close to the edge",
+                                         "How many pixels (XY) from the edge should a cell be? This cannot be undone",
+                                         minimum=0, default=20)
+        if min_distance is None:
+            return
+
+        snapshots_to_delete = []
+        experiment = self._experiment
+        links = experiment.links
+
+
+        image_loader = experiment.images
+        links = experiment.links
+        position_data = experiment.position_data
+        for time_point in experiment.time_points():
+            for position in list(experiment.positions.of_time_point(time_point)):
+                if not image_loader.is_inside_image(position, margin_xy=min_distance):
+                    # Remove cell, but inform neighbors first
+                    snapshots_to_delete.append(FullPositionSnapshot.from_position(experiment, position))
+                    _add_out_of_view_markers(links, position_data, position)
+                    #experiment.remove_position(position, update_splines=False)
 
         # Perform the deletion
         self._perform_action(_DeletePositionsAction(snapshots_to_delete))
