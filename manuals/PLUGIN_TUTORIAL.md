@@ -139,7 +139,7 @@ def get_markers():
             Marker([Position], "GOBLET", "goblet cell", (126, 255, 64))]
 ```
 
-The `get_markers` function is called automatically by OrganoidTracker. The function must return a list of `Marker`s. Each marker provides what it is targeting (`Position`), the name under which it is saved to the data files, a display name and a display color. The color is used for the border of the position markers and for the lineage trees.
+The `get_markers` function is called automatically by OrganoidTracker. The function must return a list of `Marker`s. Each marker provides what it is targeting (`Position`, `Beacon` or `Spline`), the name under which it is saved to the data files, a display name and a display color. The color is used for the border of the position markers and for the lineage trees.
 
 ### Adding command-line scripts
 

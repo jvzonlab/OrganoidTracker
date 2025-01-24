@@ -403,14 +403,15 @@ def _parse_splines_meta_format(experiment: Experiment, axes_meta: Dict[str, obje
 
 def _parse_beacons_format(experiment: Experiment, beacons_data: Dict[str, List], min_time_point: int,
                           max_time_point: int):
-    """Expects a dict: `{"1": [...], "2": [...]}`. Keys are time points, values are lists with [x,y,z] positions:
-    `[[2,4,7], [4,5.3,3], ...]`."""
+    """Expects a dict: `{"1": [...], "2": [...]}`. Keys are time points, values are lists with [x,y,z(,type)] positions:
+    `[[2,4,7,"TYPE_NAME"], [4,5.3,3], ...]`. The type is optional"""
     for time_point_str, beacons_list in beacons_data.items():
         time_point_number = int(time_point_str)
         if time_point_number < min_time_point or time_point_number > max_time_point:
             continue
         for beacon_values in beacons_list:
-            experiment.beacons.add(Position(*beacon_values, time_point_number=time_point_number))
+            type_name = beacon_values[3] if len(beacon_values) > 3 else None
+            experiment.beacons.add(Position(*beacon_values[0:3], time_point_number=time_point_number), type_name)
 
 
 def _parse_connections_format(experiment: Experiment, connections_data: Dict[str, List[List[Dict]]],
@@ -580,8 +581,11 @@ def _encode_beacons(beacons: BeaconCollection):
     data_structure = {}
     for time_point in beacons.time_points():
         encoded_positions = []
-        for position in beacons.of_time_point(time_point):
-            encoded_positions.append([position.x, position.y, position.z])
+        for beacon in beacons.of_time_point_with_type(time_point):
+            if beacon.beacon_type is None:
+                encoded_positions.append([beacon.position.x, beacon.position.y, beacon.position.z])
+            else:
+                encoded_positions.append([beacon.position.x, beacon.position.y, beacon.position.z, beacon.beacon_type])
 
         data_structure[str(time_point.time_point_number())] = encoded_positions
     return data_structure

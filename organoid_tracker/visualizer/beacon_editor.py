@@ -1,13 +1,15 @@
-from typing import Optional, Dict, Any
+from functools import partial
+from typing import Optional, Dict, Any, List
 
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 
 from organoid_tracker import core
+from organoid_tracker.core.beacon_collection import Beacon
 from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.core.marker import Marker
 from organoid_tracker.core.position import Position
 from organoid_tracker.gui.undo_redo import UndoableAction, ReversedAction
 from organoid_tracker.gui.window import Window
-from organoid_tracker.linking import nearby_position_finder
 from organoid_tracker.visualizer.abstract_editor import AbstractEditor
 from organoid_tracker.visualizer.link_and_position_editor import LinkAndPositionEditor
 
@@ -44,21 +46,55 @@ class _MoveBeaconAction(UndoableAction):
         return f"Moved the beacon back to {self._old_position}"
 
 
+class _ChangeBeaconTypeAction(UndoableAction):
+    _beacon: Position
+    _old_type: Optional[str]
+    _new_type: Optional[str]
+
+    def __init__(self, beacon: Position, old_type: Optional[str], new_type: Optional[str]):
+        self._beacon = beacon
+        self._old_type = old_type
+        self._new_type = new_type
+
+    def do(self, experiment: Experiment) -> str:
+        experiment.beacons.set_beacon_type(self._beacon, self._new_type)
+        if self._new_type is None:
+            return f"Removed the type of the beacon at {self._beacon}"
+        return f"Set the type of the beacon {self._beacon} to \"{self._new_type}\""
+
+    def undo(self, experiment: Experiment) -> str:
+        experiment.beacons.set_beacon_type(self._beacon, self._old_type)
+        if self._old_type is None:
+            return f"Removed the type of the beacon at {self._beacon} again"
+        return f"Changed the type of the beacon at {self._beacon} back to \"{self._old_type}\""
+
+
 class BeaconEditor(AbstractEditor):
     """Editor for beacons - abstract points that cells move around or towards. Use Insert, Shift and Delete to insert,
     shift or delete points."""
 
-    _selected_index: Optional[int] = None
+    _selected_beacon: Optional[Position] = None
     _draw_beacon_distances: bool = False
 
     def __init__(self, window: Window):
         super().__init__(window, parent_viewer=LinkAndPositionEditor)
 
+    def _get_available_beacon_types(self) -> List[Marker]:
+        return list(self._window.registry.get_registered_markers(Beacon))
+
     def get_extra_menu_options(self) -> Dict[str, Any]:
-        return {
+        menu_options = {
             **super().get_extra_menu_options(),
             "Edit//Positions-Toggle showing distances to positions": self._toggle_showing_beacon_distances
         }
+
+        beacon_types = self._get_available_beacon_types()
+        for beacon_type in beacon_types:
+            menu_options[f"Edit//Beacons-Change type to \"{beacon_type.display_name}\""] = partial(self._set_beacon_type, beacon_type)
+        if len(beacon_types) > 0:
+            menu_options["Edit//Beacons-Remove type"] = lambda: self._set_beacon_type(None)
+
+        return menu_options
 
     def _get_figure_title(self) -> str:
         return ("Editing beacons of time point " + str(self._time_point.time_point_number())
@@ -67,6 +103,15 @@ class BeaconEditor(AbstractEditor):
     def _toggle_showing_beacon_distances(self):
         self._draw_beacon_distances = not self._draw_beacon_distances
         self.draw_view()
+
+    def _set_beacon_type(self, new_type: Optional[Marker]):
+        selected = self._selected_beacon
+        if selected is None:
+            self.update_status("No beacon was selected - cannot change anything.")
+            return
+        old_type = self._experiment.beacons.get_beacon_type(selected)
+        new_type_str = new_type.save_name if new_type is not None else None
+        self._perform_action(_ChangeBeaconTypeAction(selected, old_type, new_type_str))
 
     def _on_position_draw(self, position: Position, color: str, dz: int, dt: int) -> bool:
         if not self._draw_beacon_distances or dt != 0 or abs(dz) > self.MAX_Z_DISTANCE:
@@ -77,7 +122,7 @@ class BeaconEditor(AbstractEditor):
 
         if beacon is None:
             return super()._on_position_draw(position, color, dz, dt)
-        is_selected = beacon.beacon_index == self._selected_index
+        is_selected = beacon.beacon_position == self._selected_beacon
 
         background_color = (1, 1, 1, 0.8) if is_selected else (0, 1, 0, 0.8)
         self._draw_annotation(position, f"{beacon.distance_um:.1f} μm", background_color=background_color)
@@ -91,31 +136,40 @@ class BeaconEditor(AbstractEditor):
         resolution = self._experiment.images.resolution()
         closest_beacon = self._experiment.beacons.find_closest_beacon(clicked_position, resolution)
         if closest_beacon is None:
-            self._selected_index = None
-        elif closest_beacon.distance_um > 3:
-            self._selected_index = None
+            self._selected_beacon = None
+        elif closest_beacon.distance_um > 8:
+            self._selected_beacon = None
             self.draw_view()
             self.update_status("Deselected the beacon.")
         else:
-            self._selected_index = closest_beacon.beacon_index
+            self._selected_beacon = closest_beacon.beacon_position
             self.draw_view()
             self.update_status("Selected a beacon.")
 
     def _draw_extra(self):
         """Draws the selection box."""
-        selected = self._selected_beacon()
+        selected = self._selected_beacon
         if selected is not None:
+            beacon_name = self._experiment.beacons.get_beacon_type(selected)
+            font_weight = "bold"
+            font_style = "normal"
+            if beacon_name is None:
+                # Unknown name
+                beacon_name = "(untyped)"
+                font_weight = "normal"
+                font_style = "italic"
+            else:
+                # Try to replace with display name
+                beacon_type_marker = self._window.registry.get_marker_by_save_name(beacon_name)
+                if beacon_type_marker is not None and beacon_type_marker.applies_to(Beacon):
+                    beacon_name = beacon_type_marker.display_name
+
             self._draw_selection(selected, core.COLOR_CELL_CURRENT)
             if self._experiment.beacons.count_beacons_at_time_point(self._time_point) > 1:
                 dz = int(abs(selected.z - self._z))
-                self._ax.annotate(str(self._selected_index), (selected.x, selected.y), fontsize=8 - abs(dz / 2),
-                                  fontweight="bold", color="black", backgroundcolor=(1, 1, 1, 0.8))
-
-    def _selected_beacon(self) -> Optional[Position]:
-        """Gets the currently selected beacon."""
-        if self._selected_index is None:
-            return None
-        return self._experiment.beacons.get_beacon_by_index(self._time_point, self._selected_index)
+                self._ax.annotate(beacon_name, (selected.x, selected.y), fontsize=8 - abs(dz / 2),
+                                  fontweight=font_weight, fontstyle=font_style, color="black",
+                                  backgroundcolor=(1, 1, 1, 0.8))
 
     def _on_key_press(self, event: KeyEvent):
         if event.key == "insert" or event.key == "enter":
@@ -131,13 +185,13 @@ class BeaconEditor(AbstractEditor):
             return
 
         beacon = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
-        self._selected_index = self._experiment.beacons.get_next_index(self._time_point)
+        self._selected_beacon = beacon
         self._perform_action(_InsertBeaconAction(beacon))
 
     def _try_remove(self):
-        selected = self._selected_beacon()
+        selected = self._selected_beacon
         if selected is None:
             self.update_status("No beacon was selected - cannot delete anything.")
             return
-        self._selected_index = None
+        self._selected_beacon = None
         self._perform_action(ReversedAction(_InsertBeaconAction(selected)))
