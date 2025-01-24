@@ -102,7 +102,7 @@ class SphereRepresentation:
             self._orientation_positions.append(track_as_list[-1])
 
     def _get_beacon(self, position: Position) -> Optional[Position]:
-        return self._beacons.get_beacon_by_index(position.time_point(), self._beacon_index)
+        return self._beacons.find_single_beacon_of_time_point(position.time_point())
 
     def draw_3d(self, ax: Axes3D, sphere_origin_px: Vector3):
         # Start with the sphere

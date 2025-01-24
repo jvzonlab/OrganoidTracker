@@ -45,7 +45,7 @@ def _iterable_len(iterable: Iterable) -> int:
 
 
 report = ComparisonReport()
-for errored_position in linking_markers.find_errored_positions(automatic_experiment.position_data):
+for errored_position in linking_markers.find_errored_positions(automatic_experiment):
     translated_position = _translate(errored_position, automatic_experiment, corrected_experiment)
 
     if not corrected_experiment.positions.contains_position(translated_position):

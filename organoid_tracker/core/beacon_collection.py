@@ -1,5 +1,5 @@
 import math
-from typing import List, Dict, Optional, Iterable
+from typing import List, Dict, Optional, Iterable, NamedTuple, Tuple
 
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.position import Position
@@ -7,19 +7,29 @@ from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.core.vector import Vector3
 
 
+_DEFAULT_BEACON_TYPE = "__DEFAULT__"
+
+
+class Beacon(NamedTuple):
+    """A beacon is a named point in space."""
+    position: Position
+    beacon_type: Optional[str]
+
+
 class ClosestBeacon:
     """Used to represent the distance towards, the identity and the position of the closest beacon."""
     distance_um: float
     beacon_position: Position
+    beacon_type: str
     search_position: Position
     beacon_index: int
     resolution: ImageResolution
 
-    def __init__(self, search_position: Position, beacon_position: Position, beacon_index: int, distance_um: float,
+    def __init__(self, search_position: Position, beacon_position: Position, beacon_type: Optional[str], distance_um: float,
                  resolution: ImageResolution):
         self.search_position = search_position
         self.beacon_position = beacon_position
-        self.beacon_index = beacon_index
+        self.beacon_type = beacon_type
         self.distance_um = distance_um
         self.resolution = resolution
 
@@ -34,22 +44,24 @@ class ClosestBeacon:
 class BeaconCollection:
     """Ordered list of beacons per time point."""
 
-    _beacons: Dict[TimePoint, List[Position]]
+    _beacons: Dict[TimePoint, Dict[Position, str]]
 
     def __init__(self):
         self._beacons = dict()
 
-    def add(self, position: Position):
-        """Adds a new beacon. Duplicate beacons are allowed."""
+    def add(self, position: Position, beacon_type: Optional[str] = None):
+        """Adds a new beacon. If there is already a beacon at the given position, it is overwritten."""
         time_point = position.time_point()
         if time_point is None:
             raise ValueError(f"No time point specified for {position}.")
+        if beacon_type is None:
+            beacon_type = _DEFAULT_BEACON_TYPE  # We don't store None
 
         beacons_at_time_point = self._beacons.get(time_point)
         if beacons_at_time_point is None:
-            beacons_at_time_point = list()
+            beacons_at_time_point = dict()
             self._beacons[time_point] = beacons_at_time_point
-        beacons_at_time_point.append(position)
+        beacons_at_time_point[position] = beacon_type
 
     def remove(self, position: Position) -> bool:
         """Removes the beacon at the given position. Returns True if succesful, returns False if there was no beacon at
@@ -63,7 +75,7 @@ class BeaconCollection:
             return False
 
         try:
-            beacons_at_time_point.remove(position)
+            del beacons_at_time_point[position]
             if len(beacons_at_time_point) == 0:
                 del self._beacons[time_point]  # Remove the now-empty list
             return True
@@ -83,11 +95,13 @@ class BeaconCollection:
         if beacons_at_time_point is None:
             return False  # No beacons at that time point, nothing to move
 
-        for i in range(len(beacons_at_time_point)):
-            if beacons_at_time_point[i] == old_position:
-                beacons_at_time_point[i] = new_position
-                return True
-        return False
+        old_beacon_type = beacons_at_time_point.get(old_position)
+        if old_beacon_type is None:
+            return False  # No beacon at old position
+
+        del beacons_at_time_point[old_position]
+        beacons_at_time_point[new_position] = old_beacon_type
+        return True
 
     def contains_position(self, beacon: Position) -> bool:
         """Gets whether the given beacon exists in this collection."""
@@ -97,29 +111,39 @@ class BeaconCollection:
             return False
         return beacon in beacons_at_time_point
 
-    def get_next_index(self, time_point: TimePoint) -> int:
-        """Beacons have indices: 1, 2, 3, etc. for every time point. This method returns the index that the next beacon
-        placed at the given time point will get."""
-        beacons_at_time_point = self._beacons.get(time_point)
-        if beacons_at_time_point is None:
-            return 1
-        return len(beacons_at_time_point) + 1
-
-    def get_beacon_by_index(self, time_point: TimePoint, index: int) -> Optional[Position]:
-        """Gets the beacon with the given index at the given time point. Index 1 is the first beacon."""
-        beacons_at_time_point = self._beacons.get(time_point)
-        if beacons_at_time_point is None:
-            return None
-        if index <= 0 or index > len(beacons_at_time_point):
-            return None
-        return beacons_at_time_point[index - 1]
-
     def of_time_point(self, time_point: TimePoint) -> Iterable[Position]:
         """Gets all beacons at the given time point."""
         beacons_at_time_point = self._beacons.get(time_point)
         if beacons_at_time_point is None:
             return
         yield from beacons_at_time_point
+
+    def get_beacon_type(self, beacon_position: Position) -> Optional[str]:
+        """Gets the name of the beacon at the given position."""
+        time_point = beacon_position.time_point()
+        if time_point is None:
+            raise ValueError(f"No time point specified for {beacon_position}.")
+        beacons_at_time_point = self._beacons.get(time_point)
+        if beacons_at_time_point is None:
+            return None
+        beacon_type = beacons_at_time_point.get(beacon_position)
+        if beacon_type == _DEFAULT_BEACON_TYPE:
+            return None
+        return beacon_type
+
+    def set_beacon_type(self, beacon_position: Position, name: Optional[str]):
+        """Sets the name of the beacon at the given position. Does nothing if there is no beacon at that position."""
+        time_point = beacon_position.time_point()
+        if time_point is None:
+            raise ValueError(f"No time point specified for {beacon_position}.")
+        beacons_at_time_point = self._beacons.get(time_point)
+        if beacons_at_time_point is None:
+            return
+
+        if beacon_position not in beacons_at_time_point:
+            return
+
+        beacons_at_time_point[beacon_position] = name if name is not None else _DEFAULT_BEACON_TYPE
 
     def find_closest_beacon(self, position: Position, resolution: ImageResolution) -> Optional[ClosestBeacon]:
         """Finds the closest beacon at the same time point as the position. Returns None if there are no beacons at that
@@ -133,14 +157,16 @@ class BeaconCollection:
 
         shortest_distance_squared = float("inf")
         closest_beacon = None
-        closest_beacon_index = None
-        for i, beacon in enumerate(beacons_at_time_point):
+        closest_beacon_type = None
+        for beacon, name in beacons_at_time_point.items():
             distance_squared = beacon.distance_squared(position, resolution)
             if distance_squared < shortest_distance_squared:
                 shortest_distance_squared = distance_squared
                 closest_beacon = beacon
-                closest_beacon_index = i + 1
-        return ClosestBeacon(position, closest_beacon, closest_beacon_index, math.sqrt(shortest_distance_squared),
+                closest_beacon_type = name
+        if closest_beacon_type == _DEFAULT_BEACON_TYPE:
+            closest_beacon_type = None
+        return ClosestBeacon(position, closest_beacon, closest_beacon_type, math.sqrt(shortest_distance_squared),
                              resolution)
 
     def time_points(self) -> Iterable[TimePoint]:
@@ -159,11 +185,10 @@ class BeaconCollection:
         return len(self._beacons) > 0
 
     def add_beacons(self, beacons: "BeaconCollection"):
-        """Adds all beacons from the given collection to this collection. Like for add(..), duplicate beacons are
-         allowed."""
+        """Adds all beacons from the given collection to this collection."""
         for time_point, beacons_of_time_point in beacons._beacons.items():
             if time_point in self._beacons:
-                self._beacons[time_point] += beacons_of_time_point
+                self._beacons[time_point].update(beacons_of_time_point)
             else:
                 self._beacons[time_point] = beacons_of_time_point
 
@@ -173,8 +198,15 @@ class BeaconCollection:
             return None  # There cannot be exactly one beacon
         beacons = next(iter(self._beacons.values()))
         if len(beacons) == 1:
-            return beacons[0]
+            return next(iter(beacons.keys()))
         return None
+
+    def find_single_beacon_of_time_point(self, time_point: TimePoint) -> Optional[Position]:
+        """If there is only one beacon in the given time point, return it. Otherwise, it returns None."""
+        beacons = self._beacons.get(time_point)
+        if beacons is None or len(beacons) != 1:
+            return None
+        return next(iter(beacons.keys()))
 
     def move_in_time(self, time_point_delta: int):
         """Moves all data with the given time point delta."""
@@ -182,3 +214,13 @@ class BeaconCollection:
         for time_point, values in self._beacons.items():
             new_beacons_dict[time_point + time_point_delta] = values
         self._beacons = new_beacons_dict
+
+    def of_time_point_with_type(self, time_point: TimePoint) -> Iterable[Beacon]:
+        """Gets all beacons at the given time point, including their beacon types."""
+        beacons_at_time_point = self._beacons.get(time_point)
+        if beacons_at_time_point is None:
+            return
+        for position, name in beacons_at_time_point.items():
+            if name == _DEFAULT_BEACON_TYPE:
+                name = None
+            yield Beacon(position, name)

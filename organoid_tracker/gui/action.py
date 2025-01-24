@@ -236,7 +236,7 @@ def view_statistics(window: Window):
     time_point_count = experiment.last_time_point_number() - experiment.first_time_point_number() + 1
     position_count = len(experiment.positions)
     links_count = len(experiment.links)
-    errors_count = sum(1 for error in linking_markers.find_errored_positions(experiment.position_data))
+    errors_count = sum(1 for error in linking_markers.find_errored_positions(experiment))
     errors_percentage = errors_count/position_count*100 if position_count > 0 else 0
     dialog.popup_message("Statistics", f"There are {time_point_count} time points loaded. {position_count} positions "
                                        f" are annotated and {links_count} links have been created."

@@ -13,6 +13,7 @@ import tifffile
 
 from organoid_tracker import core
 from organoid_tracker.core import TimePoint, UserError, COLOR_CELL_CURRENT, image_coloring
+from organoid_tracker.core.beacon_collection import Beacon
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.core.position import Position
@@ -240,12 +241,29 @@ class AbstractImageVisualizer(Visualizer):
                       markeredgecolor=marker_color, markeredgewidth=5)
 
     def _draw_beacons(self):
-        for beacon in self._experiment.beacons.of_time_point(self._time_point):
-            dz = self._z - round(beacon.z)
+        registry = self._window.registry
+
+        x_values = []
+        y_values = []
+        colors = []
+        sizes = []
+        for beacon in self._experiment.beacons.of_time_point_with_type(self._time_point):
+            dz = self._z - round(beacon.position.z)
             if abs(dz) > self.MAX_Z_DISTANCE * 2:
                 continue
-            self._ax.scatter(beacon.x, beacon.y, marker='*', facecolor=core.COLOR_CELL_CURRENT,
-                             edgecolors="black", s=(20 - abs(dz)) ** 2, linewidths=2)
+
+            registered_type = registry.get_marker_by_save_name(beacon.beacon_type)
+            if registered_type is not None and registered_type.applies_to(Beacon):
+                color = registered_type.mpl_color
+            else:
+                color = core.COLOR_CELL_CURRENT
+
+            x_values.append(beacon.position.x)
+            y_values.append(beacon.position.y)
+            colors.append(color)
+            sizes.append((20 - abs(dz)) ** 2)
+
+        self._ax.scatter(x_values, y_values, marker='*', facecolor=colors, edgecolors="black", s=sizes, linewidths=2)
 
     def _draw_annotation(self, position: Position, text: str, *, text_color: MPLColor = "black",
                          background_color: MPLColor = (1, 1, 1, 0.8)):
