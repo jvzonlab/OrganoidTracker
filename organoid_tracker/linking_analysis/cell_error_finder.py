@@ -20,17 +20,7 @@ def find_errors_in_experiment(experiment: Experiment) -> Tuple[int, int]:
     warning_count = 0
     no_links_count = 0
     for position in experiment.positions:
-
-        # check if there is a marginalized probability available
-        next_position = experiment.links.find_single_future(position)
-        if next_position:
-            marginal_probability = experiment.link_data.get_link_data(position, next_position, data_name="marginal_probability")
-            if marginal_probability:
-                error = get_error(experiment, position, marginalization=True)
-            else:
-                error = get_error(experiment, position, marginalization=False)
-        else:
-            error = get_error(experiment, position, marginalization=True)
+        error = get_error(experiment, position)
 
         linking_markers.set_error_marker(position_data, position, error)
         if error is not None:
@@ -41,7 +31,7 @@ def find_errors_in_experiment(experiment: Experiment) -> Tuple[int, int]:
     return warning_count, no_links_count
 
 
-def get_error(experiment: Experiment, position: Position, marginalization = False) -> Optional[Error]:
+def get_error(experiment: Experiment, position: Position) -> Optional[Error]:
     links = experiment.links
     position_data = experiment.position_data
     link_data = experiment.link_data
@@ -87,28 +77,28 @@ def get_error(experiment: Experiment, position: Position, marginalization = Fals
             return Error.NO_PAST_POSITION
     elif len(past_positions) >= 2:
         return Error.CELL_MERGE
-
-    elif marginalization:  # len(past_positions) == 1
-        past_position = past_positions.pop()
-        # Check marginalized link probability
-        link_probability = link_data.get_link_data(past_position, position, data_name="marginal_probability")
-        if link_probability is not None and link_probability < warning_limits.min_marginal_probability\
-                and linking_markers.is_live(position_data, position):
-            return Error.LOW_LINK_SCORE
     else:
+        # So len(past_positions) == 1
         past_position = past_positions.pop()
 
-        # Check movement distance (fast movement is only allowed when a cell is launched into its death)
-        distance_moved_um_per_m = past_position.distance_um(position, resolution) / resolution.time_point_interval_m
-        if distance_moved_um_per_m > warning_limits.max_distance_moved_um_per_min:
-            if linking_markers.is_live(position_data, position):
-                return Error.MOVED_TOO_FAST
+        marginal_link_probability = link_data.get_link_data(past_position, position, data_name="marginal_probability")
+        if marginal_link_probability is not None:
+            # Check marginalized link probability
+            if marginal_link_probability < warning_limits.min_marginal_probability\
+                    and linking_markers.is_live(position_data, position):
+                return Error.LOW_LINK_SCORE
+        else:
+            # Check movement distance (fast movement is only allowed when a cell is launched into its death)
+            distance_moved_um_per_m = past_position.distance_um(position, resolution) / resolution.time_point_interval_m
+            if distance_moved_um_per_m > warning_limits.max_distance_moved_um_per_min:
+                if linking_markers.is_live(position_data, position):
+                    return Error.MOVED_TOO_FAST
 
-        # Check link probability
-        link_probability = link_data.get_link_data(position, past_position, data_name="link_probability")
-        if link_probability is not None and link_probability < warning_limits.min_probability\
-                and linking_markers.is_live(position_data, position):
-            return Error.LOW_LINK_SCORE
+            # Check link probability
+            link_probability = link_data.get_link_data(position, past_position, data_name="link_probability")
+            if link_probability is not None and link_probability < warning_limits.min_probability\
+                    and linking_markers.is_live(position_data, position):
+                return Error.LOW_LINK_SCORE
 
     return None
 

@@ -14,7 +14,9 @@ class WarningLimits:
     # Minimum probability of a link/division
     min_probability: float
 
-    # Minimum probability of a marginal
+    # Minimum probability of a marginal, should be a lot higher than the normal minimum probability
+    # (If a link has a probability of 0.2, but there are no other options, it will still have a high marginal
+    # probability. So the marginal probability cutoff can be a lot higher.)
     min_marginal_probability: float
 
     def __init__(self, *, min_time_between_divisions_h: float = 10,
