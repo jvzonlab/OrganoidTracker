@@ -38,7 +38,7 @@ class CellTrackEndVisualizer(PositionListVisualizer):
     def _get_end_cause(self, position: Position) -> str:
         end_reason = linking_markers.get_track_end_marker(self._experiment.position_data, position)
         if end_reason is None:
-            if linking_markers.is_error_suppressed(self._experiment.position_data, position, Error.NO_FUTURE_POSITION):
+            if linking_markers.is_error_suppressed(self._experiment.position_data, position, Error.TRACK_END):
                 return "analyzed, but no conclusion"
             return "not analyzed"
         return end_reason.get_display_name()

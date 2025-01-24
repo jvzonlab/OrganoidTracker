@@ -124,24 +124,16 @@ def set_track_start_marker(position_data: PositionData, position: Position, star
         position_data.set_position_data(position, "starting", start_marker.name.lower())
 
 
-def find_errored_positions(position_data: PositionData, *, min_time_point: Optional[TimePoint] = None,
-                           max_time_point: Optional[TimePoint] = None, excluded_errors: Optional[list] = None) -> Iterable[Position]:
-    """Gets all positions that have a (non suppressed) error in the given time point range."""
-    min_time_point_number = min_time_point.time_point_number() if min_time_point is not None else float("-inf")
-    max_time_point_number = max_time_point.time_point_number() if max_time_point is not None else float("inf")
-    excluded_errors = [] if excluded_errors is None else excluded_errors
-
+def find_errored_positions(experiment: Experiment) -> Iterable[Position]:
+    """Gets all positions that have a (non-suppressed) error."""
+    position_data = experiment.position_data
 
     with_error_marker = position_data.find_all_positions_with_data("error")
     for position, error_number in with_error_marker:
         if position_data.get_position_data(position, "suppressed_error") == error_number:
             continue  # Error was suppressed
 
-        if error_number in excluded_errors:
-            continue
-
-        if min_time_point_number <= position.time_point_number() <= max_time_point_number:
-            yield position
+        yield position
 
 
 def get_error_marker(position_data: PositionData, position: Position) -> Optional[Error]:

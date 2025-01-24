@@ -14,11 +14,12 @@ from organoid_tracker.core.marker import Marker
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.core.typing import DataType
-from organoid_tracker.gui import dialog
+from organoid_tracker.gui import dialog, option_choose_dialog
 from organoid_tracker.gui.undo_redo import UndoableAction, ReversedAction, CombinedAction
 from organoid_tracker.gui.window import Window
 from organoid_tracker.linking_analysis import cell_error_finder, linking_markers, track_positions_finder, \
     lineage_markers, lineage_error_finder
+from organoid_tracker.linking_analysis.errors import Error
 from organoid_tracker.linking_analysis.linking_markers import EndMarker
 from organoid_tracker.linking_analysis.links_postprocessor import _add_out_of_view_markers
 from organoid_tracker.position_analysis import position_markers
@@ -426,8 +427,8 @@ class LinkAndPositionEditor(AbstractEditor):
             return super()._get_position_edge(position)
 
     def _get_figure_title(self) -> str:
-        title_start = "Editing time point " + str(self._time_point.time_point_number()) + "    (z=" +\
-                       self._get_figure_title_z_str() + ")\n"
+        title_start = "Editing time point " + str(self._time_point.time_point_number()) + "    (z=" + \
+                      self._get_figure_title_z_str() + ")\n"
         if len(self._selected) == 1:
             return title_start + "1 position selected"
         elif len(self._selected) > 1:
@@ -486,7 +487,8 @@ class LinkAndPositionEditor(AbstractEditor):
                                "\n        " + self._position_string(selected_first) +
                                "\n        " + self._position_string(selected_second))
         else:
-            self.update_status(f"Selected: {len(self._selected)} positions. To deselect all cells, double-click an empty location, or press Escape or Ctrl+D.")
+            self.update_status(
+                f"Selected: {len(self._selected)} positions. To deselect all cells, double-click an empty location, or press Escape or Ctrl+D.")
 
     def _on_mouse_double_click(self, event: MouseEvent):
         new_selection = self._get_position_at(event.xdata, event.ydata)
@@ -549,6 +551,12 @@ class LinkAndPositionEditor(AbstractEditor):
             "Errors//Focus-Focus on correcting lineages of selected positions": self._focus_on_tracks_of_selected,
             "Errors//Focus-Focus on correcting lineages with X divisions": self._focus_on_lineages_with_min_divisions,
             "Errors//Focus-Unfocus all tracks": self._remove_focuses,
+            "Errors//Error settings-Change minimum allowed time in between divisions...": self._change_errors_min_division_time,
+            "Errors//Error settings-Change maximum allowed movement per minute...": self._change_errors_max_distance,
+            "Errors//Error settings-Change minimum marginal probability...": self._change_errors_min_marginal_probability,
+            "Errors//Time-Change minimum time point for correction...": self._change_errors_min_time_point,
+            "Errors//Time-Change maximum time point for correction...": self._change_errors_max_time_point,
+            "Errors//Types-Only show some types of errors...": self._change_excluded_errors,
             "View//Linking-Linking errors and warnings (E)": self._show_linking_errors,
             "View//Linking-Lineage errors and warnings": self._show_lineage_errors,
             "Navigate//Layer-Layer of selected position [Space]": self._move_to_z_of_selected_position,
@@ -997,7 +1005,6 @@ class LinkAndPositionEditor(AbstractEditor):
         experiment = self._experiment
         links = experiment.links
 
-
         image_loader = experiment.images
         links = experiment.links
         position_data = experiment.position_data
@@ -1313,3 +1320,115 @@ class LinkAndPositionEditor(AbstractEditor):
             if value > 0:
                 focus_points.append(position)
         return focus_points
+
+    def _change_errors_min_division_time(self):
+        old_time = self._experiment.warning_limits.min_time_between_divisions_h
+        new_time = dialog.prompt_float("Minimum allowed time in between divisions",
+                                       "What is the minimum amount of time that should pass before a cell divides"
+                                       " again?\nCells this violate this will be flagged. Please specify the amount in"
+                                       " hours.", minimum=0, default=old_time)
+        if new_time is None:
+            return
+        if new_time != old_time:
+            self._experiment.warning_limits.min_time_between_divisions_h = new_time
+            cell_error_finder.find_errors_in_experiment(self._experiment)
+            self._window.get_gui_experiment().undo_redo.mark_unsaved_changes()
+            self.update_status("Set minimum time between divisions to " + str(new_time) + " hours.")
+
+    def _change_errors_max_distance(self):
+        old_distance = self._experiment.warning_limits.max_distance_moved_um_per_min
+        new_distance = dialog.prompt_float("Maximum allowed distance per time point",
+                                           "What is the maximum distance in micrometers that cells can travel per minute?\n"
+                                           "Cells that go faster will be flagged.",
+                                           minimum=0, default=old_distance)
+        if new_distance is None:
+            return
+        if new_distance != old_distance:
+            self._experiment.warning_limits.max_distance_moved_um_per_min = new_distance
+            cell_error_finder.find_errors_in_experiment(self._experiment)
+            self._window.get_gui_experiment().undo_redo.mark_unsaved_changes()
+            self.update_status("Set maximum distance per time point to " + str(new_distance) + " micrometers.")
+
+    def _change_errors_min_marginal_probability(self):
+        old_limit = self._experiment.warning_limits.min_marginal_probability
+        new_limit = dialog.prompt_float("Minimum marginal probability of a link",
+                                        "Links with lower probability will be flagged",
+                                        minimum=0, default=old_limit)
+        if new_limit is None:
+            return
+        if old_limit != new_limit:
+            self._experiment.warning_limits.min_marginal_probability = new_limit
+            cell_error_finder.find_errors_in_experiment(self._experiment)
+            self._window.get_gui_experiment().undo_redo.mark_unsaved_changes()
+            self.update_status("Set minimum marginal probability of a link to " + str(new_limit) + ".")
+
+    def _change_errors_min_time_point(self):
+        # Find out the bounds
+        first_time_point, last_time_point = self._get_min_max_time_point()
+
+        # Find the current value
+        current_min_time_point = self._experiment.warning_limits.min_time_point
+        if current_min_time_point is None:
+            current_min_time_point = first_time_point
+
+        # Update new value
+        answer = dialog.prompt_int("Error checking", "At which time point should error checking start?",
+                                   default=current_min_time_point.time_point_number(),
+                                   minimum=first_time_point.time_point_number(),
+                                   maximum=last_time_point.time_point_number())
+        if answer is None:
+            return
+        new_min_time_point = None if answer <= first_time_point.time_point_number() else TimePoint(answer)
+        self._experiment.warning_limits.min_time_point = new_min_time_point
+        cell_error_finder.find_errors_in_experiment(self._experiment)
+        self._window.get_gui_experiment().undo_redo.mark_unsaved_changes()
+        self.update_status("Now checking errors starting at time point " + str(answer) + ".")
+
+    def _change_errors_max_time_point(self):
+        # Find out the bounds
+        first_time_point, last_time_point = self._get_min_max_time_point()
+
+        # Find the current value
+        current_max_time_point = self._experiment.warning_limits.max_time_point
+        if current_max_time_point is None:
+            current_max_time_point = last_time_point
+
+        # Update new value
+        answer = dialog.prompt_int("Error checking", "Up to and including which time point should error checking"
+                                                     " continue?", default=current_max_time_point.time_point_number(),
+                                   minimum=first_time_point.time_point_number(),
+                                   maximum=last_time_point.time_point_number())
+        if answer is None:
+            return
+        new_max_time_point = None if answer >= last_time_point.time_point_number() else TimePoint(answer)
+        self._experiment.warning_limits.max_time_point = new_max_time_point
+        cell_error_finder.find_errors_in_experiment(self._experiment)
+        self._window.get_gui_experiment().undo_redo.mark_unsaved_changes()
+        self.update_status("Now checking errors up too and including time point " + str(answer) + ".")
+
+    def _change_excluded_errors(self):
+        available_errors = [error for error in Error]
+        available_error_names = [error.get_display_name() for error in available_errors]
+        answer = option_choose_dialog.prompt_list_multiple("Errors", "Error names", "Error types to ignore:",
+                                                           available_error_names)
+        if answer is None:
+            return
+
+        chosen_errors = [available_errors[i] for i in answer]
+        chosen_error_names = [error.get_display_name() for error in chosen_errors]
+
+        self._experiment.warning_limits.excluded_errors = {error.value for error in chosen_errors}
+        cell_error_finder.find_errors_in_experiment(self._experiment)
+        self._window.get_gui_experiment().undo_redo.mark_unsaved_changes()
+        self.update_status("Now ignoring errors of type " + ", ".join(chosen_error_names) + ".")
+
+    def _get_min_max_time_point(self) -> Tuple[TimePoint, TimePoint]:
+        """Gets the min and max time point of the tracking data. If no positions are loaded, arbitrary values are
+        returned."""
+        first_time_point = self._experiment.positions.first_time_point()
+        if first_time_point is None:
+            first_time_point = TimePoint(0)
+        last_time_point = self._experiment.positions.last_time_point()
+        if last_time_point is None:
+            last_time_point = TimePoint(9999)
+        return first_time_point, last_time_point

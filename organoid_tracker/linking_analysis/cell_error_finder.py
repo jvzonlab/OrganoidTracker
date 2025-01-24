@@ -1,6 +1,5 @@
-from typing import Optional, Iterable, Callable, Tuple
+from typing import Optional, Iterable, Tuple
 
-from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
@@ -16,11 +15,14 @@ def find_errors_in_experiment(experiment: Experiment) -> Tuple[int, int]:
     Returns the amount of errors (excluding positions without links) and the number of positions without links."""
     position_data = experiment.position_data
     links = experiment.links
+    excluded_errors = experiment.warning_limits.excluded_errors
 
     warning_count = 0
     no_links_count = 0
     for position in experiment.positions:
-        error = get_error(experiment, position)
+        error = _calculate_error(experiment, position)
+        if error is not None and error.value in excluded_errors:
+            error = None
 
         linking_markers.set_error_marker(position_data, position, error)
         if error is not None:
@@ -31,13 +33,22 @@ def find_errors_in_experiment(experiment: Experiment) -> Tuple[int, int]:
     return warning_count, no_links_count
 
 
-def get_error(experiment: Experiment, position: Position) -> Optional[Error]:
+def _calculate_error(experiment: Experiment, position: Position) -> Optional[Error]:
+    """Calculates the error for the given position. Returns None if no error is found.
+
+    Note: ignores experiment.warning_limits.excluded_errors.
+    """
     links = experiment.links
     position_data = experiment.position_data
     link_data = experiment.link_data
     positions = experiment.positions
     resolution = experiment.images.resolution()
     warning_limits = experiment.warning_limits
+
+    if warning_limits.min_time_point is not None and position.time_point_number() < warning_limits.min_time_point.time_point_number():
+        return None
+    if warning_limits.max_time_point is not None and position.time_point_number() > warning_limits.max_time_point.time_point_number():
+        return None
 
     if linking_markers.is_uncertain(position_data, position):
         return Error.UNCERTAIN_POSITION
@@ -51,16 +62,16 @@ def get_error(experiment: Experiment, position: Position) -> Optional[Error]:
     elif len(future_positions) == 0 \
             and position.time_point_number() < positions.last_time_point_number() \
             and linking_markers.get_track_end_marker(position_data, position) is None:
-        return Error.NO_FUTURE_POSITION
+        return Error.TRACK_END
     elif len(future_positions) == 2:
         # Found a putative mother
         division_probability = position_data.get_position_data(position, 'division_probability')
         if division_probability is not None and division_probability < warning_limits.min_probability:
-            return Error.LOW_MOTHER_SCORE
+            return Error.LOW_DIVISION_SCORE
 
         age = particle_age_finder.get_age(links, position)
         if age is not None and age * resolution.time_point_interval_h < warning_limits.min_time_between_divisions_h:
-            return Error.YOUNG_MOTHER
+            return Error.SHORT_CELL_CYCLE
     elif len(future_positions) == 1:
         division_probability = position_data.get_position_data(position, 'division_probability')
         if division_probability is not None\
@@ -68,7 +79,7 @@ def get_error(experiment: Experiment, position: Position) -> Optional[Error]:
             # Likely missed a division
             if not _has_high_division_probability_hereafter(links, position_data, warning_limits,
                                                             next(iter(future_positions))):
-                return Error.POTENTIALLY_SHOULD_BE_A_MOTHER
+                return Error.MISSED_DIVISION
 
     past_positions = links.find_pasts(position)
     if len(past_positions) == 0:
@@ -162,16 +173,19 @@ def find_errors_in_all_dividing_cells(experiment: Experiment):
         # Found a mother track!
         age = particle_age_finder.get_age_at_end_of_track(track)
         if age is not None and age * resolution.time_point_interval_h < warning_limits.min_time_between_divisions_h:
-            return Error.YOUNG_MOTHER
+            return Error.SHORT_CELL_CYCLE
 
 
 def _find_errors_in_just_the_iterable(experiment: Experiment, iterable: Iterable[Position]):
     """Checks all positions in the given iterable for logical errors, like cell merges, cell dividing into three
-    daughters, cells moving too fast, ect."""
-    links = experiment.links
+    daughters, cells moving too fast, etc."""
     position_data = experiment.position_data
+    excluded_errors = experiment.warning_limits.excluded_errors
+
     for position in iterable:
-        error = get_error(experiment, position)
+        error = _calculate_error(experiment, position)
+        if error is not None and error.value in excluded_errors:
+            error = None
         linking_markers.set_error_marker(position_data, position, error)
 
 

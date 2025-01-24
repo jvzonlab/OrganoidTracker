@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Any, Optional, Union, Iterable, Tuple
+from typing import Callable, Dict, List, Any, Optional, Union, Iterable, Tuple, Set
 
 from PySide2.QtWidgets import QMainWindow, QLabel, QMenuBar, QMenu
 from matplotlib.figure import Figure
@@ -10,6 +10,7 @@ from organoid_tracker.gui import APP_NAME
 from organoid_tracker.gui.gui_experiment import GuiExperiment
 from organoid_tracker.gui.threading import Scheduler
 from organoid_tracker.gui.undo_redo import UndoRedo, UndoableAction
+from organoid_tracker.linking_analysis.errors import Error
 from organoid_tracker.plugin.plugin_manager import PluginManager
 from organoid_tracker.plugin.registry import Registry
 
@@ -27,8 +28,6 @@ class DisplaySettings:
     max_intensity_projection: bool = False
     image_channel: ImageChannel
     segmentation_channel: Optional[ImageChannel]
-    error_correction_min_time_point: Optional[TimePoint] = None
-    error_correction_max_time_point: Optional[TimePoint] = None
 
     def __init__(self, *, show_next_time_point: bool = False, show_images: bool = True,
                  show_data_axes: bool = True, show_positions: bool = True):
