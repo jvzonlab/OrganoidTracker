@@ -165,8 +165,8 @@ class BeaconEditor(AbstractEditor):
                     beacon_name = beacon_type_marker.display_name
 
             self._draw_selection(selected, core.COLOR_CELL_CURRENT)
-            if self._experiment.beacons.count_beacons_at_time_point(self._time_point) > 1:
-                dz = int(abs(selected.z - self._z))
+            dz = int(abs(selected.z - self._z))
+            if dz < 10:
                 self._ax.annotate(beacon_name, (selected.x, selected.y), fontsize=8 - abs(dz / 2),
                                   fontweight=font_weight, fontstyle=font_style, color="black",
                                   backgroundcolor=(1, 1, 1, 0.8))

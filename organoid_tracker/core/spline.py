@@ -23,12 +23,14 @@ class SplinePosition:
     spline_id: int  # Used to identify the data axis over multiple time points.
     pos: float  # The position on the spline in pixels.
     distance: float  # The distance from the point to the nearest point on the data axis.
+    time_point: TimePoint  # The time point of the position.
 
-    def __init__(self, axis: "Spline", pos: float, distance: float):
+    def __init__(self, axis: "Spline", pos: float, distance: float, time_point: TimePoint):
         self.spline = axis
         self.spline_id = 0
         self.pos = pos
         self.distance = distance
+        self.time_point = time_point
 
     def calculate_angle(self, position: Position, resolution: ImageResolution) -> float:
         """Calculates the angle from this point on the data axis to the given position."""
@@ -172,7 +174,8 @@ class Spline:
 
         raw_path_position = combined_length_of_previous_lines + distance_on_line
 
-        return SplinePosition(self, raw_path_position - self._offset, math.sqrt(min_distance_to_line_squared))
+        return SplinePosition(self, raw_path_position - self._offset, math.sqrt(min_distance_to_line_squared),
+                              position.time_point())
 
     def from_position_on_axis(self, path_position: float) -> Optional[Tuple[float, float, float]]:
         """Given a path position, this returns the corresponding x, y and z coordinates. Returns None for positions

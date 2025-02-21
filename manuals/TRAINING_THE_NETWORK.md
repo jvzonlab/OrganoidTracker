@@ -30,19 +30,20 @@ Make sure that the data is correct! Even a low percentage of errors (1%) can alr
 Figure 2: OrganoidTracker automatically sees that you have only annotated part of the image, so you don't need to annotate the entire image. However, you do need to annotate each and every cell within that region.
 
 ## The training process
-Open the data of all the experiments you're going to use in the OrganoidTracker GUI, and use `Process` -> `Train the neural network...`. Run the resulting script. It will first convert your images and training data to a format Tensorflow (the software library we're using for the neural networks) can understand. Then, it will start training. The training process saves checkpoints. If you abort the training process, then it will resume from the most recent checkpoint when you start the program again.
+Open the data of all the experiments you're going to use in the OrganoidTracker GUI, switch to the "<all experiments>" tab and use `Process` -> `Train the neural network...`. Run the resulting script.
 
-By default, the training lasts for 50 epochs, but you can modify this in the `organoid_tracker.ini` file next to the script. Note that more steps is not always better. The more steps, the better the model will learn to recognize patterns in your data. However, if you train it for too long, then it will only recognize your training images, and not be able to do anything with any image that is even a little bit different. This is called overfitting. However, if you train the model for too few steps, then it will mark anything as a cell that looks even a bit like it.
+By default, the training lasts for 50 epochs, but you can modify this in the `organoid_tracker.ini` file next to the script. Training will stop automatically if the results no longer improve on the validation set (which will be randomly created from the dataset you supplied).
 
-Neural networks work differently from our own brains. If you change some microscopy settings, which makes the noise in the images different, then if you're unlucky the the neural network will suddenly not recognize your nuclei anymore. Additionally, if you give the network nuclei at a different resolution, it might no longer work.
+Neural networks work differently from our own brains. If you change some microscopy settings, which makes the noise in the images different, then if you're unlucky the neural network will suddenly not recognize your nuclei anymore. Additionally, if you provide the network nuclei at a different resolution, it might no longer work.
 
 To combat both effects, OrganoidTracker generates artificial data based on your input images. It makes cells brighter or darker and rotates them. This makes the algorithm less specific to your images. The program also randomizes the order in which it sees your training data, so that it is not training on a single experiment for a long time.
-
-All in all, training a neural network is a difficult process. However, it has proven to be a very successful method, and for any complex image it will be worth it.
 
 ## Using image data of multiple channels
 The `Process` -> `Train the neural network...` generates a folder with a configuration file `organoid_tracker.ini` in it. If you open it, you can see where the neural network is getting its image data from. 
 
 An interesting setting here is `image_channels_x`, which `x` the number of the image dataset. Normally, the network is trained on just the first channel. You can change this here to another channel. This is necessary if the first channel does not properly identify the nuclei, for example because it is a brightfield channel.
 
-You can also provide multiple channels, for example `image_channels_x = 3,4` which will first sum the third and fourth channel, and then train the network on the sum of those channels.
+You can also provide multiple channels, for example `image_channels_x = 3,4` which will first sum the third and fourth channel, and then train the network on the sum of those channels. (The first channel is channel 1, not 0, just like in the OrganoidTracker GUI.)
+
+## Using data that is not from a time lapse
+If you're using data that is not from a time-lapse (so just a sequence of unrelated images), or if the nuclei have moved so much that they're no longer close to themselves in the next time point, make sure to set `time_window_before` and  `time_window_after` to 0 in the `organoid_tracker.ini` file. Otherwise multiple time points will be used for recognition of the nuclei.

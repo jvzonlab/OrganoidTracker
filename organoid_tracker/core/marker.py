@@ -57,6 +57,12 @@ class Marker:
     def __str__(self) -> str:
         return self._display_name
 
+    def __hash__(self) -> int:
+        return hash(self._save_name)
+
+    def __eq__(self, other) -> bool:
+        return isinstance(other, Marker) and self._save_name == other._save_name
+
 
 def draw_marker_2d(x: float, y: float, dz: int, dt: int, area: Axes, color: MPLColor, edge_color: MPLColor):
     """The default (point) representation of a shape. Implementation can fall back on this if they want."""
