@@ -47,7 +47,7 @@ class GaussianBlurFilter(ImageFilter):
                 image[z] = out.astype(image.dtype)
         elif len(image.shape) == 2: # len(...) == 2
             out = numpy.empty_like(image, dtype=numpy.float32)
-            skimage.filters.gaussian(image.astype(numpy.float32), sigma=self.blur_radius / 2, output=out)
+            skimage.filters.gaussian(image.astype(numpy.float32), sigma=self.blur_radius / 2, out=out)
             image[...] = out.astype(image.dtype)
         else:
             raise ValueError("Can only handle 2D or 3D images. Got shape " + str(image.shape))
