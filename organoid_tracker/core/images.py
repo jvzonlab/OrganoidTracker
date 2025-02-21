@@ -279,6 +279,18 @@ class Image:
         int(position.y - self.offset.y),
         int(position.x - self.offset.x)] = value
 
+    def get_image_slice_2d(self, z: int) -> Optional[ndarray]:
+        """Gets a 2D slice of the image at the given Z. The Z is in position coords, and the offset of the image will
+        be taken into account. Returns None if the Z is outside the image."""
+        image_z = int(z - self._offset.z)
+        if image_z < 0 or image_z >= self._array.shape[0]:
+            return None
+        return self._array[image_z]
+
+    def max(self) -> float:
+        """Gets the max value in the image."""
+        return self._array.max()
+
 
 class ChannelDescription(NamedTuple):
     """Describes a channel in an image. What name did the user give it, and what colormap is used to display it?"""
