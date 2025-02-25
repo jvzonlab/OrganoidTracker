@@ -40,6 +40,11 @@ class ClosestBeacon:
         dz = (self.search_position.z - self.beacon_position.z) * self.resolution.pixel_size_z_um
         return Vector3(dx, dy, dz)
 
+    @property
+    def beacon(self) -> Beacon:
+        """Gets the beacon as a Beacon object."""
+        return Beacon(position=self.beacon_position, beacon_type=self.beacon_type)
+
 
 class BeaconCollection:
     """Ordered list of beacons per time point."""
