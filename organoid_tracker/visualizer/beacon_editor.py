@@ -38,6 +38,8 @@ class _MoveBeaconAction(UndoableAction):
     def __init__(self, old_position: Position, new_position: Position):
         self._old_position = old_position
         self._new_position = new_position
+        if self._old_position.time_point_number() != self._new_position.time_point_number():
+            raise ValueError("Cannot move a beacon to a different time point")
 
     def do(self, experiment: Experiment) -> str:
         experiment.beacons.move(self._old_position, self._new_position)
@@ -84,6 +86,11 @@ class BeaconEditor(AbstractEditor):
     def _selected_beacon(self) -> Optional[Beacon]:
         if self._selected_beacon_position is None:
             return None
+        if not self._experiment.beacons.contains_position(self._selected_beacon_position):
+            # Beacon disappeared, likely because of an Undo action
+            self._selected_beacon_position = None
+            return None
+        
         beacon_type = self._experiment.beacons.get_beacon_type(self._selected_beacon_position)
         return Beacon(position=self._selected_beacon_position, beacon_type=beacon_type)
 
@@ -185,6 +192,8 @@ class BeaconEditor(AbstractEditor):
             self._try_insert(event)
         elif event.key == "delete" or event.key == "backspace":
             self._try_remove()
+        elif event.key == "shift":
+            self._try_move(event)
         else:
             super()._on_key_press(event)
 
@@ -199,6 +208,23 @@ class BeaconEditor(AbstractEditor):
         beacon_position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
         self._selected_beacon_position = beacon_position
         self._perform_action(_InsertBeaconAction(Beacon(position=beacon_position, beacon_type=beacon_type)))
+
+    def _try_move(self, event: KeyEvent):
+        selected = self._selected_beacon()
+        if selected is None:
+            self.update_status("No beacon was selected - cannot move anything.")
+            return
+        if selected.position.time_point() != self._time_point:
+            self.update_status("Cannot move a beacon to a different time point. Please select one in the current time"
+                               " point.")
+            return
+        if event.xdata is None or event.ydata is None:
+            self.update_status("Place your mouse at the location where you want to move the beacon.")
+            return
+
+        new_position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
+        self._selected_beacon_position = new_position
+        self._perform_action(_MoveBeaconAction(selected.position, new_position))
 
     def _try_remove(self):
         selected = self._selected_beacon()
