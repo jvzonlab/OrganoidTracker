@@ -4,10 +4,12 @@ from typing import Optional, Dict, Any, List
 from matplotlib.backend_bases import KeyEvent, MouseEvent
 
 from organoid_tracker import core
+from organoid_tracker.core import UserError
 from organoid_tracker.core.beacon_collection import Beacon
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.marker import Marker
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.gui.undo_redo import UndoableAction, ReversedAction
 from organoid_tracker.gui.window import Window
 from organoid_tracker.visualizer.abstract_editor import AbstractEditor
@@ -100,7 +102,7 @@ class BeaconEditor(AbstractEditor):
     def get_extra_menu_options(self) -> Dict[str, Any]:
         menu_options = {
             **super().get_extra_menu_options(),
-            "Edit//Positions-Toggle showing distances to positions": self._toggle_showing_beacon_distances
+            "View//Positions-Toggle showing distances to positions": self._toggle_showing_beacon_distances
         }
 
         beacon_types = self._get_available_beacon_types()
@@ -129,10 +131,17 @@ class BeaconEditor(AbstractEditor):
         self._perform_action(_ChangeBeaconTypeAction(selected.position, old_type, new_type_str))
 
     def _on_position_draw(self, position: Position, color: str, dz: int, dt: int) -> bool:
+        # Draw distances to all beacons if self._draw_beacon_distances is True
         if not self._draw_beacon_distances or dt != 0 or abs(dz) > self.MAX_Z_DISTANCE:
             return super()._on_position_draw(position, color, dz, dt)
 
-        resolution = self._experiment.images.resolution()
+        try:
+            unit = "μm"
+            resolution = self._experiment.images.resolution()
+        except UserError:
+            unit = "px"
+            resolution = ImageResolution.PIXELS
+
         beacon = self._experiment.beacons.find_closest_beacon(position, resolution)
 
         if beacon is None:
@@ -140,7 +149,7 @@ class BeaconEditor(AbstractEditor):
         is_selected = beacon.beacon_position == self._selected_beacon_position
 
         background_color = (1, 1, 1, 0.8) if is_selected else (0, 1, 0, 0.8)
-        self._draw_annotation(position, f"{beacon.distance_um:.1f} μm", background_color=background_color)
+        self._draw_annotation(position, f"{beacon.distance_um:.1f} {unit}", background_color=background_color)
         return True
 
     def _on_mouse_single_click(self, event: MouseEvent):
@@ -149,7 +158,10 @@ class BeaconEditor(AbstractEditor):
             return
 
         clicked_position = Position(event.xdata, event.ydata, self._z, time_point=self._time_point)
-        resolution = self._experiment.images.resolution()
+        try:
+            resolution = self._experiment.images.resolution()
+        except UserError:
+            resolution = ImageResolution.PIXELS  # No resolution set, use a default one
         closest_beacon = self._experiment.beacons.find_closest_beacon(clicked_position, resolution)
         if closest_beacon is None:
             self._selected_beacon_position = None
