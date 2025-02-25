@@ -21,7 +21,7 @@ def reconstruct_volume(multi_im: ndarray, mid_layers_nb: int) -> Tuple[ndarray, 
         return multi_im, 1  # No need to reconstruct anything
 
     out_img = numpy.zeros(
-        (int(len(multi_im) + mid_layers_nb * (len(multi_im) - 1) + 2 * mid_layers_nb),) + multi_im[0].shape).astype(
+        (int(len(multi_im) + mid_layers_nb * (len(multi_im) - 1) + 2 * mid_layers_nb),) + multi_im[0].shape, dtype=
         multi_im[0].dtype)
 
     layer_index = mid_layers_nb + 1
