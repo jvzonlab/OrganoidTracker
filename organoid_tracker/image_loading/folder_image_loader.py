@@ -82,7 +82,7 @@ class FolderImageLoader(ImageLoader):
     def __init__(self, folder: str, file_name_format: str, min_time_point: int, max_time_point: int, min_channel: int,
                  max_channel: int):
         """Creates a loader for multi-page TIFF files. file_name_format is a format string (so containing something
-        like %03d), accepting one parameter representing the time point number."""
+        like {time:03}), accepting one parameter representing the time point number."""
         self._folder = folder
         self._file_name_format = file_name_format
         self._min_time_point = min_time_point
