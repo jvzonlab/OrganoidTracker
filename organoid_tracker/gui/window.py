@@ -8,6 +8,7 @@ from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.gui import APP_NAME
 from organoid_tracker.gui.gui_experiment import GuiExperiment
+from organoid_tracker.gui.progress_bar import ProgressBar
 from organoid_tracker.gui.threading import Scheduler
 from organoid_tracker.gui.undo_redo import UndoRedo, UndoableAction
 from organoid_tracker.linking_analysis.errors import Error
@@ -59,9 +60,10 @@ class Window:
     __menu: QMenuBar
     __scheduler: Optional[Scheduler] = None
     __plugin_manager: PluginManager
+    __progress_bar: ProgressBar = ProgressBar.NO_OP
 
     def __init__(self, q_window: QMainWindow, figure: Figure, experiment: GuiExperiment,
-                 title_text: QLabel, status_text: QLabel):
+                 title_text: QLabel, status_text: QLabel, *, progress_bar: ProgressBar = ProgressBar.NO_OP):
         self.__q_window = q_window
         self.__menu = q_window.menuBar()
         self.__fig = figure
@@ -71,6 +73,7 @@ class Window:
         self.__event_handler_ids = list()
         self.__display_settings = DisplaySettings()
         self.__plugin_manager = PluginManager()
+        self.__progress_bar = progress_bar
 
     def _event_source(self) -> str:
         """Returns an identifier used to register and unregister events."""
@@ -101,9 +104,10 @@ class Window:
         """Gets the Matplotlib figure."""
         return self.__fig
 
+
     def get_scheduler(self) -> Scheduler:
         if self.__scheduler is None:
-            self.__scheduler = Scheduler()
+            self.__scheduler = Scheduler(self.__progress_bar)
             self.__scheduler.daemon = True
             self.__scheduler.start()
         return self.__scheduler
