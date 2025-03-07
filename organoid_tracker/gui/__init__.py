@@ -12,8 +12,8 @@ To start the OrganoidTracker window:
 
 >>> from organoid_tracker.core.experiment import Experiment
 >>> experiment = Experiment()  # This empty experiment is a placeholder
->>> from organoid_tracker.gui import launcher
->>> launcher.launch_window(experiment)
+>>> from organoid_tracker.gui import main_window
+>>> main_window.launch_window(experiment)
 """
 
 APP_NAME = "OrganoidTracker"

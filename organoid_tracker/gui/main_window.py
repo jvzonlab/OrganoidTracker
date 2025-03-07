@@ -5,7 +5,7 @@ from typing import Dict, Any
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeyEvent, QPalette, QCloseEvent
-from PySide6.QtWidgets import QMainWindow, QSizePolicy, QScrollArea, QFrame
+from PySide6.QtWidgets import QMainWindow, QSizePolicy, QScrollArea, QFrame, QProgressBar, QHBoxLayout
 from PySide6.QtWidgets import QWidget, QApplication, QVBoxLayout, QLabel, QLineEdit
 from matplotlib import pyplot
 from matplotlib.backend_bases import KeyEvent
@@ -16,6 +16,7 @@ from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.gui import APP_NAME
 from organoid_tracker.gui.gui_experiment import GuiExperiment
 from organoid_tracker.gui.icon_getter import get_icon
+from organoid_tracker.gui.progress_bar import ProgressBar
 from organoid_tracker.gui.toolbar import Toolbar
 from organoid_tracker.gui.window import Window
 
@@ -35,6 +36,30 @@ class _CommandBox(QLineEdit):
             super().keyPressEvent(event)
 
 
+class _MainWindowProgressBar(QProgressBar, ProgressBar):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setMaximumWidth(200)
+        self.setTextVisible(False)
+
+    def _reset_range(self):
+        if self.maximum() == 0:
+            # Reset range
+            self.setRange(0, 100)
+
+    def set_progress(self, progress: int):
+        self._reset_range()
+        self.setValue(progress)
+
+    def set_busy(self):
+        # This changes the progress bar to an indeterminate state
+        self.setRange(0, 0)
+
+    def set_error(self):
+        self._reset_range()
+        self.setValue(100)
+
+
 class _MyQMainWindow(QMainWindow):
 
     command_box: _CommandBox
@@ -42,6 +67,7 @@ class _MyQMainWindow(QMainWindow):
     toolbar: Toolbar
     status_box: QLabel
     mpl_canvas: FigureCanvasQTAgg
+    progress_bar: _MainWindowProgressBar
     close_handler: Optional[Callable[[QCloseEvent], None]] = None
 
     def __init__(self, figure: Figure):
@@ -90,9 +116,15 @@ class _MyQMainWindow(QMainWindow):
         status_frame.setWidget(self.status_box)
         vertical_boxes.addWidget(status_frame)
 
-        # Add command box
+        # Add command box and progress bar
+        command_and_progress_area = QWidget(parent=main_frame)
+        command_and_progress_area_layout = QHBoxLayout(command_and_progress_area)
         self.command_box = _CommandBox(parent=main_frame)
-        vertical_boxes.addWidget(self.command_box)
+        command_and_progress_area_layout.addWidget(self.command_box)
+        self.progress_bar = _MainWindowProgressBar(parent=main_frame)
+        self.progress_bar.setMaximumWidth(200)
+        command_and_progress_area_layout.addWidget(self.progress_bar)
+        vertical_boxes.addWidget(command_and_progress_area)
 
         self.mpl_canvas.mpl_connect("key_release_event", partial(_commandbox_autofocus, command_box=self.command_box))
         self.command_box.escape_handler = lambda: self.mpl_canvas.setFocus()
@@ -112,8 +144,8 @@ class _MyQMainWindow(QMainWindow):
 class MainWindow(Window):
 
     def __init__(self, q_window: QMainWindow, figure: Figure, experiment: GuiExperiment,
-                 title_text: QLabel, status_text: QLabel):
-        super().__init__(q_window, figure, experiment, title_text, status_text)
+                 title_text: QLabel, status_text: QLabel, *, progress_bar: ProgressBar):
+        super().__init__(q_window, figure, experiment, title_text, status_text, progress_bar=progress_bar)
 
     def _get_default_menu(self) -> Dict[str, Any]:
         from organoid_tracker.gui import action
@@ -189,7 +221,8 @@ def launch_window(experiment: Experiment) -> MainWindow:
     if not root:
         root = QApplication(sys.argv)
     q_window = _MyQMainWindow(fig)
-    window = MainWindow(q_window, fig, GuiExperiment(experiment), q_window.title, q_window.status_box)
+    window = MainWindow(q_window, fig, GuiExperiment(experiment), q_window.title, q_window.status_box,
+                        progress_bar=q_window.progress_bar)
 
     q_window.command_box.enter_handler = partial(_commandbox_execute, window=window, main_figure=q_window.mpl_canvas)
     q_window.close_handler = lambda close_event: _window_close(window, close_event)

@@ -7,7 +7,7 @@ import sys
 from organoid_tracker.config import ConfigFile
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.plugin import plugin_loader, plugin_manager
-from organoid_tracker.gui.launcher import launch_window, mainloop
+from organoid_tracker.gui.main_window import launch_window, mainloop
 from organoid_tracker.plugin.plugin_manager import PluginManager
 from organoid_tracker.visualizer.empty_visualizer import EmptyVisualizer
 from organoid_tracker.visualizer import activate

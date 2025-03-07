@@ -9,6 +9,7 @@ from PySide6.QtWidgets import QApplication
 
 from organoid_tracker.core import UserError
 from organoid_tracker.core.concurrent import ConcurrentSet
+from organoid_tracker.gui.progress_bar import ProgressBar
 
 
 class Task(ABC):
@@ -58,12 +59,14 @@ class Scheduler(Thread):
     _task_queue: Queue  # Queue[Task]
     _running_tasks: ConcurrentSet
     _finished_queue: Queue  # Queue[_CompletedTask]
+    _progress_bar: ProgressBar
 
-    def __init__(self):
+    def __init__(self, progress_bar: ProgressBar):
         super().__init__()
         self._task_queue = Queue(maxsize=1)
         self._finished_queue = Queue()
         self._running_tasks = ConcurrentSet()
+        self._progress_bar = progress_bar
 
         timer = QTimer(QApplication.instance())
         timer.timeout.connect(self._check_for_results_on_gui_thread)
@@ -73,6 +76,7 @@ class Scheduler(Thread):
         if len(self._running_tasks) == 0:
             try:
                 self._task_queue.put_nowait(task)
+                self._progress_bar.set_busy()
                 return
             except queue.Full:
                 pass
@@ -82,7 +86,8 @@ class Scheduler(Thread):
     def _check_for_results_on_gui_thread(self):
         try:
             while True:
-                result: _CompletedTask = self._finished_queue.get(block = False)
+                result: _CompletedTask = self._finished_queue.get(block=False)
+                self._progress_bar.set_progress(100)
                 result.handle()
         except queue.Empty:
             # Ignore, will check again after a while
@@ -91,6 +96,7 @@ class Scheduler(Thread):
             # Unhandled exception, don't let PyQt catch this
             from organoid_tracker.gui import dialog
             dialog.popup_exception(e)
+            self._progress_bar.set_error()
 
     def run(self):
         """Long-running method that processes pending tasks. Do not call, let Python call it."""

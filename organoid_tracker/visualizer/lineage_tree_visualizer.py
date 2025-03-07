@@ -338,7 +338,7 @@ class LineageTreeVisualizer(Visualizer):
         position_data = experiment.position_data
 
         tracks = self._get_sorted_tracks()
-        if len(tracks) > 4000:
+        if len(tracks) > 5000:
             raise ValueError(f"Lineage tree is too complex to display ({len(tracks)} tracks)")
 
         self._calculate_track_colors()

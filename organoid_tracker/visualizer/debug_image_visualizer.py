@@ -3,7 +3,7 @@ from matplotlib.colors import Colormap
 from numpy import ndarray
 
 from organoid_tracker.core.experiment import Experiment
-from organoid_tracker.gui.launcher import launch_window, mainloop
+from organoid_tracker.gui.main_window import launch_window, mainloop
 from organoid_tracker.gui.window import Window
 from organoid_tracker.image_loading.array_image_loader import SingleImageLoader
 from organoid_tracker.visualizer import activate
