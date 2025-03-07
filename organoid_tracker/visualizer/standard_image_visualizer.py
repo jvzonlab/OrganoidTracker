@@ -2,7 +2,7 @@ from matplotlib.backend_bases import MouseEvent
 
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.gui import dialog
-from organoid_tracker.gui.launcher import launch_window
+from organoid_tracker.gui.main_window import launch_window
 from organoid_tracker.imaging import io
 from organoid_tracker.text_popup.position_popup import PositionPopup
 from organoid_tracker.visualizer import activate

@@ -264,11 +264,11 @@ You can of course save data files and then manually open them. However, you can 
 ```python
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.images import Images
-from organoid_tracker.gui import launcher
+from organoid_tracker.gui import main_window
 from organoid_tracker.image_loading.array_image_loader import SingleImageLoader
 from organoid_tracker.visualizer import standard_image_visualizer
 
-array = ... # Some single color 3D numpy array, representing an image
+array = ...  # Some single color 3D numpy array, representing an image
 
 # Set up Images object
 images = Images()
