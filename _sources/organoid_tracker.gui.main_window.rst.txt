@@ -1,0 +1,7 @@
+organoid\_tracker.gui.main\_window module
+=========================================
+
+.. automodule:: organoid_tracker.gui.main_window
+   :members:
+   :undoc-members:
+   :show-inheritance:

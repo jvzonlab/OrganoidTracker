@@ -13,9 +13,10 @@ Submodules
    organoid_tracker.gui.icon_getter
    organoid_tracker.gui.image_resolution_dialog
    organoid_tracker.gui.image_series_loader_dialog
-   organoid_tracker.gui.launcher
    organoid_tracker.gui.location_map
+   organoid_tracker.gui.main_window
    organoid_tracker.gui.option_choose_dialog
+   organoid_tracker.gui.progress_bar
    organoid_tracker.gui.threading
    organoid_tracker.gui.toolbar
    organoid_tracker.gui.undo_redo

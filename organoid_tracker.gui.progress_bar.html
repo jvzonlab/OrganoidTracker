@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>organoid_tracker.core.image_coloring module &mdash; OrganoidTracker 2.0 documentation</title>
+  <title>organoid_tracker.gui.progress_bar module &mdash; OrganoidTracker 2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -19,8 +19,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="organoid_tracker.core.image_filters module" href="organoid_tracker.core.image_filters.html" />
-    <link rel="prev" title="organoid_tracker.core.global_data module" href="organoid_tracker.core.global_data.html" /> 
+    <link rel="next" title="organoid_tracker.gui.threading module" href="organoid_tracker.gui.threading.html" />
+    <link rel="prev" title="organoid_tracker.gui.option_choose_dialog module" href="organoid_tracker.gui.option_choose_dialog.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -68,13 +68,13 @@
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.connecting.html">organoid_tracker.connecting package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.connection_analysis.html">organoid_tracker.connection_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.coordinate_system.html">organoid_tracker.coordinate_system package</a></li>
-<li class="toctree-l3 current"><a class="reference internal" href="organoid_tracker.core.html">organoid_tracker.core package</a><ul class="current">
-<li class="toctree-l4 current"><a class="reference internal" href="organoid_tracker.core.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.core.html">organoid_tracker.core package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.division_detection_cnn.html">organoid_tracker.division_detection_cnn package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="organoid_tracker.gui.html">organoid_tracker.gui package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="organoid_tracker.gui.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html#module-organoid_tracker.gui">Module contents</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.division_detection_cnn.html">organoid_tracker.division_detection_cnn package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.gui.html">organoid_tracker.gui package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html">organoid_tracker.guizela_tracker_compatibility package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.image_loading.html">organoid_tracker.image_loading package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.imaging.html">organoid_tracker.imaging package</a></li>
@@ -111,10 +111,10 @@
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="organoid_tracker.html">organoid_tracker package</a> &raquo;</li>
-          <li><a href="organoid_tracker.core.html">organoid_tracker.core package</a> &raquo;</li>
-      <li>organoid_tracker.core.image_coloring module</li>
+          <li><a href="organoid_tracker.gui.html">organoid_tracker.gui package</a> &raquo;</li>
+      <li>organoid_tracker.gui.progress_bar module</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/organoid_tracker.core.image_coloring.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/organoid_tracker.gui.progress_bar.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -122,21 +122,37 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-organoid_tracker.core.image_coloring">
-<span id="organoid-tracker-core-image-coloring-module"></span><h1>organoid_tracker.core.image_coloring module<a class="headerlink" href="#module-organoid_tracker.core.image_coloring" title="Permalink to this heading"></a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.core.image_coloring.get_colormap">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.core.image_coloring.</span></span><span class="sig-name descname"><span class="pre">get_colormap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.13)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.Colormap.html#matplotlib.colors.Colormap" title="(in Matplotlib v3.10.1)"><span class="pre">Colormap</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.image_coloring.get_colormap" title="Permalink to this definition"></a></dt>
-<dd><p>Load a colormap by name. If the name is not in the allowed list, the gray colormap will be returned.</p>
-<p>Note that these colormaps can be different from the built-in Matplotlib colormaps. For example, “green” returns
-a colormap that goes from black to pure green (#00FF00), while Matplotlib’s “Greens” colormap goes from white to
-another shade of green.</p>
+  <section id="module-organoid_tracker.gui.progress_bar">
+<span id="organoid-tracker-gui-progress-bar-module"></span><h1>organoid_tracker.gui.progress_bar module<a class="headerlink" href="#module-organoid_tracker.gui.progress_bar" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.gui.progress_bar.ProgressBar">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.progress_bar.</span></span><span class="sig-name descname"><span class="pre">ProgressBar</span></span><a class="headerlink" href="#organoid_tracker.gui.progress_bar.ProgressBar" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Abstract class for progress bars. Concrete implementations must implement the methods below.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.gui.progress_bar.ProgressBar.NO_OP">
+<span class="sig-name descname"><span class="pre">NO_OP</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#organoid_tracker.gui.progress_bar.ProgressBar" title="organoid_tracker.gui.progress_bar.ProgressBar"><span class="pre">ProgressBar</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;organoid_tracker.gui.progress_bar._NoOpProgressBar</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#organoid_tracker.gui.progress_bar.ProgressBar.NO_OP" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.progress_bar.ProgressBar.set_busy">
+<span class="sig-name descname"><span class="pre">set_busy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.progress_bar.ProgressBar.set_busy" title="Permalink to this definition"></a></dt>
+<dd><p>Set the progress bar to a busy state, e.g. by showing an animation. At this point, it is not known how far
+along the task is.</p>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.core.image_coloring.get_segmentation_colormap">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.core.image_coloring.</span></span><span class="sig-name descname"><span class="pre">get_segmentation_colormap</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.Colormap.html#matplotlib.colors.Colormap" title="(in Matplotlib v3.10.1)"><span class="pre">Colormap</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.image_coloring.get_segmentation_colormap" title="Permalink to this definition"></a></dt>
-<dd><p>Get the colormap for segmentation masks.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.progress_bar.ProgressBar.set_error">
+<span class="sig-name descname"><span class="pre">set_error</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.progress_bar.ProgressBar.set_error" title="Permalink to this definition"></a></dt>
+<dd><p>Sets the progress bar to an error state.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.progress_bar.ProgressBar.set_progress">
+<span class="sig-name descname"><span class="pre">set_progress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.progress_bar.ProgressBar.set_progress" title="Permalink to this definition"></a></dt>
+<dd><p>Sets the progress. 0 is fully empty, 100 is fully done.</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -145,8 +161,8 @@ another shade of green.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="organoid_tracker.core.global_data.html" class="btn btn-neutral float-left" title="organoid_tracker.core.global_data module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="organoid_tracker.core.image_filters.html" class="btn btn-neutral float-right" title="organoid_tracker.core.image_filters module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="organoid_tracker.gui.option_choose_dialog.html" class="btn btn-neutral float-left" title="organoid_tracker.gui.option_choose_dialog module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="organoid_tracker.gui.threading.html" class="btn btn-neutral float-right" title="organoid_tracker.gui.threading module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -343,11 +343,11 @@
 <p>You can of course save data files and then manually open them. However, you can also directly open the visualizer from a script, with your data already loaded. Say, you have an image that you want to display:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.experiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Experiment</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.images</span><span class="w"> </span><span class="kn">import</span> <span class="n">Images</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.gui</span><span class="w"> </span><span class="kn">import</span> <span class="n">launcher</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.gui</span><span class="w"> </span><span class="kn">import</span> <span class="n">main_window</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.image_loading.array_image_loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">SingleImageLoader</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.visualizer</span><span class="w"> </span><span class="kn">import</span> <span class="n">standard_image_visualizer</span>
 
-<span class="n">array</span> <span class="o">=</span> <span class="o">...</span> <span class="c1"># Some single color 3D numpy array, representing an image</span>
+<span class="n">array</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># Some single color 3D numpy array, representing an image</span>
 
 <span class="c1"># Set up Images object</span>
 <span class="n">images</span> <span class="o">=</span> <span class="n">Images</span><span class="p">()</span>

@@ -1778,7 +1778,7 @@
       </ul></li>
       <li><a href="organoid_tracker.coordinate_system.spherical_coordinates.html#organoid_tracker.coordinate_system.spherical_coordinates.SphericalCoordinate.latitude_degrees">latitude_degrees() (organoid_tracker.coordinate_system.spherical_coordinates.SphericalCoordinate method)</a>
 </li>
-      <li><a href="organoid_tracker.gui.launcher.html#organoid_tracker.gui.launcher.launch_window">launch_window() (in module organoid_tracker.gui.launcher)</a>
+      <li><a href="organoid_tracker.gui.main_window.html#organoid_tracker.gui.main_window.launch_window">launch_window() (in module organoid_tracker.gui.main_window)</a>
 </li>
       <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.Spline.length">length() (organoid_tracker.core.spline.Spline method)</a>
 
@@ -1902,9 +1902,9 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="organoid_tracker.config.html#organoid_tracker.config.ConfigFile.made_value_changes">made_value_changes (organoid_tracker.config.ConfigFile attribute)</a>
 </li>
-      <li><a href="organoid_tracker.gui.launcher.html#organoid_tracker.gui.launcher.mainloop">mainloop() (in module organoid_tracker.gui.launcher)</a>
+      <li><a href="organoid_tracker.gui.main_window.html#organoid_tracker.gui.main_window.mainloop">mainloop() (in module organoid_tracker.gui.main_window)</a>
 </li>
-      <li><a href="organoid_tracker.gui.launcher.html#organoid_tracker.gui.launcher.MainWindow">MainWindow (class in organoid_tracker.gui.launcher)</a>
+      <li><a href="organoid_tracker.gui.main_window.html#organoid_tracker.gui.main_window.MainWindow">MainWindow (class in organoid_tracker.gui.main_window)</a>
 </li>
       <li><a href="organoid_tracker.linking.nearby_position_finder.html#organoid_tracker.linking.nearby_position_finder.make_nearby_positions_graph">make_nearby_positions_graph() (in module organoid_tracker.linking.nearby_position_finder)</a>
 </li>
@@ -2106,11 +2106,13 @@
 </li>
         <li><a href="organoid_tracker.gui.image_series_loader_dialog.html#module-organoid_tracker.gui.image_series_loader_dialog">organoid_tracker.gui.image_series_loader_dialog</a>
 </li>
-        <li><a href="organoid_tracker.gui.launcher.html#module-organoid_tracker.gui.launcher">organoid_tracker.gui.launcher</a>
-</li>
         <li><a href="organoid_tracker.gui.location_map.html#module-organoid_tracker.gui.location_map">organoid_tracker.gui.location_map</a>
 </li>
+        <li><a href="organoid_tracker.gui.main_window.html#module-organoid_tracker.gui.main_window">organoid_tracker.gui.main_window</a>
+</li>
         <li><a href="organoid_tracker.gui.option_choose_dialog.html#module-organoid_tracker.gui.option_choose_dialog">organoid_tracker.gui.option_choose_dialog</a>
+</li>
+        <li><a href="organoid_tracker.gui.progress_bar.html#module-organoid_tracker.gui.progress_bar">organoid_tracker.gui.progress_bar</a>
 </li>
         <li><a href="organoid_tracker.gui.threading.html#module-organoid_tracker.gui.threading">organoid_tracker.gui.threading</a>
 </li>
@@ -2456,6 +2458,8 @@
       <li><a href="organoid_tracker.gui.action.html#organoid_tracker.gui.action.new">new() (in module organoid_tracker.gui.action)</a>
 </li>
       <li><a href="organoid_tracker.gui.toolbar.html#organoid_tracker.gui.toolbar.Toolbar.new_handler">new_handler() (organoid_tracker.gui.toolbar.Toolbar method)</a>
+</li>
+      <li><a href="organoid_tracker.gui.progress_bar.html#organoid_tracker.gui.progress_bar.ProgressBar.NO_OP">NO_OP (organoid_tracker.gui.progress_bar.ProgressBar attribute)</a>
 </li>
       <li><a href="organoid_tracker.linking_analysis.errors.html#organoid_tracker.linking_analysis.errors.Error.NO_PAST_POSITION">NO_PAST_POSITION (organoid_tracker.linking_analysis.errors.Error attribute)</a>
 </li>
@@ -2888,13 +2892,6 @@
 </li>
       </ul></li>
       <li>
-    organoid_tracker.gui.launcher
-
-      <ul>
-        <li><a href="organoid_tracker.gui.launcher.html#module-organoid_tracker.gui.launcher">module</a>
-</li>
-      </ul></li>
-      <li>
     organoid_tracker.gui.location_map
 
       <ul>
@@ -2902,10 +2899,24 @@
 </li>
       </ul></li>
       <li>
+    organoid_tracker.gui.main_window
+
+      <ul>
+        <li><a href="organoid_tracker.gui.main_window.html#module-organoid_tracker.gui.main_window">module</a>
+</li>
+      </ul></li>
+      <li>
     organoid_tracker.gui.option_choose_dialog
 
       <ul>
         <li><a href="organoid_tracker.gui.option_choose_dialog.html#module-organoid_tracker.gui.option_choose_dialog">module</a>
+</li>
+      </ul></li>
+      <li>
+    organoid_tracker.gui.progress_bar
+
+      <ul>
+        <li><a href="organoid_tracker.gui.progress_bar.html#module-organoid_tracker.gui.progress_bar">module</a>
 </li>
       </ul></li>
       <li>
@@ -3111,6 +3122,8 @@
         <li><a href="organoid_tracker.imaging.depth_colored_image_creator.html#module-organoid_tracker.imaging.depth_colored_image_creator">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     organoid_tracker.imaging.image_adder
 
@@ -3118,8 +3131,6 @@
         <li><a href="organoid_tracker.imaging.image_adder.html#module-organoid_tracker.imaging.image_adder">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     organoid_tracker.imaging.image_file_name_pattern_finder
 
@@ -3855,14 +3866,14 @@
         <li><a href="organoid_tracker.core.full_position_snapshot.html#organoid_tracker.core.full_position_snapshot.FullPositionSnapshot.position">(organoid_tracker.core.full_position_snapshot.FullPositionSnapshot attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment.position_data">position_data (organoid_tracker.core.experiment.Experiment property)</a>
 
       <ul>
         <li><a href="organoid_tracker.core.full_position_snapshot.html#organoid_tracker.core.full_position_snapshot.FullPositionSnapshot.position_data">(organoid_tracker.core.full_position_snapshot.FullPositionSnapshot attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="organoid_tracker.core.full_position_snapshot.html#organoid_tracker.core.full_position_snapshot.FullPositionSnapshot.position_with_links">position_with_links() (organoid_tracker.core.full_position_snapshot.FullPositionSnapshot static method)</a>
 </li>
       <li><a href="organoid_tracker.core.position_collection.html#organoid_tracker.core.position_collection.PositionCollection">PositionCollection (class in organoid_tracker.core.position_collection)</a>
@@ -3898,6 +3909,8 @@
       <li><a href="organoid_tracker.local_marginalization.local_marginalization_functions.html#organoid_tracker.local_marginalization.local_marginalization_functions.prob_to_energy">prob_to_energy() (in module organoid_tracker.local_marginalization.local_marginalization_functions)</a>
 </li>
       <li><a href="organoid_tracker.gui.gui_experiment.html#organoid_tracker.gui.gui_experiment.GuiExperiment.program_closing">program_closing() (organoid_tracker.gui.gui_experiment.GuiExperiment method)</a>
+</li>
+      <li><a href="organoid_tracker.gui.progress_bar.html#organoid_tracker.gui.progress_bar.ProgressBar">ProgressBar (class in organoid_tracker.gui.progress_bar)</a>
 </li>
       <li><a href="organoid_tracker.gui.dialog.html#organoid_tracker.gui.dialog.prompt_color">prompt_color() (in module organoid_tracker.gui.dialog)</a>
 </li>
@@ -4185,11 +4198,15 @@
 </li>
       <li><a href="organoid_tracker.core.mask.html#organoid_tracker.core.mask.Mask.set_bounds_exact">set_bounds_exact() (organoid_tracker.core.mask.Mask method)</a>
 </li>
+      <li><a href="organoid_tracker.gui.progress_bar.html#organoid_tracker.gui.progress_bar.ProgressBar.set_busy">set_busy() (organoid_tracker.gui.progress_bar.ProgressBar method)</a>
+</li>
       <li><a href="organoid_tracker.core.images.html#organoid_tracker.core.images.Images.set_channel_description">set_channel_description() (organoid_tracker.core.images.Images method)</a>
 </li>
       <li><a href="organoid_tracker.linking_analysis.lineage_markers.html#organoid_tracker.linking_analysis.lineage_markers.set_color">set_color() (in module organoid_tracker.linking_analysis.lineage_markers)</a>
 </li>
       <li><a href="organoid_tracker.core.global_data.html#organoid_tracker.core.global_data.GlobalData.set_data">set_data() (organoid_tracker.core.global_data.GlobalData method)</a>
+</li>
+      <li><a href="organoid_tracker.gui.progress_bar.html#organoid_tracker.gui.progress_bar.ProgressBar.set_error">set_error() (organoid_tracker.gui.progress_bar.ProgressBar method)</a>
 </li>
       <li><a href="organoid_tracker.linking_analysis.linking_markers.html#organoid_tracker.linking_analysis.linking_markers.set_error_marker">set_error_marker() (in module organoid_tracker.linking_analysis.linking_markers)</a>
 </li>
@@ -4219,17 +4236,19 @@
 </li>
       <li><a href="organoid_tracker.position_analysis.position_markers.html#organoid_tracker.position_analysis.position_markers.set_position_type">set_position_type() (in module organoid_tracker.position_analysis.position_markers)</a>
 </li>
+      <li><a href="organoid_tracker.gui.progress_bar.html#organoid_tracker.gui.progress_bar.ProgressBar.set_progress">set_progress() (organoid_tracker.gui.progress_bar.ProgressBar method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="organoid_tracker.position_analysis.intensity_calculator.html#organoid_tracker.position_analysis.intensity_calculator.set_raw_intensities">set_raw_intensities() (in module organoid_tracker.position_analysis.intensity_calculator)</a>
 
       <ul>
         <li><a href="organoid_tracker.position_analysis.position_markers.html#organoid_tracker.position_analysis.position_markers.set_raw_intensities">(in module organoid_tracker.position_analysis.position_markers)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="organoid_tracker.core.images.html#organoid_tracker.core.images.Images.set_resolution">set_resolution() (organoid_tracker.core.images.Images method)</a>
 </li>
-      <li><a href="organoid_tracker.gui.launcher.html#organoid_tracker.gui.launcher.MainWindow.set_status">set_status() (organoid_tracker.gui.launcher.MainWindow method)</a>
+      <li><a href="organoid_tracker.gui.main_window.html#organoid_tracker.gui.main_window.MainWindow.set_status">set_status() (organoid_tracker.gui.main_window.MainWindow method)</a>
 
       <ul>
         <li><a href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window.set_status">(organoid_tracker.gui.window.Window method)</a>

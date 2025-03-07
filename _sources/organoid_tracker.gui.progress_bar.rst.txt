@@ -1,0 +1,7 @@
+organoid\_tracker.gui.progress\_bar module
+==========================================
+
+.. automodule:: organoid_tracker.gui.progress_bar
+   :members:
+   :undoc-members:
+   :show-inheritance:
