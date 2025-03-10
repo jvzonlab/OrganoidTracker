@@ -48,7 +48,10 @@ class _MainWindowProgressBar(QProgressBar, ProgressBar):
             # Reset range
             self.setRange(0, 100)
 
-    def set_progress(self, progress: int):
+    def set_progress(self, progress: Optional[int]):
+        if progress is None:
+            self.set_busy()
+            return
         self._reset_range()
         self.setValue(progress)
 

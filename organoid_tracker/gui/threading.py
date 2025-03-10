@@ -30,6 +30,14 @@ class Task(ABC):
         from organoid_tracker.gui import dialog
         dialog.popup_exception(e)
 
+    def get_percentage_completed(self) -> Optional[int]:
+        """Gets the percentage currently completed. Can be called from any thread.
+
+        You don't have to implement this method - returning None is fine. However, if you return a value, make sure it's
+        100 at the end of the task (so when self.compute() is done).
+        """
+        return None
+
 
 class _CompletedTask:
     task: Task
@@ -57,7 +65,7 @@ class Scheduler(Thread):
     and the task will be executed on a worker thread."""
 
     _task_queue: Queue  # Queue[Task]
-    _running_tasks: ConcurrentSet
+    _running_task: Optional[Task]
     _finished_queue: Queue  # Queue[_CompletedTask]
     _progress_bar: ProgressBar
 
@@ -65,7 +73,7 @@ class Scheduler(Thread):
         super().__init__()
         self._task_queue = Queue(maxsize=1)
         self._finished_queue = Queue()
-        self._running_tasks = ConcurrentSet()
+        self._running_task = None
         self._progress_bar = progress_bar
 
         timer = QTimer(QApplication.instance())
@@ -73,7 +81,7 @@ class Scheduler(Thread):
         timer.start(100)
 
     def add_task(self, task: Task):
-        if len(self._running_tasks) == 0:
+        if self._running_task is None:
             try:
                 self._task_queue.put_nowait(task)
                 self._progress_bar.set_busy()
@@ -85,6 +93,12 @@ class Scheduler(Thread):
 
     def _check_for_results_on_gui_thread(self):
         try:
+            # Update progress bar
+            task = self._running_task
+            if task is not None:
+                self._progress_bar.set_progress(task.get_percentage_completed())
+
+            # Handle all finished tasks
             while True:
                 result: _CompletedTask = self._finished_queue.get(block=False)
                 self._progress_bar.set_progress(100)
@@ -98,19 +112,27 @@ class Scheduler(Thread):
             dialog.popup_exception(e)
             self._progress_bar.set_error()
 
+    def _get_percentage_completed(self) -> Optional[float]:
+        """Gets the percentage completed of the current task. Returns None if there is no running task, or if the
+        current task doesn't keep track of how far it is completed."""
+        task = self._running_task
+        if task is None:
+            return None
+        return task.get_percentage_completed()
+
     def run(self):
         """Long-running method that processes pending tasks. Do not call, let Python call it."""
         while True:
-            task: Task = self._task_queue.get(block=True, timeout=None)
-            self._running_tasks.add(task)
+            task: Task = self._task_queue.get(block=True, timeout=None)  # Blocks until the next task
+            self._running_task = task  # Set the task as the currently active task
             try:
                 result = task.compute()
                 self._finished_queue.put(_CompletedTask(task, result=result))
             except Exception as e:
                 self._finished_queue.put(_CompletedTask(task, error=e))
             finally:
-                self._running_tasks.remove(task)
+                self._running_task = None
 
     def has_active_tasks(self) -> bool:
         """Gets whether there are currently tasks being run or scheduled to run."""
-        return len(self._running_tasks) > 0 or self._task_queue.qsize() > 0
+        return self._running_task is not None or self._task_queue.qsize() > 0
