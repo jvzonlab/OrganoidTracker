@@ -1,11 +1,11 @@
 import os.path
 from threading import Lock
-from typing import Tuple, Any, List, Optional
+from typing import Tuple, List, Optional
 
 import numpy
 import tifffile
 from numpy.core.multiarray import ndarray
-from tifffile import TiffFile, TiffPageSeries
+from tifffile import TiffFile, TiffPageSeries, TiffTags
 
 from organoid_tracker.core import TimePoint, max_none, min_none, UserError
 from organoid_tracker.core.experiment import Experiment
@@ -228,3 +228,21 @@ class _MergedTiffImageLoader(ImageLoader):
 
     def close(self):
         self._tiff.close()
+
+    def can_save_images(self, image_channel: ImageChannel) -> bool:
+        if len(self._tiff.series) > 1:
+            return False  # We can't save to a multi-series TIF file
+        return self._axes == "ZYX"  # We can only save single 3D images, more complex are not supported (yet?)
+
+    def save_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image: ndarray):
+        if not self.can_save_images(image_channel):
+            # Can only save single 3D images
+            raise UserError("Unsupported operation", "Saving to this TIF file is not supported.")
+
+        with self._tiff_lock:
+            # Close the TIFF file, overwrite it, and reopen it
+            self._tiff.close()
+            tifffile.imwrite(self._file_name, image, compression=tifffile.COMPRESSION.ADOBE_DEFLATE,
+                             compressionargs={"level": 9})
+            self._tiff = TiffFile(self._file_name)
+            self._tiff_series = self._tiff.series[0]
