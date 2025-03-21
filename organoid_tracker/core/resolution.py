@@ -1,4 +1,4 @@
-from typing import Tuple, Union, Optional
+from typing import Tuple, Union, Optional, Literal
 
 import numpy
 from numpy import ndarray
@@ -170,3 +170,49 @@ class ImageTimings:
         time point 2 will now be what the reported timings of time point 0 were."""
         self._min_time_point_number += time_point_delta
 
+    def find_closest_time_point(self, time: float, unit: Union[Literal["m"], Literal["h"]]) -> TimePoint:
+        """Finds the time point closest to the given time in minutes or hours. If two time points are equally close,
+        then the later one is returned."""
+        if unit not in ("m", "h"):
+            raise ValueError(f"Unit must be 'm' or 'h', was '{unit}'")
+        time_m = time if unit == "m" else time * 60
+
+        if time_m < self._timings_m[0]:
+            # Calculate how many time points back we need to go
+            time_interval_m = self._timings_m[1] - self._timings_m[0]
+            time_before_array_m = time_m - self._timings_m[0]
+            return TimePoint(self._min_time_point_number + _round(time_before_array_m / time_interval_m))
+
+        if time_m >= self._timings_m[-1]:
+            # Calculate how many time points forward we need to go
+            time_interval_m = self._timings_m[-1] - self._timings_m[-2]
+            time_after_array_m = time_m - self._timings_m[-1]
+            return TimePoint(self._min_time_point_number + len(self._timings_m) - 1 + _round(time_after_array_m / time_interval_m))
+
+        # In range
+        time_index = numpy.searchsorted(self._timings_m, time_m, side="right")
+        difference_to_previous_time_point = time_m - self._timings_m[time_index - 1]
+        difference_to_next_time_point = self._timings_m[time_index] - time_m
+        if difference_to_next_time_point <= difference_to_previous_time_point:
+            return TimePoint(self._min_time_point_number + time_index)
+        else:
+            return TimePoint(self._min_time_point_number + time_index - 1)
+
+
+def _round(number: float) -> int:
+    """In Python, 0.5 rounds to 0, as opposed to 1, as any halves are rounded to the nearest even number.
+    This function rounds 0.5 to 1. Also for negative numbers it rounds UP for halves, so -0.5 rounds to 0."""
+    if number < 0:
+        # Handle negative numbers
+        absolute_number = abs(number)
+        remainder = absolute_number % 1
+        if remainder > 0.5:
+            # Note that int(-0.8) is 0, so we need to subtract 1 from the result to get -1 in this example
+            return int(number) - 1
+        else:
+            return int(number)
+
+    remainder = number % 1
+    if remainder < 0.5:
+        return int(number)
+    return int(number) + 1
