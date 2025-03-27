@@ -19,7 +19,9 @@ Some example code to construct positions and links:
 >>> print(experiment.positions.of_time_point(TimePoint(1)))  # "{Position(1, 3, 0, time_point_number=1)}"
 """
 import re
-from typing import Optional, Iterable, Union, Tuple, Any
+import typing
+from collections.abc import Sequence
+from typing import Optional, Iterable, Union, Tuple, Any, NamedTuple, Sized, Container
 
 import matplotlib.colors
 import numpy
@@ -47,6 +49,17 @@ class UserError(Exception):
 
 class TimePoint:
     """A single point in time."""
+
+    @staticmethod
+    def range(first_time_point: Optional["TimePoint"], last_time_point: Optional["TimePoint"]
+              ) -> Sequence["TimePoint"]:
+        """Creates a range of time points, *inclusive*. Useful for iterating over time points. If any of the time points
+        is None, the range will be empty. Raises a ValueError if the first time point is after the last time point."""
+        if first_time_point is None or last_time_point is None:
+            return []
+        if first_time_point > last_time_point:
+            raise ValueError(f"First time point {first_time_point} is after last time point {last_time_point}")
+        return _TimePointRange(first_time_point, last_time_point)
 
     _time_point_number: int
 
@@ -90,6 +103,30 @@ class TimePoint:
         if isinstance(other, TimePoint):
             return TimePoint(self._time_point_number - other.time_point_number())
         return NotImplemented
+
+
+class _TimePointRange(Sequence):
+    """A range of time points, inclusive. Used for iterating over time points. You can create instances using
+    `TimePoint.range(first_time_point, last_time_point)`."""
+    min_time_point: TimePoint
+    max_time_point: TimePoint
+    _index: int
+
+    def __init__(self, min_time_point: TimePoint, max_time_point: TimePoint):
+        if not isinstance(min_time_point, TimePoint) or not isinstance(max_time_point, TimePoint):
+            raise TypeError(f"Expected two TimePoint instances, got {min_time_point} and {max_time_point}")
+        self.min_time_point = min_time_point
+        self.max_time_point = max_time_point
+
+    def __getitem__(self, item) -> TimePoint:
+        time_point_number = self.min_time_point.time_point_number() + item if item >= 0\
+            else self.max_time_point.time_point_number() + 1 + item
+        if time_point_number < self.min_time_point.time_point_number() or time_point_number > self.max_time_point.time_point_number():
+            raise IndexError(f"Time point {time_point_number} is not in range {self}")
+        return TimePoint(time_point_number)
+
+    def __len__(self) -> int:
+        return self.max_time_point.time_point_number() - self.min_time_point.time_point_number() + 1
 
 
 class Name:

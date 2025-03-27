@@ -332,11 +332,7 @@ class SplineCollection:
 
     def time_points(self) -> Iterable[TimePoint]:
         """Gets all time points with data axes in them, from first to last."""
-        if self._min_time_point_number is None:
-            return
-
-        for time_point_number in range(self._min_time_point_number, self._max_time_point_number + 1):
-            yield TimePoint(time_point_number)
+        return TimePoint.range(self.first_time_point(), self.last_time_point())
 
     def reference_time_point(self, number: Optional[TimePoint] = None) -> Optional[TimePoint]:
         """Gets or sets the reference time point number. The reference time point is used to define the "original"

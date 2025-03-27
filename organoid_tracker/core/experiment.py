@@ -170,15 +170,7 @@ class Experiment:
     def time_points(self) -> Iterable[TimePoint]:
         """Returns an iterable over all time points, so that you can do `for time_point in experiment.time_points():`.
         """
-        first_number = self.first_time_point_number()
-        last_number = self.last_time_point_number()
-        if first_number is None or last_number is None:
-            return []
-
-        current_number = first_number
-        while current_number <= last_number:
-            yield self.get_time_point(current_number)
-            current_number += 1
+        return TimePoint.range(self.first_time_point(), self.last_time_point())
 
     def get_image_stack(self, time_point: TimePoint) -> Optional[ndarray]:
         warnings.warn("Use experiment.images.get_image_stack instead", DeprecationWarning)

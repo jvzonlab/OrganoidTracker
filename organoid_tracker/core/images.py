@@ -485,12 +485,7 @@ class Images:
 
     def time_points(self) -> Iterable[TimePoint]:
         """Gets all time points for which images are available."""
-        min_time_point_number = self._image_loader.first_time_point_number()
-        max_time_point_number = self._image_loader.last_time_point_number()
-        if min_time_point_number is None or max_time_point_number is None:
-            return
-        for time_point_number in range(min_time_point_number, max_time_point_number + 1):
-            yield TimePoint(time_point_number)
+        return TimePoint.range(self._image_loader.first_time_point(), self._image_loader.last_time_point())
 
     def get_channels(self) -> List[ImageChannel]:
         """Gets all available image channels. These are determined by the image_loader. They will be in order, so
