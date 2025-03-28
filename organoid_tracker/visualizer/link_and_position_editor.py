@@ -406,8 +406,13 @@ class _SuppressErrorsAction(UndoableAction):
 
 
 class LinkAndPositionEditor(AbstractEditor):
-    """Editor for cell links and positions. Use the Insert or Enter key to insert new cells or links, and use the Delete
-     or Backspace key to delete them."""
+    """Editor for cell links and positions. Use the Insert or Enter key to insert new cells.
+    • To select a cell, click on it. You can then shift its position using the Shift key, or delete it using the Delete or Backspace key.
+    • If you have selected two cells, the Insert/Enter and Delete/Backspace keys will insert or delete a link between them.
+    • If you have selected one cell and press Insert/Enter in the next or previous time point, a new cell will be inserted
+       that is linked to the existing one.
+    • These are just the basics, see the user manual for more information on how to use this editor.
+    """
 
     _selected: List[Position]
     _displayed_error_focus_points: Optional[Set[Position]] = None
@@ -471,7 +476,8 @@ class LinkAndPositionEditor(AbstractEditor):
         new_selection = self._get_position_at(event.xdata, event.ydata)
         if new_selection is None:
             self.update_status("Cannot find a cell here."
-                               "\n(To unselect all cells, double-click an empty location, or press Escape or Ctrl+D.)")
+                               "\n(To unselect all cells, double-click an empty location, or press Escape or Ctrl+D. "
+                               "To select all cells in a rectangle, press R.)")
             return
 
         if new_selection in self._selected:
@@ -541,7 +547,7 @@ class LinkAndPositionEditor(AbstractEditor):
             "Edit//LineageEnd-Mark as moving out of view [V]": lambda: self._try_set_end_marker(EndMarker.OUT_OF_VIEW),
             "Edit//LineageEnd-Remove end marker": lambda: self._try_set_end_marker(None),
             "Edit//Marker-Set color of lineage...": self._set_color_of_lineage,
-            "Select//Select-Select positions in a rectangle...": self._show_positions_in_rectangle_selector,
+            "Select//Select-Select positions in a rectangle... [R]": self._show_positions_in_rectangle_selector,
             "Select//Select-Select all positions in current time point [Ctrl+A]": self._select_all,
             "Select//Select-Select all positions in time point range...": self._select_all_of_multiple_time_points,
             "Select//Deselect-Deselect all positions [Ctrl+D]": self._deselect_all,

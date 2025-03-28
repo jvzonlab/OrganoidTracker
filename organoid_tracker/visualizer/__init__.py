@@ -165,6 +165,17 @@ class Visualizer:
     def _on_key_press(self, event: KeyEvent):
         pass
 
+    def _on_mouse_move_raw(self, event: MouseEvent):
+        """Calls _on_mouse_move, but catches all exceptions."""
+        try:
+            self._on_mouse_move(event)
+        except Exception as e:
+            dialog.popup_exception(e)
+
+    def _on_mouse_move(self, event: MouseEvent):
+        """Called when the mouse is moved."""
+        pass
+
     def _on_command_raw(self, text: str):
         """Executes a command, catches errors and shows a message if the command does not exist."""
         try:
@@ -221,6 +232,7 @@ class Visualizer:
         self._window.register_event_handler("key_press_event", self._on_key_press_raw)
         self._window.register_event_handler("button_press_event", self._on_mouse_press_raw)
         self._window.register_event_handler("button_release_event", self._on_mouse_release_raw)
+        self._window.register_event_handler("motion_notify_event", self._on_mouse_move)
         self._window.register_event_handler("data_updated_event", self.refresh_data)
         self._window.register_event_handler("any_updated_event", self.refresh_all)
         self._window.register_event_handler("command_event", self._on_command_raw)
