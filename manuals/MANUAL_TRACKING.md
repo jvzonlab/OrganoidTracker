@@ -8,7 +8,7 @@ To insert positions, make sure you have no cell selected, and then press the Ins
 
 You can also use the Enter and Backspace keys as alternatives for the Insert and Delete keys, respectively. Both keys perform exactly the same function, so depending on your keyboard layout, you might find it easier to use one or the other.
 
-If you press Shift while having a single cell selected, that cell will be moved to your mouse position. The metadata and links of the cell will be preserved.
+If you press Shift while having a single cell selected, that cell will be moved to your mouse position.
 
 Undo and Redo functions are available from the Edit menu. You can also use the Control+Z and Control+Y keyboard shortcuts, respectively.
 
@@ -20,7 +20,7 @@ A nice shortcut exists where if you have selected one single cell, then place yo
 ### Working with many (cell) positions
 There are also some tools to work with multiple positions at once.
 
-Use Control + A to select all positions of the current time point. Use Select -> Select positions in a rectangle... to select positions within a rectangular area.
+Use Control + A to select all positions of the current time point. Use `Select` -> `Select positions in a rectangle...` or press R to select positions within a rectangular area.
 
 Use Alt + A/D to move the positions to the left or right, use Alt + S/W to move the positions up or down in the Y-direction and use Alt + Q/E to move the positions up or down in the Z-direction.
 
