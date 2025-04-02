@@ -42,6 +42,7 @@ class _MainWindowProgressBar(QProgressBar, ProgressBar):
         super().__init__(*args, **kwargs)
         self.setMaximumWidth(200)
         self.setTextVisible(False)
+        self.setVisible(False)
 
     def _reset_range(self):
         if self.maximum() == 0:
@@ -54,14 +55,17 @@ class _MainWindowProgressBar(QProgressBar, ProgressBar):
             return
         self._reset_range()
         self.setValue(progress)
+        self.setVisible(progress > 0)
 
     def set_busy(self):
         # This changes the progress bar to an indeterminate state
         self.setRange(0, 0)
+        self.setVisible(True)
 
     def set_error(self):
         self._reset_range()
         self.setValue(100)
+        self.setVisible(True)
 
 
 class _MyQMainWindow(QMainWindow):
@@ -95,6 +99,7 @@ class _MyQMainWindow(QMainWindow):
         title_frame.setWidgetResizable(True)
         title_frame.setFrameShape(QFrame.NoFrame)
         title_frame.setWidget(self.title)
+        title_frame.setStyleSheet("background: transparent;")
         vertical_boxes.addWidget(title_frame)
 
         # Add Matplotlib figure to frame
@@ -118,6 +123,7 @@ class _MyQMainWindow(QMainWindow):
         status_frame.setFrameShape(QFrame.NoFrame)
         status_frame.setMinimumHeight(100)
         status_frame.setWidget(self.status_box)
+        status_frame.setStyleSheet("background: transparent;")
         vertical_boxes.addWidget(status_frame)
 
         # Add command box and progress bar
