@@ -1,6 +1,8 @@
 import math
 from functools import partial
 from typing import Optional, Dict, Any, Tuple, List
+import os
+import shutil
 
 import PIL.Image
 import PIL.ImageDraw
@@ -13,10 +15,13 @@ from organoid_tracker import core
 from organoid_tracker.core import UserError, image_coloring, TimePoint
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.image_loader import ImageChannel
+from organoid_tracker.core.images import ChannelDescription
 from organoid_tracker.core.position import Position
-from organoid_tracker.gui import dialog
+from organoid_tracker.gui import dialog, action
 from organoid_tracker.gui.undo_redo import UndoableAction, UndoRedo
 from organoid_tracker.gui.window import Window
+from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelAppendingImageLoader
+from organoid_tracker.image_loading.folder_image_loader import FolderImageLoader
 from organoid_tracker.visualizer import activate
 from organoid_tracker.visualizer.abstract_editor import AbstractEditor
 from organoid_tracker.visualizer.link_and_position_editor import LinkAndPositionEditor
@@ -512,7 +517,7 @@ class CellSegmentationEditor(AbstractEditor):
             **super().get_extra_menu_options(),
             "Edit//Labeling-Delete current label [Shift+Delete]": self._delete_current_label,
             "Edit//Batch-Add positions to masks without positions": self._add_positions_to_orphaned_masks,
-            "Edit//Batch-Remove masks without positions": self._remove_orphaned_masks,
+            "Edit//Batch-Remove masks without positions": self._remove_orphaned_masks
         }
 
         image_loader = self._experiment.images.image_loader()
@@ -520,7 +525,7 @@ class CellSegmentationEditor(AbstractEditor):
 
         for channel in image_loader.get_channels():
             channel_description = self._experiment.images.get_channel_description(channel)
-            menu_label = "Channel " + channel_description.channel_name
+            menu_label = "Channels-Channel " + channel_description.channel_name
             if channel == self._display_settings.segmentation_channel:
                 menu_label += " (currently selected)"
             elif not image_loader.can_save_images(channel):
@@ -532,6 +537,9 @@ class CellSegmentationEditor(AbstractEditor):
 
             menu_options[f"Edit//Settings-Set segmentation image channel//" + menu_label] \
                 = partial(self._set_segmentation_image_channel, channel)
+
+        menu_options["Edit//Settings-Set segmentation image channel//New-Create new segmentation channel..."]= self._create_new_segmentation_channel
+        menu_options["Edit//Settings-Set segmentation image channel//New-Load segmentation from disk..."]= self._load_segmentation_channel
 
         return menu_options
 
@@ -625,6 +633,64 @@ class CellSegmentationEditor(AbstractEditor):
         self._segmentation_image_undo_redo.mark_everything_saved()
         dialog.popup_message("Removed masks without positions", "Removed all masks that did not have"
                                                                 " a corresponding position.")
+
+    def _create_new_segmentation_channel(self):
+        if not dialog.prompt_confirmation("Create new segmentation channel", "This option will create a folder with"
+                                          " black (empty, zero-valued) TIF files, one for each time point, which you"
+                                          " can use for drawing segmentation masks. We will now ask you where to create"
+                                          " that folder."):
+            return
+        folder = dialog.prompt_save_file("Images folder", [("Folder", "*")])
+        if folder is None:
+            return
+        os.makedirs(folder, exist_ok=True)
+        # Get time points (either from existing images, existing positions, or by prompting the user)
+        time_points = list(self._experiment.images.time_points())
+        image_size = self._experiment.images.image_loader().get_image_size_zyx()
+        if len(time_points) == 0:
+            raise UserError("No images loaded", "No images were loaded. Cannot create segmentation images matching them.")
+        if image_size is None:
+            raise UserError("Inconsistent image size", "No (single) image size was found. This is required"
+                            " for our image creation algorithm. However, you can still create zero-filled images"
+                            " yourself in another program, if you want.")
+
+        # Create a first image
+        array = numpy.zeros(image_size, dtype=numpy.uint16)
+        import tifffile
+        first_image_name = os.path.join(folder, f"segmentation_t{time_points[0].time_point_number()}.tif")
+        tifffile.imwrite(first_image_name, array, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
+
+        # Copy that image over and over (faster than calling imwrite repeatedly)
+        for time_point in time_points[1:]:
+            shutil.copyfile(first_image_name, os.path.join(folder, f"segmentation_t{time_point.time_point_number()}.tif"))
+
+        # Add this channel to the experiment, and activate it
+        new_loader = FolderImageLoader(folder, "segmentation_t{time}.tif",
+                                       min_time_point=self._experiment.images.first_time_point_number(),
+                                       max_time_point=self._experiment.images.last_time_point_number(),
+                                       min_channel=1, max_channel=1)
+        self._experiment.images.image_loader(ChannelAppendingImageLoader([self._experiment.images.image_loader(), new_loader]))
+        new_channel = self._experiment.images.get_channels()[-1]
+        self._experiment.images.set_channel_description(new_channel, ChannelDescription("segmentation", image_coloring.get_segmentation_colormap()))
+        self._set_segmentation_image_channel(new_channel)
+
+    def _load_segmentation_channel(self):
+        from organoid_tracker.gui import image_series_loader_dialog
+        temp_experiment = Experiment()
+        if not image_series_loader_dialog.prompt_image_series(temp_experiment):
+            return
+        temp_last_channel = temp_experiment.images.get_channels()[-1]  # This channel will be selected
+        new_loader = temp_experiment.images.image_loader()
+        if not new_loader.can_save_images(temp_last_channel):
+            raise UserError("Not writeable", "For this image format, writing is not supported. Please"
+                                             " convert your images to a folder of TIF files, one file per time point.")
+
+        # Use the image channel
+        self._experiment.images.image_loader(ChannelAppendingImageLoader([self._experiment.images.image_loader(), new_loader]))
+        new_channel = self._experiment.images.get_channels()[-1]
+        self._experiment.images.set_channel_description(new_channel, ChannelDescription("segmentation",
+                                                                                        image_coloring.get_segmentation_colormap()))
+        self._set_segmentation_image_channel(new_channel)
 
     def _delete_current_label(self):
         segmentation_stack, label = self._get_segmentation_stack_and_selected_label()
