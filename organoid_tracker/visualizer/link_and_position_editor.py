@@ -1,3 +1,4 @@
+import typing
 from collections import defaultdict
 from typing import Optional, List, Dict, Iterable, Tuple, Set
 
@@ -405,6 +406,11 @@ class _SuppressErrorsAction(UndoableAction):
         return f"Unsuppressed the error of {len(self._positions)} positions"
 
 
+def _display_in_flag_list(value: typing.Any) -> bool:
+    if isinstance(value, typing.Sized):
+        return len(value) > 0
+    return bool(value)
+
 class LinkAndPositionEditor(AbstractEditor):
     """Editor for cell links and positions. Use the Insert or Enter key to insert new cells.
     • To select a cell, click on it. You can then shift its position using the Shift key, or delete it using the Delete or Backspace key.
@@ -513,7 +519,7 @@ class LinkAndPositionEditor(AbstractEditor):
 
         data_names = list()
         for data_name, value in self._experiment.position_data.find_all_data_of_position(position):
-            if value:
+            if _display_in_flag_list(value):
                 data_names.append("'" + data_name + "'")
         if len(data_names) > 10:
             data_names = data_names[0:10]
