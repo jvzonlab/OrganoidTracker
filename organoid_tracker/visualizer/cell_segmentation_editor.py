@@ -18,7 +18,7 @@ from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.core.images import ChannelDescription
 from organoid_tracker.core.position import Position
 from organoid_tracker.gui import dialog, action
-from organoid_tracker.gui.undo_redo import UndoableAction, UndoRedo
+from organoid_tracker.gui.undo_redo import UndoableAction, UndoRedo, CombinedAction
 from organoid_tracker.gui.window import Window
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelAppendingImageLoader
 from organoid_tracker.image_loading.folder_image_loader import FolderImageLoader
@@ -231,14 +231,18 @@ class CellSegmentationEditor(AbstractEditor):
         if segmentation_stack is None:
             return None, None
 
-        offset = self._experiment.images.offsets.of_time_point(self._time_point)
-        image_position = self._selected_position - offset
-        x, y, z = int(round(image_position.x)), int(round(image_position.y)), int(round(image_position.z))
+        x, y, z = self._get_image_position_xyz(self._selected_position)
         if 0 <= x < segmentation_stack.shape[2] and 0 <= y < segmentation_stack.shape[1] and 0 <= z < \
                 segmentation_stack.shape[0]:
             return segmentation_stack, segmentation_stack[z, y, x]
 
         return None, None
+
+    def _get_image_position_xyz(self, position: Position) -> Tuple[int, int, int]:
+        offset = self._experiment.images.offsets.of_time_point(position.time_point())
+        image_position = position - offset
+        x, y, z = int(round(image_position.x)), int(round(image_position.y)), int(round(image_position.z))
+        return x, y, z
 
     def _undo(self):
         # Redirect the undo function to our own undo/redo queue
@@ -417,6 +421,7 @@ class CellSegmentationEditor(AbstractEditor):
             return
 
         # Need to add a new label if the selected position has no label
+        ensure_center_is_part_of_new_mask_action = None
         if label == 0:
             label = _find_new_label(segmentation_image)
 
@@ -430,10 +435,21 @@ class CellSegmentationEditor(AbstractEditor):
             except ValueError:
                 pass  # Float image, ignore
 
+            x, y, z = self._get_image_position_xyz(self._selected_position)
+            ensure_center_is_part_of_new_mask_action = _SetLabelAction(segmentation_image,
+                      numpy.full((1, 1), label, dtype=segmentation_image.dtype),
+                      x, y, z, label, delete=False)
+
+
         x_min, y_min, z_coord, mask = self._to_mask(self._clicked_positions)
 
         # Create the action
         label_action = _SetLabelAction(segmentation_image, mask, x_min, y_min, z_coord, label, delete=False)
+        if ensure_center_is_part_of_new_mask_action is not None:
+            # We're inserting a new mask, also include the single pixel at self._selected_position
+            label_action = CombinedAction([label_action, ensure_center_is_part_of_new_mask_action],
+                                          do_message="Started a new mask for the cell. You can modify the mask by"
+                                          "drawing more.", undo_message="Removed the mask again.")
 
         # Perform the action
         self._clicked_positions.clear()
