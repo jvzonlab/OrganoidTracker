@@ -2,13 +2,14 @@
 import os
 from typing import List
 import tensorflow as tf
+import numpy as np
 from functools import partial
 
 from organoid_tracker.division_detection_cnn.training_data_creator import _ImageWithDivisions
 from organoid_tracker.position_detection_cnn.training_data_creator import _ImageWithPositions
 
 # Loads images with position and division information
-def load_images_with_divisions(i, image_with_positions_list: List[_ImageWithDivisions], time_window=[0, 0], create_labels=False):
+def load_images_with_divisions(i, image_with_positions_list: List[_ImageWithDivisions], time_window=[0, 0], create_labels=False, crop=False):
 
     image_with_positions = image_with_positions_list[i]
 
@@ -20,28 +21,45 @@ def load_images_with_divisions(i, image_with_positions_list: List[_ImageWithDivi
     else:
         label = image_with_positions.xyz_positions
         label = label[:, [2,1,0]]
+
+    if crop:
+        min_coords = np.amin(label, axis=0)
+        min_coords = min_coords-32
+        min_coords[min_coords<0] = 0
+        min_coords[0]= 0
+
+        max_coords = np.amax(label, axis=0)
+        max_coords = max_coords+32
+        max_coords[0] = 0
+        shape = np.asarray(image.shape[0:3])-1
+        max_coords = np.where(max_coords > shape, shape, max_coords)
+        label = np.subtract(label, min_coords)
+
+        # Crop in x and y
+        image = image[:, min_coords[1]:max_coords[1]+1, min_coords[2]:max_coords[2]+1, :]
+
     # extract division info
     dividing = image_with_positions._dividing
 
     return image, label, dividing
 
 # tensorflow wrapper to laod image + division data
-def tf_load_images_with_divisions(i, image_with_positions_list: List[_ImageWithPositions], time_window=[0, 0], create_labels=False):
+def tf_load_images_with_divisions(i, image_with_positions_list: List[_ImageWithPositions], time_window=[0, 0], create_labels=False, crop=False):
     if create_labels:
         image, label, dividing = tf.py_function(
             partial(load_images_with_divisions, image_with_positions_list=image_with_positions_list,
-                time_window=time_window, create_labels=create_labels), [i],
+                time_window=time_window, create_labels=create_labels, crop=crop), [i],
             (tf.float32, tf.float32, tf.bool))
     else:
         image, label, dividing = tf.py_function(
             partial(load_images_with_divisions, image_with_positions_list=image_with_positions_list,
-                time_window=time_window, create_labels=create_labels), [i],
+                time_window=time_window, create_labels=create_labels, crop=crop), [i],
             (tf.float32, tf.int32, tf.bool))
 
     return image, label, dividing
 
 
-def load_images_with_positions(i, image_with_positions_list: List[_ImageWithDivisions], time_window=[0, 0], create_labels=False):
+def load_images_with_positions(i, image_with_positions_list: List[_ImageWithDivisions], time_window=[0, 0], create_labels=False, crop=False):
 
     image_with_positions = image_with_positions_list[i]
 
@@ -55,24 +73,37 @@ def load_images_with_positions(i, image_with_positions_list: List[_ImageWithDivi
         label = image_with_positions.xyz_positions
         label = label[:, [2,1,0]]
 
+    if crop:
+        min_coords = np.amin(label, axis=0)
+        min_coords = min_coords-32
+        min_coords[min_coords<0] = 0
+        min_coords[0]= 0
+
+        max_coords = np.amax(label, axis=0)
+        max_coords = max_coords+32
+        max_coords[0] = 0
+        shape = np.asarray(image.shape[0:3])-1
+        max_coords = np.where(max_coords > shape, shape, max_coords)
+
+        # Crop in x and y
+        image = image[:, min_coords[1]:max_coords[1]+1, min_coords[2]:max_coords[2]+1, :]
+
     return image, label
 
 # tensorflow wrapper to laod image + positions
-def tf_load_images_with_positions(i, image_with_positions_list: List[_ImageWithPositions], time_window=[0, 0], create_labels=False):
+def tf_load_images_with_positions(i, image_with_positions_list: List[_ImageWithPositions], time_window=[0, 0], create_labels=False, crop=False):
     if create_labels:
         image, label = tf.py_function(
             partial(load_images_with_positions, image_with_positions_list=image_with_positions_list,
-                time_window=time_window, create_labels=create_labels), [i],
+                time_window=time_window, create_labels=create_labels, crop=crop), [i],
             (tf.float32, tf.float32))
     else:
         image, label = tf.py_function(
             partial(load_images_with_positions, image_with_positions_list=image_with_positions_list,
-                time_window=time_window, create_labels=create_labels), [i],
+                time_window=time_window, create_labels=create_labels, crop=crop), [i],
             (tf.float32, tf.int32))
 
     return image, label
-
-
 
 def dataset_writer(image_with_positions_list: List[_ImageWithPositions], time_window, shards=10):
     dataset = tf.data.Dataset.range(len(image_with_positions_list))

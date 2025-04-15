@@ -34,7 +34,7 @@ from organoid_tracker.division_detection_cnn.training_data_creator import _Image
 
 # Creates training and validation data from an image_with_positions_list
 def training_data_creator_from_raw(image_with_divisions_list: List[_ImageWithDivisions], time_window, patch_shape,
-                                   batch_size: int, mode, split_proportion: float = 0.8, perturb=True):
+                                   batch_size: int, mode, split_proportion: float = 0.8, perturb=True, crop=False):
     dataset = tf.data.Dataset.range(len(image_with_divisions_list))
     len_dataset = len(dataset)
 
@@ -50,7 +50,7 @@ def training_data_creator_from_raw(image_with_divisions_list: List[_ImageWithDiv
 
     # Load data
     dataset = dataset.map(partial(tf_load_images_with_divisions, image_with_positions_list=image_with_divisions_list,
-                                  time_window=time_window, create_labels=False), num_parallel_calls=12)
+                                  time_window=time_window, create_labels=False, crop=crop), num_parallel_calls=12) #12
 
     # Normalize images
     dataset = dataset.map(normalize)
