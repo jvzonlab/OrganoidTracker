@@ -41,7 +41,7 @@ def prediction_data_creator(tf_load_images_with_links_list: List[_ImageWithLinks
 
     # Load data
     dataset = dataset.map(partial(tf_load_images_with_links, image_with_positions_list=tf_load_images_with_links_list,
-                                  time_window=time_window), num_parallel_calls=12)
+                                  time_window=time_window, crop=False), num_parallel_calls=12)
 
 
     # Normalize images

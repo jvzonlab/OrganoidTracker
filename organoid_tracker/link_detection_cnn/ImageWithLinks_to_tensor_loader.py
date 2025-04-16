@@ -3,13 +3,14 @@ import os
 from typing import Tuple, List
 import tensorflow as tf
 from functools import partial
+import numpy as np
 
 
 from organoid_tracker.link_detection_cnn.training_data_creator import _ImageWithLinks
 from organoid_tracker.position_detection_cnn.training_data_creator import _ImageWithPositions
 
 
-def load_images_with_links(i, image_with_positions_list: List[_ImageWithLinks], time_window=[0, 0]):
+def load_images_with_links(i, image_with_positions_list: List[_ImageWithLinks], time_window=[0, 0], crop=False):
     image_with_positions = image_with_positions_list[i]
 
     image = image_with_positions.load_image_time_stack(time_window)
@@ -30,15 +31,29 @@ def load_images_with_links(i, image_with_positions_list: List[_ImageWithLinks], 
 
     linked = image_with_positions._linked
 
+    if crop:
+        coords = np.concatenate((label, target_label), axis=0)
+        min_coords = np.amin(coords, axis=0)
+        min_coords[0] = 0
+        max_coords = np.amax(coords, axis=0)
+        max_coords[0] = 0
+
+        label = np.subtract(label, min_coords)
+        target_label = np.subtract(target_label, min_coords)
+
+        # Crop in x and y
+        image = image[:, min_coords[1]:max_coords[1]+1, min_coords[2]:max_coords[2]+1, :]
+        target_image = target_image[:, min_coords[1]:max_coords[1]+1, min_coords[2]:max_coords[2]+1, :]
+
     return image, target_image, label, target_label, distances, linked
 
 
-def tf_load_images_with_links(i: int, image_with_positions_list: List[_ImageWithLinks], time_window: List[int]
-                              ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
+def tf_load_images_with_links(i: int, image_with_positions_list: List[_ImageWithLinks], time_window: List[int],
+                              crop=False) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
 
     image, target_image, label, target_label, distances, linked = tf.py_function(
         partial(load_images_with_links, image_with_positions_list=image_with_positions_list,
-        time_window=time_window), [i],
+        time_window=time_window, crop=crop), [i],
         (tf.float32, tf.float32, tf.int32, tf.int32, tf.float32, tf.bool))
 
     return image, target_image, label, target_label, distances, linked
