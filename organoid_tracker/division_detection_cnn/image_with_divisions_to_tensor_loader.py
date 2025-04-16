@@ -84,6 +84,7 @@ def load_images_with_positions(i, image_with_positions_list: List[_ImageWithDivi
         max_coords[0] = 0
         shape = np.asarray(image.shape[0:3])-1
         max_coords = np.where(max_coords > shape, shape, max_coords)
+        label = np.subtract(label, min_coords)
 
         # Crop in x and y
         image = image[:, min_coords[1]:max_coords[1]+1, min_coords[2]:max_coords[2]+1, :]
