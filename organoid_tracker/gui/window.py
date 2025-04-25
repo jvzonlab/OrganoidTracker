@@ -174,7 +174,7 @@ class Window:
 
     def get_undo_redo(self) -> UndoRedo:
         """Gets the undo/redo handler. Any actions performed through this handler can be undone."""
-        return self.__gui_experiment.undo_redo
+        return self.__gui_experiment.get_undo_redo()
 
     def _get_default_menu(self) -> Dict[str, Any]:
         return dict()

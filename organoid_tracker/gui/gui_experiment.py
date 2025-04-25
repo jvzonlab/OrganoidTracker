@@ -73,9 +73,10 @@ class GuiExperiment:
         for event_name in self.KNOWN_EVENTS:
             self._event_handlers[event_name] = _EventListeners()
 
-    @property  # read-only
-    def undo_redo(self) -> UndoRedo:
-        return self._tabs[-1].undo_redo
+    def get_undo_redo(self) -> UndoRedo:
+        """Gets the UndoRedo object of the currently selected experiment. If no single experiment is selected,
+        this method will raise a UserError."""
+        return self.get_open_tab().undo_redo
 
     def register_event_handler(self, event: str, source: str, action: Callable):
         """Registers an event handler. Supported events:
