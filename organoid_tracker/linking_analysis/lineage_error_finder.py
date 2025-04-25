@@ -119,10 +119,7 @@ def get_problematic_lineages(experiment: Experiment, crumbs: AbstractSet[Positio
                              excluded_errors=None) -> List[LineageWithErrors]:
     """Gets a list of all lineages with warnings in the experiment. The provided "crumbs" are placed in the right
     lineages, so that you can see to what lineages those cells belong."""
-    positions_with_errors = linking_markers.find_errored_positions(experiment.position_data,
-                                                                   min_time_point=min_time_point,
-                                                                   max_time_point=max_time_point,
-                                                                   excluded_errors=excluded_errors)
+    positions_with_errors = linking_markers.find_errored_positions(experiment.position_data)
     track_to_errors = _group_by_track(experiment.links, positions_with_errors)
     track_to_crumbs = _group_by_track(experiment.links, crumbs)
     tracks_to_focus_on = find_error_focus_tracks(experiment)
