@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Any, Optional, Union, Iterable, Tuple, Set
+from typing import Callable, Dict, List, Any, Optional, Union, Iterable, Tuple
 
 from PySide6.QtWidgets import QMainWindow, QLabel, QMenuBar, QMenu
 from matplotlib.figure import Figure
@@ -29,6 +29,9 @@ class DisplaySettings:
     max_intensity_projection: bool = False
     image_channel: ImageChannel
     segmentation_channel: Optional[ImageChannel]
+    error_correction_min_time_point: Optional[TimePoint] = None
+    error_correction_max_time_point: Optional[TimePoint] = None
+    excluded_errors: Optional[list] = None
 
     def __init__(self, *, show_next_time_point: bool = False, show_images: bool = True,
                  show_data_axes: bool = True, show_positions: bool = True):
@@ -103,7 +106,6 @@ class Window:
     def get_figure(self) -> Figure:
         """Gets the Matplotlib figure."""
         return self.__fig
-
 
     def get_scheduler(self) -> Scheduler:
         if self.__scheduler is None:

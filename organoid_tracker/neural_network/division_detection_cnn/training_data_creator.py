@@ -217,15 +217,24 @@ def create_image_with_positions_list(experiment: Experiment):
                 positions_xyz.append([position.x - offset.x, position.y - offset.y, position.z - offset.z])
                 positions_list.append(position)
 
-        # array with all positions for single timepoint
-        positions_xyz = numpy.array(positions_xyz, dtype=numpy.int32)
+        max_size = 250
 
-        # Add ImageWithPositions for that time_point
-        image_with_positions_list.append(
-            ImageWithPositions(str(experiment.name), experiment.images, time_point, positions_xyz))
+        while len(positions_xyz) > 0:
+            print(len(positions_xyz))
+            if len(positions_xyz) > max_size:
+                print('split link list')
 
-        # add positions as list for single time_point
-        positions_per_frame_list.append(positions_list)
+            # Add ImageWithPositions for that time_point
+            image_with_positions_list.append(
+                _ImageWithPositions(str(experiment.name), experiment.images, time_point,
+                                    numpy.array(positions_xyz[:max_size], dtype=numpy.int32)))
+
+            positions_xyz = positions_xyz[max_size:]
+
+            # add positions as list for single time_point
+            positions_per_frame_list.append(positions_list[:max_size])
+
+            positions_list = positions_list[max_size:]
 
     return image_with_positions_list, positions_per_frame_list
 
