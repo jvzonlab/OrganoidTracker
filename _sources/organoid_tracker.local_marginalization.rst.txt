@@ -8,11 +8,7 @@ Submodules
    :maxdepth: 1
 
    organoid_tracker.local_marginalization.local_marginalization_functions
-   organoid_tracker.local_marginalization.marginalization_set_up
-   organoid_tracker.local_marginalization.plugin_draw_tree
-   organoid_tracker.local_marginalization.plugin_tracking_output
    organoid_tracker.local_marginalization.tree_drawing
-   organoid_tracker.local_marginalization.tree_drawing_new
 
 Module contents
 ---------------
