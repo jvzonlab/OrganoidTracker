@@ -109,7 +109,7 @@ class ImageOffsetEditor(ExitableImageVisualizer):
         if self._experiment.images.offsets != self._previous_offsets:
             # Apply the offsets again, now also moving the positions and links, and using an UndoableAction
             current_offsets = self._experiment.images.offsets.copy()
-            self.get_window().get_gui_experiment().undo_redo.do(
+            self.get_window().get_undo_redo().do(
                 _ChangeAllPositionsAction(self._previous_offsets, current_offsets), self._experiment)
 
         # Actually move

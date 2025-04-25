@@ -965,7 +965,7 @@ class LinkAndPositionEditor(AbstractEditor):
         if not dialog.prompt_yes_no("Warning", "Are you sure you want to delete all tracks with at least a single error"
                                                " in them? This cannot be undone."):
             return
-        self.get_window().get_gui_experiment().undo_redo.clear()
+        self.get_window().get_undo_redo()
 
         from organoid_tracker.linking_analysis import lineage_error_finder
         lineage_error_finder.delete_problematic_lineages(self._experiment)
@@ -1036,7 +1036,7 @@ class LinkAndPositionEditor(AbstractEditor):
         if not dialog.prompt_yes_no("Warning", "Are you sure you want to delete all lineages that do not reach the"
                                                " first time point? This cannot be undone."):
             return
-        self.get_window().get_gui_experiment().undo_redo.clear()
+        self.get_window().get_undo_redo().clear()
 
         from organoid_tracker.linking_analysis import links_filter
         links_filter.delete_lineages_not_in_first_time_point(self._experiment)
@@ -1344,7 +1344,7 @@ class LinkAndPositionEditor(AbstractEditor):
         if new_time != old_time:
             self._experiment.warning_limits.min_time_between_divisions_h = new_time
             cell_error_finder.find_errors_in_experiment(self._experiment)
-            self._window.get_gui_experiment().undo_redo.mark_unsaved_changes()
+            self._window.get_undo_redo().mark_unsaved_changes()
             self.update_status("Set minimum time between divisions to " + str(new_time) + " hours.")
 
     def _change_errors_max_distance(self):
@@ -1358,7 +1358,7 @@ class LinkAndPositionEditor(AbstractEditor):
         if new_distance != old_distance:
             self._experiment.warning_limits.max_distance_moved_um_per_min = new_distance
             cell_error_finder.find_errors_in_experiment(self._experiment)
-            self._window.get_gui_experiment().undo_redo.mark_unsaved_changes()
+            self._window.get_undo_redo().mark_unsaved_changes()
             self.update_status("Set maximum distance per time point to " + str(new_distance) + " micrometers.")
 
     def _change_errors_min_marginal_probability(self):
@@ -1371,7 +1371,7 @@ class LinkAndPositionEditor(AbstractEditor):
         if old_limit != new_limit:
             self._experiment.warning_limits.min_marginal_probability = new_limit
             cell_error_finder.find_errors_in_experiment(self._experiment)
-            self._window.get_gui_experiment().undo_redo.mark_unsaved_changes()
+            self._window.get_undo_redo().mark_unsaved_changes()
             self.update_status("Set minimum marginal probability of a link to " + str(new_limit) + ".")
 
     def _change_errors_min_time_point(self):
@@ -1393,7 +1393,7 @@ class LinkAndPositionEditor(AbstractEditor):
         new_min_time_point = None if answer <= first_time_point.time_point_number() else TimePoint(answer)
         self._experiment.warning_limits.min_time_point = new_min_time_point
         cell_error_finder.find_errors_in_experiment(self._experiment)
-        self._window.get_gui_experiment().undo_redo.mark_unsaved_changes()
+        self._window.get_undo_redo().mark_unsaved_changes()
         self.update_status("Now checking errors starting at time point " + str(answer) + ".")
 
     def _change_errors_max_time_point(self):
@@ -1415,7 +1415,7 @@ class LinkAndPositionEditor(AbstractEditor):
         new_max_time_point = None if answer >= last_time_point.time_point_number() else TimePoint(answer)
         self._experiment.warning_limits.max_time_point = new_max_time_point
         cell_error_finder.find_errors_in_experiment(self._experiment)
-        self._window.get_gui_experiment().undo_redo.mark_unsaved_changes()
+        self._window.get_undo_redo().mark_unsaved_changes()
         self.update_status("Now checking errors up too and including time point " + str(answer) + ".")
 
     def _change_excluded_errors(self):
@@ -1431,7 +1431,7 @@ class LinkAndPositionEditor(AbstractEditor):
 
         self._experiment.warning_limits.excluded_errors = {error.value for error in chosen_errors}
         cell_error_finder.find_errors_in_experiment(self._experiment)
-        self._window.get_gui_experiment().undo_redo.mark_unsaved_changes()
+        self._window.get_undo_redo().mark_unsaved_changes()
         self.update_status("Now ignoring errors of type " + ", ".join(chosen_error_names) + ".")
 
     def _get_min_max_time_point(self) -> Tuple[TimePoint, TimePoint]:
