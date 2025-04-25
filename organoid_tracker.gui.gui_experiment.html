@@ -197,6 +197,13 @@ been selected, this returns all tabs.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.gui_experiment.GuiExperiment.get_undo_redo">
+<span class="sig-name descname"><span class="pre">get_undo_redo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.gui.undo_redo.html#organoid_tracker.gui.undo_redo.UndoRedo" title="organoid_tracker.gui.undo_redo.UndoRedo"><span class="pre">UndoRedo</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.gui_experiment.GuiExperiment.get_undo_redo" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the UndoRedo object of the currently selected experiment. If no single experiment is selected,
+this method will raise a UserError.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.gui.gui_experiment.GuiExperiment.goto_position">
 <span class="sig-name descname"><span class="pre">goto_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.gui_experiment.GuiExperiment.goto_position" title="Permalink to this definition"></a></dt>
 <dd><p>Moves the view towards the given position. The position must have a time point set.</p>
@@ -258,11 +265,6 @@ one will be initialized.</p>
 <dd><p>Sets the experiment with the given index (from self.get_selectable_experiments()) as the visible
 experiment.</p>
 </dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="organoid_tracker.gui.gui_experiment.GuiExperiment.undo_redo">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">undo_redo</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.gui.undo_redo.html#organoid_tracker.gui.undo_redo.UndoRedo" title="organoid_tracker.gui.undo_redo.UndoRedo"><span class="pre">UndoRedo</span></a></em><a class="headerlink" href="#organoid_tracker.gui.gui_experiment.GuiExperiment.undo_redo" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.gui.gui_experiment.GuiExperiment.unregister_event_handlers">
