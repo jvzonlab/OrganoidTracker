@@ -1,0 +1,7 @@
+organoid\_tracker.local\_marginalization.tree\_drawing\_new module
+==================================================================
+
+.. automodule:: organoid_tracker.local_marginalization.tree_drawing_new
+   :members:
+   :undoc-members:
+   :show-inheritance:

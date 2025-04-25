@@ -1,0 +1,7 @@
+organoid\_tracker.link\_detection\_cnn.convolutional\_neural\_network\_alt module
+=================================================================================
+
+.. automodule:: organoid_tracker.link_detection_cnn.convolutional_neural_network_alt
+   :members:
+   :undoc-members:
+   :show-inheritance:

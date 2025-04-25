@@ -27,6 +27,7 @@ Submodules
    organoid_tracker.visualizer.lineage_errors_visualizer
    organoid_tracker.visualizer.lineage_fate_visualizer
    organoid_tracker.visualizer.lineage_tree_visualizer
+   organoid_tracker.visualizer.lineage_tree_visualizer_new
    organoid_tracker.visualizer.link_and_position_editor
    organoid_tracker.visualizer.link_score_visualizer
    organoid_tracker.visualizer.position_in_rectangle_selector

@@ -9,6 +9,7 @@ Submodules
 
    organoid_tracker.link_detection_cnn.ImageWithLinks_to_tensor_loader
    organoid_tracker.link_detection_cnn.convolutional_neural_network
+   organoid_tracker.link_detection_cnn.convolutional_neural_network_alt
    organoid_tracker.link_detection_cnn.prediction_dataset
    organoid_tracker.link_detection_cnn.training_data_creator
    organoid_tracker.link_detection_cnn.training_dataset

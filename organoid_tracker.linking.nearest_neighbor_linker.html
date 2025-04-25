@@ -139,6 +139,20 @@ links that are at most twice as long as the shortest forward link, and you’ll 
 most twice as long as the shortest backward link.</p>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.linking.nearest_neighbor_linker.nearest_neighbor_mutual">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking.nearest_neighbor_linker.</span></span><span class="sig-name descname"><span class="pre">nearest_neighbor_mutual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">back</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forward</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.links.html#organoid_tracker.core.links.Links" title="organoid_tracker.core.links.Links"><span class="pre">Links</span></a></span></span><a class="headerlink" href="#organoid_tracker.linking.nearest_neighbor_linker.nearest_neighbor_mutual" title="Permalink to this definition"></a></dt>
+<dd><p>Simple nearest neighbour linking, keeping a list of potential candidates based on a given tolerance.</p>
+<p>A tolerance of 1.05 also links positions 5% from the closest position, so you end up with more links than you have
+positions.</p>
+<p>If the experiment has images loaded, then no links outside the images will be created.</p>
+<p>Nearest neighbor-linking can happen both forwards (every position is linked to the nearest in the next time point)
+and backwards (every position is linked to the nearest in the previous time point). If you do both, note that the
+tolerance is calculated independently for both directions: with a tolerance of for example 2, you’ll get all forward
+links that are at most twice as long as the shortest forward link, and you’ll get all backward links that are at
+most twice as long as the shortest backward link.</p>
+</dd></dl>
+
 </section>
 
 

@@ -1,0 +1,7 @@
+organoid\_tracker.local\_marginalization.marginalization\_set\_up module
+========================================================================
+
+.. automodule:: organoid_tracker.local_marginalization.marginalization_set_up
+   :members:
+   :undoc-members:
+   :show-inheritance:
