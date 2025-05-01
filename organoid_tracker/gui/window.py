@@ -29,9 +29,6 @@ class DisplaySettings:
     max_intensity_projection: bool = False
     image_channel: ImageChannel
     segmentation_channel: Optional[ImageChannel]
-    error_correction_min_time_point: Optional[TimePoint] = None
-    error_correction_max_time_point: Optional[TimePoint] = None
-    excluded_errors: Optional[list] = None
 
     def __init__(self, *, show_next_time_point: bool = False, show_images: bool = True,
                  show_data_axes: bool = True, show_positions: bool = True):

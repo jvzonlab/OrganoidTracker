@@ -154,9 +154,18 @@ class PositionsInRectangleSelector(LinkAndPositionEditor):
 
         # Draw positions already selected
         time_point_number = self._time_point.time_point_number()
+        to_unselect = set()
         for selected_position in self._selected:
             if round(selected_position.z) == self._z and selected_position.time_point_number() == time_point_number:
+                if not self._experiment.positions.contains_position(selected_position):
+                    to_unselect.add(selected_position)  # Position was deleted, remove from selection
+                    continue
+
                 self._draw_selection(selected_position, core.COLOR_CELL_CURRENT)
+
+        # Unselect positions that don't exist anymore
+        if len(to_unselect) > 0:
+            self._selected = [element for element in self._selected if element not in to_unselect]
 
         # Draw selection start marker
         if self._min_position is not None and self._max_position is None:

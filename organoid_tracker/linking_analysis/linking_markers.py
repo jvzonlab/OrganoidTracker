@@ -124,10 +124,8 @@ def set_track_start_marker(position_data: PositionData, position: Position, star
         position_data.set_position_data(position, "starting", start_marker.name.lower())
 
 
-def find_errored_positions(experiment: Experiment) -> Iterable[Position]:
-    """Gets all positions that have a (non-suppressed) error."""
-    position_data = experiment.position_data
-
+def find_errored_positions(position_data: PositionData) -> Iterable[Position]:
+    """Gets all positions that have a (non-suppressed) error in the given time point range."""
     with_error_marker = position_data.find_all_positions_with_data("error")
     for position, error_number in with_error_marker:
         if position_data.get_position_data(position, "suppressed_error") == error_number:

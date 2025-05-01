@@ -5,11 +5,13 @@ from matplotlib.backend_bases import KeyEvent
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.position import Position
 from organoid_tracker.gui import dialog, option_choose_dialog
+from organoid_tracker.gui.undo_redo import CombinedAction, ReversedAction
 from organoid_tracker.gui.window import Window
 from organoid_tracker.linking_analysis import linking_markers, lineage_error_finder, cell_error_finder
 from organoid_tracker.linking_analysis.errors import Error
 from organoid_tracker.linking_analysis.lineage_error_finder import LineageWithErrors
 from organoid_tracker.visualizer import activate
+from organoid_tracker.visualizer.link_and_position_editor import _MarkPositionAsSomethingAction, _SetGlobalDataAction
 from organoid_tracker.visualizer.position_list_visualizer import PositionListVisualizer
 
 
@@ -34,10 +36,7 @@ class ErrorsVisualizer(PositionListVisualizer):
         if self._get_last_position() is not None:
             crumb_positions.add(self._get_last_position())
         display_settings = window.display_settings
-        self._problematic_lineages = lineage_error_finder.get_problematic_lineages(experiment, crumb_positions,
-                                             min_time_point=display_settings.error_correction_min_time_point,
-                                             max_time_point=display_settings.error_correction_max_time_point,
-                                             excluded_errors=display_settings.excluded_errors)
+        self._problematic_lineages = lineage_error_finder.get_problematic_lineages(experiment, crumb_positions)
         self._total_number_of_warnings = sum((len(lineage.errored_positions) for lineage in self._problematic_lineages))
 
         super().__init__(window, chosen_position=start_position, all_positions=[])
@@ -66,7 +65,7 @@ class ErrorsVisualizer(PositionListVisualizer):
         return {
             **super().get_extra_menu_options(),
             "Edit//Errors-Suppress this error [Delete]": self._suppress_error,
-            "Edit//Errors-Recheck all errors": self._recheck_errors,
+            "Edit//Errors-Recheck all errors": self._action_recheck_errors,
             "Edit//Error settings-Change minimum allowed time in between divisions...": self._change_min_division_time,
             "Edit//Error settings-Change maximum allowed movement per minute...": self._change_max_distance,
             "Edit//Error settings-Change minimum marginal probability...": self._change_min_marginal_probability,
@@ -87,85 +86,98 @@ class ErrorsVisualizer(PositionListVisualizer):
             return
         if new_time != old_time:
             self._experiment.warning_limits.min_time_between_divisions_h = new_time
-            self._recheck_errors()
+            self._recalculate_errors()
+            self._window.get_undo_redo().mark_unsaved_changes()
+            self.update_status("Set minimum time between divisions to " + str(new_time) + " hours.")
 
     def _change_max_distance(self):
         old_distance = self._experiment.warning_limits.max_distance_moved_um_per_min
         new_distance = dialog.prompt_float("Maximum allowed distance per time point",
-                                       "What is the maximum distance in micrometers that cells can travel per minute?\n"
-                                       "Cells that go faster will be flagged.",
-                                       minimum=0, default=old_distance)
+                                           "What is the maximum distance in micrometers that cells can travel per minute?\n"
+                                           "Cells that go faster will be flagged.",
+                                           minimum=0, default=old_distance)
         if new_distance is None:
             return
         if new_distance != old_distance:
             self._experiment.warning_limits.max_distance_moved_um_per_min = new_distance
-            self._recheck_errors()
+            self._recalculate_errors()
+            self._window.get_undo_redo().mark_unsaved_changes()
+            self.update_status("Set maximum distance per time point to " + str(new_distance) + " micrometers.")
 
     def _change_min_marginal_probability(self):
         old_limit = self._experiment.warning_limits.min_marginal_probability
         new_limit = dialog.prompt_float("Minimum marginal probability of a link",
-                                       "Links with lower probability will be flagged",
-                                       minimum=0, default=old_limit)
+                                        "Links with lower probability will be flagged",
+                                        minimum=0, default=old_limit)
         if new_limit is None:
             return
         if old_limit != new_limit:
             self._experiment.warning_limits.min_marginal_probability = new_limit
-            self._recheck_errors()
-
+            self._recalculate_errors()
+            self._window.get_undo_redo().mark_unsaved_changes()
+            self.update_status("Set minimum marginal probability of a link to " + str(new_limit) + ".")
 
     def _change_min_time_point(self):
         # Find out the bounds
-        first_time_point_number, last_time_point_number = self._get_error_checking_time_points()
+        first_time_point, last_time_point = self._get_min_max_time_point()
 
         # Find the current value
-        current_min_time_point = self.get_window().display_settings.error_correction_min_time_point
+        current_min_time_point = self._experiment.warning_limits.min_time_point
         if current_min_time_point is None:
-            current_min_time_point = TimePoint(first_time_point_number)
+            current_min_time_point = first_time_point
 
         # Update new value
         answer = dialog.prompt_int("Error checking", "At which time point should error checking start?",
-                                   default=current_min_time_point.time_point_number(), minimum=first_time_point_number,
-                                   maximum=last_time_point_number)
+                                   default=current_min_time_point.time_point_number(),
+                                   minimum=first_time_point.time_point_number(),
+                                   maximum=last_time_point.time_point_number())
         if answer is None:
             return
-        new_min_time_point = None if answer <= first_time_point_number else TimePoint(answer)
-        self.get_window().display_settings.error_correction_min_time_point = new_min_time_point
+        new_min_time_point = None if answer <= first_time_point.time_point_number() else TimePoint(answer)
+        self._experiment.warning_limits.min_time_point = new_min_time_point
         self._recalculate_errors()
+        self._window.get_undo_redo().mark_unsaved_changes()
         self.update_status("Now checking errors starting at time point " + str(answer) + ".")
 
     def _change_max_time_point(self):
         # Find out the bounds
-        first_time_point_number, last_time_point_number = self._get_error_checking_time_points()
+        first_time_point, last_time_point = self._get_min_max_time_point()
 
         # Find the current value
-        current_max_time_point = self.get_window().display_settings.error_correction_max_time_point
+        current_max_time_point = self._experiment.warning_limits.max_time_point
         if current_max_time_point is None:
-            current_max_time_point = TimePoint(last_time_point_number)
+            current_max_time_point = last_time_point
 
         # Update new value
         answer = dialog.prompt_int("Error checking", "Up to and including which time point should error checking"
-                                   " continue?", default=current_max_time_point.time_point_number(),
-                                   minimum=first_time_point_number, maximum=last_time_point_number)
+                                                     " continue?", default=current_max_time_point.time_point_number(),
+                                   minimum=first_time_point.time_point_number(),
+                                   maximum=last_time_point.time_point_number())
         if answer is None:
             return
-        new_max_time_point = None if answer >= last_time_point_number else TimePoint(answer)
-        self.get_window().display_settings.error_correction_max_time_point = new_max_time_point
+        new_max_time_point = None if answer >= last_time_point.time_point_number() else TimePoint(answer)
+        self._experiment.warning_limits.max_time_point = new_max_time_point
         self._recalculate_errors()
+        self._window.get_undo_redo().mark_unsaved_changes()
         self.update_status("Now checking errors up too and including time point " + str(answer) + ".")
 
     def _change_excluded_errors(self):
-
-        available_error_names = [error.name for error in Error]
+        available_errors = [error for error in Error]
+        available_error_names = [error.get_display_name() for error in available_errors]
         answer = option_choose_dialog.prompt_list_multiple("Errors", "Error names", "Error types to ignore:",
-                                                  available_error_names)
+                                                           available_error_names)
         if answer is None:
             return
 
-        self.get_window().display_settings.excluded_errors = answer
-        self._recalculate_errors()
-        self.update_status("Now ignoring errors of type " + str(answer) + ".")
+        chosen_errors = [available_errors[i] for i in answer]
+        chosen_error_names = [error.get_display_name() for error in chosen_errors]
 
-    def _get_error_checking_time_points(self) -> Tuple[int, int]:
+        self._experiment.warning_limits.excluded_errors = {error.value for error in chosen_errors}
+        self._recalculate_errors()
+        self._window.get_undo_redo().mark_unsaved_changes()
+        self.update_status("Now ignoring errors of type " + ", ".join(chosen_error_names) + ".")
+
+    def _get_min_max_time_point(self) -> Tuple[TimePoint, TimePoint]:
         """Gets the min and max time point used for error checking. If no positions are loaded, arbitrary values are
         returned."""
         first_time_point_number = self._experiment.positions.first_time_point_number()
@@ -174,7 +186,7 @@ class ErrorsVisualizer(PositionListVisualizer):
         last_time_point_number = self._experiment.positions.last_time_point_number()
         if last_time_point_number is None:
             last_time_point_number = 9999
-        return first_time_point_number, last_time_point_number
+        return TimePoint(first_time_point_number), TimePoint(last_time_point_number)
 
     def get_message_no_positions(self):
         if len(self._problematic_lineages) > 0:
@@ -199,17 +211,14 @@ class ErrorsVisualizer(PositionListVisualizer):
 
     def _on_command(self, command: str) -> bool:
         if command == "recheck":
-            self._recheck_errors()
+            self._action_recheck_errors()
             return True
         return super()._on_command(command)
 
-    def _recheck_errors(self):
+    def _action_recheck_errors(self):
         cell_error_finder.find_errors_in_experiment(self._experiment)
         # Recalculate everything
-        selected_position = None
-        if 0 <= self._current_position_index < len(self._position_list):
-            selected_position = self._position_list[self._current_position_index]
-        activate(ErrorsVisualizer(self.get_window(), selected_position))
+        self._recalculate_errors()
         self.update_status("Rechecked all cells in the experiment. "
                            "Please note that suppressed warnings remain suppressed.")
 

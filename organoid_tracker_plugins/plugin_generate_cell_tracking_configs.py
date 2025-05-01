@@ -1,8 +1,8 @@
 """Generates config files for the cell tracker."""
 import json
 import os
-import sys
 import shlex
+import sys
 from typing import Dict, Optional, Any, Tuple, List
 
 from organoid_tracker.config import ConfigFile
@@ -12,11 +12,10 @@ from organoid_tracker.gui import dialog
 from organoid_tracker.gui.dialog import DefaultOption
 from organoid_tracker.gui.window import Window
 from organoid_tracker.imaging import io, list_io
-from organoid_tracker.linking_analysis import linking_markers
 
-_TRAINING_PATCH_SHAPE_ZYX: Tuple[int, int, int] = (32, 64, 64)
-_TRAINING_PATCH_SHAPE_ZYX_DIVISION: Tuple[int, int, int] = (8, 32, 32)
-_TRAINING_PATCH_SHAPE_ZYX_LINKING: Tuple[int, int, int] = (8, 32, 32)
+_TRAINING_PATCH_SHAPE_ZYX: Tuple[int, int, int] = (32, 96, 96)
+_TRAINING_PATCH_SHAPE_ZYX_DIVISION: Tuple[int, int, int] = (12, 64, 64)
+_TRAINING_PATCH_SHAPE_ZYX_LINKING: Tuple[int, int, int] = (16, 64, 64)
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -114,9 +113,9 @@ def _generate_position_training_config(window: Window):
     config.get_or_default("patch_shape",
                           f"{_TRAINING_PATCH_SHAPE_ZYX[2]}, {_TRAINING_PATCH_SHAPE_ZYX[1]}, {_TRAINING_PATCH_SHAPE_ZYX[0]}")
     config.get_or_default("output_folder", "./output")
-    config.get_or_default("batch_size", "30")
+    config.get_or_default("batch_size", "16")
 
-    config.get_or_default(f"time_window_before", str(-1))
+    config.get_or_default(f"time_window_before", str(0))
     config.get_or_default(f"time_window_after", str(1))
 
     tracking_files_folder = os.path.join(save_directory, "Ground truth files")
@@ -222,7 +221,8 @@ def _generate_division_training_config(window: Window):
     config.get_or_default("patch_shape",
                           f"{_TRAINING_PATCH_SHAPE_ZYX_DIVISION[2]}, {_TRAINING_PATCH_SHAPE_ZYX_DIVISION[1]}, {_TRAINING_PATCH_SHAPE_ZYX_DIVISION[0]}")
     config.get_or_default("output_folder", "./output")
-    config.get_or_default("batch_size", "30")
+    config.get_or_default("batch_size", "16")
+
     config.get_or_default(f"time_window_before", str(-1))
     config.get_or_default(f"time_window_after", str(1))
 
@@ -305,11 +305,10 @@ def _generate_link_training_config(window: Window):
     config.get_or_default("patch_shape",
                           f"{_TRAINING_PATCH_SHAPE_ZYX_LINKING[2]}, {_TRAINING_PATCH_SHAPE_ZYX_LINKING[1]}, {_TRAINING_PATCH_SHAPE_ZYX_LINKING[0]}")
     config.get_or_default("output_folder", "./output")
-    config.get_or_default("batch_size", "120")
-    config.get_or_default("time_window_before", str(0))
-    config.get_or_default("time_window_after", str(0))
+    config.get_or_default("batch_size", "8")
 
-
+    config.get_or_default(f"time_window_before", str(0))
+    config.get_or_default(f"time_window_after", str(1))
 
     config.save()
     _create_run_script(save_directory, "organoid_tracker_train_link_network")
