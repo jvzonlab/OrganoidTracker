@@ -6,6 +6,14 @@
 Program for tracking cell nuclei in (intestinal) organoids over time. Uses a convolutional neural network for nucleus detection, a min-cost flow solver ([Haubold, 2016]) for linking nuclei over time and tools for manual error correction.
 
 
+Nature Protocols 2025 edition
+-----------------------------
+
+This branch features a specialized edition of OrganoidTracker 2 (the Tensorflow version). It has [CellPhenTracker] pre-installed, which is the plugin used to measure intensities. In addition, it has a plugin pre-installed that defines mouse intestinal epithelial cell types, and can back-propagate them as described in [TypeTracker].
+
+**This version of OrganoidTracker will not be updated with new features.** This edition allows user to closely follow the protocol as described in the paper. However, as the years will pass, this edition will slowly become more outdated, and may not support newly released graphics cards, image formats, tracking file formats, etc.
+
+
 Features
 --------
 
@@ -87,3 +95,5 @@ The [files dealing with the neural network](organoid_tracker/neural_network/posi
 [publication]: https://doi.org/10.1371/journal.pone.0240802
 [Jupyter]: manuals/JUPYTER_NOTEBOOK.md
 [Haubold, 2016]: https://doi.org/10.1007/978-3-319-46478-7_35
+[CellPhenTracker]: https://github.com/RodriguezColmanLab/CellPhenTracker
+[TypeTracker]: https://www.science.org/doi/full/10.1126/sciadv.add6480
