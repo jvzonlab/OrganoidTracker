@@ -9,6 +9,8 @@ import PIL.ImageDraw
 import numpy
 import skimage
 from matplotlib.backend_bases import MouseEvent, KeyEvent
+from matplotlib.collections import PathCollection
+from matplotlib.lines import Line2D
 from numpy import ndarray
 
 from organoid_tracker import core
@@ -123,6 +125,8 @@ class CellSegmentationEditor(AbstractEditor):
     _segmentation_image_undo_redo: UndoRedo
 
     _clicked_positions: List[Position]
+    _clicked_positions_drawing_points: Optional[PathCollection] = None
+    _clicked_positions_drawing_line: Optional[List[Line2D]] = None
 
     def __init__(self, window: Window, selected_position: Optional[Position] = None):
         super().__init__(window, LinkAndPositionEditor)
@@ -295,7 +299,7 @@ class CellSegmentationEditor(AbstractEditor):
             self._draw_selection(self._selected_position, core.COLOR_CELL_CURRENT)
 
         # Draw drawing shape
-        self._draw_drawing_shape()
+        self._draw_clicked_positions()
 
     def _draw_selected_mask(self, segmentation_stack: ndarray, label: int):
         if label == 0:
@@ -313,14 +317,33 @@ class CellSegmentationEditor(AbstractEditor):
         self._ax.imshow(segmentation_slice_at_viewing_z == label, cmap="gray", extent=extent, interpolation="nearest",
                         alpha=0.2)
 
-    def _draw_drawing_shape(self):
-        # Draw clicked positions
+    def _draw_clicked_positions(self):
+        """Draws the clicked positions, and sets self._clicked_positions_drawing_points and
+        self._clicked_positions_drawing_line, to allow removing just those and then redrawing them (without redrawing
+        the entire canvas)."""
+        self._clicked_positions_drawing_line = None
+        self._clicked_positions_drawing_points = None
         if len(self._clicked_positions) > 0 and self._z == round(self._clicked_positions[0].z):
             x_positions = [position.x for position in self._clicked_positions]
             y_positions = [position.y for position in self._clicked_positions]
-            self._ax.scatter(x_positions, y_positions, color="red", s=50, edgecolors="white", linewidths=1)
+            self._clicked_positions_drawing_points = self._ax.scatter(x_positions, y_positions, color="red", s=50, edgecolors="white", linewidths=1)
             if len(x_positions) > 1:
-                self._ax.plot(x_positions, y_positions, color="white")
+                self._clicked_positions_drawing_line = self._ax.plot(x_positions, y_positions, color="white")
+
+    def _remove_drawn_clicked_positions(self):
+        """Removes the clicked positions, as drawn by self._draw_clicked_positions()"""
+        if self._clicked_positions_drawing_line is not None:
+            for line in self._clicked_positions_drawing_line:
+                line.remove()
+            self._clicked_positions_drawing_line = None
+        if self._clicked_positions_drawing_points is not None:
+            self._clicked_positions_drawing_points.remove()
+
+    def _update_drawn_clicked_positions_only(self):
+        """Like self.draw_view(), but just for the clicked positions."""
+        self._remove_drawn_clicked_positions()
+        self._draw_clicked_positions()
+        self._fig.canvas.draw_idle()
 
     def _on_mouse_double_click(self, event: MouseEvent):
         if self._display_settings.segmentation_channel is None:
@@ -350,6 +373,26 @@ class CellSegmentationEditor(AbstractEditor):
             f"\nUse the left-mouse button to draw a selection, then use Insert or Enter to add that part to the"
             f"\nmask, or Delete or Backspace to remove that part from the mask.")
 
+    def _on_mouse_press_raw(self, event: MouseEvent):
+        """For drawing masks, it makes sense to immediately respond to the click, without checking whether the user was
+        trying to drag the view or something."""
+        if event.dblclick or event.button not in {1, 3}:
+            # Handle double-clicks or clicks that are not left or right like normal
+            super()._on_mouse_press_raw(event)
+            return
+
+        if len(self._clicked_positions) == 0:
+            # We're not drawing a mask currently, defer to usual handling
+            super()._on_mouse_press_raw(event)
+            return
+
+        # Handle clicks ourselves
+        self._mouse_press_x = None
+        self._mouse_press_y = None
+
+        # Immediately call single click event (normally called on release)
+        self._on_mouse_single_click(event)
+
     def _on_mouse_single_click(self, event: MouseEvent):
         x = event.xdata
         y = event.ydata
@@ -371,7 +414,7 @@ class CellSegmentationEditor(AbstractEditor):
                     self._clicked_positions.clear()  # Start a new polygon if we change z or clicking button
 
             self._clicked_positions.append(Position(x, y, self._z, time_point=self._time_point))
-            self.draw_view()
+            self._update_drawn_clicked_positions_only()
             self.update_status(
                 "Added a point. Left-click somewhere else to draw another point, and press Enter or Insert to add the mask, or Delete or Backspace to remove the mask. Right-click somewhere to remove the last point.")
         else:
@@ -383,7 +426,7 @@ class CellSegmentationEditor(AbstractEditor):
                     self.update_status("Removed all points, as they were on a different Z-layer.")
                     return
                 self._clicked_positions.pop()
-                self.draw_view()
+                self._update_drawn_clicked_positions_only()
                 self.update_status("Removed the last point.")
 
     def _on_key_press(self, event: KeyEvent):
