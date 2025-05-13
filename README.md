@@ -6,6 +6,14 @@
 Program for tracking cell nuclei in (intestinal) organoids over time. Uses a convolutional neural network for nucleus detection, a min-cost flow solver ([Haubold, 2016]) for linking nuclei over time and tools for manual error correction.
 
 
+Nature Protocols 2025 edition
+-----------------------------
+
+This branch features a specialized edition of OrganoidTracker 2 (the Tensorflow version). It has [CellPhenTracker] pre-installed, which is the plugin used to measure intensities. In addition, it has a plugin pre-installed that defines mouse intestinal epithelial cell types, and can back-propagate them as described in [TypeTracker].
+
+**This version of OrganoidTracker will not be updated with new features.** This edition allows user to closely follow the protocol as described in the paper. However, as the years will pass, this edition will slowly become more outdated, and may not support newly released graphics cards, image formats, tracking file formats, etc.
+
+
 Features
 --------
 
@@ -14,8 +22,8 @@ Features
 * Automated and accurate predictions of link and division probabilities using convolutional neural networks. 
 * Automatically finding the most likely tracking solution using a min-cost flow solver ([Haubold, 2016])
 * High confidence, context-aware, error probabilities for every link in a track to indicate the tracking quality. 
-* Supports [TIFF files, TIFF series, Leica LIF files, Imaris IMS files, Zeiss CZI files and NIKON nd2 files](https://jvzonlab.github.io/OrganoidTracker/IMAGE_FORMATS.html).
-* [Plugin API with live-reload for fast development](https://jvzonlab.github.io/OrganoidTracker/PLUGIN_TUTORIAL.html)
+* Supports [TIFF files, TIFF series, Leica LIF files, Imaris IMS files, Zeiss CZI files and NIKON nd2 files](manuals/IMAGE_FORMATS.html).
+* [Plugin API with live-reload for fast development](manuals/PLUGIN_TUTORIAL.html)
 
 
 Screenshot
@@ -81,9 +89,11 @@ License and reuse
 The [files dealing with the neural network](organoid_tracker/position_detection_cnn) are licensed under the MIT license. This is indicated at the top of those files. Other files are licensed under the [GPL license](LICENSE.txt). Please cite the [publication] if you're using this work.
 
 
-[API]: https://jvzonlab.github.io/OrganoidTracker/API.html
-[installation]: https://jvzonlab.github.io/OrganoidTracker/INSTALLATION.html
-[manual]: https://jvzonlab.github.io/OrganoidTracker/
+[API]: manuals/API.html
+[installation]: manuals/INSTALLATION.html
+[manual]: manuals/
 [publication]: https://doi.org/10.1371/journal.pone.0240802
-[Jupyter]: https://jvzonlab.github.io/OrganoidTracker/JUPYTER_NOTEBOOK.html
+[Jupyter]: manuals/JUPYTER_NOTEBOOK.html
 [Haubold, 2016]: https://doi.org/10.1007/978-3-319-46478-7_35
+[CellPhenTracker]: https://github.com/RodriguezColmanLab/CellPhenTracker
+[TypeTracker]: https://www.science.org/doi/full/10.1126/sciadv.add6480
