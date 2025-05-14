@@ -91,7 +91,7 @@ The [files dealing with the neural network](organoid_tracker/neural_network/posi
 
 [API]: manuals/API.md
 [installation]: manuals/INSTALLATION.md
-[manual]: https://jvzonlab.github.io/OrganoidTracker/
+[manual]: manuals/
 [publication]: https://doi.org/10.1371/journal.pone.0240802
 [Jupyter]: manuals/JUPYTER_NOTEBOOK.md
 [Haubold, 2016]: https://doi.org/10.1007/978-3-319-46478-7_35
