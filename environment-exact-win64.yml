@@ -1,4 +1,4 @@
-name: organoid_tracker
+name: organoid_tracker_natprot
 channels:
   - conda-forge
   - ilastik-forge
