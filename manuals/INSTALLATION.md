@@ -24,11 +24,11 @@ Next, to run the scripts you will first need to install the dependencies. Open t
 Once you're in the right directory, run the following two commands.
 
     conda env create -f environment-exact-win64.yml
-    conda activate organoid_tracker
+    conda activate organoid_tracker_natprot
 
 The last command is necessary because Tensorflow 2 is not available in Anaconda. If you need to remove (the previous version of) OrganoidTracker, execute this command:
 
-    conda env remove -n organoid_tracker
+    conda env remove -n organoid_tracker_natprot
 
 To test if the software is working, run `python organoid_tracker.py`. A window should pop up, from which you can load images and tracking data. See the Help menu for more information and tutorials.
 
