@@ -191,7 +191,8 @@ def distance_map(y_true, range=(3., 16., 16.), range_edges = (3., 11. , 11.), ad
         distances = tf.where(distances > 1, 1., distances)
 
         #s_squared = 0.25 # c Elegans
-        s_squared = 0.125
+        s_squared = 0.2 # Human intestinal organoids
+        #s_squared = 0.125
         #s_squared = 0.125/2
         distances = tf.exp(-distances ** 2 / (2*s_squared))
 

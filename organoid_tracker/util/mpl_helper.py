@@ -14,6 +14,8 @@ from organoid_tracker.core.typing import MPLColor
 
 SANDER_APPROVED_COLORS = colors.to_rgba_array(["#55efc4", "#fdcb6e", "#636e72", "#74b9ff", "#e84393",
                                                "#ff7675", "#fd79a8", "#fab1a0", "#e84393"])
+KASPER_APPROVED_COLORS = colors.to_rgba_array(["darkgreen","darkorange","darkblue","gold","darkred",
+                                               "darkviolet","darkturquoise","darkgray","darksalmon","black","olive"])
 
 # A bit darker colors
 SANDER_BLUE = "#0984e3"
