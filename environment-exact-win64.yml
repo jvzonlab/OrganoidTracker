@@ -1,8 +1,8 @@
-name: organoid_tracker
+name: organoid_tracker_natprot
 channels:
   - ilastik-forge
-  - conda-forge
   - esri
+  - conda-forge
   - defaults
 dependencies:
   - _tflow_select=2.7.0=gpu
@@ -147,7 +147,6 @@ dependencies:
   - munkres=1.1.4=pyh9f0ad1d_0
   - nd2reader=3.3.0=pyhd8ed1ab_0
   - networkx=3.0=pyhd8ed1ab_0
-  - numpy=1.21.6=py39h6331f09_0
   - oauthlib=3.2.2=pyhd8ed1ab_0
   - opencv=4.6.0=py39hcbf5309_9
   - openh264=2.3.1=h63175ca_2
@@ -183,7 +182,6 @@ dependencies:
   - pyyaml=6.0=py39ha55989b_5
   - qt-main=5.15.8=h720456b_6
   - re2=2023.02.01=h63175ca_0
-  - requests=2.28.2=pyhd8ed1ab_0
   - requests-oauthlib=1.3.1=pyhd8ed1ab_0
   - rsa=4.9=pyhd8ed1ab_0
   - scikit-image=0.19.3=py39h2ba5b7c_2
@@ -206,7 +204,6 @@ dependencies:
   - typeguard=2.13.0=py_1
   - typing-extensions=4.4.0=hd8ed1ab_0
   - typing_extensions=4.4.0=pyha770c72_0
-  - tzdata=2022g=h191b570_0
   - ucrt=10.0.22621.0=h57928b3_0
   - unicodedata2=15.0.0=py39ha55989b_0
   - urllib3=1.26.14=pyhd8ed1ab_0
@@ -230,4 +227,94 @@ dependencies:
   - zlib-ng=2.0.6=h8ffe710_0
   - zstd=1.5.2=h12be248_6
   - pip:
+      - anyio==4.0.0
+      - argon2-cffi==23.1.0
+      - argon2-cffi-bindings==21.2.0
+      - arrow==1.2.3
+      - asttokens==2.4.0
+      - async-lru==2.0.4
+      - autograd==1.6.2
+      - autograd-gamma==0.5.0
+      - babel==2.12.1
+      - backcall==0.2.0
+      - beautifulsoup4==4.12.2
+      - bleach==6.0.0
+      - comm==0.1.4
+      - debugpy==1.8.0
+      - decorator==5.1.1
+      - defusedxml==0.7.1
+      - et-xmlfile==1.1.0
+      - exceptiongroup==1.1.3
+      - executing==1.2.0
+      - fastjsonschema==2.18.0
+      - formulaic==0.6.4
+      - fqdn==1.5.1
+      - future==0.18.3
+      - interface-meta==1.3.0
+      - ipykernel==6.25.2
+      - ipython==8.15.0
+      - isoduration==20.11.0
+      - jedi==0.19.0
+      - json5==0.9.14
+      - jsonpointer==2.4
+      - jsonschema==4.19.0
+      - jsonschema-specifications==2023.7.1
+      - jupyter-client==8.3.1
+      - jupyter-core==5.3.1
+      - jupyter-events==0.7.0
+      - jupyter-lsp==2.2.0
+      - jupyter-server==2.7.3
+      - jupyter-server-terminals==0.4.4
+      - jupyterlab==4.0.6
+      - jupyterlab-pygments==0.2.2
+      - jupyterlab-server==2.25.0
+      - lifelines==0.27.8
+      - matplotlib-inline==0.1.6
+      - mistune==3.0.1
+      - nbclient==0.8.0
+      - nbconvert==7.8.0
+      - nbformat==5.9.2
+      - nest-asyncio==1.5.8
+      - notebook==7.0.3
+      - notebook-shim==0.2.3
+      - numpy==1.26.0
+      - openpyxl==3.1.2
+      - overrides==7.4.0
+      - pandas==2.1.0
+      - pandocfilters==1.5.0
+      - parso==0.8.3
+      - pickleshare==0.7.5
+      - platformdirs==3.10.0
+      - prometheus-client==0.17.1
+      - prompt-toolkit==3.0.39
+      - psutil==5.9.5
+      - pure-eval==0.2.2
+      - pygments==2.16.1
+      - python-json-logger==2.0.7
+      - pytz==2023.3.post1
+      - pywin32==306
+      - pywinpty==2.0.11
+      - pyzmq==25.1.1
+      - referencing==0.30.2
+      - requests==2.31.0
+      - rfc3339-validator==0.1.4
+      - rfc3986-validator==0.1.1
+      - rpds-py==0.10.3
+      - seaborn==0.13.0
+      - send2trash==1.8.2
+      - sniffio==1.3.0
+      - soupsieve==2.5
+      - stack-data==0.6.2
       - tensorflow-addons==0.17.1
+      - terminado==0.17.1
+      - tinycss2==1.2.1
+      - tomli==2.0.1
+      - tornado==6.3.3
+      - traitlets==5.10.0
+      - tzdata==2023.3
+      - uri-template==1.3.0
+      - wcwidth==0.2.6
+      - webcolors==1.13
+      - webencodings==0.5.1
+      - websocket-client==1.6.3
+prefix: C:\Users\spoelstra\Anaconda3\envs\organoid_tracker
