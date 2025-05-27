@@ -112,7 +112,7 @@ def prompt_save_file(title: str, file_types: List[Tuple[str, str]], suggested_na
 
     If the user does not write a file extension, then the file extension will be added automatically.
     """
-    file_types_str = ";;".join((name + "(" + extension + ")" for name, extension in file_types))
+    file_types_str = ";;".join((name + " (" + extension + ")" for name, extension in file_types))
 
     file_name, _ = QFileDialog.getSaveFileName(_window(), title, "", file_types_str)
     if not file_name:
@@ -152,8 +152,8 @@ def _to_file_types_str(file_types: List[Tuple[str, str]]) -> str:
         extensions = set()
         for name, extension in file_types:
             extensions.add(extension)
-        file_types = [("All supported file types", ";".join(extensions))] + file_types
-    return ";;".join((name + "("+extension+ ")" for name, extension in file_types))
+        file_types = [("All supported file types", " ".join(extensions))] + file_types
+    return ";;".join((name + " ("+extension+ ")" for name, extension in file_types))
 
 
 def prompt_directory(title: str) -> Optional[str]:

@@ -8,8 +8,8 @@ import os.path
 def prompt_image_series(experiment: Experiment) -> bool:
     """Prompts an image series, and loads it into the experiment. Returns whether anything was loaded."""
     full_path = dialog.prompt_load_file("Select first image file", [
-        ("Single TIF or TIF series", "*.tif;*.tiff"),
-        ("Image per time point", "*.png;*.jpg;*.gif"),
+        ("Single TIF or TIF series", "*.tif *.tiff"),
+        ("Image per time point", "*.png *.jpg *.gif"),
         ("LIF file", "*.lif"),
         ("ND2 file", "*.nd2"),
         ("CZI file", "*.czi"),
