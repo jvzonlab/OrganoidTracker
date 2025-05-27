@@ -26,13 +26,11 @@ Once you're in the right directory, run the following two commands.
     conda env create -f environment-exact-win64.yml
     conda activate organoid_tracker
 
-The last command is necessary because Tensorflow 2 is not available in Anaconda. If you need to remove (the previous version of) OrganoidTracker, execute this command:
+If you need to remove (the previous version of) OrganoidTracker, execute this command:
 
     conda env remove -n organoid_tracker
 
 To test if the software is working, run `python organoid_tracker.py`. A window should pop up, from which you can load images and tracking data. See the Help menu for more information and tutorials.
-
-Note: in previous versions of OrganoidTracker you would need to install CUDA and cuDNN. Because those programs are now installed via Anaconda, you no longer need to do this.
 
 > Tip: you can install the `orjson` library into your Conda environment to speed up saving/loading of AUT files by a factor of two. To do this, run the command `conda install --channel conda-forge orjson`.
 
@@ -41,7 +39,7 @@ Unfortunately, OrganoidTracker has not been tested on any other OSes. If you're 
 
 Download and install Anaconda/Miniconda and open the Anaconda Prompt. Use the `cd` command to navigate to the directory of OrganoidTracker. Run the following commands:
 
-    conda create -n organoid_tracker -c pytorch -c nvidia -c conda-forge python=3.10 ilastik-forge::dpct matplotlib-base tifffile scikit-image scikit-learn scipy nd2reader pyside6 pandas h5py lifelines markdown pytorch-cuda=11.8 keras
+    conda create -n organoid_tracker -c pytorch -c nvidia -c conda-forge python=3.10 ilastik-forge::dpct matplotlib-base tifffile scikit-image scikit-learn scipy nd2reader pyside6 pandas h5py lifelines markdown pytorch keras
     conda activate organoid_tracker
 
 The first command creates an Anaconda environment named "organoid_tracker" with all dependencies installed. The second command activates this environment. The third command installs Tensorflow, which only has a PIP package.

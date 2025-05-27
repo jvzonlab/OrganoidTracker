@@ -14,8 +14,8 @@ Features
 * Automated and accurate predictions of link and division probabilities using convolutional neural networks. 
 * Automatically finding the most likely tracking solution using a min-cost flow solver ([Haubold, 2016])
 * High confidence, context-aware, error probabilities for every link in a track to indicate the tracking quality. 
-* Supports [TIFF files, TIFF series, Leica LIF files, Imaris IMS files, Zeiss CZI files and NIKON nd2 files](https://jvzonlab.github.io/OrganoidTracker/IMAGE_FORMATS.html).
-* [Plugin API with live-reload for fast development](https://jvzonlab.github.io/OrganoidTracker/PLUGIN_TUTORIAL.html)
+* Supports [TIFF files, TIFF series, Leica LIF files, Imaris IMS files, Zeiss CZI files and NIKON nd2 files](manuals/IMAGE_FORMATS.md).
+* [Plugin API with live-reload for fast development](manuals/PLUGIN_TUTORIAL.md)
 
 
 Screenshot
@@ -81,9 +81,9 @@ License and reuse
 The [files dealing with the neural network](organoid_tracker/neural_network/position_detection_cnn) are licensed under the MIT license. This is indicated at the top of those files. Other files are licensed under the [GPL license](LICENSE.txt). Please cite the [publication] if you're using this work.
 
 
-[API]: https://jvzonlab.github.io/OrganoidTracker/API.html
-[installation]: https://jvzonlab.github.io/OrganoidTracker/INSTALLATION.html
+[API]: manuals/API.md
+[installation]: manuals/INSTALLATION.md
 [manual]: https://jvzonlab.github.io/OrganoidTracker/
 [publication]: https://doi.org/10.1371/journal.pone.0240802
-[Jupyter]: https://jvzonlab.github.io/OrganoidTracker/JUPYTER_NOTEBOOK.html
+[Jupyter]: manuals/JUPYTER_NOTEBOOK.md
 [Haubold, 2016]: https://doi.org/10.1007/978-3-319-46478-7_35

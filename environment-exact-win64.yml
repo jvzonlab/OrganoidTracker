@@ -1,4 +1,4 @@
-name: organoid_tracker_keras3
+name: organoid_tracker
 channels:
   - pytorch
   - ilastik-forge
