@@ -241,8 +241,7 @@ def construct_microstates(links_out, links_in, types, complete_graph= False):
     # combine all these vectors to form a set containing all possible flow configurations (but which are not all possible)
     possibilities = []
     for combination in itertools.product(*independents):
-
-        possibility = np.sum(list(combination), axis=0)
+        possibility = [sum(x) for x in zip(*combination)]  # Was np.sum(list(combination), axis=0), but that doesn't work with modern numpy
 
         possibilities.append(np.squeeze(possibility))
 

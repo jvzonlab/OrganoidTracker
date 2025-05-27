@@ -220,13 +220,10 @@ def create_image_with_positions_list(experiment: Experiment):
         max_size = 250
 
         while len(positions_xyz) > 0:
-            print(len(positions_xyz))
-            if len(positions_xyz) > max_size:
-                print('split link list')
 
             # Add ImageWithPositions for that time_point
             image_with_positions_list.append(
-                _ImageWithPositions(str(experiment.name), experiment.images, time_point,
+                ImageWithPositions(str(experiment.name), experiment.images, time_point,
                                     numpy.array(positions_xyz[:max_size], dtype=numpy.int32)))
 
             positions_xyz = positions_xyz[max_size:]
