@@ -1156,12 +1156,11 @@ class LinkAndPositionEditor(AbstractEditor):
         if len(self._selected) == 0:
             self.update_status("You need to select a position first.")
             return
-        if len(self._selected) > 1:
-            self.update_status("You have multiple positions selected - please unselect one.")
-            return
 
-        positions = track_positions_finder.find_all_positions_in_track_of(self._experiment.links, self._selected[0])
-        old_position_types = position_markers.get_position_types(self._experiment.position_data, set(positions))
+        positions = set()
+        for selected in self._selected:
+            positions.update(track_positions_finder.find_all_positions_in_track_of(self._experiment.links, selected))
+        old_position_types = position_markers.get_position_types(self._experiment.position_data, positions)
         self._perform_action(_SetAllAsType(old_position_types, position_type))
 
     def _set_position_to_type(self, position_type: Optional[Marker]):
