@@ -224,10 +224,12 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links,
 
 def calculate_appearance_penalty(experiment: Experiment, min_appearance_probability, name='appearance_penalty', buffer_distance = 5.0, only_top = True):
     # go over all timepoints
+    image_shape = experiment.images.image_loader().get_image_size_zyx()  # Will be None if images have an inconsistent shape
     for time_point in experiment.positions.time_points():
         positions = experiment.positions.of_time_point(time_point)
         offset = experiment.images.offsets.of_time_point(time_point)
-        image_shape = experiment._images.get_image_stack(time_point).shape
+        if image_shape is None:
+            image_shape = experiment.images.get_image_stack(time_point).shape
         resolution = experiment.images.resolution()
         # and all positions
         for position in positions:
