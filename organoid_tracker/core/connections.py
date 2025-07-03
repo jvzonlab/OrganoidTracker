@@ -136,6 +136,19 @@ class _ConnectionsByTimePoint:
         self._graph.clear()  # Helps garbage collector
         self._graph = new_graph
 
+    def find_all_data_names(self):
+        return set({key for edge in self._graph.edges for key in self._graph.edges[edge].keys()})
+
+    def get_all_data(self, data_name) -> Dict:
+        """Gets all connections of this time point."""
+        edges = self._graph.edges(data=True)
+
+        return {x[:-1]: x[-1].get(data_name, None) for x in edges}
+
+    def set_all_data(self, values, data_name):
+        """Gets all connections of this time point."""
+        networkx.set_edge_attributes(self._graph, values, data_name)
+
 
 class Connections:
     """Holds the connections of an experiment."""
@@ -176,6 +189,22 @@ class Connections:
             return False
         if connections.is_empty():
             del self._by_time_point[time_point_number]
+
+    def set_data_of_edge(self, position1: Position, position2: Position, key: str, value):
+        self._by_time_point.get(position1.time_point_number())._graph.edges[position1, position2][key] = value
+
+    def get_data_of_edge(self, position1: Position, position2: Position, key: str):
+        return self._by_time_point.get(position1.time_point_number())._graph.edges[position1, position2][key]
+
+    def remove_data_of_edge(self, position1: Position, position2: Position, key: str):
+        self._by_time_point.get(position1.time_point_number())._graph.edges[position1, position2].pop(key)
+
+    def find_all_data_names(self) -> Set[str]:
+        """Finds all data_names"""
+        data_names = set()
+        for data_of_time_point in self._by_time_point.values():
+            data_names.update(data_of_time_point.find_all_data_names())
+        return data_names
 
     def replace_position(self, position_old: Position, position_new: Position):
         """Reroutes all connections from position_old to position_new. Does nothing if position_old has no
