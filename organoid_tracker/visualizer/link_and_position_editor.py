@@ -123,8 +123,8 @@ class _DeletePositionsAction(UndoableAction):
 
     def do(self, experiment: Experiment):
         experiment.remove_positions((particle.position for particle in self._snapshots))
-        for particle in self._snapshots:  # Check linked particles for errors
-            cell_error_finder.find_errors_in_just_these_positions(experiment, *particle.links)
+        for snapshot in self._snapshots:  # Check linked particles for errors
+            cell_error_finder.find_errors_in_just_these_positions(experiment, *snapshot.links)
         cell_error_finder.find_errors_in_all_dividing_cells(experiment)
         return f"Removed {len(self._snapshots)} positions"
 
@@ -218,25 +218,41 @@ class _MarkLineageEndAction(UndoableAction):
     marker: Optional[EndMarker]  # Set to None to erase a marker
     old_marker: Optional[EndMarker]
     position: Position
+    removed_position_snapshots: List[FullPositionSnapshot]  # Positions that were removed when adding the marker
 
-    def __init__(self, position: Position, marker: Optional[EndMarker], old_marker: Optional[EndMarker]):
+    def __init__(self, position: Position, marker: Optional[EndMarker], old_marker: Optional[EndMarker], removed_positions: List[FullPositionSnapshot]):
         self.position = position
         self.marker = marker
         self.old_marker = old_marker
+        self.removed_position_snapshots = removed_positions
 
     def do(self, experiment: Experiment) -> str:
+        experiment.remove_positions([snapshot.position for snapshot in self.removed_position_snapshots])
         linking_markers.set_track_end_marker(experiment.position_data, self.position, self.marker)
+        for snapshot in self.removed_position_snapshots:  # Check linked positions for errors
+            cell_error_finder.find_errors_in_just_these_positions(experiment, *snapshot.links)
         cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.position)
-        if self.marker is None:
-            return f"Removed the lineage end marker of {self.position}"
-        return f"Added the {self.marker.get_display_name()}-marker to {self.position}"
+
+        message = f"Removed the lineage end marker of {self.position}"
+        if self.marker is not None:
+            message = f"Added the {self.marker.get_display_name()}-marker to {self.position}"
+        if len(self.removed_position_snapshots) > 0:
+            message += f" and removed the {len(self.removed_position_snapshots)} position(s) afterwards"
+        return message
 
     def undo(self, experiment: Experiment):
         linking_markers.set_track_end_marker(experiment.position_data, self.position, self.old_marker)
+        for snapshot in self.removed_position_snapshots:
+            snapshot.restore(experiment)
+            cell_error_finder.find_errors_in_just_these_positions(experiment, snapshot.position, *snapshot.links)
         cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.position)
-        if self.old_marker is None:
-            return f"Removed the lineage end marker again of {self.position}"
-        return f"Re-added the {self.old_marker.get_display_name()}-marker to {self.position}"
+
+        message = f"Removed the lineage end marker again of {self.position}"
+        if self.old_marker is not None:
+            message = f"Re-added the {self.old_marker.get_display_name()}-marker to {self.position}"
+        if len(self.removed_position_snapshots) > 0:
+            message += f" and restored {len(self.removed_position_snapshots)} removed position(s)"
+        return message
 
 
 class _InsertConnectionsAction(UndoableAction):
@@ -782,18 +798,29 @@ class LinkAndPositionEditor(AbstractEditor):
             self.update_status("You need to have exactly one cell selected in order to set an end marker.")
             return
 
-        links = self._experiment.links
-        if len(links.find_futures(self._selected[0])) > 0:
-            self.update_status(f"The {self._selected[0]} is not a lineage end.")
-            return
-        current_marker = linking_markers.get_track_end_marker(self._experiment.position_data, self._selected[0])
+        experiment = self._experiment
+
+        # Check if the marker is already set
+        current_marker = linking_markers.get_track_end_marker(experiment.position_data, self._selected[0])
         if current_marker == marker:
             if marker is None:
                 self.update_status("There is no lineage ending marker here, cannot delete anything.")
             else:
                 self.update_status(f"This lineage end already has the {marker.get_display_name()} marker.")
             return
-        self._perform_action(_MarkLineageEndAction(self._selected[0], marker, current_marker))
+
+        # Collect data of all positions afterwards, which will be removed
+        track = experiment.links.get_track(self._selected[0])
+        if track is None:
+            self.update_status("Selected position does not belong to a track, cannot mark as lineage end.")
+            return
+        positions_afterwards = list()
+        for some_track in track.find_all_descending_tracks(include_self=True):
+            for some_position in some_track.positions():
+                if some_position.time_point_number() > self._time_point.time_point_number():
+                    positions_afterwards.append(FullPositionSnapshot.from_position(experiment, some_position))
+
+        self._perform_action(_MarkLineageEndAction(self._selected[0], marker, current_marker, positions_afterwards))
 
     def _try_mark_as(self, flag_name: Optional[str], new_value: bool):
         """Marks a position as having a certain flag. If the flag_name is None, the user will be prompted for a name."""
