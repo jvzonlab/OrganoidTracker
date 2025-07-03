@@ -59,11 +59,22 @@ print("Loading model...")
 model = keras.saving.load_model(os.path.join(_model_folder, "model.keras"))
 
 # Create output folder
+_output_folder = os.path.abspath(_output_folder)  # Convert to absolute path, as list_io changes the working directory
 os.makedirs(_output_folder, exist_ok=True)
 
 # Loop through experiments
 experiments_to_save = list()
 for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(_dataset_file)):
+    # Check if output file exists already (in which case we skip this experiment)
+    output_file = os.path.join(_output_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}."
+                               + io.FILE_EXTENSION)
+    if os.path.isfile(output_file):
+        experiment.last_save_file = output_file
+        experiments_to_save.append(experiment)
+        print(f"Experiment {experiment_index + 1} ({experiment.name.get_save_name()}) already has links saved at"
+              f" {output_file}. Skipping.")
+        continue
+
     print(f"Working on experiment {experiment_index + 1}: {experiment.name}")
 
     # Check if images were loaded
@@ -74,6 +85,7 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
     experiment.images.resolution()  # Check for resolution
 
     # Edit image channels if necessary
+    original_image_loader = experiment.images.image_loader()
     if _images_channels != {1}:
         # Replace the first channel
         old_channels = experiment.images.get_channels()
@@ -120,9 +132,8 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
                                                value=True)
 
     print("Saving file...")
+    experiment.images.image_loader(original_image_loader)  # Restore original image loader
     experiment.links = possible_links
-    output_file = os.path.join(_output_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}."
-                               + io.FILE_EXTENSION)
     io.save_data_to_json(experiment, output_file)
     experiments_to_save.append(experiment)
 

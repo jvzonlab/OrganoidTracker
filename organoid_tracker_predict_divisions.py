@@ -63,11 +63,23 @@ if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
     exit(1)
 
 # create output folder
+_output_folder = os.path.abspath(_output_folder)  # Convert to absolute path, as list_io changes the working directory
 os.makedirs(_output_folder, exist_ok=True)
 
 experiments_to_save = list()
 for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(_dataset_file)):
+    # Check if output file exists already (in which case we skip this experiment)
+    output_file = os.path.join(_output_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}."
+                               + io.FILE_EXTENSION)
+    if os.path.isfile(output_file):
+        experiment.last_save_file = output_file
+        experiments_to_save.append(experiment)
+        print(f"Experiment {experiment_index + 1} ({experiment.name.get_save_name()}) already has divisions saved at"
+              f" {output_file}. Skipping.")
+        continue
+
     print(f"Working on experiment {experiment_index + 1}: {experiment.name}")
+
     # Check if images were loaded
     if not experiment.images.image_loader().has_images():
         print(f"No images were found for experiment \"{experiment.name}\". Please check the configuration file and make"
@@ -76,6 +88,7 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
     experiment.images.resolution()  # Check if resolution is set
 
     # Edit image channels if necessary
+    original_image_loader = experiment.images.image_loader()
     if _images_channels != {1}:
         # Replace the first channel
         old_channels = experiment.images.get_channels()
@@ -185,9 +198,8 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
     print(f'Division oversegmentations removed: {len(to_remove)}')
 
     print("Saving file...")
-    output_file = os.path.join(_output_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}."
-                               + io.FILE_EXTENSION)
     io.save_data_to_json(experiment, output_file)
+    experiment.images.image_loader(original_image_loader)  # Restore original image loader
     experiments_to_save.append(experiment)
 
 

@@ -54,8 +54,11 @@ _margin_xy = config.get_or_default("remove positions below this distance from ed
                                    type=config_type_int)
 _links_output_folder = config.get_or_default("output_folder", "Output tracks")
 config.save()
-
 # END OF PARAMETERS
+
+# Convert output folder to absolute path (as list_io changes the working directory)
+_links_output_folder = os.path.abspath(_links_output_folder)
+
 for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(_dataset_file)):
     possible_links = experiment.links
 

@@ -115,6 +115,22 @@ if _dataset_file != '':
 # Loop through experiments
 experiments_to_save = list()
 for experiment_index, experiment in enumerate(experiment_list):
+    # Check if output file exists already (in which case we skip this experiment)
+    if _dataset_file != '':
+        output_file = os.path.join(_output_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}."
+                                   + io.FILE_EXTENSION)
+    else:
+        output_file = _output_file
+    if os.path.exists(output_file):
+        # Skip experiment (but still add to the AUTLIST file)
+        print(f"Experiment {experiment_index + 1} ({experiment.name.get_save_name()}) already has positions saved at"
+              f" {output_file}. Skipping.")
+        if _dataset_file != '':
+            # Collect for writing AUTLIST file
+            experiment.last_save_file = output_file
+            experiments_to_save.append(experiment)
+        continue
+
     # Check if images were loaded
     if not experiment.images.image_loader().has_images():
         print(f"No images were found for experiment \"{experiment.name}\". Please check the configuration file and make"
@@ -230,18 +246,16 @@ for experiment_index, experiment in enumerate(experiment_list):
 
 
     print("Saving file...")
+    io.save_data_to_json(experiment, output_file)
     if _dataset_file != '':
-        output_file = os.path.join(_output_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}."
-                                   + io.FILE_EXTENSION)
-        io.save_data_to_json(experiment, output_file)
         # Collect for writing AUTLIST file
         experiment.images.image_loader(original_image_loader)  # Restore original
         experiment.last_save_file = output_file
         experiments_to_save.append(experiment)
 
-        list_io.save_experiment_list_file(experiments_to_save,
-                                      os.path.join(_output_folder, "_All" + list_io.FILES_LIST_EXTENSION))
-    else:
-        io.save_data_to_json(experiment, _output_file)
+if _dataset_file != '':
+    list_io.save_experiment_list_file(experiments_to_save,
+                                  os.path.join(_output_folder, "_All" + list_io.FILES_LIST_EXTENSION))
+
 
 print("Done!")

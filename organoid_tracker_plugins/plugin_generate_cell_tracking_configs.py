@@ -27,14 +27,17 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
         "Tools//Use-Detect dividing cells...": lambda: _generate_division_detection_config(window),
         "Tools//Use-Detect link likelihoods...": lambda: _generate_link_detection_config(window),
         "Tools//Use-Create tracks...": lambda: _generate_tracks_config(window),
-         #"Tools//All-Perform all tracking steps...": lambda : _generate_all_steps_config(window), # Not tested on this branch
-        "Tools//Error rates-Find scaling temperature": lambda: _generate_calibrate_marginalization_config(window),
-        "Tools//Error rates-Compute marginalized error rates": lambda: _generate_marginalization_config(window)
+        "Tools//All-Perform all tracking steps...": lambda : _generate_all_steps_config(window),
+        "Tools//Error rates-Compute marginalized error rates...": lambda: _generate_marginalization_config(window),
+        "Tools//Error rates-Find scaling temperature...": lambda: _generate_calibrate_marginalization_config(window),
     }
 
 
-def _create_run_script(output_folder: str, script_name: str):
-    script_file = os.path.abspath(script_name + ".py")
+def _create_run_script(output_folder: str, script_name: str, *, scripts_to_run: Optional[List[str]] = None):
+    """Creates a Batch/Bash script to run the tracking step(s) with the given script_name. If scripts_to_run is given,
+    it will run those tracking steps instead, and script_name will only be used for the name of the Batch/Bash file."""
+    if scripts_to_run is None:
+        scripts_to_run = [script_name]
 
     # For Windows
     conda_env_folder = os.sep + "envs" + os.sep
@@ -46,17 +49,26 @@ def _create_run_script(output_folder: str, script_name: str):
         writer.write(f"""@rem Automatically generated script for running {script_name}
 @echo off
 @CALL "{conda_installation_folder}\\condabin\\conda.bat" activate {os.getenv('CONDA_DEFAULT_ENV')}
-set TF_FORCE_GPU_ALLOW_GROWTH=true
-"{sys.executable}" "{script_file}"
-pause""")
+set TF_FORCE_GPU_ALLOW_GROWTH=true""")
+        for i, script_to_run in enumerate(scripts_to_run):
+            script_file = os.path.abspath(script_to_run + ".py")
+            writer.write(f'\n"{sys.executable}" "{script_file}"')
+            if i < len(scripts_to_run) - 1:
+                # If a script crashes, we don't want to run the next one, so we check the error level
+                writer.write("\nif errorlevel 1 goto end")
+        if len(scripts_to_run) > 1:
+            # Target for the above errorlevel check
+            writer.write("\n:end")
+        writer.write("\npause\n")
 
     # For Linux
     sh_file = os.path.join(output_folder, script_name + ".sh")
     with open(sh_file, "w") as writer:
         writer.write(f"""#!/bin/bash
-# Automatically generated script for running {script_name}
-{shlex.quote(sys.executable)} {shlex.quote(script_file)}
-""")
+# Automatically generated script for running {script_name}""")
+        for script_to_run in scripts_to_run:
+            script_file = os.path.abspath(script_to_run + ".py")
+            writer.write(f"{shlex.quote(sys.executable)} {shlex.quote(script_file)}")
     os.chmod(sh_file, 0o777)
 
 
@@ -155,6 +167,9 @@ def _generate_position_detection_config(window: Window):
             raise UserError("No images", f"No images were loaded in the experiment \"{experiment.name}\","
                             f" so no cells can be detected. Please load some images first.")
 
+    if not dialog.popup_message_cancellable("Trained model folder",
+                                            "First, we will ask you where you have stored the positions model."):
+        return None
     model_folder = _get_model_folder("positions")
     if model_folder is None:
         return
@@ -243,6 +258,9 @@ def _generate_division_detection_config(window: Window):
                                          f" so no cells can be detected. Please load some images first.")
         experiment.images.resolution()  # Check for resolution
 
+    if not dialog.popup_message_cancellable("Trained model folder",
+                                            "First, we will ask you where you have stored the divisions model."):
+        return None
     model_folder = _get_model_folder("divisions")
     if model_folder is None:
         return
@@ -325,6 +343,9 @@ def _generate_link_detection_config(window: Window):
                                          f" so no cells can be detected. Please load some images first.")
         experiment.images.resolution()  # Check for resolution
 
+    if not dialog.popup_message_cancellable("Trained model folder",
+                                            "First, we will ask you where you have stored the links model."):
+        return None
     model_folder = _get_model_folder("links")
     if model_folder is None:
         return
@@ -452,10 +473,8 @@ def _generate_marginalization_config(window: Window):
     config = ConfigFile("marginalisation", folder_name=save_directory)
     config.get_or_default("solution_links_file", positions_file)
     config.get_or_default("all_links_file", all_links_file)
-
     config.get_or_default("min_time_point", str(experiment.first_time_point_number()), store_in_defaults=True)
     config.get_or_default("max_time_point", str(experiment.last_time_point_number()), store_in_defaults=True)
-
     config.get_or_default("predictions_output_folder", "out")
 
     config.save()
@@ -470,18 +489,28 @@ def _generate_all_steps_config(window: Window):
         image_loader = experiment.images.image_loader()
         if not image_loader.has_images():
             raise UserError("No images", f"No images were loaded in the experiment \"{experiment.name}\","
-                                         f" so no cells can be detected. Please load some images first.")
+                            f" so no cells can be detected. Please load some images first.")
         experiment.images.resolution()  # Check for resolution
 
+    if not dialog.popup_message_cancellable("Trained models folder",
+                                            "First, we will ask you where you have stored the trained models"
+                                            " for positions, divisions and links, in that order. "):
+        return None
+    model_folder_positions = _get_model_folder("positions")
+    if model_folder_positions is None:
+        return
+    model_folder_divisions = _get_model_folder("divisions")
+    if model_folder_divisions is None:
+        return
+    model_folder_links = _get_model_folder("links")
+    if model_folder_links is None:
+        return
+
     if not dialog.popup_message_cancellable("Out folder",
-                                            "Select an output folder."):
+                                            "Great, that were all models! Now we will ask you to select an output folder."):
         return
     save_directory = dialog.prompt_save_file("Output directory", [("Folder", "*")])
     if save_directory is None:
-        return
-
-    model_directory = _get_model_folder("positions")
-    if model_directory is None:
         return
 
     tracking_files_folder = os.path.join(save_directory, "Input files")
@@ -489,76 +518,44 @@ def _generate_all_steps_config(window: Window):
     list_io.save_experiment_list_file(experiments, os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
                                       tracking_files_folder=tracking_files_folder)
 
+    # Generate one big config file for all steps
     config = ConfigFile("predict_positions", folder_name=save_directory)
-
-    _pixel_size_x_um = config.get_or_default("pixel_size_x_um", "",
-                                             comment="Resolution of the images. Only used if the image files and"
-                                                     " tracking files don't provide a resolution.",
-                                             store_in_defaults=True)
-    _pixel_size_y_um = config.get_or_default("pixel_size_y_um", "", store_in_defaults=True)
-    _pixel_size_z_um = config.get_or_default("pixel_size_z_um", "", store_in_defaults=True)
-    _time_point_duration_m = config.get_or_default("time_point_duration_m", "", store_in_defaults=True)
-
     config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
-    config.get_or_default("model_folder", model_directory)
-    config.get_or_default("predictions_output_folder", "Nuclear center predictions")
+    config.get_or_default("model_folder", model_folder_positions)
+    config.get_or_default("predictions_output_folder", "Nucleus center predictions")
+    config.get_or_default("positions_output_folder", "Automatic positions")
     config.get_or_default("patch_shape_y", str(320))
     config.get_or_default("patch_shape_x", str(320))
     config.get_or_default("buffer_z", str(1))
     config.get_or_default("buffer_y", str(32))
     config.get_or_default("buffer_x", str(32))
-    config.get_or_default("positions_output_file", "Automatic positions.aut",
-                                         comment="Output file for the positions, can be viewed using the visualizer program.")
-
+    config.get_or_default("images_channels", str(window.display_settings.image_channel.index_one), store_in_defaults=True)
     config.save()
-    _create_run_script(save_directory, "organoid_tracker_predict_positions")
-
-    model_directory = _get_model_folder("divisions")
-    if model_directory is None:
-        return
-
     config = ConfigFile("predict_divisions", folder_name=save_directory)
-    config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
-    config.get_or_default("checkpoint_folder", model_directory)
-    config.get_or_default("positions_output_file", "Automatic divisions.aut",
-                                         comment="Output file for the positions, can be viewed using the visualizer program.")
+    config.get_or_default("dataset_file", "Automatic positions/_All" + list_io.FILES_LIST_EXTENSION)
+    config.get_or_default("model_folder", model_folder_divisions)
+    config.get_or_default("predictions_output_folder", "Division predictions")
     config.save()
-    _create_run_script(save_directory, "organoid_tracker_predict_divisions")
-
-    model_directory = _get_model_folder("links")
-    if model_directory is None:
-        return
-
     config = ConfigFile("predict_links", folder_name=save_directory)
-    config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
-    config.get_or_default("checkpoint_folder", model_directory)
-    config.get_or_default("positions_output_file", "Automatic links.aut",
-                          comment="Output file for the positions, can be viewed using the visualizer program.")
+    config.get_or_default("dataset_file", "Division predictions/_All" + list_io.FILES_LIST_EXTENSION)
+    config.get_or_default("model_folder", model_folder_links)
+    config.get_or_default("predictions_output_folder", "Link predictions")
     config.save()
-    _create_run_script(save_directory, "organoid_tracker_predict_links")
-
     config = ConfigFile("create_tracks", folder_name=save_directory)
-    config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
-    config.get_or_default("output_file", "_Automatic links.aut")
+    config.get_or_default("dataset_file", "Link predictions/_All" + list_io.FILES_LIST_EXTENSION)
+    config.get_or_default("output_folder", "Output tracks")
     config.save()
-    _create_run_script(save_directory, "organoid_tracker_create_links")
 
-    config = ConfigFile("marginalisation", folder_name=save_directory)
-    config.get_or_default("solution_links_file", "clean_Automatic links.aut")
-    config.get_or_default("all_links_file", "all_links_clean_Automatic links.aut")
-
-    _create_run_script(save_directory, "organoid_tracker_marginalization")
-
-    config.save()
-    _popup_confirmation(save_directory, "executable")
+    _create_run_script(save_directory, "organoid_tracker_run_all_tracking_steps", scripts_to_run=[
+        "organoid_tracker_predict_positions", "organoid_tracker_predict_divisions", "organoid_tracker_predict_links",
+        "organoid_tracker_create_tracks"
+    ])
+    _popup_confirmation(save_directory, "organoid_tracker_run_all_tracking_steps")
 
 
 def _get_model_folder(model_type: str) -> Optional[str]:
-    if not dialog.popup_message_cancellable("Trained model folder",
-                                            "First, we will ask you where you have stored the " + model_type + " model."):
-        return None
     while True:
-        directory = dialog.prompt_directory("Please choose a model folder")
+        directory = dialog.prompt_directory(f"Please choose a {model_type} model folder")
         if not directory:
             return None  # Cancelled, stop loop
         if os.path.isfile(os.path.join(directory, "model.keras")):
@@ -586,7 +583,7 @@ def _get_model_folder(model_type: str) -> Optional[str]:
 
 def _get_all_links_file() -> Optional[str]:
     if not dialog.popup_message_cancellable("All links file",
-                                            "Where have you stored the file with all possible links"):
+                                            "Where have you stored the file with all possible links?"):
         return None
     while True:
         file = dialog.prompt_load_file('choose a file', [('aut_file', '*.aut')])
