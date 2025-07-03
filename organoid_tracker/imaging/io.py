@@ -414,21 +414,31 @@ def _parse_beacons_format(experiment: Experiment, beacons_data: Dict[str, List],
             experiment.beacons.add(Position(*beacon_values[0:3], time_point_number=time_point_number), type_name)
 
 
-def _parse_connections_format(experiment: Experiment, connections_data: Dict[str, List[List[Dict]]],
+def _parse_connections_format(experiment: Experiment, connections_data: Dict[str, Dict],
                               min_time_point: int, max_time_point: int):
     """Adds all connections from the serialized format to the Connections object."""
     connections = experiment.connections
-    for time_point_str, connections_list in connections_data.items():
+    for time_point_str, connections_dict in connections_data.items():
         time_point_number = int(time_point_str)
         if time_point_number < min_time_point or time_point_number > max_time_point:
             continue
 
-        for connection in connections_list:
+        position1_list = []
+        position2_list = []
+
+        for connection in zip(connections_dict["from_xyz_px"], connections_dict["to_xyz_px"]):
             position1 = _parse_position(connection[0])
             position2 = _parse_position(connection[1])
 
             connections.add_connection(position1.with_time_point_number(time_point_number),
                                        position2.with_time_point_number(time_point_number))
+
+            position1_list.append(position1)
+            position2_list.append(position2)
+
+        for data_name, data in connections_dict["metadata"].items():
+            data_dict = dict(zip(zip(position1_list, position2_list), data))
+            connections._by_time_point[time_point_number].set_all_data(data_dict, data_name=data_name)
 
 
 def _parse_image_filters(data: Dict[str, Any]) -> ImageFilters:
@@ -645,14 +655,28 @@ def _encode_position(position: Position) -> Dict[str, Any]:
         }
 
 
-def _encode_connections_to_json(connections: Connections) -> Dict[str, List[List[Dict]]]:
+def _encode_connections_to_json(connections: Connections) -> Dict[str, Dict]:
     connections_dict = dict()
-    for time_point in connections.time_points():
-        connections_json = list()
-        for position1, position2 in connections.of_time_point(time_point):
-            connections_json.append([_encode_position(position1.with_time_point(None)),
-                                     _encode_position(position2.with_time_point(None))])
-        connections_dict[str(time_point.time_point_number())] = connections_json
+
+    data_names = connections.find_all_data_names()
+
+    for time_point_number, graph in connections._by_time_point.items():
+        connections_json = dict()
+        connections_metadata = dict()
+
+        for data_name in data_names:
+            metadata = graph.get_all_data(data_name)
+            connections_metadata[data_name] = list(metadata.values())
+
+        position1_list = [_encode_position(position1) for position1, position2 in metadata.keys()]
+        position2_list = [_encode_position(position2) for position1, position2 in metadata.keys()]
+
+        connections_json["from_xyz_px"] = position1_list
+        connections_json["to_xyz_px"] = position2_list
+        connections_json['metadata'] = connections_metadata
+
+        connections_dict[str(time_point_number)] = connections_json
+
     return connections_dict
 
 
