@@ -1,13 +1,14 @@
 """Connections are used to indicate connections between particles at the same time point, for example because the
 particles are close by, or they are part of some subsystem. This is different from links, which indicates that two
 observations made at different time points refer to the same particle."""
-import typing
-from typing import Dict, List, Set, Tuple, Iterable
+from typing import Dict, List, Set, Tuple, Iterable, Optional
+
 import networkx
 from networkx import Graph
 
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.typing import DataType
 
 
 def _lowest_first(position1: Position, position2: Position) -> Tuple[Position, Position]:
@@ -71,6 +72,10 @@ class _ConnectionsByTimePoint:
     def get_all(self) -> Iterable[Tuple[Position, Position]]:
         """Gets all connections of this time point."""
         return self._graph.edges
+
+    def get_all_with_metadata(self) -> Iterable[Tuple[Position, Position, Dict[str, DataType]]]:
+        """Gets all connections of this time point, including their metadata."""
+        return self._graph.edges(data=True)
 
     def find_connections(self, position: Position) -> Iterable[Position]:
         """Finds all connections starting and going to the given position."""
@@ -136,18 +141,33 @@ class _ConnectionsByTimePoint:
         self._graph.clear()  # Helps garbage collector
         self._graph = new_graph
 
-    def find_all_data_names(self):
+    def find_all_data_names(self) -> Set[str]:
         return set({key for edge in self._graph.edges for key in self._graph.edges[edge].keys()})
 
-    def get_all_data(self, data_name) -> Dict:
-        """Gets all connections of this time point."""
-        edges = self._graph.edges(data=True)
+    def get_data_of_connection(self, position_a: Position, position_b: Position, data_name: str) -> Optional[DataType]:
+        edge_dict = self._graph.get_edge_data(position_a, position_b, None)
+        if edge_dict:
+            return edge_dict[data_name]
+        return None
 
-        return {x[:-1]: x[-1].get(data_name, None) for x in edges}
+    def set_data_of_connection(self, position_a: Position, position_b: Position, data_name: str, value: Optional[DataType]):
+        """Sets the value. Fails quietly if the connection doesn't exist. If value is None, the data is removed."""
+        data_of_connection = self._graph.get_edge_data(position_a, position_b, None)
+        if data_of_connection is None:
+            return  # Connection doesn't exist
+        if value is None:
+            if data_name in data_of_connection:
+                del data_of_connection[data_name]
+        else:
+            data_of_connection[data_name] = value
 
-    def set_all_data(self, values, data_name):
-        """Gets all connections of this time point."""
-        networkx.set_edge_attributes(self._graph, values, data_name)
+    def add_data_from_time_point_dict(self, connections: List[Tuple[Position, Position]], metadata_dict: Dict[str, List[Optional[DataType]]]):
+        for i, connection in enumerate(connections):
+            metadata_dict_of_connection = dict()
+            for data_name, data_values in metadata_dict.items():
+                if data_values[i] is not None:
+                    metadata_dict_of_connection[data_name] = data_values[i]
+            self._graph.add_edge(connection[0], connection[1], **metadata_dict_of_connection)
 
 
 class Connections:
@@ -189,18 +209,35 @@ class Connections:
             return False
         if connections.is_empty():
             del self._by_time_point[time_point_number]
+        return True
 
-    def set_data_of_edge(self, position1: Position, position2: Position, key: str, value):
-        self._by_time_point.get(position1.time_point_number())._graph.edges[position1, position2][key] = value
+    def set_data_of_connection(self, position1: Position, position2: Position, key: str, value: Optional[DataType]):
+        """Sets the data of a connection. If the connection does not exist, this method does nothing. To delete
+        the metadata, set the value to None."""
+        by_time_point = self._by_time_point.get(position1.time_point_number())
+        if by_time_point is None:
+            return
+        by_time_point.set_data_of_connection(position1, position2, key, value)
 
-    def get_data_of_edge(self, position1: Position, position2: Position, key: str):
-        return self._by_time_point.get(position1.time_point_number())._graph.edges[position1, position2][key]
+    def get_data_of_connection(self, position1: Position, position2: Position, key: str) -> Optional[DataType]:
+        """Gets the metadata of the connection with the given key. If the connection does not exist, or if the
+        connection does not have data for this type, None is returned."""
+        by_time_point = self._by_time_point.get(position1.time_point_number())
+        if by_time_point is None:
+            return None
+        return by_time_point.get_data_of_connection(position1, position2, key)
 
-    def remove_data_of_edge(self, position1: Position, position2: Position, key: str):
-        self._by_time_point.get(position1.time_point_number())._graph.edges[position1, position2].pop(key)
+    def find_all_data_names(self, *, time_point: Optional[TimePoint] = None) -> Set[str]:
+        """Finds all metadata names in use. If you pass the time point parameter, the search is restricted to the
+        given time point."""
+        if time_point is not None:
+            # Search by time point
+            data_of_time_point = self._by_time_point.get(time_point.time_point_number())
+            if data_of_time_point is None:
+                return set()  # No data for this time point
+            return data_of_time_point.find_all_data_names()
 
-    def find_all_data_names(self) -> Set[str]:
-        """Finds all data_names"""
+        # Return all
         data_names = set()
         for data_of_time_point in self._by_time_point.values():
             data_names.update(data_of_time_point.find_all_data_names())
@@ -239,6 +276,13 @@ class Connections:
         if connections is None:
             return []
         return connections.get_all()
+
+    def of_time_point_with_data(self, time_point: TimePoint) -> Iterable[Tuple[Position, Position, Dict[str, DataType]]]:
+        """Gets all connections of a time point, including their metadata."""
+        connections = self._by_time_point.get(time_point.time_point_number())
+        if connections is None:
+            return []
+        return connections.get_all_with_metadata()
 
     def time_points(self) -> Iterable[TimePoint]:
         """Gets all time points that have at least one connection present."""
@@ -379,3 +423,13 @@ class Connections:
         """Gets all connections of all time points."""
         for by_time_point in self._by_time_point.values():
             yield from by_time_point.get_all()
+
+    def add_data_from_time_point_dict(self, time_point: TimePoint, connections: List[Tuple[Position, Position]],
+                                      metadata_dict: Dict[str, List[Optional[DataType]]]):
+        """Loads the connections and their metadata for the given time point. The connections list and the lists in
+        the metadata must match, such that the data of metadata_dict["example_key"][i] belongs to connections[i]."""
+        by_time_point = self._by_time_point.get(time_point.time_point_number())
+        if by_time_point is None:
+            by_time_point = _ConnectionsByTimePoint()
+            self._by_time_point[time_point.time_point_number()] = by_time_point
+        by_time_point.add_data_from_time_point_dict(connections, metadata_dict)
