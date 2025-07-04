@@ -1,5 +1,6 @@
 import unittest
 
+from organoid_tracker.core import TimePoint
 from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.position import Position
 
@@ -66,3 +67,27 @@ class TestConnections(unittest.TestCase):
             Position(2, 3, 4, time_point_number=3), Position(1, 3, 4, time_point_number=3)))
         self.assertTrue(connections.contains_connection(
             Position(2, 3, 4, time_point_number=13), Position(1, 3, 4, time_point_number=13)))
+
+    def test_connection_data(self):
+        connections = Connections()
+        pos_a = Position(2, 3, 4, time_point_number=3)
+        pos_b = Position(1, 3, 4, time_point_number=3)
+
+        # Check if there's no data yet (should always return None for non-existing connections)
+        self.assertIsNone(connections.get_data_of_connection(pos_a, pos_b, "test_key"))
+        # Now add the connection (without any data)
+        connections.add_connection(pos_a, pos_b)
+        # Check if it still returns None (we didn't add any data yet)
+        self.assertIsNone(connections.get_data_of_connection(pos_a, pos_b, "test_key"))
+        # Now set some data, and check
+        connections.set_data_of_connection(pos_a, pos_b, "test_key", "test_value")
+        self.assertEqual("test_value", connections.get_data_of_connection(pos_a, pos_b, "test_key"))
+        # Test if it still works if we swap the arguments pos_a and pos_b
+        self.assertEqual("test_value", connections.get_data_of_connection(pos_b, pos_a, "test_key"))
+
+        # Check metadata keys
+        self.assertEqual({"test_key"}, connections.find_all_data_names())
+
+        # Remove the data, and check again
+        connections.set_data_of_connection(pos_b, pos_a, "test_key", None)
+        self.assertEqual(set(), connections.find_all_data_names())

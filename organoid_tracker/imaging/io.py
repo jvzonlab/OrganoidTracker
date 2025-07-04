@@ -418,27 +418,31 @@ def _parse_connections_format(experiment: Experiment, connections_data: Dict[str
                               min_time_point: int, max_time_point: int):
     """Adds all connections from the serialized format to the Connections object."""
     connections = experiment.connections
-    for time_point_str, connections_dict in connections_data.items():
+    for time_point_str, connections_of_time_point in connections_data.items():
         time_point_number = int(time_point_str)
         if time_point_number < min_time_point or time_point_number > max_time_point:
             continue
 
-        position1_list = []
-        position2_list = []
+        if isinstance(connections_of_time_point, list):
+            # Old format, without metadata, just a list of tuples
+            for connection in connections_of_time_point:
+                position1 = _parse_position(connection[0])
+                position2 = _parse_position(connection[1])
 
-        for connection in zip(connections_dict["from_xyz_px"], connections_dict["to_xyz_px"]):
-            position1 = _parse_position(connection[0])
-            position2 = _parse_position(connection[1])
+                connections.add_connection(position1.with_time_point_number(time_point_number),
+                                           position2.with_time_point_number(time_point_number))
+        else:
+            # Dictionary, with keys "from_xyz_px", "to_xyz_px" and "metadata"
 
-            connections.add_connection(position1.with_time_point_number(time_point_number),
-                                       position2.with_time_point_number(time_point_number))
+            # Parse the positions
+            connections_list = []
+            for raw_position_1, raw_position_2 in zip(connections_of_time_point["from_xyz_px"], connections_of_time_point["to_xyz_px"]):
+                position1 = Position(*raw_position_1, time_point_number=time_point_number)
+                position2 = Position(*raw_position_2, time_point_number=time_point_number)
+                connections_list.append((position1, position2))
 
-            position1_list.append(position1)
-            position2_list.append(position2)
-
-        for data_name, data in connections_dict["metadata"].items():
-            data_dict = dict(zip(zip(position1_list, position2_list), data))
-            connections._by_time_point[time_point_number].set_all_data(data_dict, data_name=data_name)
+            # Add all connections and metadata
+            connections.add_data_from_time_point_dict(TimePoint(time_point_number), connections_list, connections_of_time_point["metadata"])
 
 
 def _parse_image_filters(data: Dict[str, Any]) -> ImageFilters:
@@ -658,24 +662,28 @@ def _encode_position(position: Position) -> Dict[str, Any]:
 def _encode_connections_to_json(connections: Connections) -> Dict[str, Dict]:
     connections_dict = dict()
 
-    data_names = connections.find_all_data_names()
+    for time_point in connections.time_points():
+        data_names = connections.find_all_data_names(time_point=time_point)
 
-    for time_point_number, graph in connections._by_time_point.items():
-        connections_json = dict()
+        # Initialize the empty lists for positions and metadata
+        positions_1_list = list()
+        positions_2_list = list()
         connections_metadata = dict()
-
         for data_name in data_names:
-            metadata = graph.get_all_data(data_name)
-            connections_metadata[data_name] = list(metadata.values())
+            connections_metadata[data_name] = list()
 
-        position1_list = [_encode_position(position1) for position1, position2 in metadata.keys()]
-        position2_list = [_encode_position(position2) for position1, position2 in metadata.keys()]
+        # Loop through all connections at this time point and add them to the lists
+        for position_1, position_2, metadata in connections.of_time_point_with_data(time_point):
+            positions_1_list.append([position_1.x, position_1.y, position_1.z])
+            positions_2_list.append([position_2.x, position_2.y, position_2.z])
+            for data_name in data_names:
+                connections_metadata[data_name].append(metadata.get(data_name))
 
-        connections_json["from_xyz_px"] = position1_list
-        connections_json["to_xyz_px"] = position2_list
-        connections_json['metadata'] = connections_metadata
-
-        connections_dict[str(time_point_number)] = connections_json
+        connections_dict[str(time_point.time_point_number())] = {
+            "from_xyz_px": positions_1_list,
+            "to_xyz_px": positions_2_list,
+            "metadata": connections_metadata
+        }
 
     return connections_dict
 
