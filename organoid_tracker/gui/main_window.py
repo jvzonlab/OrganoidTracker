@@ -139,9 +139,6 @@ class _MyQMainWindow(QMainWindow):
         self.command_box.escape_handler = lambda: self.mpl_canvas.setFocus()
 
         self.toolbar = Toolbar(self.mpl_canvas, self)
-        self.toolbar.setMovable(False)
-        self.toolbar.setStyleSheet("QToolBar { background: white; padding: 6px; border-top: 1px solid #D6D6D6; border-bottom: 1px solid #D6D6D6; } "
-                                   "QToolBar > QObject { padding: 4px; margin-right: 5px; }")
         self.addToolBar(self.toolbar)
 
     def closeEvent(self, event: QCloseEvent):

@@ -1,12 +1,12 @@
 from typing import Callable, List
 
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QMainWindow, QToolBar, QComboBox
+from PySide6 import QtGui, QtCore
+from PySide6.QtGui import QIcon, QGuiApplication, Qt
+from PySide6.QtWidgets import QMainWindow, QComboBox
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 
-from organoid_tracker.gui import dialog
-from organoid_tracker.gui.icon_getter import get_icon
+from organoid_tracker.gui import dialog, icon_getter
 
 
 class Toolbar(NavigationToolbar2QT):
@@ -37,6 +37,15 @@ class Toolbar(NavigationToolbar2QT):
 
     def __init__(self, canvas: FigureCanvasQTAgg, parent: QMainWindow):
         super().__init__(canvas, parent)
+        self.setMovable(False)
+
+        # Set the toolbar style
+        dark_mode = QGuiApplication.styleHints().colorScheme() == Qt.ColorScheme.Dark
+        background_color = "#191919" if dark_mode else "#FFFFFF"
+        border_color = "#3A3A3A" if dark_mode else "#D6D6D6"
+        self.setStyleSheet(
+            "QToolBar { background: " + background_color + "; padding: 6px; border-top: 1px solid " + border_color + "; border-bottom: 1px solid " + border_color + "; } "
+            "QToolBar > QObject { padding: 4px; margin-right: 5px; }")
 
         # Add experiment selector
         self._experiment_selector_box = QComboBox(self)
@@ -44,22 +53,37 @@ class Toolbar(NavigationToolbar2QT):
             lambda index: self._call(lambda: self.experiment_select_handler(index) if index != -1 else ...))
         self.update_selectable_experiments([], 0)
         self.addSeparator()
-        self.addAction(get_icon("experiment_previous.png"), "Previous experiment", lambda *e: self._call(self.previous_experiment_handler))
+        self.addAction(self._get_our_icon("experiment_previous.png"), "Previous experiment", lambda *e: self._call(self.previous_experiment_handler))
         self.addWidget(self._experiment_selector_box)
-        self.addAction(get_icon("experiment_next.png"), "Next experiment", lambda *e: self._call(self.next_experiment_handler))
+        self.addAction(self._get_our_icon("experiment_next.png"), "Next experiment", lambda *e: self._call(self.next_experiment_handler))
         self.addSeparator()
-        self.addAction(get_icon("file_new.png"), "New", lambda *e: self._call(self.new_handler))
-        self.addAction(get_icon("file_close.png"), "Close", lambda *e: self._call(self.close_handler))
+        self.addAction(self._get_our_icon("file_new.png"), "New", lambda *e: self._call(self.new_handler))
+        self.addAction(self._get_our_icon("file_close.png"), "Close", lambda *e: self._call(self.close_handler))
 
     def _icon(self, name):
-        # Overridden to provide custom icons
+        # Overridden to provide custom icons (see toolitems at the top of this class)
         if name.startswith("$custom-icon$"):
             # One of our icons!
             name = name[len("$custom-icon$"):]
-            return get_icon(name)
+            return self._get_our_icon(name)
         else:
             # Default matplotlib icon
             return super()._icon(name)
+
+    def _get_our_icon(self, name: str) -> QIcon:
+        """Loads an icon, and converts it to dark mode if necessary."""
+        # Load the icon
+        pixmap = icon_getter.get_icon_pixmap(name)
+        pixmap.setDevicePixelRatio(self.devicePixelRatioF() or 1)  # rarely, devicePixelRatioF=0
+        # Convert to dark mode if necessary
+        if self.palette().color(self.backgroundRole()).value() < 128:
+            icon_color = self.palette().color(self.foregroundRole())
+            mask = pixmap.createMaskFromColor(
+                QtGui.QColor('black'),
+                QtCore.Qt.MaskMode.MaskOutColor)
+            pixmap.fill(icon_color)
+            pixmap.setMask(mask)
+        return QIcon(pixmap)
 
     def update_selectable_experiments(self, experiment_names: List[str], selected_index: int):
         if len(experiment_names) == 0:
