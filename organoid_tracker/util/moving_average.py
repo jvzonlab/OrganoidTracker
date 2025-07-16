@@ -245,17 +245,16 @@ class LinesAverage(PlotAverage):
     def get_x_positions_and_means(self) -> Tuple[ndarray, ndarray]:
         min_x, max_x = self._get_min_max_x()
 
-        x_error_values = list()
-        y_error_values_mean = list()
+        x_values = list()
+        y_values_mean = list()
         for x in numpy.arange(min_x + 0.01, max_x - 0.01, self._x_step_size):
             y_values = self._get_y_values_at(x)
             if len(y_values) <= 1:
                 continue
 
             y_mean = numpy.mean(y_values)
-            y_error = numpy.std(y_values, ddof=1)
 
-            x_error_values.append(x)
-            y_error_values_mean.append(y_mean)
+            x_values.append(x)
+            y_values_mean.append(y_mean)
 
-        return numpy.array(x_error_values, dtype=numpy.float32), numpy.array(y_error_values_mean, dtype=numpy.float32)
+        return numpy.array(x_values, dtype=numpy.float32), numpy.array(y_values_mean, dtype=numpy.float32)
