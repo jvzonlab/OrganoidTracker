@@ -60,6 +60,11 @@ config.save()
 _links_output_folder = os.path.abspath(_links_output_folder)
 
 for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(_dataset_file)):
+    output_folder_experiment = os.path.join(_links_output_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}")
+    if os.path.exists(os.path.join(output_folder_experiment, 'Clean.' + io.FILE_EXTENSION)):
+        print(f"Experiment {experiment_index + 1} already processed, skipping.")
+        continue
+
     possible_links = experiment.links
 
     # Check if images were loaded
@@ -82,12 +87,12 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
                                                dissappearance_weight=_disappearance_weight, method=_method)
 
     # The resulting tracks
-    experiment_result = experiment.copy_selected(images=True, positions=True, position_data=True,
+    experiment_result = experiment.copy_selected(images=True, positions=True, position_data=True, name=True,
                                                  links=True, link_data=True, global_data=True)
     experiment_result.links = link_result
 
     # This includes the unpruned set of links, important for later marginalization
-    experiment_all = experiment.copy_selected(images=True, positions=True, position_data=True,
+    experiment_all = experiment.copy_selected(images=True, positions=True, position_data=True, name=True,
                                               links=True, link_data=True, global_data=True)
     experiment_all.links = naive_links
 
@@ -144,7 +149,6 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
     print("Checking results for common errors...")
     warning_count, no_links_count = cell_error_finder.find_errors_in_experiment(experiment_result)
     print("Writing results to file...")
-    output_folder_experiment = os.path.join(_links_output_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}")
     os.makedirs(output_folder_experiment, exist_ok=True)
     io.save_data_to_json(experiment_result, os.path.join(output_folder_experiment, 'Links.' + io.FILE_EXTENSION))
     io.save_data_to_json(experiment_all, os.path.join(output_folder_experiment, 'All links.' + io.FILE_EXTENSION))
