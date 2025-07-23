@@ -574,7 +574,8 @@ class LinkAndPositionEditor(AbstractEditor):
             "Select//Select-Select all positions in time point range...": self._select_all_of_multiple_time_points,
             "Select//Deselect-Deselect all positions [Ctrl+D]": self._deselect_all,
             "Select//Deselect-Deselect positions in time point range...": self._deselect_positions_from_time_points,
-            "Select//Expand-Expand selection to entire track [T]": self._select_track,
+            "Select//Modify-Expand selection to entire track [T]": self._select_track,
+            "Select//Modify-Invert selection [Ctrl+I]": self._invert_selection,
             "Errors//Suppress-Suppress errors in selected positions": self._suppress_errors_in_selected,
             "Errors//Focus-Focus on correcting lineages of selected positions": self._focus_on_tracks_of_selected,
             "Errors//Focus-Focus on correcting lineages with X divisions": self._focus_on_lineages_with_min_divisions,
@@ -686,6 +687,29 @@ class LinkAndPositionEditor(AbstractEditor):
         self._selected = list(to_select)
         self.draw_view()
         self.update_status(f"Added all {difference_count} positions that came before or after the selected positions.")
+
+    def _invert_selection(self):
+        if len(self._selected) == 0:
+            self.update_status("No positions selected - cannot invert selection.")
+            return
+
+        # Group selected positions by their time point number
+        selected_positions_per_time_point_number = defaultdict(list)
+        for position in self._selected:
+            selected_positions_per_time_point_number[position.time_point_number()].append(position)
+
+        # For all time points with a selected position, find all positions that are not selected
+        new_selection = list()
+        experiment_positions = self._experiment.positions
+        for time_point_number, currently_selected_positions in selected_positions_per_time_point_number.items():
+            for position in experiment_positions.of_time_point(TimePoint(time_point_number)):
+                if position not in currently_selected_positions:
+                    new_selection.append(position)
+
+        # Set the new selection
+        self._selected = new_selection
+        self.draw_view()
+        self.update_status(f"Inverted selection - now {len(self._selected)} positions are selected.")
 
     def _move_to_position(self, position: Position) -> bool:
         if position not in self._selected:
