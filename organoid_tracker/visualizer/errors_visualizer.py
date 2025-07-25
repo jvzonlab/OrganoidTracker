@@ -216,13 +216,14 @@ class ErrorsVisualizer(PositionListVisualizer):
         return super()._on_command(command)
 
     def _action_recheck_errors(self):
-        cell_error_finder.find_errors_in_experiment(self._experiment)
         # Recalculate everything
         self._recalculate_errors()
         self.update_status("Rechecked all cells in the experiment. "
                            "Please note that suppressed warnings remain suppressed.")
 
     def _recalculate_errors(self):
+        cell_error_finder.find_errors_in_experiment(self._experiment)
+
         selected_position = None
         if 0 <= self._current_position_index < len(self._position_list):
             selected_position = self._position_list[self._current_position_index]
