@@ -93,21 +93,6 @@ class PositionsInRectangleSelector(LinkAndPositionEditor):
         else:
             super()._on_key_press(event)
 
-    def _is_rectangle_at_current_time(self) -> bool:
-        """Returns True if the rectangle overlaps with this time point and z value."""
-        if self._min_position.time_point_number() > self._time_point.time_point_number():
-            return False
-        if self._max_position.time_point_number() < self._time_point.time_point_number():
-            return False
-        return True
-
-    def _is_rectangle_at_current_layer(self) -> bool:
-        if self._min_position.z > self._z:
-            return False
-        if self._max_position.z < self._z:
-            return False
-        return True
-
     def _get_newly_selected_positions(self) -> Iterable[Position]:
         """Gets all positions that are inside or outside the selected cuboid. Throws an exception if the two
         positions defining the rectangle haven't been defined yet."""
@@ -156,7 +141,8 @@ class PositionsInRectangleSelector(LinkAndPositionEditor):
         time_point_number = self._time_point.time_point_number()
         to_unselect = set()
         for selected_position in self._selected:
-            if round(selected_position.z) == self._z and selected_position.time_point_number() == time_point_number:
+            is_in_z = round(selected_position.z) == self._z or self._display_settings.max_intensity_projection
+            if is_in_z and selected_position.time_point_number() == time_point_number:
                 if not self._experiment.positions.contains_position(selected_position):
                     to_unselect.add(selected_position)  # Position was deleted, remove from selection
                     continue
