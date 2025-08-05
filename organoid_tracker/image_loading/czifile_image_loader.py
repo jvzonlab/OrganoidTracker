@@ -68,8 +68,13 @@ def load_from_czi_reader(experiment: Experiment, file: str, reader: CziFile, ser
     experiment.images.image_loader(_CziImageLoader(file, reader, serie_index, min_time_point, max_time_point))
 
     # Set up resolution
-    metadata = read_xml(reader.reader.read_meta())
-    experiment.images.set_resolution(_read_resolution(metadata))
+    try:
+        metadata = read_xml(reader.reader.read_meta())
+    except RuntimeError:
+        # No metadata available, so we cannot read the resolution
+        pass
+    else:
+        experiment.images.set_resolution(_read_resolution(metadata))
 
     # Generate an automatic name for the experiment
     file_name = os.path.basename(file)
@@ -105,7 +110,13 @@ class _CziImageLoader(ImageLoader):
 
     def _get_dims_shape(self) -> Dict[str, Tuple[int, int]]:
         """Returns the dimensions and their shapes."""
-        for dims_shape in self._czi_file.get_dims_shape():
+        dims_shapes = self._czi_file.get_dims_shape()
+        if len(dims_shapes) == 1:
+            # Only one series in the file, in that case "S" is not always declared in dims_shapes
+            # Just assume that the only specified series is the one we want
+            return dims_shapes[0]
+
+        for dims_shape in dims_shapes:
             min_s, max_s_exclusive = dims_shape["S"]
             if min_s <= self._series_index < max_s_exclusive:
                 return dims_shape
@@ -220,11 +231,17 @@ def read_czi_file(file_path: str) -> Tuple[CziFile, int, int]:
     """Reads a CZI file and returns the reader and the available series range (inclusive)."""
     reader = CziFile(file_path)
     available_series = set()
-    for dim_shape in  reader.get_dims_shape():
+    for dim_shape in reader.get_dims_shape():
+        if "S" not in dim_shape:
+            continue
         s_min, s_max_exclusive = dim_shape["S"]
         for s in range(s_min, s_max_exclusive):
             available_series.add(s)
 
     available_series = list(available_series)
     available_series.sort()
+
+    if len(available_series) == 0:
+        available_series = [1]  # Default to series 1 if no series are found
+
     return reader, min(available_series), max(available_series)
