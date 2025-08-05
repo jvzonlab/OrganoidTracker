@@ -718,27 +718,55 @@ class LinkAndPositionEditor(AbstractEditor):
         return super()._move_to_position(position)
 
     def _move_to_track_start(self):
-        if len(self._selected) != 1:
-            self.update_status("Select only one position to move to a track origin")
+        if len(self._selected) == 0:
+            self.update_status("No position selected - cannot move to the first position.")
             return
+
+        if len(self._selected) != 1:
+            # Multi-selection case - move to the first position of the selection
+            first_pos = None
+            for position in self._selected:
+                if first_pos is None or position.time_point_number() < first_pos.time_point_number():
+                    first_pos = position
+            super()._move_to_position(first_pos)
+            self.update_status("Moved to the first position of the selection.")
+            return
+
+        # Single selection case - move to the first position of the track
         track_of_position = self._experiment.links.get_track(self._selected[0])
         if track_of_position is not None:
             first_position_of_track = track_of_position.find_first_position()
-            return super()._move_to_position(first_position_of_track)
+            super()._move_to_position(first_position_of_track)
+            self.update_status("Moved to the first position of the track of the selected position.")
+            return
         else:
-            self.update_status("Position does not belong to a track")
+            self.update_status("Only one position selected, but it does not belong to a track. Cannot move to the first position.")
             return
 
     def _move_to_track_end(self):
-        if len(self._selected) != 1:
-            self.update_status("Select only one position to move to a track origin")
+        if len(self._selected) == 0:
+            self.update_status("No position selected - cannot move to a track end")
             return
+
+        if len(self._selected) != 1:
+            # Multi-selection case - move to the first position of the selection
+            last_pos = None
+            for position in self._selected:
+                if last_pos is None or position.time_point_number() > last_pos.time_point_number():
+                    last_pos = position
+            super()._move_to_position(last_pos)
+            self.update_status("Moved to the last position of the selection.")
+            return
+
+        # Single selection case - move to the last position of the track
         track_of_position = self._experiment.links.get_track(self._selected[0])
         if track_of_position is not None:
             last_position_of_track = track_of_position.find_last_position()
-            return super()._move_to_position(last_position_of_track)
+            super()._move_to_position(last_position_of_track)
+            self.update_status("Moved to the last position of the track of the selected position.")
+            return
         else:
-            self.update_status("Position does not belong to a track")
+            self.update_status("Only one position selected, but it does not belong to a track. Cannot move to the last position.")
             return
 
     def _move_to_z_of_selected_position(self):
