@@ -211,7 +211,7 @@ for image_set_index in range(image_set_count):
                            time_point=time_point) + image_offset
             all_positions.add(pos)
 
-experiment.positions.add_positions(all_positions)
+experiment.positions.merge_data(all_positions)
 
 if _test_for_foreground:
     print('remove background')

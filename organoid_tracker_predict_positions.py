@@ -241,7 +241,7 @@ for experiment_index, experiment in enumerate(experiment_list):
                             time_point=time_point) + image_offset
                 all_positions.add(pos)
 
-    experiment.positions.add_positions(all_positions)
+    experiment.positions.merge_data(all_positions)
 
 
 

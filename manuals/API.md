@@ -158,9 +158,9 @@ from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.linking_analysis import linking_markers
 
 experiment = Experiment()
-shed_cells = linking_markers.find_shed_positions(experiment.links, experiment.position_data)
-dead_cells = linking_markers.find_death_positions(experiment.links, experiment.position_data)
-dead_and_shed_cells = linking_markers.find_death_and_shed_positions(experiment.links, experiment.position_data)
+shed_cells = linking_markers.find_shed_positions(experiment.links, experiment.positions)
+dead_cells = linking_markers.find_death_positions(experiment.links, experiment.positions)
+dead_and_shed_cells = linking_markers.find_death_and_shed_positions(experiment.links, experiment.positions)
 ```
 
 You can then iterate over those using a loop: `for position in dead_cells:`.
@@ -211,7 +211,7 @@ experiment = Experiment()
 position = ...
 
 track = experiment.links.get_track(position)
-end_marker = linking_markers.get_track_end_marker(experiment.position_data, track.find_last_position())
+end_marker = linking_markers.get_track_end_marker(experiment.positions, track.find_last_position())
 if end_marker == EndMarker.DEAD:
     # Cell died
     ...
@@ -282,5 +282,5 @@ experiment.images = images
 
 # Open the visualizer
 standard_image_visualizer.show(experiment)
-launcher.mainloop()  # Necessary! Google "event loop" for details
+main_window.mainloop()  # Necessary! Google "event loop" for details
 ```

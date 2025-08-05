@@ -55,7 +55,7 @@ for coordinate in coordinates:
     start_positions.add(pos)
 
 start_experiment = Experiment()
-start_experiment.positions.add_positions(start_positions)
+start_experiment.positions.merge_data(start_positions)
 io.save_data_to_json(start_experiment, 'start_positions.aut')
 
 

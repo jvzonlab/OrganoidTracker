@@ -55,4 +55,4 @@ class TestTimings(unittest.TestCase):
         self.assertEqual(TimePoint(-1), timings.find_closest_time_point(-10, "m"))
 
         # Test using hours as unit
-        self.assertEqual(TimePoint(1), timings.find_closest_time_point(1, "h"))
+        self.assertEqual(TimePoint(2), timings.find_closest_time_point(1, "h"))

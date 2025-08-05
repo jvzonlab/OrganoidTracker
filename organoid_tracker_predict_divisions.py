@@ -193,7 +193,7 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
 
     # adapt positions
     experiment.remove_positions(to_remove)
-    experiment.positions.add_positions(PositionCollection(to_add))
+    experiment.positions.merge_data(PositionCollection(to_add))
 
     print(f'Division oversegmentations removed: {len(to_remove)}')
 

@@ -15,13 +15,13 @@ class TestPositionData(unittest.TestCase):
         position_3 = Position(3, 0, 0, time_point_number=0)
 
         experiment = Experiment()
-        position_data = experiment.position_data
-        position_data.set_position_data(position_1, "intensity", 8)
-        position_data.set_position_data(position_2, "intensity", 10)
-        position_data.set_position_data(position_3, "intensity", 12)
-        position_data.set_position_data(position_1, "intensity_volume", 100)
-        position_data.set_position_data(position_2, "intensity_volume", 100)
-        position_data.set_position_data(position_3, "intensity_volume", 200)
+        positions = experiment.positions
+        positions.set_position_data(position_1, "intensity", 8)
+        positions.set_position_data(position_2, "intensity", 10)
+        positions.set_position_data(position_3, "intensity", 12)
+        positions.set_position_data(position_1, "intensity_volume", 100)
+        positions.set_position_data(position_2, "intensity_volume", 100)
+        positions.set_position_data(position_3, "intensity_volume", 200)
 
         intensity_calculator.perform_intensity_normalization(experiment)
         intensity1 = intensity_calculator.get_normalized_intensity(experiment, position_1)
@@ -29,7 +29,8 @@ class TestPositionData(unittest.TestCase):
         intensity3 = intensity_calculator.get_normalized_intensity(experiment, position_3)
 
         # check if median is indeed 1
-        self.assertAlmostEqual(1, sorted([intensity1, intensity2,intensity3])[1], delta=0.0001)
+        self.assertAlmostEqual(1, sorted([intensity1, intensity2, intensity3])[1], delta=0.0001)
 
         # check if lowest is indeed 0 (background correction)
-        self.assertAlmostEqual(0, intensity1, delta=0.0001)
+        # (not that intensity3 is the lowest, as there the intensity is divided over the largest volume)
+        self.assertAlmostEqual(0, intensity3, delta=0.0001)

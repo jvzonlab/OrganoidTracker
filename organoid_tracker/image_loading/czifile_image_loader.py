@@ -87,7 +87,7 @@ class _CziImageLoader(ImageLoader):
     _file: str
     _czi_file: CziFile
     _czi_lock: Lock  # Acquired from the public (outer) methods
-    _series_index: int  # Series index, starts at 1
+    _series_index_one: int  # Series index, starts at 1
 
     _min_time_point_number: int
     _max_time_point_number: int
@@ -96,7 +96,7 @@ class _CziImageLoader(ImageLoader):
         self._file = file
         self._czi_file = reader
         self._czi_lock = Lock()
-        self._series_index = series_index
+        self._series_index_one = series_index
 
         dims_shape = self._get_dims_shape()
         min_time_point_file, max_time_point_file_exclusive = dims_shape.get("T", (0, 1))
@@ -118,9 +118,9 @@ class _CziImageLoader(ImageLoader):
 
         for dims_shape in dims_shapes:
             min_s, max_s_exclusive = dims_shape["S"]
-            if min_s <= self._series_index < max_s_exclusive:
+            if min_s <= self._series_index_one - 1 < max_s_exclusive:
                 return dims_shape
-        raise ValueError(f"Series index {self._series_index} not found in CZI file {self._file}.")
+        raise ValueError(f"Series index {self._series_index_one} not found in CZI file {self._file}.")
 
     def first_time_point_number(self) -> int:
         """Gets the first time point for which images are available."""
@@ -150,7 +150,7 @@ class _CziImageLoader(ImageLoader):
         # Build an image query in such a way that we avoid the "The coordinates are overspecified" error is avoided,
         # by only querying the dimensions that are available in the CZI file.
         available_keys = self._get_dims_shape().keys()
-        image_query = {"S": self._series_index,
+        image_query = {"S": self._series_index_one - 1,
                        "T": time_point.time_point_number(),
                        "C": image_channel.index_zero}
         for dim in list(image_query.keys()):
@@ -187,7 +187,7 @@ class _CziImageLoader(ImageLoader):
         # Build an image query in such a way that we avoid the "The coordinates are overspecified" error is avoided,
         # by only querying the dimensions that are available in the CZI file.
         available_keys = self._get_dims_shape().keys()
-        image_query = {"S": self._series_index,
+        image_query = {"S": self._series_index_one - 1,
                        "T": time_point.time_point_number(),
                        "C": image_channel.index_zero,
                        "Z": image_z}
@@ -214,11 +214,11 @@ class _CziImageLoader(ImageLoader):
         return z_size, y_size, x_size
 
     def copy(self) -> "_CziImageLoader":
-        return _CziImageLoader(self._file, CziFile(self._file), self._series_index, self._min_time_point_number,
+        return _CziImageLoader(self._file, CziFile(self._file), self._series_index_one, self._min_time_point_number,
                                self._max_time_point_number)
 
     def serialize_to_config(self) -> Tuple[str, str]:
-        return self._file, str(self._series_index)
+        return self._file, str(self._series_index_one)
 
     def close(self):
         with self._czi_lock:
@@ -236,7 +236,7 @@ def read_czi_file(file_path: str) -> Tuple[CziFile, int, int]:
             continue
         s_min, s_max_exclusive = dim_shape["S"]
         for s in range(s_min, s_max_exclusive):
-            available_series.add(s)
+            available_series.add(s + 1)  # Switch to one-based indexing
 
     available_series = list(available_series)
     available_series.sort()

@@ -71,7 +71,6 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
 
     all_positions = PositionCollection()
     all_links = Links()
-    all_position_data = PositionData()
     links_to_mother_by_time_point = _read_lineage_file(file_name)
 
     file_prefix = file_name[:-4]
@@ -98,7 +97,7 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
 
             # Add position
             all_positions.add(position)
-            all_position_data.set_position_data(position, "ctc_id", region.label)
+            all_positions.set_position_data(position, "ctc_id", region.label)
 
             # Try to add link
             if region.label in positions_of_previous_time_point:
@@ -121,7 +120,6 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
 
     experiment.positions = all_positions
     experiment.links = all_links
-    experiment.position_data = all_position_data
 
     return experiment
 
