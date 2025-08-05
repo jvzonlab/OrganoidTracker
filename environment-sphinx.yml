@@ -1,7 +1,6 @@
 # Compared to the normal environment, we made the following changes:
 # Added Sphinx, myst-parser and sphinx-rtd-theme
-# Replaced tensorflow-gpu by tensorflow, since we don't need the graphics drivers
-# (to do that, I also had to replace tensorflow-addons by its Pip equivalent)
+# Removed some of the bigger packages such as pytorch, they're not needed for most of the code.
 name: sphinx
 channels:
   - conda-forge
