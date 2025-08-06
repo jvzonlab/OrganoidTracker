@@ -183,7 +183,7 @@ class AbstractImageVisualizer(Visualizer):
         self._draw_legend()
         self._window.set_figure_title(self._get_figure_title())
 
-        self._fig.canvas.draw()
+        self._fig.canvas.draw_idle()
 
     def _draw_image(self):
         if self._image_slice_2d is not None:
@@ -582,7 +582,7 @@ class AbstractImageVisualizer(Visualizer):
         if event.button == "up":
             shift_y *= -1  # Inverse direction
         self._ax.set_ylim(old_ylim[0] + shift_y, old_ylim[1] + shift_y)
-        self._fig.canvas.draw()
+        self._fig.canvas.draw_idle()
 
     def _scroll_shift_x(self, event: MouseEvent):
         old_xlim = self._ax.get_xlim()
@@ -591,7 +591,7 @@ class AbstractImageVisualizer(Visualizer):
         if event.button == "up":
             shift_x *= -1  # Inverse direction
         self._ax.set_xlim(old_xlim[0] + shift_x, old_xlim[1] + shift_x)
-        self._fig.canvas.draw()
+        self._fig.canvas.draw_idle()
 
     def _scroll_zoom(self, event: MouseEvent):
         old_xlim = self._ax.get_xlim()
@@ -611,7 +611,7 @@ class AbstractImageVisualizer(Visualizer):
         # noinspection PyTypeChecker
         self._ax.set_ylim([old_ydata - (old_ydata - old_ylim[0]) / scale_factor,
                            old_ydata + (old_ylim[1] - old_ydata) / scale_factor])
-        self._fig.canvas.draw()
+        self._fig.canvas.draw_idle()
 
     def _on_command(self, command: str) -> bool:
         if command.startswith("track "):

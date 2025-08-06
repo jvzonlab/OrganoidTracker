@@ -80,7 +80,7 @@ class PositionListVisualizer(Visualizer):
                 self._window.set_figure_title(self.get_message_no_positions())
             else:
                 self._window.set_figure_title(self.get_message_press_right())
-            self._fig.canvas.draw()
+            self._fig.canvas.draw_idle()
             return
 
         self._zoom_to_cell()
@@ -94,7 +94,7 @@ class PositionListVisualizer(Visualizer):
         self._draw_connections(self._experiment.links, current_position)
         self._window.set_figure_title(self.get_title(self._position_list, self._current_position_index))
 
-        self._fig.canvas.draw()
+        self._fig.canvas.draw_idle()
         PositionListVisualizer.__last_position_by_class[type(self)] = current_position
 
     def _zoom_to_cell(self):

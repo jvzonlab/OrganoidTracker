@@ -36,7 +36,7 @@ class EmptyVisualizer(Visualizer):
     def draw_view(self):
         self._clear_axis()
         self._window.set_figure_title("Empty project. Get started by loading images and tracking data.")
-        self._fig.canvas.draw()
+        self._fig.canvas.draw_idle()
 
     def _get_window_title(self):
         return "New project"

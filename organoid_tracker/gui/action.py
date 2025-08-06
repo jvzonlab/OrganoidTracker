@@ -46,7 +46,7 @@ def toggle_axis(figure: Figure):
             set_visible = not axis.get_xaxis().get_visible()
         axis.get_xaxis().set_visible(set_visible)
         axis.get_yaxis().set_visible(set_visible)
-    figure.canvas.draw()
+    figure.canvas.draw_idle()
 
 
 def new(window: Window):
