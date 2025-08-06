@@ -19,14 +19,14 @@ class TestIO(TestCase):
 
         experiment = Experiment()
         experiment.positions.add(position)
-        experiment.position_data.set_position_data(position, "test_key", numpy.sqrt(5))
+        experiment.positions.set_position_data(position, "test_key", numpy.sqrt(5))
 
         with TemporaryDirectory() as directory:
             file = os.path.join(directory, "test." + io.FILE_EXTENSION)
             io.save_data_to_json(experiment, file)
 
             experiment = io.load_data_file(file)
-            self.assertAlmostEqual(math.sqrt(5), experiment.position_data.get_position_data(position, "test_key"))
+            self.assertAlmostEqual(math.sqrt(5), experiment.positions.get_position_data(position, "test_key"))
 
     def test_save_format(self):
         expected_data = {'version': 'v2',
@@ -77,9 +77,9 @@ class TestIO(TestCase):
         experiment.positions.add(position_3)
         experiment.links.add_link(position_1, position_2)
         experiment.links.add_link(position_2, position_3)
-        experiment.position_data.set_position_data(position_1, "test_key", 1)
-        experiment.position_data.set_position_data(position_2, "test_key", 2)
-        experiment.position_data.set_position_data(position_3, "other_key", 3)
+        experiment.positions.set_position_data(position_1, "test_key", 1)
+        experiment.positions.set_position_data(position_2, "test_key", 2)
+        experiment.positions.set_position_data(position_3, "other_key", 3)
         experiment.link_data.set_link_data(position_2, position_3, "test_key", 4)
         # Between position_1 and position_2 there is no link data, so then test_key should become None there
 
@@ -116,9 +116,9 @@ class TestIO(TestCase):
             self.assertEqual(2, len(experiment.links))
 
             # Position meta
-            self.assertEqual(1, experiment.position_data.get_position_data(Position(1, 2, 3, time_point_number=1),
+            self.assertEqual(1, experiment.positions.get_position_data(Position(1, 2, 3, time_point_number=1),
                                                                            "test_key"))
-            self.assertEqual(3, experiment.position_data.get_position_data(Position(7, 8, 9, time_point_number=3),
+            self.assertEqual(3, experiment.positions.get_position_data(Position(7, 8, 9, time_point_number=3),
                                                                            "other_key"))
 
             # Link meta
@@ -152,9 +152,9 @@ class TestIO(TestCase):
             self.assertEqual(2, len(experiment.links))
 
             # Position meta
-            self.assertEqual(1, experiment.position_data.get_position_data(Position(1, 2, 3, time_point_number=1),
+            self.assertEqual(1, experiment.positions.get_position_data(Position(1, 2, 3, time_point_number=1),
                                                                            "test_key"))
-            self.assertEqual(3, experiment.position_data.get_position_data(Position(7, 8, 9, time_point_number=3),
+            self.assertEqual(3, experiment.positions.get_position_data(Position(7, 8, 9, time_point_number=3),
                                                                            "other_key"))
 
             # Link meta

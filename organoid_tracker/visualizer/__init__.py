@@ -345,7 +345,7 @@ class Visualizer:
         """Gets the color that the given position should be annotated with, based on the type of the position. Usually
         this color is used to decorate the edge of the position marker."""
         position_type = self.get_window().registry.get_marker_by_save_name(
-            position_markers.get_position_type(self._experiment.position_data, position))
+            position_markers.get_position_type(self._experiment.positions, position))
         if position_type is None:
             return None
         return position_type.mpl_color

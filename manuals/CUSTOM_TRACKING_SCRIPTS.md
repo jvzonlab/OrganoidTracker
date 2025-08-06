@@ -119,7 +119,7 @@ for position in experiment.positions:
     # The chance may not be 0 or 1, so limit it from 0.00000001 to 0.99999999
 
     penalty = -math.log10(chance)+math.log10(1-chance)
-    experiment.position_data.set_position_data(position, "division_penalty", penalty)
+    experiment.positions.set_position_data(position, "division_penalty", penalty)
 ```
 
 That's it! Don't forget to save your experiment at the end of the script with `io.save_data_to_json(experiment, "output_file.aut")`. Now your tracking data file is ready for the `organoid_tracker_create_links.py` script.

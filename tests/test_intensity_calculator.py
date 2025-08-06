@@ -14,13 +14,13 @@ class TestIntensityCalculator(unittest.TestCase):
         position_3 = Position(3, 0, 0, time_point_number=0)
 
         experiment = Experiment()
-        position_data = experiment.position_data
-        position_data.set_position_data(position_1, "intensity", 8)
-        position_data.set_position_data(position_2, "intensity", 10)
-        position_data.set_position_data(position_3, "intensity", 12)
-        position_data.set_position_data(position_1, "intensity_volume", 100)
-        position_data.set_position_data(position_2, "intensity_volume", 100)
-        position_data.set_position_data(position_3, "intensity_volume", 200)
+        positions = experiment.positions
+        positions.set_position_data(position_1, "intensity", 8)
+        positions.set_position_data(position_2, "intensity", 10)
+        positions.set_position_data(position_3, "intensity", 12)
+        positions.set_position_data(position_1, "intensity_volume", 100)
+        positions.set_position_data(position_2, "intensity_volume", 100)
+        positions.set_position_data(position_3, "intensity_volume", 200)
 
         intensity_calculator.perform_intensity_normalization(experiment)
         intensity1 = intensity_calculator.get_normalized_intensity(experiment, position_1)

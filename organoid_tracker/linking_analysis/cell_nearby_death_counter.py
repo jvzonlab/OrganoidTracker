@@ -6,7 +6,6 @@ from typing import Dict, List
 from organoid_tracker.core.links import Links, LinkingTrack
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
-from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.linking_analysis import linking_markers
 
@@ -18,9 +17,9 @@ class NearbyDeaths:
     _track_to_nearby_deaths: Dict[LinkingTrack, List[Position]]
     _track_to_previous_death_counts: Dict[LinkingTrack, int]
 
-    def __init__(self, links: Links, position_data: PositionData, resolution: ImageResolution, max_distance_um: float = 18):
+    def __init__(self, links: Links, positions: PositionCollection, resolution: ImageResolution, max_distance_um: float = 18):
         """Does the initial bookkeeping, to speed up later calculations."""
-        death_positions = PositionCollection(linking_markers.find_death_and_shed_positions(links, position_data))
+        death_positions = PositionCollection(linking_markers.find_death_and_shed_positions(links, positions))
         max_distance_squared = max_distance_um ** 2
 
         # List all deaths nearby each track

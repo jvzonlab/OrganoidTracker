@@ -134,8 +134,9 @@ position = Position(0, 0, 0, time_point_number=0)
 
 # How to store and retrieve metadata
 experiment = Experiment()
-experiment.position_data.set_position_data(position, "some_key", "some_value")
-the_value = experiment.position_data.get_position_data(position, "some_key")
+experiment.positions.add(position)  # Position needs to exist in dataset to store metadata
+experiment.positions.set_position_data(position, "some_key", "some_value")
+the_value = experiment.positions.get_position_data(position, "some_key")
 ```
 
 You can store exactly the same types of position metadata as you could for `experiment.global_data`. So you can store strings, ints, floats, booleans and lists of those.
@@ -180,7 +181,7 @@ class _CellActivitySetter(ExitableImageVisualizer):
             return  # Didn't click on a position
         
         # Get old activity
-        old_activity = self._experiment.position_data.get_position_data(position, "activity")
+        old_activity = self._experiment.positions.get_position_data(position, "activity")
         if old_activity is None:
             old_activity = 0
         
@@ -190,7 +191,7 @@ class _CellActivitySetter(ExitableImageVisualizer):
             return  # User pressed cancel
         
         # Store
-        self._experiment.position_data.set_position_data(position, "activity", activity)
+        self._experiment.positions.set_position_data(position, "activity", activity)
 
 
 # This function simply opens the activity setting screen
@@ -238,19 +239,20 @@ from organoid_tracker.position_analysis import position_markers
 # Replace these with real values
 experiment = Experiment()
 position = Position(0, 0, 0, time_point_number=0)
+experiment.positions.add(position)
 
 # This method returns the "type" metadata of a position,
 # and converts it to UPPERCASE if it isn't already
-position_markers.get_position_type(experiment.position_data, position)
+position_markers.get_position_type(experiment.positions, position)
 
 # This method sets the "type" metadata of a position,
 # after converting the type to UPPERCASE if it isn't already
-position_markers.set_position_type(experiment.position_data, position, "PANETH")
+position_markers.set_position_type(experiment.positions, position, "PANETH")
 
 # This method returns an iterable of all positions of the type "PANETH".
 # Note that if a single Paneth cell has 100 positions over time,
 # then this method will return all 100 positions of that Paneth cell.
-paneth_positions = position_markers.get_positions_of_type(experiment.position_data, "PANETH")
+paneth_positions = position_markers.get_positions_of_type(experiment.positions, "PANETH")
 ```
 
 

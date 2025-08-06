@@ -123,7 +123,7 @@ def _import_csv(window: Window, *, new_positions: bool = True) -> Optional[int]:
                     experiment.positions.add(position)
 
             for metadata_id, metadata_name in zip(selected_option_indices, selected_options):
-                experiment.position_data.set_position_data(position, metadata_name, _parse(row[metadata_id]))
+                experiment.positions.set_position_data(position, metadata_name, _parse(row[metadata_id]))
     window.redraw_data()
 
     return positions_that_did_not_exist

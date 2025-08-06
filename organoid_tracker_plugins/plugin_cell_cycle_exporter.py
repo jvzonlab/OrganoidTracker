@@ -1,23 +1,10 @@
-
-import json
 import csv
 import os
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any
 
 from organoid_tracker.core import UserError
-from organoid_tracker.core.experiment import Experiment
-from organoid_tracker.core.links import Links
-from organoid_tracker.core.marker import Marker
-from organoid_tracker.core.position import Position
-from organoid_tracker.core.position_collection import PositionCollection
-from organoid_tracker.core.position_data import PositionData
-from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.gui import dialog
-from organoid_tracker.gui.threading import Task
 from organoid_tracker.gui.window import Window
-from organoid_tracker.position_analysis import position_markers
-from organoid_tracker.linking_analysis import lineage_markers
-from organoid_tracker.linking_analysis.cell_fate_finder import CellFateType
 
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
@@ -42,12 +29,12 @@ def _export_cell_cycle_as_csv(window: Window):
     file_name = os.path.join(folder, file_prefix)
 
     for link in experiment.links.find_all_links():
-        division_penalty1 = experiment.position_data.get_position_data(link[0], 'division_penalty')
-        division_penalty2 = experiment.position_data.get_position_data(link[1], 'division_penalty')
+        division_penalty1 = experiment.positions.get_position_data(link[0], 'division_penalty')
+        division_penalty2 = experiment.positions.get_position_data(link[1], 'division_penalty')
 
         next_position = experiment.links.find_single_future(link[1])
         if (next_position is not None) and (division_penalty1 is not None):
-            division_penalty3 = experiment.position_data.get_position_data(next_position, 'division_penalty')
+            division_penalty3 = experiment.positions.get_position_data(next_position, 'division_penalty')
 
             if (division_penalty1 + division_penalty2 + division_penalty3) / 3 < -2.0:
                 track = experiment.links.get_track(link[0])
@@ -71,8 +58,8 @@ def _export_cell_cycle_as_csv(window: Window):
             start = first_pos.time_point_number()
             end = last_pos.time_point_number()
 
-            division_penalty_start = experiment.position_data.get_position_data(first_pos, "division_penalty")
-            division_penalty_end = experiment.position_data.get_position_data(last_pos, "division_penalty")
+            division_penalty_start = experiment.positions.get_position_data(first_pos, "division_penalty")
+            division_penalty_end = experiment.positions.get_position_data(last_pos, "division_penalty")
 
             if division_penalty_end is None:
                 division_penalty_end = 1000

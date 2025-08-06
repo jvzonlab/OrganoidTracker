@@ -41,7 +41,7 @@ class PositionPopup(RichTextPopup):
         text += f"[Go to position](goto {self._position.x} {self._position.y} {self._position.z} {self._position.time_point_number()})"
 
         text += "\n\n## Metadata\n\nAny metadata stored on the position\n\n"
-        for name, value in experiment.position_data.find_all_data_of_position(self._position):
+        for name, value in experiment.positions.find_all_data_of_position(self._position):
             text += f"* **{name}:** `{value}`\n"
 
         text += "\n\n## Links\n\nShows the links over time.\n\n"

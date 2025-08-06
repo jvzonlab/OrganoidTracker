@@ -7,6 +7,7 @@ from organoid_tracker.core.position import Position
 class TestPositionData(unittest.TestCase):
     """Tests that the deprecated position_data API still works, and writes through to the new positions API."""
 
+    # noinspection PyDeprecation
     def test_write_through(self):
         experiment = Experiment()
         position = Position(1, 2, 3, time_point_number=4)

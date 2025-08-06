@@ -355,7 +355,7 @@ class AbstractImageVisualizer(Visualizer):
         self._draw_positions_of_time_point(self._time_point)
 
     def _draw_positions_of_time_point(self, time_point: TimePoint, color: str = core.COLOR_CELL_CURRENT):
-        position_data = self._experiment.position_data
+        positions = self._experiment.positions
         dt = time_point.time_point_number() - self._time_point.time_point_number()
         show_errors = self._display_settings.show_errors
         max_intensity_projection = self._display_settings.max_intensity_projection
@@ -375,7 +375,7 @@ class AbstractImageVisualizer(Visualizer):
                 continue
 
             # Add error marker
-            if show_errors and linking_markers.get_error_marker(position_data, position) is not None:
+            if show_errors and linking_markers.get_error_marker(positions, position) is not None:
                 crosses_x_list.append(position.x)
                 crosses_y_list.append(position.y)
 
@@ -398,7 +398,7 @@ class AbstractImageVisualizer(Visualizer):
     def _get_position_edge(self, position: Position) -> tuple[tuple[float, float, float], float]:
         """Gets the RGB color (0-1) and the line width"""
         position_type = self.get_window().registry.get_marker_by_save_name(
-            position_markers.get_position_type(self._experiment.position_data, position))
+            position_markers.get_position_type(self._experiment.positions, position))
         edge_color = (0.0, 0.0, 0.0) if position_type is None else position_type.mpl_color
         edge_width = 1.0 if position_type is None else 3.0
         return edge_color, edge_width

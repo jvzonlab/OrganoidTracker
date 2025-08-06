@@ -2,8 +2,7 @@ import unittest
 
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.position import Position
-from organoid_tracker.core.position_data import PositionData
-from organoid_tracker.position_analysis import position_markers, intensity_calculator
+from organoid_tracker.position_analysis import intensity_calculator
 
 
 class TestPositionData(unittest.TestCase):

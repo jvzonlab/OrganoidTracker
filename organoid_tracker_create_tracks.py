@@ -80,7 +80,7 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
                                               name="disappearance_penalty", buffer_distance=_margin_um, only_top=True)
 
     print("Deciding on what links to use...")
-    link_result, naive_links = dpct_linker.run(experiment.positions, experiment.position_data, possible_links,
+    link_result, naive_links = dpct_linker.run(experiment.positions, possible_links,
                                                link_data=experiment.link_data, link_weight=_link_weight,
                                                detection_weight=_detection_weight, division_weight=_division_weight,
                                                appearance_weight=_appearance_weight,

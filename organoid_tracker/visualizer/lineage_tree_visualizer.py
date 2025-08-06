@@ -4,39 +4,35 @@ from typing import Dict, Any, Tuple, Optional, List
 
 import matplotlib.cm
 import matplotlib.colors
-from matplotlib.backend_bases import MouseEvent
-
 import numpy as np
+from matplotlib.backend_bases import MouseEvent
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from organoid_tracker.core import Color, UserError
-from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import LinkingTrack
 from organoid_tracker.core.position import Position
-from organoid_tracker.core.position_data import PositionData
-from organoid_tracker.core.resolution import ImageResolution, ImageTimings
-from organoid_tracker.core.typing import MPLColor
+from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.gui import dialog, option_choose_dialog
 from organoid_tracker.gui.location_map import LocationMap
 from organoid_tracker.gui.window import Window
-from organoid_tracker.local_marginalization.tree_drawing import color_error_rates, compute_lineage_error_probability, compute_track_error_probability
-from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking_analysis import linking_markers, lineage_markers
 from organoid_tracker.linking_analysis.lineage_division_counter import get_min_division_count_in_lineage, \
     get_number_of_cells_at_end
 from organoid_tracker.linking_analysis.lineage_drawing import LineageDrawing
 from organoid_tracker.linking_analysis.linking_markers import EndMarker
+from organoid_tracker.local_marginalization.tree_drawing import color_error_rates, compute_lineage_error_probability, \
+    compute_track_error_probability
+from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.visualizer import Visualizer
-from organoid_tracker_plugins.plugin_positions_csv_exporter import _get_data_names
 
 _SPLINE_COLORMAP = matplotlib.cm.get_cmap("YlOrBr")  # For drawing position on axis
 
 
-def _includes_cell_type(position_data: PositionData, linking_track: LinkingTrack, cell_type: str):
+def _includes_cell_type(positions: PositionCollection, linking_track: LinkingTrack, cell_type: str):
     """Checks if the given lineage (starting at linking_track) includes the given cell type. Only checks the last
     position of each track."""
     for track_in_lineage in linking_track.find_all_descending_tracks(include_self=True):
-        if position_markers.get_position_type(position_data, track_in_lineage.find_last_position()) == cell_type:
+        if position_markers.get_position_type(positions, track_in_lineage.find_last_position()) == cell_type:
             return True
     return False
 
@@ -89,7 +85,7 @@ class LineageTreeVisualizer(Visualizer):
                 return False  # Don't even check, every lineage has 0 or more divisions
 
         if self._filter_cell_type is not None:
-            if not _includes_cell_type(self._experiment.position_data, linking_track, self._filter_cell_type):
+            if not _includes_cell_type(self._experiment.positions, linking_track, self._filter_cell_type):
                 return False
         return True
 
@@ -335,7 +331,7 @@ class LineageTreeVisualizer(Visualizer):
             display_timings = experiment.images.timings()
         except UserError:
             display_timings = None
-        position_data = experiment.position_data
+        positions = experiment.positions
 
         tracks = self._get_sorted_tracks()
         if len(tracks) > 5000:
@@ -346,11 +342,11 @@ class LineageTreeVisualizer(Visualizer):
 
         def color_getter(time_point_number: int, track: LinkingTrack) -> Tuple[float, float, float]:
             if self._display_warnings:
-                if _has_error_close_in_time(position_data, time_point_number, track):
+                if _has_error_close_in_time(positions, time_point_number, track):
                     return 0.7, 0.7, 0.7
 
             if self._display_deaths and track.last_time_point_number() - time_point_number < 10:
-                end_marker = linking_markers.get_track_end_marker(position_data, track.find_last_position())
+                end_marker = linking_markers.get_track_end_marker(positions, track.find_last_position())
                 if end_marker == EndMarker.DEAD:
                     return 1, 0, 0
                 elif end_marker == EndMarker.SHED:
@@ -439,10 +435,10 @@ class LineageTreeVisualizer(Visualizer):
         return 1.5
 
 
-def _has_error_close_in_time(position_data: PositionData, time_point_number: int, track: LinkingTrack, time_window: int = 5):
+def _has_error_close_in_time(positions: PositionCollection, time_point_number: int, track: LinkingTrack, time_window: int = 5):
     min_t = max(track.first_time_point_number(), time_point_number - time_window)
     max_t = min(track.last_time_point_number(), time_point_number + time_window)
     for t in range(min_t, max_t + 1):
-        if linking_markers.get_error_marker(position_data, track.find_position_at_time_point_number(t)):
+        if linking_markers.get_error_marker(positions, track.find_position_at_time_point_number(t)):
             return True
     return False

@@ -56,7 +56,7 @@ class LineageFateVisualizer(ExitableImageVisualizer):
     def _update_deaths_and_divisions(self, time_point: TimePoint):
         # Check what lineages contain errors
         links = self._experiment.links
-        position_data = self._experiment.position_data
+        positions = self._experiment.positions
         if not links.has_links():
             self._lineage_fates = dict()
             return
@@ -66,7 +66,7 @@ class LineageFateVisualizer(ExitableImageVisualizer):
         last_time_point_number = self._experiment.positions.last_time_point_number()
         result = dict()
         for position in positions:
-            result[position] = lineage_fate_finder.get_lineage_fate(position, links, position_data, 
+            result[position] = lineage_fate_finder.get_lineage_fate(position, links, positions,
                                                                     last_time_point_number)
         self._lineage_fates = result
 

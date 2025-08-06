@@ -32,7 +32,7 @@ class Experiment:
     but in the case of a division, it will be two positions. In the case of a cell death, it will be 0 positions.
 
     Cells can also have neighbors, and those are defined in :code:`experiment.connections`. Metadata of cell positions,
-    like the cell type or fluorescent intensity, is stored in :code:`experiment.position_data`.
+    like the cell type or fluorescent intensity, is stored in :code:`experiment.positions`.
     """
 
     # Note: none of the fields may be None after __init__ is called
@@ -350,8 +350,8 @@ class Experiment:
     def copy_selected(self, *, images: bool = False, positions: bool = False, position_data: Optional[bool] = None,
                       links: bool = False, link_data: bool = False, global_data: bool = False,
                       connections: bool = False, name: bool = False) -> "Experiment":
-        """Copies the selected attributes over to a new experiment. Note that position_data and links can only be copied
-        if the positions are copied."""
+        """Copies the selected attributes over to a new experiment. Note that links can only be copied if the positions
+        are copied."""
         if position_data is not None:
             warnings.warn("The position_data argument is deprecated, use positions instead", DeprecationWarning)
 

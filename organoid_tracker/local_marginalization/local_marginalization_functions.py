@@ -12,7 +12,7 @@ def minimal_marginalization(position1, position2, experiment, scale=1):
     possible_previous = experiment.links.find_pasts(position2)
 
     # sum of all link likelihoods (the partition function)
-    marginal = 10 ** ((-experiment.position_data.get_position_data(position2, data_name='appearance_penalty'))*scale)
+    marginal = 10 ** ((-experiment.positions.get_position_data(position2, data_name='appearance_penalty'))*scale)
 
     for previous_pos in possible_previous:
         marginal = marginal + 10 ** ((-experiment.link_data.get_link_data(previous_pos, position2, data_name='link_penalty'))*scale)
@@ -111,7 +111,7 @@ def get_flows_and_energies(previous_pos, current_pos, local_links, experiment, i
             for future in outside_futures:
                 outside_energies.append(experiment.link_data.get_link_data(pos, future, data_name='link_penalty'))
 
-            outside_energies.append(experiment.position_data.get_position_data(pos, data_name='disappearance_penalty'))
+            outside_energies.append(experiment.positions.get_position_data(pos, data_name='disappearance_penalty'))
 
             if integrate_ignore_penalty: #New element
                 outside_energies.append(ignore_penalty)
@@ -120,10 +120,10 @@ def get_flows_and_energies(previous_pos, current_pos, local_links, experiment, i
             #print(combine_events(outside_energies))
 
         elif integrate_ignore_penalty:
-            combined = combine_events([ignore_penalty, experiment.position_data.get_position_data(pos, data_name='disappearance_penalty')])
+            combined = combine_events([ignore_penalty, experiment.positions.get_position_data(pos, data_name='disappearance_penalty')])
             energies.append(combined)
         else:
-            energies.append(experiment.position_data.get_position_data(pos, data_name='disappearance_penalty'))
+            energies.append(experiment.positions.get_position_data(pos, data_name='disappearance_penalty'))
 
         # these elements form self-pointers in the graph
         links_out.append(key_dict[pos])
@@ -132,7 +132,7 @@ def get_flows_and_energies(previous_pos, current_pos, local_links, experiment, i
         types.append('previous_position')
 
         # Add divisions
-        division_penalty = experiment.position_data.get_position_data(pos, data_name='division_penalty')
+        division_penalty = experiment.positions.get_position_data(pos, data_name='division_penalty')
         if division_penalty < (ignore_penalty +1):
             energies.append(division_penalty)
             # these elements form self-pointers in the graph
@@ -158,7 +158,7 @@ def get_flows_and_energies(previous_pos, current_pos, local_links, experiment, i
             for future in outside_futures:
                 outside_energies.append(experiment.link_data.get_link_data(pos, future, data_name='link_penalty'))
 
-            outside_energies.append(experiment.position_data.get_position_data(pos, data_name='disappearance_penalty'))
+            outside_energies.append(experiment.positions.get_position_data(pos, data_name='disappearance_penalty'))
 
             if integrate_ignore_penalty: #New element
                 outside_energies.append(ignore_penalty)
@@ -166,10 +166,10 @@ def get_flows_and_energies(previous_pos, current_pos, local_links, experiment, i
             energies.append(combine_events(outside_energies))
 
         elif integrate_ignore_penalty:
-            combined = combine_events([experiment.position_data.get_position_data(pos, data_name='appearance_penalty'), ignore_penalty])
+            combined = combine_events([experiment.positions.get_position_data(pos, data_name='appearance_penalty'), ignore_penalty])
             energies.append(combined)
         else:
-            energies.append(experiment.position_data.get_position_data(pos, data_name='appearance_penalty'))
+            energies.append(experiment.positions.get_position_data(pos, data_name='appearance_penalty'))
 
         links_out.append(key_dict[pos])
         links_in.append(key_dict[pos])

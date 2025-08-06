@@ -14,7 +14,7 @@ class FullPositionSnapshot(NamedTuple):
         """Gets a snapshot of all information of a position."""
         links = list(experiment.links.find_links_of(position))
         connections = list(experiment.connections.find_connections(position))
-        data = dict(experiment.position_data.find_all_data_of_position(position))
+        data = dict(experiment.positions.find_all_data_of_position(position))
         return FullPositionSnapshot(position=position, links=links, connections=connections, position_data=data)
 
     @staticmethod
@@ -41,4 +41,4 @@ class FullPositionSnapshot(NamedTuple):
         for connection in self.connections:
             experiment.connections.add_connection(self.position, connection)
         for data_name, data_value in self.position_data.items():
-            experiment.position_data.set_position_data(self.position, data_name, data_value)
+            experiment.positions.set_position_data(self.position, data_name, data_value)

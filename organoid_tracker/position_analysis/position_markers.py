@@ -62,7 +62,7 @@ def get_normalized_intensity(experiment: Experiment, position: Position) -> Opti
 
 
 def get_position_flags(experiment: Experiment) -> Iterable[str]:
-    """Gets all used position flags of the experiment. These are simply all keys in experiment.position_data with the
+    """Gets all used position flags of the experiment. These are simply all data keys in experiment.positions with the
     bool data type. In addition, the special flag `UNCERTAIN_MARKER` is always returned, as that flag is used in the
     error checker."""
     returned_uncertain_marker = False

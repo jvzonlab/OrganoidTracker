@@ -3,6 +3,7 @@ from organoid_tracker.core.experiment import Experiment
 
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.linking import cell_division_finder
 from organoid_tracker.linking.nearby_position_finder import find_closest_n_positions
@@ -31,12 +32,12 @@ def finetune_solution(experiment: Experiment, experiment_result: Experiment):
 
             if prev_position in mothers:
                 old_penalty = experiment_result.link_data.get_link_data(prev_position, position, 'link_penalty') \
-                              + experiment_result.position_data.get_position_data(prev_position, 'division_penalty')
-                new_penalty = experiment_result.position_data.get_position_data(position, 'appearance_penalty')
+                              + experiment_result.positions.get_position_data(prev_position, 'division_penalty')
+                new_penalty = experiment_result.positions.get_position_data(position, 'appearance_penalty')
             else:
                 old_penalty = experiment_result.link_data.get_link_data(prev_position, position, 'link_penalty')
-                new_penalty = experiment_result.position_data.get_position_data(position, 'appearance_penalty') \
-                              + experiment_result.position_data.get_position_data(prev_position,
+                new_penalty = experiment_result.positions.get_position_data(position, 'appearance_penalty') \
+                              + experiment_result.positions.get_position_data(prev_position,
                                                                                   'disappearance_penalty')
 
             if old_penalty > new_penalty:
@@ -47,7 +48,7 @@ def finetune_solution(experiment: Experiment, experiment_result: Experiment):
         time_point_number_to_ignore=experiment.first_time_point_number()))
 
     for position in loose_starts:
-        old_appearance_penalty = experiment_result.position_data.get_position_data(position, 'appearance_penalty')
+        old_appearance_penalty = experiment_result.positions.get_position_data(position, 'appearance_penalty')
 
         prev_positions = experiment.links.find_pasts(position)
 
@@ -62,7 +63,7 @@ def finetune_solution(experiment: Experiment, experiment_result: Experiment):
 
             for next_position in next_positions:
                 old_link_penalty = experiment.link_data.get_link_data(prev_position, next_position, 'link_penalty')
-                new_appearance_penalty = experiment_result.position_data.get_position_data(next_position,
+                new_appearance_penalty = experiment_result.positions.get_position_data(next_position,
                                                                                            'appearance_penalty')
                 penalty_diff = (-old_link_penalty - old_appearance_penalty + new_link_penalty + new_appearance_penalty)
 
@@ -72,7 +73,7 @@ def finetune_solution(experiment: Experiment, experiment_result: Experiment):
                     min_penalty_diff = penalty_diff
 
             if len(next_positions) == 0:
-                old_disappearance_penalty = experiment_result.position_data.get_position_data(prev_position,
+                old_disappearance_penalty = experiment_result.positions.get_position_data(prev_position,
                                                                                               'disappearance_penalty')
                 penalty_diff = (-old_disappearance_penalty - old_appearance_penalty + new_link_penalty)
 
@@ -93,7 +94,7 @@ def finetune_solution(experiment: Experiment, experiment_result: Experiment):
         time_point_number_to_ignore=experiment.last_time_point_number()))
 
     for position in loose_ends:
-        old_disappearance_penalty = experiment_result.position_data.get_position_data(position, 'disappearance_penalty')
+        old_disappearance_penalty = experiment_result.positions.get_position_data(position, 'disappearance_penalty')
 
         next_positions = experiment.links.find_futures(position)
 
@@ -108,7 +109,7 @@ def finetune_solution(experiment: Experiment, experiment_result: Experiment):
 
             for prev_position in prev_positions:
                 old_link_penalty = experiment.link_data.get_link_data(prev_position, next_position, 'link_penalty')
-                new_disappearance_penalty = experiment_result.position_data.get_position_data(prev_position,
+                new_disappearance_penalty = experiment_result.positions.get_position_data(prev_position,
                                                                                               'disappearance_penalty')
                 penalty_diff = (
                             -old_link_penalty - old_disappearance_penalty + new_link_penalty + new_disappearance_penalty)
@@ -119,7 +120,7 @@ def finetune_solution(experiment: Experiment, experiment_result: Experiment):
                     min_penalty_diff = penalty_diff
 
             if len(prev_positions) == 0:
-                old_appearance_penalty = experiment_result.position_data.get_position_data(next_position,
+                old_appearance_penalty = experiment_result.positions.get_position_data(next_position,
                                                                                            'appearance_penalty')
 
                 penalty_diff = (-old_appearance_penalty - old_disappearance_penalty + new_link_penalty)
@@ -140,7 +141,7 @@ def finetune_solution(experiment: Experiment, experiment_result: Experiment):
         next_positions = list(experiment_result.links.find_futures(position))
         next_possible_positions = list(experiment.links.find_futures(position))
 
-        division_penalty = experiment.position_data.get_position_data(position, 'division_penalty')
+        division_penalty = experiment.positions.get_position_data(position, 'division_penalty')
 
         # check if cell is not currently dividing
         if len(next_positions) == 1:
@@ -156,7 +157,7 @@ def finetune_solution(experiment: Experiment, experiment_result: Experiment):
                                                                           'link_penalty')
                     new_link_penalty = experiment.link_data.get_link_data(position, next_possible_position,
                                                                           'link_penalty')
-                    new_disappearance_penalty = experiment_result.position_data.get_position_data(prev_position,
+                    new_disappearance_penalty = experiment_result.positions.get_position_data(prev_position,
                                                                                                   'disappearance_penalty')
 
                     if division_penalty + new_link_penalty + new_disappearance_penalty < old_link_penalty:
@@ -167,7 +168,7 @@ def finetune_solution(experiment: Experiment, experiment_result: Experiment):
                 elif (next_possible_position not in next_positions) and (len(prev_position) == 0):
                     new_link_penalty = experiment.link_data.get_link_data(position, next_possible_position,
                                                                           'link_penalty')
-                    old_appearance_penalty = experiment_result.position_data.get_position_data(next_possible_position,
+                    old_appearance_penalty = experiment_result.positions.get_position_data(next_possible_position,
                                                                                                'appearance_penalty')
 
                     if division_penalty + new_link_penalty < old_appearance_penalty:
@@ -206,8 +207,8 @@ def finetune_solution(experiment: Experiment, experiment_result: Experiment):
                         # if we do not swap two links, but change a link anc create a disappearance + an appearance
                         else:
                             new_link_penalty2 = \
-                                experiment.position_data.get_position_data(position, 'disappearance_penalty') \
-                                + experiment.position_data.get_position_data(alternative_next_position,
+                                experiment.positions.get_position_data(position, 'disappearance_penalty') \
+                                + experiment.positions.get_position_data(alternative_next_position,
                                                                              'appearance_penalty')
                             break_track = True
 
@@ -226,7 +227,7 @@ def finetune_solution(experiment: Experiment, experiment_result: Experiment):
     mothers = cell_division_finder.find_mothers(experiment_result.links, exclude_multipolar=False)
 
     for position in mothers:
-        if experiment_result.position_data.get_position_data(position, 'division_penalty') > 2.0:
+        if experiment_result.positions.get_position_data(position, 'division_penalty') > 2.0:
 
             next_positions = list(experiment_result.links.find_futures(position))
 
@@ -302,9 +303,9 @@ def connect_loose_ends(experiment: Experiment, experiment_result: Experiment, ov
 
                     link_penalty = experiment.link_data.get_link_data(past_position, position,
                                                                       'link_penalty')
-                    disappearance_penalty = experiment.position_data.get_position_data(past_position,
+                    disappearance_penalty = experiment.positions.get_position_data(past_position,
                                                                                        'disappearance_penalty')
-                    appearance_penalty = experiment.position_data.get_position_data(position,
+                    appearance_penalty = experiment.positions.get_position_data(position,
                                                                                     'appearance_penalty')
 
                     # connect tracks and remove spurious positions
@@ -369,7 +370,7 @@ def bridge_gaps(experiment: Experiment, experiment_result: Experiment, miss_pena
 
     # if a position can be division but is not now, it can be considered a loose end as well
     for position in experiment_result.positions:
-        if (experiment_result.position_data.get_position_data(position, 'division_penalty') < 0) and (
+        if (experiment_result.positions.get_position_data(position, 'division_penalty') < 0) and (
                 len(experiment_result.links.find_futures(position)) == 1):
             loose_ends.append(position)
 
@@ -416,9 +417,9 @@ def bridge_gaps(experiment: Experiment, experiment_result: Experiment, miss_pena
 
                 # if the candidate is the best option then we can connect the tracks
                 if (position == closest_alternative) and (position not in fixed) and (neighbor not in fixed):
-                    disappearance_penalty = experiment.position_data.get_position_data(position,
+                    disappearance_penalty = experiment.positions.get_position_data(position,
                                                                                        'disappearance_penalty')
-                    appearance_penalty = experiment.position_data.get_position_data(neighbor,
+                    appearance_penalty = experiment.positions.get_position_data(neighbor,
                                                                                     'appearance_penalty')
 
                     if miss_penalty < disappearance_penalty + appearance_penalty:
@@ -435,7 +436,7 @@ def bridge_gaps(experiment: Experiment, experiment_result: Experiment, miss_pena
                                                 time_point=time_point)
 
                         experiment_result.positions.add(add_position)
-                        experiment_result.position_data.set_position_data(add_position, 'division_penalty', value=10.0)
+                        experiment_result.positions.set_position_data(add_position, 'division_penalty', value=10.0)
 
                         # add links
                         experiment_result.links.add_link(position, add_position)
@@ -443,13 +444,13 @@ def bridge_gaps(experiment: Experiment, experiment_result: Experiment, miss_pena
 
                         # create position and links in full graph
                         experiment.positions.add(add_position)
-                        experiment.position_data.set_position_data(add_position, 'division_penalty', value=10.0)
-                        experiment.position_data.set_position_data(add_position, 'division_probability', value=0)
+                        experiment.positions.set_position_data(add_position, 'division_penalty', value=10.0)
+                        experiment.positions.set_position_data(add_position, 'division_probability', value=0)
 
                         # using the position (i.e. not letting it disappear) is associated with a penalty
-                        experiment.position_data.set_position_data(add_position, 'disappearance_penalty',
+                        experiment.positions.set_position_data(add_position, 'disappearance_penalty',
                                                                    value=-miss_penalty)  # +appearance_penalty)
-                        experiment.position_data.set_position_data(add_position, 'appearance_penalty',
+                        experiment.positions.set_position_data(add_position, 'appearance_penalty',
                                                                    value=-miss_penalty)  # +appearance_penalty)
 
                         # add all possible links for later marginalization withg uniform probabilities
@@ -493,7 +494,7 @@ def bridge_gaps2(experiment: Experiment, experiment_result: Experiment, miss_pen
 
     # if a position can be division but is not now, it can be considered a loose end as well
     for position in experiment_result.positions:
-        if (experiment_result.position_data.get_position_data(position, 'division_penalty') < 0) and (
+        if (experiment_result.positions.get_position_data(position, 'division_penalty') < 0) and (
                 len(experiment_result.links.find_futures(position)) == 1):
             loose_ends.append(position)
 
@@ -532,9 +533,9 @@ def bridge_gaps2(experiment: Experiment, experiment_result: Experiment, miss_pen
 
                 # if the candidate is the best option then we can connect the tracks
                 if (position == closest_alternative) and (position not in fixed) and (neighbor not in fixed):
-                    disappearance_penalty = experiment.position_data.get_position_data(position,
+                    disappearance_penalty = experiment.positions.get_position_data(position,
                                                                                        'disappearance_penalty')
-                    appearance_penalty = experiment.position_data.get_position_data(neighbor,
+                    appearance_penalty = experiment.positions.get_position_data(neighbor,
                                                                                     'appearance_penalty')
 
                     if miss_penalty < disappearance_penalty + appearance_penalty:
@@ -573,9 +574,9 @@ def pinpoint_divisions(experiment: Experiment, experiment_result: Experiment, mi
         next_positions = list(experiment_result.links.find_futures(position))
 
         # how do the division scores of mothers and daughters compare
-        div_penalty = experiment_result.position_data.get_position_data(position, 'division_penalty')
-        div_penalty_0 = experiment_result.position_data.get_position_data(next_positions[0], 'division_penalty')
-        div_penalty_1 = experiment_result.position_data.get_position_data(next_positions[1], 'division_penalty')
+        div_penalty = experiment_result.positions.get_position_data(position, 'division_penalty')
+        div_penalty_0 = experiment_result.positions.get_position_data(next_positions[0], 'division_penalty')
+        div_penalty_1 = experiment_result.positions.get_position_data(next_positions[1], 'division_penalty')
 
         # needed?
         if div_penalty is None:
@@ -666,7 +667,7 @@ def _remove_spurs_division(experiment: Experiment, experiment_result: Experiment
 
     for position in mothers:
         daughters = list(experiment_result.links.find_futures(position))
-        division_penalty = experiment.position_data.get_position_data(position, 'division_penalty')
+        division_penalty = experiment.positions.get_position_data(position, 'division_penalty')
 
         for daughter in daughters:
 
@@ -680,12 +681,12 @@ def _remove_spurs_division(experiment: Experiment, experiment_result: Experiment
 def _remove_positions_close_to_edge(experiment: Experiment, margin_xy: int):
     image_loader = experiment.images
     links = experiment.links
-    position_data = experiment.position_data
+    positions = experiment.positions
     for time_point in experiment.time_points():
         for position in list(experiment.positions.of_time_point(time_point)):
             if not image_loader.is_inside_image(position, margin_xy=margin_xy):
                 # Remove cell, but inform neighbors first
-                _add_out_of_view_markers(links, position_data, position)
+                _add_out_of_view_markers(links, positions, position)
                 experiment.remove_position(position, update_splines=False)
 
 
@@ -706,22 +707,22 @@ def _mark_positions_going_out_of_image(experiment: Experiment):
         for position in experiment.positions.of_time_point(time_point_previous):
             # Check for positions in the previous image that fall outside the current image
             if not experiment.images.is_inside_image(position.with_time_point(time_point)):
-                linking_markers.set_track_end_marker(experiment.position_data, position, EndMarker.OUT_OF_VIEW)
+                linking_markers.set_track_end_marker(experiment.positions, position, EndMarker.OUT_OF_VIEW)
 
         for position in experiment.positions.of_time_point(time_point):
             # Check for positions in the current image that fall outside the previous image
             if not experiment.images.is_inside_image(position.with_time_point(time_point_previous)):
-                linking_markers.set_track_start_marker(experiment.position_data, position, StartMarker.GOES_INTO_VIEW)
+                linking_markers.set_track_start_marker(experiment.positions, position, StartMarker.GOES_INTO_VIEW)
 
 
-def _add_out_of_view_markers(links: Links, position_data: PositionData, position: Position):
+def _add_out_of_view_markers(links: Links, positions: PositionCollection, position: Position):
     """Adds markers to the remaining links so that it is clear why they appeared/disappeared."""
     linked_positions = links.find_links_of(position)
     for linked_position in linked_positions:
         if linked_position.time_point_number() < position.time_point_number():
-            linking_markers.set_track_end_marker(position_data, linked_position, EndMarker.OUT_OF_VIEW)
+            linking_markers.set_track_end_marker(positions, linked_position, EndMarker.OUT_OF_VIEW)
         else:
-            linking_markers.set_track_start_marker(position_data, linked_position, StartMarker.GOES_INTO_VIEW)
+            linking_markers.set_track_start_marker(positions, linked_position, StartMarker.GOES_INTO_VIEW)
 
 
 def _remove_spurs(experiment: Experiment):

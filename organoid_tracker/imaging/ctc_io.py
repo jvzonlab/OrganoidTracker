@@ -18,7 +18,6 @@ from organoid_tracker.core.links import Links
 from organoid_tracker.core.mask import Mask
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
-from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.resolution import ImageResolution
 
 
