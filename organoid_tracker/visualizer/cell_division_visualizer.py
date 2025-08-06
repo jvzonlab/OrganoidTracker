@@ -31,8 +31,7 @@ class _DeleteDivisionLinksAction(UndoableAction):
             experiment.links.remove_link(position1, position2)
 
         # Redo the error checking for the involved positions
-        cell_error_finder.find_errors_in_just_these_positions(experiment, *self._get_involved_positions())
-        cell_error_finder.find_errors_in_all_dividing_cells(experiment)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self._get_involved_positions())
 
         return f"Removed the division by removing {len(self.position_pairs)} link(s)"
 
@@ -50,8 +49,7 @@ class _DeleteDivisionLinksAction(UndoableAction):
                 experiment.link_data.set_link_data(position1, position2, data_key, data_value)
 
         # Redo the error checking for the involved positions
-        cell_error_finder.find_errors_in_just_these_positions(experiment, *self._get_involved_positions())
-        cell_error_finder.find_errors_in_all_dividing_cells(experiment)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self._get_involved_positions())
 
         return f"Restored the division by inserting {len(self.position_pairs)} link(s)"
 

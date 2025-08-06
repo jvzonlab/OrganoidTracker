@@ -169,6 +169,23 @@ def set_error_marker(positions: PositionCollection, position: Position, error: O
         positions.set_position_data(position, "error", error.value)
 
 
+def remove_error_marker(positions: PositionCollection, position: Position, error: Error):
+    """Removes an error marker if (and only if) it's currently set to the given error.
+
+    See also:
+        - set_error_marker(positions, position, None) - removes any error marker, independent of the current one
+        - suppress_error_marker(positions, position, error) - makes this position immune of the given type of error,
+          even if set_error_marker is called, it will not show up in get_error_marker. Normally used by the end-user
+          to suppress false positives.
+    """
+    error_number = positions.get_position_data(position, "error")
+    if error_number is None or error_number != error.value:
+        return  # Error is not set to the one we want removed
+
+    positions.set_position_data(position, "error", None)
+    positions.set_position_data(position, "suppressed_error", None)
+
+
 def get_position_type(positions: PositionCollection, position: Position) -> Optional[str]:
     """Deprecated - use position_markers.get_position_type"""
     warnings.warn("Use position_markers.get_position_type instead of linking_markers.get_position_type", DeprecationWarning)

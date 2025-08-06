@@ -48,7 +48,7 @@ class _InsertLinkAction(UndoableAction):
                 experiment.links.add_link(position, previous_position)
             previous_position = position
 
-        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, *self.all_positions)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.all_positions)
         return f"Inserted link between {self.all_positions[0]} and {self.all_positions[-1]}"
 
     def undo(self, experiment: Experiment):
@@ -60,8 +60,8 @@ class _InsertLinkAction(UndoableAction):
             for position in self.all_positions[1:-1]:
                 experiment.remove_position(position)
 
-        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.all_positions[0],
-                                                                                self.all_positions[-1])
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, [self.all_positions[0],
+                                                                                self.all_positions[-1]])
         return f"Removed link between {self.all_positions[0]} and {self.all_positions[-1]}"
 
 
@@ -98,8 +98,8 @@ class _InsertPositionAction(UndoableAction):
 
     def do(self, experiment: Experiment) -> str:
         self.particle.restore(experiment)
-        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.particle.position,
-                                                                                *self.particle.links)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, [self.particle.position,
+                                                                                *self.particle.links])
 
         return_value = f"Added {self.particle.position}"
         if len(self.particle.links) > 1:
@@ -111,7 +111,7 @@ class _InsertPositionAction(UndoableAction):
 
     def undo(self, experiment: Experiment) -> str:
         experiment.remove_position(self.particle.position)
-        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, *self.particle.links)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.particle.links)
         return f"Removed {self.particle.position}"
 
 
@@ -123,16 +123,18 @@ class _DeletePositionsAction(UndoableAction):
 
     def do(self, experiment: Experiment):
         experiment.remove_positions((particle.position for particle in self._snapshots))
-        for snapshot in self._snapshots:  # Check linked particles for errors
-            cell_error_finder.find_errors_in_just_these_positions(experiment, *snapshot.links)
-        cell_error_finder.find_errors_in_all_dividing_cells(experiment)
+
+        previously_linked_positions = set()
+        for snapshot in self._snapshots:
+            previously_linked_positions.update(snapshot.links)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, previously_linked_positions)
         return f"Removed {len(self._snapshots)} positions"
 
     def undo(self, experiment: Experiment):
+        restored_positions = list()
         for particle in self._snapshots:
             particle.restore(experiment)
-            cell_error_finder.find_errors_in_just_these_positions(experiment, particle.position, *particle.links)
-        cell_error_finder.find_errors_in_all_dividing_cells(experiment)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, restored_positions)
         return f"Added {len(self._snapshots)} positions"
 
 
@@ -165,7 +167,7 @@ class _MovePositionAction(UndoableAction):
             experiment.link_data.set_link_data(self.new_position, link, "link_probability", None)
 
         # Recheck errors
-        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.new_position)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, [self.new_position])
         return f"Moved {self.old_position} to {self.new_position}"
 
     def undo(self, experiment: Experiment):
@@ -173,7 +175,7 @@ class _MovePositionAction(UndoableAction):
         for link in experiment.links.find_links_of(self.old_position):
             experiment.link_data.set_link_data(self.old_position, link, "link_probability",
                                                self.old_link_probabilities.get(link))
-        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.old_position)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, [self.old_position])
         return f"Moved {self.new_position} back to {self.old_position}"
 
 
@@ -199,7 +201,7 @@ class _MoveMultiplePositionsAction(UndoableAction):
             experiment.move_position(old_position, new_position)
 
         # Recheck errors
-        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, *new_positions)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, new_positions)
         return f"Moved {len(new_positions)} position(s) by ({self.dx:01}, {self.dy:01}, {self.dz:01})"
 
     def undo(self, experiment: Experiment):
@@ -208,7 +210,7 @@ class _MoveMultiplePositionsAction(UndoableAction):
             experiment.move_position(new_position, old_position)
 
         # Recheck errors
-        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, *self.old_positions)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.old_positions)
         return f"Moved {len(new_positions)} position(s) back by ({self.dx:01}, {self.dy:01}, {self.dz:01})"
 
 
@@ -228,10 +230,10 @@ class _MarkLineageEndAction(UndoableAction):
 
     def do(self, experiment: Experiment) -> str:
         experiment.remove_positions([snapshot.position for snapshot in self.removed_position_snapshots])
-        linking_markers.set_track_end_marker(experiment.position_data, self.position, self.marker)
+        linking_markers.set_track_end_marker(experiment.positions, self.position, self.marker)
         for snapshot in self.removed_position_snapshots:  # Check linked positions for errors
             cell_error_finder.find_errors_in_just_these_positions(experiment, *snapshot.links)
-        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.position)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, [self.position])
 
         message = f"Removed the lineage end marker of {self.position}"
         if self.marker is not None:
@@ -241,11 +243,11 @@ class _MarkLineageEndAction(UndoableAction):
         return message
 
     def undo(self, experiment: Experiment):
-        linking_markers.set_track_end_marker(experiment.position_data, self.position, self.old_marker)
+        linking_markers.set_track_end_marker(experiment.positions, self.position, self.old_marker)
         for snapshot in self.removed_position_snapshots:
             snapshot.restore(experiment)
             cell_error_finder.find_errors_in_just_these_positions(experiment, snapshot.position, *snapshot.links)
-        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self.position)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, [self.position])
 
         message = f"Removed the lineage end marker again of {self.position}"
         if self.old_marker is not None:
@@ -287,10 +289,10 @@ class _SetAllAsType(UndoableAction):
         self._type = new_type
 
     def do(self, experiment: Experiment) -> str:
-        position_data = experiment.position_data
+        positions = experiment.positions
         save_name = self._type.save_name if self._type is not None else None
         for position in self._previous_position_types.keys():
-            position_markers.set_position_type(position_data, position, save_name)
+            position_markers.set_position_type(positions, position, save_name)
         position_count = len(self._previous_position_types.keys())
         if self._type is None:
             return f"Removed the type of {position_count} position(s)"
@@ -299,9 +301,9 @@ class _SetAllAsType(UndoableAction):
         return f"{position_count} positions are now of the type \"{self._type.display_name}\""
 
     def undo(self, experiment: Experiment) -> str:
-        position_data = experiment.position_data
+        positions = experiment.positions
         for position in self._previous_position_types.keys():
-            position_markers.set_position_type(position_data, position, self._previous_position_types.get(position))
+            position_markers.set_position_type(positions, position, self._previous_position_types.get(position))
         return f"Reset all positions to their previous type"
 
 
@@ -340,14 +342,14 @@ class _OverwritePositionAction(UndoableAction):
         experiment.remove_position(self._old_particle.position)
         self._new_particle.restore(experiment)
         cell_error_finder.find_errors_in_just_these_positions(experiment, *self._old_particle.links)
-        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self._new_particle.position)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, [self._new_particle.position])
         return f"Overwritten {self._old_particle.position} with {self._new_particle.position}"
 
     def undo(self, experiment: Experiment) -> str:
         experiment.remove_position(self._new_particle.position)
         self._old_particle.restore(experiment)
         cell_error_finder.find_errors_in_just_these_positions(experiment, *self._new_particle.links)
-        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self._old_particle.position)
+        cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, [self._old_particle.position])
         return f"Restored {self._old_particle.position}"
 
 
@@ -361,7 +363,7 @@ class _MarkPositionAsSomethingAction(UndoableAction):
 
     def do(self, experiment: Experiment) -> str:
         for position in self._positions:
-            experiment.position_data.set_position_data(position, self._name, True)
+            experiment.positions.set_position_data(position, self._name, True)
         if self._name == linking_markers.UNCERTAIN_MARKER:
             cell_error_finder.find_errors_in_just_these_positions(experiment, *self._positions)
         if len(self._positions) == 1:
@@ -370,7 +372,7 @@ class _MarkPositionAsSomethingAction(UndoableAction):
 
     def undo(self, experiment: Experiment) -> str:
         for position in self._positions:
-            experiment.position_data.set_position_data(position, self._name, None)
+            experiment.positions.set_position_data(position, self._name, None)
         if self._name == linking_markers.UNCERTAIN_MARKER:
             cell_error_finder.find_errors_in_just_these_positions(experiment, *self._positions)
         if len(self._positions) == 1:
@@ -407,16 +409,16 @@ class _SuppressErrorsAction(UndoableAction):
 
     def do(self, experiment: Experiment) -> str:
         for position in self._positions:
-            error = linking_markers.get_error_marker(experiment.position_data, position)
+            error = linking_markers.get_error_marker(experiment.positions, position)
             if error is not None:
-                linking_markers.suppress_error_marker(experiment.position_data, position, error)
+                linking_markers.suppress_error_marker(experiment.positions, position, error)
         if len(self._positions) == 1:
             return f"Suppressed the error of one position"
         return f"Suppressed the error of {len(self._positions)} positions"
 
     def undo(self, experiment: Experiment) -> str:
         for position in self._positions:
-            linking_markers.unsuppress_error_marker(experiment.position_data, position)
+            linking_markers.unsuppress_error_marker(experiment.positions, position)
         if len(self._positions) == 1:
             return f"Unsuppressed the error of one position"
         return f"Unsuppressed the error of {len(self._positions)} positions"
@@ -534,7 +536,7 @@ class LinkAndPositionEditor(AbstractEditor):
         return_value = str(position)
 
         data_names = list()
-        for data_name, value in self._experiment.position_data.find_all_data_of_position(position):
+        for data_name, value in self._experiment.positions.find_all_data_of_position(position):
             if _display_in_flag_list(value):
                 data_names.append("'" + data_name + "'")
         if len(data_names) > 10:
@@ -853,7 +855,7 @@ class LinkAndPositionEditor(AbstractEditor):
         experiment = self._experiment
 
         # Check if the marker is already set
-        current_marker = linking_markers.get_track_end_marker(experiment.position_data, self._selected[0])
+        current_marker = linking_markers.get_track_end_marker(experiment.positions, self._selected[0])
         if current_marker == marker:
             if marker is None:
                 self.update_status("There is no lineage ending marker here, cannot delete anything.")
@@ -886,9 +888,9 @@ class LinkAndPositionEditor(AbstractEditor):
             if flag_name is None:
                 return
 
-        position_data = self._experiment.position_data
+        positions = self._experiment.positions
         positions_that_need_changing = [selected for selected in self._selected
-                                        if bool(position_data.get_position_data(selected, flag_name)) != new_value]
+                                        if bool(positions.get_position_data(selected, flag_name)) != new_value]
         insert = " is" if len(self._selected) == 1 else "s are"
         if new_value:
             # Mark all as True
@@ -1098,13 +1100,13 @@ class LinkAndPositionEditor(AbstractEditor):
 
         image_loader = experiment.images
         links = experiment.links
-        position_data = experiment.position_data
+        positions = experiment.positions
         for time_point in experiment.time_points():
             for position in list(experiment.positions.of_time_point(time_point)):
                 if not image_loader.is_inside_image(position, margin_xy=min_distance):
                     # Remove cell, but inform neighbors first
                     snapshots_to_delete.append(FullPositionSnapshot.from_position(experiment, position))
-                    _add_out_of_view_markers(links, position_data, position)
+                    _add_out_of_view_markers(links, positions, position)
                     #experiment.remove_position(position, update_splines=False)
 
         # Perform the deletion
@@ -1239,7 +1241,7 @@ class LinkAndPositionEditor(AbstractEditor):
         positions = set()
         for selected in self._selected:
             positions.update(track_positions_finder.find_all_positions_in_track_of(self._experiment.links, selected))
-        old_position_types = position_markers.get_position_types(self._experiment.position_data, positions)
+        old_position_types = position_markers.get_position_types(self._experiment.positions, positions)
         self._perform_action(_SetAllAsType(old_position_types, position_type))
 
     def _set_position_to_type(self, position_type: Optional[Marker]):
@@ -1249,7 +1251,7 @@ class LinkAndPositionEditor(AbstractEditor):
             return
 
         positions = set(self._selected)
-        old_position_types = position_markers.get_position_types(self._experiment.position_data, positions)
+        old_position_types = position_markers.get_position_types(self._experiment.positions, positions)
         self._perform_action(_SetAllAsType(old_position_types, position_type))
 
     def _set_color_of_lineage(self):
@@ -1337,10 +1339,10 @@ class LinkAndPositionEditor(AbstractEditor):
             self.update_status("No positions selected - cannot suppress errors.")
             return
 
-        position_data = self._experiment.position_data
+        positions = self._experiment.positions
         positions_with_errors = list()
         for position in self._selected:
-            if linking_markers.get_error_marker(position_data, position) is not None:
+            if linking_markers.get_error_marker(positions, position) is not None:
                 positions_with_errors.append(position)
         self._perform_action(_SuppressErrorsAction(positions_with_errors))
 
@@ -1405,7 +1407,7 @@ class LinkAndPositionEditor(AbstractEditor):
 
     def _find_error_focus_points(self):
         focus_points = list()
-        for position, value in self._experiment.position_data.find_all_positions_with_data(
+        for position, value in self._experiment.positions.find_all_positions_with_data(
                 lineage_error_finder.ERROR_FOCUS_POINT_MARKER):
             if value > 0:
                 focus_points.append(position)
