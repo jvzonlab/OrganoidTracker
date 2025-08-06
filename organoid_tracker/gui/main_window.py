@@ -161,7 +161,7 @@ class MainWindow(Window):
 
         menu_items = {
             "File//Project-New project... [Ctrl+N]": lambda: action.new(self),
-            "File//SaveLoad-Load images... [Ctrl+I]": lambda: action.load_images(self),
+            "File//SaveLoad-Load images...": lambda: action.load_images(self),
             "File//SaveLoad-Load tracking data... [Ctrl+O]": lambda: action.load_tracking_data(self),
             "File//SaveLoad-Save tracking data [Ctrl+S]": lambda: action.save_tracking_data(self),
             "File//SaveLoad-Save tracking data as... [Ctrl+Shift+S]": lambda: action.save_tracking_data(self, force_save_as=True),
