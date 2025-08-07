@@ -190,7 +190,7 @@ class AbstractImageVisualizer(Visualizer):
             offset = self._experiment.images.offsets.of_time_point(self._time_point)
             extent = (offset.x, offset.x + self._image_slice_2d.shape[1],
                       offset.y + self._image_slice_2d.shape[0], offset.y)
-            self._ax.imshow(self._image_slice_2d, cmap=self._get_color_map(), extent=extent, interpolation="nearest")
+            self._ax.imshow(self._image_slice_2d, cmap=self._get_color_map(), extent=extent, interpolation="none", interpolation_stage="data")
             self._ax.set_aspect("equal", adjustable="datalim")
 
     def _draw_legend(self):
