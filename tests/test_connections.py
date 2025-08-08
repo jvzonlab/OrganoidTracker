@@ -74,20 +74,20 @@ class TestConnections(unittest.TestCase):
         pos_b = Position(1, 3, 4, time_point_number=3)
 
         # Check if there's no data yet (should always return None for non-existing connections)
-        self.assertIsNone(connections.get_data_of_connection(pos_a, pos_b, "test_key"))
+        self.assertIsNone(connections.get_connection_data(pos_a, pos_b, "test_key"))
         # Now add the connection (without any data)
         connections.add_connection(pos_a, pos_b)
         # Check if it still returns None (we didn't add any data yet)
-        self.assertIsNone(connections.get_data_of_connection(pos_a, pos_b, "test_key"))
+        self.assertIsNone(connections.get_connection_data(pos_a, pos_b, "test_key"))
         # Now set some data, and check
-        connections.set_data_of_connection(pos_a, pos_b, "test_key", "test_value")
-        self.assertEqual("test_value", connections.get_data_of_connection(pos_a, pos_b, "test_key"))
+        connections.set_connection_data(pos_a, pos_b, "test_key", "test_value")
+        self.assertEqual("test_value", connections.get_connection_data(pos_a, pos_b, "test_key"))
         # Test if it still works if we swap the arguments pos_a and pos_b
-        self.assertEqual("test_value", connections.get_data_of_connection(pos_b, pos_a, "test_key"))
+        self.assertEqual("test_value", connections.get_connection_data(pos_b, pos_a, "test_key"))
 
         # Check metadata keys
         self.assertEqual({"test_key"}, connections.find_all_data_names())
 
         # Remove the data, and check again
-        connections.set_data_of_connection(pos_b, pos_a, "test_key", None)
+        connections.set_connection_data(pos_b, pos_a, "test_key", None)
         self.assertEqual(set(), connections.find_all_data_names())

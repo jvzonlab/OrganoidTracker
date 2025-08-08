@@ -76,8 +76,8 @@ experiment.connections.add_connection(pos1, pos2)
 experiment.connections.remove_connection(pos1, pos2)
 experiment.connections.contains_connection(pos1, pos2)
 experiment.connections.to_networkx_graph(time_point)
-experiment.connections.get_data_of_connection(pos1, pos2, "data_key")
-experiment.connections.set_data_of_connection(pos1, pos2, "data_key", "data value")
+experiment.connections.get_connection_data(pos1, pos2, "data_key")
+experiment.connections.set_connection_data(pos1, pos2, "data_key", "data value")
 ```
 
 # Images
