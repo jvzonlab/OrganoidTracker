@@ -211,7 +211,7 @@ class Connections:
             del self._by_time_point[time_point_number]
         return True
 
-    def set_data_of_connection(self, position1: Position, position2: Position, key: str, value: Optional[DataType]):
+    def set_connection_data(self, position1: Position, position2: Position, key: str, value: Optional[DataType]):
         """Sets the data of a connection. If the connection does not exist, this method does nothing. To delete
         the metadata, set the value to None."""
         by_time_point = self._by_time_point.get(position1.time_point_number())
@@ -219,7 +219,7 @@ class Connections:
             return
         by_time_point.set_data_of_connection(position1, position2, key, value)
 
-    def get_data_of_connection(self, position1: Position, position2: Position, key: str) -> Optional[DataType]:
+    def get_connection_data(self, position1: Position, position2: Position, key: str) -> Optional[DataType]:
         """Gets the metadata of the connection with the given key. If the connection does not exist, or if the
         connection does not have data for this type, None is returned."""
         by_time_point = self._by_time_point.get(position1.time_point_number())
