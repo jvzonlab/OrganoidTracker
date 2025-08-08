@@ -1,11 +1,11 @@
-# API reference
+# API cookbook
 [← Back to main page](index.md)
 
 OrganoidTracker contains many functions for working with experimental data. Those functions should make it possible to plot useful information. You can use these functions from standalone Python scripts, from [plugins](PLUGIN_TUTORIAL.md) or from [Jupyter Notebooks](JUPYTER_NOTEBOOK.md).
 
 Note: any method, function and field that has a name starting with an underscore (`_`) should not be used by external code. Ask if there is an alternative way to do it.
 
-Note: for a complete overview of all methods and properties in the `Experiment` object, use the `Help -> Show data inspector...` menu option. To view a (daunting) overview of all classes and methods in OrganoidTracker, run `pydoc -b` from the command line, while you are in the OrganoidTracker folder and in the OrganoidTracker conda environment.
+This page is written like a cookbook, with a list of questions and then example code. There's also a document [that explains the data structure](DATA_STRUCTURE.md) of the `Experiment` object, which is the main data structure in OrganoidTracker. You can also inspect this object from the GUI, using the `Help -> Show data inspector...` menu option.
 
 ### How do I save and load tracking data?
 

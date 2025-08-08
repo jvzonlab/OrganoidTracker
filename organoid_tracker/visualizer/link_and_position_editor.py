@@ -9,8 +9,7 @@ from organoid_tracker.core import Color, UserError, TimePoint
 from organoid_tracker.core.connections import Connections
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.full_position_snapshot import FullPositionSnapshot
-from organoid_tracker.core.link_data import LinkData
-from organoid_tracker.core.links import LinkingTrack
+from organoid_tracker.core.links import LinkingTrack, Links
 from organoid_tracker.core.marker import Marker
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.resolution import ImageResolution
@@ -69,11 +68,11 @@ class _DeleteLinksAction(UndoableAction):
     """Inserts multiple links. Will not interpolate any positions."""
     position_pairs: List[Tuple[Position, Position, Dict[str, DataType]]]
 
-    def __init__(self, link_data: LinkData, position_pairs: List[Tuple[Position, Position]]):
+    def __init__(self, links: Links, position_pairs: List[Tuple[Position, Position]]):
         self.position_pairs = list()
         for position_a, position_b in position_pairs:
             self.position_pairs.append((position_a, position_b,
-                                        dict(link_data.find_all_data_of_link(position_a, position_b))))
+                                        dict(links.find_all_data_of_link(position_a, position_b))))
 
     def do(self, experiment: Experiment) -> str:
         for position1, position2, data in self.position_pairs:
@@ -84,7 +83,7 @@ class _DeleteLinksAction(UndoableAction):
         for position1, position2, data in self.position_pairs:
             experiment.links.add_link(position1, position2)
             for data_key, data_value in data.items():
-                experiment.link_data.set_link_data(position1, position2, data_key, data_value)
+                experiment.links.set_link_data(position1, position2, data_key, data_value)
         return f"Inserted {len(self.position_pairs)} links"
 
 
@@ -156,7 +155,7 @@ class _MovePositionAction(UndoableAction):
         # Collect old link probabilities (for the undo functionality)
         self.old_link_probabilities = dict()
         for link in experiment.links.find_links_of(self.old_position):
-            self.old_link_probabilities[link] = experiment.link_data.get_link_data(self.old_position, link,
+            self.old_link_probabilities[link] = experiment.links.get_link_data(self.old_position, link,
                                                                                    "link_probability")
 
     def do(self, experiment: Experiment):
@@ -164,7 +163,7 @@ class _MovePositionAction(UndoableAction):
 
         # Remove link probability, as it's no longer correct
         for link in experiment.links.find_links_of(self.new_position):
-            experiment.link_data.set_link_data(self.new_position, link, "link_probability", None)
+            experiment.links.set_link_data(self.new_position, link, "link_probability", None)
 
         # Recheck errors
         cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, [self.new_position])
@@ -173,7 +172,7 @@ class _MovePositionAction(UndoableAction):
     def undo(self, experiment: Experiment):
         experiment.move_position(self.new_position, self.old_position)
         for link in experiment.links.find_links_of(self.old_position):
-            experiment.link_data.set_link_data(self.old_position, link, "link_probability",
+            experiment.links.set_link_data(self.old_position, link, "link_probability",
                                                self.old_link_probabilities.get(link))
         cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, [self.old_position])
         return f"Moved {self.new_position} back to {self.old_position}"
@@ -1035,11 +1034,11 @@ class LinkAndPositionEditor(AbstractEditor):
             return  # Cancelled
         cutoff_fraction = cutoff / 100
         to_remove = list()
-        link_data = self._experiment.link_data
-        for (position_a, position_b), value in link_data.find_all_links_with_data("marginal_probability"):
+        links = self._experiment.links
+        for (position_a, position_b), value in links.find_all_links_with_data("marginal_probability"):
             if value < cutoff_fraction:
                 to_remove.append((position_a, position_b))
-        self._perform_action(_DeleteLinksAction(link_data, to_remove))
+        self._perform_action(_DeleteLinksAction(links, to_remove))
 
     def _delete_tracks_with_errors(self):
         """Deletes all lineages where at least a single error was present."""

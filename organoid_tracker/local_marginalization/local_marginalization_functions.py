@@ -15,10 +15,10 @@ def minimal_marginalization(position1, position2, experiment, scale=1):
     marginal = 10 ** ((-experiment.positions.get_position_data(position2, data_name='appearance_penalty'))*scale)
 
     for previous_pos in possible_previous:
-        marginal = marginal + 10 ** ((-experiment.link_data.get_link_data(previous_pos, position2, data_name='link_penalty'))*scale)
+        marginal = marginal + 10 ** ((-experiment.links.get_link_data(previous_pos, position2, data_name='link_penalty'))*scale)
 
     # actual marginalization
-    return (10 ** ((-experiment.link_data.get_link_data(position1, position2, data_name='link_penalty'))*scale)) / marginal
+    return (10 ** ((-experiment.links.get_link_data(position1, position2, data_name='link_penalty'))*scale)) / marginal
 
 
 def find_local_set(previous_pos, current_pos, links, steps=2, first_backward=True):
@@ -95,7 +95,7 @@ def get_flows_and_energies(previous_pos, current_pos, local_links, experiment, i
 
     # add link energies and flows
     for link in local_links:
-        energies.append(experiment.link_data.get_link_data(link[0], link[1], data_name='link_penalty'))
+        energies.append(experiment.links.get_link_data(link[0], link[1], data_name='link_penalty'))
         links_out.append(key_dict[link[0]])
         links_in.append(key_dict[link[1]])
         flow.append(1)
@@ -109,7 +109,7 @@ def get_flows_and_energies(previous_pos, current_pos, local_links, experiment, i
 
             outside_energies = []
             for future in outside_futures:
-                outside_energies.append(experiment.link_data.get_link_data(pos, future, data_name='link_penalty'))
+                outside_energies.append(experiment.links.get_link_data(pos, future, data_name='link_penalty'))
 
             outside_energies.append(experiment.positions.get_position_data(pos, data_name='disappearance_penalty'))
 
@@ -156,7 +156,7 @@ def get_flows_and_energies(previous_pos, current_pos, local_links, experiment, i
 
             outside_energies = []
             for future in outside_futures:
-                outside_energies.append(experiment.link_data.get_link_data(pos, future, data_name='link_penalty'))
+                outside_energies.append(experiment.links.get_link_data(pos, future, data_name='link_penalty'))
 
             outside_energies.append(experiment.positions.get_position_data(pos, data_name='disappearance_penalty'))
 

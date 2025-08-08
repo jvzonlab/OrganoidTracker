@@ -6,8 +6,7 @@ import os
 
 from organoid_tracker.config import ConfigFile, config_type_int, config_type_float
 from organoid_tracker.imaging import io, list_io
-from organoid_tracker.image_loading import general_image_loader
-from organoid_tracker.linking import dpct_linker, cell_division_finder
+from organoid_tracker.linking import dpct_linker
 from organoid_tracker.linking.dpct_linker import calculate_appearance_penalty
 from organoid_tracker.linking_analysis import cell_error_finder
 from organoid_tracker.linking_analysis.links_postprocessor import postprocess, finetune_solution, connect_loose_ends, \
@@ -81,7 +80,7 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
 
     print("Deciding on what links to use...")
     link_result, naive_links = dpct_linker.run(experiment.positions, possible_links,
-                                               link_data=experiment.link_data, link_weight=_link_weight,
+                                               link_weight=_link_weight,
                                                detection_weight=_detection_weight, division_weight=_division_weight,
                                                appearance_weight=_appearance_weight,
                                                dissappearance_weight=_disappearance_weight, method=_method)

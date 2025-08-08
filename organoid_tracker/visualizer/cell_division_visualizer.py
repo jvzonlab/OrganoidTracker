@@ -5,12 +5,12 @@ from matplotlib.backend_bases import KeyEvent
 
 from organoid_tracker.core import UserError
 from organoid_tracker.core.experiment import Experiment
-from organoid_tracker.core.link_data import LinkData
+from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.core.typing import DataType
 from organoid_tracker.gui.undo_redo import UndoableAction
-from organoid_tracker.gui.window import Window, DisplaySettings
+from organoid_tracker.gui.window import Window
 from organoid_tracker.linking import cell_division_finder
 from organoid_tracker.linking_analysis import cell_error_finder
 from organoid_tracker.visualizer.position_list_visualizer import PositionListVisualizer
@@ -20,11 +20,11 @@ class _DeleteDivisionLinksAction(UndoableAction):
     """Inserts multiple links. Will not interpolate any positions."""
     position_pairs: List[Tuple[Position, Position, Dict[str, DataType]]]
 
-    def __init__(self, link_data: LinkData, position_pairs: List[Tuple[Position, Position]]):
+    def __init__(self, links: Links, position_pairs: List[Tuple[Position, Position]]):
         self.position_pairs = list()
         for position_a, position_b in position_pairs:
             self.position_pairs.append((position_a, position_b,
-                                        dict(link_data.find_all_data_of_link(position_a, position_b))))
+                                        dict(links.find_all_data_of_link(position_a, position_b))))
 
     def do(self, experiment: Experiment) -> str:
         for position1, position2, data in self.position_pairs:
@@ -46,7 +46,7 @@ class _DeleteDivisionLinksAction(UndoableAction):
         for position1, position2, data in self.position_pairs:
             experiment.links.add_link(position1, position2)
             for data_key, data_value in data.items():
-                experiment.link_data.set_link_data(position1, position2, data_key, data_value)
+                experiment.links.set_link_data(position1, position2, data_key, data_value)
 
         # Redo the error checking for the involved positions
         cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells(experiment, self._get_involved_positions())
@@ -118,7 +118,7 @@ class CellDivisionVisualizer(PositionListVisualizer):
         for daughter in daughters:
             if daughter != closest_daughter:
                 position_pairs_to_remove.append((position, daughter))
-        action = _DeleteDivisionLinksAction(self._experiment.link_data, position_pairs_to_remove)
+        action = _DeleteDivisionLinksAction(self._experiment.links, position_pairs_to_remove)
         self._window.get_undo_redo().do(action, self._experiment)
 
         # Update the position list to remove the mother position

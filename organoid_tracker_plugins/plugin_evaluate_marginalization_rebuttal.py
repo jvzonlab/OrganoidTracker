@@ -183,7 +183,7 @@ def main(args: List[str]) -> int:
 
             for position1 in config.link_scores_experiment.positions.of_time_point(time_point):
                 for position2 in config.link_scores_experiment.links.find_pasts(position1):
-                    link_probability = config.link_scores_experiment.link_data.get_link_data(position1, position2, "link_probability")
+                    link_probability = config.link_scores_experiment.links.get_link_data(position1, position2, "link_probability")
                     if link_probability is None:
                         print(position1)
                         print(position2)
@@ -225,18 +225,18 @@ def main(args: List[str]) -> int:
                         marginal_chance_minimal = minimal_marginalization(position1, position2,
                                                                           config.link_scores_experiment, scale=0.77)
 
-                    config.link_scores_experiment.link_data.set_link_data(position1, position2,
-                                                                          data_name="marginal_probability",
-                                                                          value=float(marginal_chance))
-                    config.link_scores_experiment.link_data.set_link_data(position1, position2,
-                                                                          data_name="marginal_probability_minimal",
-                                                                          value=float(marginal_chance_minimal))
-                    config.link_scores_experiment.link_data.set_link_data(position1, position2,
-                                                                          data_name="marginal_probability_extra",
-                                                                          value=float(marginal_chance))
-                    config.link_scores_experiment.link_data.set_link_data(position1, position2,
-                                                                          data_name="true_link",
-                                                                          value=bool(is_correct))
+                    config.link_scores_experiment.links.set_link_data(position1, position2,
+                                                                      data_name="marginal_probability",
+                                                                      value=float(marginal_chance))
+                    config.link_scores_experiment.links.set_link_data(position1, position2,
+                                                                      data_name="marginal_probability_minimal",
+                                                                      value=float(marginal_chance_minimal))
+                    config.link_scores_experiment.links.set_link_data(position1, position2,
+                                                                      data_name="marginal_probability_extra",
+                                                                      value=float(marginal_chance))
+                    config.link_scores_experiment.links.set_link_data(position1, position2,
+                                                                      data_name="true_link",
+                                                                      value=bool(is_correct))
 
                     csv_writer.writerow((is_predicted, is_correct, link_probability, marginal_chance,
                                          marginal_chance_minimal, marginal_chance_extra,  position1.x, position1.y,
@@ -249,7 +249,7 @@ def main(args: List[str]) -> int:
 
         for position1 in config.scratch_experiment.positions:
             for position2 in config.scratch_experiment.links.find_pasts(position1):
-                marginal_probability = config.link_scores_experiment.link_data.get_link_data(position1, position2,
+                marginal_probability = config.link_scores_experiment.links.get_link_data(position1, position2,
                                                                                          "marginal_probability")
                 if marginal_probability is None:
                     print(position1)

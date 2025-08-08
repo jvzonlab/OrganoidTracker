@@ -266,8 +266,7 @@ def _parse_d3_links_format(experiment: Experiment, links_json: Dict[str, Any], m
     """Parses a node_link_graph and adds all links and positions to the experiment."""
     links = experiment.links
     positions = experiment.positions
-    link_data = experiment.link_data
-    _add_d3_data(links, link_data, positions, links_json, min_time_point, max_time_point)
+    _add_d3_data(links, positions, links_json, min_time_point, max_time_point)
     positions = experiment.positions
     for position in links.find_all_positions():
         positions.add(position)
@@ -294,7 +293,6 @@ def _parse_positions_and_meta_format(experiment: Experiment, positions_json: Lis
 def _parse_tracks_and_meta_format(experiment: Experiment, tracks_json: List[Dict], min_time_point: int,
                                   max_time_point: int):
     links = experiment.links
-    link_data = experiment.link_data
 
     # Iterate a first time to add the tracks
     for track_json in tracks_json:
@@ -321,7 +319,7 @@ def _parse_tracks_and_meta_format(experiment: Experiment, tracks_json: List[Dict
                     if value is None:
                         continue
 
-                    link_data.set_link_data(positions_of_track[i - min_index], positions_of_track[i - min_index + 1], metadata_key, value)
+                    links.set_link_data(positions_of_track[i - min_index], positions_of_track[i - min_index + 1], metadata_key, value)
 
         # Handle lineage metadata
         if "lineage_meta" in track_json:
@@ -355,7 +353,7 @@ def _parse_tracks_and_meta_format(experiment: Experiment, tracks_json: List[Dict
                     value = metadata_values[i]
                     if value is None:
                         continue
-                    link_data.set_link_data(position_previous_track, position_first, metadata_key, value)
+                    links.set_link_data(position_previous_track, position_first, metadata_key, value)
 
 
 def _parse_splines_format(experiment: Experiment, splines_data: List[Dict], min_time_point: int, max_time_point: int):
@@ -471,7 +469,7 @@ def _parse_position(json_structure: Dict[str, Any]) -> Position:
     return Position(json_structure["x"], json_structure["y"], json_structure["z"])
 
 
-def _add_d3_data(links: Links, link_data: LinkData, positions: PositionCollection, links_json: Dict,
+def _add_d3_data(links: Links, positions: PositionCollection, links_json: Dict,
                  min_time_point: int = -100000, max_time_point: int = 100000):
     """Adds data in the D3.js node-link format. Used for deserialization."""
 
@@ -506,10 +504,10 @@ def _add_d3_data(links: Links, link_data: LinkData, positions: PositionCollectio
                 links.set_lineage_data(links.get_track(source), data_key[len("__lineage_"):], data_value)
             elif data_key != "source" and data_key != "target":
                 # Link metadata, store it
-                link_data.set_link_data(source, target, data_key, data_value)
+                links.set_link_data(source, target, data_key, data_value)
 
 
-def _links_to_d3_data(links: Links, positions: PositionCollection, link_data: LinkData) -> Dict:
+def _links_to_d3_data(links: Links, positions: PositionCollection) -> Dict:
     """Return data in D3.js node-link format that is suitable for JSON serialization
     and use in Javascript documents."""
     links.sort_tracks_by_x()  # Make sure tracks are always saved in the correct order
@@ -539,7 +537,7 @@ def _links_to_d3_data(links: Links, positions: PositionCollection, link_data: Li
             # Start of a lineage, so add lineage data
             for data_name, data_value in links.find_all_data_of_lineage(links.get_track(source)):
                 edge["__lineage_" + data_name] = data_value
-        for data_name, data_value in link_data.find_all_data_of_link(source, target):
+        for data_name, data_value in links.find_all_data_of_link(source, target):
             edge[data_name] = data_value
         edges.append(edge)
 
@@ -733,7 +731,7 @@ def _encode_positions_and_meta(positions: PositionCollection) -> List[Dict]:
     return time_points_json
 
 
-def _encode_tracks_and_meta(links: Links, link_data: LinkData) -> List[Dict]:
+def _encode_tracks_and_meta(links: Links) -> List[Dict]:
     tracks_json = list()
     for track in links.find_all_tracks():
         # Collect last positions of previous tracks, for connecting tracks
@@ -745,7 +743,7 @@ def _encode_tracks_and_meta(links: Links, link_data: LinkData) -> List[Dict]:
             last_position = previous_track.find_last_position()
 
             # Add metadata to the metadata lists
-            for data_name, data_value in link_data.find_all_data_of_link(last_position, first_position):
+            for data_name, data_value in links.find_all_data_of_link(last_position, first_position):
                 # This data value was not yet found in the connections to the previous tracks
                 # Set it to None for all previous positions
                 if data_name not in link_meta_before:
@@ -768,7 +766,7 @@ def _encode_tracks_and_meta(links: Links, link_data: LinkData) -> List[Dict]:
         for position in track.positions():
             if previous_position is not None:
                 # Add metadata in between current and previous position to the metadata lists
-                for data_name, data_value in link_data.find_all_data_of_link(previous_position, position):
+                for data_name, data_value in links.find_all_data_of_link(previous_position, position):
                     # This data value was not yet found in the connections to the previous tracks
                     # Set it to None for all previous positions
                     if data_name not in link_meta:
@@ -820,7 +818,7 @@ def save_data_to_json(experiment: Experiment, json_file_name: str, *, write_new_
 
         # Save tracks
         if experiment.links.has_links():
-            save_data["tracks"] = _encode_tracks_and_meta(experiment.links, experiment.link_data)
+            save_data["tracks"] = _encode_tracks_and_meta(experiment.links)
     else:
         save_data = {"version": "v1"}
 
@@ -830,8 +828,7 @@ def save_data_to_json(experiment: Experiment, json_file_name: str, *, write_new_
 
         # Save links
         if experiment.links.has_links() or experiment.positions.has_position_data():
-            save_data["links"] = _links_to_d3_data(experiment.links, experiment.positions,
-                                                   experiment.link_data)
+            save_data["links"] = _links_to_d3_data(experiment.links, experiment.positions)
 
     # Save name
     if experiment.name.has_name():

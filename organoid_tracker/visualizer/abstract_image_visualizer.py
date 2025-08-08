@@ -485,7 +485,7 @@ class AbstractImageVisualizer(Visualizer):
         self._ax.scatter(x=points_x, y=points_y, marker=marker, facecolors=color,
                          linewidths=2, edgecolors="black", s=points_size)
 
-    def _get_position_at(self, x: Optional[int], y: Optional[int]) -> Optional[Position]:
+    def _get_position_at(self, x: Optional[float], y: Optional[float]) -> Optional[Position]:
         """Wrapper of get_closest_position that makes use of the fact that we can lookup all positions ourselves."""
         min_z = self._z - self.MAX_Z_DISTANCE
         max_z = self._z + self.MAX_Z_DISTANCE

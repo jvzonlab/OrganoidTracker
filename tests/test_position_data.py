@@ -11,6 +11,7 @@ class TestPositionData(unittest.TestCase):
     def test_write_through(self):
         experiment = Experiment()
         position = Position(1, 2, 3, time_point_number=4)
+        experiment.positions.add(position)
 
         # Test setting using the new API, retrieving using the old API
         experiment.positions.set_position_data(position, "via_new_api", "test_value")

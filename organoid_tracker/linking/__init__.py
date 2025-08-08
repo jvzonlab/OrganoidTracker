@@ -22,8 +22,7 @@ The more complex linker is the dpct linker:
 >>> # for all positions.
 >>> # and must contain link_data for 'link_penalty' for all potential links
 >>> experiment.links = dpct_linker.run(experiment.positions, all_potential_links,
->>>            experiment.link_data, link_weight=1, detection_weigh=1, division_weight=1, appearance_weight=1,
->>>            dissappearance_weight=1)
+>>>            link_weight=1, detection_weigh=1, division_weight=1, appearance_weight=1, dissappearance_weight=1)
 
 
 """

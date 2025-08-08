@@ -25,7 +25,7 @@ def color_error_rates(time_point_number: int, track: LinkingTrack, experiment: E
     current_position = position
 
     for prev_position in prev_positions:
-        marginal = (experiment.link_data.get_link_data(prev_position, current_position,
+        marginal = (experiment.links.get_link_data(prev_position, current_position,
                                                        "marginal_probability"))
         if marginal is not None:
             marginals.append(marginal)
@@ -35,7 +35,7 @@ def color_error_rates(time_point_number: int, track: LinkingTrack, experiment: E
     current_position = position
 
     for next_position in future_positions:
-        marginal = (experiment.link_data.get_link_data(current_position, next_position,
+        marginal = (experiment.links.get_link_data(current_position, next_position,
                                                        "marginal_probability"))
         if marginal is not None:
             marginals.append(marginal)
@@ -75,7 +75,7 @@ def compute_lineage_error_probability(track: LinkingTrack, experiment: Experimen
         for pos in track.positions():
             prev_pos = experiment.links.find_single_past(pos)
             if prev_pos is not None:
-                marginal_probability = experiment.link_data.get_link_data(prev_pos, pos, 'marginal_probability')
+                marginal_probability = experiment.links.get_link_data(prev_pos, pos, 'marginal_probability')
                 error = experiment.positions.get_position_data(pos, 'error') == 14
                 suppressed_error = experiment.positions.get_position_data(pos, 'suppressed_error') == 14
                 if marginal_probability is not None:
@@ -96,7 +96,7 @@ def compute_track_error_probability(track: LinkingTrack, experiment: Experiment)
 
         prev_pos = experiment.links.find_single_past(pos)
         if prev_pos is not None:
-            marginal_probability = experiment.link_data.get_link_data(prev_pos, pos, 'marginal_probability')
+            marginal_probability = experiment.links.get_link_data(prev_pos, pos, 'marginal_probability')
             error = experiment.positions.get_position_data(pos, 'error') == low_link_score_error
             suppressed_error = experiment.positions.get_position_data(pos, 'suppressed_error') == low_link_score_error
             if marginal_probability is not None:

@@ -15,6 +15,10 @@ class TestIntensityCalculator(unittest.TestCase):
 
         experiment = Experiment()
         positions = experiment.positions
+        positions.add(position_1)
+        positions.add(position_2)
+        positions.add(position_3)
+
         positions.set_position_data(position_1, "intensity", 8)
         positions.set_position_data(position_2, "intensity", 10)
         positions.set_position_data(position_3, "intensity", 12)

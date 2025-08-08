@@ -39,7 +39,6 @@ def _calculate_error(experiment: Experiment, position: Position) -> Optional[Err
     Note: ignores experiment.warning_limits.excluded_errors.
     """
     links = experiment.links
-    link_data = experiment.link_data
     positions = experiment.positions
     resolution = experiment.images.resolution()
     warning_limits = experiment.warning_limits
@@ -91,7 +90,7 @@ def _calculate_error(experiment: Experiment, position: Position) -> Optional[Err
         # So len(past_positions) == 1
         past_position = past_positions.pop()
 
-        marginal_link_probability = link_data.get_link_data(past_position, position, data_name="marginal_probability")
+        marginal_link_probability = links.get_link_data(past_position, position, data_name="marginal_probability")
         if marginal_link_probability is not None:
             # Check marginalized link probability
             if marginal_link_probability < warning_limits.min_marginal_probability\
@@ -105,7 +104,7 @@ def _calculate_error(experiment: Experiment, position: Position) -> Optional[Err
                     return Error.MOVED_TOO_FAST
 
             # Check link probability
-            link_probability = link_data.get_link_data(position, past_position, data_name="link_probability")
+            link_probability = links.get_link_data(position, past_position, data_name="link_probability")
             if link_probability is not None and link_probability < warning_limits.min_probability\
                     and linking_markers.is_live(positions, position):
                 return Error.LOW_LINK_SCORE

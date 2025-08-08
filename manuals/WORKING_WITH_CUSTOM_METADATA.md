@@ -267,8 +267,8 @@ experiment = Experiment()
 position_1 = Position(0, 0, 0, time_point_number=0)
 position_2 = Position(0, 0, 0, time_point_number=1)
 
-value = experiment.link_data.get_link_data(position_1, position_2, "key")
-experiment.link_data.set_link_data(position_1, position_2, "key", "value")
+value = experiment.links.get_link_data(position_1, position_2, "key")
+experiment.links.set_link_data(position_1, position_2, "key", "value")
 ```
 
 Allowed data types are the same as for other metadata.

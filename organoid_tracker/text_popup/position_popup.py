@@ -48,7 +48,7 @@ class PositionPopup(RichTextPopup):
         for i, position in enumerate(experiment.links.find_links_of(self._position)):
             text += f"* Towards {position} [View](goto {position.x} {position.y} {position.z} {position.time_point_number()})  \n"
 
-            link_data = dict(experiment.link_data.find_all_data_of_link(self._position, position))
+            link_data = dict(experiment.links.find_all_data_of_link(self._position, position))
             if len(link_data) > 0:
                 text += f"  \n  Link metadata: `{link_data}`\n\n"
         if len(experiment.links.find_links_of(self._position)) == 0:

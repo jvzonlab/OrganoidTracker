@@ -125,10 +125,10 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
             scaled_prediction = (10**likelihood) / (1 + 10**likelihood)
 
             # add division prediction to the data
-            experiment.position_data.set_position_data(position, data_name="division_probability", value=float(scaled_prediction))
+            experiment.positions.set_position_data(position, data_name="division_probability", value=float(scaled_prediction))
             # add division penalty (log-likelihood) to the data
             eps = 10 ** -10
-            experiment.position_data.set_position_data(position, data_name="division_penalty", value=float(-likelihood))
+            experiment.positions.set_position_data(position, data_name="division_penalty", value=float(-likelihood))
 
     # Remove oversegmentation for dividing cells by setting a minimal distance for dividing cells
     to_remove = []
@@ -137,14 +137,14 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
     for position in experiment.positions:
 
         # check if cell is dividing
-        if experiment.position_data.get_position_data(position, data_name="division_probability") > 0.5:
+        if experiment.positions.get_position_data(position, data_name="division_probability") > 0.5:
 
             # find 6 closest neighbors
             neighbors = find_closest_n_positions(experiment.positions.of_time_point(position.time_point()), around = position, max_amount=6, resolution=experiment.images.resolution())
             for neighbor in neighbors:
 
                 # check if neighbor is also dividing and if the neighbor is within the range
-                if experiment.position_data.get_position_data(neighbor, data_name="division_probability") > 0.5:
+                if experiment.positions.get_position_data(neighbor, data_name="division_probability") > 0.5:
                     detection_range = 1.5*_min_distance_dividing
                 else:
                     detection_range = _min_distance_dividing
@@ -159,15 +159,15 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
                                                 time_point=position.time_point())
                         to_add.append(add_position)
 
-                        experiment.position_data.set_position_data(add_position, 'division_probability',
-                                                                   max(experiment.position_data.get_position_data(
+                        experiment.positions.set_position_data(add_position, 'division_probability',
+                                                                   max(experiment.positions.get_position_data(
                                                                        position, data_name="division_probability"),
-                                                                       experiment.position_data.get_position_data(
+                                                                       experiment.positions.get_position_data(
                                                                            neighbor, data_name="division_probability")))
-                        experiment.position_data.set_position_data(add_position, 'division_penalty',
-                                                                   min(experiment.position_data.get_position_data(
+                        experiment.positions.set_position_data(add_position, 'division_penalty',
+                                                                   min(experiment.positions.get_position_data(
                                                                        position, data_name="division_penalty"),
-                                                                       experiment.position_data.get_position_data(
+                                                                       experiment.positions.get_position_data(
                                                                            neighbor, data_name="division_penalty")))
                         # print(position)
 

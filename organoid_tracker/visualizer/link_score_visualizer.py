@@ -57,7 +57,7 @@ class LinkScoreVisualizer(ExitableImageVisualizer):
             line = (position1.x, position1.y), (position2.x, position2.y)
             lines.append(line)
 
-            link_score = self._experiment.link_data.get_link_data(position1, position2, "link_penalty")
+            link_score = self._experiment.links.get_link_data(position1, position2, "link_penalty")
             if link_score is None:
                 link_score = 0
             color = _link_score_to_color(link_score)

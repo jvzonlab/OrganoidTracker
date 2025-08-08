@@ -1,5 +1,5 @@
 import warnings
-from typing import Optional, Dict, Iterable, List, Set, Tuple, Any
+from typing import Optional, Dict, Iterable, List, Set, Tuple, Any, ItemsView
 
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.position import Position
@@ -7,6 +7,22 @@ from organoid_tracker.core.typing import DataType
 
 
 class LinkingTrack:
+    """A trajectory of a single cell. In a lineage tree, a linking track would be a single vertical line. The track can
+    connect to two or more daughter tracks (`self.get_next_tracks()`). If the cell dies, goes out of the image, or
+    if the time-lapse ends, the track will not have any next tracks.
+
+    `self.get_previous_tracks()` is the inverse of `self.get_next_tracks()`. In case of a cell division, it will return
+    one track, the track of the parent cell. If the cell is the first cell in the lineage, it will return an empty
+    set.
+
+    The data structure is quite flexible, cell merges are allowed, and divisions with more than two daughter cells too.
+    In those cases, the assumption of cells having zero or one parents, and zero or two children, is not valid anymore.
+
+    The Links class further below is responsible for keeping consistency in the linking tracks. It needs to ensure that
+    `self.get_next_tracks()` and `self.get_previous_tracks()` are always consistent with each other, and that tracks
+    are merged or split when necessary. It also needs to keep a map of every known position to its track.
+    """
+
     _min_time_point_number: int  # Equal to _positions_by_time_point[0].time_point_number()
 
     # Positions by time point. Position 0 contains the position at min_time_point, position 1 min_time_point + 1, etc.
@@ -194,6 +210,149 @@ class LinkingTrack:
                 self._min_time_point_number + len(self._positions_by_time_point))
 
 
+class _LinkDataOfTimePoint:
+    """All link metadata from this time point to the next one.
+
+    In principle, this could have been stored in the LinkingTrack class. However, when splitting or merging tracks,
+    the bookkeeping of all the metadata would become quite complicated. Lookups should be equally fast, instead of
+    looking up a track and then a position pair, we now look up a time point and then a position pair.
+    """
+    _time_point_first: TimePoint
+    _link_data: Dict[str, Dict[Tuple[Position, Position], DataType]]
+
+    def __init__(self, time_point_first: TimePoint):
+        self._link_data = dict()
+        self._time_point_first = time_point_first
+
+    def has_link_data(self) -> bool:
+        """Gets whether there is any link data stored here."""
+        return len(self._link_data) > 0
+
+    def get_link_data(self, link_tuple: Tuple[Position, Position], data_name: str) -> Optional[DataType]:
+        """Gets the attribute of the link with the given name. Returns None if not found. Raises ValueError if the two
+        positions are not in consecutive time points."""
+        data_of_links = self._link_data.get(data_name)
+        if data_of_links is None:
+            return None
+        return data_of_links.get(link_tuple)
+
+    def set_link_data(self, link_tuple: Tuple[Position, Position], data_name: str, value: Optional[DataType]):
+        """Adds or overwrites the given attribute for the given position. Set value to None to delete the attribute.
+        Raises ValueError if the two positions are not in consecutive time points.
+
+        For compatibility with the old file format, some names ("source", "target", or anything starting with "__") are
+        reserved and cannot be used as data names.
+        """
+        if data_name.startswith("__"):
+            # Reserved for future/internal use
+            raise ValueError(f"The data name {data_name} is not allowed: data names must not start with '__'.")
+        if data_name == "source" or data_name == "target":
+            # Would go wrong when saving to JSON
+            raise ValueError(f"The data name {data_name} is not allowed: this is a reserved word.")
+
+        data_of_links = self._link_data.get(data_name)
+        if data_of_links is None:
+            if value is None:
+                return  # No value was stored already, so no need to change anything
+
+            # Initialize dict for this data type
+            data_of_links = dict()
+            self._link_data[data_name] = data_of_links
+
+        if value is None:
+            # Delete
+            if link_tuple in data_of_links:
+                del data_of_links[link_tuple]
+                if len(data_of_links) == 0:
+                    # Remove dict for this data type
+                    del self._link_data[data_name]
+        else:
+            # Store
+            data_of_links[link_tuple] = value
+
+
+    def copy(self) -> "_LinkDataOfTimePoint":
+        """Creates a copy of this linking dataset. Changes to the copy will not affect this object, and vice versa."""
+        copy = _LinkDataOfTimePoint(self._time_point_first)
+        for data_name, data_value in self._link_data.items():
+            copy._link_data[data_name] = data_value.copy()
+        return copy
+
+    def merge_data(self, other: "_LinkDataOfTimePoint"):
+        """Merges all data from the given dataset into this one. Changes to the other dataset made afterwards may
+        "write-through" into this dataset."""
+        for data_name, values in other._link_data.items():
+            if data_name not in self._link_data:
+                self._link_data[data_name] = values
+            else:
+                self._link_data[data_name].update(values)
+
+    def remove_link(self, link_tuple: Tuple[Position, Position]):
+        """Removes all data of the given link. Raises ValueError if the two positions are not in consecutive time
+        points."""
+        for data_name, data_of_links in list(self._link_data.items()):
+            # ^ The list(...) makes a defensive copy, so we can delete things while iterating over it
+            if link_tuple in data_of_links:
+                # Delete data for given link
+                del data_of_links[link_tuple]
+
+                if len(data_of_links) == 0:
+                    # No remaining data of this type, delete it
+                    del self._link_data[data_name]
+
+    def replace_link(self, link_tuple_old: Tuple[Position, Position], link_tuple_new: Tuple[Position, Position]):
+        """Replaces a link, for example if the position moved. Raises ValueError if any of the two links are not between
+        consecutive time points. Raises ValueError if the time points of the links are changed."""
+        # Actually replace
+        for data_name, data_of_links in self._link_data.items():
+            if link_tuple_old in data_of_links:
+                data_old = data_of_links[link_tuple_old]
+                del data_of_links[link_tuple_old]
+                data_of_links[link_tuple_new] = data_old
+
+    def find_all_links_with_data(self, data_name: str) -> ItemsView[Tuple[Position, Position], DataType]:
+        """Gets a dictionary of all positions with the given data marker. Do not modify the returned dictionary."""
+        data_set = self._link_data.get(data_name)
+        if data_set is None:
+            return dict().items()
+        return data_set.items()
+
+    def find_all_data_of_link(self, link_tuple: Tuple[Position, Position]) -> Iterable[Tuple[str, DataType]]:
+        """Finds all data associated with the given link. Raises ValueError if the two positions are not in
+        consecutive time points."""
+        for data_name, data_of_links in self._link_data.items():
+            if link_tuple in data_of_links:
+                yield data_name, data_of_links[link_tuple]
+
+    def find_all_data_names(self):
+        """Finds all data_names"""
+        return self._link_data.keys()
+
+    def move_in_time(self, time_point_delta: int):
+        """Moves all data with the given time point delta."""
+        for data_key in list(self._link_data.keys()):
+            values_new = dict()
+            values_old = self._link_data[data_key]
+            for (position_a, position_b), value in values_old.items():
+                values_new[(position_a.with_time_point_number(position_a.time_point_number() + time_point_delta),
+                            position_b.with_time_point_number(position_b.time_point_number() + time_point_delta))] = value
+            self._link_data[data_key] = values_new
+        self._time_point_first = TimePoint(self._time_point_first.time_point_number() + time_point_delta)
+
+
+def _create_link_tuple(position1: Position, position2: Position) -> Tuple[Position, Position]:
+    """Returns a tuple with the position that's first in time on position 0. Raises ValueError if the positions are
+    not in consecutive time points."""
+    if position1.time_point_number() + 1 == position2.time_point_number():
+        return position1, position2
+    if position1.time_point_number() - 1 == position2.time_point_number():
+        return position2, position1
+    raise ValueError(f"Not in consecutive time points, so no link can exist: {position1}---{position2}")
+
+
+# We disable the warning about protected members, because we would like to access the protected members of
+# LinkingTrack all the time, to keep the data structure consistent.
+# noinspection PyProtectedMember
 class Links:
     """Represents all links between positions at different time points. This is used to follow particles over time. If a
     position is linked to two positions in the next time step, than that is a cell division. If a position is linked to
@@ -201,20 +360,45 @@ class Links:
 
     _tracks: List[LinkingTrack]
     _position_to_track: Dict[str, LinkingTrack]
+    _link_meta_by_first_time_point: Dict[int, _LinkDataOfTimePoint]
 
     def __init__(self):
         self._tracks = []
         self._position_to_track = dict()
+        self._link_meta_by_first_time_point = dict()
 
     def add_links(self, links: "Links"):
-        """Adds all links from the graph. Existing link are not removed. Changes may write through in the original
-        links."""
+        warnings.warn("Links.add_links() is deprecated, use Links.merge_data() instead.", DeprecationWarning)
+        self.merge_data(links)
+
+    def merge_data(self, other: "Links"):
+        """Merges all data (links and meta) from the other Links object into this one. This is useful if you
+        want to merge the data of two experiments.
+
+        Note that this object may now reuse data structures from the other object, so changes to the other object made
+        after this call may also write through into this object. This behaviour is undefined. If you plan to keep
+        around both objects after this call, you should replace one of them with a copy of itself, so that the data
+        structures are disconnected.
+        """
+        # Merge all links
         if self.has_links():
-            for position1, position2 in links.find_all_links():
+            for position1, position2 in other.find_all_links():
                 self.add_link(position1, position2)
         else:
-            self._tracks = links._tracks
-            self._position_to_track = links._position_to_track
+            # Just reference the other data structure
+            self._tracks = other._tracks
+            self._position_to_track = other._position_to_track
+
+        # Merge all metadata
+        for time_point_number, other_data_of_time_point in other._link_meta_by_first_time_point.items():
+            our_data_of_time_point = self._link_meta_by_first_time_point.get(time_point_number)
+            if our_data_of_time_point is None:
+                # Just reference the other data structure
+                self._link_meta_by_first_time_point[time_point_number] = other_data_of_time_point
+            else:
+                # Need to merge
+                our_data_of_time_point.merge_data(other_data_of_time_point)
+
 
     def add_track(self, track: LinkingTrack):
         """Adds a track to the linking network. This is useful if you have a track that is not linked to the rest of the
@@ -232,12 +416,16 @@ class Links:
             track._previous_tracks.clear()
         self._tracks.clear()
         self._position_to_track.clear()
+        self._link_meta_by_first_time_point.clear()
 
     def remove_links_of_position(self, position: Position):
         """Removes all links from and to the position."""
         track = self._position_to_track.get(position.to_dict_key())
         if track is None:
             return
+
+        # First, while the links of this position still exist, remove their metadata
+        self._remove_link_metadata(track, position)
 
         age = track.get_age(position)
         if len(track._positions_by_time_point) == 1:
@@ -279,21 +467,55 @@ class Links:
         # Remove from index
         del self._position_to_track[position.to_dict_key()]
 
-    def replace_position(self, old_position: Position, position_new: Position):
+    def _remove_link_metadata(self, track: LinkingTrack, position: Position):
+        """Internal method to remove all link metadata of the given position, which must be in the given track."""
+
+        # Search for metadata with this position as the first position in the link tuple
+        for future in track._find_futures(position.time_point_number()):
+            data_of_time_point = self._link_meta_by_first_time_point.get(position.time_point_number())
+            if data_of_time_point is not None:
+                data_of_time_point.remove_link((position, future))
+
+        # Search for metadata with this position as the second position in the link tuple
+        for past in track._find_pasts(position.time_point_number()):
+            data_of_time_point = self._link_meta_by_first_time_point.get(past.time_point_number())
+            if data_of_time_point is not None:
+                data_of_time_point.remove_link((past, position))
+
+    def replace_position(self, position_old: Position, position_new: Position):
         """Replaces one position with another. The old position is removed from the graph, the new one is added. All
         links will be moved over to the new position"""
-        if old_position.time_point_number() != position_new.time_point_number():
+        if position_old.time_point_number() != position_new.time_point_number():
             raise ValueError("Cannot replace with position at another time point")
 
         # Update in track
-        track = self._position_to_track.get(old_position.to_dict_key())
-        if track is not None:
-            track._positions_by_time_point[
-                position_new.time_point_number() - track._min_time_point_number] = position_new
+        track = self._position_to_track.get(position_old.to_dict_key())
+        if track is None:
+            return  # Position not in any track, nothing to do
+        track._positions_by_time_point[
+            position_new.time_point_number() - track._min_time_point_number] = position_new
 
-            # Update reference to track
-            del self._position_to_track[old_position.to_dict_key()]
-            self._position_to_track[position_new.to_dict_key()] = track
+        # Update reference to track
+        del self._position_to_track[position_old.to_dict_key()]
+        self._position_to_track[position_new.to_dict_key()] = track
+
+        # Update links to the future in the link metadata
+        for future in track._find_futures(position_old.time_point_number()):
+            link_tuple_old = position_old, future
+            link_tuple_new = position_new, future
+
+            data_of_time_point = self._link_meta_by_first_time_point.get(link_tuple_old[0].time_point_number())
+            if data_of_time_point is not None:
+                data_of_time_point.replace_link(link_tuple_old, link_tuple_new)
+
+        # Update links to the past in the link metadata
+        for past in track._find_pasts(position_old.time_point_number()):
+            link_tuple_old = past, position_old
+            link_tuple_new = past, position_new
+
+            data_of_time_point = self._link_meta_by_first_time_point.get(link_tuple_old[0].time_point_number())
+            if data_of_time_point is not None:
+                data_of_time_point.replace_link(link_tuple_old, link_tuple_new)
 
     def has_links(self) -> bool:
         """Returns True if at least one link is present."""
@@ -495,6 +717,14 @@ class Links:
                 self._decouple_next_track(track1, next_track=track2)
                 self._decouple_previous_track(track2, previous_track=track1)
 
+        # Remove link data
+        link_tuple = position1, position2  # We already checked that position1 is before position2, and that they are in consecutive time points
+        data_of_time_point = self._link_meta_by_first_time_point.get(position1.time_point_number())
+        if data_of_time_point is not None:
+            data_of_time_point.remove_link(link_tuple)
+            if not data_of_time_point.has_link_data():
+                del self._link_meta_by_first_time_point[position1.time_point_number()]
+
     def _decouple_next_track(self, track: LinkingTrack, *, next_track: LinkingTrack):
         """Removes a next track from the current track. If only one next track remains, a merge with the remaining next
         track is performed. If the track ends up with only a single time point and no links to other tracks, it will be
@@ -596,6 +826,10 @@ class Links:
                 next_track_copy = copy._position_to_track[next_track.find_first_position().to_dict_key()]
                 track_copy._next_tracks.append(next_track_copy)
                 next_track_copy._previous_tracks.append(track_copy)
+
+        # Copy over link data
+        for time_point_number, data_of_time_point in self._link_meta_by_first_time_point.items():
+            copy._link_meta_by_first_time_point[time_point_number] = data_of_time_point.copy()
 
         return copy
 
@@ -845,6 +1079,7 @@ class Links:
 
     def move_in_time(self, time_point_delta: int):
         """Moves all data with the given time point delta."""
+
         # We need to update self._tracks and rebuild self._position_to_track
         self._position_to_track.clear()
         for track in self._tracks:
@@ -853,6 +1088,13 @@ class Links:
                 moved_position = position.with_time_point_number(position.time_point_number() + time_point_delta)
                 track._positions_by_time_point[i] = moved_position
                 self._position_to_track[moved_position.to_dict_key()] = track
+
+        # We also need to update self._data_by_first_time_point
+        new_dictionary = dict()
+        for time_point_number, data_of_time_point in self._link_meta_by_first_time_point.items():
+            data_of_time_point.move_in_time(time_point_delta)
+            new_dictionary[time_point_number + time_point_delta] = data_of_time_point
+        self._link_meta_by_first_time_point = new_dictionary
 
     def connect_tracks(self, *, previous: LinkingTrack, next: LinkingTrack):
         """Connects two tracks. The previous track should end one time point before the next track starts. Raises
@@ -870,3 +1112,63 @@ class Links:
         # Connect the tracks
         previous._next_tracks.append(next)
         next._previous_tracks.append(previous)
+
+    def has_link_data(self) -> bool:
+        """Gets whether there is any link metadata stored here."""
+        return len(self._link_meta_by_first_time_point) > 0
+
+    def get_link_data(self, position1: Position, position2: Position, data_name: str) -> Optional[DataType]:
+        """Gets the attribute of the link with the given name. Returns None if not found. Raises ValueError if the two
+        positions are not in consecutive time points."""
+        link_tuple = _create_link_tuple(position1, position2)
+        data_of_time_point = self._link_meta_by_first_time_point.get(link_tuple[0].time_point_number())
+        if data_of_time_point is None:
+            return None
+        return data_of_time_point.get_link_data(link_tuple, data_name)
+
+    def set_link_data(self, position1: Position, position2: Position, data_name: str, value: Optional[DataType]):
+        """Adds or overwrites the given attribute for the given position. Set value to None to delete the attribute.
+        Raises ValueError if the two positions are not in consecutive time points. Silently does nothing if the
+        links do not exist.
+        """
+        link_tuple = _create_link_tuple(position1, position2)
+        if not self.contains_link(position1, position2):
+            return
+
+        data_of_time_point = self._link_meta_by_first_time_point.get(link_tuple[0].time_point_number())
+
+        if data_of_time_point is None:
+            if value is None:
+                return  # No value was stored already, so no need to change anything
+
+            # Need to create a new data_of_time_point
+            data_of_time_point = _LinkDataOfTimePoint(link_tuple[0].time_point())
+            self._link_meta_by_first_time_point[link_tuple[0].time_point_number()] = data_of_time_point
+        data_of_time_point.set_link_data(link_tuple, data_name, value)
+
+        if value is None and not data_of_time_point.has_link_data():
+            # Deleted the last data of this time point, so remove the time point
+            del self._link_meta_by_first_time_point[link_tuple[0].time_point_number()]
+
+    def find_all_links_with_data(self, data_name: str) -> ItemsView[Tuple[Position, Position], DataType]:
+        """Gets a dictionary of all positions with the given data marker. Do not modify the returned dictionary."""
+        all_links_with_data = dict()
+        for data_of_time_point in self._link_meta_by_first_time_point.values():
+            all_links_with_data.update(data_of_time_point.find_all_links_with_data(data_name))
+        return all_links_with_data.items()
+
+    def find_all_data_of_link(self, position1: Position, position2: Position) -> Iterable[Tuple[str, DataType]]:
+        """Finds all data associated with the given link. Raises ValueError if the two positions are not in
+        consecutive time points."""
+        link_tuple = _create_link_tuple(position1, position2)
+        data_of_time_point = self._link_meta_by_first_time_point.get(link_tuple[0].time_point_number())
+        if data_of_time_point is None:
+            return
+        yield from data_of_time_point.find_all_data_of_link(link_tuple)
+
+    def find_all_data_names(self) -> Set[str]:
+        """Finds all data_names"""
+        data_names = set()
+        for data_of_time_point in self._link_meta_by_first_time_point.values():
+            data_names.update(data_of_time_point.find_all_data_names())
+        return data_names

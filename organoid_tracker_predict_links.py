@@ -10,8 +10,6 @@ import numpy as np
 
 from organoid_tracker.config import ConfigFile
 from organoid_tracker.core.position_collection import PositionCollection
-from organoid_tracker.core.resolution import ImageResolution
-from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 from organoid_tracker.imaging import io, list_io
 from organoid_tracker.neural_network.link_detection_cnn.prediction_dataset import prediction_data_creator
@@ -120,15 +118,15 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
             likelihood = intercept+scaling*float(np.log10(prediction+eps)-np.log10(1-prediction+eps))
             scaled_prediction = (10**likelihood)/(1+10**likelihood)
 
-            experiment.link_data.set_link_data(predicted_link[0], predicted_link[1], data_name="link_probability",
+            experiment.links.set_link_data(predicted_link[0], predicted_link[1], data_name="link_probability",
                                                value=float(scaled_prediction))
-            experiment.link_data.set_link_data(predicted_link[0], predicted_link[1], data_name="link_penalty",
+            experiment.links.set_link_data(predicted_link[0], predicted_link[1], data_name="link_penalty",
                                                value=float(-likelihood))
 
     # If predictions replace existing data, record overlap. Useful for evaluation purposes.
     if experiment.links is not None:
         for link in experiment.links.find_all_links():
-            experiment.link_data.set_link_data(link[0], link[1], data_name="present_in_original",
+            experiment.links.set_link_data(link[0], link[1], data_name="present_in_original",
                                                value=True)
 
     print("Saving file...")

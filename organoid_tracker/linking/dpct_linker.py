@@ -11,7 +11,6 @@ import dpct
 import numpy as np
 
 from organoid_tracker.core.experiment import Experiment
-from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
@@ -51,7 +50,7 @@ def _to_links(position_ids: _PositionToId, results: Dict) -> Links:
 
     return links
 
-def run(positions: PositionCollection, starting_links: Links, link_data: LinkData,
+def run(positions: PositionCollection, starting_links: Links,
             *, link_weight: int, detection_weight: int, division_weight: int, appearance_weight: int,
             dissappearance_weight: int, method = 'FlowBased', penalty_difference_cut_off = 3.0,
             penalty_abs_cut_off = 3.0) -> Tuple[Links, Links]:
@@ -60,7 +59,6 @@ def run(positions: PositionCollection, starting_links: Links, link_data: LinkDat
     :param positions: The positions and metadata for the positions. Must contain 'division_penalty', 'appearance_penalty',
     'dissappearance_penalty' for all positions.
     :param starting_links: Basic linking network that includes all possible links.
-    :param link_data: Metadata for the links. Must contain 'link_penalty' for all potential links.
     :param link_weight: multiplier for linking features - the higher, the more expensive to create a link.
     :param detection_weight: multiplier for detection of a cell - the higher, the more expensive to omit a cell
     :param division_weight: multiplier for division features - the higher, the cheaper it is to create a cell division
@@ -69,7 +67,7 @@ def run(positions: PositionCollection, starting_links: Links, link_data: LinkDat
     :return:
     """
     position_ids = _PositionToId()
-    input, has_possible_divisions, naive_links = _create_dpct_graph(position_ids, starting_links, positions, link_data,
+    input, has_possible_divisions, naive_links = _create_dpct_graph(position_ids, starting_links, positions,
                                         positions.first_time_point_number(), positions.last_time_point_number(),
                                                                     penalty_difference_cut_off = penalty_difference_cut_off,
                                                                     penalty_abs_cut_off = penalty_abs_cut_off)
@@ -91,8 +89,7 @@ def run(positions: PositionCollection, starting_links: Links, link_data: LinkDat
     return _to_links(position_ids, results), naive_links
 
 
-def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links,
-                       positions: PositionCollection, link_data: LinkData,
+def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links, positions: PositionCollection,
                        min_time_point: int, max_time_point: int, division_penalty_cut_off = 2.0, ignore_penalty = 2.0,
                        penalty_difference_cut_off = 3.0,
                        penalty_abs_cut_off = 3.0) -> Tuple[Dict, bool, Links]:
@@ -111,7 +108,7 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links,
             position1, position2 = position2, position1
 
         # get link penalty
-        link_penalty = link_data.get_link_data(position1, position2, data_name="link_penalty")
+        link_penalty = starting_links.get_link_data(position1, position2, data_name="link_penalty")
         # is it there?
         if link_penalty is None:
             print(position1)
@@ -189,7 +186,7 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links,
             print('happens?')
             position1, position2 = position2, position1
 
-        link_penalty = link_data.get_link_data(position1, position2, data_name="link_penalty")
+        link_penalty = starting_links.get_link_data(position1, position2, data_name="link_penalty")
         if link_penalty is None:
             print("link data missing" + str(j))
             j = j + 1
