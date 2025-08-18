@@ -6,9 +6,9 @@ from organoid_tracker import core
 from organoid_tracker.core import marker
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.gui.window import Window, DisplaySettings
 from organoid_tracker.linking.nearby_position_finder import find_closest_position
-from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.visualizer import Visualizer, activate
 
 
@@ -47,7 +47,8 @@ class PositionListVisualizer(Visualizer):
                 self._current_position_index = self._position_list.index(position)
             except ValueError:
                 # Try nearest position
-                close_match = find_closest_position(self._position_list, position, max_distance_um=100)
+                close_match = find_closest_position(self._position_list, around=position, max_distance_um=100,
+                                                    resolution=ImageResolution.PIXELS)
 
                 if close_match is not None and close_match.time_point_number() == position.time_point_number():
                     self._current_position_index = self._position_list.index(close_match)

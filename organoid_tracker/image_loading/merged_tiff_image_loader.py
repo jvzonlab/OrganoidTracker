@@ -178,9 +178,9 @@ class _MergedTiffImageLoader(ImageLoader):
     def copy(self) -> "ImageLoader":
         return _MergedTiffImageLoader(self._file_name, self._min_time_point_number, self._max_time_point_number)
 
-    def _get_offset(self, t: int, c: int, z: int) -> int:
+    def _get_offset(self, t: int, c: int, z: int, item_size: int) -> int:
         """Gets the pixel offset for the given 2D image."""
-        offset = self._get_2d_page_number(t, c, z) * self._image_size_zyx[1] * self._image_size_zyx[2]
+        offset = self._get_2d_page_number(t, c, z) * self._image_size_zyx[1] * self._image_size_zyx[2] * item_size
         return int(offset + self._tiff_series.dataoffset)
 
     def _get_2d_page_number(self, t: int, c: int, z: int) -> int:
@@ -211,11 +211,11 @@ class _MergedTiffImageLoader(ImageLoader):
             self._tiff.asarray(key=page, out=out)
         else:
             # Need to fiddle with bytes :(. Irfanview also has trouble with these files, tifffile is not the only one.
-            offset = self._get_offset(t, c, z)
+            offset = self._get_offset(t, c, z, self._tiff_series.dtype.itemsize)
             shape_2d = self._shape[-2:]
             type_code = self._tiff.byteorder + self._tiff_series.dtype.char
             self._tiff.filehandle.seek(offset)
-            self._tiff.filehandle.read_array(type_code, numpy.prod(shape_2d), out=out)
+            self._tiff.filehandle.read_array(type_code, numpy.product(shape_2d), out=out)
 
     def get_suggested_experiment_name(self) -> str:
         """Gets the suggested experiment name. Returns "nd799xy08" for "C:/Images/nd799xy08.tif"."""
