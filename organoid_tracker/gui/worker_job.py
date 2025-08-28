@@ -6,7 +6,7 @@ GUI.
 To get started, make a subclass of WorkerJob, and then call the submit_job function with an instance of your class.
 """
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any, List, Dict, Iterable
 
 from organoid_tracker.core.experiment import Experiment
@@ -18,6 +18,7 @@ from organoid_tracker.gui.window import Window
 class WorkerJob(ABC):
     """A task that makes changes to the experiment. Will be applied to all open tabs."""
 
+    @abstractmethod
     def copy_experiment(self, experiment: Experiment) -> Experiment:
         """As gather_data is called on a worker thread, this method is called on the GUI thread to make a copy of the
         experiment. This copy will be passed to gather_data.
@@ -27,6 +28,7 @@ class WorkerJob(ABC):
         """
         raise NotImplementedError()
 
+    @abstractmethod
     def gather_data(self, experiment_copy: Experiment) -> Any:
         """Gather data from the experiment. Will be called on the worker thread.
 
@@ -38,6 +40,7 @@ class WorkerJob(ABC):
         """Uses the data. Called on the GUI thread, once for every experiment."""
         pass
 
+    @abstractmethod
     def on_finished(self, data: Iterable[Any]):
         """Called when the task is finished for all experiments. use_data will already have been called once for every
         experiment."""
