@@ -9,20 +9,19 @@ from organoid_tracker.gui.window import Window
 
 def get_menu_items(window: Window):
     return {
-        "Edit//Scale positions":
-            lambda: _scale_positions(window),
+        "Edit//Tracking-Scale positions...": lambda: _scale_positions(window),
     }
 
 
 def _scale_positions(window: Window):
     """in x, y and z"""
-    xy_scale = dialog.prompt_float("xy scaling", "By what factors should the positions be scaled?", minimum=0.1,
+    xy_scale = dialog.prompt_float("XY scaling", "By what factors should the positions be scaled?", minimum=0.1,
                                    default=1)
 
     if xy_scale is None:
         return
 
-    z_scale = dialog.prompt_float("z scaling", "By what factors should the positions be scaled?", minimum=0.1,
+    z_scale = dialog.prompt_float("Z scaling", "By what factors should the positions be scaled?", minimum=0.1,
                                   default=1)
     if z_scale is None:
         return
@@ -48,4 +47,4 @@ def _scale_positions(window: Window):
             new_offsets.append(new_offset)
         experiment.images.offsets = ImageOffsets(new_offsets)
 
-    dialog.popup_message("Scaling", "scaled all positions")
+    dialog.popup_message("Scaling", "Scaled all positions!")
