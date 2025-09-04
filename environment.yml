@@ -1,7 +1,6 @@
 name: organoid_tracker
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - python=3.11
   - ilastik-forge::dpct
