@@ -185,7 +185,7 @@ for image_set_index in range(image_set_count):
         if _debug_folder is not None:
         #if _debug_folder is None:
             image_name = "image_" + str(time_point.time_point_number())
-            tifffile.imsave(os.path.join(_debug_folder, '{}.tif'.format(image_name)), prediction)
+            tifffile.imwrite(os.path.join(_debug_folder, '{}.tif'.format(image_name)), prediction)
 
         del prediction_batch
 
