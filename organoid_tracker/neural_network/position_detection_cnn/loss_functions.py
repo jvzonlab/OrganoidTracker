@@ -12,7 +12,9 @@ from organoid_tracker.neural_network import Tensor
 def peak_finding(y_pred: Tensor, threshold: float = 0.1, volume: List[int] = (3, 13, 13)):
     """Finds the local peaks in the given predictions. Operates by doing a dilation,
     and then checking where the actual value reaches the dilation."""
-    dilation = torch.nn.functional.max_pool3d(y_pred, volume, stride=1, padding=tuple(v // 2 for v in volume))
+
+    dilation = torch.nn.functional.max_pool3d(torch.permute(y_pred, (0,4,1,2,3)), volume, stride=1, padding=tuple(v // 2 for v in volume))
+    dilation =torch.permute(dilation,(0,2,3,4,1))
     # The following line should also work, but for some reason the padding is miscalculated as [6, 6, 1]
     # instead of [1, 6, 6] by Keras. Bug in Keras?
     # dilation = keras.ops.max_pool(y_pred, volume, strides=1, padding='same')
@@ -80,7 +82,8 @@ def overcount(y_true, y_pred):
 step = 0
 def loss(y_true, y_pred):
     # find cell centers on target after distortions (rotation/scaling)
-    dilation = torch.nn.functional.max_pool3d(y_true, (1, 3, 3), stride=1, padding=(0, 1, 1))
+    dilation = torch.nn.functional.max_pool3d(torch.permute(y_true, (0,4,1,2,3)), (1, 3, 3), stride=1, padding=(0, 1, 1))
+    dilation =torch.permute(dilation,(0,2,3,4,1))
     # The following line should also work, but for some reason the padding is miscalculated as [1, 1, 0]
     # instead of [0, 1, 1] by Keras. Bug in Keras?
     # dilation = keras.ops.max_pool(y_true, [1, 3, 3], strides=1, padding='same')
