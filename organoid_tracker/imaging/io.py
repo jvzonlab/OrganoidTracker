@@ -1,4 +1,5 @@
 """Classes for expressing the positions of positions"""
+import json
 import os
 import warnings
 from pathlib import Path
@@ -33,6 +34,21 @@ SUPPORTED_IMPORT_FILES = [
     ("TrackMate file", "*.xml"),
     ("Guizela's tracking files", "track_00000.p")]
 WRITE_NEW_FORMAT = True  # Default value for the saving function. Reading always supports both formats.
+
+
+class NumpyToJsonEncoder(json.JSONEncoder):
+    """JSON encoder that can serialize numpy arrays (unlike the default JSON encoder)."""
+
+    def default(self, obj):
+        if isinstance(obj, numpy.bool_):
+            return bool(obj)
+        if isinstance(obj, numpy.integer):
+            return int(obj)
+        if isinstance(obj, numpy.floating):
+            return float(obj)
+        if isinstance(obj, numpy.ndarray):
+            return obj.tolist()
+        return super().default(obj)
 
 
 def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: str,
@@ -920,7 +936,7 @@ def _write_json_to_file(file_name: str, data_structure):
         # SLower path, but only relies on Python standard library
         import json
         with open(file_name, 'w', encoding="utf8") as handle:
-            json.dump(data_structure, handle)
+            json.dump(data_structure, handle, cls=NumpyToJsonEncoder)
 
 
 def _create_parent_directories(file_name: str):
