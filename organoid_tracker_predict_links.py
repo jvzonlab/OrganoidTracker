@@ -118,15 +118,15 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
             likelihood = intercept+scaling*float(np.log10(prediction+eps)-np.log10(1-prediction+eps))
             scaled_prediction = (10**likelihood)/(1+10**likelihood)
 
-            experiment.links.set_link_data(predicted_link[0], predicted_link[1], data_name="link_probability",
+            possible_links.set_link_data(predicted_link[0], predicted_link[1], data_name="link_probability",
                                                value=float(scaled_prediction))
-            experiment.links.set_link_data(predicted_link[0], predicted_link[1], data_name="link_penalty",
+            possible_links.set_link_data(predicted_link[0], predicted_link[1], data_name="link_penalty",
                                                value=float(-likelihood))
 
     # If predictions replace existing data, record overlap. Useful for evaluation purposes.
     if experiment.links is not None:
         for link in experiment.links.find_all_links():
-            experiment.links.set_link_data(link[0], link[1], data_name="present_in_original",
+            possible_links.set_link_data(link[0], link[1], data_name="present_in_original",
                                                value=True)
 
     print("Saving file...")

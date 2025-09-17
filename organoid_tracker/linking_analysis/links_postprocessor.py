@@ -22,6 +22,7 @@ def finetune_solution(experiment: Experiment, experiment_result: Experiment):
     """Adds, deletes or swaps single links to lower the energy of the solution"""
     mothers = cell_division_finder.find_mothers(experiment_result.links, exclude_multipolar=False)
     links_result = experiment_result.links
+    links_start = experiment.links
 
     # removes links that are best replaced by appearances + disappearances
     for position in experiment_result.positions:
@@ -58,12 +59,12 @@ def finetune_solution(experiment: Experiment, experiment_result: Experiment):
         min_penalty_diff = 0
 
         for prev_position in prev_positions:
-            new_link_penalty = links_result.get_link_data(prev_position, position, 'link_penalty')
+            new_link_penalty = links_start.get_link_data(prev_position, position, 'link_penalty')
 
             next_positions = experiment_result.links.find_futures(prev_position)
 
             for next_position in next_positions:
-                old_link_penalty = links_result.get_link_data(prev_position, next_position, 'link_penalty')
+                old_link_penalty = links_start.get_link_data(prev_position, next_position, 'link_penalty')
                 new_appearance_penalty = experiment_result.positions.get_position_data(next_position,
                                                                                            'appearance_penalty')
                 penalty_diff = (-old_link_penalty - old_appearance_penalty + new_link_penalty + new_appearance_penalty)

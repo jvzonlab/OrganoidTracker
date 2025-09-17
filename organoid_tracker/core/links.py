@@ -390,15 +390,19 @@ class Links:
             self._position_to_track = other._position_to_track
 
         # Merge all metadata
+        self.merge_link_meta_data(other)
+
+    def merge_link_meta_data(self, other: "Links"):
+        """Merges all link meta data from the other Links object into this one. Does not modify the linking structure,
+        only the link meta data."""
         for time_point_number, other_data_of_time_point in other._link_meta_by_first_time_point.items():
             our_data_of_time_point = self._link_meta_by_first_time_point.get(time_point_number)
             if our_data_of_time_point is None:
                 # Just reference the other data structure
-                self._link_meta_by_first_time_point[time_point_number] = other_data_of_time_point
+                self._link_meta_by_first_time_point[time_point_number] = other_data_of_time_point.copy()
             else:
                 # Need to merge
                 our_data_of_time_point.merge_data(other_data_of_time_point)
-
 
     def add_track(self, track: LinkingTrack):
         """Adds a track to the linking network. This is useful if you have a track that is not linked to the rest of the

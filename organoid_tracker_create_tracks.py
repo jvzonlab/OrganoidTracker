@@ -86,14 +86,14 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
                                                dissappearance_weight=_disappearance_weight, method=_method)
 
     # The resulting tracks
-    experiment_result = experiment.copy_selected(images=True, positions=True, position_data=True, name=True,
-                                                 links=True, link_data=True, global_data=True)
+    experiment_result = experiment.copy_selected(images=True, positions=True, name=True, links=False, global_data=True)
     experiment_result.links = link_result
+    experiment_result.links.merge_link_meta_data(possible_links)
 
     # This includes the unpruned set of links, important for later marginalization
-    experiment_all = experiment.copy_selected(images=True, positions=True, position_data=True, name=True,
-                                              links=True, link_data=True, global_data=True)
+    experiment_all = experiment.copy_selected(images=True, positions=True, name=True, links=False, global_data=True)
     experiment_all.links = naive_links
+    experiment_all.links.merge_link_meta_data(possible_links)
 
     # Results before post-processing:
     #io.save_data_to_json(experiment_result, '00' + _links_output_file)
