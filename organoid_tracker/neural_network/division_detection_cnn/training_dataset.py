@@ -111,7 +111,7 @@ def generate_patches_division(image, label, dividing, patch_shape, perturb):
         # apply perturbations
         if perturb:
             #init_crop = apply_random_perturbations_stacked(init_crop)
-            random = keras.ops.random.uniform((1,))
+            random = keras.random.uniform((1,))
             init_crop = keras.ops.cond(random<0.5,
                                 lambda: apply_random_flips(init_crop),
                                 lambda: apply_random_perturbations_stacked(init_crop))
@@ -137,10 +137,10 @@ def apply_random_perturbations_stacked(stacked):
     transforms = []
     # random rotation in xy
     transform = image_transforms.angles_to_projective_transforms(
-        keras.ops.random.uniform([], -np.pi, np.pi), image_shape[1], image_shape[2])
+        keras.random.uniform([], -np.pi, np.pi), image_shape[1], image_shape[2])
     transforms.append(transform)
     # random scale 80% to 120% size
-    scale = keras.ops.random.uniform([], 0.8, 1.2, dtype="float32")
+    scale = keras.random.uniform([], 0.8, 1.2, dtype="float32")
     transform = keras.ops.convert_to_tensor([[scale, 0., image_shape[1] / 2 * (1 - scale),
                                        0., scale, image_shape[2] / 2 * (1 - scale), 0.,
                                        0.]], dtype="float32")
@@ -156,13 +156,13 @@ def apply_random_perturbations_stacked(stacked):
 
 
 def apply_random_flips(stacked):
-    random = keras.ops.random.uniform((1,))
+    random = keras.random.uniform((1,))
     stacked = keras.ops.cond(random<0.5, lambda: keras.ops.flip(stacked, axis=[1]), lambda: stacked)
 
-    random = keras.ops.random.uniform((1,))
+    random = keras.random.uniform((1,))
     stacked = keras.ops.cond(random<0.5, lambda: keras.ops.flip(stacked, axis=[2]), lambda: stacked)
 
-    random = keras.ops.random.uniform((1,))
+    random = keras.random.uniform((1,))
     stacked = keras.ops.cond(random<0.5, lambda: keras.ops.flip(stacked, axis=[0]), lambda: stacked)
 
     return stacked
@@ -171,7 +171,7 @@ def apply_random_flips(stacked):
 def apply_noise(image):
     # add noise
     # take power of image to increase or reduce contrast
-    image = keras.ops.power(image, keras.ops.random.uniform((1,), minval=0.3, maxval=1.7))
+    image = keras.ops.power(image, keras.random.uniform((1,), minval=0.3, maxval=1.7))
 
     return image
 

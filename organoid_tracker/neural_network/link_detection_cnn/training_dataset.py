@@ -126,7 +126,7 @@ def generate_patches_links(image, target_image, label, target_label, distances, 
         combined_init_crops = keras.ops.concatenate([init_crop, init_target_crop], axis=-1)
 
         if perturb:
-            random = keras.ops.random.uniform((1,))
+            random = keras.random.uniform((1,))
             combined_init_crops, distance = keras.ops.cond(random<0.99,
                                                     lambda: apply_random_flips(combined_init_crops, distance),
                                                     lambda: apply_random_perturbations_stacked(combined_init_crops, distance))
@@ -154,12 +154,12 @@ def apply_random_perturbations_stacked(stacked, distance):
 
     transforms = []
     # random rotation in xy
-    angle = keras.ops.random.uniform([], -np.pi, np.pi)
+    angle = keras.random.uniform([], -np.pi, np.pi)
     transform = image_transforms.angles_to_projective_transforms(
         angle, image_shape[1], image_shape[2])
     transforms.append(transform)
     # random scale 80% to 120% size
-    scale = keras.ops.random.uniform([], 0.8, 1.2, dtype="float32")
+    scale = keras.random.uniform([], 0.8, 1.2, dtype="float32")
     transform = keras.ops.convert_to_tensor([[scale, 0., image_shape[1] / 2 * (1 - scale),
                                        0., scale, image_shape[2] / 2 * (1 - scale), 0.,
                                        0.]], dtype="float32")
@@ -192,12 +192,12 @@ def apply_random_perturbations_stacked(stacked, distance):
     return stacked, distance_new
 
 def apply_random_flips(stacked, distance):
-    random = keras.ops.random.uniform((1,))
+    random = keras.random.uniform((1,))
 
     stacked = keras.ops.cond(random<0.5, lambda: keras.ops.flip(stacked, axis=[1]), lambda: stacked)
     distance = keras.ops.cond(random<0.5, lambda: distance * keras.ops.flip([1, -1, 1]), lambda: distance)
 
-    random = keras.ops.random.uniform((1,))
+    random = keras.random.uniform((1,))
 
     stacked = keras.ops.cond(random<0.5, lambda: keras.ops.flip(stacked, axis=[2]), lambda: stacked)
     distance = keras.ops.cond(random<0.5, lambda: distance * keras.ops.flip([1, 1, -1]), lambda: distance)
@@ -207,7 +207,7 @@ def apply_random_flips(stacked, distance):
     return stacked, distance
 
 def random_flip_z(image, target_image, distances, linked):
-    random = keras.ops.random.uniform((1,))
+    random = keras.random.uniform((1,))
 
     image = keras.ops.cond(random<0.5, lambda: keras.ops.flip(image, axis=[0]), lambda: image)
     target_image = keras.ops.cond(random<0.5, lambda: keras.ops.flip(target_image, axis=[0]), lambda: target_image)
@@ -218,12 +218,12 @@ def random_flip_z(image, target_image, distances, linked):
 
 def apply_noise(image, target_image):
     # take power of image to increase or reduce contrast
-    random_mul = keras.ops.random.uniform((1,), minval=0.7, maxval=1.3)
+    random_mul = keras.random.uniform((1,), minval=0.7, maxval=1.3)
     image = keras.ops.power(image, random_mul)
     target_image = keras.ops.power(target_image, random_mul)
 
     # take a random decay constant (biased to 1 by taking the root)
-    #decay = keras.ops.sqrt(keras.ops.random.uniform((1,), minval=0.16, maxval=1))
+    #decay = keras.ops.sqrt(keras.random.uniform((1,), minval=0.16, maxval=1))
 
     # let image intensity decay differently
     #scale = decay + (1-decay) * (1 - keras.ops.range(keras.ops.shape(image)[0], dtype="float32") / keras.ops.cast(keras.ops.shape(image)[0], "float32"))

@@ -45,7 +45,7 @@ def random_crop(value: TensorLike, size: TensorLike, seed=None):
     size = keras.ops.convert_to_tensor(size, dtype="int32")
     shape = keras.ops.convert_to_tensor(keras.ops.shape(value), dtype="int32")
     limit = shape - size + 1
-    offset = keras.ops.random.randint(
+    offset = keras.random.randint(
         keras.ops.shape(shape),
         dtype="int32",
         minval=0,
