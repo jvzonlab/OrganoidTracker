@@ -42,7 +42,7 @@ def _gaussian_kernel(kernel_size: int, sigma: float, depth: int, n_channels: int
     if normalize:
         g_kernel = g_kernel / keras.ops.max(g_kernel)
     else:
-        g_kernel = g_kernel / keras.ops.max(g_kernel)
+        g_kernel = g_kernel / keras.ops.sum(g_kernel)
 
     # add channel dimension and later batch dimension
     g_kernel = keras.ops.expand_dims(g_kernel, axis=-1)
