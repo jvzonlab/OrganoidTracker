@@ -16,13 +16,13 @@ def get_menu_items(window: Window):
 def _scale_positions(window: Window):
     """in x, y and z"""
     xy_scale = dialog.prompt_float("XY scaling", "By what factors should the positions be scaled?", minimum=0.1,
-                                   default=1)
+                                   default=1, decimals=2)
 
     if xy_scale is None:
         return
 
     z_scale = dialog.prompt_float("Z scaling", "By what factors should the positions be scaled?", minimum=0.1,
-                                  default=1)
+                                  default=1, decimals=2)
     if z_scale is None:
         return
 
