@@ -226,8 +226,8 @@ class LinesAverage(PlotAverage):
             if len(y_values) <= 1:
                 continue
 
-            y_mean = numpy.mean(y_values)
-            y_error = numpy.std(y_values, ddof=1)
+            y_mean = numpy.nanmean(y_values)
+            y_error = numpy.nanstd(y_values, ddof=1)
             if standard_error:
                 y_error /= numpy.sqrt(len(y_values))
 
