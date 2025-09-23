@@ -27,6 +27,7 @@ from typing import List, Tuple, Iterable
 import keras
 import keras.random
 import numpy as np
+import torch
 from torch.utils.data import IterableDataset, DataLoader
 
 from organoid_tracker.neural_network import image_transforms, Tensor
@@ -37,17 +38,17 @@ from organoid_tracker.neural_network.dataset_transforms import ShufflingDataset,
 
 
 class _TorchDataset(IterableDataset):
-    _CROPS_PER_IMAGE: int = 20
-
     _image_with_position_list: List[ImageWithPositions]
+    _crops_per_image: int
     _time_window: Tuple[int, int]
     _perturb: bool
     _patch_shape: Tuple[int, int, int]
     _crop_to_positions: bool
 
-    def __init__(self, image_with_position_list: List[ImageWithPositions], time_window: Tuple[int, int],
+    def __init__(self, image_with_position_list: List[ImageWithPositions], crops_per_image: int, time_window: Tuple[int, int],
                  patch_shape: Tuple[int, int, int], perturb: bool, crop_to_positions: bool):
         self._image_with_position_list = image_with_position_list
+        self._crops_per_image = crops_per_image
         self._time_window = time_window
         self._patch_shape = patch_shape
         self._perturb = perturb
@@ -65,18 +66,17 @@ class _TorchDataset(IterableDataset):
             image, label = normalize(image, label)
 
             image_patches, label_patches = generate_patches(image, label, self._patch_shape,
-                                                            multiplier=self._CROPS_PER_IMAGE, perturb=self._perturb)
+                                                            multiplier=self._crops_per_image, perturb=self._perturb)
             for i in range(len(image_patches)):
                 image = image_patches[i]
                 label = label_patches[i]
 
                 if self._perturb:
                     image, label = apply_noise(image, label)
-
                 yield image, label
 
     def __len__(self):
-        return len(self._image_with_position_list) * self._CROPS_PER_IMAGE
+        return len(self._image_with_position_list) * self._crops_per_image
 
 
 # Creates training and validation data from an image_with_positions_list
@@ -88,8 +88,8 @@ def training_data_creator_from_raw(image_with_positions_list: List[ImageWithPosi
     elif mode == "validation":
         image_with_positions_list = image_with_positions_list[round(split_proportion * len(image_with_positions_list)):]
 
-    dataset = _TorchDataset(image_with_positions_list, time_window, patch_shape, mode == "train", crop)
-    dataset = PrefetchingDataset(dataset, buffer_size=100)
+    dataset = _TorchDataset(image_with_positions_list, batch_size, time_window, patch_shape, mode == "train", crop)
+    #dataset = PrefetchingDataset(dataset, buffer_size=10)
     if mode == "train":
         dataset = ShufflingDataset(dataset, buffer_size=batch_size * 10, seed=seed)
     return DataLoader(RepeatingDataset(dataset), batch_size=batch_size, num_workers=0, drop_last=True)
@@ -99,6 +99,8 @@ def training_data_creator_from_raw(image_with_positions_list: List[ImageWithPosi
 def normalize(image, label):
     image = keras.ops.divide(keras.ops.subtract(image, keras.ops.min(image)),
                              keras.ops.subtract(keras.ops.max(image), keras.ops.min(image)))
+
+    #print(keras.ops.shape(image))
 
     return image, label
 
@@ -152,10 +154,15 @@ def generate_patches(image, label, patch_shape, multiplier=20, perturb=True):
     # if the image is smaller that the patch region then pad
     stacked = pad_to_patch(stacked, patch_shape_init)
 
+    #print(keras.ops.shape(stacked))
+
+
     # add buffer region
     padding = [[0, 0], [patch_shape[1] // 2, patch_shape[1] // 2],
                [patch_shape[2] // 2, patch_shape[2] // 2], [0, 0]]
     stacked = keras.ops.pad(stacked, padding, mode='constant', constant_values=0)
+
+    #print(keras.ops.shape(stacked))
 
     # add channel dimensions
     patch_shape_init = patch_shape_init + [keras.ops.shape(stacked)[-1]]
