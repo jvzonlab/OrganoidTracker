@@ -92,6 +92,8 @@ def deconv_block(n_conv, layer, to_concat, filters, kernel=3, strides=2, dropout
     else:
         layer = keras.layers.UpSampling3D(size=strides,
                                                 name=name + '>upsample')(layer)
+        layer = keras.layers.Conv3D(filters=filters, kernel_size=strides, padding='same', activation='relu',
+                                             name=name + '>upsamp_conv')(layer)
 
     if to_concat is not None:
         layer = keras.ops.concatenate([layer, to_concat], axis=-1)
