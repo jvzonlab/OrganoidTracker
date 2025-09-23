@@ -111,7 +111,7 @@ def finetune_solution(experiment: Experiment, experiment_result: Experiment):
                 new_disappearance_penalty = experiment_result.position_data.get_position_data(prev_position,
                                                                                               'disappearance_penalty')
                 penalty_diff = (
-                            -old_link_penalty - old_disappearance_penalty + new_link_penalty + new_disappearance_penalty)
+                        -old_link_penalty - old_disappearance_penalty + new_link_penalty + new_disappearance_penalty)
 
                 if penalty_diff < min_penalty_diff:
                     target_position = next_position
@@ -342,14 +342,14 @@ def connect_loose_ends(experiment: Experiment, experiment_result: Experiment, ov
                                                            link_penalty + oversegmentation_penalty)
                         experiment.link_data.set_link_data(past_position, position, 'link_probability',
                                                            10 ** -(link_penalty + oversegmentation_penalty) / (10 ** -(
-                                                                       link_penalty + oversegmentation_penalty) + 1))
+                                                                   link_penalty + oversegmentation_penalty) + 1))
 
                         experiment_result.link_data.set_link_data(past_position, position, 'link_penalty',
                                                                   link_penalty + oversegmentation_penalty)
                         experiment_result.link_data.set_link_data(past_position, position, 'link_probability',
                                                                   10 ** -(link_penalty + oversegmentation_penalty) / (
-                                                                              10 ** -(
-                                                                                  link_penalty + oversegmentation_penalty) + 1))
+                                                                          10 ** -(
+                                                                          link_penalty + oversegmentation_penalty) + 1))
 
     print('number of oversegmentations fixed:')
     print(len(oversegmentations_fixed))
@@ -371,7 +371,18 @@ def bridge_gaps(experiment: Experiment, experiment_result: Experiment, miss_pena
     for position in experiment_result.positions:
         if (experiment_result.position_data.get_position_data(position, 'division_penalty') < 0) and (
                 len(experiment_result.links.find_futures(position)) == 1):
-            loose_ends.append(position)
+            next_position = experiment_result.links.find_single_future(position)
+            prev_position = experiment_result.links.find_single_past(position)
+
+            if prev_position is None:
+                prev_position= position
+
+            if next_position is None:
+                next_position = position
+
+            if ((len(experiment_result.links.find_futures(next_position)) == 1) and
+                (len(experiment_result.links.find_futures(prev_position)) == 1)):
+                loose_ends.append(position)
 
     # remember which gaps are already fixed
     fixed = []
@@ -452,7 +463,7 @@ def bridge_gaps(experiment: Experiment, experiment_result: Experiment, miss_pena
                         experiment.position_data.set_position_data(add_position, 'appearance_penalty',
                                                                    value=-miss_penalty)  # +appearance_penalty)
 
-                        # add all possible links for later marginalization withg uniform probabilities
+                        # add all possible links for later marginalization with uniform probabilities based on local density
                         alternatives = list(
                             find_closest_n_positions(experiment_result.positions.of_time_point(prev_time_point),
                                                      around=position, max_amount=6, max_distance_um=7,
@@ -495,7 +506,19 @@ def bridge_gaps2(experiment: Experiment, experiment_result: Experiment, miss_pen
     for position in experiment_result.positions:
         if (experiment_result.position_data.get_position_data(position, 'division_penalty') < 0) and (
                 len(experiment_result.links.find_futures(position)) == 1):
-            loose_ends.append(position)
+            next_position = experiment_result.links.find_single_future(position)
+            prev_position = experiment_result.links.find_single_past(position)
+
+            if prev_position is None:
+                prev_position= position
+
+            if next_position is None:
+                next_position = position
+
+            if ((len(experiment_result.links.find_futures(next_position)) == 1) and
+                (len(experiment_result.links.find_futures(prev_position)) == 1)):
+                loose_ends.append(position)
+
 
     # remember which gaps are already fixed
     fixed = []
@@ -669,8 +692,8 @@ def _remove_spurs_division(experiment: Experiment, experiment_result: Experiment
         division_penalty = experiment.position_data.get_position_data(position, 'division_penalty')
 
         for daughter in daughters:
-
-            if (len(experiment_result.links.find_futures(daughter)) == 0) and (division_penalty > 0):
+            if (len(experiment_result.links.find_futures(daughter)) == 0) and (division_penalty > 0) \
+                    and (daughter.time_point_number() != experiment.last_time_point_number()):
                 experiment_result.remove_position(daughter)
                 experiment.remove_position(daughter)
 
