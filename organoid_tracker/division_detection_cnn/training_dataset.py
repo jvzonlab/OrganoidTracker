@@ -46,7 +46,7 @@ def training_data_creator_from_raw(image_with_divisions_list: List[_ImageWithDiv
         dataset = dataset.shuffle(round(0.1*len_dataset))
     elif mode == 'validation':
         dataset = dataset.skip(round(split_proportion * len(dataset)))
-        #dataset = dataset.repeat()
+        dataset = dataset.repeat()
 
     # Load data
     dataset = dataset.map(partial(tf_load_images_with_divisions, image_with_positions_list=image_with_divisions_list,
