@@ -54,8 +54,8 @@ def _to_links(position_ids: _PositionToId, results: Dict) -> Links:
 
 def run(positions: PositionCollection, position_data: PositionData, starting_links: Links, link_data: LinkData,
             *, link_weight: int, detection_weight: int, division_weight: int, appearance_weight: int,
-            dissappearance_weight: int, method = 'FlowBased', penalty_difference_cut_off = 3.0,
-            penalty_abs_cut_off = 3.0) -> Tuple[Links, Links]:
+            dissappearance_weight: int, method = 'FlowBased', penalty_difference_cut_off = 4.0,
+            penalty_abs_cut_off = 4.0) -> Tuple[Links, Links]:
     """
     Calculates the optimal links, based on the given starting points and weights.
     :param positions: The positions.
@@ -96,8 +96,8 @@ def run(positions: PositionCollection, position_data: PositionData, starting_lin
 def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links,
                        position_data: PositionData, link_data: LinkData,
                        min_time_point: int, max_time_point: int, division_penalty_cut_off = 2.0, ignore_penalty = 2.0,
-                       penalty_difference_cut_off = 3.0,
-                       penalty_abs_cut_off = 3.0) -> Tuple[Dict, bool, Links]:
+                       penalty_difference_cut_off = 4.0,
+                       penalty_abs_cut_off = 4.0) -> Tuple[Dict, bool, Links]:
     """Creates the linking network. Returns the network and whether there are possible divisions."""
 
     # first cycle over all the links to find for very node the lowest input (top two) and output link energy
@@ -221,7 +221,6 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links,
         "linkingHypotheses": linking_hypotheses,
     }, created_possible_division, naive_links
 
-
 def calculate_appearance_penalty(experiment: Experiment, min_appearance_probability, name='appearance_penalty', buffer_distance = 5.0, only_top = True):
     # go over all timepoints
     for time_point in experiment.positions.time_points():
@@ -251,8 +250,6 @@ def calculate_appearance_penalty(experiment: Experiment, min_appearance_probabil
 
             # calculate (dis)appearance probability
             if min_distance < buffer_distance:
-                if (image_shape[0] - position.z - 1 + offset.z) * resolution.pixel_size_z_um == min_distance:
-                    print(min_distance)
                 appearance_probability = 0.5 * (1 - min_distance/buffer_distance) + min_appearance_probability
             else:
                 appearance_probability = min_appearance_probability
