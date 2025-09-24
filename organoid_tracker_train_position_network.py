@@ -2,6 +2,8 @@
 
 """Script used to train the convolutional neural network, so that it can recognize nuclei in 3D images."""
 import _keras_environment
+from organoid_tracker.neural_network.log_memory_callback import LogMemoryCallback
+
 _keras_environment.activate()
 
 import json
@@ -87,6 +89,7 @@ history = model.fit(training_dataset,
                     callbacks=[
                         keras.callbacks.CSVLogger(os.path.join(logging_folder, "logging.csv"), separator=",", append=False),
                         WriteExamplesCallback(logging_folder, example_dataset),
+                        LogMemoryCallback(os.path.join(logging_folder, "memory_usage.csv")),
                         keras.callbacks.EarlyStopping(patience=1, restore_best_weights=True)])
 
 
