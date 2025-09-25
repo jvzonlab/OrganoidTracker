@@ -3,8 +3,6 @@
 """Script used to train the convolutional neural network, so that it can recognize the same nucleus across time points.
 """
 import _keras_environment
-from organoid_tracker.neural_network.log_memory_callback import LogMemoryCallback
-
 _keras_environment.activate()
 
 import json
@@ -26,6 +24,7 @@ from organoid_tracker.neural_network.dataset_transforms import LimitingDataset
 from organoid_tracker.neural_network.link_detection_cnn.convolutional_neural_network import build_model
 from organoid_tracker.neural_network.link_detection_cnn.training_data_creator import create_image_with_links_list
 from organoid_tracker.neural_network.link_detection_cnn.training_dataset import training_data_creator_from_raw
+from organoid_tracker.neural_network.log_memory_callback import LogMemoryCallback
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
