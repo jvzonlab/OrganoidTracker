@@ -1,7 +1,6 @@
 from typing import Union
 
 import keras
-import psutil
 import torch
 import datetime
 
@@ -20,6 +19,7 @@ class LogMemoryCallback(keras.callbacks.Callback):
         # Write header to the output file
         with open(self._output_file, 'w') as handle:
             handle.write("# Logs GPU and RAM memory usage after each epoch. Epoch 0 is before training starts.\n")
+            handle.write("# To view the system RAM usage, the 'psutil' package must be installed.\n")
             handle.write("time,epoch,batch,gpu_memory_allocated_gb,gpu_memory_reserved_gb,ram_used_gb\n")
 
     def on_epoch_begin(self, epoch, logs=None):
@@ -45,12 +45,16 @@ class LogMemoryCallback(keras.callbacks.Callback):
             gpu_reserved_gb = 0.0
 
         # Retrieve RAM usage
-        process = psutil.Process()
-        memory_info = process.memory_info()
-        ram_used_gb = memory_info.rss / (1024 ** 3)  # Convert to GB
+        try:
+            import psutil
+            process = psutil.Process()
+            memory_info = process.memory_info()
+            ram_used_str = f"{memory_info.rss / (1024 ** 3):.4f}"  # Convert to GB
+        except ImportError:
+            ram_used_str = "no psutil"
 
         # Retrieve time in a format that Excel can parse
         current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         with open(self._output_file, 'a') as handle:
-            handle.write(f"{current_time},{epoch + 1},{batch},{gpu_allocated_gb:.4f},{gpu_reserved_gb:.4f},{ram_used_gb:.4f}\n")
+            handle.write(f"{current_time},{epoch + 1},{batch},{gpu_allocated_gb:.4f},{gpu_reserved_gb:.4f},{ram_used_str}\n")
