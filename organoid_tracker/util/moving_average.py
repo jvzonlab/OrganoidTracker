@@ -170,16 +170,23 @@ class LinesAverage(PlotAverage):
         if x_step_size <= 0:
             raise ValueError(f"Illegal step size: {x_step_size}")
 
-    def _get_min_max_x(self) -> Tuple[float, float]:
+    def _get_min_max_x(self, min_x: Optional[float] = None, max_x: Optional[float] = None) -> Tuple[float, float]:
         """Gets the lowest and highest x values used in the lines. Returns (0, 1) if no lines are available."""
-        min_x = None
-        max_x = None
+        found_min_x = None
+        found_max_x = None
         for line_x, _ in self._lines:
-            min_x = min_none(line_x[0], min_x)
-            max_x = max_none(line_x[-1], max_x)
-        if min_x is None:
+            found_min_x = min_none(line_x[0], found_min_x)
+            found_max_x = max_none(line_x[-1], found_max_x)
+
+        # Let min_x and max_x override the found values
+        if min_x is not None and found_min_x is not None and min_x > found_min_x:
+            found_min_x = min_x
+        if max_x is not None and found_max_x is not None and max_x < found_max_x:
+            found_max_x = max_x
+
+        if found_min_x is None:
             return 0, 1
-        if max_x == min_x:
+        if found_max_x == found_min_x:
             return min_x, max_x + 1
         return min_x, max_x
 
@@ -213,8 +220,9 @@ class LinesAverage(PlotAverage):
         min_x, max_x = self._get_min_max_x()
         return len(self._get_y_values_at(min_x)), len(self._get_y_values_at(max_x))
 
-    def plot(self, axes: Axes, *, color: Color = Color(0, 0, 255), linewidth=2, error_opacity=0.8, standard_error: bool = False, label="Average"):
-        min_x, max_x = self._get_min_max_x()
+    def plot(self, axes: Axes, *, color: Color = Color(0, 0, 255), linewidth=2, error_opacity=0.8,
+             standard_error: bool = False, label="Average", min_x: Optional[float] = None, max_x: Optional[float] = None):
+        min_x, max_x = self._get_min_max_x(min_x, max_x)
 
         # Calculate error bounds
         x_error_values = list()
