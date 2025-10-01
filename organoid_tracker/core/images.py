@@ -35,19 +35,21 @@ class _CachedImageLoader(ImageLoader):
     def get_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
         time_point_number = time_point.time_point_number()
 
-        z_size = self._internal.get_image_size_zyx()[0]
-        image_layers_by_z: List[Optional[ndarray]] = [None] * z_size
-        for entry in self._image_cache:
-            if entry[0] == time_point_number and entry[2] == image_channel:
-                cached_z: int = entry[1]
-                try:
-                    # Found cache entry for this z
-                    image_layers_by_z[cached_z] = entry[3]
-                except IndexError:
-                    pass  # Ignore, image contains extra z levels
-        if self._is_complete(image_layers_by_z):
-            # Collected all necessary cache entries
-            return numpy.array(image_layers_by_z, dtype=image_layers_by_z[0].dtype)
+        image_size_zyx = self._internal.get_image_size_zyx()
+        if image_size_zyx is not None:
+            z_size = image_size_zyx[0]
+            image_layers_by_z: List[Optional[ndarray]] = [None] * z_size
+            for entry in self._image_cache:
+                if entry[0] == time_point_number and entry[2] == image_channel:
+                    cached_z: int = entry[1]
+                    try:
+                        # Found cache entry for this z
+                        image_layers_by_z[cached_z] = entry[3]
+                    except IndexError:
+                        pass  # Ignore, image contains extra z levels
+            if self._is_complete(image_layers_by_z):
+                # Collected all necessary cache entries
+                return numpy.array(image_layers_by_z, dtype=image_layers_by_z[0].dtype)
 
         # Cache miss
         array = self._internal.get_3d_image_array(time_point, image_channel)
