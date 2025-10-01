@@ -341,7 +341,7 @@ class Experiment:
 
     def copy_selected(self, *, images: bool = False, positions: bool = False, position_data: Optional[bool] = None,
                       links: bool = False, link_data: Optional[bool] = None, global_data: bool = False,
-                      connections: bool = False, name: bool = False) -> "Experiment":
+                      connections: bool = False, name: bool = False, warning_limits: bool = False) -> "Experiment":
         """Copies the selected attributes over to a new experiment. Note that links can only be copied if the positions
         are copied."""
         if position_data is not None:
@@ -362,6 +362,8 @@ class Experiment:
             copy.connections = self._connections.copy()
         if name:
             copy.name = self._name.copy()
+        if warning_limits:
+            copy.warning_limits = self._warning_limits.copy()
         return copy
 
     def close(self):

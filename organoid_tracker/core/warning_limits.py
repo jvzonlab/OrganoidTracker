@@ -68,3 +68,7 @@ class WarningLimits:
                 if self.max_time_point is not None else None,
             "excluded_errors": list(self.excluded_errors)
         }
+
+    def copy(self) -> "WarningLimits":
+        """Makes a copy of this object. Changes to the copy will not affect this object."""
+        return WarningLimits(**self.to_dict())

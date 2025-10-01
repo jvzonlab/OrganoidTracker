@@ -86,7 +86,8 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
                                                dissappearance_weight=_disappearance_weight, method=_method)
 
     # The resulting tracks
-    experiment_result = experiment.copy_selected(images=True, positions=True, name=True, links=False, global_data=True)
+    experiment_result = experiment.copy_selected(images=True, positions=True, name=True, links=False, global_data=True,
+                                                 warning_limits=True)
     experiment_result.links = link_result
     experiment_result.links.merge_link_meta_data(possible_links)
 
