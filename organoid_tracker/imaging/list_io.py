@@ -82,7 +82,7 @@ def count_experiments_in_list_file(open_files_list_file: str) -> int:
 
 
 def save_experiment_list_file(experiments: List[Experiment], json_file_name: str, *,
-                              tracking_files_folder: Optional[str] = None):
+                              tracking_files_folder: Optional[str] = None, append_to_file: bool = False) -> None:
     """Saves references to the given experiments to a file.
 
     If a folder has been specified for tracking_files_folder, the experiments will be saved to that folder.
@@ -91,11 +91,24 @@ def save_experiment_list_file(experiments: List[Experiment], json_file_name: str
     experiment.last_save_file. This method does not check for unsaved changes in the experiments. Raises ValueError if
     the experiment contains positions or splines, but no value for experiment.last_save_file. For an interactive version
     where the user is prompted to save unsaved changes, see `action.to_experiment_list_file_structure(...)`.
+
+    When saving many experiments at once, it can become expensive to keep them all in memory. In that case, you can
+    save them one by one to the list file, by setting append_to_file=True. For the first iteration though, make sure
+    that the file does not exist yet or that you set append_to_file=False, otherwise the old file will keep on growing.
     """
     save_base_folder = os.path.dirname(os.path.abspath(json_file_name))
 
-    experiments_json = []
-    for i, experiment in enumerate(experiments):
+    # Load existing file if append_to_file is True, otherwise start with an empty list
+    if append_to_file and os.path.exists(json_file_name):
+        with open(json_file_name, "r", encoding="utf-8") as handle:
+            experiments_json = json.load(handle)
+            if not isinstance(experiments_json, list):
+                raise TypeError("Expected a list in " + json_file_name + ", got " + repr(experiments_json))
+    else:
+        experiments_json = list()
+
+    for experiment in experiments:
+        i = len(experiments_json)  # Current index in the list file
         experiment_json = dict()
 
         # Store experiment file
