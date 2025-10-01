@@ -50,7 +50,7 @@ def crop_3d_to_2d(image: Image, x_start: int, y_start: int, z: int, output: ndar
         return  # We're completely outside the image, nothing to do
     if y_start >= image.limit_y:
         return  # We're completely outside the image, nothing to do
-    if z < 0 or z >= image.limit_z:
+    if z < image.min_z or z >= image.limit_z:
         return  # We're completely outside the image, nothing to do
 
     # Calculate input image bounds
