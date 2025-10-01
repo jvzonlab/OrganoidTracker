@@ -335,6 +335,6 @@ def prob_to_energy(prob):
 def combine_events(energies):
     """combines mutually exclusive events"""
     probs = energy_to_prob(np.array(energies))
-    prob = 1-np.product(1-probs)
+    prob = 1-np.prod(1-probs)
 
     return prob_to_energy(prob)
