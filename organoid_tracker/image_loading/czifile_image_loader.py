@@ -7,7 +7,7 @@ import numpy
 from aicspylibczi import CziFile
 from numpy import ndarray
 
-from organoid_tracker.core import TimePoint
+from organoid_tracker.core import TimePoint, UserError
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.image_loader import ImageLoader, ImageChannel
 from organoid_tracker.core.resolution import ImageResolution
@@ -30,19 +30,35 @@ def _read_resolution(metadata: XmlWrapper) -> Optional[ImageResolution]:
         return None  # Couldn't read the resolution
 
     # I wonder how we're supposed to read the time resolution. This is one way:
-    time_resolution_value_s = metadata["Metadata"]["Information"]["Image"]["Dimensions"]["T"]["Positions"]["Interval"]["Increment"].value_float()
+    time_resolution_value_minutes = metadata["Metadata"]["Information"]["Image"]["Dimensions"]["T"]["Positions"]["Interval"]["Increment"].value_float()
 
-    if time_resolution_value_s is None:
+    if time_resolution_value_minutes is None:
         # This appears to be another way
-        time_resolution = metadata["Metadata"]["Experiment"]["ExperimentBlocks"]["AcquisitionBlock"]["TimeSeriesSetup"]\
-            ["Switches"]["Switch"]["SwitchAction"]["SetIntervalAction"]["Interval"]["TimeSpan"]
-        time_resolution_value_s = 0
-        if time_resolution["DefaultUnitFormat"].value_str() == "ms":
-            time_resolution_value_ms = time_resolution["Value"].value_float()
-            if time_resolution_value_ms is not None:
-                time_resolution_value_s = time_resolution_value_ms / 1000
 
-    return ImageResolution(resolution_zyx[2], resolution_zyx[1], resolution_zyx[0], time_resolution_value_s / 60)
+        acquisition_block = metadata["Metadata"]["Experiment"]["ExperimentBlocks"]["AcquisitionBlock"]
+        time_series_setup = acquisition_block["TimeSeriesSetup"]
+        if time_series_setup.is_none():
+            # Try using the SubDimensionSetups instead
+            time_series_setup = acquisition_block["SubDimensionSetups"]["TimeSeriesSetup"]
+
+        time_resolution = time_series_setup["Interval"]["TimeSpan"]
+        if time_resolution.is_none():
+            # Apparently time series interval was controlled by a switch action
+            time_resolution = time_series_setup["Switches"]["Switch"]["SwitchAction"]["SetIntervalAction"]["Interval"]["TimeSpan"]
+
+        time_resolution_value_minutes = 0
+        unit = time_resolution["DefaultUnitFormat"].value_str()
+        value = time_resolution["Value"].value_float()
+        if unit == "s":
+            time_resolution_value_minutes = value / 60
+        elif unit == "min":
+            time_resolution_value_minutes = value
+        elif unit == "ms":
+            time_resolution_value_minutes = value / (60 * 1000)
+        elif unit == "h":
+            time_resolution_value_minutes = value * 60
+
+    return ImageResolution(resolution_zyx[2], resolution_zyx[1], resolution_zyx[0], time_resolution_value_minutes / 60)
 
 
 def _read_resolution_zyx_um(metadata: XmlWrapper) -> Tuple[float, float, float]:
@@ -69,12 +85,16 @@ def load_from_czi_reader(experiment: Experiment, file: str, reader: CziFile, ser
 
     # Set up resolution
     try:
-        metadata = read_xml(reader.reader.read_meta())
-    except RuntimeError:
-        # No metadata available, so we cannot read the resolution
-        pass
-    else:
-        experiment.images.set_resolution(_read_resolution(metadata))
+        experiment.images.resolution()
+    except UserError:
+        # No resolution set yet, try to read it from the metadata
+        try:
+            metadata = read_xml(reader.reader.read_meta())
+        except RuntimeError:
+            # No metadata available, so we cannot read the resolution
+            pass
+        else:
+            experiment.images.set_resolution(_read_resolution(metadata))
 
     # Generate an automatic name for the experiment
     file_name = os.path.basename(file)
