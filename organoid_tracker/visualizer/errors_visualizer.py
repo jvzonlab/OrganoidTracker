@@ -200,7 +200,7 @@ class ErrorsVisualizer(PositionListVisualizer):
 
     def get_title(self, position_list: List[Position], current_position_index: int):
         position = position_list[current_position_index]
-        error = linking_markers.get_error_marker(self._experiment.position_data, position)
+        error = linking_markers.get_error_marker(self._experiment.positions, position)
         type = error.get_severity().name if error is not None else "Position"
         message = error.get_message() if error is not None else "Error was suppressed"
 
@@ -216,13 +216,14 @@ class ErrorsVisualizer(PositionListVisualizer):
         return super()._on_command(command)
 
     def _action_recheck_errors(self):
-        cell_error_finder.find_errors_in_experiment(self._experiment)
         # Recalculate everything
         self._recalculate_errors()
         self.update_status("Rechecked all cells in the experiment. "
                            "Please note that suppressed warnings remain suppressed.")
 
     def _recalculate_errors(self):
+        cell_error_finder.find_errors_in_experiment(self._experiment)
+
         selected_position = None
         if 0 <= self._current_position_index < len(self._position_list):
             selected_position = self._position_list[self._current_position_index]
@@ -271,12 +272,12 @@ class ErrorsVisualizer(PositionListVisualizer):
         if self._current_position_index < 0 or self._current_position_index >= len(self._position_list):
             return
         position = self._position_list[self._current_position_index]
-        position_data = self._experiment.position_data
-        error = linking_markers.get_error_marker(position_data, position)
+        positions = self._experiment.positions
+        error = linking_markers.get_error_marker(positions, position)
         if error is None:
             self.update_status(f"Warning for {position} was already suppressed")
             return
-        linking_markers.suppress_error_marker(position_data, position, error)
+        linking_markers.suppress_error_marker(positions, position, error)
         self._total_number_of_warnings -= 1
         self.draw_view()
         self.update_status(f"Suppressed warning for {position}")

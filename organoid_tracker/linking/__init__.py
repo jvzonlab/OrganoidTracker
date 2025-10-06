@@ -18,12 +18,11 @@ The simplest linker is the nearest-neighbor linker:
 The more complex linker is the dpct linker:
 >>> from organoid_tracker.linking import dpct_linker
 >>> all_potential_links = nearest_neighbor_linker.nearest_neighbor(experiment, tolerance=2)
->>> # experiment must contain position_data for 'division_penalty', 'appearance_penalty', 'dissappearance_penalty'
+>>> # experiment must contain position data for 'division_penalty', 'appearance_penalty', 'dissappearance_penalty'
 >>> # for all positions.
 >>> # and must contain link_data for 'link_penalty' for all potential links
->>> experiment.links = dpct_linker.run(experiment.positions, experiment.position_data, all_potential_links,
->>>            experiment.link_data, link_weight=1, detection_weigh=1, division_weight=1, appearance_weight=1,
->>>            dissappearance_weight=1)
+>>> experiment.links = dpct_linker.run(experiment.positions, all_potential_links,
+>>>            link_weight=1, detection_weigh=1, division_weight=1, appearance_weight=1, dissappearance_weight=1)
 
 
 """

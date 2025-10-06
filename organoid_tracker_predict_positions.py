@@ -1,25 +1,31 @@
 """Predicts cell positions using an already-trained convolutional neural network."""
+import _keras_environment
+from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.image_loading import general_image_loader
+
+_keras_environment.activate()
+
 import json
 import math
 import os
 
+import keras.saving
 import numpy as np
-import tensorflow as tf
+import tifffile
 from skimage.feature import peak_local_max
-from tifffile import tifffile
 
 from organoid_tracker.config import ConfigFile, config_type_int
-from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
-from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 from organoid_tracker.imaging import io, list_io
-from organoid_tracker.position_detection_cnn.loss_functions import loss, position_precision, overcount, position_recall
-from organoid_tracker.position_detection_cnn.peak_calling import reconstruct_volume
-from organoid_tracker.position_detection_cnn.prediction_dataset import predicting_data_creator
-from organoid_tracker.position_detection_cnn.split_images import corners_split, reconstruction
-from organoid_tracker.position_detection_cnn.training_data_creator import create_image_list_without_positions
+from organoid_tracker.neural_network.position_detection_cnn.loss_functions import loss, position_precision, overcount, \
+    position_recall
+from organoid_tracker.neural_network.position_detection_cnn.peak_calling import reconstruct_volume
+from organoid_tracker.neural_network.position_detection_cnn.prediction_dataset import predicting_data_creator
+from organoid_tracker.neural_network.position_detection_cnn.split_images import corners_split, reconstruction
+from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import \
+    create_image_list_without_positions
 
 # PARAMETERS
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
@@ -53,14 +59,14 @@ else:
 
     experiment_list = [experiment_list]
 
-_patch_shape_y = config.get_or_default("patch_shape_y", str(240), type=config_type_int, comment="Maximum patch size to use for predictions."
+_patch_shape_y = config.get_or_default("patch_shape_y", str(320), type=config_type_int, comment="Maximum patch size to use for predictions."
                                        " Make this smaller if you run out of video card memory.")
-_patch_shape_x = config.get_or_default("patch_shape_x", str(240), type=config_type_int)
+_patch_shape_x = config.get_or_default("patch_shape_x", str(320), type=config_type_int)
 
 _buffer_z = config.get_or_default("buffer_z", str(1), comment="Buffer space to use when stitching multiple patches"
-                                  " together", type=config_type_int)
-_buffer_y = config.get_or_default("buffer_y", str(8), type=config_type_int)
-_buffer_x = config.get_or_default("buffer_x", str(8), type=config_type_int)
+                                                              " together", type=config_type_int)
+_buffer_y = config.get_or_default("buffer_y", str(32), type=config_type_int, comment="buffer_y * 2 + patch_shape_y needs to be a multiple of 32")
+_buffer_x = config.get_or_default("buffer_x", str(32), type=config_type_int, comment="Same for buffer_x")
 
 _model_folder = config.get_or_prompt("model_folder", "Please paste the path here to the \"trained_model\" folder containing the trained model.")
 _output_folder = config.get_or_default("positions_output_folder", "Automatic positions", comment="Output folder for the positions, can be viewed using the visualizer program.")
@@ -69,10 +75,11 @@ _images_channels = {int(part) for part in _channels_str.split(",")}
 _mid_layers = int(config.get_or_default("mid_layers", str(5), comment="Number of layers to interpolate in between"
                                         " z-planes. Used to improve peak finding."))
 _peak_min_distance_px = int(config.get_or_default("peak_min_distance_px", str(6), comment="Minimum distance in pixels"
-                                                  " between detected positions."))
-_threshold = float(config.get_or_default("threshold", str(0.1), comment="Minimum peak intensity"))
+                                                                                          " between detected positions."))
+_threshold = float(config.get_or_default("threshold", str(0.1), comment="Minimum peak intensity, relative to the maximum in the time point"))
 
-_debug_folder = config.get_or_default("predictions_output_folder", "", comment="If you want to see the raw prediction images, paste the path to a folder here. In that folder, a prediction image will be placed for each time point.")
+_debug_folder = config.get_or_default("predictions_output_folder", "",
+                                      comment="If you want to see the raw prediction images, paste the path to a folder here. In that folder, a prediction image will be placed for each time point.")
 if len(_debug_folder) == 0:
     _debug_folder = None
 config.save()
@@ -81,10 +88,11 @@ config.save()
 # Load models
 print("Loading model...")
 _model_folder = os.path.abspath(_model_folder)
-model = tf.keras.models.load_model(_model_folder, custom_objects={"loss": loss,
-                                                                  "position_precision": position_precision,
-                                                                  "position_recall": position_recall,
-                                                                  "overcount": overcount})
+model = keras.saving.load_model(os.path.join(_model_folder, "model.keras"),
+                                custom_objects={"loss": loss,
+                                                "position_precision": position_precision,
+                                                "position_recall": position_recall,
+                                                "overcount": overcount})
 
 # Set relevant parameters
 if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
@@ -107,6 +115,22 @@ if _dataset_file != '':
 # Loop through experiments
 experiments_to_save = list()
 for experiment_index, experiment in enumerate(experiment_list):
+    # Check if output file exists already (in which case we skip this experiment)
+    if _dataset_file != '':
+        output_file = os.path.join(_output_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}."
+                                   + io.FILE_EXTENSION)
+    else:
+        output_file = _output_file
+    if os.path.exists(output_file):
+        # Skip experiment (but still add to the AUTLIST file)
+        print(f"Experiment {experiment_index + 1} ({experiment.name.get_save_name()}) already has positions saved at"
+              f" {output_file}. Skipping.")
+        if _dataset_file != '':
+            # Collect for writing AUTLIST file
+            experiment.last_save_file = output_file
+            experiments_to_save.append(experiment)
+        continue
+
     # Check if images were loaded
     if not experiment.images.image_loader().has_images():
         print(f"No images were found for experiment \"{experiment.name}\". Please check the configuration file and make"
@@ -133,7 +157,7 @@ for experiment_index, experiment in enumerate(experiment_list):
     image_list = create_image_list_without_positions(experiment)
 
     # set relevant parameters
-    _patch_shape_z = model.layers[0].input_shape[0][1] - _buffer_z * 2  # All models have a fixed z-shape
+    _patch_shape_z = model.layers[0].batch_shape[1] - _buffer_z * 2  # All models have a fixed z-shape
     patch_shape_zyx = [_patch_shape_z, _patch_shape_y, _patch_shape_x]
     buffer = np.array([[_buffer_z, _buffer_z], [_buffer_y, _buffer_y], [_buffer_x, _buffer_x]])
 
@@ -171,18 +195,17 @@ for experiment_index, experiment in enumerate(experiment_list):
         print(f"Predicting set of images {image_set_index + 1}/{image_set_count}")
 
         # set current set size
-        current_set_size = min(len(image_list)-image_set_index*set_size, set_size)
+        current_set_size = min(len(image_list) - image_set_index * set_size, set_size)
 
         # take relevant part of the tf.Dataset
-        prediction_dataset = prediction_dataset_all_iter.get_next()
-        prediction_dataset = tf.data.Dataset.from_tensor_slices(prediction_dataset).batch(1)
+        prediction_dataset = next(prediction_dataset_all)
 
         # create prediction mask for peak_finding
-        prediction_mask_shape = 2*tf.floor(np.sqrt(_peak_min_distance_px ** 2 / 3)) + 1
-        prediction_mask = np.ones([int(prediction_mask_shape),]*3)
+        prediction_mask_shape = 2 * np.floor(np.sqrt(_peak_min_distance_px ** 2 / 3)) + 1
+        prediction_mask = np.ones([int(prediction_mask_shape), ] * 3)
 
         # make predictions
-        predictions = model.predict(prediction_dataset)
+        predictions = model.predict(prediction_dataset, batch_size=1, verbose=0)
 
         # split set in batches of patches belonging to single figure
         predictions = np.split(predictions, current_set_size)
@@ -210,35 +233,29 @@ for experiment_index, experiment in enumerate(experiment_list):
 
             # Comparison between image_max and im to find the coordinates of local maxima
             #im = erosion(im, np.ones((7,7,7)))
-
-            if _threshold is None:
-                coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=im.max() / 10,  exclude_border=False) #, footprint=prediction_mask)
-            else:
-                coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=_threshold,
-                                             exclude_border=False)
+            coordinates = peak_local_max(im, min_distance=_peak_min_distance_px, threshold_abs=im.max() * _threshold,
+                                        exclude_border=False)  #, footprint=prediction_mask)
 
             for coordinate in coordinates:
                 pos = Position(coordinate[2], coordinate[1], coordinate[0] / z_divisor - 1,
-                               time_point=time_point) + image_offset
+                            time_point=time_point) + image_offset
                 all_positions.add(pos)
 
-    experiment.positions.add_positions(all_positions)
+    experiment.positions.merge_data(all_positions)
 
 
 
     print("Saving file...")
+    io.save_data_to_json(experiment, output_file)
     if _dataset_file != '':
-        output_file = os.path.join(_output_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}."
-                                   + io.FILE_EXTENSION)
-        io.save_data_to_json(experiment, output_file)
         # Collect for writing AUTLIST file
         experiment.images.image_loader(original_image_loader)  # Restore original
         experiment.last_save_file = output_file
         experiments_to_save.append(experiment)
 
-        list_io.save_experiment_list_file(experiments_to_save,
-                                      os.path.join(_output_folder, "_All" + list_io.FILES_LIST_EXTENSION))
-    else:
-        io.save_data_to_json(experiment, _output_file)
+if _dataset_file != '':
+    list_io.save_experiment_list_file(experiments_to_save,
+                                  os.path.join(_output_folder, "_All" + list_io.FILES_LIST_EXTENSION))
+
 
 print("Done!")

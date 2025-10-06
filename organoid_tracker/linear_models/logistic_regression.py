@@ -8,7 +8,7 @@ import numpy
 def platt_scaling(predictions, correct):
 
     # define model
-    model = LogisticRegression(random_state=0, penalty='none')
+    model = LogisticRegression(random_state=0, penalty=None)
 
     #
     eps = 10**-10
@@ -19,11 +19,8 @@ def platt_scaling(predictions, correct):
 
     intercept = model.intercept_
     coef = model.coef_[0]
-    print(intercept)
-    print(coef)
 
-    model = LogisticRegression(random_state=0, penalty='none', fit_intercept=False)
+    model = LogisticRegression(random_state=0, penalty=None, fit_intercept=False)
     model.fit(predictions.reshape(-1, 1), correct)
-    print(model.coef_[0])
 
     return intercept[0] , coef[0] ,model.coef_[0]

@@ -18,7 +18,6 @@ from organoid_tracker.core.links import Links
 from organoid_tracker.core.mask import Mask
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
-from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.resolution import ImageResolution
 
 
@@ -71,7 +70,6 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
 
     all_positions = PositionCollection()
     all_links = Links()
-    all_position_data = PositionData()
     links_to_mother_by_time_point = _read_lineage_file(file_name)
 
     file_prefix = file_name[:-4]
@@ -98,7 +96,7 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
 
             # Add position
             all_positions.add(position)
-            all_position_data.set_position_data(position, "ctc_id", region.label)
+            all_positions.set_position_data(position, "ctc_id", region.label)
 
             # Try to add link
             if region.label in positions_of_previous_time_point:
@@ -121,7 +119,6 @@ def load_data_file(file_name: str, min_time_point: int = 0, max_time_point: int 
 
     experiment.positions = all_positions
     experiment.links = all_links
-    experiment.position_data = all_position_data
 
     return experiment
 
@@ -199,7 +196,7 @@ def _save_track_images(experiment: Experiment, image_prefix: str, mask: Mask):
             mask.center_around(position)
             mask.stamp_image(image_fill_array, track_id + 1)  # Track id is offset by 1 to avoid track id 0
 
-        tifffile.imsave(image_file_name, image_fill_array.array) #, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
+        tifffile.imwrite(image_file_name, image_fill_array.array) #, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
 
 
 def _save_track_images_watershed(experiment: Experiment, image_prefix: str, mask: Mask, resolution: ImageResolution):

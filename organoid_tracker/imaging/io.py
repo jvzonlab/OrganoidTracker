@@ -1,8 +1,9 @@
 """Classes for expressing the positions of positions"""
+import json
 import os
 import warnings
 from pathlib import Path
-from typing import List, Dict, Any, Iterable, Optional
+from typing import List, Dict, Any, Optional
 
 import numpy
 
@@ -18,7 +19,6 @@ from organoid_tracker.core.link_data import LinkData
 from organoid_tracker.core.links import Links, LinkingTrack
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
-from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.resolution import ImageResolution, ImageTimings
 from organoid_tracker.core.spline import SplineCollection, Spline
 from organoid_tracker.core.warning_limits import WarningLimits
@@ -34,6 +34,21 @@ SUPPORTED_IMPORT_FILES = [
     ("TrackMate file", "*.xml"),
     ("Guizela's tracking files", "track_00000.p")]
 WRITE_NEW_FORMAT = True  # Default value for the saving function. Reading always supports both formats.
+
+
+class NumpyToJsonEncoder(json.JSONEncoder):
+    """JSON encoder that can serialize numpy arrays (unlike the default JSON encoder)."""
+
+    def default(self, obj):
+        if isinstance(obj, numpy.bool_):
+            return bool(obj)
+        if isinstance(obj, numpy.integer):
+            return int(obj)
+        if isinstance(obj, numpy.floating):
+            return float(obj)
+        if isinstance(obj, numpy.ndarray):
+            return obj.tolist()
+        return super().default(obj)
 
 
 def load_positions_and_shapes_from_json(experiment: Experiment, json_file_name: str,
@@ -266,9 +281,8 @@ def _parse_d3_links_format(experiment: Experiment, links_json: Dict[str, Any], m
                            max_time_point: int):
     """Parses a node_link_graph and adds all links and positions to the experiment."""
     links = experiment.links
-    position_data = experiment.position_data
-    link_data = experiment.link_data
-    _add_d3_data(links, link_data, position_data, links_json, min_time_point, max_time_point)
+    positions = experiment.positions
+    _add_d3_data(links, positions, links_json, min_time_point, max_time_point)
     positions = experiment.positions
     for position in links.find_all_positions():
         positions.add(position)
@@ -283,23 +297,18 @@ def _parse_positions_and_meta_format(experiment: Experiment, positions_json: Lis
         if time_point_number < min_time_point or time_point_number > max_time_point:
             continue
 
-        has_meta = "position_meta" in time_point_json
-        positions_of_time_point = list() if has_meta else None
+        position_meta = time_point_json["position_meta"] if "position_meta" in time_point_json else dict()
+        positions_of_time_point = list()
         for raw_position in time_point_json["coords_xyz_px"]:
             position = Position(*raw_position, time_point_number=time_point_number)
-            positions.add(position)
-            if positions_of_time_point is not None:
-                positions_of_time_point.append(position)
+            positions_of_time_point.append(position)
 
-        if has_meta:
-            experiment.position_data.add_data_from_time_point_dict(TimePoint(time_point_number), positions_of_time_point,
-                                                                   time_point_json["position_meta"])
+        positions.add_data_from_time_point_dict(TimePoint(time_point_number), positions_of_time_point, position_meta)
 
 
 def _parse_tracks_and_meta_format(experiment: Experiment, tracks_json: List[Dict], min_time_point: int,
                                   max_time_point: int):
     links = experiment.links
-    link_data = experiment.link_data
 
     # Iterate a first time to add the tracks
     for track_json in tracks_json:
@@ -326,7 +335,7 @@ def _parse_tracks_and_meta_format(experiment: Experiment, tracks_json: List[Dict
                     if value is None:
                         continue
 
-                    link_data.set_link_data(positions_of_track[i - min_index], positions_of_track[i - min_index + 1], metadata_key, value)
+                    links.set_link_data(positions_of_track[i - min_index], positions_of_track[i - min_index + 1], metadata_key, value)
 
         # Handle lineage metadata
         if "lineage_meta" in track_json:
@@ -360,7 +369,7 @@ def _parse_tracks_and_meta_format(experiment: Experiment, tracks_json: List[Dict
                     value = metadata_values[i]
                     if value is None:
                         continue
-                    link_data.set_link_data(position_previous_track, position_first, metadata_key, value)
+                    links.set_link_data(position_previous_track, position_first, metadata_key, value)
 
 
 def _parse_splines_format(experiment: Experiment, splines_data: List[Dict], min_time_point: int, max_time_point: int):
@@ -414,21 +423,35 @@ def _parse_beacons_format(experiment: Experiment, beacons_data: Dict[str, List],
             experiment.beacons.add(Position(*beacon_values[0:3], time_point_number=time_point_number), type_name)
 
 
-def _parse_connections_format(experiment: Experiment, connections_data: Dict[str, List[List[Dict]]],
+def _parse_connections_format(experiment: Experiment, connections_data: Dict[str, Dict],
                               min_time_point: int, max_time_point: int):
     """Adds all connections from the serialized format to the Connections object."""
     connections = experiment.connections
-    for time_point_str, connections_list in connections_data.items():
+    for time_point_str, connections_of_time_point in connections_data.items():
         time_point_number = int(time_point_str)
         if time_point_number < min_time_point or time_point_number > max_time_point:
             continue
 
-        for connection in connections_list:
-            position1 = _parse_position(connection[0])
-            position2 = _parse_position(connection[1])
+        if isinstance(connections_of_time_point, list):
+            # Old format, without metadata, just a list of tuples
+            for connection in connections_of_time_point:
+                position1 = _parse_position(connection[0])
+                position2 = _parse_position(connection[1])
 
-            connections.add_connection(position1.with_time_point_number(time_point_number),
-                                       position2.with_time_point_number(time_point_number))
+                connections.add_connection(position1.with_time_point_number(time_point_number),
+                                           position2.with_time_point_number(time_point_number))
+        else:
+            # Dictionary, with keys "from_xyz_px", "to_xyz_px" and "metadata"
+
+            # Parse the positions
+            connections_list = []
+            for raw_position_1, raw_position_2 in zip(connections_of_time_point["from_xyz_px"], connections_of_time_point["to_xyz_px"]):
+                position1 = Position(*raw_position_1, time_point_number=time_point_number)
+                position2 = Position(*raw_position_2, time_point_number=time_point_number)
+                connections_list.append((position1, position2))
+
+            # Add all connections and metadata
+            connections.add_data_from_time_point_dict(TimePoint(time_point_number), connections_list, connections_of_time_point["metadata"])
 
 
 def _parse_image_filters(data: Dict[str, Any]) -> ImageFilters:
@@ -462,7 +485,7 @@ def _parse_position(json_structure: Dict[str, Any]) -> Position:
     return Position(json_structure["x"], json_structure["y"], json_structure["z"])
 
 
-def _add_d3_data(links: Links, link_data: LinkData, position_data: PositionData, links_json: Dict,
+def _add_d3_data(links: Links, positions: PositionCollection, links_json: Dict,
                  min_time_point: int = -100000, max_time_point: int = 100000):
     """Adds data in the D3.js node-link format. Used for deserialization."""
 
@@ -479,7 +502,7 @@ def _add_d3_data(links: Links, link_data: LinkData, position_data: PositionData,
             if data_key == "id":
                 continue
 
-            position_data.set_position_data(position, data_key, data_value)
+            positions.set_position_data(position, data_key, data_value)
 
     # Add links (and link and lineage data)
     for link in links_json["links"]:
@@ -497,11 +520,10 @@ def _add_d3_data(links: Links, link_data: LinkData, position_data: PositionData,
                 links.set_lineage_data(links.get_track(source), data_key[len("__lineage_"):], data_value)
             elif data_key != "source" and data_key != "target":
                 # Link metadata, store it
-                link_data.set_link_data(source, target, data_key, data_value)
+                links.set_link_data(source, target, data_key, data_value)
 
 
-def _links_to_d3_data(links: Links, positions: Iterable[Position], position_data: PositionData,
-                      link_data: LinkData) -> Dict:
+def _links_to_d3_data(links: Links, positions: PositionCollection) -> Dict:
     """Return data in D3.js node-link format that is suitable for JSON serialization
     and use in Javascript documents."""
     links.sort_tracks_by_x()  # Make sure tracks are always saved in the correct order
@@ -513,7 +535,7 @@ def _links_to_d3_data(links: Links, positions: Iterable[Position], position_data
         node = {
             "id": _encode_position(position)
         }
-        for data_name, data_value in position_data.find_all_data_of_position(position):
+        for data_name, data_value in positions.find_all_data_of_position(position):
             if data_name == "shape":
                 continue  # For historical reasons, shape information is stored in the "positions" array
             node[data_name] = data_value
@@ -531,7 +553,7 @@ def _links_to_d3_data(links: Links, positions: Iterable[Position], position_data
             # Start of a lineage, so add lineage data
             for data_name, data_value in links.find_all_data_of_lineage(links.get_track(source)):
                 edge["__lineage_" + data_name] = data_value
-        for data_name, data_value in link_data.find_all_data_of_link(source, target):
+        for data_name, data_value in links.find_all_data_of_link(source, target):
             edge[data_name] = data_value
         edges.append(edge)
 
@@ -563,14 +585,13 @@ def save_positions_to_json(experiment: Experiment, json_file_name: str):
 def _encode_image_positions(experiment: Experiment):
     positions = experiment.positions
     offsets = experiment.images.offsets
-    position_data = experiment.position_data
 
     data_structure = {}
     for time_point in positions.time_points():
         offset = offsets.of_time_point(time_point)
         encoded_positions = []
         for position in positions.of_time_point(time_point):
-            if linking_markers.is_live(position_data, position):
+            if linking_markers.is_live(positions, position):
                 encoded_positions.append([position.x - offset.x, position.y - offset.y, position.z - offset.z])
 
         data_structure[str(time_point.time_point_number())] = encoded_positions
@@ -645,14 +666,32 @@ def _encode_position(position: Position) -> Dict[str, Any]:
         }
 
 
-def _encode_connections_to_json(connections: Connections) -> Dict[str, List[List[Dict]]]:
+def _encode_connections_to_json(connections: Connections) -> Dict[str, Dict]:
     connections_dict = dict()
+
     for time_point in connections.time_points():
-        connections_json = list()
-        for position1, position2 in connections.of_time_point(time_point):
-            connections_json.append([_encode_position(position1.with_time_point(None)),
-                                     _encode_position(position2.with_time_point(None))])
-        connections_dict[str(time_point.time_point_number())] = connections_json
+        data_names = connections.find_all_data_names(time_point=time_point)
+
+        # Initialize the empty lists for positions and metadata
+        positions_1_list = list()
+        positions_2_list = list()
+        connections_metadata = dict()
+        for data_name in data_names:
+            connections_metadata[data_name] = list()
+
+        # Loop through all connections at this time point and add them to the lists
+        for position_1, position_2, metadata in connections.of_time_point_with_data(time_point):
+            positions_1_list.append([position_1.x, position_1.y, position_1.z])
+            positions_2_list.append([position_2.x, position_2.y, position_2.z])
+            for data_name in data_names:
+                connections_metadata[data_name].append(metadata.get(data_name))
+
+        connections_dict[str(time_point.time_point_number())] = {
+            "from_xyz_px": positions_1_list,
+            "to_xyz_px": positions_2_list,
+            "metadata": connections_metadata
+        }
+
     return connections_dict
 
 
@@ -689,13 +728,12 @@ def _encode_image_filters_to_json(filters: ImageFilters) -> Dict[str, Any]:
     return result_dict
 
 
-def _encode_positions_and_meta(positions: PositionCollection, position_data: PositionData) -> List[Dict]:
+def _encode_positions_and_meta(positions: PositionCollection) -> List[Dict]:
     """Encodes positions and metadata to a JSON structure."""
     time_points_json = list()
     for time_point in positions.time_points():
-        metadata_lists = dict()
         positions_of_time_point = list(positions.of_time_point(time_point))
-        metadata_lists = position_data.create_time_point_dict(time_point, positions_of_time_point)
+        metadata_lists = positions.create_time_point_dict(time_point, positions_of_time_point)
         xyz_values = [[position.x, position.y, position.z] for position in positions_of_time_point]
 
         if len(positions_of_time_point) > 0:
@@ -709,7 +747,7 @@ def _encode_positions_and_meta(positions: PositionCollection, position_data: Pos
     return time_points_json
 
 
-def _encode_tracks_and_meta(links: Links, link_data: LinkData) -> List[Dict]:
+def _encode_tracks_and_meta(links: Links) -> List[Dict]:
     tracks_json = list()
     for track in links.find_all_tracks():
         # Collect last positions of previous tracks, for connecting tracks
@@ -721,7 +759,7 @@ def _encode_tracks_and_meta(links: Links, link_data: LinkData) -> List[Dict]:
             last_position = previous_track.find_last_position()
 
             # Add metadata to the metadata lists
-            for data_name, data_value in link_data.find_all_data_of_link(last_position, first_position):
+            for data_name, data_value in links.find_all_data_of_link(last_position, first_position):
                 # This data value was not yet found in the connections to the previous tracks
                 # Set it to None for all previous positions
                 if data_name not in link_meta_before:
@@ -744,7 +782,7 @@ def _encode_tracks_and_meta(links: Links, link_data: LinkData) -> List[Dict]:
         for position in track.positions():
             if previous_position is not None:
                 # Add metadata in between current and previous position to the metadata lists
-                for data_name, data_value in link_data.find_all_data_of_link(previous_position, position):
+                for data_name, data_value in links.find_all_data_of_link(previous_position, position):
                     # This data value was not yet found in the connections to the previous tracks
                     # Set it to None for all previous positions
                     if data_name not in link_meta:
@@ -792,11 +830,11 @@ def save_data_to_json(experiment: Experiment, json_file_name: str, *, write_new_
 
         # Save positions
         if experiment.positions.has_positions():
-            save_data["positions"] = _encode_positions_and_meta(experiment.positions, experiment.position_data)
+            save_data["positions"] = _encode_positions_and_meta(experiment.positions)
 
         # Save tracks
         if experiment.links.has_links():
-            save_data["tracks"] = _encode_tracks_and_meta(experiment.links, experiment.link_data)
+            save_data["tracks"] = _encode_tracks_and_meta(experiment.links)
     else:
         save_data = {"version": "v1"}
 
@@ -805,9 +843,8 @@ def save_data_to_json(experiment: Experiment, json_file_name: str, *, write_new_
             save_data["positions"] = _encode_positions_in_old_format(experiment.positions)
 
         # Save links
-        if experiment.links.has_links() or experiment.position_data.has_position_data():
-            save_data["links"] = _links_to_d3_data(experiment.links, experiment.positions, experiment.position_data,
-                                                   experiment.link_data)
+        if experiment.links.has_links() or experiment.positions.has_position_data():
+            save_data["links"] = _links_to_d3_data(experiment.links, experiment.positions)
 
     # Save name
     if experiment.name.has_name():
@@ -899,7 +936,7 @@ def _write_json_to_file(file_name: str, data_structure):
         # SLower path, but only relies on Python standard library
         import json
         with open(file_name, 'w', encoding="utf8") as handle:
-            json.dump(data_structure, handle)
+            json.dump(data_structure, handle, cls=NumpyToJsonEncoder)
 
 
 def _create_parent_directories(file_name: str):

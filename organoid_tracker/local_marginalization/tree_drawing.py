@@ -8,6 +8,7 @@ import numpy
 import matplotlib.cm
 
 from organoid_tracker.linking import cell_division_finder
+from organoid_tracker.linking_analysis.errors import Error
 
 
 def color_error_rates(time_point_number: int, track: LinkingTrack, experiment: Experiment) -> MPLColor:
@@ -24,7 +25,7 @@ def color_error_rates(time_point_number: int, track: LinkingTrack, experiment: E
     current_position = position
 
     for prev_position in prev_positions:
-        marginal = (experiment.link_data.get_link_data(prev_position, current_position,
+        marginal = (experiment.links.get_link_data(prev_position, current_position,
                                                        "marginal_probability"))
         if marginal is not None:
             marginals.append(marginal)
@@ -34,7 +35,7 @@ def color_error_rates(time_point_number: int, track: LinkingTrack, experiment: E
     current_position = position
 
     for next_position in future_positions:
-        marginal = (experiment.link_data.get_link_data(current_position, next_position,
+        marginal = (experiment.links.get_link_data(current_position, next_position,
                                                        "marginal_probability"))
         if marginal is not None:
             marginals.append(marginal)
@@ -74,9 +75,9 @@ def compute_lineage_error_probability(track: LinkingTrack, experiment: Experimen
         for pos in track.positions():
             prev_pos = experiment.links.find_single_past(pos)
             if prev_pos is not None:
-                marginal_probability = experiment.link_data.get_link_data(prev_pos, pos, 'marginal_probability')
-                error = experiment.position_data.get_position_data(pos, 'error') == 14
-                suppressed_error = experiment.position_data.get_position_data(pos, 'suppressed_error') == 14
+                marginal_probability = experiment.links.get_link_data(prev_pos, pos, 'marginal_probability')
+                error = experiment.positions.get_position_data(pos, 'error') == 14
+                suppressed_error = experiment.positions.get_position_data(pos, 'suppressed_error') == 14
                 if marginal_probability is not None:
                     if marginal_probability > 0.99 or (error and not suppressed_error):
                         probability = probability*marginal_probability
@@ -88,13 +89,16 @@ def compute_track_error_probability(track: LinkingTrack, experiment: Experiment)
 
     # multiply all probabilities except if an error is corrected
     probability = 1
+
+    low_link_score_error = Error.LOW_LINK_SCORE.value
+
     for pos in track.positions():
 
         prev_pos = experiment.links.find_single_past(pos)
         if prev_pos is not None:
-            marginal_probability = experiment.link_data.get_link_data(prev_pos, pos, 'marginal_probability')
-            error = experiment.position_data.get_position_data(pos, 'error') == 14
-            suppressed_error = experiment.position_data.get_position_data(pos, 'suppressed_error') == 14
+            marginal_probability = experiment.links.get_link_data(prev_pos, pos, 'marginal_probability')
+            error = experiment.positions.get_position_data(pos, 'error') == low_link_score_error
+            suppressed_error = experiment.positions.get_position_data(pos, 'suppressed_error') == low_link_score_error
             if marginal_probability is not None:
                 if marginal_probability > 0.99 or (error and not suppressed_error):
                     probability = probability*marginal_probability

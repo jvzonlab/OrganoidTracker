@@ -14,13 +14,12 @@ from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
-from organoid_tracker.core.position_data import PositionData
 from organoid_tracker.core.spline import SplineCollection, Spline
 from organoid_tracker.guizela_tracker_compatibility import cell_type_converter
 from organoid_tracker.guizela_tracker_compatibility.track_lib import Track
-from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.linking_analysis.linking_markers import EndMarker
+from organoid_tracker.position_analysis import position_markers
 
 
 def _load_links(experiment: Experiment, tracks_dir: str, min_time_point: int = 0, max_time_point: int = 5000):
@@ -28,7 +27,6 @@ def _load_links(experiment: Experiment, tracks_dir: str, min_time_point: int = 0
 
     _fix_python_path_for_pickle()
     links = experiment.links
-    position_data = experiment.position_data
 
     # Read tracks and divisions for links
     tracks = _read_track_files(tracks_dir, experiment, min_time_point=min_time_point, max_time_point=max_time_point)
@@ -39,9 +37,9 @@ def _load_links(experiment: Experiment, tracks_dir: str, min_time_point: int = 0
     for position in experiment.links.find_all_positions():
         positions.add(position)
 
-    _read_deaths_file(tracks_dir, position_data, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
+    _read_deaths_file(tracks_dir, positions, tracks, min_time_point=min_time_point, max_time_point=max_time_point)
     for cell_type, file_name in cell_type_converter.CELL_TYPE_TO_FILE.items():
-        _read_cell_type_file(tracks_dir, position_data, tracks, cell_type, file_name=file_name)
+        _read_cell_type_file(tracks_dir, positions, tracks, cell_type, file_name=file_name)
 
 
 def _load_crypt_axis(tracks_dir: str, positions: PositionCollection, paths: SplineCollection, min_time_point: int,
@@ -139,7 +137,7 @@ def _read_lineage_file(tracks_dir: str, links: Links, tracks: Dict[int, Track], 
                 links.add_link(mother_last_snapshot, child_2_first_snapshot)
 
 
-def _read_deaths_file(tracks_dir: str, position_data: PositionData, tracks_by_id: Dict[int, Track], min_time_point: int,
+def _read_deaths_file(tracks_dir: str, positions: PositionCollection, tracks_by_id: Dict[int, Track], min_time_point: int,
                       max_time_point: int):
     """Adds all marked cell deaths to the linking network."""
     _fix_python_path_for_pickle()
@@ -160,10 +158,10 @@ def _read_deaths_file(tracks_dir: str, position_data: PositionData, tracks_by_id
                 continue
             last_position_position = track.x[-1]
             last_position = Position(*last_position_position, time_point_number=last_position_time)
-            linking_markers.set_track_end_marker(position_data, last_position, EndMarker.DEAD)
+            linking_markers.set_track_end_marker(positions, last_position, EndMarker.DEAD)
 
 
-def _read_cell_type_file(tracks_dir: str, position_data: PositionData, tracks_by_id: Dict[int, Track], cell_type: str, *,
+def _read_cell_type_file(tracks_dir: str, positions: PositionCollection, tracks_by_id: Dict[int, Track], cell_type: str, *,
                          file_name: str):
     """Adds all marked cell deaths to the linking network. If the file name is not specified, it is assumed to be
     cell_type.p ."""
@@ -184,7 +182,7 @@ def _read_cell_type_file(tracks_dir: str, position_data: PositionData, tracks_by
             track = tracks_by_id[typed_cell_number]
             for i in range(len(track.x)):
                 position = Position(*track.x[i], time_point_number=track.t[i])
-                position_markers.set_position_type(position_data, position, cell_type.upper())
+                position_markers.set_position_type(positions, position, cell_type.upper())
 
 
 def _get_cell_in_time_point(track: Track, time_point_number: int) -> Optional[Position]:

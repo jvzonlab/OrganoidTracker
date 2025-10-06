@@ -6,9 +6,9 @@ from organoid_tracker import core
 from organoid_tracker.core import marker
 from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.gui.window import Window, DisplaySettings
 from organoid_tracker.linking.nearby_position_finder import find_closest_position
-from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.visualizer import Visualizer, activate
 
 
@@ -47,7 +47,8 @@ class PositionListVisualizer(Visualizer):
                 self._current_position_index = self._position_list.index(position)
             except ValueError:
                 # Try nearest position
-                close_match = find_closest_position(self._position_list, position, max_distance_um=100)
+                close_match = find_closest_position(self._position_list, around=position, max_distance_um=100,
+                                                    resolution=ImageResolution.PIXELS)
 
                 if close_match is not None and close_match.time_point_number() == position.time_point_number():
                     self._current_position_index = self._position_list.index(close_match)
@@ -80,7 +81,7 @@ class PositionListVisualizer(Visualizer):
                 self._window.set_figure_title(self.get_message_no_positions())
             else:
                 self._window.set_figure_title(self.get_message_press_right())
-            self._fig.canvas.draw()
+            self._fig.canvas.draw_idle()
             return
 
         self._zoom_to_cell()
@@ -94,7 +95,7 @@ class PositionListVisualizer(Visualizer):
         self._draw_connections(self._experiment.links, current_position)
         self._window.set_figure_title(self.get_title(self._position_list, self._current_position_index))
 
-        self._fig.canvas.draw()
+        self._fig.canvas.draw_idle()
         PositionListVisualizer.__last_position_by_class[type(self)] = current_position
 
     def _zoom_to_cell(self):
@@ -130,7 +131,7 @@ class PositionListVisualizer(Visualizer):
         if image_2d is not None:
             offset = self._experiment.images.offsets.of_time_point(time_point)
             extent = (offset.x, offset.x + image_2d.shape[1], offset.y + image_2d.shape[0], offset.y)
-            self._ax.imshow(image_2d, cmap="gray", extent=extent)
+            self._ax.imshow(image_2d, cmap=self._get_color_map(), extent=extent, interpolation="none", interpolation_stage="data")
 
     def _goto_next(self):
         self._current_position_index += 1

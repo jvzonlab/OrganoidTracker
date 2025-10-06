@@ -27,7 +27,7 @@ class DivisionScoreVisualizer(ExitableImageVisualizer):
         positions = self._experiment.positions.of_time_point(self._time_point)
         result = dict()
         for position in positions:
-            result[position] = self._experiment.position_data.get_position_data(position, 'division_penalty')
+            result[position] = self._experiment.positions.get_position_data(position, 'division_penalty')
         self._division_scores = result
 
     def _on_position_draw(self, position: Position, color: str, dz: int, dt: int):

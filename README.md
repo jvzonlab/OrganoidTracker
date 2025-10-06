@@ -86,7 +86,7 @@ Install the program as normal, and then point your Python editor (PyCharm or Vis
 
 License and reuse
 -----------------
-The [files dealing with the neural network](organoid_tracker/position_detection_cnn) are licensed under the MIT license. This is indicated at the top of those files. Other files are licensed under the [GPL license](LICENSE.txt). Please cite the [publication] if you're using this work.
+The [files dealing with the neural network](organoid_tracker/neural_network/position_detection_cnn) are licensed under the MIT license. This is indicated at the top of those files. Other files are licensed under the [GPL license](LICENSE.txt). Please cite the [publication] if you're using this work.
 
 
 [API]: manuals/API.md

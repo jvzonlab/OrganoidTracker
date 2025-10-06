@@ -64,7 +64,7 @@ class _DividingCells:
                 elif fate.type == CellFateType.UNKNOWN:
                     dividing_count_max += 1  # Could be dividing, but we're not sure
 
-                cell_type = position_markers.get_position_type(experiment.position_data, position)
+                cell_type = position_markers.get_position_type(experiment.positions, position)
                 if cell_type == "PANETH":
                     paneth_count += 1
 

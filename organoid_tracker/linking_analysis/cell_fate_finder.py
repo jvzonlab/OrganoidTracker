@@ -4,7 +4,7 @@ from typing import Optional
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import Links, LinkingTrack
 from organoid_tracker.core.position import Position
-from organoid_tracker.core.position_data import PositionData
+from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.linking_analysis.linking_markers import EndMarker
 
@@ -41,10 +41,10 @@ UNKNOWN_FATE = CellFate(CellFateType.UNKNOWN, None)
 def get_fate(experiment: Experiment, position: Position) -> CellFate:
     """Checks if a cell will undergo a division later in the experiment. Returns None if not sure, because we are near
     the end of the experiment. max_time_point_number is the number of the last time point in the experiment."""
-    return get_fate_ext(experiment.links, experiment.position_data, experiment.division_lookahead_time_points, position)
+    return get_fate_ext(experiment.links, experiment.positions, experiment.division_lookahead_time_points, position)
 
 
-def get_fate_ext(links: Links, position_data: PositionData, division_lookahead_time_points: int, position: Position
+def get_fate_ext(links: Links, positions: PositionCollection, division_lookahead_time_points: int, position: Position
                  ) -> CellFate:
     """Checks if a cell will undergo a division later in the experiment. Returns None if not sure, because we are near
     the end of the experiment. max_time_point_number is the number of the last time point in the experiment."""
@@ -56,7 +56,7 @@ def get_fate_ext(links: Links, position_data: PositionData, division_lookahead_t
 
     next_tracks = track.get_next_tracks()
     if len(next_tracks) == 0:
-        marker = linking_markers.get_track_end_marker(position_data, track.find_last_position())
+        marker = linking_markers.get_track_end_marker(positions, track.find_last_position())
         if marker == EndMarker.DEAD:
             # Actual cell death
             time_points_remaining = track.last_time_point_number() - position.time_point_number()
@@ -77,5 +77,5 @@ def get_fate_ext(links: Links, position_data: PositionData, division_lookahead_t
         return CellFate(CellFateType.WILL_DIVIDE, time_points_remaining)
     else:
         print("len(next_tracks) == 1, this should be impossible")
-        return get_fate_ext(links, position_data, division_lookahead_time_points, next_tracks.pop().find_first_position())
+        return get_fate_ext(links, positions, division_lookahead_time_points, next_tracks.pop().find_first_position())
 

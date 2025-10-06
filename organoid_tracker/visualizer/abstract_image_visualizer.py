@@ -183,14 +183,14 @@ class AbstractImageVisualizer(Visualizer):
         self._draw_legend()
         self._window.set_figure_title(self._get_figure_title())
 
-        self._fig.canvas.draw()
+        self._fig.canvas.draw_idle()
 
     def _draw_image(self):
         if self._image_slice_2d is not None:
             offset = self._experiment.images.offsets.of_time_point(self._time_point)
             extent = (offset.x, offset.x + self._image_slice_2d.shape[1],
                       offset.y + self._image_slice_2d.shape[0], offset.y)
-            self._ax.imshow(self._image_slice_2d, cmap=self._get_color_map(), extent=extent, interpolation="nearest")
+            self._ax.imshow(self._image_slice_2d, cmap=self._get_color_map(), extent=extent, interpolation="none", interpolation_stage="data")
             self._ax.set_aspect("equal", adjustable="datalim")
 
     def _draw_legend(self):
@@ -355,7 +355,7 @@ class AbstractImageVisualizer(Visualizer):
         self._draw_positions_of_time_point(self._time_point)
 
     def _draw_positions_of_time_point(self, time_point: TimePoint, color: str = core.COLOR_CELL_CURRENT):
-        position_data = self._experiment.position_data
+        positions = self._experiment.positions
         dt = time_point.time_point_number() - self._time_point.time_point_number()
         show_errors = self._display_settings.show_errors
         max_intensity_projection = self._display_settings.max_intensity_projection
@@ -375,7 +375,7 @@ class AbstractImageVisualizer(Visualizer):
                 continue
 
             # Add error marker
-            if show_errors and linking_markers.get_error_marker(position_data, position) is not None:
+            if show_errors and linking_markers.get_error_marker(positions, position) is not None:
                 crosses_x_list.append(position.x)
                 crosses_y_list.append(position.y)
 
@@ -398,7 +398,7 @@ class AbstractImageVisualizer(Visualizer):
     def _get_position_edge(self, position: Position) -> tuple[tuple[float, float, float], float]:
         """Gets the RGB color (0-1) and the line width"""
         position_type = self.get_window().registry.get_marker_by_save_name(
-            position_markers.get_position_type(self._experiment.position_data, position))
+            position_markers.get_position_type(self._experiment.positions, position))
         edge_color = (0.0, 0.0, 0.0) if position_type is None else position_type.mpl_color
         edge_width = 1.0 if position_type is None else 3.0
         return edge_color, edge_width
@@ -485,7 +485,7 @@ class AbstractImageVisualizer(Visualizer):
         self._ax.scatter(x=points_x, y=points_y, marker=marker, facecolors=color,
                          linewidths=2, edgecolors="black", s=points_size)
 
-    def _get_position_at(self, x: Optional[int], y: Optional[int]) -> Optional[Position]:
+    def _get_position_at(self, x: Optional[float], y: Optional[float]) -> Optional[Position]:
         """Wrapper of get_closest_position that makes use of the fact that we can lookup all positions ourselves."""
         min_z = self._z - self.MAX_Z_DISTANCE
         max_z = self._z + self.MAX_Z_DISTANCE
@@ -582,7 +582,7 @@ class AbstractImageVisualizer(Visualizer):
         if event.button == "up":
             shift_y *= -1  # Inverse direction
         self._ax.set_ylim(old_ylim[0] + shift_y, old_ylim[1] + shift_y)
-        self._fig.canvas.draw()
+        self._fig.canvas.draw_idle()
 
     def _scroll_shift_x(self, event: MouseEvent):
         old_xlim = self._ax.get_xlim()
@@ -591,7 +591,7 @@ class AbstractImageVisualizer(Visualizer):
         if event.button == "up":
             shift_x *= -1  # Inverse direction
         self._ax.set_xlim(old_xlim[0] + shift_x, old_xlim[1] + shift_x)
-        self._fig.canvas.draw()
+        self._fig.canvas.draw_idle()
 
     def _scroll_zoom(self, event: MouseEvent):
         old_xlim = self._ax.get_xlim()
@@ -611,7 +611,7 @@ class AbstractImageVisualizer(Visualizer):
         # noinspection PyTypeChecker
         self._ax.set_ylim([old_ydata - (old_ydata - old_ylim[0]) / scale_factor,
                            old_ydata + (old_ylim[1] - old_ydata) / scale_factor])
-        self._fig.canvas.draw()
+        self._fig.canvas.draw_idle()
 
     def _on_command(self, command: str) -> bool:
         if command.startswith("track "):
@@ -710,7 +710,7 @@ class AbstractImageVisualizer(Visualizer):
                 and (images[:, :, :, 0] == images[:, :, :, 2]).all():
             images = images[:, :, :, 0]
 
-        tifffile.imsave(file, images, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
+        tifffile.imwrite(file, images, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
 
     def _toggle_showing_next_time_point(self):
         self._display_settings.show_next_time_point = not self._display_settings.show_next_time_point
@@ -790,7 +790,7 @@ class AbstractImageVisualizer(Visualizer):
 
     def _clamp_channel(self):
         """Makes sure a valid channel is selected. Changes the channel if not."""
-        available_channels = self._experiment.images.image_loader().get_channels()
+        available_channels = self._experiment.images.get_channels()
 
         # Handle the case where no channels are available
         if len(available_channels) == 0:

@@ -7,9 +7,9 @@ from enum import Enum
 from statistics import median
 from typing import Tuple, List, Optional, Callable, Any, Dict, Union
 
-from PySide2 import QtCore
-from PySide2.QtGui import QCloseEvent, QColor
-from PySide2.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow, QVBoxLayout, \
+from PySide6 import QtCore
+from PySide6.QtGui import QCloseEvent, QColor
+from PySide6.QtWidgets import QMessageBox, QApplication, QWidget, QFileDialog, QInputDialog, QMainWindow, QVBoxLayout, \
     QLabel, QSizePolicy, QColorDialog, QMenuBar
 from matplotlib.backend_bases import KeyEvent
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT
@@ -76,17 +76,15 @@ def prompt_options(title: str, question: str, *, option_1: str, option_2: Option
     (either Cancel or Ok) was pressed, returns a number (1, 2 or 3, depending on the picked option) otherwise."""
 
     # Set up window
+    button_1, button_2, button_3 = None, None, None
     box = QMessageBox(_window())
     box.setWindowTitle(title)
     box.setText(question)
-    button_count = 1
-    box.addButton(option_1, QMessageBox.ActionRole)
+    button_1 = box.addButton(option_1, QMessageBox.ActionRole)
     if option_2 is not None:
-        button_count += 1
-        box.addButton(option_2, QMessageBox.ActionRole)
+        button_2 = box.addButton(option_2, QMessageBox.ActionRole)
         if option_3 is not None:
-            button_count += 1
-            box.addButton(option_3, QMessageBox.ActionRole)
+            button_3 = box.addButton(option_3, QMessageBox.ActionRole)
     if option_default == DefaultOption.OK:
         box.addButton(QMessageBox.Ok)
     else:
@@ -94,9 +92,16 @@ def prompt_options(title: str, question: str, *, option_1: str, option_2: Option
 
     result = box.exec_()
     if result == QMessageBox.Cancel or result == QMessageBox.Ok:
-        # Clicked the last button, which is always Cancel
+        # Clicked one of these standard buttons
         return None
-    return result + 1  # + 1 to make it correspond to the numbering of option_1, option_2, etc.
+    clicked_button = box.clickedButton()
+    if clicked_button == button_1:
+        return 1
+    if button_2 is not None and clicked_button == button_2:
+        return 2
+    if button_3 is not None and clicked_button == button_3:
+        return 3
+    return None  # Don't know what was clicked
 
 
 def prompt_save_file(title: str, file_types: List[Tuple[str, str]], suggested_name: Optional[Name] = None
@@ -107,7 +112,7 @@ def prompt_save_file(title: str, file_types: List[Tuple[str, str]], suggested_na
 
     If the user does not write a file extension, then the file extension will be added automatically.
     """
-    file_types_str = ";;".join((name + "(" + extension + ")" for name, extension in file_types))
+    file_types_str = ";;".join((name + " (" + extension + ")" for name, extension in file_types))
 
     file_name, _ = QFileDialog.getSaveFileName(_window(), title, "", file_types_str)
     if not file_name:
@@ -147,8 +152,8 @@ def _to_file_types_str(file_types: List[Tuple[str, str]]) -> str:
         extensions = set()
         for name, extension in file_types:
             extensions.add(extension)
-        file_types = [("All supported file types", ";".join(extensions))] + file_types
-    return ";;".join((name + "("+extension+ ")" for name, extension in file_types))
+        file_types = [("All supported file types", " ".join(extensions))] + file_types
+    return ";;".join((name + " ("+extension+ ")" for name, extension in file_types))
 
 
 def prompt_directory(title: str) -> Optional[str]:

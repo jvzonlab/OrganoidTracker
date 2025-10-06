@@ -1,7 +1,7 @@
 """Contains a lot of functions related to measuring intensity, averaged intensity and intensity derivatives."""
 
 import math
-from typing import NamedTuple, Optional, Dict, List
+from typing import Optional, Dict, List
 
 import numpy
 from scipy.stats import linregress
@@ -9,7 +9,7 @@ from scipy.stats import linregress
 from organoid_tracker.core import UserError
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.position import Position
-from organoid_tracker.core.position_data import PositionData
+from organoid_tracker.core.position_collection import PositionCollection
 
 # The default intensity key, used if the user didn't specify another one
 DEFAULT_INTENSITY_KEY = "intensity"
@@ -142,16 +142,16 @@ def set_raw_intensities(experiment: Experiment, raw_intensities: Dict[Position, 
         raise ValueError("Cannot use an empty intensity_key")
 
     remove_intensities(experiment, intensity_key=intensity_key)
-    experiment.position_data.add_positions_data(intensity_key, raw_intensities)
-    experiment.position_data.add_positions_data(intensity_key + "_volume", volumes)
+    experiment.positions.add_positions_data(intensity_key, raw_intensities)
+    experiment.positions.add_positions_data(intensity_key + "_volume", volumes)
 
 
 def remove_intensities(experiment: Experiment, *, intensity_key: str = DEFAULT_INTENSITY_KEY):
     """Deletes the intensities with the given key."""
 
     # Remove values
-    experiment.position_data.delete_data_with_name(intensity_key)
-    experiment.position_data.delete_data_with_name(intensity_key + "_volume")
+    experiment.positions.delete_data_with_name(intensity_key)
+    experiment.positions.delete_data_with_name(intensity_key + "_volume")
 
     # Remove normalization
     remove_intensity_normalization(experiment, intensity_key=intensity_key)
@@ -164,7 +164,7 @@ def get_intensity_keys(experiment: Experiment) -> List[str]:
     seen as being an intensity.
     """
     return_list = list()
-    names_and_types = experiment.position_data.get_data_names_and_types()
+    names_and_types = experiment.positions.get_data_names_and_types()
     for data_name, data_type in names_and_types.items():
         if data_type != float:
             continue  # Skip non-numeric metadata
@@ -179,10 +179,10 @@ def get_intensity_keys(experiment: Experiment) -> List[str]:
     return return_list
 
 
-def get_raw_intensity(position_data: PositionData, position: Position, *, intensity_key: str = DEFAULT_INTENSITY_KEY
+def get_raw_intensity(positions: PositionCollection, position: Position, *, intensity_key: str = DEFAULT_INTENSITY_KEY
                       ) -> Optional[float]:
     """Gets the raw intensity of the position."""
-    return position_data.get_position_data(position, intensity_key)
+    return positions.get_position_data(position, intensity_key)
 
 
 def get_normalized_intensity(experiment: Experiment, position: Position, *, intensity_key: str = DEFAULT_INTENSITY_KEY,
@@ -191,10 +191,10 @@ def get_normalized_intensity(experiment: Experiment, position: Position, *, inte
     (for normalization), which might be specific to the time point or Z layer. Either returns the intensity sum or the
     intensity per pixel, depending on the per_pixel parameter (default false).
     """
-    position_data = experiment.position_data
+    positions = experiment.positions
     global_data = experiment.global_data
 
-    intensity = position_data.get_position_data(position, intensity_key)
+    intensity = positions.get_position_data(position, intensity_key)
     if intensity is None:
         return None
     background_per_px = global_data.get_data(intensity_key + "_background_per_pixel")
@@ -211,7 +211,7 @@ def get_normalized_intensity(experiment: Experiment, position: Position, *, inte
             if multiplier is None:
                 # Also failed - then don't multiply
                 multiplier = 1
-    volume_px = position_data.get_position_data(position, intensity_key + "_volume")
+    volume_px = positions.get_position_data(position, intensity_key + "_volume")
     if volume_px is None:
         if per_pixel:
             return None  # Can't calculate intensity per pixel if volume is missing
@@ -241,9 +241,9 @@ def perform_intensity_normalization(experiment: Experiment, *, background_correc
     zs = list()
     ts = list()
 
-    position_data = experiment.position_data
-    for position, intensity in position_data.find_all_positions_with_data(intensity_key):
-        volume = position_data.get_position_data(position, intensity_key + "_volume")
+    positions = experiment.positions
+    for position, intensity in positions.find_all_positions_with_data(intensity_key):
+        volume = positions.get_position_data(position, intensity_key + "_volume")
         if volume is None and background_correction:
             continue
         if intensity == 0:

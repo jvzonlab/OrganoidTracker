@@ -42,12 +42,12 @@ positions = experiment.positions
 
 # check for missed divisions in the tracks
 for link in experiment.links.find_all_links():
-    division_penalty1 = experiment.position_data.get_position_data(link[0], 'division_penalty')
-    division_penalty2 = experiment.position_data.get_position_data(link[1], 'division_penalty')
+    division_penalty1 = experiment.positions.get_position_data(link[0], 'division_penalty')
+    division_penalty2 = experiment.positions.get_position_data(link[1], 'division_penalty')
 
     next_position = experiment.links.find_single_future(link[1])
     if (next_position is not None) and (division_penalty1 is not None):
-        division_penalty3 = experiment.position_data.get_position_data(next_position, 'division_penalty')
+        division_penalty3 = experiment.positions.get_position_data(next_position, 'division_penalty')
 
         if (division_penalty1 + division_penalty2 + division_penalty3)/3 < -2.0:
             track = experiment.links.get_track(link[0])
@@ -74,8 +74,8 @@ with open(_output_file, "w", newline='') as handle:
         start = first_pos.time_point_number()
         end = last_pos.time_point_number()
 
-        division_penalty_start = experiment.position_data.get_position_data(first_pos, "division_penalty")
-        division_penalty_end = experiment.position_data.get_position_data(last_pos, "division_penalty")
+        division_penalty_start = experiment.positions.get_position_data(first_pos, "division_penalty")
+        division_penalty_end = experiment.positions.get_position_data(last_pos, "division_penalty")
 
         if division_penalty_start is None:
             division_penalty_start = 1000

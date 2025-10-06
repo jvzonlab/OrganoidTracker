@@ -2,8 +2,8 @@
 
 from typing import Optional
 
-from PySide2 import QtCore
-from PySide2.QtWidgets import QDoubleSpinBox, QDialog, QPushButton, QWidget, QGroupBox, QFormLayout, QLabel, \
+from PySide6 import QtCore
+from PySide6.QtWidgets import QDoubleSpinBox, QDialog, QPushButton, QWidget, QGroupBox, QFormLayout, QLabel, \
     QDialogButtonBox, QVBoxLayout
 
 from organoid_tracker.core import UserError
@@ -30,6 +30,7 @@ class _ResolutionEditorWindow(QDialog):
         form_box = QGroupBox("Image resolution", parent=self)
         form = QFormLayout()
         self.x_res = QDoubleSpinBox(parent=form_box)
+        self.x_res.setMinimumWidth(140)
         self.x_res.setSuffix("   μm/px")
         self.x_res.setValue(image_resolution.pixel_size_x_um)
         self.x_res.valueChanged.connect(self._on_field_change)

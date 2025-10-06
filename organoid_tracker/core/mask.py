@@ -134,7 +134,7 @@ class Mask:
         mask = self._mask[0:image_for_masking.shape[0], 0:image_for_masking.shape[1], 0:image_for_masking.shape[2]]
 
         # Apply mask
-        image_for_masking[mask == 0] = numpy.NAN
+        image_for_masking[mask == 0] = numpy.nan
         return image_for_masking
 
     def create_masked_image(self, image: Image) -> ndarray:
@@ -151,14 +151,14 @@ class Mask:
 
     def create_masked_image_nan(self, image: Image) -> ndarray:
         """Creates a subimage (float64) where all pixels outside the mask are set to NaN."""
-        image_for_masking = numpy.full_like(self._mask, fill_value=numpy.NAN, dtype=numpy.float64)
+        image_for_masking = numpy.full_like(self._mask, fill_value=numpy.nan, dtype=numpy.float64)
 
         cropper.crop_3d(image.array, int(self.offset_x - image.offset.x), int(self.offset_y - image.offset.y),
                         int(self.offset_z - image.offset.z),
                         output=image_for_masking)
 
         # Apply mask
-        image_for_masking[self._mask == 0] = numpy.NAN
+        image_for_masking[self._mask == 0] = numpy.nan
         return image_for_masking
 
     def stamp_image(self, image: Image, stamp_value: Union[int, float]):

@@ -272,14 +272,13 @@ class ComparisonReport:
                 details = empty_details
             yield (position, details)
 
-    def count_positions(self, category: Category, *, time_point: Optional[TimePoint] = None, z: Optional[int] = None
-                        ) -> int:
+    def count_positions(self, category: Category, *, time_point: Optional[TimePoint] = None) -> int:
         """Gets how many entries there are in the given category, optionally at the given time point. Returns 0 if the
         given category is not used."""
         entries = self._positions_by_category.get(category)
         if entries is None:
             return 0
-        return entries.count_positions(time_point=time_point, z=z)
+        return entries.count_positions(time_point=time_point)
 
     def get_positions(self, category: Category, *, time_point: Optional[TimePoint]) -> Iterable[Position]:
         """Gets all positions in the given category, optionally filtered to the given time point."""

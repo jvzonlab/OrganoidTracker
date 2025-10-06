@@ -219,7 +219,7 @@ for position in experiment.positions:
 
 # adapt positions
 experiment.remove_positions(to_remove)
-experiment.positions.add_positions(PositionCollection(to_add))
+experiment.positions.merge_data(PositionCollection(to_add))
 
 print('division oversegmentations removed:')
 print(len(to_remove))

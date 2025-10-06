@@ -3,11 +3,10 @@ from functools import partial
 from typing import Callable, Optional
 from typing import Dict, Any
 
-from PySide2.QtCore import Qt
-from PySide2.QtGui import QKeyEvent, QPalette, QCloseEvent
-from PySide2.QtWidgets import QMainWindow, QSizePolicy, QScrollArea, QFrame, QProgressBar, QHBoxLayout, \
-    QGraphicsColorizeEffect
-from PySide2.QtWidgets import QWidget, QApplication, QVBoxLayout, QLabel, QLineEdit
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QKeyEvent, QPalette, QCloseEvent
+from PySide6.QtWidgets import QMainWindow, QSizePolicy, QScrollArea, QFrame, QProgressBar, QHBoxLayout
+from PySide6.QtWidgets import QWidget, QApplication, QVBoxLayout, QLabel, QLineEdit
 from matplotlib import pyplot
 from matplotlib.backend_bases import KeyEvent
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
@@ -28,10 +27,10 @@ class _CommandBox(QLineEdit):
 
     def keyPressEvent(self, event: QKeyEvent):
         key = event.key()
-        if key == Qt.Key_Enter or key == Qt.Key_Return:
+        if key == Qt.Key.Key_Enter or key == Qt.Key.Key_Return:
             self.enter_handler(self.text())
             self.setText("")
-        elif key == Qt.Key_Escape:
+        elif key == Qt.Key.Key_Escape:
             self.escape_handler()
         else:
             super().keyPressEvent(event)
@@ -92,12 +91,12 @@ class _MyQMainWindow(QMainWindow):
         # Add title
         self.title = QLabel(parent=main_frame)
         self.title.setStyleSheet("font-size: 16pt; font-weight: bold")
-        self.title.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
+        self.title.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed))
         title_frame = QScrollArea()
-        title_frame.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        title_frame.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        title_frame.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        title_frame.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         title_frame.setWidgetResizable(True)
-        title_frame.setFrameShape(QFrame.NoFrame)
+        title_frame.setFrameShape(QFrame.Shape.NoFrame)
         title_frame.setWidget(self.title)
         title_frame.setStyleSheet("background: transparent;")
         vertical_boxes.addWidget(title_frame)
@@ -105,22 +104,22 @@ class _MyQMainWindow(QMainWindow):
         # Add Matplotlib figure to frame
         self.mpl_canvas = FigureCanvasQTAgg(figure)  # A tk.DrawingArea.
         self.mpl_canvas.setParent(main_frame)
-        self.mpl_canvas.setFocusPolicy(Qt.ClickFocus)
+        self.mpl_canvas.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.mpl_canvas.setFocus()
         vertical_boxes.addWidget(self.mpl_canvas)
 
         # Set figure background color to that of the main_frame
-        background_color = main_frame.palette().color(QPalette.Background)
+        background_color = main_frame.palette().color(QPalette.ColorRole.Window)
         figure.set_facecolor((background_color.redF(), background_color.greenF(), background_color.blueF()))
 
         # Add status bar
         self.status_box = QLabel(parent=main_frame)
-        self.status_box.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
+        self.status_box.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed))
         status_frame = QScrollArea()
-        status_frame.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        status_frame.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        status_frame.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        status_frame.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         status_frame.setWidgetResizable(True)
-        status_frame.setFrameShape(QFrame.NoFrame)
+        status_frame.setFrameShape(QFrame.Shape.NoFrame)
         status_frame.setMinimumHeight(100)
         status_frame.setWidget(self.status_box)
         status_frame.setStyleSheet("background: transparent;")
@@ -162,7 +161,7 @@ class MainWindow(Window):
 
         menu_items = {
             "File//Project-New project... [Ctrl+N]": lambda: action.new(self),
-            "File//SaveLoad-Load images... [Ctrl+I]": lambda: action.load_images(self),
+            "File//SaveLoad-Load images...": lambda: action.load_images(self),
             "File//SaveLoad-Load tracking data... [Ctrl+O]": lambda: action.load_tracking_data(self),
             "File//SaveLoad-Save tracking data [Ctrl+S]": lambda: action.save_tracking_data(self),
             "File//SaveLoad-Save tracking data as... [Ctrl+Shift+S]": lambda: action.save_tracking_data(self, force_save_as=True),
@@ -262,6 +261,12 @@ def _connect_toolbar_actions(toolbar: Toolbar, window: Window):
         action.load_images(window)
     def experiment(index):
         window.get_gui_experiment().select_experiment(index)
+    def previous_experiment():
+        from organoid_tracker.gui import action
+        action.switch_experiment_tab_relative(window, -1)
+    def next_experiment():
+        from organoid_tracker.gui import action
+        action.switch_experiment_tab_relative(window, 1)
     def update_experiment_list(*args):
         # Update the list of experiment names in the top right corner, in case experiment.name has changed
         selected_index = 0
@@ -277,6 +282,8 @@ def _connect_toolbar_actions(toolbar: Toolbar, window: Window):
     toolbar.save_handler = save
     toolbar.load_handler = load
     toolbar.image_handler = image
+    toolbar.next_experiment_handler = next_experiment
+    toolbar.previous_experiment_handler = previous_experiment
     toolbar.experiment_select_handler = experiment
     window.get_gui_experiment().register_event_handler("any_updated_event", "toolbar", update_experiment_list)
     window.get_gui_experiment().register_event_handler("data_updated_event", "toolbar", update_experiment_list)

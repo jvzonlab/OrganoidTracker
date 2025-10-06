@@ -53,27 +53,27 @@ def _view_survival_curve(window: Window):
                         lambda figure: _plot_survival_curve(figure, sister_times_all, sister_divisions_all, names, 'Time since sister division'))
 
 
-def make_cell_cycle_table(experiment):
+def make_cell_cycle_table(experiment: Experiment) -> Any:
     # check for missed divisions in the tracks
     for link in experiment.links.find_all_links():
-        division_penalty1 = experiment.position_data.get_position_data(link[0], 'division_penalty')
-        division_penalty2 = experiment.position_data.get_position_data(link[1], 'division_penalty')
+        division_penalty1 = experiment.positions.get_position_data(link[0], 'division_penalty')
+        division_penalty2 = experiment.positions.get_position_data(link[1], 'division_penalty')
 
         next_position = experiment.links.find_single_future(link[1])
         if (next_position is not None) and (division_penalty1 is not None):
-            division_penalty3 = experiment.position_data.get_position_data(next_position, 'division_penalty')
+            division_penalty3 = experiment.positions.get_position_data(next_position, 'division_penalty')
 
             # Is there a division detected for a window of time
             if (division_penalty1 + division_penalty2 + division_penalty3) / 3 < -2.0:
                 track = experiment.links.get_track(link[0])
-                if ((link[0].time_point_number() - track.min_time_point_number() > 6)
-                        and (track.max_time_point_number() - link[0].time_point_number() > 6)):
+                if ((link[0].time_point_number() - track.first_time_point_number() > 6)
+                        and (track.last_time_point_number() - link[0].time_point_number() > 6)):
                     experiment.links.remove_link(link[1], next_position)
             if (division_penalty1 is not None) and (division_penalty2 is not None) and (division_penalty3 is not None):
                 if (division_penalty1 + division_penalty2 + division_penalty3) / 3 < -2.0:
                     track = experiment.links.get_track(link[0])
-                    if ((link[0].time_point_number() - track.min_time_point_number() > 6)
-                            and (track.max_time_point_number() - link[0].time_point_number() > 6)):
+                    if ((link[0].time_point_number() - track.first_time_point_number() > 6)
+                            and (track.last_time_point_number() - link[0].time_point_number() > 6)):
                         experiment.links.remove_link(link[1], next_position)
 
     lifetimes =[]
@@ -91,8 +91,8 @@ def make_cell_cycle_table(experiment):
         start = first_pos.time_point_number()
         end = last_pos.time_point_number()
 
-        division_penalty_start = experiment.position_data.get_position_data(first_pos, "division_penalty")
-        division_penalty_end = experiment.position_data.get_position_data(last_pos, "division_penalty")
+        division_penalty_start = experiment.positions.get_position_data(first_pos, "division_penalty")
+        division_penalty_end = experiment.positions.get_position_data(last_pos, "division_penalty")
 
         if division_penalty_start is None:
             division_penalty_start = 1000
@@ -134,7 +134,7 @@ def make_cell_cycle_table(experiment):
             # does sister end in division
             sister_track = experiment.links.get_track_by_id(sister_id)
             sister_last_pos = sister_track.find_last_position()
-            sister_division_penalty_end = experiment.position_data.get_position_data(sister_last_pos, "division_penalty")
+            sister_division_penalty_end = experiment.positions.get_position_data(sister_last_pos, "division_penalty")
 
             if sister_division_penalty_end is None:
                 sister_division_penalty_end=1000

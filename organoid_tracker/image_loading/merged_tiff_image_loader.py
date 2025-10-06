@@ -129,7 +129,7 @@ class _MergedTiffImageLoader(ImageLoader):
     def _has_wrong_page_count(self) -> bool:
         """Some files (over 2 GB) have an apparently incorrect page count. This method returns True if that is the case.
         In that case, more low-level page reading functions need to be used."""
-        expected_page_count = numpy.product(self._shape[0:-2])  # Every page is a 2D image
+        expected_page_count = numpy.prod(self._shape[0:-2])  # Every page is a 2D image
         page_count = len(self._tiff_series.pages)
         return page_count == 1 and expected_page_count > 1
 
@@ -178,10 +178,10 @@ class _MergedTiffImageLoader(ImageLoader):
     def copy(self) -> "ImageLoader":
         return _MergedTiffImageLoader(self._file_name, self._min_time_point_number, self._max_time_point_number)
 
-    def _get_offset(self, t: int, c: int, z: int) -> int:
+    def _get_offset(self, t: int, c: int, z: int, item_size: int) -> int:
         """Gets the pixel offset for the given 2D image."""
-        offset = self._get_2d_page_number(t, c, z) * self._image_size_zyx[1] * self._image_size_zyx[2]
-        return int(offset + self._tiff_series.offset)
+        offset = self._get_2d_page_number(t, c, z) * self._image_size_zyx[1] * self._image_size_zyx[2] * item_size
+        return int(offset + self._tiff_series.dataoffset)
 
     def _get_2d_page_number(self, t: int, c: int, z: int) -> int:
         """Gets the page number for the given 2D image.
@@ -191,7 +191,7 @@ class _MergedTiffImageLoader(ImageLoader):
         page = 0
         for i in range(len(self._axes) - skip_axes):
             axis = self._axes[i]
-            multiplier = numpy.product(self._shape[i + 1:-skip_axes], dtype=numpy.uint64)
+            multiplier = numpy.prod(self._shape[i + 1:-skip_axes], dtype=numpy.uint64)
             if axis == "T":
                 page += t * multiplier
             if axis == "Z":
@@ -211,7 +211,7 @@ class _MergedTiffImageLoader(ImageLoader):
             self._tiff.asarray(key=page, out=out)
         else:
             # Need to fiddle with bytes :(. Irfanview also has trouble with these files, tifffile is not the only one.
-            offset = self._get_offset(t, c, z)
+            offset = self._get_offset(t, c, z, self._tiff_series.dtype.itemsize)
             shape_2d = self._shape[-2:]
             type_code = self._tiff.byteorder + self._tiff_series.dtype.char
             self._tiff.filehandle.seek(offset)

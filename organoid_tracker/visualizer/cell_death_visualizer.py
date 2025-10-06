@@ -9,7 +9,7 @@ from organoid_tracker.visualizer.position_list_visualizer import PositionListVis
 
 
 def _get_end_of_tracks(experiment: Experiment) -> List[Position]:
-    return list(linking_markers.find_death_and_shed_positions(experiment.links, experiment.position_data))
+    return list(linking_markers.find_death_and_shed_positions(experiment.links, experiment.positions))
 
 
 class CellTrackEndVisualizer(PositionListVisualizer):
@@ -36,9 +36,9 @@ class CellTrackEndVisualizer(PositionListVisualizer):
                f"\n{cell}"
 
     def _get_end_cause(self, position: Position) -> str:
-        end_reason = linking_markers.get_track_end_marker(self._experiment.position_data, position)
+        end_reason = linking_markers.get_track_end_marker(self._experiment.positions, position)
         if end_reason is None:
-            if linking_markers.is_error_suppressed(self._experiment.position_data, position, Error.TRACK_END):
+            if linking_markers.is_error_suppressed(self._experiment.positions, position, Error.TRACK_END):
                 return "analyzed, but no conclusion"
             return "not analyzed"
         return end_reason.get_display_name()

@@ -4,24 +4,22 @@
 import os
 import random
 from functools import partial
-from os import path
 from typing import Set
 
 import tensorflow as tf
-from PIL import Image as Img
 from tifffile import tifffile
 
-from organoid_tracker.config import ConfigFile, config_type_image_shape, config_type_int
+from organoid_tracker.config import ConfigFile, config_type_image_shape_xyz_to_zyx, config_type_int
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 from organoid_tracker.imaging import io
 # from organoid_tracker.position_detection_cnn import training_data_creator, trainer
 
-from organoid_tracker.position_detection_cnn.convolutional_neural_network import build_model, tensorboard_callback
-from organoid_tracker.position_detection_cnn.training_data_creator import create_image_with_positions_list
+from organoid_tracker.neural_network.position_detection_cnn import build_model, tensorboard_callback
+from organoid_tracker.neural_network.position_detection_cnn import create_image_with_positions_list
 
-from organoid_tracker.position_detection_cnn.training_dataset import  training_data_creator_from_TFR, training_data_creator_from_raw
+from organoid_tracker.neural_network.position_detection_cnn import training_data_creator_from_raw
 
 
 # PARAMETERS
@@ -94,7 +92,7 @@ use_TFR = bool(use_TFR == "True")
 patch_shape = list(
     config.get_or_default("patch_shape", "64, 64, 32", comment="Size in pixels (x, y, z) of the patches used"
                                                                " to train the network.",
-                          type=config_type_image_shape))
+                          type=config_type_image_shape_xyz_to_zyx))
 
 output_folder = config.get_or_default("output_folder", "training_output_folder", comment="Folder that will contain the"
                                                                                          " trained model.")
@@ -170,14 +168,14 @@ for i in range(10):
 
     array = element[0].numpy()
     array = array[0, :, :, :, 0]
-    tifffile.imsave("example_input" + str(i) + ".tiff", array, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
+    tifffile.imwrite("example_input" + str(i) + ".tiff", array, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
 
     array = element[1].numpy()
     array = array[0, :, :, :, 0]
-    tifffile.imsave("example_prediction" + str(i) + ".tiff", array, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
+    tifffile.imwrite("example_prediction" + str(i) + ".tiff", array, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
 
     array = element[2].numpy()
     array = array[0, :, :, :, 0]
-    tifffile.imsave("input_prediction" + str(i) + ".tiff", array, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
+    tifffile.imwrite("input_prediction" + str(i) + ".tiff", array, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
 
 

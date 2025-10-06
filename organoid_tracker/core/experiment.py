@@ -24,7 +24,7 @@ class Experiment:
     An experiment contains :class:`~organoid_tracker.core.position.Position` objects. They represent a cell detection
     at a particular time point. The object itself just stores an x, y, z and time point. The objects can be found in
     :code:`experiment.positions`. For example, to get a list of all positions at time point 7, use
-    :code:`list(experiment.positions.of_time_point(TimePoint(7))`.
+    :code:`list(experiment.positions.of_time_point(TimePoint(7)))`.
 
     Cell detections from different time points can be marked as belonging to the same biological cell. These links over
     time are stored in :code:`experiment.links`. Using for example :code:`experiment.links.find_futures(position)`,
@@ -32,15 +32,13 @@ class Experiment:
     but in the case of a division, it will be two positions. In the case of a cell death, it will be 0 positions.
 
     Cells can also have neighbors, and those are defined in :code:`experiment.connections`. Metadata of cell positions,
-    like the cell type or fluorescent intensity, is stored in :code:`experiment.position_data`.
+    like the cell type or fluorescent intensity, is stored in :code:`experiment.positions`.
     """
 
     # Note: none of the fields may be None after __init__ is called
     _positions: PositionCollection  # Used to mark cell positions
     _beacons: BeaconCollection  # Used to mark some abstract position that the cells move to or move around.
     _links: Links  # Used to link cells together accross multiple time points
-    _position_data: PositionData  # Used for metadata of cells
-    _link_data: LinkData  # Used for metadata of links
     _images: Images  # Used for microscopy images
     _connections: Connections  # Used to create connections in a single time point, for example for related cells
     _name: Name  # Name of the experiment
@@ -50,19 +48,25 @@ class Experiment:
     last_save_file: Optional[str] = None  # Location where the "Save" button will save again.
     _global_data: GlobalData
 
+    # Deprecated field:
+    _position_data: PositionData  # Old location of position metadata, now just a wrapper around PositionCollection
+    _link_data: LinkData  # Old location of link metadata, now just a wrapper around Links
+
     def __init__(self):
         self._name = Name()
         self._positions = PositionCollection()
         self._beacons = BeaconCollection()
-        self._position_data = PositionData()
         self.splines = SplineCollection()
         self._links = Links()
-        self._link_data = LinkData()
         self._images = Images()
         self._connections = Connections()
         self._warning_limits = WarningLimits()
         self._color = Color.black()
         self._global_data = GlobalData()
+
+        # Metadata objects got merged into the main objects. These are now just wrappers for backwards compatibility.
+        self._position_data = PositionData(self._positions)
+        self._link_data = LinkData(self._links)
 
     def remove_position(self, position: Position, *, update_splines: bool = True):
         """Removes a position and its links and other data from the experiment.
@@ -81,14 +85,9 @@ class Experiment:
         moving all positions."""
         affected_time_points = set()
         for position in positions:
-            old_links = self._links.find_links_of(position)
-            for old_link in old_links:
-                self._link_data.remove_link(position, old_link)
-
             self._positions.detach_position(position)
             self._links.remove_links_of_position(position)
             self._connections.remove_connections_of_position(position)
-            self._position_data.remove_position(position)
 
             affected_time_points.add(position.time_point())
 
@@ -108,12 +107,9 @@ class Experiment:
         position_new.check_time_point(position_old.time_point())  # Make sure both have the same time point
 
         # Replace in all collections
-        for linked_position in self._links.find_links_of(position_old):
-            self._link_data.replace_link(position_old, linked_position, position_new, linked_position)
         self._links.replace_position(position_old, position_new)
         self._connections.replace_position(position_old, position_new)
         self._positions.move_position(position_old, position_new)
-        self._position_data.replace_position(position_old, position_new)
 
         if update_splines:
             time_point = position_new.time_point()
@@ -132,14 +128,14 @@ class Experiment:
 
     def first_time_point_number(self) -> Optional[int]:
         """Gets the first time point of the experiment where there is data (images, splines and/or positions)."""
-        return min_none(self._images.image_loader().first_time_point_number(),
+        return min_none(self._images.first_time_point_number(),
                         self._positions.first_time_point_number(),
                         self.splines.first_time_point_number())
 
     def last_time_point_number(self) -> Optional[int]:
         """Gets the last time point (inclusive) of the experiment where there is data (images, splines and/or
          positions)."""
-        return max_none(self._images.image_loader().last_time_point_number(),
+        return max_none(self._images.last_time_point_number(),
                         self._positions.last_time_point_number(),
                         self.splines.last_time_point_number())
 
@@ -201,6 +197,7 @@ class Experiment:
         if not isinstance(positions, PositionCollection):
             raise TypeError(f"positions must be a {PositionCollection.__name__} object, was " + repr(positions))
         self._positions = positions
+        self._position_data = PositionData(positions)  # The deprecated wrapper also needs to be updated
 
     @property
     def beacons(self) -> BeaconCollection:
@@ -218,15 +215,15 @@ class Experiment:
 
     @property
     def position_data(self) -> PositionData:
-        """Gets the metadata associated with cell positions, like cell type, intensity, etc."""
+        warnings.warn("experiment.position_data is deprecated, use experiment.positions instead. That object"
+                      " now stores all the position metadata.", DeprecationWarning)
         return self._position_data
 
+    # noinspection PyDeprecation
     @position_data.setter
     def position_data(self, position_data: PositionData):
-        """Replaces the metadata associated with cell positions."""
-        if not isinstance(position_data, PositionData):
-            raise TypeError(f"position_data must be a {PositionData.__name__} object, was " + repr(position_data))
-        self._position_data = position_data
+        raise ValueError("experiment.position_data is deprecated. It has been merged into experiment.positions. Please"
+                         " insert your position metadata there.")
 
     @property
     def name(self) -> Name:
@@ -268,16 +265,15 @@ class Experiment:
 
     @property
     def link_data(self) -> LinkData:
-        """Gets all metadata of links."""
-        # Using a property to prevent someone from setting link_data to None
+        warnings.warn("experiment.link_data is deprecated, use experiment.links instead. That object"
+                      " now stores all the link metadata.", DeprecationWarning)
         return self._link_data
 
+    # noinspection PyDeprecation
     @link_data.setter
     def link_data(self, link_data: LinkData):
-        """Sets the links to the given value. May not be None."""
-        if not isinstance(link_data, LinkData):
-            raise TypeError(f"link_data must be a {LinkData.__name__} object, was " + repr(link_data))
-        self._link_data = link_data
+        raise ValueError("experiment.link_data is deprecated. It has been merged into experiment.links. Please"
+                         " insert your link metadata there.")
 
     @property
     def images(self) -> Images:
@@ -324,11 +320,9 @@ class Experiment:
     def merge(self, other: "Experiment"):
         """Merges the position, linking, connections and global data of the other experiment into this one. Images and
         their resolution/timings are not merged, so do that yourself in an appropriate way."""
-        self.positions.add_positions(other.positions)
+        self.positions.merge_data(other.positions)
         self.beacons.add_beacons(other.beacons)
-        self.links.add_links(other.links)
-        self.position_data.merge_data(other.position_data)
-        self.link_data.merge_data(other.link_data)
+        self.links.merge_data(other.links)
         self.connections.add_connections(other.connections)
         self.global_data.merge_data(other.global_data)
 
@@ -341,28 +335,27 @@ class Experiment:
         self.positions.move_in_time(time_point_delta)
         self.beacons.move_in_time(time_point_delta)
         self.links.move_in_time(time_point_delta)
-        self.position_data.move_in_time(time_point_delta)
-        self.link_data.move_in_time(time_point_delta)
         self.connections.move_in_time(time_point_delta)
         self.images.move_in_time(time_point_delta)
         self.splines.move_in_time(time_point_delta)
 
-    def copy_selected(self, *, images: bool = False, positions: bool = False, position_data: bool = False,
-                      links: bool = False, link_data: bool = False, global_data: bool = False,
+    def copy_selected(self, *, images: bool = False, positions: bool = False, position_data: Optional[bool] = None,
+                      links: bool = False, link_data: Optional[bool] = None, global_data: bool = False,
                       connections: bool = False, name: bool = False) -> "Experiment":
-        """Copies the selected attributes over to a new experiment. Note that position_data and links can only be copied
-        if the positions are copied."""
+        """Copies the selected attributes over to a new experiment. Note that links can only be copied if the positions
+        are copied."""
+        if position_data is not None:
+            warnings.warn("The position_data argument is deprecated, use positions instead", DeprecationWarning)
+        if link_data is not None:
+            warnings.warn("The link_data argument is deprecated, use links instead", DeprecationWarning)
+
         copy = Experiment()
         if images:
             copy.images = self._images.copy()
         if positions:
             copy.positions = self._positions.copy()
-            if position_data:
-                copy.position_data = self._position_data.copy()
             if links:
                 copy.links = self._links.copy()
-                if link_data:
-                    copy.link_data = self._link_data.copy()
         if global_data:
             copy.global_data = self._global_data.copy()
         if connections:

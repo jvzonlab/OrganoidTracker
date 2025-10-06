@@ -1,63 +1,29 @@
 """Predictions particle positions using an already-trained convolutional neural network."""
+import _keras_environment
+_keras_environment.activate()
+
 import json
 import os
-from functools import partial
-from typing import Tuple
 
-from tifffile import tifffile
-
-from organoid_tracker.config import ConfigFile, config_type_bool
-from organoid_tracker.core.resolution import ImageResolution
-from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
-from organoid_tracker.imaging import io
-from organoid_tracker.image_loading import general_image_loader
-from organoid_tracker.core.position_collection import PositionCollection
-
-from organoid_tracker.link_detection_cnn.prediction_dataset import prediction_data_creator
-import tensorflow as tf
+import keras.saving
 import numpy as np
 
-from organoid_tracker.link_detection_cnn.training_data_creator import create_image_with_possible_links_list
+from organoid_tracker.config import ConfigFile
+from organoid_tracker.core.position_collection import PositionCollection
+from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
+from organoid_tracker.imaging import io, list_io
+from organoid_tracker.neural_network.link_detection_cnn.prediction_dataset import prediction_data_creator
+from organoid_tracker.neural_network.link_detection_cnn.training_data_creator import \
+    create_image_with_possible_links_list
 
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("predict_links")
-_images_folder = config.get_or_prompt("images_container", "If you have a folder of image files, please paste the folder"
-                                      " path here. Else, if you have a LIF file, please paste the path to that file"
-                                      " here.", store_in_defaults=True)
-_images_format = config.get_or_prompt("images_pattern", "What are the image file names? (Use {time:03} for three digits"
-                                      " representing the time point, use {channel} for the channel)",
-                                      store_in_defaults=True)
-_pixel_size_x_um = config.get_or_default("pixel_size_x_um", "",
-                                         comment="Resolution of the images. Only used if the image files and"
-                                                 " tracking files don't provide a resolution.")
-_pixel_size_y_um = config.get_or_default("pixel_size_y_um", "")
-_pixel_size_z_um = config.get_or_default("pixel_size_z_um", "")
-_time_point_duration_m = config.get_or_default("time_point_duration_m", "")
-if _pixel_size_x_um and _pixel_size_y_um and _pixel_size_z_um and _time_point_duration_m:
-    fallback_resolution = ImageResolution(float(_pixel_size_x_um), float(_pixel_size_y_um), float(_pixel_size_z_um), float(_time_point_duration_m))
-else:
-    fallback_resolution = None
+_dataset_file = config.get_or_prompt("dataset_file", "Please paste the path here to the dataset file."
+                                     " You can generate such a file from OrganoidTracker using File -> Tabs -> "
+                                     " all tabs.", store_in_defaults=True)
 
-_positions_file = config.get_or_default("positions_file",
-                                            "Where are the cell postions saved?",
-                                            comment="What are the detected positions for those images?")
-
-_min_time_point = int(config.get_or_default("min_time_point", str(1), store_in_defaults=True))
-_max_time_point = int(config.get_or_default("max_time_point", str(9999), store_in_defaults=True))
-
-experiment = io.load_data_file(_positions_file, _min_time_point, _max_time_point)
-general_image_loader.load_images(experiment, _images_folder, _images_format,
-                                 min_time_point=_min_time_point, max_time_point=_max_time_point)
-
-# Try to fix missing resolution (this allows running all scripts in sequence)
-if experiment.images.resolution(allow_incomplete=True).is_incomplete():
-    if fallback_resolution is None:
-        print("Please provide a resolution in the tracking data file, or in the configuration file.")
-        exit(1)
-    experiment.images.set_resolution(fallback_resolution)
-
-_model_folder = config.get_or_prompt("checkpoint_folder", "Please paste the path here to the \"checkpoints\" folder containing the trained model.")
-_output_file = config.get_or_default("positions_output_file", "Automatic positions.aut", comment="Output file for the positions, can be viewed using the visualizer program.")
+_model_folder = config.get_or_prompt("model_folder", "Please paste the path here to the \"trained_model\" folder containing the trained model.")
+_output_folder = config.get_or_default("predictions_output_folder", "Link predictions", comment="Output folder for the links, can be viewed using the visualizer program.")
 _channels_str = config.get_or_default("images_channels", str(1), comment="Index(es) of the channels to use. Use \"3\" to use the third channel for predictions. Use \"1,3,4\" to use the sum of the first, third and fourth channel for predictions.")
 _images_channels = {int(part) for part in _channels_str.split(",")}
 
@@ -65,31 +31,16 @@ config.save()
 # END OF PARAMETERS
 
 
-# Check if images were loaded
-if not experiment.images.image_loader().has_images():
-    print("No images were found. Please check the configuration file and make sure that you have stored images at"
-          " the specified location.")
-    exit(1)
-
-# Edit image channels if necessary
-if _images_channels != {1}:
-    # Replace the first channel
-    old_channels = experiment.images.get_channels()
-    new_channels = [old_channels[index - 1] for index in _images_channels]
-    channel_merging_image_loader = ChannelSummingImageLoader(experiment.images.image_loader(), [new_channels])
-    experiment.images.image_loader(channel_merging_image_loader)
-
-# create image_list from experiment
-image_with_links_list, predicted_links_list, possible_links = create_image_with_possible_links_list(experiment)
-
 # set relevant parameters
+_model_folder = os.path.abspath(_model_folder)
 if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
     print("Error: no settings.json found in model folder.")
     exit(1)
 with open(os.path.join(_model_folder, "settings.json")) as file_handle:
     json_contents = json.load(file_handle)
     if json_contents["type"] != "links":
-        print("Error: model at " + _model_folder + " is made for working with " + str(json_contents["type"]) + ", not links")
+        print("Error: model at " + _model_folder + " is made for working with " + str(
+            json_contents["type"]) + ", not links")
         exit(1)
     time_window = json_contents["time_window"]
     if "patch_shape_xyz" in json_contents:
@@ -103,51 +54,87 @@ with open(os.path.join(_model_folder, "settings.json")) as file_handle:
 
 # load models
 print("Loading model...")
-_model_folder = os.path.abspath(_model_folder)
-model = tf.keras.models.load_model(_model_folder)
-if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
-    print("Error: no settings.json found in model folder.")
-    exit(1)
+model = keras.saving.load_model(os.path.join(_model_folder, "model.keras"))
 
+# Create output folder
+_output_folder = os.path.abspath(_output_folder)  # Convert to absolute path, as list_io changes the working directory
+os.makedirs(_output_folder, exist_ok=True)
 
-print("start predicting...")
-all_positions = PositionCollection()
+# Loop through experiments
+experiments_to_save = list()
+for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(_dataset_file)):
+    # Check if output file exists already (in which case we skip this experiment)
+    output_file = os.path.join(_output_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}."
+                               + io.FILE_EXTENSION)
+    if os.path.isfile(output_file):
+        experiment.last_save_file = output_file
+        experiments_to_save.append(experiment)
+        print(f"Experiment {experiment_index + 1} ({experiment.name.get_save_name()}) already has links saved at"
+              f" {output_file}. Skipping.")
+        continue
 
-prediction_dataset_all = prediction_data_creator(image_with_links_list, time_window, patch_shape_zyx)
-predictions_all = model.predict(prediction_dataset_all)
+    print(f"Working on experiment {experiment_index + 1}: {experiment.name}")
 
-number_of_links_done = 0
+    # Check if images were loaded
+    if not experiment.images.image_loader().has_images():
+        print("No images were found. Please check the configuration file and make sure that you have stored images at"
+              " the specified location.")
+        exit(1)
+    experiment.images.resolution()  # Check for resolution
 
-for i in range(len(image_with_links_list)):
-    print("predict image {}/{}".format(i, len(image_with_links_list)))
+    # Edit image channels if necessary
+    original_image_loader = experiment.images.image_loader()
+    if _images_channels != {1}:
+        # Replace the first channel
+        old_channels = experiment.images.get_channels()
+        new_channels = [old_channels[index - 1] for index in _images_channels]
+        channel_merging_image_loader = ChannelSummingImageLoader(experiment.images.image_loader(), [new_channels])
+        experiment.images.image_loader(channel_merging_image_loader)
 
-    set_size = len(predicted_links_list[i])
+    # create image_list from experiment
+    print("Building link list...")
+    image_with_links_list, predicted_links_list, possible_links = create_image_with_possible_links_list(experiment)
 
-    # create dataset and predict
-    predictions = predictions_all[number_of_links_done : (number_of_links_done+set_size)]
-    number_of_links_done = number_of_links_done + set_size
+    print("Start predicting...")
+    all_positions = PositionCollection()
 
-    #predictions = model.predict(prediction_dataset)
-    predicted_links = predicted_links_list[i]
+    prediction_dataset_all = prediction_data_creator(image_with_links_list, time_window, patch_shape_zyx)
+    predictions_all = model.predict(prediction_dataset_all)
 
-    for predicted_link, prediction in zip(predicted_links, predictions):
-        eps = 10 ** -10
-        likelihood = intercept+scaling*float(np.log10(prediction+eps)-np.log10(1-prediction+eps))
-        scaled_prediction = (10**likelihood)/(1+10**likelihood)
+    number_of_links_done = 0
 
-        #experiment.link_data.set_link_data(predicted_link[0], predicted_link[1], data_name="link_probability",
-                                         #  value=float(scaled_prediction))
-        experiment.link_data.set_link_data(predicted_link[0], predicted_link[1], data_name="link_probability",
-                                           value=float(scaled_prediction))
-        experiment.link_data.set_link_data(predicted_link[0], predicted_link[1], data_name="link_penalty",
-                                           value=float(-likelihood))
+    print("Storing predictions in experiment...")
+    for i in range(len(image_with_links_list)):
+        set_size = len(predicted_links_list[i])
 
-# If predictions replace existing data, record overlap. Useful for evaluation purposes.
-if experiment.links is not None:
-    for link in experiment.links.find_all_links():
-        experiment.link_data.set_link_data(link[0], link[1], data_name="present_in_original",
-                                           value=True)
+        # create dataset and predict
+        predictions = predictions_all[number_of_links_done : (number_of_links_done+set_size)]
+        number_of_links_done = number_of_links_done + set_size
 
-print("Saving file...")
-experiment.links = possible_links
-io.save_data_to_json(experiment, _output_file)
+        predicted_links = predicted_links_list[i]
+
+        for predicted_link, prediction in zip(predicted_links, predictions):
+            eps = 10 ** -10
+            likelihood = intercept+scaling*float(np.log10(prediction+eps)-np.log10(1-prediction+eps))
+            scaled_prediction = (10**likelihood)/(1+10**likelihood)
+
+            possible_links.set_link_data(predicted_link[0], predicted_link[1], data_name="link_probability",
+                                               value=float(scaled_prediction))
+            possible_links.set_link_data(predicted_link[0], predicted_link[1], data_name="link_penalty",
+                                               value=float(-likelihood))
+
+    # If predictions replace existing data, record overlap. Useful for evaluation purposes.
+    if experiment.links is not None:
+        for link in experiment.links.find_all_links():
+            possible_links.set_link_data(link[0], link[1], data_name="present_in_original",
+                                               value=True)
+
+    print("Saving file...")
+    experiment.images.image_loader(original_image_loader)  # Restore original image loader
+    experiment.links = possible_links
+    io.save_data_to_json(experiment, output_file)
+    experiments_to_save.append(experiment)
+
+list_io.save_experiment_list_file(experiments_to_save,
+                                  os.path.join(_output_folder, "_All" + list_io.FILES_LIST_EXTENSION))
+print("Done!")

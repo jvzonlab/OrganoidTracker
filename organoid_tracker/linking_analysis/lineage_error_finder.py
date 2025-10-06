@@ -2,16 +2,13 @@
 
 from typing import List, Optional, Set, AbstractSet, Dict, Iterable
 
-from organoid_tracker.core import TimePoint
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.links import Links, LinkingTrack
 from organoid_tracker.core.position import Position
-from organoid_tracker.core.position_data import PositionData
-from organoid_tracker.gui.window import DisplaySettings
+from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.linking_analysis import linking_markers
-from organoid_tracker.linking_analysis.errors import Error
 
-# When at least one position has this position_data marker, the error checker will only check in the lineages containing
+# When at least one position has this position data marker, the error checker will only check in the lineages containing
 # positions with this marker. This is useful for focusing the error checker on a specific part of the experiment.
 ERROR_FOCUS_POINT_MARKER = "error_focus_point"
 
@@ -98,7 +95,7 @@ def find_error_focus_tracks(experiment: Experiment) -> Optional[Set[LinkingTrack
     links = experiment.links
     focus_tracks = set()
     has_focus_points = False
-    for focus_point, value in experiment.position_data.find_all_positions_with_data(ERROR_FOCUS_POINT_MARKER):
+    for focus_point, value in experiment.positions.find_all_positions_with_data(ERROR_FOCUS_POINT_MARKER):
         if value <= 0:
             continue
 
@@ -119,7 +116,7 @@ def get_problematic_lineages(experiment: Experiment, crumbs: AbstractSet[Positio
                              excluded_errors=None) -> List[LineageWithErrors]:
     """Gets a list of all lineages with warnings in the experiment. The provided "crumbs" are placed in the right
     lineages, so that you can see to what lineages those cells belong."""
-    positions_with_errors = linking_markers.find_errored_positions(experiment.position_data)
+    positions_with_errors = linking_markers.find_errored_positions(experiment.positions)
     track_to_errors = _group_by_track(experiment.links, positions_with_errors)
     track_to_crumbs = _group_by_track(experiment.links, crumbs)
     tracks_to_focus_on = find_error_focus_tracks(experiment)
@@ -141,13 +138,13 @@ def get_problematic_lineages(experiment: Experiment, crumbs: AbstractSet[Positio
     return lineages_with_errors
 
 
-def _find_errors_in_lineage(links: Links, position_data: PositionData, lineage: LineageWithErrors, position: Position,
+def _find_errors_in_lineage(links: Links, positions: PositionCollection, lineage: LineageWithErrors, position: Position,
                             crumbs: AbstractSet[Position]):
     while True:
         if position in crumbs:
             lineage.crumbs.add(position)
 
-        error = linking_markers.get_error_marker(position_data, position)
+        error = linking_markers.get_error_marker(positions, position)
         if error is not None:
             lineage.errored_positions.append(position)
         future_positions = links.find_futures(position)
@@ -155,7 +152,7 @@ def _find_errors_in_lineage(links: Links, position_data: PositionData, lineage: 
         if len(future_positions) > 1:
             # Branch out
             for future_position in future_positions:
-                _find_errors_in_lineage(links, position_data, lineage, future_position, crumbs)
+                _find_errors_in_lineage(links, positions, lineage, future_position, crumbs)
             return
         if len(future_positions) < 1:
             # Stop

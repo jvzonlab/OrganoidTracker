@@ -10,10 +10,10 @@ from organoid_tracker.core import UserError
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.images import ImageOffsets
 from organoid_tracker.core.links import Links, LinkingTrack
-from organoid_tracker.core.position_data import PositionData
+from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.guizela_tracker_compatibility import cell_type_converter
-from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking_analysis import linking_markers
+from organoid_tracker.position_analysis import position_markers
 
 
 def export_links(experiment: Experiment, output_folder: str, comparison_folder: Optional[str] = None):
@@ -37,7 +37,7 @@ class _TrackExporter:
 
     _next_track_id: int = 0
     _links: Links
-    _position_data: PositionData
+    _positions: PositionCollection
     _offsets: ImageOffsets
 
     _mother_daughter_pairs: List[List[int]]
@@ -47,7 +47,7 @@ class _TrackExporter:
 
     def __init__(self, experiment: Experiment):
         self._links = experiment.links
-        self._position_data = experiment.position_data
+        self._positions = experiment.positions
         self._offsets = experiment.images.offsets
         self._mother_daughter_pairs = []
         self._dead_track_ids = []
@@ -75,7 +75,7 @@ class _TrackExporter:
                                         t=position.time_point_number())
 
         # Register cell type
-        position_type = position_markers.get_position_type(self._position_data, track.find_last_position())
+        position_type = position_markers.get_position_type(self._positions, track.find_last_position())
         if position_type is not None:
             track_ids_of_cell_type = self._typed_track_ids.get(position_type)
             if track_ids_of_cell_type is None:
@@ -96,7 +96,7 @@ class _TrackExporter:
             self._add_track_including_child_tracks(daughter_track_2, track_id_2)
         elif len(future_tracks) == 0:
             # End of the road
-            if not linking_markers.is_live(self._position_data, track.find_last_position()):
+            if not linking_markers.is_live(self._positions, track.find_last_position()):
                 # Actual cell dead, mark as such
                 self._dead_track_ids.append(track_id)
 
