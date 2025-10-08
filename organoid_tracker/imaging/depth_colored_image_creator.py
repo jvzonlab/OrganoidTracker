@@ -1,5 +1,6 @@
-from typing import Tuple
+from typing import Tuple, Union
 
+from matplotlib.colors import ListedColormap, Colormap
 from numpy import ndarray
 import numpy
 import matplotlib.cm
@@ -9,13 +10,15 @@ from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.core.images import Images
 
 
+SPECTRAL_CROPPED = ListedColormap(matplotlib.colormaps['Spectral'](numpy.linspace(0.1, 1, 128)))
+
+
 def create_image(image: ndarray, *, background_rgba: Tuple[int, int, int, int] = (0, 0, 0, 255),
-                 color_map_name: str = "Spectral") -> ndarray:
+                 color_map: Colormap = SPECTRAL_CROPPED) -> ndarray:
     """Creates a 2D image (float32, [y, x, RGBA]) by giving each xy later in the 3D image another color.
 
     background_rgba is the background RGBA color, for example (255, 0, 0, 255) for bright red.
-    color_map_name is the Matplotlib colormap used for drawing."""
-    color_map = matplotlib.cm.get_cmap(color_map_name)
+    color_map is the Matplotlib colormap used for drawing."""
 
     background_image = numpy.zeros((image.shape[1], image.shape[2], 4), dtype=numpy.uint8)
     for i in range(4):
@@ -23,7 +26,10 @@ def create_image(image: ndarray, *, background_rgba: Tuple[int, int, int, int] =
     color_image_pil = Image.fromarray(background_image)
 
     max_z = image.shape[0] - 1
-    max_intensity = image.max()
+
+    # Simple auto intensity scaling
+    min_used_intensity = numpy.quantile(image, 0.1)
+    max_used_intensity = numpy.quantile(image, 0.99)
 
     slice_buffer = numpy.zeros((image.shape[1], image.shape[2], 4), dtype=numpy.float32)  # 2D RGBA
     slice_buffer_uint8 = numpy.zeros((image.shape[1], image.shape[2], 4), dtype=numpy.uint8)  # 2D RGBA
@@ -39,7 +45,9 @@ def create_image(image: ndarray, *, background_rgba: Tuple[int, int, int, int] =
 
         # Set the alpha layer to the image slice
         slice_buffer[:, :, 3] = image_slice
-        slice_buffer[:, :, 3] /= max_intensity
+        slice_buffer[:, :, 3] -= min_used_intensity
+        slice_buffer[:, :, 3] /= max_used_intensity - min_used_intensity
+        numpy.clip(slice_buffer[:, :, 3], 0, 1, out=slice_buffer[:, :, 3])
         slice_buffer[:, :, 3] **= 2  # To suppress noise
         slice_buffer[:, :, 3] *= 255
 
