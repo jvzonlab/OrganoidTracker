@@ -188,7 +188,7 @@ def show_manual():
 
 def about_the_program():
     dialog.popup_message("About", "Cell detection and linking.\n\n"
-                                  "Developed by Rutger Kok in February 2018 - present. Copyright AMOLF.\n"
+                                  "Developed by Max Betjes and Rutger Kok. Licensed as GPL v2.0.\n"
                                   "Splines and alternative data format by Guizela Huelsz-Prince\n"
                                   "Lineage tree drawing by Jeroen van Zon\n"
                                   "Convolutional neural network by Laetitia Hebert and Greg Stephens\n\n"
