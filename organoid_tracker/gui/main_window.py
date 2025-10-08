@@ -4,7 +4,7 @@ from typing import Callable, Optional
 from typing import Dict, Any
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QKeyEvent, QPalette, QCloseEvent
+from PySide6.QtGui import QKeyEvent, QPalette, QCloseEvent, QDragEnterEvent, QDropEvent
 from PySide6.QtWidgets import QMainWindow, QSizePolicy, QScrollArea, QFrame, QProgressBar, QHBoxLayout
 from PySide6.QtWidgets import QWidget, QApplication, QVBoxLayout, QLabel, QLineEdit
 from matplotlib import pyplot
@@ -75,7 +75,10 @@ class _MyQMainWindow(QMainWindow):
     status_box: QLabel
     mpl_canvas: FigureCanvasQTAgg
     progress_bar: _MainWindowProgressBar
+
     close_handler: Optional[Callable[[QCloseEvent], None]] = None
+    drag_handler: Optional[Callable[[QDragEnterEvent], None]] = None
+    drop_handler: Optional[Callable[[QDropEvent], None]] = None
 
     def __init__(self, figure: Figure):
         super().__init__()
@@ -135,16 +138,37 @@ class _MyQMainWindow(QMainWindow):
         command_and_progress_area_layout.addWidget(self.progress_bar)
         vertical_boxes.addWidget(command_and_progress_area)
 
+        # Connect command box
         self.mpl_canvas.mpl_connect("key_release_event", partial(_commandbox_autofocus, command_box=self.command_box))
         self.command_box.escape_handler = lambda: self.mpl_canvas.setFocus()
 
+        # Add toolbar
         self.toolbar = Toolbar(self.mpl_canvas, self)
         self.addToolBar(self.toolbar)
+
+        # Enable drag and drop
+        self.setAcceptDrops(True)
 
     def closeEvent(self, event: QCloseEvent):
         try:
             if self.close_handler is not None:
                 self.close_handler(event)
+        except BaseException as e:
+            from organoid_tracker.gui import dialog
+            dialog.popup_exception(e)
+
+    def dragEnterEvent(self, event: QDragEnterEvent):
+        try:
+            if self.drag_handler is not None:
+                self.drag_handler(event)
+        except BaseException as e:
+            from organoid_tracker.gui import dialog
+            dialog.popup_exception(e)
+
+    def dropEvent(self, event: QDropEvent):
+        try:
+            if self.drop_handler is not None:
+                self.drop_handler(event)
         except BaseException as e:
             from organoid_tracker.gui import dialog
             dialog.popup_exception(e)
@@ -235,6 +259,8 @@ def launch_window(experiment: Experiment) -> MainWindow:
 
     q_window.command_box.enter_handler = partial(_commandbox_execute, window=window, main_figure=q_window.mpl_canvas)
     q_window.close_handler = lambda close_event: _window_close(window, close_event)
+    q_window.drag_handler = lambda drag_event: _on_drag(window, drag_event)
+    q_window.drop_handler = lambda drop_event: _on_drop(window, drop_event)
     _connect_toolbar_actions(q_window.toolbar, window)
 
     q_window.show()
@@ -304,6 +330,45 @@ def _commandbox_autofocus(event: KeyEvent, command_box: QLineEdit):
         command_box.setText("/")
         command_box.setCursorPosition(1)
 
+def _to_local_file(event) -> Optional[str]:
+    """If the drag event contains exactly one local file, returns its path. Otherwise returns None."""
+    mime_data = event.mimeData()
+    urls = mime_data.urls()
+    if len(urls) != 1:
+        return None
+
+    local_file = urls[0].toLocalFile()
+    if not local_file:
+        return None
+
+    return local_file
+
+
+def _on_drag(window: Window, event: QDragEnterEvent):
+    local_file = _to_local_file(event)
+    if local_file is None:
+        event.ignore()
+        return
+
+    from organoid_tracker.gui import action
+    if action.drag_file(window, local_file):
+        event.accept()
+    else:
+        event.ignore()
+
+
+def _on_drop(window: Window, event: QDropEvent):
+    local_file = _to_local_file(event)
+    if local_file is None:
+        event.ignore()
+        return
+
+    # Try to load the file
+    from organoid_tracker.gui import action
+    if action.load_dropped_file(window, local_file):
+        event.accept()
+    else:
+        event.ignore()
 
 def mainloop():
     """Starts the main loop."""

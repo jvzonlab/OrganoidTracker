@@ -1,3 +1,5 @@
+import fnmatch
+import os.path
 from typing import Optional, Iterable, List, Any, Dict
 
 from PySide6.QtWidgets import QApplication
@@ -11,6 +13,7 @@ from organoid_tracker.gui.gui_experiment import GuiExperiment, SingleGuiTab
 from organoid_tracker.gui.undo_redo import UndoableAction
 from organoid_tracker.gui.window import Window
 from organoid_tracker.imaging import io
+from organoid_tracker.imaging.file_loader import FileLoaderType
 from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.visualizer import activate
 from organoid_tracker.visualizer.empty_visualizer import EmptyVisualizer
@@ -72,22 +75,36 @@ def close_experiment(window: Window):
 def load_images(window: Window):
     """Prompts the image loader, and loads the images into the experiment."""
     from organoid_tracker.gui import image_series_loader_dialog
-    if image_series_loader_dialog.prompt_image_series(window.get_experiment()):
+    if image_series_loader_dialog.prompt_image_series(window.registry.get_registered_file_loaders(), window.get_experiment()):
         window.redraw_all()
 
 
 def load_tracking_data(window: Window):
     if not ask_save_unsaved_changes([window.get_gui_experiment().get_open_tab()]):
         return  # Cancelled
+    experiment = window.get_experiment()
 
-    file_name = dialog.prompt_load_file("Select data file", io.SUPPORTED_IMPORT_FILES)
-    if file_name is None:
+    # Check which formats we support, and by which loader
+    supported_formats_list = list()
+    file_loader_by_pattern = dict()
+    for file_loader in window.registry.get_registered_file_loaders():
+        if file_loader.get_type() != FileLoaderType.TRACKING:
+            continue
+        supported_formats_list.append((file_loader.get_name(), " ".join(file_loader.get_file_patterns())))
+        for pattern in file_loader.get_file_patterns():
+            file_loader_by_pattern[pattern] = file_loader
+
+    file_path = dialog.prompt_load_file("Select data file", supported_formats_list)
+    if file_path is None:
         return  # Cancelled
 
     # Replace the existing experiment with one with the same images, but the new data
-    new_experiment = io.load_data_file(file_name)
-    new_experiment.images.use_image_loader_from(window.get_experiment().images)
-    window.get_gui_experiment().replace_selected_experiment(new_experiment)
+    for pattern, handler in file_loader_by_pattern.items():
+        if fnmatch.fnmatch(file_path, pattern):
+            # Found the right handler
+            handler.load_file_interactive(file_path, into=experiment)
+            window.redraw_data()
+            break
 
 
 def export_positions(experiment: Experiment):
@@ -311,3 +328,29 @@ def switch_experiment_tab_relative(window: Window, relative_index: int):
         return
     gui_experiment.select_experiment(index + relative_index)
     window.set_status(f"Switched to experiment \"{gui_experiment.get_open_tab().experiment.name}\" (tab {index + relative_index + 1}/{len(tabs)}).")
+
+
+def drag_file(window: Window, file_path: str) -> bool:
+    """Checks whether the given file can be loaded into the current experiment, using the registered file loaders."""
+    for file_loader in window.registry.get_registered_file_loaders():
+        if not any(fnmatch.fnmatch(file_path, pattern) for pattern in file_loader.get_file_patterns()):
+            continue
+
+        return True
+    return False
+
+
+def load_dropped_file(window: Window, file_path: str) -> bool:
+    """Tries to load the given file into the current experiment, using the registered file loaders. Returns whether
+    loading was successful."""
+    for file_loader in window.registry.get_registered_file_loaders():
+        if not any(fnmatch.fnmatch(file_path, pattern) for pattern in file_loader.get_file_patterns()):
+            continue
+
+        if file_loader.load_file_interactive(file_path, into=window.get_experiment()):
+            window.redraw_all()
+            window.set_status(file_loader.get_name() + " loaded from " + os.path.basename(file_path) + ".")
+            return True
+        return False
+
+    return False

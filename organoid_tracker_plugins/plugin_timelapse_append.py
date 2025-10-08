@@ -23,7 +23,7 @@ def _append_timelapse(window: Window):
                                                  " current image series is not defined.")
 
     from organoid_tracker.gui import image_series_loader_dialog
-    if not image_series_loader_dialog.prompt_image_series(temporary_experiment):
+    if not image_series_loader_dialog.prompt_image_series(window.registry.get_registered_file_loaders(), temporary_experiment):
         return
 
     window.perform_data_action(_TimelapseAppendAction(experiment.images.image_loader(),
@@ -39,7 +39,7 @@ def _prepend_timelapse(window: Window):
     temporary_experiment = Experiment()
 
     from organoid_tracker.gui import image_series_loader_dialog
-    if not image_series_loader_dialog.prompt_image_series(temporary_experiment):
+    if not image_series_loader_dialog.prompt_image_series(window.registry.get_registered_file_loaders(), temporary_experiment):
         return
     prepending_loader = temporary_experiment.images.image_loader()
     if prepending_loader.last_time_point_number() is None:

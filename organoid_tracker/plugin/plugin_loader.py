@@ -4,6 +4,7 @@ from typing import Any, List, Dict, Tuple, Callable, Optional
 import importlib
 
 from organoid_tracker.core.marker import Marker
+from organoid_tracker.imaging.file_loader import FileLoader
 from organoid_tracker.plugin.instance import Plugin
 
 
@@ -25,6 +26,11 @@ class _ModulePlugin(Plugin):
         if hasattr(self._loaded_script, 'get_menu_items'):
             return self._loaded_script.get_menu_items(window)
         return {}
+
+    def get_file_loaders(self) -> List[FileLoader]:
+        if hasattr(self._loaded_script, 'get_file_loaders'):
+            return self._loaded_script.get_file_loaders()
+        return []
 
     def reload(self):
         importlib.reload(self._loaded_script)

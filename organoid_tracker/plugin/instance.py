@@ -2,6 +2,7 @@
 from typing import Dict, Any, Set, TYPE_CHECKING, List, Callable
 
 from organoid_tracker.core.marker import Marker
+from organoid_tracker.imaging.file_loader import FileLoader
 
 if TYPE_CHECKING:
     from organoid_tracker.gui.window import Window
@@ -15,6 +16,10 @@ class Plugin:
 
     def get_markers(self) -> List[Marker]:
         """Called once to run initialization code."""
+        pass
+
+    def get_file_loaders(self) -> List[FileLoader]:
+        """Called once to get any file loaders provided by this plugin."""
         pass
 
     def get_menu_items(self, window: "Window") -> Dict[str, Callable[[], None]]:

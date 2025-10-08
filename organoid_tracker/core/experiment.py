@@ -370,3 +370,13 @@ class Experiment:
         """Closes any system resources of this experiment, like file handles for images on disk."""
         # Right now, we only need to close the images
         self.images.close_image_loader()
+
+    def clear_tracking_data(self):
+        """Removes everything except the images from the experiment. So positions, links, connections, beacons and
+        splines are removed."""
+        self.positions = PositionCollection()
+        self.beacons = BeaconCollection()
+        self.links = Links()
+        self.connections = Connections()
+        self.splines = SplineCollection()
+        self.global_data = GlobalData()

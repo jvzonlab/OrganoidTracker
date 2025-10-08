@@ -78,6 +78,8 @@ class PluginManager:
         self._plugins[file_path] = plugin
         for marker in plugin.get_markers():
             self._registry._markers[marker.save_name] = marker
+        for file_loader in plugin.get_file_loaders():
+            self._registry._file_loaders.append(file_loader)
 
     def get_plugins(self) -> Iterable[Plugin]:
         """Iterates over all loaded plugins."""

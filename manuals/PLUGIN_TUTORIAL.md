@@ -166,3 +166,35 @@ def _my_command_handler(args: List[str]) -> int:
 ```
 
 This will only call your command, and not show the graphical program. The last line of the command handler, `return 0`, means that the command executed succesfully. If it returns any other number, then this is seen as an error code. The error code is passed on to the operating system (Windows, Linux, etc.).
+
+
+### Adding custom data file formats
+You can add exporting support for some custom file format by adding a new menu option to the GUI. See the "First Steps"
+section above for how to add a new menu option. Then just make your menu option call a function that does the exporting.
+
+For importing some custom file format, the same approach can be used. However, it's better to register your custom
+file loaders, so that they can be used in the standard load dialogs, as well as when dragging and dropping files onto
+the program window. Here's an example of a file loader for a fictional "XYZ" file format:
+
+```python
+from typing import List, Set
+from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.imaging.file_loader import FileLoader, FileLoaderType
+
+class _MyFileLoader(FileLoader):
+    def get_name(self) -> str:
+        return "XYZ file"
+
+    def get_file_patterns(self) -> Set[str]:
+        return {"*.xyz"}
+
+    def load_file_interactive(self, file_path: str, *, into: Experiment) -> bool:
+        # Implement the actual loading here
+        return True
+
+    def get_type(self) -> FileLoaderType:
+        return FileLoaderType.TRACKING  # or FileLoaderType.IMAGE to have it show up in the image loading dialog
+
+def get_file_loaders() -> List[FileLoader]:
+    return [_MyFileLoader()]
+```

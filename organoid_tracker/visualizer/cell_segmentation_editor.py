@@ -736,7 +736,7 @@ class CellSegmentationEditor(AbstractEditor):
     def _load_segmentation_channel(self):
         from organoid_tracker.gui import image_series_loader_dialog
         temp_experiment = Experiment()
-        if not image_series_loader_dialog.prompt_image_series(temp_experiment):
+        if not image_series_loader_dialog.prompt_image_series(self._window.registry.get_registered_file_loaders(), temp_experiment):
             return
         temp_last_channel = temp_experiment.images.get_channels()[-1]  # This channel will be selected
         new_loader = temp_experiment.images.image_loader()

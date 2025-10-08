@@ -21,7 +21,7 @@ def _append_channel(window: Window):
     temporary_experiment = Experiment()
 
     from organoid_tracker.gui import image_series_loader_dialog
-    image_series_loader_dialog.prompt_image_series(temporary_experiment)
+    image_series_loader_dialog.prompt_image_series(window.registry.get_registered_file_loaders(), temporary_experiment)
 
     window.perform_data_action(_ChannelAppendAction(experiment.images.image_loader(),
                                                     temporary_experiment.images.image_loader()))
