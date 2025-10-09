@@ -1,7 +1,7 @@
 ![Logo](manuals/images/logo.png) OrganoidTracker
 ================================================
 
-[Publication of OrganoidTracker 1](https://doi.org/10.1371/journal.pone.0240802) / [Pre-print of OrganoidTracker 2](https://doi.org/10.1101/2024.10.11.617799)
+[Publication of OrganoidTracker 1](https://doi.org/10.1371/journal.pone.0240802) / [Publication of OrganoidTracker 2](https://doi.org/10.1038/s41592-025-02845-6)
 
 Program for tracking cell nuclei in (intestinal) organoids over time. Uses a convolutional neural network for nucleus detection, a min-cost flow solver ([Haubold, 2016]) for linking nuclei over time and tools for manual error correction.
 
