@@ -347,6 +347,13 @@ def load_dropped_file(window: Window, file_path: str) -> bool:
         if not any(fnmatch.fnmatch(file_path, pattern) for pattern in file_loader.get_file_patterns()):
             continue
 
+        # Found a matching file loader!
+        if file_loader.get_type() == FileLoaderType.TRACKING:
+            # Don't just overwrite tracking data, ask to save unsaved changes first
+            if not ask_save_unsaved_changes([window.get_gui_experiment().get_open_tab()]):
+                return False  # Cancelled
+
+        # Load the file (can be images or tracking data)
         if file_loader.load_file_interactive(file_path, into=window.get_experiment()):
             window.redraw_all()
             window.set_status(file_loader.get_name() + " loaded from " + os.path.basename(file_path) + ".")

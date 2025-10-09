@@ -12,9 +12,18 @@ from organoid_tracker.core.experiment import Experiment
 
 
 class FileLoaderType(Enum):
-    """The type of file that a FileHandler can open."""
-    IMAGE = auto()  # The handler shows up in the image import dialog
-    TRACKING = auto()  # The handler shows up in the tracking data import dialog
+    """The type of file that a FileHandler can open.
+
+    This influences a few things in the GUI:
+    - In which loading button the handler shows up (image loading button vs tracking data button).
+    - For tracking data, a warning is shown first if there were any unsaved changes.
+
+    When you're loading a file format that contains both images and tracking data, prefer TRACKING. Alternatively,
+    you can register two loaders, one that only loads the image data from the file, and one that only loads the
+    tracking data.
+    """
+    IMAGE = auto()
+    TRACKING = auto()
 
 
 class FileLoader(ABC):
