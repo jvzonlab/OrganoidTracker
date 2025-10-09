@@ -2,11 +2,9 @@ from functools import partial
 from typing import List
 
 import keras.ops
-import numpy
 
-from organoid_tracker.neural_network import Tensor
 from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import ImageWithPositions
-from organoid_tracker.neural_network.position_detection_cnn.training_dataset import pad_to_patch, normalize
+from organoid_tracker.neural_network.position_detection_cnn.training_dataset import pad_to_patch
 
 
 def predicting_data_creator(image_with_positions_list: List[ImageWithPositions], time_window, corners,
@@ -18,10 +16,10 @@ def predicting_data_creator(image_with_positions_list: List[ImageWithPositions],
             array = image_with_positions.load_image_time_stack(time_window)
             if array is None:
                 continue
-            array = array.astype(numpy.float32)
+            array = keras.ops.convert_to_tensor(array)
 
             # Normalize images
-            array = normalize(array)
+            array = _normalize(array)
 
             # Split images in smaller parts to reduce memory load
             arrays = _split(array, corners=corners, patch_shape=patch_shape, buffer=buffer, image_shape=image_shape)
@@ -31,26 +29,26 @@ def predicting_data_creator(image_with_positions_list: List[ImageWithPositions],
     # Divide entries of single_sample_generator into batches of size batch_size
     samples = list()
     for sample in single_sample_generator():
-        samples.append(keras.ops.convert_to_tensor(sample))
+        samples.append(sample)
         if len(samples) == batch_size:
             yield keras.ops.stack(samples)
             samples.clear()
 
 
-def _split(image: numpy.ndarray, corners, patch_shape, buffer, image_shape) -> List[numpy.ndarray]:
+def _split(image, corners, patch_shape, buffer, image_shape):
     # ensure proper image shape
     image = pad_to_patch(image, image_shape)
     image = pad_to_patch(image, patch_shape)
 
     # add padding
-    padding = numpy.concatenate([buffer, numpy.zeros((1, 2), dtype="int32")], axis=0)
-    image = numpy.pad(image, padding, mode='constant', constant_values=0)
+    padding = keras.ops.concatenate([buffer, keras.ops.zeros((1, 2), dtype="int32")], axis=0)
+    image = keras.ops.pad(image, padding, mode='constant', constant_values=0)
 
     # The shape that has to be cropped form the images, needed?
     final_shape = [patch_shape[0] + buffer[0, 0] + buffer[0, 1],
                    patch_shape[1] + buffer[1, 0] + buffer[1, 1],
                    patch_shape[2] + buffer[2, 0] + buffer[2, 1],
-                   image.shape[3]]
+                   keras.ops.shape(image)[3]]
 
     images = []
 
@@ -61,3 +59,8 @@ def _split(image: numpy.ndarray, corners, patch_shape, buffer, image_shape) -> L
         images.append(image_crop)
 
     return images
+
+
+def _normalize(image, ):
+    return keras.ops.divide(keras.ops.subtract(image, keras.ops.min(image)),
+                            keras.ops.subtract(keras.ops.max(image), keras.ops.min(image)))
