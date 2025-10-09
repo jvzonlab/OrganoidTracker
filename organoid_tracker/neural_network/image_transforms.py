@@ -12,16 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+from typing import List
 
 # Code was taken from the TensorFlow Addons repository, which is no longer maintained.
 # The code was modified to work with Keras 3.
 
 import keras
+import numpy
 
 from organoid_tracker.neural_network import Tensor, TensorLike
 
 
-def random_crop(value: TensorLike, size: TensorLike, seed=None):
+def random_crop(big_image: numpy.ndarray, size: List[int], seed=None) -> numpy.ndarray:
     """Randomly crops a tensor to a given size.
 
     Slices a shape `size` portion out of `value` at a uniformly chosen offset.
@@ -32,7 +34,7 @@ def random_crop(value: TensorLike, size: TensorLike, seed=None):
     `size = [crop_height, crop_width, 3]`.
 
     Args:
-      value: Input tensor to crop.
+      big_image: Input tensor to crop.
       size: 1-D tensor with size the rank of `value`.
       seed: Python integer. Used to create a random seed. See
         `tf.random.set_seed`
@@ -41,17 +43,32 @@ def random_crop(value: TensorLike, size: TensorLike, seed=None):
     Returns:
       A cropped tensor of the same rank as `value` and shape `size`.
     """
-    value = keras.ops.convert_to_tensor(value)
-    size = keras.ops.convert_to_tensor(size, dtype="int32")
-    shape = keras.ops.convert_to_tensor(keras.ops.shape(value), dtype="int32")
+    size = numpy.array(size, dtype=numpy.int32)
+    shape = big_image.shape
     limit = shape - size + 1
-    offset = keras.random.randint(
-        keras.ops.shape(shape),
-        dtype="int32",
-        minval=0,
-        maxval=2**31,
-        seed=seed) % limit
-    return keras.ops.slice(value, offset, size)
+
+    random = numpy.random.default_rng(seed)
+    offset = random.integers(
+        size=len(shape),
+        dtype=numpy.int32,
+        low=0,
+        high=2**31) % limit
+    return _slice(inputs=big_image, start_indices=offset, shape=size)
+
+
+def _slice(inputs: numpy.ndarray, start_indices: numpy.ndarray, shape: numpy.ndarray) -> numpy.ndarray:
+    """numpy translation of keras.ops.slice"""
+
+    # Generate list of indices arrays for each dimension
+    indices = [
+        numpy.arange(start, start + length)
+        for start, length in zip(start_indices, shape)
+    ]
+
+    # Use numpy.ix_ to create a multidimensional index array
+    mesh = numpy.ix_(*indices)
+
+    return inputs[mesh]
 
 
 def compose_transforms(transforms: Tensor) -> Tensor:

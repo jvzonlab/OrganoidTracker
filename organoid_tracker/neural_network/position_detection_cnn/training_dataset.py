@@ -58,12 +58,12 @@ class _TorchDataset(IterableDataset):
         for image_with_positions in self._image_with_position_list:
             image, label = load_images_with_positions(image_with_positions,
                                                       time_window=self._time_window, crop=self._crop_to_positions)
-            image = keras.ops.convert_to_tensor(image)
-            label = keras.ops.convert_to_tensor(label)
+            image = image.astype(np.float32)
+            label = label.astype(np.float32)
 
-            label = keras.ops.expand_dims(label, axis=-1)  # Add channel dimension to labels
+            label = np.expand_dims(label, axis=-1)  # Add channel dimension to labels
 
-            image, label = normalize(image, label)
+            image = normalize(image)
 
             image_patches, label_patches = generate_patches(image, label, self._patch_shape,
                                                             multiplier=self._crops_per_image, perturb=self._perturb)
@@ -95,56 +95,29 @@ def training_data_creator_from_raw(image_with_positions_list: List[ImageWithPosi
     return DataLoader(RepeatingDataset(dataset), batch_size=batch_size, num_workers=0, drop_last=True)
 
 
-# Normalizes image data
-def normalize(image, label):
-    image = keras.ops.divide(keras.ops.subtract(image, keras.ops.min(image)),
-                             keras.ops.subtract(keras.ops.max(image), keras.ops.min(image)))
-
-    #print(keras.ops.shape(image))
-
-    return image, label
+def normalize(image: np.ndarray) -> np.ndarray:
+    """Simple min-max normalization to 0-1 range."""
+    image_min = image.min()
+    image_max = image.max()
+    return (image - image_min) / (image_max - image_min)
 
 
-def pad_to_patch(stacked, patch_shape):
-    stacked_shape = keras.ops.shape(stacked)
+def pad_to_patch(stacked: np.ndarray, patch_shape):
+    stacked_shape = stacked.shape
 
-    pad_z = keras.ops.cond(keras.ops.less(stacked_shape[0], patch_shape[0]), lambda: patch_shape[0] - stacked_shape[0],
-                           lambda: 0)
-    pad_y = keras.ops.cond(keras.ops.less(stacked_shape[1], patch_shape[1]), lambda: patch_shape[1] - stacked_shape[1],
-                           lambda: 0)
-    pad_x = keras.ops.cond(keras.ops.less(stacked_shape[2], patch_shape[2]), lambda: patch_shape[2] - stacked_shape[2],
-                           lambda: 0)
+    pad_z = max(0, patch_shape[0] - stacked_shape[0])
+    pad_y = max(0, patch_shape[1] - stacked_shape[1])
+    pad_x = max(0, patch_shape[2] - stacked_shape[2])
 
     padding = [[pad_z, 0], [0, pad_y], [0, pad_x], [0, 0]]
 
-    return keras.ops.pad(stacked, padding, mode='constant', constant_values=0)
-
-
-# generates single patch without pertubations for validation set
-def generate_patch(image, label, patch_shape, batch=False, perturb=True):
-    # concat in channel dimension
-    stacked = keras.ops.concatenate([image, label], axis=-1)
-
-    stacked = pad_to_patch(stacked, patch_shape)
-
-    patch_shape = patch_shape + [keras.ops.shape(stacked)[-1]]
-
-    # needed?
-    if batch:
-        patch_shape = [keras.ops.shape(stacked)[0]] + patch_shape
-
-    stacked = image_transforms.random_crop(stacked, size=patch_shape)
-
-    image = stacked[:, :, :, :keras.ops.shape(image)[3]]
-    label = stacked[:, :, :, keras.ops.shape(image)[3]:]
-
-    return image, label
+    return np.pad(stacked, padding, mode='constant', constant_values=0)
 
 
 # generates multiple perturbed patches
-def generate_patches(image, label, patch_shape, multiplier=20, perturb=True):
+def generate_patches(image: np.ndarray, label: np.ndarray, patch_shape: Tuple[int, int, int], multiplier=20, perturb=True):
     # concat image and labels in channel dimension
-    stacked = keras.ops.concatenate([image, label], axis=-1)
+    stacked = np.concatenate([image, label], axis=-1)
 
     # initial crop is twice the final crop size in x and y
     patch_shape_init = list(patch_shape)
@@ -154,24 +127,24 @@ def generate_patches(image, label, patch_shape, multiplier=20, perturb=True):
     # if the image is smaller that the patch region then pad
     stacked = pad_to_patch(stacked, patch_shape_init)
 
-    #print(keras.ops.shape(stacked))
-
-
     # add buffer region
     padding = [[0, 0], [patch_shape[1] // 2, patch_shape[1] // 2],
                [patch_shape[2] // 2, patch_shape[2] // 2], [0, 0]]
-    stacked = keras.ops.pad(stacked, padding, mode='constant', constant_values=0)
-
-    #print(keras.ops.shape(stacked))
+    stacked = np.pad(stacked, padding, mode='constant', constant_values=0)
 
     # add channel dimensions
-    patch_shape_init = patch_shape_init + [keras.ops.shape(stacked)[-1]]
+    patch_shape_init = patch_shape_init + [stacked.shape[-1]]
 
     stacked_crops = []
 
     for i in range(multiplier):
         # first (larger) crop
         stacked_crop = image_transforms.random_crop(stacked, size=patch_shape_init)
+
+        # At this point we convert to a tensor
+        # - the big image we had to keep as numpy array (too large for most desktop GPUs)
+        # - but the crops should fit on the GPU, and the perturbations are faster to perform on the GPU
+        stacked_crop = keras.ops.convert_to_tensor(stacked_crop)
 
         # apply perturbations
         if perturb:
