@@ -129,7 +129,7 @@ class MovingAverage(PlotAverage):
                 axes.fill_between(self.x_values[starting_index:end],
                                   self.mean_values[starting_index:end] - error_bar_size[starting_index:end],
                                   self.mean_values[starting_index:end] + error_bar_size[starting_index:end],
-                                  color=previous_color.to_rgb_floats(), alpha=1 - error_opacity)
+                                  color=previous_color.to_rgb_floats(), alpha=1 - error_opacity, linewidth=0)
                 starting_index = i
 
             previous_color = colors[i]
@@ -141,7 +141,7 @@ class MovingAverage(PlotAverage):
             axes.fill_between(self.x_values[starting_index:end],
                               self.mean_values[starting_index:end] - error_bar_size[starting_index:end],
                               self.mean_values[starting_index:end] + error_bar_size[starting_index:end],
-                              color=previous_color.to_rgb_floats(), alpha=1 - error_opacity)
+                              color=previous_color.to_rgb_floats(), alpha=1 - error_opacity, linewidth=0)
 
     def get_mean_at(self, x: float) -> Optional[float]:
         """Gets the mean at the given x. Ignores the step size that was supplied for this object, so the mean is
@@ -187,8 +187,8 @@ class LinesAverage(PlotAverage):
         if found_min_x is None:
             return 0, 1
         if found_max_x == found_min_x:
-            return min_x, max_x + 1
-        return min_x, max_x
+            return found_min_x, found_max_x + 1
+        return found_min_x, found_max_x
 
     def _get_y_values_at(self, x: float) -> List[float]:
         """Returns a list of all y values of the lines at the given position,
@@ -248,7 +248,7 @@ class LinesAverage(PlotAverage):
         if len(x_error_values) > 0:
             axes.plot(x_error_values, y_error_values_mean, color=color.to_rgb_floats(), linewidth=linewidth, label=label)
             axes.fill_between(x_error_values, y_error_values_min,
-                          y_error_values_max, color=color.to_rgb_floats(), alpha=1 - error_opacity)
+                              y_error_values_max, color=color.to_rgb_floats(), alpha=1 - error_opacity, linewidth=0)
 
     def get_x_positions_and_means(self) -> Tuple[ndarray, ndarray]:
         min_x, max_x = self._get_min_max_x()
@@ -266,3 +266,7 @@ class LinesAverage(PlotAverage):
             y_values_mean.append(y_mean)
 
         return numpy.array(x_values, dtype=numpy.float32), numpy.array(y_values_mean, dtype=numpy.float32)
+
+    def count_lines(self) -> int:
+        """Returns how many lines were used to calculate the average."""
+        return len(self._lines)
