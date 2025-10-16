@@ -367,6 +367,10 @@ class Images:
                 # No timings, but a time resolution was provided. Assume constant timing.
                 self._timings = ImageTimings.contant_timing(self._resolution.time_point_interval_m)
                 return self._timings
+            if self.first_time_point_number() == self.last_time_point_number():
+                # Only one time point, so timings don't matter
+                self._timings = ImageTimings.contant_timing(0)
+                return self._timings
             raise UserError("No time resolution set", "No time resolution was set. Please set a resolution first."
                                                       " This can be done in the Edit menu of the program.")
         return self._timings
