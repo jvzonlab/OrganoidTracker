@@ -167,7 +167,7 @@ class PositionsInRectangleSelector(LinkAndPositionEditor):
 
     def _add_positions_to_selection(self):
         """Adds all positions inside the rectangle to the selection, and then deletes the selection."""
-        self._selected = set(self._selected) | set(self._get_newly_selected_positions())
+        self._selected = list(set(self._selected) | set(self._get_newly_selected_positions()))
         self._min_position = None
         self._max_position = None
 
