@@ -4,6 +4,7 @@ from typing import Dict, Any, Tuple, Optional, List
 
 import matplotlib.cm
 import matplotlib.colors
+import numpy
 import numpy as np
 from matplotlib.backend_bases import MouseEvent
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -12,6 +13,7 @@ from organoid_tracker.core import Color, UserError
 from organoid_tracker.core.links import LinkingTrack
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
+from organoid_tracker.core.resolution import ImageTimings, ImageResolution
 from organoid_tracker.gui import dialog, option_choose_dialog
 from organoid_tracker.gui.location_map import LocationMap
 from organoid_tracker.gui.window import Window
@@ -388,9 +390,11 @@ class LineageTreeVisualizer(Visualizer):
         self._ax.set_xticks([])
         if self._ax.get_xlim() == (0, 1):
             # Only change axis if the default values were used
-            # noinspection PyTypeChecker
-            self._ax.set_ylim([display_timings.get_time_h_since_start(experiment.last_time_point_number()),
-                               display_timings.get_time_h_since_start(experiment.first_time_point_number()) - 1])
+            if display_timings is None:
+                self._ax.set_ylim((experiment.last_time_point_number(), experiment.first_time_point_number() - 1))
+            else:
+                self._ax.set_ylim((display_timings.get_time_h_since_start(experiment.last_time_point_number()),
+                                   display_timings.get_time_h_since_start(experiment.first_time_point_number()) - 1))
             # noinspection PyTypeChecker
             self._ax.set_xlim([-0.1, width + 0.1])
 
