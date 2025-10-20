@@ -124,17 +124,17 @@ class _TrackingFileLoader(FileLoader):
     """For loading a file supported by io.load_data_file()."""
 
     _name: str
-    _file_extension: str
+    _file_extensions: Set[str]
 
-    def __init__(self, name: str, file_pattern: str):
+    def __init__(self, name: str, file_patterns: Set[str]):
         self._name = name
-        self._file_extension = file_pattern
+        self._file_extensions = file_patterns
 
     def get_name(self) -> str:
         return self._name
 
     def get_file_patterns(self) -> Set[str]:
-        return {self._file_extension}
+        return self._file_extensions
 
     def load_file_interactive(self, file_path: str, *, into: Experiment) -> bool:
         into.clear_tracking_data()
@@ -152,8 +152,9 @@ def get_file_loaders() -> List[FileLoader]:
             _Nd2FileLoader(),
             _CziFileLoader(),
             _ImsFileLoader(),
-            _TrackingFileLoader(io.FILE_EXTENSION.upper() + " file", "*." + io.FILE_EXTENSION),
-            _TrackingFileLoader("Old detection or linking files", "*.json"),
-            _TrackingFileLoader("Cell tracking challenge files", "*.txt"),
-            _TrackingFileLoader("TrackMate file", "*.xml"),
-            _TrackingFileLoader("Guizela's tracking files", "track_00000.p")]
+            _TrackingFileLoader(io.FILE_EXTENSION.upper() + " file", {"*." + io.FILE_EXTENSION}),
+            _TrackingFileLoader("Old detection or linking files", {"*.json"}),
+            _TrackingFileLoader("Cell tracking challenge files", {"*.txt"}),
+            _TrackingFileLoader("TrackMate file", {"*.xml"}),
+            _TrackingFileLoader("GEFF file", {"*.geff*", ".zgroup"}),
+            _TrackingFileLoader("Guizela's tracking files", {"track_00000.p"})]
