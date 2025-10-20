@@ -10,8 +10,8 @@ def build_model(shape: Tuple, batch_size):
     input = keras.Input(shape=shape, batch_size=batch_size)
 
     # convolutions
-    filter_sizes = [32, 32, 64]
-    # filter_sizes = [16, 32, 32]
+    # filter_sizes = [32, 32, 64]
+    filter_sizes = [16, 32, 32]
 
     layer = conv_block(2, input, filters=filter_sizes[0], kernel=(2, 2, 2), pool_size=(1, 2, 2),
                        pool_strides=(1, 2, 2), name="down0")
