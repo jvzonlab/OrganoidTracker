@@ -1,4 +1,4 @@
-name: organoid_tracker_natprot
+name: organoid_tracker
 channels:
   - ilastik-forge
   - esri
