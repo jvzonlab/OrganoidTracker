@@ -84,10 +84,10 @@ def conv_block(n_conv, layer, filters, kernel=3, pool_size=2, pool_strides=2, dr
     return layer, to_concat
 
 
-def deconv_block(n_conv, layer, to_concat, filters, kernel=3, strides=2, dropout=False, name=None, depth_wise= None, deconvolve=False):
+def deconv_block(n_conv, layer, to_concat, filters, kernel=3, strides=2, dropout=False, name=None, depth_wise= None, deconvolve=True):
 
     if deconvolve:
-        layer = keras.layers.Conv3DTranspose(filters=filters, kernel_size=strides, strides=strides, padding='same',
+        layer = keras.layers.Conv3DTranspose(filters=filters, kernel_size=kernel, strides=strides, padding='same',
                                                 name=name + '>upconv')(layer)
     else:
         layer = keras.layers.UpSampling3D(size=strides,

@@ -19,8 +19,8 @@ def build_model(shape: Tuple, batch_size):
 
     # define encoder, a CNN that will work the same on both input images. Encoding them to a sequence of features.
     def encoder():
-        filter_sizes = [8, 16, 32]
-        # filter_sizes = [16, 32, 64]
+        # filter_sizes = [8, 16, 32]
+        filter_sizes = [16, 32, 64]
 
         conv_0 = conv_block(2, filters=filter_sizes[0], kernel=(1, 3, 3), pool_size=(1, 2, 2),
                             pool_strides=(1, 2, 2), name="down0")
