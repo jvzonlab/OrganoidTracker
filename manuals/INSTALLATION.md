@@ -2,16 +2,21 @@
 =========================
 [← Back to main page](./index.md)
 
+> ### Notice
+> This current verstion of OrganoidTracker is different from the version published in our most recent paper. The main change is that the Tensorflow library has been replaced with PyTorch. We have converted our trained neural networks to be compatible with PyTorch. Should you need any assistance upgrading to this version, feel free to contact us. In case you still need access to the old version, it is still available.
+> 
+> **Old links**: [Old manual](https://github.com/jvzonlab/OrganoidTracker/blob/v2/manuals/index.md) | [Old ZIP download](https://github.com/jvzonlab/OrganoidTracker/archive/refs/heads/v2.zip) | [Old source code](https://github.com/jvzonlab/OrganoidTracker/tree/v2)
+
+
 ## Windows
 **System requirements:**
 
-* 64-bit Windows, version 7 and later
+* 64-bit Windows, version 10 and later
 * Video card with CUDA 11 support and 2 GB of video RAM
 
 **Additional system requirements for training the neural network:**
 
 * Video card with CUDA 11 support and 11 GB of video RAM
-* 8 GB RAM if you want to train without using the intermediary TFRecord files
 
 First, make sure you have Miniforge installed. You can download them at [conda-forge.org/download](https://conda-forge.org/download/). Anaconda or Miniconda should also work, but keep in mind that both may require a commercial license.
 
