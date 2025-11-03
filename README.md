@@ -54,8 +54,8 @@ After you have installed the software, please have a look at the [manual]. The m
 
 Pre-trained neural networks
 ---------------------------
-* [Network trained for OrganoidTracker 2 (C elegans)](https://doi.org/10.5281/zenodo.13912686) - trained using C elegans confocal data from the Cell Tracking Challenge
-* [Network trained for OrganoidTracker 2 (organoid)](https://zenodo.org/records/13946119) - trained using our manually annotated intestinal organoid data
+* [Network trained for OrganoidTracker 2 (C elegans)](https://doi.org/10.5281/zenodo.17495514) - trained using C elegans confocal data from the Cell Tracking Challenge
+* [Network trained for OrganoidTracker 2 (organoid)](https://doi.org/10.5281/zenodo.17495402) - trained using our manually annotated intestinal organoid data
 
 Example data
 ------------
