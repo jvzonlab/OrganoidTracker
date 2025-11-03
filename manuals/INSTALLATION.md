@@ -3,7 +3,7 @@
 [← Back to main page](./index.md)
 
 > ### Notice
-> This current verstion of OrganoidTracker is different from the version published in our most recent paper. The main change is that the Tensorflow library has been replaced with PyTorch. We have converted our trained neural networks to be compatible with PyTorch. Should you need any assistance upgrading to this version, feel free to contact us. In case you still need access to the old version, it is still available.
+> This current verstion of OrganoidTracker is different from the version published in [our most recent paper](https://doi.org/10.1038/s41592-025-02845-6). The main change is that the Tensorflow library has been replaced with PyTorch. We have converted our trained neural networks to be compatible with PyTorch. Should you need any assistance upgrading to this version from the old published version, feel free to contact us. In case you still need access to the old version, it is still available.
 > 
 > **Old links**: [Old manual](https://github.com/jvzonlab/OrganoidTracker/blob/v2/manuals/index.md) | [Old ZIP download](https://github.com/jvzonlab/OrganoidTracker/archive/refs/heads/v2.zip) | [Old source code](https://github.com/jvzonlab/OrganoidTracker/tree/v2)
 
