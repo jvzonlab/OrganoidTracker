@@ -40,11 +40,15 @@ class HelpPopup(RichTextPopup):
             raise UserError("File not found", url + " does not exist")
         markdown_str =  _file_get_contents(file)
 
+        # Replace :::{note} style blocks with a block using horizontal lines
+        markdown_str = markdown_str.replace(":::{note}", "\n----------------\n### Note:")
+        markdown_str = markdown_str.replace(":::", "\n-----------------\n")
+
         # Cut off everything after :::{eval-rst}  (that is metadata for the Sphinx documentation builder)
         try:
             remove_start_index = markdown_str.index(":::{eval-rst}")
             markdown_str = markdown_str[0:remove_start_index]
         except ValueError:
-            pass  # There's not metadata
+            pass  # There's no metadata
 
         return markdown_str
