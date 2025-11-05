@@ -50,7 +50,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">For reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
 <li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
@@ -69,7 +69,6 @@
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.connection_analysis.html">organoid_tracker.connection_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.coordinate_system.html">organoid_tracker.coordinate_system package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.core.html">organoid_tracker.core package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.division_detection_cnn.html">organoid_tracker.division_detection_cnn package</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="organoid_tracker.gui.html">organoid_tracker.gui package</a><ul class="current">
 <li class="toctree-l4 current"><a class="reference internal" href="organoid_tracker.gui.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html#module-organoid_tracker.gui">Module contents</a></li>
@@ -78,14 +77,13 @@
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html">organoid_tracker.guizela_tracker_compatibility package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.image_loading.html">organoid_tracker.image_loading package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.imaging.html">organoid_tracker.imaging package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.link_detection_cnn.html">organoid_tracker.link_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking.html">organoid_tracker.linking package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking_analysis.html">organoid_tracker.linking_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.local_marginalization.html">organoid_tracker.local_marginalization package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.neural_network.html">organoid_tracker.neural_network package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.plugin.html">organoid_tracker.plugin package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_analysis.html">organoid_tracker.position_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection.html">organoid_tracker.position_detection package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html">organoid_tracker.position_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.text_popup.html">organoid_tracker.text_popup package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.util.html">organoid_tracker.util package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.visualizer.html">organoid_tracker.visualizer package</a></li>
@@ -122,66 +120,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-organoid_tracker.gui.threading">
-<span id="organoid-tracker-gui-threading-module"></span><h1>organoid_tracker.gui.threading module<a class="headerlink" href="#module-organoid_tracker.gui.threading" title="Permalink to this heading"></a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.gui.threading.Scheduler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.threading.</span></span><span class="sig-name descname"><span class="pre">Scheduler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">progress_bar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.progress_bar.html#organoid_tracker.gui.progress_bar.ProgressBar" title="organoid_tracker.gui.progress_bar.ProgressBar"><span class="pre">ProgressBar</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.threading.Scheduler" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/threading.html#threading.Thread" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Thread</span></code></a></p>
-<p>To avoid blocking the UI, computationally intensive tasks are run on a worker thread. Simply call add_task(..)
-and the task will be executed on a worker thread.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.gui.threading.Scheduler.add_task">
-<span class="sig-name descname"><span class="pre">add_task</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.gui.threading.Task" title="organoid_tracker.gui.threading.Task"><span class="pre">Task</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.threading.Scheduler.add_task" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.gui.threading.Scheduler.has_active_tasks">
-<span class="sig-name descname"><span class="pre">has_active_tasks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.threading.Scheduler.has_active_tasks" title="Permalink to this definition"></a></dt>
-<dd><p>Gets whether there are currently tasks being run or scheduled to run.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.gui.threading.Scheduler.run">
-<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.threading.Scheduler.run" title="Permalink to this definition"></a></dt>
-<dd><p>Long-running method that processes pending tasks. Do not call, let Python call it.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.gui.threading.Task">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.threading.</span></span><span class="sig-name descname"><span class="pre">Task</span></span><a class="headerlink" href="#organoid_tracker.gui.threading.Task" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
-<p>A long-running task. run() will be called on a worker thread, on_finished() and on_error() on the GUI thread.</p>
-<p>Note: this class is kind of low-level. If you have a task that needs to process Experiment objects in some way,
-consider using the higher-level WorkerJob class instead. This class greatly simplifies running any task on all
-active experiments.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.gui.threading.Task.compute">
-<span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.threading.Task.compute" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.gui.threading.Task.get_percentage_completed">
-<span class="sig-name descname"><span class="pre">get_percentage_completed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.gui.threading.Task.get_percentage_completed" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the percentage currently completed. Can be called from any thread.</p>
-<p>You don’t have to implement this method - returning None is fine. However, if you return a value, make sure it’s
-100 at the end of the task (so when self.compute() is done).</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.gui.threading.Task.on_error">
-<span class="sig-name descname"><span class="pre">on_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.14)"><span class="pre">BaseException</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.threading.Task.on_error" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.gui.threading.Task.on_finished">
-<span class="sig-name descname"><span class="pre">on_finished</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.threading.Task.on_finished" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+  <section id="organoid-tracker-gui-threading-module">
+<h1>organoid_tracker.gui.threading module<a class="headerlink" href="#organoid-tracker-gui-threading-module" title="Permalink to this heading"></a></h1>
 </section>
 
 

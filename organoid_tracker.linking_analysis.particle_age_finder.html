@@ -50,7 +50,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">For reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
 <li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
@@ -69,12 +69,10 @@
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.connection_analysis.html">organoid_tracker.connection_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.coordinate_system.html">organoid_tracker.coordinate_system package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.core.html">organoid_tracker.core package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.division_detection_cnn.html">organoid_tracker.division_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.gui.html">organoid_tracker.gui package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html">organoid_tracker.guizela_tracker_compatibility package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.image_loading.html">organoid_tracker.image_loading package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.imaging.html">organoid_tracker.imaging package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.link_detection_cnn.html">organoid_tracker.link_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking.html">organoid_tracker.linking package</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="organoid_tracker.linking_analysis.html">organoid_tracker.linking_analysis package</a><ul class="current">
 <li class="toctree-l4 current"><a class="reference internal" href="organoid_tracker.linking_analysis.html#submodules">Submodules</a></li>
@@ -82,10 +80,10 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.local_marginalization.html">organoid_tracker.local_marginalization package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.neural_network.html">organoid_tracker.neural_network package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.plugin.html">organoid_tracker.plugin package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_analysis.html">organoid_tracker.position_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection.html">organoid_tracker.position_detection package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html">organoid_tracker.position_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.text_popup.html">organoid_tracker.text_popup package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.util.html">organoid_tracker.util package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.visualizer.html">organoid_tracker.visualizer package</a></li>
@@ -135,7 +133,16 @@ division..</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="organoid_tracker.linking_analysis.particle_age_finder.get_age_at_end_of_track">
 <span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.particle_age_finder.</span></span><span class="sig-name descname"><span class="pre">get_age_at_end_of_track</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">track</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.links.html#organoid_tracker.core.links.LinkingTrack" title="organoid_tracker.core.links.LinkingTrack"><span class="pre">LinkingTrack</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.particle_age_finder.get_age_at_end_of_track" title="Permalink to this definition"></a></dt>
-<dd><p>Gets the length of the cell cycle.</p>
+<dd><p>Gets the length of the cell cycle in time points.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.particle_age_finder.get_age_at_end_of_track_h">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.particle_age_finder.</span></span><span class="sig-name descname"><span class="pre">get_age_at_end_of_track_h</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.resolution.html#organoid_tracker.core.resolution.ImageTimings" title="organoid_tracker.core.resolution.ImageTimings"><span class="pre">ImageTimings</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">track</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.links.html#organoid_tracker.core.links.LinkingTrack" title="organoid_tracker.core.links.LinkingTrack"><span class="pre">LinkingTrack</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.linking_analysis.particle_age_finder.get_age_at_end_of_track_h" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the age of the cell at the end of the track in hours. The cell needs to have divided beforehand, as
+otherwise we don’t know how old it was at the start of the track.</p>
+<p>At the first time point the cell appeared, it is assumed to be 1 time point old (instead of 0). So essentially,
+we assume the division to have happened moments after the last time point of the mother track.</p>
 </dd></dl>
 
 </section>

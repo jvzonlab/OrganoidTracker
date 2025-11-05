@@ -13,19 +13,17 @@ Subpackages
    organoid_tracker.connection_analysis
    organoid_tracker.coordinate_system
    organoid_tracker.core
-   organoid_tracker.division_detection_cnn
    organoid_tracker.gui
    organoid_tracker.guizela_tracker_compatibility
    organoid_tracker.image_loading
    organoid_tracker.imaging
-   organoid_tracker.link_detection_cnn
    organoid_tracker.linking
    organoid_tracker.linking_analysis
    organoid_tracker.local_marginalization
+   organoid_tracker.neural_network
    organoid_tracker.plugin
    organoid_tracker.position_analysis
    organoid_tracker.position_detection
-   organoid_tracker.position_detection_cnn
    organoid_tracker.text_popup
    organoid_tracker.util
    organoid_tracker.visualizer

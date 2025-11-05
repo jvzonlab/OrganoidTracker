@@ -1,0 +1,22 @@
+organoid\_tracker.neural\_network.division\_detection\_cnn package
+==================================================================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   organoid_tracker.neural_network.division_detection_cnn.convolutional_neural_network
+   organoid_tracker.neural_network.division_detection_cnn.image_with_divisions_to_tensor_loader
+   organoid_tracker.neural_network.division_detection_cnn.prediction_dataset
+   organoid_tracker.neural_network.division_detection_cnn.training_data_creator
+   organoid_tracker.neural_network.division_detection_cnn.training_dataset
+
+Module contents
+---------------
+
+.. automodule:: organoid_tracker.neural_network.division_detection_cnn
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -19,7 +19,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="organoid_tracker.imaging.image_adder module" href="organoid_tracker.imaging.image_adder.html" />
+    <link rel="next" title="organoid_tracker.imaging.file_loader module" href="organoid_tracker.imaging.file_loader.html" />
     <link rel="prev" title="organoid_tracker.imaging.ctc_io module" href="organoid_tracker.imaging.ctc_io.html" /> 
 </head>
 
@@ -50,7 +50,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">For reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
 <li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
@@ -69,7 +69,6 @@
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.connection_analysis.html">organoid_tracker.connection_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.coordinate_system.html">organoid_tracker.coordinate_system package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.core.html">organoid_tracker.core package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.division_detection_cnn.html">organoid_tracker.division_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.gui.html">organoid_tracker.gui package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html">organoid_tracker.guizela_tracker_compatibility package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.image_loading.html">organoid_tracker.image_loading package</a></li>
@@ -78,14 +77,13 @@
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.imaging.html#module-organoid_tracker.imaging">Module contents</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.link_detection_cnn.html">organoid_tracker.link_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking.html">organoid_tracker.linking package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking_analysis.html">organoid_tracker.linking_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.local_marginalization.html">organoid_tracker.local_marginalization package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.neural_network.html">organoid_tracker.neural_network package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.plugin.html">organoid_tracker.plugin package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_analysis.html">organoid_tracker.position_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection.html">organoid_tracker.position_detection package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html">organoid_tracker.position_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.text_popup.html">organoid_tracker.text_popup package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.util.html">organoid_tracker.util package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.visualizer.html">organoid_tracker.visualizer package</a></li>
@@ -126,10 +124,10 @@
 <span id="organoid-tracker-imaging-depth-colored-image-creator-module"></span><h1>organoid_tracker.imaging.depth_colored_image_creator module<a class="headerlink" href="#module-organoid_tracker.imaging.depth_colored_image_creator" title="Permalink to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="organoid_tracker.imaging.depth_colored_image_creator.create_image">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.depth_colored_image_creator.</span></span><span class="sig-name descname"><span class="pre">create_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">background_rgba</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">255)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_map_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Spectral'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><span class="pre">ndarray</span></a></span></span><a class="headerlink" href="#organoid_tracker.imaging.depth_colored_image_creator.create_image" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.depth_colored_image_creator.</span></span><span class="sig-name descname"><span class="pre">create_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image:</span> <span class="pre">~numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">background_rgba:</span> <span class="pre">~typing.Tuple[int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int]</span> <span class="pre">=</span> <span class="pre">(0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">255)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color_map:</span> <span class="pre">~matplotlib.colors.Colormap</span> <span class="pre">=</span> <span class="pre">&lt;matplotlib.colors.ListedColormap</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><span class="pre">ndarray</span></a></span></span><a class="headerlink" href="#organoid_tracker.imaging.depth_colored_image_creator.create_image" title="Permalink to this definition"></a></dt>
 <dd><p>Creates a 2D image (float32, [y, x, RGBA]) by giving each xy later in the 3D image another color.</p>
 <p>background_rgba is the background RGBA color, for example (255, 0, 0, 255) for bright red.
-color_map_name is the Matplotlib colormap used for drawing.</p>
+color_map is the Matplotlib colormap used for drawing.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -145,7 +143,7 @@ color_map_name is the Matplotlib colormap used for drawing.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="organoid_tracker.imaging.ctc_io.html" class="btn btn-neutral float-left" title="organoid_tracker.imaging.ctc_io module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="organoid_tracker.imaging.image_adder.html" class="btn btn-neutral float-right" title="organoid_tracker.imaging.image_adder module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="organoid_tracker.imaging.file_loader.html" class="btn btn-neutral float-right" title="organoid_tracker.imaging.file_loader module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

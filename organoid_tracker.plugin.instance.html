@@ -50,7 +50,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">For reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
 <li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
@@ -69,15 +69,14 @@
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.connection_analysis.html">organoid_tracker.connection_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.coordinate_system.html">organoid_tracker.coordinate_system package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.core.html">organoid_tracker.core package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.division_detection_cnn.html">organoid_tracker.division_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.gui.html">organoid_tracker.gui package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html">organoid_tracker.guizela_tracker_compatibility package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.image_loading.html">organoid_tracker.image_loading package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.imaging.html">organoid_tracker.imaging package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.link_detection_cnn.html">organoid_tracker.link_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking.html">organoid_tracker.linking package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking_analysis.html">organoid_tracker.linking_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.local_marginalization.html">organoid_tracker.local_marginalization package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.neural_network.html">organoid_tracker.neural_network package</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="organoid_tracker.plugin.html">organoid_tracker.plugin package</a><ul class="current">
 <li class="toctree-l4 current"><a class="reference internal" href="organoid_tracker.plugin.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.plugin.html#module-organoid_tracker.plugin">Module contents</a></li>
@@ -85,7 +84,6 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_analysis.html">organoid_tracker.position_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection.html">organoid_tracker.position_detection package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html">organoid_tracker.position_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.text_popup.html">organoid_tracker.text_popup package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.util.html">organoid_tracker.util package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.visualizer.html">organoid_tracker.visualizer package</a></li>
@@ -142,6 +140,12 @@ anything else is an error code. This error code is passed to the operating syste
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.plugin.instance.Plugin.get_file_loaders">
+<span class="sig-name descname"><span class="pre">get_file_loaders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.imaging.file_loader.html#organoid_tracker.imaging.file_loader.FileLoader" title="organoid_tracker.imaging.file_loader.FileLoader"><span class="pre">FileLoader</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.plugin.instance.Plugin.get_file_loaders" title="Permalink to this definition"></a></dt>
+<dd><p>Called once to get any file loaders provided by this plugin.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.plugin.instance.Plugin.get_markers">
 <span class="sig-name descname"><span class="pre">get_markers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.marker.html#organoid_tracker.core.marker.Marker" title="organoid_tracker.core.marker.Marker"><span class="pre">Marker</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.plugin.instance.Plugin.get_markers" title="Permalink to this definition"></a></dt>
 <dd><p>Called once to run initialization code.</p>
@@ -149,7 +153,7 @@ anything else is an error code. This error code is passed to the operating syste
 
 <dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.plugin.instance.Plugin.get_menu_items">
-<span class="sig-name descname"><span class="pre">get_menu_items</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window" title="organoid_tracker.gui.window.Window"><span class="pre">Window</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.plugin.instance.Plugin.get_menu_items" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_menu_items</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Window</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.plugin.instance.Plugin.get_menu_items" title="Permalink to this definition"></a></dt>
 <dd><p>Used to add menu items that must always be visible. Example:</p>
 <blockquote>
 <div><dl class="simple">

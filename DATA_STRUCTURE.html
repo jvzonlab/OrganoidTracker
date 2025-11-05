@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Structure of OrganoidTracker &mdash; OrganoidTracker 2.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> OrganoidTracker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SEGMENTATION_EDITOR.html">Segmentation masks editor</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OrganoidTracker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Data Structure of OrganoidTracker</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/DATA_STRUCTURE.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="data-structure-of-organoidtracker">
+<h1>Data Structure of OrganoidTracker<a class="headerlink" href="#data-structure-of-organoidtracker" title="Permalink to this heading"></a></h1>
+<p><a class="reference internal" href="index.html"><span class="doc std std-doc">← Back to main page</span></a></p>
+<p>The data structure of OrganoidTracker is not simply a flat table. Instead, for every time-lapse it holds all data in an instance of the <code class="docutils literal notranslate"><span class="pre">Experiment</span></code> class. This class contains all data of the experiment, such as the positions, links, connections and images. This page gives an overview of the data structure, and explains the design philosophy. There’s also a <a class="reference internal" href="API.html"><span class="doc std std-doc">cookbook-like page</span></a> that shows how to use the data structure in practice, with examples, like how to plot some metadata of a cell over time.</p>
+<p><em>This page is about the Python data structure that is used in memory. If you’re looking for information on the on-disk data format, see the <a class="reference internal" href="TRACKING_FORMATS.html"><span class="doc std std-doc">tracking formats page</span></a>.</em></p>
+<p>Do not access the private fields (those with names starting with an underscore) directly. You are supposed to access the data through the public methods and fields. This gives OrganoidTracker the ability to evolve its internal data structure over time. For example, the Connections class currently uses the NetworkX graph library internally. However, this is an implementation detail, and you should not access this structure directly. Most interactions will instead be through OrganoidTracker-specific methods such as <code class="docutils literal notranslate"><span class="pre">experiment.connections.find_connections(pos)</span></code>. In this way, OrganoidTracker remains free to switch to another graph library. In case you do need the power of the NetworkX library, there’s an escape hatch: the method <code class="docutils literal notranslate"><span class="pre">experiment.connections.to_networkx_graph()</span></code> returns a <em>copy</em> of the internal data structure, so you can use all the methods of the library. In the event that OrganoidTracker switches to another graph library, then <code class="docutils literal notranslate"><span class="pre">to_networkx_graph()</span></code> method will be reimplemented to convert the object of that graph library back to NetworkX. In this way, your code will keep working.</p>
+<p>When using PyCharm or VS Code as your Python editor, the data structure is quite navigable, thanks to their excellent autocomplete. But without that, your best bet is to (a) switch to those editors, or (b) use the data inspector of the OrganoidTracker GUI (<code class="docutils literal notranslate"><span class="pre">Help</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Show</span> <span class="pre">data</span> <span class="pre">inspector...</span></code>).</p>
+<p>The most important members of the data structure are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">experiment.positions</span></code> - holds the positions.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">experiment.links</span></code> - links over time.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">experiment.connections</span></code> - specifies which cells are neighbors.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">experiment.images</span></code> - the images &amp; their resolution, timestamps, spatial offsets and channel information.</p></li>
+</ul>
+<p>The data structures are described below, along with a highlight of their most imporant methods.</p>
+</section>
+<section id="positions">
+<h1>Positions<a class="headerlink" href="#positions" title="Permalink to this heading"></a></h1>
+<p>Positions are stored per time point instead of in one huge table. This is for performance reasons, it makes lookups and edits faster.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">of_time_point</span><span class="p">(</span><span class="n">TimePoint</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+
+<span class="n">position</span> <span class="o">=</span> <span class="n">Position</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">time_point</span><span class="o">=</span><span class="n">TimePoint</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>  <span class="c1"># Add a position to the experiment</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">set_position_data</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="s2">&quot;data_key&quot;</span><span class="p">,</span> <span class="s2">&quot;data value&quot;</span><span class="p">)</span>  <span class="c1"># Set metadata for a position</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">get_position_data</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="s2">&quot;data_key&quot;</span><span class="p">)</span>  <span class="c1"># Get metadata for a position</span>
+
+<span class="c1"># To remove a position, use the base experiment class, which will also remove its links and connections</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">remove_position</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
+<span class="c1"># Moves a position (like remove_position, this method also updates the links and connections data structures)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">move_position</span><span class="p">(</span><span class="n">position_old</span><span class="p">,</span> <span class="n">position_new</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="links">
+<h1>Links<a class="headerlink" href="#links" title="Permalink to this heading"></a></h1>
+<p>Normally, each position is connected to one position in the next time point. Upon a cell death, it is connected to zero, and upon a division, to two positions. Originally, OrganoidTracker used to store links like this, at the individual time point level. However, for performance reasons it has switched to a structure composed of so-called <code class="docutils literal notranslate"><span class="pre">LinkingTrack</span></code>s.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">LinkingTrack</span></code> is essentially a list of positions, and corresponds to a vertical line in a lineage tree. Each track specifies both the previous and next tracks. For example, upon a cell division, two next tracks are specified: the tracks of the daughter cells. Cell mergers and multi-divisions (three or more daughters) are also supported by the data structure.</p>
+<p>When reading the data, you can choose which abstraction you use. If you need information on every time point, for example to measure the fluorescence over time, you have to iterate at the single time point level. However, if you’re interested in cell fate, like how much offspring a cell has, it’s faster to iterate at the track level.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># At the track level (read-only)</span>
+<span class="n">track</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">get_track</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">find_starting_tracks</span><span class="p">()</span>  <span class="c1"># Tracks without parents</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">find_all_tracks</span><span class="p">()</span>  <span class="c1"># Includes daughter tracks</span>
+<span class="n">track</span><span class="o">.</span><span class="n">positions</span><span class="p">()</span>
+<span class="n">track</span><span class="o">.</span><span class="n">get_previous_tracks</span><span class="p">()</span>  <span class="c1"># Just direct parent</span>
+<span class="n">track</span><span class="o">.</span><span class="n">get_next_tracks</span><span class="p">()</span>  <span class="c1"># Just direct offspring</span>
+<span class="n">track</span><span class="o">.</span><span class="n">find_all_previous_tracks</span><span class="p">(</span><span class="n">include_self</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># Iterates back further</span>
+<span class="n">track</span><span class="o">.</span><span class="n">find_all_descending_tracks</span><span class="p">(</span><span class="n">include_self</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># Iterates to further generations</span>
+
+<span class="c1"># At the single-time point level (read and write)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">find_pasts</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">find_futures</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">iterate_to_past</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">iterate_to_future</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">add_link</span><span class="p">(</span><span class="n">pos1</span><span class="p">,</span> <span class="n">pos2</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">remove_link</span><span class="p">(</span><span class="n">pos1</span><span class="p">,</span> <span class="n">pos2</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">set_link_data</span><span class="p">(</span><span class="n">pos1</span><span class="p">,</span> <span class="n">pos2</span><span class="p">,</span> <span class="s2">&quot;data_key&quot;</span><span class="p">,</span> <span class="s2">&quot;data value&quot;</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">get_link_data</span><span class="p">(</span><span class="n">pos1</span><span class="p">,</span> <span class="n">pos2</span><span class="p">,</span> <span class="s2">&quot;data_key&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="connections">
+<h1>Connections<a class="headerlink" href="#connections" title="Permalink to this heading"></a></h1>
+<p>Connections specify which cells are neighbors. (Assuming spatial neighbors, but you can set up neighbors however you want.) Each time point maintains their own independent neighborhood graph.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.experiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Experiment</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+
+<span class="n">experiment</span><span class="o">.</span><span class="n">connections</span><span class="o">.</span><span class="n">find_connections</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">connections</span><span class="o">.</span><span class="n">add_connection</span><span class="p">(</span><span class="n">pos1</span><span class="p">,</span> <span class="n">pos2</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">connections</span><span class="o">.</span><span class="n">remove_connection</span><span class="p">(</span><span class="n">pos1</span><span class="p">,</span> <span class="n">pos2</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">connections</span><span class="o">.</span><span class="n">contains_connection</span><span class="p">(</span><span class="n">pos1</span><span class="p">,</span> <span class="n">pos2</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">connections</span><span class="o">.</span><span class="n">to_networkx_graph</span><span class="p">(</span><span class="n">time_point</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">connections</span><span class="o">.</span><span class="n">get_connection_data</span><span class="p">(</span><span class="n">pos1</span><span class="p">,</span> <span class="n">pos2</span><span class="p">,</span> <span class="s2">&quot;data_key&quot;</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">connections</span><span class="o">.</span><span class="n">set_connection_data</span><span class="p">(</span><span class="n">pos1</span><span class="p">,</span> <span class="n">pos2</span><span class="p">,</span> <span class="s2">&quot;data_key&quot;</span><span class="p">,</span> <span class="s2">&quot;data value&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="images">
+<h1>Images<a class="headerlink" href="#images" title="Permalink to this heading"></a></h1>
+<p>Unlike other data structures, images are not kept in memory. Essentially, OrganoidTracker always functions like the virtual stack feature of ImageJ. To load images, you provide your image loader to <code class="docutils literal notranslate"><span class="pre">experiment.images.image_loader(...)</span></code>. You can implement an <code class="docutils literal notranslate"><span class="pre">ImageLoader</span></code> subclass yourself, or use one of the existing ones. OrganoidTracker automatically wraps your image loader into a caching image loader, which stores a certain number of 2D planes in memory, for faster response times.</p>
+<p>When loading your images, you can also provide other information to the images object, like the resolution, timings and channel descriptions.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">image_loader</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">time_point</span><span class="p">,</span> <span class="n">ImageChannel</span><span class="p">(</span><span class="n">index_one</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>  <span class="c1"># Object with offset</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">get_image_stack</span><span class="p">(</span><span class="n">time_point</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>  <span class="c1"># Raw 3d numpy array</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">get_image_slice_2d</span><span class="p">(</span><span class="n">time_point</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>  <span class="c1"># Raw 2d numpy array</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">set_channel_description</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">ChannelDescription</span><span class="p">(</span><span class="n">channel_name</span><span class="o">=</span><span class="s2">&quot;mCherry&quot;</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">colormaps</span><span class="o">.</span><span class="n">viridis</span><span class="p">))</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">resolution</span><span class="p">()</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">set_resolution</span><span class="p">(</span><span class="n">ImageResolution</span><span class="p">(</span><span class="mf">0.32</span><span class="p">,</span> <span class="mf">0.32</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">timings</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020-2025, Jeroen van Zon Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

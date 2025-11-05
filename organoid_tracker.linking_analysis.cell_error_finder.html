@@ -50,7 +50,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">For reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
 <li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
@@ -69,12 +69,10 @@
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.connection_analysis.html">organoid_tracker.connection_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.coordinate_system.html">organoid_tracker.coordinate_system package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.core.html">organoid_tracker.core package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.division_detection_cnn.html">organoid_tracker.division_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.gui.html">organoid_tracker.gui package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html">organoid_tracker.guizela_tracker_compatibility package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.image_loading.html">organoid_tracker.image_loading package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.imaging.html">organoid_tracker.imaging package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.link_detection_cnn.html">organoid_tracker.link_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking.html">organoid_tracker.linking package</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="organoid_tracker.linking_analysis.html">organoid_tracker.linking_analysis package</a><ul class="current">
 <li class="toctree-l4 current"><a class="reference internal" href="organoid_tracker.linking_analysis.html#submodules">Submodules</a></li>
@@ -82,10 +80,10 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.local_marginalization.html">organoid_tracker.local_marginalization package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.neural_network.html">organoid_tracker.neural_network package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.plugin.html">organoid_tracker.plugin package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_analysis.html">organoid_tracker.position_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection.html">organoid_tracker.position_detection package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html">organoid_tracker.position_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.text_popup.html">organoid_tracker.text_popup package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.util.html">organoid_tracker.util package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.visualizer.html">organoid_tracker.visualizer package</a></li>
@@ -125,9 +123,9 @@
   <section id="module-organoid_tracker.linking_analysis.cell_error_finder">
 <span id="organoid-tracker-linking-analysis-cell-error-finder-module"></span><h1>organoid_tracker.linking_analysis.cell_error_finder module<a class="headerlink" href="#module-organoid_tracker.linking_analysis.cell_error_finder" title="Permalink to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_error_finder.find_errors_in_all_dividing_cells">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.cell_error_finder.</span></span><span class="sig-name descname"><span class="pre">find_errors_in_all_dividing_cells</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_error_finder.find_errors_in_all_dividing_cells" title="Permalink to this definition"></a></dt>
-<dd><p>Rechecks all mother and daughter cells to verify that the mothers aren’t too young. Checking this accross the
+<dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_error_finder.find_errors_in_cell_cycle_lengths">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.cell_error_finder.</span></span><span class="sig-name descname"><span class="pre">find_errors_in_cell_cycle_lengths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_error_finder.find_errors_in_cell_cycle_lengths" title="Permalink to this definition"></a></dt>
+<dd><p>Rechecks all mother and daughter cells to verify that the mothers aren’t too young. Checking this across the
 entire experiment is useful, as changes in links far away might affect the measured cell cycle length.</p>
 </dd></dl>
 
@@ -148,7 +146,7 @@ daughters, cells moving too fast, ect.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="organoid_tracker.linking_analysis.cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.cell_error_finder.</span></span><span class="sig-name descname"><span class="pre">find_errors_in_positions_links_and_all_dividing_cells</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">iterable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.linking_analysis.cell_error_finder.</span></span><span class="sig-name descname"><span class="pre">find_errors_in_positions_links_and_all_dividing_cells</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.14)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.linking_analysis.cell_error_finder.find_errors_in_positions_links_and_all_dividing_cells" title="Permalink to this definition"></a></dt>
 <dd><p>Checks all of the given positions and all dividing cells in the experiment for logical errors, like cell merges,
 cell dividing into three daughters, cells moving too fast, ect. The reason dividing cells are also checked is that
 otherwise it’s not possible to detect when a young mother cell is no longer a young mother cell because far away in

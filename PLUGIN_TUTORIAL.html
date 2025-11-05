@@ -52,6 +52,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#multi-file-plugins">Multi-file plugins</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#adding-cell-types">Adding cell types</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#adding-command-line-scripts">Adding command-line scripts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adding-custom-data-file-formats">Adding custom data file formats</a></li>
 </ul>
 </li>
 </ul>
@@ -63,7 +64,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">For reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
 <li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
@@ -244,6 +245,36 @@
 </pre></div>
 </div>
 <p>This will only call your command, and not show the graphical program. The last line of the command handler, <code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">0</span></code>, means that the command executed succesfully. If it returns any other number, then this is seen as an error code. The error code is passed on to the operating system (Windows, Linux, etc.).</p>
+</section>
+<section id="adding-custom-data-file-formats">
+<h3>Adding custom data file formats<a class="headerlink" href="#adding-custom-data-file-formats" title="Permalink to this heading"></a></h3>
+<p>You can add exporting support for some custom file format by adding a new menu option to the GUI. See the “First Steps”
+section above for how to add a new menu option. Then just make your menu option call a function that does the exporting.</p>
+<p>For importing some custom file format, the same approach can be used. However, it’s better to register your custom
+file loaders, so that they can be used in the standard load dialogs, as well as when dragging and dropping files onto
+the program window. Here’s an example of a file loader for a fictional “XYZ” file format:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Set</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.experiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.imaging.file_loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">FileLoader</span><span class="p">,</span> <span class="n">FileLoaderType</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_MyFileLoader</span><span class="p">(</span><span class="n">FileLoader</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;XYZ file&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_file_patterns</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;*.xyz&quot;</span><span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_file_interactive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">into</span><span class="p">:</span> <span class="n">Experiment</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="c1"># Implement the actual loading here</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FileLoaderType</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">FileLoaderType</span><span class="o">.</span><span class="n">TRACKING</span>  <span class="c1"># or FileLoaderType.IMAGE to have it show up in the image loading dialog</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_file_loaders</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">FileLoader</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">_MyFileLoader</span><span class="p">()]</span>
+</pre></div>
+</div>
 </section>
 </section>
 </section>

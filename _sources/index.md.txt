@@ -12,15 +12,15 @@ Tutorials
 * [Tutorial for using Jupyter Notebooks with OrganoidTracker](JUPYTER_NOTEBOOK.md)
 * [Tutorial for working with custom metadata](WORKING_WITH_CUSTOM_METADATA.md)
 * [Tutorial for replacing the tracking scripts with custom scripts](CUSTOM_TRACKING_SCRIPTS.md)
-
+* [Cookbook for using the API](API.md)
 
 For reference
 -------------
 * [Installation instructions](INSTALLATION.md)
 * [Supported image formats](IMAGE_FORMATS.md) / [Supported tracking formats](TRACKING_FORMATS.md)
 * [Scripts reference](SCRIPTS.md)
-* [Programming API](API.md)
-* [Batch editing](BATCH_EDITING.md)
+* [Data structure of OrganoidTracker](DATA_STRUCTURE.md)
+* [Batch editing from the GUI](BATCH_EDITING.md)
 
 Getting started
 ---------------

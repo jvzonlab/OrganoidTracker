@@ -62,7 +62,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">For reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
 <li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
@@ -217,8 +217,9 @@
 
 <span class="c1"># How to store and retrieve metadata</span>
 <span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
-<span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="o">.</span><span class="n">set_position_data</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="s2">&quot;some_key&quot;</span><span class="p">,</span> <span class="s2">&quot;some_value&quot;</span><span class="p">)</span>
-<span class="n">the_value</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="o">.</span><span class="n">get_position_data</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="s2">&quot;some_key&quot;</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>  <span class="c1"># Position needs to exist in dataset to store metadata</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">set_position_data</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="s2">&quot;some_key&quot;</span><span class="p">,</span> <span class="s2">&quot;some_value&quot;</span><span class="p">)</span>
+<span class="n">the_value</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">get_position_data</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="s2">&quot;some_key&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>You can store exactly the same types of position metadata as you could for <code class="docutils literal notranslate"><span class="pre">experiment.global_data</span></code>. So you can store strings, ints, floats, booleans and lists of those.</p>
@@ -258,7 +259,7 @@
             <span class="k">return</span>  <span class="c1"># Didn&#39;t click on a position</span>
         
         <span class="c1"># Get old activity</span>
-        <span class="n">old_activity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_experiment</span><span class="o">.</span><span class="n">position_data</span><span class="o">.</span><span class="n">get_position_data</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="s2">&quot;activity&quot;</span><span class="p">)</span>
+        <span class="n">old_activity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_experiment</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">get_position_data</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="s2">&quot;activity&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">old_activity</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">old_activity</span> <span class="o">=</span> <span class="mi">0</span>
         
@@ -268,7 +269,7 @@
             <span class="k">return</span>  <span class="c1"># User pressed cancel</span>
         
         <span class="c1"># Store</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_experiment</span><span class="o">.</span><span class="n">position_data</span><span class="o">.</span><span class="n">set_position_data</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="s2">&quot;activity&quot;</span><span class="p">,</span> <span class="n">activity</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_experiment</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">set_position_data</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="s2">&quot;activity&quot;</span><span class="p">,</span> <span class="n">activity</span><span class="p">)</span>
 
 
 <span class="c1"># This function simply opens the activity setting screen</span>
@@ -310,19 +311,20 @@
 <span class="c1"># Replace these with real values</span>
 <span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
 <span class="n">position</span> <span class="o">=</span> <span class="n">Position</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">time_point_number</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
 
 <span class="c1"># This method returns the &quot;type&quot; metadata of a position,</span>
 <span class="c1"># and converts it to UPPERCASE if it isn&#39;t already</span>
-<span class="n">position_markers</span><span class="o">.</span><span class="n">get_position_type</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>
+<span class="n">position_markers</span><span class="o">.</span><span class="n">get_position_type</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>
 
 <span class="c1"># This method sets the &quot;type&quot; metadata of a position,</span>
 <span class="c1"># after converting the type to UPPERCASE if it isn&#39;t already</span>
-<span class="n">position_markers</span><span class="o">.</span><span class="n">set_position_type</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="s2">&quot;PANETH&quot;</span><span class="p">)</span>
+<span class="n">position_markers</span><span class="o">.</span><span class="n">set_position_type</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="s2">&quot;PANETH&quot;</span><span class="p">)</span>
 
 <span class="c1"># This method returns an iterable of all positions of the type &quot;PANETH&quot;.</span>
 <span class="c1"># Note that if a single Paneth cell has 100 positions over time,</span>
 <span class="c1"># then this method will return all 100 positions of that Paneth cell.</span>
-<span class="n">paneth_positions</span> <span class="o">=</span> <span class="n">position_markers</span><span class="o">.</span><span class="n">get_positions_of_type</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="p">,</span> <span class="s2">&quot;PANETH&quot;</span><span class="p">)</span>
+<span class="n">paneth_positions</span> <span class="o">=</span> <span class="n">position_markers</span><span class="o">.</span><span class="n">get_positions_of_type</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span> <span class="s2">&quot;PANETH&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -337,8 +339,8 @@
 <span class="n">position_1</span> <span class="o">=</span> <span class="n">Position</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">time_point_number</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">position_2</span> <span class="o">=</span> <span class="n">Position</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">time_point_number</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-<span class="n">value</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">link_data</span><span class="o">.</span><span class="n">get_link_data</span><span class="p">(</span><span class="n">position_1</span><span class="p">,</span> <span class="n">position_2</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">)</span>
-<span class="n">experiment</span><span class="o">.</span><span class="n">link_data</span><span class="o">.</span><span class="n">set_link_data</span><span class="p">(</span><span class="n">position_1</span><span class="p">,</span> <span class="n">position_2</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">)</span>
+<span class="n">value</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">get_link_data</span><span class="p">(</span><span class="n">position_1</span><span class="p">,</span> <span class="n">position_2</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">)</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">set_link_data</span><span class="p">(</span><span class="n">position_1</span><span class="p">,</span> <span class="n">position_2</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Allowed data types are the same as for other metadata.</p>

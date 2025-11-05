@@ -50,12 +50,13 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">For reference</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
 <li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
 <li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation instructions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#notice">Notice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#windows">Windows</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#macos-and-linux">macOS and Linux</a></li>
 </ul>
@@ -95,21 +96,27 @@
   <section id="installation-instructions">
 <h1>Installation instructions<a class="headerlink" href="#installation-instructions" title="Permalink to this heading"></a></h1>
 <p><a class="reference internal" href="index.html"><span class="doc std std-doc">← Back to main page</span></a></p>
+<blockquote>
+<div></div></blockquote>
+<section id="notice">
+<h2>Notice<a class="headerlink" href="#notice" title="Permalink to this heading"></a></h2>
+<p>This current verstion of OrganoidTracker is different from the version published in <a class="reference external" href="https://doi.org/10.1038/s41592-025-02845-6">our most recent paper</a>. The main change is that the Tensorflow library has been replaced with PyTorch. We have converted our trained neural networks to be compatible with PyTorch. Should you need any assistance upgrading to this version from the old published version, feel free to contact us. In case you still need access to the old version, it is still available.</p>
+<p><strong>Old links</strong>: <a class="reference external" href="https://github.com/jvzonlab/OrganoidTracker/blob/v2/manuals/index.md">Old manual</a> | <a class="reference external" href="https://github.com/jvzonlab/OrganoidTracker/archive/refs/heads/v2.zip">Old ZIP download</a> | <a class="reference external" href="https://github.com/jvzonlab/OrganoidTracker/tree/v2">Old source code</a></p>
+</section>
 <section id="windows">
 <h2>Windows<a class="headerlink" href="#windows" title="Permalink to this heading"></a></h2>
 <p><strong>System requirements:</strong></p>
 <ul class="simple">
-<li><p>64-bit Windows, version 7 and later</p></li>
+<li><p>64-bit Windows, version 10 and later</p></li>
 <li><p>Video card with CUDA 11 support and 2 GB of video RAM</p></li>
 </ul>
 <p><strong>Additional system requirements for training the neural network:</strong></p>
 <ul class="simple">
 <li><p>Video card with CUDA 11 support and 11 GB of video RAM</p></li>
-<li><p>8 GB RAM if you want to train without using the intermediary TFRecord files</p></li>
 </ul>
-<p>First, make sure you have Anaconda or Miniconda installed. You can download them at <a class="reference external" href="https://www.anaconda.com/distribution/">anaconda.com/distribution</a>. You should install the Anaconda version that ships with Python 3, although the one that ships with Python 2 will also work (Anaconda will just download Python 3 afterwards.) Using the default installation options of Anaconda is fine.</p>
+<p>First, make sure you have Miniforge installed. You can download them at <a class="reference external" href="https://conda-forge.org/download/">conda-forge.org/download</a>. Anaconda or Miniconda should also work, but keep in mind that both may require a commercial license.</p>
 <p>Second, make sure you have downloaded OrganoidTracker. You can install it through Git (if you’re familiar with that program), or <a class="reference external" href="https://github.com/jvzonlab/OrganoidTracker/archive/refs/heads/master.zip">simply download it from here</a> and then extract it somewhere.</p>
-<p>Next, to run the scripts you will first need to install the dependencies. Open the Anaconda Prompt (in the “All Programs” list of your start menu, there should now be a folder named Anaconda3, which contains the Anaconda Prompt). Use the command <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">path\to\folder\with\OrganoidTracker</span></code> (replace path with real path) to navigate to the directory you installed OrganoidTracker in. If you are not used to the command line, you can also type “<code class="docutils literal notranslate"><span class="pre">cd</span></code> <code class="docutils literal notranslate"> </code>” (a <code class="docutils literal notranslate"><span class="pre">c</span></code>, a <code class="docutils literal notranslate"><span class="pre">d</span></code> and a space) and then drag in the OrganoidTracker folder and drop it in the command prompt, and then press Enter. See this illustration:</p>
+<p>Next, to run the scripts you will first need to install the dependencies. Open the Miniforge Prompt, which should now be somewhere in the Start menu. Use the command <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">path\to\folder\with\OrganoidTracker</span></code> (replace path with real path) to navigate to the directory you installed OrganoidTracker in. If you are not used to the command line, you can also type “<code class="docutils literal notranslate"><span class="pre">cd</span></code> <code class="docutils literal notranslate"> </code>” (a <code class="docutils literal notranslate"><span class="pre">c</span></code>, a <code class="docutils literal notranslate"><span class="pre">d</span></code> and a space) and then drag in the OrganoidTracker folder and drop it in the command prompt, and then press Enter. See this illustration:</p>
 <p><img alt="Dragging and dropping a folder" src="_images/change_directory.png" /></p>
 <p>Once you’re in the right directory, run the following two commands.</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda env create -f environment-exact-win64.yml
@@ -122,23 +129,25 @@ conda activate organoid_tracker
 </div>
 <p>To test if the software is working, run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">organoid_tracker.py</span></code>. A window should pop up, from which you can load images and tracking data. See the Help menu for more information and tutorials.</p>
 <blockquote>
-<div><p>Tip: you can install the <code class="docutils literal notranslate"><span class="pre">orjson</span></code> library into your Conda environment to speed up saving/loading of AUT files by a factor of two. To do this, run the command <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">--channel</span> <span class="pre">conda-forge</span> <span class="pre">orjson</span></code>.</p>
+<div><p>Tip: you can install the <code class="docutils literal notranslate"><span class="pre">orjson</span></code> library into your Conda environment to speed up saving/loading of AUT files by a factor of two. To do this, run the command <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">orjson</span></code>.</p>
 </div></blockquote>
 </section>
 <section id="macos-and-linux">
 <h2>macOS and Linux<a class="headerlink" href="#macos-and-linux" title="Permalink to this heading"></a></h2>
-<p>Unfortunately, OrganoidTracker has not been tested on any other OSes. If you’re in for a challenge, here are some instructions. Feel free to ask the authors if you run into any problems, we’re interested in getting OrganoidTracker to work on other OSes.</p>
-<p>Download and install Anaconda/Miniconda and open the Anaconda Prompt. Use the <code class="docutils literal notranslate"><span class="pre">cd</span></code> command to navigate to the directory of OrganoidTracker. Run the following commands:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda create -n organoid_tracker -c ilastik-forge -c esri -c conda-forge python=3.9 dpct matplotlib-base tifffile scikit-image scipy nd2reader pyside2 tensorflow-gpu tensorflow-addons
-conda activate organoid_tracker
+<p>Unfortunately, OrganoidTracker has only been lightly tested other OSes. Feel free to ask the authors if you run into any problems.</p>
+<p>Download and install Miniforge and open the Miniforge Prompt. Use the <code class="docutils literal notranslate"><span class="pre">cd</span></code> command to navigate to the directory of OrganoidTracker. Run the following command:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda env create -f environment.yml
 </pre></div>
 </div>
-<p>The first command creates an Anaconda environment named “organoid_tracker” with all dependencies installed. The second command activates this environment. The third command installs Tensorflow, which only has a PIP package.</p>
+<p>Then, to activate the environment you just created, run:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda activate organoid_tracker
+</pre></div>
+</div>
 <p>If you need to remove (the previous version of) OrganoidTracker, execute this command:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda env remove -n organoid_tracker
 </pre></div>
 </div>
-<p>To test if the software is working, run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">organoid_tracker.py</span></code>. A window should pop up, from which you can load images and tracking data.</p>
+<p>To test if the software is working, run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">organoid_tracker.py</span></code> (after you have activated the environment). A window should pop up, from which you can load images and tracking data.</p>
 </section>
 </section>
 

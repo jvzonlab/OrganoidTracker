@@ -101,7 +101,7 @@ for source, target in experiment.links.find_all_links():
     # The chance may not be 0 or 1, so limit it from 0.00000001 to 0.99999999
 
     penalty = -math.log10(chance)+math.log10(1-chance)
-    experiment.link_data.set_link_data(source, target, "link_penalty", penalty)
+    experiment.links.set_link_data(source, target, "link_penalty", penalty)
 ```
 
 For divisions, you would use a very similar approach. You specify, for each nucleus position, the chance of that nucleus having divided into two nuclei in the next time point.
@@ -119,7 +119,7 @@ for position in experiment.positions:
     # The chance may not be 0 or 1, so limit it from 0.00000001 to 0.99999999
 
     penalty = -math.log10(chance)+math.log10(1-chance)
-    experiment.position_data.set_position_data(position, "division_penalty", penalty)
+    experiment.positions.set_position_data(position, "division_penalty", penalty)
 ```
 
 That's it! Don't forget to save your experiment at the end of the script with `io.save_data_to_json(experiment, "output_file.aut")`. Now your tracking data file is ready for the `organoid_tracker_create_links.py` script.

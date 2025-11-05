@@ -50,7 +50,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">For reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
 <li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
@@ -69,7 +69,6 @@
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.connection_analysis.html">organoid_tracker.connection_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.coordinate_system.html">organoid_tracker.coordinate_system package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.core.html">organoid_tracker.core package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.division_detection_cnn.html">organoid_tracker.division_detection_cnn package</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="organoid_tracker.gui.html">organoid_tracker.gui package</a><ul class="current">
 <li class="toctree-l4 current"><a class="reference internal" href="organoid_tracker.gui.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html#module-organoid_tracker.gui">Module contents</a></li>
@@ -78,14 +77,13 @@
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html">organoid_tracker.guizela_tracker_compatibility package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.image_loading.html">organoid_tracker.image_loading package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.imaging.html">organoid_tracker.imaging package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.link_detection_cnn.html">organoid_tracker.link_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking.html">organoid_tracker.linking package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking_analysis.html">organoid_tracker.linking_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.local_marginalization.html">organoid_tracker.local_marginalization package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.neural_network.html">organoid_tracker.neural_network package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.plugin.html">organoid_tracker.plugin package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_analysis.html">organoid_tracker.position_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection.html">organoid_tracker.position_detection package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html">organoid_tracker.position_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.text_popup.html">organoid_tracker.text_popup package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.util.html">organoid_tracker.util package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.visualizer.html">organoid_tracker.visualizer package</a></li>
@@ -122,62 +120,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-organoid_tracker.gui.worker_job">
-<span id="organoid-tracker-gui-worker-job-module"></span><h1>organoid_tracker.gui.worker_job module<a class="headerlink" href="#module-organoid_tracker.gui.worker_job" title="Permalink to this heading"></a></h1>
-<p>A worker job is a job that is applied once to each experiment that is currently open in the GUI. It allows you to
-collect some measurement, or make some change to each experiment. It is run on a worker thread, which avoids freezing
-the GUI while images are being loaded. The job is applied to each experiment, and the results are passed back to the
-GUI.</p>
-<p>To get started, make a subclass of WorkerJob, and then call the submit_job function with an instance of your class.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="organoid_tracker.gui.worker_job.WorkerJob">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.worker_job.</span></span><span class="sig-name descname"><span class="pre">WorkerJob</span></span><a class="headerlink" href="#organoid_tracker.gui.worker_job.WorkerJob" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
-<p>A task that makes changes to the experiment. Will be applied to all open tabs.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.gui.worker_job.WorkerJob.copy_experiment">
-<span class="sig-name descname"><span class="pre">copy_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.worker_job.WorkerJob.copy_experiment" title="Permalink to this definition"></a></dt>
-<dd><p>As gather_data is called on a worker thread, this method is called on the GUI thread to make a copy of the
-experiment. This copy will be passed to gather_data.</p>
-<p>You would normally write something like <cite>return experiment.copy_selected(positions=True)</cite>, to copy whatever data
-you will need on the worker thread. You should copy as few things as possible, as copying may be slow.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.gui.worker_job.WorkerJob.gather_data">
-<span class="sig-name descname"><span class="pre">gather_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment_copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.worker_job.WorkerJob.gather_data" title="Permalink to this definition"></a></dt>
-<dd><p>Gather data from the experiment. Will be called on the worker thread.</p>
-<p>Note: the experiment will be closed (Experiment.close()) after this method is called. This is to avoid memory
-leaks. The original experiment (of the GUI thread) will stay open.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.gui.worker_job.WorkerJob.on_error">
-<span class="sig-name descname"><span class="pre">on_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.14)"><span class="pre">BaseException</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.worker_job.WorkerJob.on_error" title="Permalink to this definition"></a></dt>
-<dd><p>Called when an error occurs.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.gui.worker_job.WorkerJob.on_finished">
-<span class="sig-name descname"><span class="pre">on_finished</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.14)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.worker_job.WorkerJob.on_finished" title="Permalink to this definition"></a></dt>
-<dd><p>Called when the task is finished for all experiments. use_data will already have been called once for every
-experiment.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.gui.worker_job.WorkerJob.use_data">
-<span class="sig-name descname"><span class="pre">use_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tab</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.gui_experiment.html#organoid_tracker.gui.gui_experiment.SingleGuiTab" title="organoid_tracker.gui.gui_experiment.SingleGuiTab"><span class="pre">SingleGuiTab</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.worker_job.WorkerJob.use_data" title="Permalink to this definition"></a></dt>
-<dd><p>Uses the data. Called on the GUI thread, once for every experiment.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.gui.worker_job.submit_job">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.worker_job.</span></span><span class="sig-name descname"><span class="pre">submit_job</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window" title="organoid_tracker.gui.window.Window"><span class="pre">Window</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">job</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.gui.worker_job.WorkerJob" title="organoid_tracker.gui.worker_job.WorkerJob"><span class="pre">WorkerJob</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.worker_job.submit_job" title="Permalink to this definition"></a></dt>
-<dd><p>Submit a job to the worker thread.</p>
-</dd></dl>
-
+  <section id="organoid-tracker-gui-worker-job-module">
+<h1>organoid_tracker.gui.worker_job module<a class="headerlink" href="#organoid-tracker-gui-worker-job-module" title="Permalink to this heading"></a></h1>
 </section>
 
 

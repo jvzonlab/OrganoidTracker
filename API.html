@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API reference &mdash; OrganoidTracker 2.0 documentation</title>
+  <title>API cookbook &mdash; OrganoidTracker 2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -50,7 +50,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">For reference</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">API reference</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API cookbook</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#how-do-i-save-and-load-tracking-data">How do I save and load tracking data?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#how-do-i-iterate-over-all-positions-of-a-particular-time-point">How do I iterate over all positions of a particular time point?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#how-do-i-find-the-first-last-time-point">How do I find the first/last time point?</a></li>
@@ -93,7 +93,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>API reference</li>
+      <li>API cookbook</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/API.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -103,12 +103,12 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="api-reference">
-<h1>API reference<a class="headerlink" href="#api-reference" title="Permalink to this heading"></a></h1>
+  <section id="api-cookbook">
+<h1>API cookbook<a class="headerlink" href="#api-cookbook" title="Permalink to this heading"></a></h1>
 <p><a class="reference internal" href="index.html"><span class="doc std std-doc">← Back to main page</span></a></p>
 <p>OrganoidTracker contains many functions for working with experimental data. Those functions should make it possible to plot useful information. You can use these functions from standalone Python scripts, from <a class="reference internal" href="PLUGIN_TUTORIAL.html"><span class="doc std std-doc">plugins</span></a> or from <a class="reference internal" href="JUPYTER_NOTEBOOK.html"><span class="doc std std-doc">Jupyter Notebooks</span></a>.</p>
 <p>Note: any method, function and field that has a name starting with an underscore (<code class="docutils literal notranslate"><span class="pre">_</span></code>) should not be used by external code. Ask if there is an alternative way to do it.</p>
-<p>Note: for a complete overview of all methods and properties in the <code class="docutils literal notranslate"><span class="pre">Experiment</span></code> object, use the <code class="docutils literal notranslate"><span class="pre">Help</span> <span class="pre">-&gt;</span> <span class="pre">Show</span> <span class="pre">data</span> <span class="pre">inspector...</span></code> menu option. To view a (daunting) overview of all classes and methods in OrganoidTracker, run <code class="docutils literal notranslate"><span class="pre">pydoc</span> <span class="pre">-b</span></code> from the command line, while you are in the OrganoidTracker folder and in the OrganoidTracker conda environment.</p>
+<p>This page is written like a cookbook, with a list of questions and then example code. There’s also a document <a class="reference internal" href="DATA_STRUCTURE.html"><span class="doc std std-doc">that explains the data structure</span></a> of the <code class="docutils literal notranslate"><span class="pre">Experiment</span></code> object, which is the main data structure in OrganoidTracker. You can also inspect this object from the GUI, using the <code class="docutils literal notranslate"><span class="pre">Help</span> <span class="pre">-&gt;</span> <span class="pre">Show</span> <span class="pre">data</span> <span class="pre">inspector...</span></code> menu option.</p>
 <section id="how-do-i-save-and-load-tracking-data">
 <h2>How do I save and load tracking data?<a class="headerlink" href="#how-do-i-save-and-load-tracking-data" title="Permalink to this heading"></a></h2>
 <p>Saving and loading should be straightforward. The function <code class="docutils literal notranslate"><span class="pre">io.load_data_file</span></code> can load any <a class="reference internal" href="TRACKING_FORMATS.html"><span class="doc std std-doc">supported tracking format</span></a>. The function <code class="docutils literal notranslate"><span class="pre">io.save_data_to_json</span></code> can just save to the standard data format.</p>
@@ -246,9 +246,9 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.linking_analysis</span><span class="w"> </span><span class="kn">import</span> <span class="n">linking_markers</span>
 
 <span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
-<span class="n">shed_cells</span> <span class="o">=</span> <span class="n">linking_markers</span><span class="o">.</span><span class="n">find_shed_positions</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="p">,</span> <span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="p">)</span>
-<span class="n">dead_cells</span> <span class="o">=</span> <span class="n">linking_markers</span><span class="o">.</span><span class="n">find_death_positions</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="p">,</span> <span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="p">)</span>
-<span class="n">dead_and_shed_cells</span> <span class="o">=</span> <span class="n">linking_markers</span><span class="o">.</span><span class="n">find_death_and_shed_positions</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="p">,</span> <span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="p">)</span>
+<span class="n">shed_cells</span> <span class="o">=</span> <span class="n">linking_markers</span><span class="o">.</span><span class="n">find_shed_positions</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="p">,</span> <span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="p">)</span>
+<span class="n">dead_cells</span> <span class="o">=</span> <span class="n">linking_markers</span><span class="o">.</span><span class="n">find_death_positions</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="p">,</span> <span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="p">)</span>
+<span class="n">dead_and_shed_cells</span> <span class="o">=</span> <span class="n">linking_markers</span><span class="o">.</span><span class="n">find_death_and_shed_positions</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="p">,</span> <span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>You can then iterate over those using a loop: <code class="docutils literal notranslate"><span class="pre">for</span> <span class="pre">position</span> <span class="pre">in</span> <span class="pre">dead_cells:</span></code>.</p>
@@ -291,7 +291,7 @@
 <span class="n">position</span> <span class="o">=</span> <span class="o">...</span>
 
 <span class="n">track</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">get_track</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
-<span class="n">end_marker</span> <span class="o">=</span> <span class="n">linking_markers</span><span class="o">.</span><span class="n">get_track_end_marker</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="p">,</span> <span class="n">track</span><span class="o">.</span><span class="n">find_last_position</span><span class="p">())</span>
+<span class="n">end_marker</span> <span class="o">=</span> <span class="n">linking_markers</span><span class="o">.</span><span class="n">get_track_end_marker</span><span class="p">(</span><span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span> <span class="n">track</span><span class="o">.</span><span class="n">find_last_position</span><span class="p">())</span>
 <span class="k">if</span> <span class="n">end_marker</span> <span class="o">==</span> <span class="n">EndMarker</span><span class="o">.</span><span class="n">DEAD</span><span class="p">:</span>
     <span class="c1"># Cell died</span>
     <span class="o">...</span>
@@ -361,7 +361,7 @@
 
 <span class="c1"># Open the visualizer</span>
 <span class="n">standard_image_visualizer</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span>
-<span class="n">launcher</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>  <span class="c1"># Necessary! Google &quot;event loop&quot; for details</span>
+<span class="n">main_window</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>  <span class="c1"># Necessary! Google &quot;event loop&quot; for details</span>
 </pre></div>
 </div>
 </section>

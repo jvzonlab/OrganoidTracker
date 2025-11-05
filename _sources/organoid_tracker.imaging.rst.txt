@@ -11,6 +11,8 @@ Submodules
    organoid_tracker.imaging.cropper
    organoid_tracker.imaging.ctc_io
    organoid_tracker.imaging.depth_colored_image_creator
+   organoid_tracker.imaging.file_loader
+   organoid_tracker.imaging.geff_io
    organoid_tracker.imaging.image_adder
    organoid_tracker.imaging.image_file_name_pattern_finder
    organoid_tracker.imaging.io

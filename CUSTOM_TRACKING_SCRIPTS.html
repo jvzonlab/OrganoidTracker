@@ -48,7 +48,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">For reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
 <li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
@@ -173,7 +173,7 @@
     <span class="c1"># The chance may not be 0 or 1, so limit it from 0.00000001 to 0.99999999</span>
 
     <span class="n">penalty</span> <span class="o">=</span> <span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">chance</span><span class="p">)</span><span class="o">+</span><span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">chance</span><span class="p">)</span>
-    <span class="n">experiment</span><span class="o">.</span><span class="n">link_data</span><span class="o">.</span><span class="n">set_link_data</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="s2">&quot;link_penalty&quot;</span><span class="p">,</span> <span class="n">penalty</span><span class="p">)</span>
+    <span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">set_link_data</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="s2">&quot;link_penalty&quot;</span><span class="p">,</span> <span class="n">penalty</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>For divisions, you would use a very similar approach. You specify, for each nucleus position, the chance of that nucleus having divided into two nuclei in the next time point.</p>
@@ -189,7 +189,7 @@
     <span class="c1"># The chance may not be 0 or 1, so limit it from 0.00000001 to 0.99999999</span>
 
     <span class="n">penalty</span> <span class="o">=</span> <span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">chance</span><span class="p">)</span><span class="o">+</span><span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">chance</span><span class="p">)</span>
-    <span class="n">experiment</span><span class="o">.</span><span class="n">position_data</span><span class="o">.</span><span class="n">set_position_data</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="s2">&quot;division_penalty&quot;</span><span class="p">,</span> <span class="n">penalty</span><span class="p">)</span>
+    <span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">set_position_data</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="s2">&quot;division_penalty&quot;</span><span class="p">,</span> <span class="n">penalty</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>That’s it! Don’t forget to save your experiment at the end of the script with <code class="docutils literal notranslate"><span class="pre">io.save_data_to_json(experiment,</span> <span class="pre">&quot;output_file.aut&quot;)</span></code>. Now your tracking data file is ready for the <code class="docutils literal notranslate"><span class="pre">organoid_tracker_create_links.py</span></code> script.</p>

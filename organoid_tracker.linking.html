@@ -20,7 +20,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="organoid_tracker.linking.cell_division_finder module" href="organoid_tracker.linking.cell_division_finder.html" />
-    <link rel="prev" title="organoid_tracker.link_detection_cnn.training_dataset module" href="organoid_tracker.link_detection_cnn.training_dataset.html" /> 
+    <link rel="prev" title="organoid_tracker.imaging.trackmate_io module" href="organoid_tracker.imaging.trackmate_io.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -50,7 +50,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">For reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="API.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
 <li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
@@ -69,12 +69,10 @@
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.connection_analysis.html">organoid_tracker.connection_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.coordinate_system.html">organoid_tracker.coordinate_system package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.core.html">organoid_tracker.core package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.division_detection_cnn.html">organoid_tracker.division_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.gui.html">organoid_tracker.gui package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html">organoid_tracker.guizela_tracker_compatibility package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.image_loading.html">organoid_tracker.image_loading package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.imaging.html">organoid_tracker.imaging package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.link_detection_cnn.html">organoid_tracker.link_detection_cnn package</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">organoid_tracker.linking package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-organoid_tracker.linking">Module contents</a></li>
@@ -82,10 +80,10 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking_analysis.html">organoid_tracker.linking_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.local_marginalization.html">organoid_tracker.local_marginalization package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.neural_network.html">organoid_tracker.neural_network package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.plugin.html">organoid_tracker.plugin package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_analysis.html">organoid_tracker.position_analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection.html">organoid_tracker.position_detection package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection_cnn.html">organoid_tracker.position_detection_cnn package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.text_popup.html">organoid_tracker.text_popup package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.util.html">organoid_tracker.util package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="organoid_tracker.visualizer.html">organoid_tracker.visualizer package</a></li>
@@ -153,12 +151,11 @@
 <p>The more complex linker is the dpct linker:
 &gt;&gt;&gt; from organoid_tracker.linking import dpct_linker
 &gt;&gt;&gt; all_potential_links = nearest_neighbor_linker.nearest_neighbor(experiment, tolerance=2)
-&gt;&gt;&gt; # experiment must contain position_data for ‘division_penalty’, ‘appearance_penalty’, ‘dissappearance_penalty’
+&gt;&gt;&gt; # experiment must contain position data for ‘division_penalty’, ‘appearance_penalty’, ‘dissappearance_penalty’
 &gt;&gt;&gt; # for all positions.
 &gt;&gt;&gt; # and must contain link_data for ‘link_penalty’ for all potential links
-&gt;&gt;&gt; experiment.links = dpct_linker.run(experiment.positions, experiment.position_data, all_potential_links,
-&gt;&gt;&gt;            experiment.link_data, link_weight=1, detection_weigh=1, division_weight=1, appearance_weight=1,
-&gt;&gt;&gt;            dissappearance_weight=1)</p>
+&gt;&gt;&gt; experiment.links = dpct_linker.run(experiment.positions, all_potential_links,
+&gt;&gt;&gt;            link_weight=1, detection_weigh=1, division_weight=1, appearance_weight=1, dissappearance_weight=1)</p>
 </section>
 </section>
 
@@ -166,7 +163,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="organoid_tracker.link_detection_cnn.training_dataset.html" class="btn btn-neutral float-left" title="organoid_tracker.link_detection_cnn.training_dataset module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="organoid_tracker.imaging.trackmate_io.html" class="btn btn-neutral float-left" title="organoid_tracker.imaging.trackmate_io module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="organoid_tracker.linking.cell_division_finder.html" class="btn btn-neutral float-right" title="organoid_tracker.linking.cell_division_finder module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
