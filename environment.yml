@@ -19,4 +19,4 @@ dependencies:
   - pytorch
   - tqdm
   - aicspylibczi
-  - zarr
+  - ome-zarr

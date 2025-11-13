@@ -34,6 +34,10 @@ def load_images(experiment: Experiment, container: str, pattern: str,
         from organoid_tracker.image_loading import merged_tiff_image_loader
         merged_tiff_image_loader.load_from_tif_file(experiment, container, min_time_point, max_time_point)
         return
+    if container.endswith(".zarr"):
+        from organoid_tracker.image_loading import zarr_image_loader
+        zarr_image_loader.load_from_zarr_file(experiment, container, min_time_point, max_time_point)
+        return
     if not os.path.exists(container):
         print("Failed to load \"" + container + "\" - file or folder does not exist")
         return  # Cannot load anything

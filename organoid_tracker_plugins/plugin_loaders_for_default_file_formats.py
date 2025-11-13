@@ -180,6 +180,23 @@ class _ImsFileLoader(FileLoader):
         return FileLoaderType.IMAGE
 
 
+class _ZarrFileLoader(FileLoader):
+    def get_name(self) -> str:
+        return "Zarr file"
+
+    def get_file_patterns(self) -> Set[str]:
+        return {"*.zarr*", "*.zgroup"}
+
+    def load_file_interactive(self, file_path: str, *, into: Experiment) -> bool:
+        from organoid_tracker.image_loading import zarr_image_loader
+        into.images.close_image_loader()
+        zarr_image_loader.load_from_zarr_file(into, file_path)
+        return True
+
+    def get_type(self) -> FileLoaderType:
+        return FileLoaderType.IMAGE
+
+
 class _TrackingFileLoader(FileLoader):
     """For loading a file supported by io.load_data_file()."""
 
@@ -212,6 +229,7 @@ def get_file_loaders() -> List[FileLoader]:
             _Nd2FileLoader(),
             _CziFileLoader(),
             _ImsFileLoader(),
+            _ZarrFileLoader(),
             _TrackingFileLoader(io.FILE_EXTENSION.upper() + " file", {"*." + io.FILE_EXTENSION}),
             _TrackingFileLoader("Old detection or linking files", {"*.json"}),
             _TrackingFileLoader("Cell tracking challenge files", {"*.txt"}),
