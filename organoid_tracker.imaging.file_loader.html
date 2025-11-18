@@ -152,9 +152,12 @@ additional file formats.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.imaging.file_loader.FileLoader.load_file_interactive">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_file_interactive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">into</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#organoid_tracker.imaging.file_loader.FileLoader.load_file_interactive" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_file_interactive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">into</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.imaging.file_loader.LoadInto" title="organoid_tracker.imaging.file_loader.LoadInto"><span class="pre">LoadInto</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#organoid_tracker.imaging.file_loader.FileLoader.load_file_interactive" title="Permalink to this definition"></a></dt>
 <dd><p>Loads the file at the given path and adds its contents into the given experiment. This method is allowed
 to interact with the user, for example by showing a dialog to ask for additional information.</p>
+<p>If a file loader wants to add extra tabs to the GUI (for example, when loading multiple image sequences),
+those can be added to the <cite>create_extra_tabs</cite> list. This list should start empty, and any Experiment instances
+added to it will be shown in extra tabs.</p>
 <p>Returns whether loading was successful. If loading was cancelled or failed, return False.</p>
 <p>Note: if you’re replacing the image loader, make sure to call experiment.images.close_image_loader() first,
 to avoid a memory and file handler leak.</p>
@@ -182,6 +185,36 @@ tracking data.</p>
 <dt class="sig sig-object py" id="organoid_tracker.imaging.file_loader.FileLoaderType.TRACKING">
 <span class="sig-name descname"><span class="pre">TRACKING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#organoid_tracker.imaging.file_loader.FileLoaderType.TRACKING" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.file_loader.LoadInto">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">organoid_tracker.imaging.file_loader.</span></span><span class="sig-name descname"><span class="pre">LoadInto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.imaging.file_loader.LoadInto" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>When loading a file, there will always be one open experiment already. In addition, you can create extra
+experiments, which will be shown in extra tabs added to the GUI.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.file_loader.LoadInto.allow_extra_tabs">
+<span class="sig-name descname"><span class="pre">allow_extra_tabs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#organoid_tracker.imaging.file_loader.LoadInto.allow_extra_tabs" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.file_loader.LoadInto.experiment">
+<span class="sig-name descname"><span class="pre">experiment</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></em><a class="headerlink" href="#organoid_tracker.imaging.file_loader.LoadInto.experiment" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.file_loader.LoadInto.extra_experiments">
+<span class="sig-name descname"><span class="pre">extra_experiments</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#organoid_tracker.imaging.file_loader.LoadInto.extra_experiments" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.imaging.file_loader.LoadInto.next_experiment">
+<span class="sig-name descname"><span class="pre">next_experiment</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.experiment.html#organoid_tracker.core.experiment.Experiment" title="organoid_tracker.core.experiment.Experiment"><span class="pre">Experiment</span></a></span></span><a class="headerlink" href="#organoid_tracker.imaging.file_loader.LoadInto.next_experiment" title="Permalink to this definition"></a></dt>
+<dd><p>First time this method is called, it returns the main experiment. Subsequent calls create new experiments,
+add those to the self.extra_tabs list, and then return them.</p>
+</dd></dl>
 
 </dd></dl>
 
