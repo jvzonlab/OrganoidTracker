@@ -13,7 +13,7 @@ from organoid_tracker.gui.gui_experiment import GuiExperiment, SingleGuiTab
 from organoid_tracker.gui.undo_redo import UndoableAction
 from organoid_tracker.gui.window import Window
 from organoid_tracker.imaging import io
-from organoid_tracker.imaging.file_loader import FileLoaderType
+from organoid_tracker.imaging.file_loader import FileLoaderType, LoadInto
 from organoid_tracker.linking_analysis import linking_markers
 from organoid_tracker.visualizer import activate
 from organoid_tracker.visualizer.empty_visualizer import EmptyVisualizer
@@ -75,7 +75,7 @@ def close_experiment(window: Window):
 def load_images(window: Window):
     """Prompts the image loader, and loads the images into the experiment."""
     from organoid_tracker.gui import image_series_loader_dialog
-    if image_series_loader_dialog.prompt_image_series(window.registry.get_registered_file_loaders(), window.get_experiment()):
+    if image_series_loader_dialog.prompt_image_series_multiple(window):
         window.redraw_all()
 
 
@@ -102,7 +102,10 @@ def load_tracking_data(window: Window):
     for pattern, handler in file_loader_by_pattern.items():
         if fnmatch.fnmatch(file_path, pattern):
             # Found the right handler
-            handler.load_file_interactive(file_path, into=experiment)
+            into = LoadInto(experiment)
+            handler.load_file_interactive(file_path, into=into)
+            for extra_experiment in into.extra_experiments:
+                window.get_gui_experiment().add_experiment(extra_experiment)
             window.redraw_data()
             break
 
@@ -354,7 +357,10 @@ def load_dropped_file(window: Window, file_path: str) -> bool:
                 return False  # Cancelled
 
         # Load the file (can be images or tracking data)
-        if file_loader.load_file_interactive(file_path, into=window.get_experiment()):
+        into = LoadInto(window.get_experiment())
+        if file_loader.load_file_interactive(file_path, into=into):
+            for extra_experiment in into.extra_experiments:
+                window.get_gui_experiment().add_experiment(extra_experiment)
             window.redraw_all()
             window.set_status(file_loader.get_name() + " loaded from " + os.path.basename(file_path) + ".")
             return True

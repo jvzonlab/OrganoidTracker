@@ -7,8 +7,35 @@ additional file formats.
 
 from abc import abstractmethod, ABC
 from enum import Enum, auto
+from typing import List
 
 from organoid_tracker.core.experiment import Experiment
+
+
+class LoadInto:
+    """When loading a file, there will always be one open experiment already. In addition, you can create extra
+    experiments, which will be shown in extra tabs added to the GUI."""
+
+    experiment: Experiment
+    allow_extra_tabs: bool = True  # Set this to False to prevent adding extra tabs
+    extra_experiments: List[Experiment]
+
+    _returned_first: bool = False
+
+    def __init__(self, experiment: Experiment):
+        self.experiment = experiment
+        self.extra_experiments = []
+
+    def next_experiment(self) -> Experiment:
+        """First time this method is called, it returns the main experiment. Subsequent calls create new experiments,
+        add those to the self.extra_tabs list, and then return them."""
+        if not self._returned_first:
+            self._returned_first = True
+            return self.experiment
+        else:
+            new_experiment = Experiment()
+            self.extra_experiments.append(new_experiment)
+            return new_experiment
 
 
 class FileLoaderType(Enum):
@@ -41,9 +68,13 @@ class FileLoader(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def load_file_interactive(self, file_path: str, *, into: Experiment) -> bool:
+    def load_file_interactive(self, file_path: str, *, into: LoadInto) -> bool:
         """Loads the file at the given path and adds its contents into the given experiment. This method is allowed
         to interact with the user, for example by showing a dialog to ask for additional information.
+
+        If a file loader wants to add extra tabs to the GUI (for example, when loading multiple image sequences),
+        those can be added to the `create_extra_tabs` list. This list should start empty, and any Experiment instances
+        added to it will be shown in extra tabs.
 
         Returns whether loading was successful. If loading was cancelled or failed, return False.
 
