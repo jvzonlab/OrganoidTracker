@@ -20,14 +20,14 @@ dependencies:
   - cached_property=1.5.2=pyha770c72_1
   - cairo=1.18.4=h5782bbf_0
   - charls=2.4.2=h1537add_0
-  - contourpy=1.3.3=py311h3fd045d_2
-  - crc32c=2.8=py311hf893f09_0
+  - contourpy=1.3.3=py311h3fd045d_3
+  - crc32c=2.8=py311hf893f09_1
   - cuda-cudart=12.9.79=he0c23c2_0
   - cuda-cudart_win-64=12.9.79=he0c23c2_0
   - cuda-cupti=12.9.79=hac47afa_1
   - cuda-nvrtc=12.9.86=hac47afa_1
   - cuda-version=12.9=h4f385c5_3
-  - cudnn=9.10.1.4=h32ff316_1
+  - cudnn=9.10.2.21=h32ff316_0
   - cycler=0.12.1=pyhd8ed1ab_1
   - dav1d=1.2.1=hcfcfb64_0
   - deprecated=1.3.1=pyhd8ed1ab_0
@@ -41,7 +41,7 @@ dependencies:
   - font-ttf-ubuntu=0.83=h77eed37_3
   - fontconfig=2.15.0=h765892d_1
   - fonts-conda-ecosystem=1=0
-  - fonts-conda-forge=1=0
+  - fonts-conda-forge=1=hc364b38_1
   - fonttools=4.60.1=py311h3f79411_0
   - formulaic=1.2.1=pyhd8ed1ab_2
   - freetype=2.14.1=h57928b3_0
@@ -50,18 +50,18 @@ dependencies:
   - glpk=5.0=h8ffe710_0
   - graphite2=1.3.14=hac47afa_2
   - h5py=3.15.1=nompi_py311hc40ba4b_100
-  - harfbuzz=12.1.0=h5f2951f_0
+  - harfbuzz=12.2.0=h5f2951f_0
   - hdf5=1.14.6=nompi_he30205f_103
   - icu=75.1=he0c23c2_0
-  - imagecodecs=2025.8.2=py311haf4ede9_7
+  - imagecodecs=2025.11.11=py311haf4ede9_0
   - imageio=2.37.0=pyhfb79c49_0
   - importlib-metadata=8.7.0=pyhe01879c_1
   - interface_meta=1.3.0=pyhd8ed1ab_1
   - jinja2=3.1.6=pyhd8ed1ab_0
   - joblib=1.5.2=pyhd8ed1ab_0
   - jxrlib=1.1=hcfcfb64_3
-  - keras=3.12.0=pyh753f3f9_0
-  - kiwisolver=1.4.9=py311h275cad7_1
+  - keras=3.11.2=pyh753f3f9_0
+  - kiwisolver=1.4.9=py311h275cad7_2
   - krb5=1.21.3=hdf4eb48_0
   - lazy-loader=0.4=pyhd8ed1ab_2
   - lcms2=2.17=hbcf6048_0
@@ -70,17 +70,17 @@ dependencies:
   - libabseil=20250512.1=cxx17_habfad5f_0
   - libaec=1.1.4=h20038f6_0
   - libavif16=1.3.0=he916da2_2
-  - libblas=3.9.0=38_hf2e6a31_mkl
+  - libblas=3.11.0=1_hf2e6a31_mkl
   - libboost=1.86.0=h9dfe17d_4
   - libboost-python=1.86.0=py311h05ac4f6_4
   - libbrotlicommon=1.2.0=hc82b238_0
   - libbrotlidec=1.2.0=h431afc6_0
   - libbrotlienc=1.2.0=ha521d6b_0
-  - libcblas=3.9.0=38_h2a3cdd5_mkl
+  - libcblas=3.11.0=1_h2a3cdd5_mkl
   - libclang13=21.1.5=default_ha2db4b5_0
   - libcublas=12.9.1.4=hac47afa_1
-  - libcudnn=9.10.1.4=hca898b4_1
-  - libcudnn-dev=9.10.1.4=hca898b4_1
+  - libcudnn=9.10.2.21=hca898b4_0
+  - libcudnn-dev=9.10.2.21=hca898b4_0
   - libcudss=0.7.1.4=hca898b4_0
   - libcufft=11.4.1.4=hac47afa_1
   - libcurand=10.3.10.19=hac47afa_1
@@ -93,7 +93,7 @@ dependencies:
   - libfreetype=2.14.1=h57928b3_0
   - libfreetype6=2.14.1=hdbac1cb_0
   - libgcc=15.2.0=h1383e82_7
-  - libglib=2.86.1=hd9c3897_1
+  - libglib=2.86.1=hd9c3897_2
   - libgomp=15.2.0=h1383e82_7
   - libhwloc=2.12.1=default_h64bd3f2_1002
   - libhwy=1.3.0=ha71e874_1
@@ -101,7 +101,7 @@ dependencies:
   - libintl=0.22.5=h5728263_3
   - libjpeg-turbo=3.1.2=hfd05255_0
   - libjxl=0.11.1=hac9b6f3_5
-  - liblapack=3.9.0=38_hf9ab0e9_mkl
+  - liblapack=3.11.0=1_hf9ab0e9_mkl
   - liblzma=5.8.1=h2466b09_2
   - libmagma=2.9.0=hb6a17ea_3
   - libnvjitlink=12.9.86=hac47afa_2
@@ -122,33 +122,33 @@ dependencies:
   - libzlib=1.3.1=h2466b09_2
   - libzopfli=1.0.3=h0e60522_0
   - lifelines=0.30.0=pyhd8ed1ab_1
-  - llvm-openmp=21.1.5=hfa2b4ca_0
+  - llvm-openmp=21.1.5=h4fa8253_2
   - lz4-c=1.10.0=h2466b09_1
-  - markdown=3.10=pyhd8ed1ab_0
+  - markdown=3.10=pyhcf101f3_1
   - markdown-it-py=4.0.0=pyhd8ed1ab_0
   - markupsafe=3.0.3=py311h3f79411_0
-  - matplotlib-base=3.10.7=py311h1675fdf_0
+  - matplotlib-base=3.10.8=py311h1675fdf_0
   - mdurl=0.1.2=pyhd8ed1ab_1
   - mkl=2025.3.0=hac47afa_454
   - ml_dtypes=0.5.1=py311h11fd7f3_1
   - mpmath=1.3.0=pyhd8ed1ab_1
-  - msgpack-python=1.1.2=py311h3fd045d_0
+  - msgpack-python=1.1.2=py311h3fd045d_1
   - munkres=1.1.4=pyhd8ed1ab_1
   - namex=0.1.0=pyhd8ed1ab_0
-  - narwhals=2.10.2=pyhcf101f3_0
+  - narwhals=2.12.0=pyhcf101f3_0
   - nd2reader=3.3.1=pyhd8ed1ab_0
   - networkx=3.5=pyhe01879c_0
   - numcodecs=0.16.1=py311h11fd7f3_2
-  - numpy=2.3.4=py311h80b3fa1_0
+  - numpy=2.3.5=py311h80b3fa1_0
   - openjpeg=2.5.4=h24db6dd_0
   - openssl=3.6.0=h725018a_0
-  - optree=0.17.0=py311h3fd045d_1
+  - optree=0.18.0=py311h3fd045d_0
   - packaging=25.0=pyh29332c3_1
   - pandas=2.3.3=py311h11fd7f3_1
   - pcre2=10.46=h3402e2f_0
   - pillow=12.0.0=py311hf7ee305_0
   - pims=0.7=pyhd8ed1ab_1
-  - pip=25.2=pyh8b19718_0
+  - pip=25.3=pyh8b19718_0
   - pixman=0.46.4=h5112557_1
   - pthread-stubs=0.4=h0e40799_1002
   - pybind11=2.13.6=pyhc790b64_3
@@ -163,7 +163,7 @@ dependencies:
   - python_abi=3.11=8_cp311
   - pytorch=2.8.0=cuda128_mkl_py311_h889696f_302
   - pytz=2025.2=pyhd8ed1ab_0
-  - pywavelets=1.9.0=py311h17033d2_1
+  - pywavelets=1.9.0=py311h17033d2_2
   - pyyaml=6.0.3=py311h3f79411_0
   - qhull=2020.2=hc790b64_5
   - qt6-main=6.9.3=ha0de62e_1
@@ -176,18 +176,18 @@ dependencies:
   - six=1.17.0=pyhe01879c_1
   - sleef=3.9.0=h67fd636_0
   - slicerator=1.1.0=pyhd8ed1ab_1
-  - snappy=1.2.2=h7fa0ca8_0
+  - snappy=1.2.2=h7fa0ca8_1
   - svt-av1=3.1.2=hac47afa_0
   - sympy=1.14.0=pyh04b8f61_5
-  - tbb=2022.3.0=hd094cb3_0
+  - tbb=2022.3.0=hd094cb3_1
   - threadpoolctl=3.6.0=pyhecae5ae_0
   - tifffile=2025.10.16=pyhd8ed1ab_0
-  - tk=8.6.13=h2c6b04d_2
+  - tk=8.6.13=h2c6b04d_3
   - typing-extensions=4.15.0=h396c80c_0
   - typing_extensions=4.15.0=pyhcf101f3_0
   - tzdata=2025b=h78e105d_0
   - ucrt=10.0.26100.0=h57928b3_0
-  - unicodedata2=17.0.0=py311h3485c13_0
+  - unicodedata2=17.0.0=py311h3485c13_1
   - vc=14.3=h2b53caa_32
   - vc14_runtime=14.44.35208=h818238b_32
   - vcomp14=14.44.35208=h818238b_32
@@ -195,12 +195,12 @@ dependencies:
   - wheel=0.45.1=pyhd8ed1ab_1
   - wrapt=1.17.3=py311h3485c13_1
   - xmltodict=1.0.2=pyhcf101f3_0
-  - xorg-libxau=1.0.12=h0e40799_0
-  - xorg-libxdmcp=1.1.5=h0e40799_0
+  - xorg-libxau=1.0.12=hba3369d_1
+  - xorg-libxdmcp=1.1.5=hba3369d_1
   - yaml=0.2.5=h6a83c73_3
   - zarr=3.1.3=pyhcf101f3_0
   - zfp=1.0.1=h2f0f97f_3
   - zipp=3.23.0=pyhd8ed1ab_0
   - zlib-ng=2.2.5=h32d8bfd_0
   - zstd=1.5.7=hbeecb71_2
-prefix: C:\Users\klumpe\AppData\Local\miniconda3\envs\organoid_tracker
+prefix: C:\Users\klumpe\AppData\Local\miniconda3\envs\organoid_debug
