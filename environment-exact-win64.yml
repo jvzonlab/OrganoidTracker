@@ -2,7 +2,6 @@ name: organoid_tracker
 channels:
   - conda-forge
   - ilastik-forge
-  - defaults
 dependencies:
   - _libavif_api=1.3.0=h57928b3_2
   - _openmp_mutex=4.5=2_gnu
@@ -16,7 +15,7 @@ dependencies:
   - brotli-bin=1.2.0=h6910e44_0
   - bzip2=1.0.8=h0ad9c76_8
   - c-blosc2=2.22.0=h3cf07e4_0
-  - ca-certificates=2025.10.5=h4c7d964_0
+  - ca-certificates=2025.11.12=h4c7d964_0
   - cached-property=1.5.2=hd8ed1ab_1
   - cached_property=1.5.2=pyha770c72_1
   - cairo=1.18.4=h5782bbf_0
@@ -142,7 +141,7 @@ dependencies:
   - numcodecs=0.16.1=py311h11fd7f3_2
   - numpy=2.3.4=py311h80b3fa1_0
   - openjpeg=2.5.4=h24db6dd_0
-  - openssl=3.5.4=h725018a_0
+  - openssl=3.6.0=h725018a_0
   - optree=0.17.0=py311h3fd045d_1
   - packaging=25.0=pyh29332c3_1
   - pandas=2.3.3=py311h11fd7f3_1
@@ -172,6 +171,7 @@ dependencies:
   - rich=14.2.0=pyhcf101f3_0
   - scikit-image=0.25.2=py311h11fd7f3_2
   - scikit-learn=1.7.2=py311h8a15ebc_0
+  - scipy=1.16.3=py311hf127856_1
   - setuptools=80.9.0=pyhff2d567_0
   - six=1.17.0=pyhe01879c_1
   - sleef=3.9.0=h67fd636_0
@@ -203,6 +203,4 @@ dependencies:
   - zipp=3.23.0=pyhd8ed1ab_0
   - zlib-ng=2.2.5=h32d8bfd_0
   - zstd=1.5.7=hbeecb71_2
-  - pip:
-      - scipy==1.16.3
 prefix: C:\Users\klumpe\AppData\Local\miniconda3\envs\organoid_tracker
