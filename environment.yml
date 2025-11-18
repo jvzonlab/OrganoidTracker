@@ -17,5 +17,6 @@ dependencies:
   - markdown
   - keras
   - pytorch
+  - tqdm
   - aicspylibczi
   - zarr
