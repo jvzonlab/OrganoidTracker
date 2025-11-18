@@ -18,7 +18,7 @@ This current version of OrganoidTracker is different from the version published 
 
 * Video card with CUDA 11 support and 11 GB of video RAM
 
-First, make sure you have Miniforge installed. You can download them at [conda-forge.org/download](https://conda-forge.org/download/). Anaconda or Miniconda should also work, but keep in mind that both may require a commercial license.
+First, make sure you have Miniforge installed. You can download it at [conda-forge.org/download](https://conda-forge.org/download/). Anaconda or Miniconda should also work, but keep in mind that both may require a paid license.
 
 Second, make sure you have downloaded OrganoidTracker. You can install it through Git (if you're familiar with that program), or [simply download it from here](https://github.com/jvzonlab/OrganoidTracker/archive/refs/heads/master.zip) and then extract it somewhere.
 
@@ -26,10 +26,21 @@ Next, to run the scripts you will first need to install the dependencies. Open t
 
 ![Dragging and dropping a folder](images/change_directory.png)
 
-Once you're in the right directory, run the following two commands.
+If you notice that the Command Prompt didn't actually change the directory to the OrganoidTracker folder, a common cause is that you're switching drives, like going from the `C:` drive to the `D:` drive. In that case, first just type `D:` (replace with the appropriate drive letter, and don't prefix with `cd`) and press Enter, and then use the `cd` command again to go to the OrganoidTracker folder.
+
+Once you're in the right directory, run the following command.
 
     conda env create -f environment-exact-win64.yml
+
+If it fails because CUDA cannot be installed, the most likely cause is that your graphics card does not support CUDA. If you're not using OrganoidTracker for automated cell tracking on this computer (but for example just for visualization and manual correction), you can instead run this command:
+
+    conda env create -f environment.yml
+
+Afterwards, activate the environment you just created by running:
+
     conda activate organoid_tracker
+
+Your command prompt should now start with `(organoid_tracker)`.
 
 If you need to remove (the previous version of) OrganoidTracker, execute this command:
 
