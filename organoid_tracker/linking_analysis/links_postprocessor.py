@@ -33,11 +33,11 @@ def finetune_solution(experiment: Experiment, experiment_result: Experiment):
             prev_position = prev_positions[0]
 
             if prev_position in mothers:
-                old_penalty = links_result.get_link_data(prev_position, position, 'link_penalty') \
+                old_penalty = links_start.get_link_data(prev_position, position, 'link_penalty') \
                               + experiment_result.positions.get_position_data(prev_position, 'division_penalty')
                 new_penalty = experiment_result.positions.get_position_data(position, 'appearance_penalty')
             else:
-                old_penalty = links_result.get_link_data(prev_position, position, 'link_penalty')
+                old_penalty = links_start.get_link_data(prev_position, position, 'link_penalty')
                 new_penalty = experiment_result.positions.get_position_data(position, 'appearance_penalty') \
                               + experiment_result.positions.get_position_data(prev_position,
                                                                                   'disappearance_penalty')
