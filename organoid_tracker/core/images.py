@@ -16,21 +16,45 @@ from organoid_tracker.core.resolution import ImageResolution, ImageTimings
 _ZERO = Position(0, 0, 0)
 
 
+class _CacheEntry(NamedTuple):
+    time_point_number: int
+    image_z: int
+    image_channel: ImageChannel
+    image_array: ndarray
+
+
+def _is_complete(arrays: List[Optional[ndarray]]):
+    for array in arrays:
+        if array is None:
+            return False
+    return True
+
+
 class _CachedImageLoader(ImageLoader):
     """Wrapper that caches the last few loaded images."""
 
     _internal: ImageLoader
-    _image_cache: List[Tuple[int, int, ImageChannel, ndarray]]
-    _CACHE_SIZE: int = 5 * 30
+    _image_cache: List[_CacheEntry]
+    _CACHE_SIZE_MB = 200
+    _CACHE_SIZE_B = _CACHE_SIZE_MB * 1024 * 1024
 
     def __init__(self, wrapped: ImageLoader):
         self._image_cache = []
         self._internal = wrapped
 
+    def _get_current_cache_size_bytes(self) -> int:
+        size = 0
+        for entry in self._image_cache:
+            if entry.image_array is None:
+                size += 10 * 1024  # We don't want to store an infinite amount of None entries
+            else:
+                size += entry.image_array.nbytes
+        return size
+
     def _add_to_cache(self, time_point_number: int, image_z: int, image_channel: ImageChannel, image: ndarray):
-        if len(self._image_cache) > self._CACHE_SIZE:
+        self._image_cache.append(_CacheEntry(time_point_number, image_z, image_channel, image))
+        while self._get_current_cache_size_bytes() > self._CACHE_SIZE_B:
             self._image_cache.pop(0)
-        self._image_cache.append((time_point_number, image_z, image_channel, image))
 
     def get_3d_image_array(self, time_point: TimePoint, image_channel: ImageChannel) -> Optional[ndarray]:
         time_point_number = time_point.time_point_number()
@@ -40,14 +64,14 @@ class _CachedImageLoader(ImageLoader):
             z_size = image_size_zyx[0]
             image_layers_by_z: List[Optional[ndarray]] = [None] * z_size
             for entry in self._image_cache:
-                if entry[0] == time_point_number and entry[2] == image_channel:
-                    cached_z: int = entry[1]
+                if entry.time_point_number == time_point_number and entry.image_channel == image_channel:
+                    cached_z: int = entry.image_z
                     try:
                         # Found cache entry for this z
-                        image_layers_by_z[cached_z] = entry[3]
+                        image_layers_by_z[cached_z] = entry.image_array
                     except IndexError:
                         pass  # Ignore, image contains extra z levels
-            if self._is_complete(image_layers_by_z):
+            if _is_complete(image_layers_by_z):
                 # Collected all necessary cache entries
                 return numpy.array(image_layers_by_z, dtype=image_layers_by_z[0].dtype)
 
@@ -55,24 +79,18 @@ class _CachedImageLoader(ImageLoader):
         array = self._internal.get_3d_image_array(time_point, image_channel)
         if array is None:
             return None
-        if array.shape[0] * 2 < self._CACHE_SIZE:
+        if array.nbytes * 2 < self._CACHE_SIZE_B:
             # The 3D image is small enough for cache, so add it
             for image_z in range(array.shape[0]):
                 self._add_to_cache(time_point.time_point_number(), image_z, image_channel, array[image_z])
         return array
 
-    def _is_complete(self, arrays: List[Optional[ndarray]]):
-        for array in arrays:
-            if array is None:
-                return False
-        return True
-
     def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
         time_point_number = time_point.time_point_number()
         for entry in self._image_cache:
-            if entry[0] == time_point_number and entry[1] == image_z and entry[2] == image_channel:
+            if entry.time_point_number == time_point_number and entry.image_z == image_z and entry.image_channel == image_channel:
                 # Cache hit
-                return entry[3]
+                return entry.image_array
 
         # Cache miss
         array = self._internal.get_2d_image_array(time_point, image_channel, image_z)
@@ -115,11 +133,11 @@ class _CachedImageLoader(ImageLoader):
         self._internal.save_3d_image_array(time_point, image_channel, image)
 
         # Remove the image from the cache (done by keeping only other time points and channels)
-        self._image_cache = [(time_point_number, image_z, channel, array) for time_point_number, image_z, channel, array in self._image_cache
-                                if time_point_number != time_point.time_point_number() or channel != image_channel]
+        self._image_cache = [entry for entry in self._image_cache
+                                if entry.time_point_number != time_point.time_point_number() or entry.image_channel != image_channel]
 
         # Try to add the updated image to the cache
-        if image.shape[0] * 2 < self._CACHE_SIZE:
+        if image.nbytes * 2 < self._CACHE_SIZE_B:
             # The 3D image is small enough for cache, so add it
             for image_z in range(image.shape[0]):
                 self._add_to_cache(time_point.time_point_number(), image_z, image_channel, image[image_z])
