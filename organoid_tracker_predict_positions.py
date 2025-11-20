@@ -20,6 +20,7 @@ _dataset_file = config.get_or_prompt("dataset_file", "Please paste the path here
                                      " all tabs.", store_in_defaults=True)
 
 if _dataset_file != '':
+    experiment_count = list_io.count_experiments_in_list_file(_dataset_file)
     experiment_list = list_io.load_experiment_list_file(_dataset_file)
 else:
     # if not _dataset_file is defined, we look in the defaults for an images folder to construct a single experiment
@@ -42,6 +43,7 @@ else:
     general_image_loader.load_images(experiment_list, _images_folder, _images_format,
                                      min_time_point=_min_time_point, max_time_point=_max_time_point)
 
+    experiment_count = 1
     experiment_list = [experiment_list]
 
 _patch_shape_unbuffered_y = config.get_or_default("patch_shape_y", str(320), type=config_type_int, comment="Maximum patch size to use for predictions."
@@ -82,38 +84,33 @@ if _dataset_file != '':
 # Loop through experiments
 experiments_to_save = list()
 for experiment_index, experiment in enumerate(experiment_list):
+    print(f"\nWorking on experiment {experiment_index}/{experiment_count}: {experiment.name}...")
     # Check if output file exists already (in which case we skip this experiment)
     if _dataset_file != '':
         output_file = os.path.join(_output_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}."
                                    + io.FILE_EXTENSION)
     else:
         output_file = _output_file
-    if os.path.exists(output_file):
-        # Skip experiment (but still add to the AUTLIST file)
-        print(f"Experiment {experiment_index + 1} ({experiment.name.get_save_name()}) already has positions saved at"
-              f" {output_file}. Skipping.")
-        if _dataset_file != '':
-            # Collect for writing AUTLIST file
-            experiment.last_save_file = output_file
-            experiments_to_save.append(experiment)
-        continue
 
+    # Clear any existing tracking data
+    experiment.clear_tracking_data()
+
+    # Load existing output file - useful when the script was stopped halfway previously
+    if os.path.isfile(output_file):
+        print(f"Output file {output_file} already exists, continuing were we left off.")
+        io.load_data_file(output_file, experiment=experiment)
 
     debug_folder_experiment = os.path.join(_debug_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}") \
         if _debug_folder is not None else None
-    all_positions = model.predict(experiment, debug_folder_experiment=debug_folder_experiment, image_channels=_images_channels,
-                                  patch_shape_unbuffered_yx=(_patch_shape_unbuffered_y, _patch_shape_unbuffered_x),
-                                  peak_min_distance_px=_peak_min_distance_px,
-                                  buffer_size_zyx=(_buffer_z, _buffer_y, _buffer_x),
-                                  threshold=_threshold)
+    model.predict(experiment, debug_folder_experiment=debug_folder_experiment, image_channels=_images_channels,
+                  patch_shape_unbuffered_yx=(_patch_shape_unbuffered_y, _patch_shape_unbuffered_x),
+                  peak_min_distance_px=_peak_min_distance_px,
+                  buffer_size_zyx=(_buffer_z, _buffer_y, _buffer_x),
+                  threshold=_threshold,
+                  output_file=output_file)
 
-    experiment.positions.merge_data(all_positions)
-
-    print("Saving file...")
-    io.save_data_to_json(experiment, output_file)
     if _dataset_file != '':
         # Collect for writing AUTLIST file
-        experiment.last_save_file = output_file
         experiments_to_save.append(experiment)
 
 if _dataset_file != '':

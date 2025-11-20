@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import os
 from typing import NamedTuple, Tuple, Optional, Iterable, Set, Dict
@@ -8,6 +9,7 @@ import skimage
 import tifffile
 from skimage.feature import peak_local_max
 
+import organoid_tracker.imaging.io
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.image_loader import ImageChannel
@@ -38,6 +40,38 @@ class _PredictionPatch(NamedTuple):
     # Pixels this close to the border are buffer and should be ignored in predictions.
     # The buffer is in model pixels, so after resizing, and not the original image pixels.
     buffer_zyx_px: Tuple[int, int, int]
+
+
+class _Autosaver:
+    """Used to autosave positions at regular intervals."""
+
+    _output_file: Optional[str] = None
+    _last_autosave_time: Optional[datetime] = None
+
+    def set_output_file(self, filename: Optional[str]):
+        """Sets the output file for saving. If filename is None, autosaving is disabled."""
+        self._output_file = filename
+
+    def autosave_after_interval(self, experiment: Experiment) -> bool:
+        """Saves the positions to the output file if autosaving is enabled and enough time has passed since the
+        last autosave.
+        Returns True if an autosave was performed, False otherwise.
+        """
+        if self._output_file is None:
+            return False
+        if self._last_autosave_time is None or (datetime.now() - self._last_autosave_time).total_seconds() > 600:
+            self._last_autosave_time = datetime.now()
+            organoid_tracker.imaging.io.save_data_to_json(experiment, self._output_file)
+            return True
+        return False
+
+    def save(self, experiment: Experiment):
+        """Saves the positions to the output file if autosaving is enabled, regardless of when the last autosave was."""
+        if self._output_file is None:
+            return
+
+        self._last_autosave_time = datetime.now()
+        organoid_tracker.imaging.io.save_data_to_json(experiment, self._output_file)
 
 
 class _DebugPredictions:
@@ -231,7 +265,8 @@ class PositionModel(NamedTuple):
                 peak_min_distance_px: int = 6,
                 patch_shape_unbuffered_yx: Tuple[int, int] = (320, 320),
                 buffer_size_zyx: Tuple[int, int, int] = (1, 32, 32),
-                threshold: float = 0.1) -> PositionCollection:
+                threshold: float = 0.1,
+                output_file: Optional[str] = None):
         """Predict positions for the given experiment.
 
         Args:
@@ -245,9 +280,9 @@ class PositionModel(NamedTuple):
                 area are ignored. Added on top of patch_shape_unbuffered_yx.
             threshold: Threshold for peak finding.
             automatically calculate it from the model resolution, such that the resolution becomes isotropic.
+            output_file: If given, the file to save the predicted positions to. Otherwise, positions are not saved to
+            disk, and just set in the experiment.
         """
-
-        all_positions = PositionCollection()
 
         # Auto-calculate mid_layers to get isotropic resolution
         mid_layers = max(int(self.target_resolution_zyx_um[0] / self.target_resolution_zyx_um[1] - 1), 0)
@@ -261,6 +296,11 @@ class PositionModel(NamedTuple):
         # Set up debug folder
         if debug_folder_experiment is not None:
             os.makedirs(debug_folder_experiment, exist_ok=True)
+
+        # Set up autosaving
+        autosaver = _Autosaver()
+        autosaver.set_output_file(output_file)
+        is_autosaved = False
 
         # Edit image channels if necessary
         if image_channels is None:
@@ -282,6 +322,8 @@ class PositionModel(NamedTuple):
 
         # Loop over all time points
         for time_point in experiment.images.time_points():
+            if experiment.positions.count_positions(time_point=time_point) > 0:
+                continue  # Skip time points that already have positions
             print(time_point.time_point_number(), end="  ", flush=True)
             debug_predictions = _DebugPredictions()
             if debug_folder_experiment is not None:
@@ -324,10 +366,11 @@ class PositionModel(NamedTuple):
                     full_image_y = int(prediction_y / patch.scale_factors_zyx[1] + patch.corner_zyx[1])
                     full_image_x = int(prediction_x / patch.scale_factors_zyx[2] + patch.corner_zyx[2])
 
-                    all_positions.add(Position(full_image_x, full_image_y, full_image_z, time_point=patch.time_point))
+                    experiment.positions.add(Position(full_image_x, full_image_y, full_image_z, time_point=patch.time_point))
             debug_predictions.save_full_predictions()
-
-        return all_positions
+            is_autosaved = autosaver.autosave_after_interval(experiment)
+        if not is_autosaved:
+            autosaver.save(experiment)
 
 
 def load_position_model(model_folder: str) -> PositionModel:

@@ -166,6 +166,7 @@ def _generate_position_detection_config(window: Window):
         if not image_loader.has_images():
             raise UserError("No images", f"No images were loaded in the experiment \"{experiment.name}\","
                             f" so no cells can be detected. Please load some images first.")
+        experiment.images.resolution()  # Checks for resolution
 
     if not dialog.popup_message_cancellable("Trained model folder",
                                             "First, we will ask you where you have stored the positions model."):
