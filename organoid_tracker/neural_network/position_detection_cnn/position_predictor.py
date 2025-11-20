@@ -41,6 +41,9 @@ class _PredictionPatch(NamedTuple):
     # The buffer is in model pixels, so after resizing, and not the original image pixels.
     buffer_zyx_px: Tuple[int, int, int]
 
+    # Size of the full image the patch was taken from
+    full_image_size_zyx: Tuple[int, int, int]
+
 
 class _Autosaver:
     """Used to autosave positions at regular intervals."""
@@ -80,24 +83,17 @@ class _DebugPredictions:
     _full_predictions: Optional[numpy.ndarray] = None
     _output_file: Optional[str] = None
 
-    def set_full_storage_size(self, shape: Optional[Tuple[int, int, int]]):
-        """Sets up storage for full predictions. If shape is None, debug storage is disabled.
-        Throws ValueError if output file hasn't been set before, but a shape is given.
-        """
-        if shape is None:
-            self._full_predictions = None
-            return
-        if self._output_file is None:
-            raise ValueError("Output file must be set before setting full storage size.")
-        self._full_predictions = numpy.zeros(shape, dtype=numpy.float32)
-
     def set_output_file(self, filename: Optional[str]):
         """Sets the output file for saving full predictions. If filename is None, debug storage is disabled."""
         self._output_file = filename
 
     def add_patch(self, prediction_patch: _PredictionPatch, predictions_array: numpy.ndarray):
-        if self._full_predictions is None:
+        if self._output_file is None:
             return  # Debug storage not enabled
+
+        if self._full_predictions is None:
+            # Initialize full predictions storage
+            self._full_predictions = numpy.zeros(prediction_patch.full_image_size_zyx, dtype=numpy.float32)
 
         # The predictions_array will have the shape the model expects, so we need to resize it back to the original image scale
         size_for_resizing = (
@@ -180,7 +176,7 @@ def _split_into_patches(images: Images, time_point: TimePoint,
     for dt in range(time_window[0], time_window[1] + 1):
         time_point_dt = TimePoint(time_point.time_point_number() + dt)
         full_images[time_point_dt] = images.get_image(time_point_dt, ImageChannel(index_one=1))
-    time_point_image = full_images.get(time_point)
+    time_point_image: Image = full_images.get(time_point)
     if time_point_image is None:
         return  # No image at the center time point
     _fill_none_images_with_copies(full_images)  # If images are missing (start or end of movie), fill with nearest available image
@@ -224,7 +220,8 @@ def _split_into_patches(images: Images, time_point: TimePoint,
                                        corner_zyx=(z_start, y_start, x_start),
                                        time_point=time_point,
                                        scale_factors_zyx=scale_factors_zyx,
-                                       buffer_zyx_px=buffer_size_zyx_px)
+                                       buffer_zyx_px=buffer_size_zyx_px,
+                                       full_image_size_zyx=time_point_image.array.shape)
 
 
 def _extract_patch_array(full_images: Dict[TimePoint, Image], start_zyx: Tuple[int, int, int],
@@ -328,7 +325,6 @@ class PositionModel(NamedTuple):
             debug_predictions = _DebugPredictions()
             if debug_folder_experiment is not None:
                 debug_predictions.set_output_file(os.path.join(debug_folder_experiment, f"image_{time_point.time_point_number()}.tif"))
-                debug_predictions.set_full_storage_size(images.image_loader().get_image_size_zyx())
 
             for patch in _split_into_patches(images, time_point, self.time_window, patch_shape_zyx, buffer_size_zyx, self.target_resolution_zyx_um):
                 # Resize image using scipy zoom
@@ -365,6 +361,11 @@ class PositionModel(NamedTuple):
                     full_image_z = int(prediction_z / patch.scale_factors_zyx[0] + patch.corner_zyx[0])
                     full_image_y = int(prediction_y / patch.scale_factors_zyx[1] + patch.corner_zyx[1])
                     full_image_x = int(prediction_x / patch.scale_factors_zyx[2] + patch.corner_zyx[2])
+
+                    # Bounds check for full image (the last patches may go beyond the image size, because patches have a minimum size)
+                    full_image_size_zyx = patch.full_image_size_zyx
+                    if full_image_z >= full_image_size_zyx[0] or full_image_y >= full_image_size_zyx[1] or full_image_x >= full_image_size_zyx[2]:
+                        continue
 
                     experiment.positions.add(Position(full_image_x, full_image_y, full_image_z, time_point=patch.time_point))
             debug_predictions.save_full_predictions()
