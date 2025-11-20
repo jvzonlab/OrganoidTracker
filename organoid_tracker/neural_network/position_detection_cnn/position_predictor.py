@@ -41,15 +41,25 @@ class _PredictionPatch(NamedTuple):
 
 
 class _DebugPredictions:
+    """Class for storing and saving full prediction volumes for debugging purposes."""
 
     _full_predictions: Optional[numpy.ndarray] = None
+    _output_file: Optional[str] = None
 
     def set_full_storage_size(self, shape: Optional[Tuple[int, int, int]]):
-        """Sets up storage for full predictions. If shape is None, debug storage is disabled."""
+        """Sets up storage for full predictions. If shape is None, debug storage is disabled.
+        Throws ValueError if output file hasn't been set before, but a shape is given.
+        """
         if shape is None:
             self._full_predictions = None
             return
+        if self._output_file is None:
+            raise ValueError("Output file must be set before setting full storage size.")
         self._full_predictions = numpy.zeros(shape, dtype=numpy.float32)
+
+    def set_output_file(self, filename: Optional[str]):
+        """Sets the output file for saving full predictions. If filename is None, debug storage is disabled."""
+        self._output_file = filename
 
     def add_patch(self, prediction_patch: _PredictionPatch, predictions_array: numpy.ndarray):
         if self._full_predictions is None:
@@ -89,11 +99,11 @@ class _DebugPredictions:
                                target_zyx[1]:target_zyx[1]+size_y,
                                target_zyx[2]:target_zyx[2]+size_x] = resized_predictions
 
-    def save_full_predictions(self, filename: str):
-        """Saves the full predictions to a .npy file."""
-        if self._full_predictions is None:
+    def save_full_predictions(self):
+        """Saves the full predictions to a .tif file. Does nothing if debug storage is not enabled."""
+        if self._full_predictions is None or self._output_file is None:
             return  # Debug storage not enabled
-        tifffile.imwrite(filename, self._full_predictions, compression=tifffile.COMPRESSION.ADOBE_DEFLATE,
+        tifffile.imwrite(self._output_file, self._full_predictions, compression=tifffile.COMPRESSION.ADOBE_DEFLATE,
                          compressionargs={"level": 9})
 
 
@@ -275,6 +285,7 @@ class PositionModel(NamedTuple):
             print(time_point.time_point_number(), end="  ", flush=True)
             debug_predictions = _DebugPredictions()
             if debug_folder_experiment is not None:
+                debug_predictions.set_output_file(os.path.join(debug_folder_experiment, f"image_{time_point.time_point_number()}.tif"))
                 debug_predictions.set_full_storage_size(images.image_loader().get_image_size_zyx())
 
             for patch in _split_into_patches(images, time_point, self.time_window, patch_shape_zyx, buffer_size_zyx, self.target_resolution_zyx_um):
@@ -314,7 +325,7 @@ class PositionModel(NamedTuple):
                     full_image_x = int(prediction_x / patch.scale_factors_zyx[2] + patch.corner_zyx[2])
 
                     all_positions.add(Position(full_image_x, full_image_y, full_image_z, time_point=patch.time_point))
-            debug_predictions.save_full_predictions(os.path.join(debug_folder_experiment, f"image_{time_point.time_point_number():04d}.tif"))
+            debug_predictions.save_full_predictions()
 
         return all_positions
 
