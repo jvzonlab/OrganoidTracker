@@ -5,6 +5,7 @@ from typing import NamedTuple, Tuple, Optional, Iterable, Set, Dict
 import keras
 import numpy
 import skimage
+import tifffile
 from skimage.feature import peak_local_max
 
 from organoid_tracker.core import TimePoint
@@ -27,14 +28,73 @@ _DEFAULT_TARGET_RESOLUTION_ZYX_UM = (2.0, 0.32, 0.32)
 class _PredictionPatch(NamedTuple):
     """A crop of an image along with the coordinates it was taken from."""
 
-    array: numpy.ndarray  # Raw image data
+    array: numpy.ndarray  # Raw image data, normalized between 0 and 1, but not yet resized to model input size
     corner_zyx: Tuple[int, int, int]  # Coordinates of the corner of the patch in the full image
     time_point: TimePoint  # Time point of the image
 
-    # Scale factors between image and model input. Note that the array is not yet scaled.
+    # Scale factors between image and model input.
     scale_factors_zyx: Tuple[float, float, float]
 
-    buffer_zyx_px: Tuple[int, int, int]  # Pixels this close to the border are buffer and should be ignored in predictions.
+    # Pixels this close to the border are buffer and should be ignored in predictions.
+    # The buffer is in model pixels, so after resizing, and not the original image pixels.
+    buffer_zyx_px: Tuple[int, int, int]
+
+
+class _DebugPredictions:
+
+    _full_predictions: Optional[numpy.ndarray] = None
+
+    def set_full_storage_size(self, shape: Optional[Tuple[int, int, int]]):
+        """Sets up storage for full predictions. If shape is None, debug storage is disabled."""
+        if shape is None:
+            self._full_predictions = None
+            return
+        self._full_predictions = numpy.zeros(shape, dtype=numpy.float32)
+
+    def add_patch(self, prediction_patch: _PredictionPatch, predictions_array: numpy.ndarray):
+        if self._full_predictions is None:
+            return  # Debug storage not enabled
+
+        # The predictions_array will have the shape the model expects, so we need to resize it back to the original image scale
+        size_for_resizing = (
+            int(predictions_array.shape[0] / prediction_patch.scale_factors_zyx[0]),
+            int(predictions_array.shape[1] / prediction_patch.scale_factors_zyx[1]),
+            int(predictions_array.shape[2] / prediction_patch.scale_factors_zyx[2]),
+        )
+        resized_predictions = skimage.transform.resize(predictions_array, output_shape=size_for_resizing, order=0, clip=False, preserve_range=True, anti_aliasing=False)
+
+        # We cut off the buffer area on the lower coords
+        # (at the higher coords we just rely on overwriting by later patches)
+        buffer_size_resized_zyx = (
+            int(prediction_patch.buffer_zyx_px[0] / prediction_patch.scale_factors_zyx[0]),
+            int(prediction_patch.buffer_zyx_px[1] / prediction_patch.scale_factors_zyx[1]),
+            int(prediction_patch.buffer_zyx_px[2] / prediction_patch.scale_factors_zyx[2]),
+        )
+        target_zyx = (prediction_patch.corner_zyx[0] + buffer_size_resized_zyx[0],
+                      prediction_patch.corner_zyx[1] + buffer_size_resized_zyx[1],
+                      prediction_patch.corner_zyx[2] + buffer_size_resized_zyx[2])
+        resized_predictions = resized_predictions[buffer_size_resized_zyx[0]:,
+                                                  buffer_size_resized_zyx[1]:,
+                                                  buffer_size_resized_zyx[2]:]
+
+        # Calculate how much of the resized predictions fit into the full predictions
+        # (patches have a minimum size, so at the edges of the full image they may be too large)
+        size_z = min(self._full_predictions.shape[0] - target_zyx[0], resized_predictions.shape[0])
+        size_y = min(self._full_predictions.shape[1] - target_zyx[1], resized_predictions.shape[1])
+        size_x = min(self._full_predictions.shape[2] - target_zyx[2], resized_predictions.shape[2])
+        resized_predictions = resized_predictions[0:size_z, 0:size_y, 0:size_x]
+
+        # Store into full predictions
+        self._full_predictions[target_zyx[0]:target_zyx[0]+size_z,
+                               target_zyx[1]:target_zyx[1]+size_y,
+                               target_zyx[2]:target_zyx[2]+size_x] = resized_predictions
+
+    def save_full_predictions(self, filename: str):
+        """Saves the full predictions to a .npy file."""
+        if self._full_predictions is None:
+            return  # Debug storage not enabled
+        tifffile.imwrite(filename, self._full_predictions, compression=tifffile.COMPRESSION.ADOBE_DEFLATE,
+                         compressionargs={"level": 9})
 
 
 def _fill_none_images_with_copies(full_images: Dict[TimePoint, Image]):
@@ -213,6 +273,10 @@ class PositionModel(NamedTuple):
         # Loop over all time points
         for time_point in experiment.images.time_points():
             print(time_point.time_point_number(), end="  ", flush=True)
+            debug_predictions = _DebugPredictions()
+            if debug_folder_experiment is not None:
+                debug_predictions.set_full_storage_size(images.image_loader().get_image_size_zyx())
+
             for patch in _split_into_patches(images, time_point, self.time_window, patch_shape_zyx, buffer_size_zyx, self.target_resolution_zyx_um):
                 # Resize image using scipy zoom
                 time_point_count = patch.array.shape[-1]
@@ -221,7 +285,9 @@ class PositionModel(NamedTuple):
                     input_array[:, :, :, i] = skimage.transform.resize(patch.array[:, :, :, i], output_shape=patch_shape_zyx, order=0, clip=False, preserve_range=True, anti_aliasing=False)
 
                 # Call the model
-                prediction = keras.ops.convert_to_numpy(self.keras_model(input_array[numpy.newaxis, ...], training=False))[0]
+                prediction = keras.ops.convert_to_numpy(self.keras_model(input_array[numpy.newaxis, ...], training=False))[0, :, :, :, 0]
+
+                debug_predictions.add_patch(patch, prediction)
 
                 # Interpolate between layers for peak detection
                 prediction, z_divisor = reconstruct_volume(prediction, mid_layers)
@@ -248,6 +314,7 @@ class PositionModel(NamedTuple):
                     full_image_x = int(prediction_x / patch.scale_factors_zyx[2] + patch.corner_zyx[2])
 
                     all_positions.add(Position(full_image_x, full_image_y, full_image_z, time_point=patch.time_point))
+            debug_predictions.save_full_predictions(os.path.join(debug_folder_experiment, f"image_{time_point.time_point_number():04d}.tif"))
 
         return all_positions
 
@@ -280,9 +347,4 @@ def load_position_model(model_folder: str) -> PositionModel:
     time_window = (int(time_window[0]), int(time_window[1]))
 
     return PositionModel(keras_model=keras_model, time_window=time_window, target_resolution_zyx_um=target_resolution_zyx_um)
-
-
-
-
-
 
