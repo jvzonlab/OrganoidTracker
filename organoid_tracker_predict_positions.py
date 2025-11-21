@@ -84,7 +84,7 @@ if _dataset_file != '':
 # Loop through experiments
 experiments_to_save = list()
 for experiment_index, experiment in enumerate(experiment_list):
-    print(f"\nWorking on experiment {experiment_index}/{experiment_count}: {experiment.name}...")
+    print(f"\nWorking on experiment {experiment_index + 1}/{experiment_count}: {experiment.name}...")
     # Check if output file exists already (in which case we skip this experiment)
     if _dataset_file != '':
         output_file = os.path.join(_output_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}."
