@@ -64,6 +64,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#how-do-i-know-how-much-time-a-time-point-takes">How do I know how much time a time point takes?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#how-do-i-get-set-the-image-resolution">How do I get/set the image resolution?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#how-do-i-automatically-open-organoidtracker-from-a-standalone-script">How do I automatically open OrganoidTracker from a standalone script?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-work-with-splines">How do I work with splines?</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
@@ -303,7 +304,7 @@
 </section>
 <section id="how-do-i-know-how-much-time-a-time-point-takes">
 <h2>How do I know how much time a time point takes?<a class="headerlink" href="#how-do-i-know-how-much-time-a-time-point-takes" title="Permalink to this heading"></a></h2>
-<p>The time between two time points is defined by the time resultion:</p>
+<p>The time between two time points is defined by the time resulotion:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.experiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Experiment</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.resolution</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageResolution</span>
 
@@ -362,6 +363,30 @@
 <span class="c1"># Open the visualizer</span>
 <span class="n">standard_image_visualizer</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span>
 <span class="n">main_window</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>  <span class="c1"># Necessary! Google &quot;event loop&quot; for details</span>
+</pre></div>
+</div>
+</section>
+<section id="how-do-i-work-with-splines">
+<h2>How do I work with splines?<a class="headerlink" href="#how-do-i-work-with-splines" title="Permalink to this heading"></a></h2>
+<p>The cell tracking editor allows you to draw <a class="reference internal" href="DATA_AXES.html"><span class="doc std std-doc">splines</span></a>. For any tracked position, you can find the nearest point on that spline. This allows you to for example monitor how cells are moving along some trajectory.</p>
+<p>You can interact with them from code as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.experiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.position</span><span class="w"> </span><span class="kn">import</span> <span class="n">Position</span>
+
+<span class="n">experiment</span><span class="p">:</span> <span class="n">Experiment</span> <span class="o">=</span> <span class="o">...</span>
+<span class="n">position</span><span class="p">:</span> <span class="n">Position</span> <span class="o">=</span> <span class="n">Position</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">time_point_number</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+<span class="c1"># This gives us a SplinePosition object - the nearest point (from `position`) on the spline</span>
+<span class="n">spline_position</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">splines</span><span class="o">.</span><span class="n">to_position_on_spline</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">spline_position</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1"># How to calculate progress on a spline</span>
+    <span class="c1"># Beware - doesn&#39;t have to be in the range 0-1</span>
+    <span class="n">fraction_along_spline</span> <span class="o">=</span> <span class="n">spline_position</span><span class="o">.</span><span class="n">pos</span> <span class="o">/</span> <span class="n">spline_position</span><span class="o">.</span><span class="n">spline</span><span class="o">.</span><span class="n">length</span><span class="p">()</span>
+    
+    <span class="c1"># Distance in px from position to the nearest point on the spline</span>
+    <span class="n">distance_to_spline</span> <span class="o">=</span> <span class="n">spline_position</span><span class="o">.</span><span class="n">distance</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="o">...</span>  <span class="c1"># SplinePosition is None - no spline drawn in that time point</span>
 </pre></div>
 </div>
 </section>

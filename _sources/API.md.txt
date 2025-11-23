@@ -221,7 +221,7 @@ else:
 ```
 
 ### How do I know how much time a time point takes?
-The time between two time points is defined by the time resultion:
+The time between two time points is defined by the time resulotion:
 
 ```python
 from organoid_tracker.core.experiment import Experiment
@@ -283,4 +283,30 @@ experiment.images = images
 # Open the visualizer
 standard_image_visualizer.show(experiment)
 main_window.mainloop()  # Necessary! Google "event loop" for details
+```
+
+
+### How do I work with splines?
+The cell tracking editor allows you to draw [splines](DATA_AXES.md). For any tracked position, you can find the nearest point on that spline. This allows you to for example monitor how cells are moving along some trajectory.
+
+You can interact with them from code as follows:
+
+```python
+from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.core.position import Position
+
+experiment: Experiment = ...
+position: Position = Position(1, 2, 3, time_point_number=4)
+
+# This gives us a SplinePosition object - the nearest point (from `position`) on the spline
+spline_position = experiment.splines.to_position_on_spline(position)
+if spline_position is not None:
+    # How to calculate progress on a spline
+    # Beware - doesn't have to be in the range 0-1
+    fraction_along_spline = spline_position.pos / spline_position.spline.length()
+    
+    # Distance in px from position to the nearest point on the spline
+    distance_to_spline = spline_position.distance
+else:
+    ...  # SplinePosition is None - no spline drawn in that time point
 ```
