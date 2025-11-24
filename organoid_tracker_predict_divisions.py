@@ -5,19 +5,16 @@ _keras_environment.activate()
 import json
 import os
 
-import keras.saving
 import numpy as np
 
-from organoid_tracker.config import ConfigFile
+from organoid_tracker.config import ConfigFile, config_type_int
 from organoid_tracker.core import TimePoint
+from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
-from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 from organoid_tracker.imaging import io, list_io
 from organoid_tracker.linking.nearby_position_finder import find_closest_n_positions
-from organoid_tracker.neural_network.division_detection_cnn.prediction_dataset import prediction_data_creator
-from organoid_tracker.neural_network.division_detection_cnn.training_data_creator import \
-    create_image_with_positions_list
+from organoid_tracker.neural_network.division_detection_cnn.division_predictor import load_division_model
 
 # PARAMETERS
 
@@ -27,15 +24,12 @@ _dataset_file = config.get_or_prompt("dataset_file", "Please paste the path here
                                      " You can generate such a file from OrganoidTracker using File -> Tabs -> "
                                      " all tabs.", store_in_defaults=True)
 
-_patch_shape_z = int(config.get_or_default("patch_shape_z", str(30), store_in_defaults=True))
-_patch_shape_y = int(config.get_or_default("patch_shape_y", str(240), store_in_defaults=True))
-_patch_shape_x = int(config.get_or_default("patch_shape_x", str(240), store_in_defaults=True))
 
 _model_folder = config.get_or_prompt("model_folder", "Please paste the path here to the \"trained_model\" folder containing the trained model.")
 _output_folder = config.get_or_default("divisions_output_folder", "Division predictions", comment="Output folder for the divisions, can be viewed using the visualizer program.")
 _channels_str = config.get_or_default("images_channels", str(1), comment="Index(es) of the channels to use. Use \"3\" to use the third channel for predictions. Use \"1,3,4\" to use the sum of the first, third and fourth channel for predictions.")
-_images_channels = {int(part) for part in _channels_str.split(",")}
-
+_images_channels = [ImageChannel(index_one=int(part)) for part in _channels_str.split(",")]
+_batch_size = config.get_or_default("batch_size", str(64), type=config_type_int, comment="Batch size for predictions. If you run out of memory, lower this value. Increasing it will speed up predictions slightly (but won't affect the results).")
 _min_distance_dividing = float(config.get_or_default("minimum_distance_between_dividing_cell (in micron)", str(4.5)))
 
 config.save()
@@ -57,10 +51,7 @@ with open(os.path.join(_model_folder, "settings.json")) as file_handle:
 
 # load model
 print("Loading model...")
-model = keras.saving.load_model(os.path.join(_model_folder, "model.keras"))
-if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
-    print("Error: no settings.json found in model folder.")
-    exit(1)
+division_model = load_division_model(_model_folder)
 
 # create output folder
 _output_folder = os.path.abspath(_output_folder)  # Convert to absolute path, as list_io changes the working directory
@@ -79,56 +70,7 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
         continue
 
     print(f"Working on experiment {experiment_index + 1}: {experiment.name}")
-
-    # Check if images were loaded
-    if not experiment.images.image_loader().has_images():
-        print(f"No images were found for experiment \"{experiment.name}\". Please check the configuration file and make"
-              f" sure that you have stored images at the specified location.")
-        exit(1)
-    experiment.images.resolution()  # Check if resolution is set
-
-    # Edit image channels if necessary
-    original_image_loader = experiment.images.image_loader()
-    if _images_channels != {1}:
-        # Replace the first channel
-        old_channels = experiment.images.get_channels()
-        new_channels = [old_channels[index - 1] for index in _images_channels]
-        channel_merging_image_loader = ChannelSummingImageLoader(experiment.images.image_loader(), [new_channels])
-        experiment.images.image_loader(channel_merging_image_loader)
-
-    # create image_list from experiment, with positions_list
-    image_with_positions_list, positions_list = create_image_with_positions_list(experiment)
-
-    # create PositionCollection to store positions with division scores
-    all_positions = PositionCollection()
-
-    prediction_dataset_all = prediction_data_creator(image_with_positions_list, time_window, patch_shape)
-    predictions_all = model.predict(prediction_dataset_all)
-
-    number_of_positions_done = 0
-
-    # predict for every time point
-    for i in range(len(image_with_positions_list)):
-        image_with_positions = image_with_positions_list[i]
-        set_size = len(positions_list[i])
-
-        # Extract relevant data
-        predictions = predictions_all[number_of_positions_done : (number_of_positions_done+set_size)]
-        number_of_positions_done = number_of_positions_done + set_size
-
-        # get positions
-        positions = positions_list[i]
-
-        for position, prediction in zip(positions, predictions):
-            eps = 10 ** -10
-            likelihood = intercept + scaling * float(np.log10(prediction + eps) - np.log10(1 - prediction + eps))
-            scaled_prediction = (10**likelihood) / (1 + 10**likelihood)
-
-            # add division prediction to the data
-            experiment.positions.set_position_data(position, data_name="division_probability", value=float(scaled_prediction))
-            # add division penalty (log-likelihood) to the data
-            eps = 10 ** -10
-            experiment.positions.set_position_data(position, data_name="division_penalty", value=float(-likelihood))
+    division_model.predict_divisions(experiment, batch_size=_batch_size, image_channels=_images_channels)
 
     # Remove oversegmentation for dividing cells by setting a minimal distance for dividing cells
     to_remove = []
@@ -199,7 +141,6 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
 
     print("Saving file...")
     io.save_data_to_json(experiment, output_file)
-    experiment.images.image_loader(original_image_loader)  # Restore original image loader
     experiments_to_save.append(experiment)
 
 

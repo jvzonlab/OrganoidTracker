@@ -1,6 +1,6 @@
-from datetime import datetime
 import json
 import os
+from datetime import datetime
 from typing import NamedTuple, Tuple, Optional, Iterable, Set, Dict
 
 import keras
@@ -15,16 +15,13 @@ from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.core.images import Images, Image
 from organoid_tracker.core.position import Position
-from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 from organoid_tracker.imaging import cropper
+from organoid_tracker.neural_network import DEFAULT_TARGET_RESOLUTION_ZYX_UM
+from organoid_tracker.neural_network.image_loading import fill_none_images_with_copies, extract_patch_array
 from organoid_tracker.neural_network.position_detection_cnn.loss_functions import loss, position_precision, \
     position_recall, overcount
 from organoid_tracker.neural_network.position_detection_cnn.peak_calling import reconstruct_volume
-
-# Default target resolution for position models
-# New models should always specify their target resolution in settings.json
-_DEFAULT_TARGET_RESOLUTION_ZYX_UM = (2.0, 0.32, 0.32)
 
 
 class _PredictionPatch(NamedTuple):
@@ -137,33 +134,6 @@ class _DebugPredictions:
                          compressionargs={"level": 9})
 
 
-def _fill_none_images_with_copies(full_images: Dict[TimePoint, Image]):
-    """At the start or end of a movie, some time points may be missing. Fill these with copies of the nearest available
-    image."""
-    time_points = list(full_images.keys())
-    for time_point in time_points:
-        if full_images[time_point] is not None:
-            continue
-        # Find nearest available image
-        offset = 1
-        while True:
-            time_point_before = TimePoint(time_point.time_point_number() - offset)
-            image_before = full_images.get(time_point_before)
-            if image_before is not None:
-                full_images[time_point] = image_before
-                break
-
-            time_point_after = TimePoint(time_point.time_point_number() + offset)
-            image_after = full_images.get(time_point_after)
-            if image_after is not None:
-                full_images[time_point] = image_after
-                break
-
-            offset += 1
-            if offset > len(time_points):
-                raise ValueError("No images available to fill missing time points.")
-
-
 def _split_into_patches(images: Images, time_point: TimePoint,
                         time_window: Tuple[int, int],
                         patch_shape_zyx_px: Tuple[int, int, int],
@@ -179,7 +149,7 @@ def _split_into_patches(images: Images, time_point: TimePoint,
     time_point_image: Image = full_images.get(time_point)
     if time_point_image is None:
         return  # No image at the center time point
-    _fill_none_images_with_copies(full_images)  # If images are missing (start or end of movie), fill with nearest available image
+    fill_none_images_with_copies(full_images)  # If images are missing (start or end of movie), fill with nearest available image
 
     min_intensity = float(numpy.min([numpy.quantile(image.array, 0.01) for image in full_images.values()]))
     max_intensity = float(numpy.max([numpy.quantile(image.array, 0.99) for image in full_images.values()]))
@@ -209,7 +179,7 @@ def _split_into_patches(images: Images, time_point: TimePoint,
     for z_start in range(time_point_image.min_z - buffer_size_zyx_image_px[0], time_point_image.limit_z + buffer_size_zyx_image_px[0], patch_shape_without_buffer_zyx_image_px[0]):
         for y_start in range(time_point_image.min_y - buffer_size_zyx_image_px[1], time_point_image.limit_y + buffer_size_zyx_image_px[1], patch_shape_without_buffer_zyx_image_px[1]):
             for x_start in range(time_point_image.min_x - buffer_size_zyx_image_px[2], time_point_image.limit_x + buffer_size_zyx_image_px[2], patch_shape_without_buffer_zyx_image_px[2]):
-                array = _extract_patch_array(full_images, (z_start, y_start, x_start), patch_shape_zyx_image_px)
+                array = extract_patch_array(full_images, (z_start, y_start, x_start), patch_shape_zyx_image_px)
 
                 # Normalize patch
                 array /= (max_intensity - min_intensity)
@@ -224,27 +194,6 @@ def _split_into_patches(images: Images, time_point: TimePoint,
                                        full_image_size_zyx=time_point_image.array.shape)
 
 
-def _extract_patch_array(full_images: Dict[TimePoint, Image], start_zyx: Tuple[int, int, int],
-                   patch_shape_zyx: Tuple[int, int, int]) -> numpy.ndarray:
-    """Extracts a patch from the full images. Coordinates are assumed to be in position coordinates. Offsets of the
-    images are taken into account. full_images must contain a continuous set of time points.
-    """
-
-    min_time_point = min(full_images.keys())
-    output_array = numpy.zeros((patch_shape_zyx[0], patch_shape_zyx[1], patch_shape_zyx[2], len(full_images)), dtype=numpy.float32)
-
-    for time_point_dt, image in full_images.items():
-        dt_index = time_point_dt.time_point_number() - min_time_point.time_point_number()
-        offset = image.offset
-        x_start = int(start_zyx[2] - offset.x)
-        y_start = int(start_zyx[1] - offset.y)
-        z_start = int(start_zyx[0] - offset.z)
-
-        cropper.crop_3d(image.array, x_start, y_start, z_start, output_array[:, :, :, dt_index])
-
-    return output_array
-
-
 class PositionModel(NamedTuple):
     """A position prediction model loaded from disk.
 
@@ -256,14 +205,14 @@ class PositionModel(NamedTuple):
     time_window: Tuple[int, int]
     target_resolution_zyx_um: Tuple[float, float, float]
 
-    def predict(self, experiment: Experiment, *,
-                debug_folder_experiment: Optional[str] = None,
-                image_channels: Optional[Set[ImageChannel]] = None,
-                peak_min_distance_px: int = 6,
-                patch_shape_unbuffered_yx: Tuple[int, int] = (320, 320),
-                buffer_size_zyx: Tuple[int, int, int] = (1, 32, 32),
-                threshold: float = 0.1,
-                output_file: Optional[str] = None):
+    def predict_positions(self, experiment: Experiment, *,
+                          debug_folder_experiment: Optional[str] = None,
+                          image_channels: Optional[Set[ImageChannel]] = None,
+                          peak_min_distance_px: int = 6,
+                          patch_shape_unbuffered_yx: Tuple[int, int] = (320, 320),
+                          buffer_size_zyx: Tuple[int, int, int] = (1, 32, 32),
+                          threshold: float = 0.1,
+                          output_file: Optional[str] = None):
         """Predict positions for the given experiment.
 
         Args:
@@ -396,7 +345,7 @@ def load_position_model(model_folder: str) -> PositionModel:
         if "target_resolution_zyx_um" in json_contents:
             target_resolution_zyx_um = tuple(json_contents["target_resolution_zyx_um"])
         else:
-            target_resolution_zyx_um = _DEFAULT_TARGET_RESOLUTION_ZYX_UM
+            target_resolution_zyx_um = DEFAULT_TARGET_RESOLUTION_ZYX_UM
 
     # Convert time_window to tuple of ints
     time_window = (int(time_window[0]), int(time_window[1]))

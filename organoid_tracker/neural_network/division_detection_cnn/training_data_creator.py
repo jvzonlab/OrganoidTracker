@@ -181,7 +181,7 @@ def create_image_with_divisions_list(experiments: Iterable[Experiment], division
 
 
 # Create ImageWithPositions list for which to predict division status
-def create_image_with_positions_list(experiment: Experiment):
+def create_image_with_positions_list(experiment: Experiment) -> Tuple[List[ImageWithPositions], List[List[Position]]]:
     image_with_positions_list = []
     positions_per_frame_list = []
 

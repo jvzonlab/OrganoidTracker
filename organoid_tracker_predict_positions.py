@@ -102,12 +102,12 @@ for experiment_index, experiment in enumerate(experiment_list):
 
     debug_folder_experiment = os.path.join(_debug_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}") \
         if _debug_folder is not None else None
-    model.predict(experiment, debug_folder_experiment=debug_folder_experiment, image_channels=_images_channels,
-                  patch_shape_unbuffered_yx=(_patch_shape_unbuffered_y, _patch_shape_unbuffered_x),
-                  peak_min_distance_px=_peak_min_distance_px,
-                  buffer_size_zyx=(_buffer_z, _buffer_y, _buffer_x),
-                  threshold=_threshold,
-                  output_file=output_file)
+    model.predict_positions(experiment, debug_folder_experiment=debug_folder_experiment, image_channels=_images_channels,
+                            patch_shape_unbuffered_yx=(_patch_shape_unbuffered_y, _patch_shape_unbuffered_x),
+                            peak_min_distance_px=_peak_min_distance_px,
+                            buffer_size_zyx=(_buffer_z, _buffer_y, _buffer_x),
+                            threshold=_threshold,
+                            output_file=output_file)
 
     if _dataset_file != '':
         # Collect for writing AUTLIST file
