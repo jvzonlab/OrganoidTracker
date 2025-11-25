@@ -2,7 +2,16 @@
 
 import os
 
+_activated = False
+
 def activate():
+    """Activates the Keras environment settings (PyTorch backend, ANSI escape codes in Windows)."""
+
+    global _activated
+    if _activated:
+        return
+    _activated = True
+
     # To make Keras use PyTorch as backend
     os.environ["KERAS_BACKEND"] = "torch"
 

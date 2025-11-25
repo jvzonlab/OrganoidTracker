@@ -263,7 +263,7 @@ class Image:
         return int(self._offset.z) + self._array.shape[0]
 
     @property
-    def shape_x(self) -> Tuple[int, int, int]:
+    def shape_x(self) -> int:
         """Gets the size in the x direction in pixels."""
         return self._array.shape[2]
 

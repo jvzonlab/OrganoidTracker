@@ -328,6 +328,10 @@ class _LinkDataOfTimePoint:
         """Finds all data_names"""
         return self._link_data.keys()
 
+    def has_link_data_with_name(self, data_name: str) -> bool:
+        """Checks whether there is any link data with the given name."""
+        return data_name in self._link_data
+
     def move_in_time(self, time_point_delta: int):
         """Moves all data with the given time point delta."""
         for data_key in list(self._link_data.keys()):
@@ -1176,3 +1180,10 @@ class Links:
         for data_of_time_point in self._link_meta_by_first_time_point.values():
             data_names.update(data_of_time_point.find_all_data_names())
         return data_names
+
+    def has_link_data_with_name(self, data_name: str) -> bool:
+        """Returns True if there is any link data with the given name."""
+        for data_of_time_point in self._link_meta_by_first_time_point.values():
+            if data_of_time_point.has_link_data_with_name(data_name):
+                return True
+        return False

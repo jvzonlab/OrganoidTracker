@@ -1035,7 +1035,10 @@ class LinkAndPositionEditor(AbstractEditor):
         cutoff_fraction = cutoff / 100
         to_remove = list()
         links = self._experiment.links
-        for (position_a, position_b), value in links.find_all_links_with_data("marginal_probability"):
+        probability_name = "marginal_probability"
+        if not links.has_link_data_with_name(probability_name):
+            probability_name = "link_probability"  # Used if marginalization was not performed
+        for (position_a, position_b), value in links.find_all_links_with_data(probability_name):
             if value < cutoff_fraction:
                 to_remove.append((position_a, position_b))
         self._perform_action(_DeleteLinksAction(links, to_remove))

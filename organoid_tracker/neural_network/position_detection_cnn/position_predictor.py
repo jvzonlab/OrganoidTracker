@@ -1,7 +1,8 @@
 import json
+import math
 import os
 from datetime import datetime
-from typing import NamedTuple, Tuple, Optional, Iterable, Set, Dict
+from typing import NamedTuple, Tuple, Optional, Iterable, Set, Callable, Sized, Dict
 
 import keras
 import numpy
@@ -16,8 +17,6 @@ from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.core.images import Images, Image
 from organoid_tracker.core.position import Position
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
-from organoid_tracker.imaging import cropper
-from organoid_tracker.neural_network import DEFAULT_TARGET_RESOLUTION_ZYX_UM
 from organoid_tracker.neural_network.image_loading import fill_none_images_with_copies, extract_patch_array
 from organoid_tracker.neural_network.position_detection_cnn.loss_functions import loss, position_precision, \
     position_recall, overcount
@@ -98,7 +97,8 @@ class _DebugPredictions:
             int(predictions_array.shape[1] / prediction_patch.scale_factors_zyx[1]),
             int(predictions_array.shape[2] / prediction_patch.scale_factors_zyx[2]),
         )
-        resized_predictions = skimage.transform.resize(predictions_array, output_shape=size_for_resizing, order=0, clip=False, preserve_range=True, anti_aliasing=False)
+        resized_predictions = skimage.transform.resize(predictions_array, output_shape=size_for_resizing, order=0,
+                                                       clip=False, preserve_range=True, anti_aliasing=False)
 
         # We cut off the buffer area on the lower coords
         # (at the higher coords we just rely on overwriting by later patches)
@@ -111,8 +111,8 @@ class _DebugPredictions:
                       prediction_patch.corner_zyx[1] + buffer_size_resized_zyx[1],
                       prediction_patch.corner_zyx[2] + buffer_size_resized_zyx[2])
         resized_predictions = resized_predictions[buffer_size_resized_zyx[0]:,
-                                                  buffer_size_resized_zyx[1]:,
-                                                  buffer_size_resized_zyx[2]:]
+        buffer_size_resized_zyx[1]:,
+        buffer_size_resized_zyx[2]:]
 
         # Calculate how much of the resized predictions fit into the full predictions
         # (patches have a minimum size, so at the edges of the full image they may be too large)
@@ -122,9 +122,9 @@ class _DebugPredictions:
         resized_predictions = resized_predictions[0:size_z, 0:size_y, 0:size_x]
 
         # Store into full predictions
-        self._full_predictions[target_zyx[0]:target_zyx[0]+size_z,
-                               target_zyx[1]:target_zyx[1]+size_y,
-                               target_zyx[2]:target_zyx[2]+size_x] = resized_predictions
+        self._full_predictions[target_zyx[0]:target_zyx[0] + size_z,
+        target_zyx[1]:target_zyx[1] + size_y,
+        target_zyx[2]:target_zyx[2] + size_x] = resized_predictions
 
     def save_full_predictions(self):
         """Saves the full predictions to a .tif file. Does nothing if debug storage is not enabled."""
@@ -134,35 +134,24 @@ class _DebugPredictions:
                          compressionargs={"level": 9})
 
 
-def _split_into_patches(images: Images, time_point: TimePoint,
-                        time_window: Tuple[int, int],
+def _split_into_patches(time_point: TimePoint, full_images: Dict[TimePoint, Image], *,
                         patch_shape_zyx_px: Tuple[int, int, int],
                         buffer_size_zyx_px: Tuple[int, int, int],
-                        target_resolution_zyx_um: Tuple[float, float, float]) -> Iterable[_PredictionPatch]:
+                        scale_factors_zyx: Tuple[float, float, float],
+                        intensity_quantiles: Tuple[float, float]) -> Iterable[_PredictionPatch]:
     """patch_shape_z needs to match what the model expect, and patch_shape_y and x should be a multiple of 32."""
 
     # Create a dictionary of all full images in the time window
-    full_images = dict()
-    for dt in range(time_window[0], time_window[1] + 1):
-        time_point_dt = TimePoint(time_point.time_point_number() + dt)
-        full_images[time_point_dt] = images.get_image(time_point_dt, ImageChannel(index_one=1))
     time_point_image: Image = full_images.get(time_point)
     if time_point_image is None:
         return  # No image at the center time point
-    fill_none_images_with_copies(full_images)  # If images are missing (start or end of movie), fill with nearest available image
+    fill_none_images_with_copies(
+        full_images)  # If images are missing (start or end of movie), fill with nearest available image
 
-    min_intensity = float(numpy.min([numpy.quantile(image.array, 0.01) for image in full_images.values()]))
-    max_intensity = float(numpy.max([numpy.quantile(image.array, 0.99) for image in full_images.values()]))
-
-    # Calculate scaling for the model's target resolution
-    image_resolution = images.resolution()
-    scale_factors_zyx = (
-        image_resolution.pixel_size_z_um / target_resolution_zyx_um[0],
-        image_resolution.pixel_size_y_um / target_resolution_zyx_um[1],
-        image_resolution.pixel_size_x_um / target_resolution_zyx_um[2]
-    )
-    # So if the image has a resolution of 0.16 um/px in x, and the model has a target resolution of 0.32 um/px, the scale factor is 0.5.
-    # If a patch is 384 px wide in x, we need to take 384 / 0.5 = 768 px wide from the original image.
+    min_intensity = float(
+        numpy.min([numpy.quantile(image.array, intensity_quantiles[0]) for image in full_images.values()]))
+    max_intensity = float(
+        numpy.max([numpy.quantile(image.array, intensity_quantiles[1]) for image in full_images.values()]))
 
     # Calculate patch shape and buffer size in the input image pixels (instead of the pixels the model expects)
     patch_shape_zyx_image_px = (int(patch_shape_zyx_px[0] / scale_factors_zyx[0]),
@@ -176,9 +165,15 @@ def _split_into_patches(images: Images, time_point: TimePoint,
                                                patch_shape_zyx_image_px[2] - 2 * buffer_size_zyx_image_px[2]]
 
     # Make the patches
-    for z_start in range(time_point_image.min_z - buffer_size_zyx_image_px[0], time_point_image.limit_z + buffer_size_zyx_image_px[0], patch_shape_without_buffer_zyx_image_px[0]):
-        for y_start in range(time_point_image.min_y - buffer_size_zyx_image_px[1], time_point_image.limit_y + buffer_size_zyx_image_px[1], patch_shape_without_buffer_zyx_image_px[1]):
-            for x_start in range(time_point_image.min_x - buffer_size_zyx_image_px[2], time_point_image.limit_x + buffer_size_zyx_image_px[2], patch_shape_without_buffer_zyx_image_px[2]):
+    for z_start in range(time_point_image.min_z - buffer_size_zyx_image_px[0],
+                         time_point_image.limit_z + buffer_size_zyx_image_px[0],
+                         patch_shape_without_buffer_zyx_image_px[0]):
+        for y_start in range(time_point_image.min_y - buffer_size_zyx_image_px[1],
+                             time_point_image.limit_y + buffer_size_zyx_image_px[1],
+                             patch_shape_without_buffer_zyx_image_px[1]):
+            for x_start in range(time_point_image.min_x - buffer_size_zyx_image_px[2],
+                                 time_point_image.limit_x + buffer_size_zyx_image_px[2],
+                                 patch_shape_without_buffer_zyx_image_px[2]):
                 array = extract_patch_array(full_images, (z_start, y_start, x_start), patch_shape_zyx_image_px)
 
                 # Normalize patch
@@ -194,6 +189,33 @@ def _split_into_patches(images: Images, time_point: TimePoint,
                                        full_image_size_zyx=time_point_image.array.shape)
 
 
+def _count_patches(time_point: TimePoint, full_images: Dict[TimePoint, Image], *,
+                   patch_shape_zyx_px: Tuple[int, int, int],
+                   buffer_size_zyx_px: Tuple[int, int, int],
+                   scale_factors_zyx: Tuple[float, float, float]) -> int:
+    """Counts how many patches will be generated by _split_into_patches()."""
+    time_point_image = full_images.get(time_point)
+
+    # Calculate patch shape and buffer size in the input image pixels (instead of the pixels the model expects)
+    patch_shape_zyx_image_px = (int(patch_shape_zyx_px[0] / scale_factors_zyx[0]),
+                                int(patch_shape_zyx_px[1] / scale_factors_zyx[1]),
+                                int(patch_shape_zyx_px[2] / scale_factors_zyx[2]))
+    buffer_size_zyx_image_px = (int(buffer_size_zyx_px[0] / scale_factors_zyx[0]),
+                                int(buffer_size_zyx_px[1] / scale_factors_zyx[1]),
+                                int(buffer_size_zyx_px[2] / scale_factors_zyx[2]))
+    patch_shape_without_buffer_zyx_image_px = [patch_shape_zyx_image_px[0] - 2 * buffer_size_zyx_image_px[0],
+                                               patch_shape_zyx_image_px[1] - 2 * buffer_size_zyx_image_px[1],
+                                               patch_shape_zyx_image_px[2] - 2 * buffer_size_zyx_image_px[2]]
+
+    # Count patches
+    z_size = time_point_image.limit_z + buffer_size_zyx_image_px[0] - (time_point_image.min_z - buffer_size_zyx_image_px[0])
+    y_size = time_point_image.limit_y + buffer_size_zyx_image_px[1] - (time_point_image.min_y - buffer_size_zyx_image_px[1])
+    x_size = time_point_image.limit_x + buffer_size_zyx_image_px[2] - (time_point_image.min_x - buffer_size_zyx_image_px[2])
+    return (math.ceil(z_size / patch_shape_without_buffer_zyx_image_px[0]) *
+            math.ceil(y_size / patch_shape_without_buffer_zyx_image_px[1]) *
+            math.ceil(x_size / patch_shape_without_buffer_zyx_image_px[2]))
+
+
 class PositionModel(NamedTuple):
     """A position prediction model loaded from disk.
 
@@ -203,7 +225,6 @@ class PositionModel(NamedTuple):
 
     keras_model: keras.Model
     time_window: Tuple[int, int]
-    target_resolution_zyx_um: Tuple[float, float, float]
 
     def predict_positions(self, experiment: Experiment, *,
                           debug_folder_experiment: Optional[str] = None,
@@ -212,6 +233,11 @@ class PositionModel(NamedTuple):
                           patch_shape_unbuffered_yx: Tuple[int, int] = (320, 320),
                           buffer_size_zyx: Tuple[int, int, int] = (1, 32, 32),
                           threshold: float = 0.1,
+                          mid_layers: int = 5,
+                          scale_factors_zyx: Tuple[float, float, float] = (1.0, 1.0, 1.0),
+                          intensity_quantiles: Tuple[float, float] = (0.01, 0.99),
+                          time_points: Optional[Iterable[TimePoint] | Sized] = None,
+                          progress_callback: Callable[[float], None] = lambda _: None,
                           output_file: Optional[str] = None):
         """Predict positions for the given experiment.
 
@@ -226,12 +252,15 @@ class PositionModel(NamedTuple):
                 area are ignored. Added on top of patch_shape_unbuffered_yx.
             threshold: Threshold for peak finding.
             automatically calculate it from the model resolution, such that the resolution becomes isotropic.
+            mid_layers: Interpolate this many layers between the original layers for peak detection.
+            scale_factors_zyx: Scale factors to apply to the input images to reach the target resolution of the model.
+            intensity_quantiles: The quantiles to use for intensity normalization. Normalization is done per time point
+            on the full 3D image before splitting into patches.
+            time_points: If given, only predict positions for these time points. If None, predict for all time points.
+            progress_callback: A callback function that is called with the progress (between 0.0 and 1.0).
             output_file: If given, the file to save the predicted positions to. Otherwise, positions are not saved to
             disk, and just set in the experiment.
         """
-
-        # Auto-calculate mid_layers to get isotropic resolution
-        mid_layers = max(int(self.target_resolution_zyx_um[0] / self.target_resolution_zyx_um[1] - 1), 0)
 
         # Check if images were loaded
         if not experiment.images.image_loader().has_images():
@@ -267,23 +296,45 @@ class PositionModel(NamedTuple):
         patch_shape_zyx = (patch_shape_z, patch_shape_y, patch_shape_x)
 
         # Loop over all time points
-        for time_point in experiment.images.time_points():
+        if time_points is None:
+            time_points = experiment.images.time_points()
+        time_points_count = len(time_points)
+        time_points_done = 0
+        for time_point in time_points:
             if experiment.positions.count_positions(time_point=time_point) > 0:
                 continue  # Skip time points that already have positions
             print(time_point.time_point_number(), end="  ", flush=True)
             debug_predictions = _DebugPredictions()
             if debug_folder_experiment is not None:
-                debug_predictions.set_output_file(os.path.join(debug_folder_experiment, f"image_{time_point.time_point_number()}.tif"))
+                debug_predictions.set_output_file(
+                    os.path.join(debug_folder_experiment, f"image_{time_point.time_point_number()}.tif"))
 
-            for patch in _split_into_patches(images, time_point, self.time_window, patch_shape_zyx, buffer_size_zyx, self.target_resolution_zyx_um):
+            full_images = dict()
+            for dt in range(self.time_window[0], self.time_window[1] + 1):
+                time_point_dt = TimePoint(time_point.time_point_number() + dt)
+                full_images[time_point_dt] = images.get_image(time_point_dt, ImageChannel(index_one=1))
+            patch_count = _count_patches(time_point, full_images,
+                                         patch_shape_zyx_px=patch_shape_zyx,
+                                         buffer_size_zyx_px=buffer_size_zyx,
+                                         scale_factors_zyx=scale_factors_zyx)
+            patches_done = 0
+            for patch in _split_into_patches(time_point, full_images,
+                                             patch_shape_zyx_px=patch_shape_zyx,
+                                             buffer_size_zyx_px=buffer_size_zyx,
+                                             scale_factors_zyx=scale_factors_zyx,
+                                             intensity_quantiles=intensity_quantiles):
                 # Resize image using scipy zoom
-                time_point_count = patch.array.shape[-1]
-                input_array = numpy.zeros((*patch_shape_zyx, time_point_count))
-                for i in range(time_point_count):
-                    input_array[:, :, :, i] = skimage.transform.resize(patch.array[:, :, :, i], output_shape=patch_shape_zyx, order=0, clip=False, preserve_range=True, anti_aliasing=False)
+                patch_time_point_count = patch.array.shape[-1]
+                input_array = numpy.zeros((*patch_shape_zyx, patch_time_point_count))
+                for i in range(patch_time_point_count):
+                    input_array[:, :, :, i] = skimage.transform.resize(patch.array[:, :, :, i],
+                                                                       output_shape=patch_shape_zyx, order=0,
+                                                                       clip=False, preserve_range=True,
+                                                                       anti_aliasing=False)
 
                 # Call the model
-                prediction = keras.ops.convert_to_numpy(self.keras_model(input_array[numpy.newaxis, ...], training=False))[0, :, :, :, 0]
+                prediction = \
+                keras.ops.convert_to_numpy(self.keras_model(input_array[numpy.newaxis, ...], training=False))[0, :, :, :, 0]
 
                 debug_predictions.add_patch(patch, prediction)
 
@@ -299,11 +350,11 @@ class PositionModel(NamedTuple):
 
                     # Check if inside buffer area
                     if (prediction_z < patch.buffer_zyx_px[0] or
-                        prediction_z >= prediction.shape[0] - patch.buffer_zyx_px[0] or
-                        prediction_y < patch.buffer_zyx_px[1] or
-                        prediction_y >= prediction.shape[1] - patch.buffer_zyx_px[1] or
-                        prediction_x < patch.buffer_zyx_px[2] or
-                        prediction_x >= prediction.shape[2] - patch.buffer_zyx_px[2]):
+                            prediction_z >= prediction.shape[0] - patch.buffer_zyx_px[0] or
+                            prediction_y < patch.buffer_zyx_px[1] or
+                            prediction_y >= prediction.shape[1] - patch.buffer_zyx_px[1] or
+                            prediction_x < patch.buffer_zyx_px[2] or
+                            prediction_x >= prediction.shape[2] - patch.buffer_zyx_px[2]):
                         continue  # Inside buffer, ignore
 
                     # Back to coords of the full image
@@ -313,14 +364,24 @@ class PositionModel(NamedTuple):
 
                     # Bounds check for full image (the last patches may go beyond the image size, because patches have a minimum size)
                     full_image_size_zyx = patch.full_image_size_zyx
-                    if full_image_z >= full_image_size_zyx[0] or full_image_y >= full_image_size_zyx[1] or full_image_x >= full_image_size_zyx[2]:
+                    if full_image_z >= full_image_size_zyx[0] or full_image_y >= full_image_size_zyx[
+                        1] or full_image_x >= full_image_size_zyx[2]:
                         continue
 
-                    experiment.positions.add(Position(full_image_x, full_image_y, full_image_z, time_point=patch.time_point))
+                    experiment.positions.add(
+                        Position(full_image_x, full_image_y, full_image_z, time_point=patch.time_point))
+
+                # Report progress
+                patches_done += 1
+                total_iterations = patch_count * time_points_count
+                iterations_done = time_points_done * patch_count + patches_done
+                progress_callback(iterations_done / total_iterations)
+            time_points_done += 1
             debug_predictions.save_full_predictions()
             is_autosaved = autosaver.autosave_after_interval(experiment)
         if not is_autosaved:
             autosaver.save(experiment)
+        progress_callback(1.0)
 
 
 def load_position_model(model_folder: str) -> PositionModel:
@@ -328,10 +389,10 @@ def load_position_model(model_folder: str) -> PositionModel:
     model_folder = os.path.abspath(model_folder)
 
     keras_model: keras.Model = keras.saving.load_model(os.path.join(model_folder, "model.keras"),
-                                                 custom_objects={"loss": loss,
-                                                                 "position_precision": position_precision,
-                                                                 "position_recall": position_recall,
-                                                                 "overcount": overcount})
+                                                       custom_objects={"loss": loss,
+                                                                       "position_precision": position_precision,
+                                                                       "position_recall": position_recall,
+                                                                       "overcount": overcount})
 
     # Set relevant parameters
     if not os.path.isfile(os.path.join(model_folder, "settings.json")):
@@ -342,13 +403,7 @@ def load_position_model(model_folder: str) -> PositionModel:
             raise ValueError("Error: model is made for working with " + str(json_contents["type"]) + ", not positions")
         time_window = json_contents["time_window"]
 
-        if "target_resolution_zyx_um" in json_contents:
-            target_resolution_zyx_um = tuple(json_contents["target_resolution_zyx_um"])
-        else:
-            target_resolution_zyx_um = DEFAULT_TARGET_RESOLUTION_ZYX_UM
-
     # Convert time_window to tuple of ints
     time_window = (int(time_window[0]), int(time_window[1]))
 
-    return PositionModel(keras_model=keras_model, time_window=time_window, target_resolution_zyx_um=target_resolution_zyx_um)
-
+    return PositionModel(keras_model=keras_model, time_window=time_window)

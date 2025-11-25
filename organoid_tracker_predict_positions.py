@@ -6,7 +6,7 @@ _keras_environment.activate()
 
 import os
 
-from organoid_tracker.config import ConfigFile, config_type_int
+from organoid_tracker.config import ConfigFile, config_type_int, config_type_float
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.image_loading import general_image_loader
 from organoid_tracker.imaging import io, list_io
@@ -59,10 +59,12 @@ _model_folder = config.get_or_prompt("model_folder", "Please paste the path here
 _output_folder = config.get_or_default("positions_output_folder", "Automatic positions", comment="Output folder for the positions, can be viewed using the visualizer program.")
 _channels_str = config.get_or_default("images_channels", str(1), comment="Index(es) of the channels to use. Use \"3\" to use the third channel for predictions. Use \"1,3,4\" to use the sum of the first, third and fourth channel for predictions.")
 _images_channels = {ImageChannel(index_one=int(part)) for part in _channels_str.split(",")}
-_peak_min_distance_px = int(config.get_or_default("peak_min_distance_px", str(6), comment="Minimum distance in pixels"
-                                                                                          " between detected positions."))
-_threshold = float(config.get_or_default("threshold", str(0.1), comment="Minimum peak intensity."))
-
+_peak_min_distance_px = config.get_or_default("peak_min_distance_px", str(6), comment="Minimum distance in pixels between detected positions.", type=config_type_int)
+_threshold = config.get_or_default("threshold", str(0.1), comment="Minimum peak intensity.", type=config_type_float)
+_scale_factor_xy = config.get_or_default("scale_factor_xy", str(1.0), comment="Scale factor in x and y direction. A value of 0.5 will cause all images to be scaled down to half their size before being passed to the model.", type=config_type_float)
+_scale_factor_z = config.get_or_default("scale_factor_z", str(1.0), comment="Scale factor in z direction.", type=config_type_float)
+_intensity_quantile_min = config.get_or_default("intensity_min_quantile", str(0.01), comment="Minimum quantile for intensity normalization. Applied to entire 3D stack of each time point. A value of 0.0 means the minimum intensity is used.", type=config_type_float)
+_intensity_quantile_max = config.get_or_default("intensity_max_quantile", str(0.99), comment="Maximum quantile for intensity normalization. A value of 1.0 means the maximum intensity is used.", type=config_type_float)
 _debug_folder = config.get_or_default("predictions_output_folder", "",
                                       comment="If you want to see the raw prediction images, paste the path to a folder here. In that folder, a prediction image will be placed for each time point.")
 if len(_debug_folder) == 0:
@@ -106,6 +108,8 @@ for experiment_index, experiment in enumerate(experiment_list):
                             patch_shape_unbuffered_yx=(_patch_shape_unbuffered_y, _patch_shape_unbuffered_x),
                             peak_min_distance_px=_peak_min_distance_px,
                             buffer_size_zyx=(_buffer_z, _buffer_y, _buffer_x),
+                            scale_factors_zyx=(_scale_factor_z, _scale_factor_xy, _scale_factor_xy),
+                            intensity_quantiles=(_intensity_quantile_min, _intensity_quantile_max),
                             threshold=_threshold,
                             output_file=output_file)
 
