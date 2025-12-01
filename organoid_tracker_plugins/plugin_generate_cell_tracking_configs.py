@@ -5,12 +5,14 @@ import shlex
 import sys
 from typing import Dict, Optional, Any, Tuple, List
 
+import matplotlib.cm
 
 from organoid_tracker.config import ConfigFile
 from organoid_tracker.core import UserError, TimePoint
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.core.position import Position
+from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.gui import dialog, option_choose_dialog
 from organoid_tracker.gui.dialog import DefaultOption
 from organoid_tracker.gui.threading import Task
@@ -26,14 +28,10 @@ _TRAINING_PATCH_SHAPE_ZYX_LINKING: Tuple[int, int, int] = (16, 64, 64)
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "Tools//Train-Train network for cell detection...": lambda: _generate_position_training_config(window),
-        "Tools//Train-Train network for dividing cells...": lambda: _generate_division_training_config(window),
-        "Tools//Train-Train network for linking...": lambda: _generate_link_training_config(window),
-        "Tools//Use-Detect cells in images...": lambda: _generate_position_detection_config(window),
-        "Tools//Use-Detect dividing cells...": lambda: _generate_division_detection_config(window),
-        "Tools//Use-Detect link likelihoods...": lambda: _generate_link_detection_config(window),
-        "Tools//Use-Create tracks...": lambda: _generate_tracks_config(window),
-        "Tools//All-Perform all tracking steps...": lambda : _generate_all_steps_config(window),
+        "Tools//Tracking-Train a neural network//Train network for cell detection...": lambda: _generate_position_training_config(window),
+        "Tools//Tracking-Train a neural network//Train network for dividing cells...": lambda: _generate_division_training_config(window),
+        "Tools//Tracking-Train a neural network//Train network for linking...": lambda: _generate_link_training_config(window),
+        "Tools//Tracking-Perform automatic cell tracking...": lambda: _open_tracking_visualizer(window),
         "Tools//Error rates-Compute marginalized error rates...": lambda: _generate_marginalization_config(window),
         "Tools//Error rates-Find scaling temperature...": lambda: _generate_calibrate_marginalization_config(window),
     }
@@ -165,9 +163,9 @@ def _validate_experiments_for_training(experiments: List[Experiment]):
         experiment.images.resolution()  # Forces resolution check
 
 
-def _generate_position_detection_config(window: Window):
+def _open_tracking_visualizer(window: Window):
     """For applying an already trained network on new images."""
-    activate(_PositionPredictionVisualizer(window))
+    activate(_TrackingVisualizer(window))
 
 
 def _generate_division_training_config(window: Window):
@@ -215,48 +213,6 @@ def _generate_division_training_config(window: Window):
     _create_run_script(save_directory, "organoid_tracker_train_division_network")
     _popup_confirmation(save_directory, "organoid_tracker_train_division_network")
 
-
-def _generate_division_detection_config(window: Window):
-    """For applying an already trained network on new images."""
-    experiments = list(window.get_active_experiments())
-    for experiment in experiments:
-        image_loader = experiment.images.image_loader()
-        if not image_loader.has_images():
-            raise UserError("No images", f"No images were loaded in the experiment \"{experiment.name}\","
-                                         f" so no cells can be detected. Please load some images first.")
-        experiment.images.resolution()  # Check for resolution
-
-    if not dialog.popup_message_cancellable("Trained model folder",
-                                            "First, we will ask you where you have stored the divisions model."):
-        return None
-    model_folder = _get_model_folder("divisions")
-    if model_folder is None:
-        return
-
-    if not dialog.popup_message_cancellable("Out folder",
-                                            "Second, we will ask you to select an output folder."):
-        return
-    save_directory = dialog.prompt_save_file("Output directory", [("Folder", "*")])
-    if save_directory is None:
-        return
-
-    tracking_files_folder = os.path.join(save_directory, "Input files")
-    os.makedirs(tracking_files_folder, exist_ok=True)
-    list_io.save_experiment_list_file(experiments,
-                                      os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
-                                      tracking_files_folder=tracking_files_folder)
-
-    config = ConfigFile("predict_divisions", folder_name=save_directory)
-    config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
-    config.get_or_default("model_folder", model_folder)
-    config.get_or_default("predictions_output_folder", "Division predictions")
-    config.get_or_default("images_channels", str(window.display_settings.image_channel.index_one))
-
-    config.save()
-    _create_run_script(save_directory, "organoid_tracker_predict_divisions")
-    _popup_confirmation(save_directory, "organoid_tracker_predict_divisions")
-
-
 def _generate_link_training_config(window: Window):
     """For training the neural network."""
     experiments = list(window.get_active_experiments())
@@ -299,78 +255,6 @@ def _generate_link_training_config(window: Window):
     config.save()
     _create_run_script(save_directory, "organoid_tracker_train_link_network")
     _popup_confirmation(save_directory, "organoid_tracker_train_link_network")
-
-
-def _generate_link_detection_config(window: Window):
-    """For applying an already trained network on new images."""
-    experiments = list(window.get_active_experiments())
-    for experiment in experiments:
-        image_loader = experiment.images.image_loader()
-        if not image_loader.has_images():
-            raise UserError("No images", f"No images were loaded in the experiment \"{experiment.name}\","
-                                         f" so no cells can be detected. Please load some images first.")
-        experiment.images.resolution()  # Check for resolution
-
-    if not dialog.popup_message_cancellable("Trained model folder",
-                                            "First, we will ask you where you have stored the links model."):
-        return None
-    model_folder = _get_model_folder("links")
-    if model_folder is None:
-        return
-
-    if not dialog.popup_message_cancellable("Out folder",
-                                            "Second, we will ask you to select an output folder."):
-        return
-    save_directory = dialog.prompt_save_file("Output directory", [("Folder", "*")])
-    if save_directory is None:
-        return
-
-    tracking_files_folder = os.path.join(save_directory, "Input files")
-    os.makedirs(tracking_files_folder, exist_ok=True)
-    list_io.save_experiment_list_file(experiments,
-                                      os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
-                                      tracking_files_folder=tracking_files_folder)
-
-    config = ConfigFile("predict_links", folder_name=save_directory)
-    config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
-    config.get_or_default("model_folder", model_folder)
-    config.get_or_default("predictions_output_folder", "Link predictions")
-    config.get_or_default("images_channels", str(window.display_settings.image_channel.index_one))
-
-    config.save()
-    _create_run_script(save_directory, "organoid_tracker_predict_links")
-    _popup_confirmation(save_directory, "organoid_tracker_predict_links")
-
-
-def _generate_tracks_config(window: Window):
-    experiments = list(window.get_active_experiments())
-    for experiment in experiments:
-        image_loader = experiment.images.image_loader()
-        if not image_loader.has_images():
-            raise UserError("No images", f"No images were loaded in the experiment \"{experiment.name}\","
-                                         f" so no cells can be detected. Please load some images first.")
-        if not experiment.links.has_links():
-            raise UserError("No links", f"No tracking data was found in project {experiment.name}. Did you"
-                                        f"run all the previous tracking steps?")
-        experiment.images.resolution()  # Check for resolution
-
-    save_directory = dialog.prompt_save_file("Output directory", [("Folder", "*")])
-    if save_directory is None:
-        return
-
-    tracking_files_folder = os.path.join(save_directory, "Input files")
-    os.makedirs(tracking_files_folder, exist_ok=True)
-    list_io.save_experiment_list_file(experiments,
-                                      os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
-                                      tracking_files_folder=tracking_files_folder)
-
-    config = ConfigFile("create_tracks", folder_name=save_directory)
-    config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
-    config.get_or_default("output_folder", "Output tracks")
-
-    config.save()
-    _create_run_script(save_directory, "organoid_tracker_create_tracks")
-    _popup_confirmation(save_directory, "organoid_tracker_create_tracks")
 
 
 def _generate_calibrate_marginalization_config(window: Window):
@@ -450,77 +334,6 @@ def _generate_marginalization_config(window: Window):
     _popup_confirmation(save_directory, "organoid_tracker_marginalization")
 
 
-def _generate_all_steps_config(window: Window):
-    """For applying an already trained network on new images."""
-    experiments = list(window.get_active_experiments())
-    for experiment in experiments:
-        image_loader = experiment.images.image_loader()
-        if not image_loader.has_images():
-            raise UserError("No images", f"No images were loaded in the experiment \"{experiment.name}\","
-                            f" so no cells can be detected. Please load some images first.")
-        experiment.images.resolution()  # Check for resolution
-
-    if not dialog.popup_message_cancellable("Trained models folder",
-                                            "First, we will ask you where you have stored the trained models"
-                                            " for positions, divisions and links, in that order. "):
-        return None
-    model_folder_positions = _get_model_folder("positions")
-    if model_folder_positions is None:
-        return
-    model_folder_divisions = _get_model_folder("divisions")
-    if model_folder_divisions is None:
-        return
-    model_folder_links = _get_model_folder("links")
-    if model_folder_links is None:
-        return
-
-    if not dialog.popup_message_cancellable("Out folder",
-                                            "Great, that were all models! Now we will ask you to select an output folder."):
-        return
-    save_directory = dialog.prompt_save_file("Output directory", [("Folder", "*")])
-    if save_directory is None:
-        return
-
-    tracking_files_folder = os.path.join(save_directory, "Input files")
-    os.makedirs(tracking_files_folder, exist_ok=True)
-    list_io.save_experiment_list_file(experiments, os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
-                                      tracking_files_folder=tracking_files_folder)
-
-    # Generate one big config file for all steps
-    config = ConfigFile("predict_positions", folder_name=save_directory)
-    config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
-    config.get_or_default("model_folder", model_folder_positions)
-    config.get_or_default("predictions_output_folder", "Nucleus center predictions")
-    config.get_or_default("positions_output_folder", "Automatic positions")
-    config.get_or_default("patch_shape_y", str(320))
-    config.get_or_default("patch_shape_x", str(320))
-    config.get_or_default("buffer_z", str(1))
-    config.get_or_default("buffer_y", str(32))
-    config.get_or_default("buffer_x", str(32))
-    config.get_or_default("images_channels", str(window.display_settings.image_channel.index_one), store_in_defaults=True)
-    config.save()
-    config = ConfigFile("predict_divisions", folder_name=save_directory)
-    config.get_or_default("dataset_file", "Automatic positions/_All" + list_io.FILES_LIST_EXTENSION)
-    config.get_or_default("model_folder", model_folder_divisions)
-    config.get_or_default("predictions_output_folder", "Division predictions")
-    config.save()
-    config = ConfigFile("predict_links", folder_name=save_directory)
-    config.get_or_default("dataset_file", "Division predictions/_All" + list_io.FILES_LIST_EXTENSION)
-    config.get_or_default("model_folder", model_folder_links)
-    config.get_or_default("predictions_output_folder", "Link predictions")
-    config.save()
-    config = ConfigFile("create_tracks", folder_name=save_directory)
-    config.get_or_default("dataset_file", "Link predictions/_All" + list_io.FILES_LIST_EXTENSION)
-    config.get_or_default("output_folder", "Output tracks")
-    config.save()
-
-    _create_run_script(save_directory, "organoid_tracker_run_all_tracking_steps", scripts_to_run=[
-        "organoid_tracker_predict_positions", "organoid_tracker_predict_divisions", "organoid_tracker_predict_links",
-        "organoid_tracker_create_tracks"
-    ])
-    _popup_confirmation(save_directory, "organoid_tracker_run_all_tracking_steps")
-
-
 def _get_model_folder(model_type: str) -> Optional[str]:
     while True:
         directory = dialog.prompt_directory(f"Please choose a {model_type} model folder")
@@ -562,29 +375,58 @@ def _get_all_links_file() -> Optional[str]:
             return file
 
 
-class _PositionPredictionVisualizer(ExitableImageVisualizer):
-    """Set a model folder in the Parameters menu. If you're happy with how the predictions look, generate config files
-    and start the full predictions using the Edit menu."""
+class _TrackingVisualizer(ExitableImageVisualizer):
+    """The automatic cell tracker of OrganoidTracker. Make sure that you have trained models available, and then
+    run the tracking steps from the 'Cell tracking' menu. You can also preview the results for a single time point.
 
-    model_folder: Optional[str] = None
+    The correct order of tracking steps is position prediction, division score prediction, link score prediction, and
+    finally track creation. You'll need to run all steps. See the 'Help' menu for more information.
+    """
+
+    positions_model_folder: Optional[str] = None
+    divisions_model_folder: Optional[str] = None
+    links_model_folder: Optional[str] = None
+
     min_quantile: float = 0.01
     max_quantile: float = 0.99
     xy_scaling: float = 1.0
     z_scaling: float = 1.0
     channels: List[ImageChannel]
-    _predicted_positions: List[Position] = None
+
+    _predicted_positions: Optional[List[Position]] = None
+    _predicted_divisions: Optional[Dict[Position, float]] = None
+    _predicted_links: Optional[Dict[Tuple[Position, Position], float]] = None
 
     def __init__(self, window: Window):
         super().__init__(window)
         self.channels = [window.display_settings.image_channel]
-        self._predicted_positions = list()
+
+    def refresh_all(self):
+        self._predicted_positions = None
+        self._predicted_divisions = None
+        self._predicted_links = None
+        super().refresh_all()
 
     def _draw_positions(self):
+        if self._predicted_positions is None and self._predicted_divisions is None and self._predicted_links is None:
+            super()._draw_positions()
+            return
+
+        if self._predicted_divisions is not None:
+            self._draw_predicted_divisions()
+            return
+
+        if self._predicted_positions is not None:
+            self._draw_predicted_positions()
+            return
+
+    def _draw_predicted_positions(self):
+        """Draws the predicted positions from the preview (stored in self._predicted_positions) in purple."""
+        if self._predicted_positions is None:
+            return
+
         max_intensity_projection = self._display_settings.max_intensity_projection
-
-        positions_x_list, positions_y_list, positions_edge_colors, positions_edge_widths, positions_marker_sizes = \
-            list(), list(), list(), list(), list()
-
+        positions_x_list, positions_y_list, positions_marker_sizes = list(), list(), list()
         min_z, max_z = self._z - self.MAX_Z_DISTANCE, self._z + self.MAX_Z_DISTANCE
         for position in self._predicted_positions:
             if not max_intensity_projection and (position.z < min_z or position.z > max_z):
@@ -598,48 +440,112 @@ class _PositionPredictionVisualizer(ExitableImageVisualizer):
 
             positions_x_list.append(position.x)
             positions_y_list.append(position.y)
-            positions_edge_colors.append(edge_color)
-            positions_edge_widths.append(edge_width)
             dz_penalty = 0 if dz == 0 or max_intensity_projection else abs(dz) + 1
-            positions_marker_sizes.append(max(1, 7 - dz_penalty + edge_width) ** 2)
+            positions_marker_sizes.append(max(1.0, 8 - dz_penalty) ** 2)
 
         self._ax.scatter(positions_x_list, positions_y_list, s=positions_marker_sizes, facecolor="#be2edd",
                          edgecolors="black", linewidths=1, marker="s")
 
+    def _draw_predicted_divisions(self):
+        """Draws the predicted divisions from the preview (stored in self._predicted_divisions) in purple."""
+        if self._predicted_divisions is None:
+            return
+
+        colormap = matplotlib.cm.get_cmap("Purples")
+
+        max_intensity_projection = self._display_settings.max_intensity_projection
+        positions_x_list, positions_y_list, positions_face_colors, positions_edge_colors, positions_edge_widths, positions_marker_sizes = \
+            list(), list(), list(), list(), list(), list()
+        min_z, max_z = self._z - self.MAX_Z_DISTANCE, self._z + self.MAX_Z_DISTANCE
+        for position, division_probability in self._predicted_divisions.items():
+            if not max_intensity_projection and (position.z < min_z or position.z > max_z):
+                continue
+            if position.time_point_number() != self._time_point.time_point_number():
+                continue
+            dz = self._z - round(position.z)
+
+            # Add marker
+            if division_probability is None:
+                division_probability = 0
+            edge_width = 1 + division_probability * 2
+
+            positions_x_list.append(position.x)
+            positions_y_list.append(position.y)
+            positions_edge_colors.append(colormap(1 - division_probability))
+            positions_edge_widths.append(edge_width)
+            positions_face_colors.append(colormap(division_probability))
+            dz_penalty = 0 if dz == 0 or max_intensity_projection else abs(dz) + 1
+            positions_marker_sizes.append(max(1.0, 7 - dz_penalty + edge_width) ** 2)
+            if division_probability > 0.1:
+                self._draw_annotation(position, f"{division_probability * 100:.0f}%")
+
+        self._ax.scatter(positions_x_list, positions_y_list, s=positions_marker_sizes, facecolor=positions_face_colors,
+                         edgecolors=positions_edge_colors, linewidths=positions_edge_widths, marker="s")
+
+
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
             **super().get_extra_menu_options(),
-            "Parameters//Quantile-Set min intensity quantile...": self._set_min_quantile,
-            "Parameters//Quantile-Set max intensity quantile...": self._set_max_quantile,
-            "Parameters//Scaling-Set XY scaling...": self._set_xy_scaling,
-            "Parameters//Scaling-Set Z scaling...": self._set_z_scaling,
-            "Parameters//Model-Set image channel for prediction...": self._set_channel,
-            "Parameters//Model-Set model folder...": self._set_model_folder,
-            "Edit//Model-Generate configuration files...": self._generate_config,
-            "Edit//Model-Test on this time point...": self._test_on_time_point,
+            "Parameters//Model-Set positions model folder...": self._set_positions_model_folder,
+            "Parameters//Model-Set divisions model folder...": self._set_divisions_model_folder,
+            "Parameters//Model-Set links model folder...": self._set_links_model_folder,
+            "Parameters//Images-Set min intensity quantile...": self._set_min_quantile,
+            "Parameters//Images-Set max intensity quantile...": self._set_max_quantile,
+            "Parameters//Images-Set XY scaling...": self._set_xy_scaling,
+            "Parameters//Images-Set Z scaling...": self._set_z_scaling,
+            "Parameters//Images-Set image channel for prediction...": self._set_channel,
+            "Cell tracking//Preview-Preview position detection": self._test_position_predictions_on_time_point,
+            "Cell tracking//Preview-Preview division detection": self._test_division_predictions_on_time_point,
+            "Cell tracking//Tracking-Predict positions in all time points...": self._generate_position_detection_config,
+            "Cell tracking//Tracking-Predict divisions in all time points...": self._generate_division_detection_config,
+            "Cell tracking//Tracking-Predict links in all time points...": self._generate_link_detection_config,
+            "Cell tracking//Tracking-Create tracks...": self._generate_tracks_config,
+            "Cell tracking//Tracking-Perform all tracking steps...": self._generate_all_steps_config,
         }
 
     def _get_figure_title(self) -> str:
-        return "Position detection\nTime point " + str(self._time_point.time_point_number()) + "    (z=" + \
+        return "Automatic cell tracking\nTime point " + str(self._time_point.time_point_number()) + "    (z=" + \
                       self._get_figure_title_z_str() + ")"
 
-    def _test_on_time_point(self):
+    def _test_position_predictions_on_time_point(self):
         self._experiment.images.resolution()  # Make sure a resolution is set
         if not self._experiment.images.image_loader().has_images():
             # Nothing to predict
-            self._predicted_positions.clear()
             return
-        if self.model_folder is None:
+        if self.positions_model_folder is None:
             # No model selected
-            self._predicted_positions.clear()
-            raise UserError("No model set", "Set a model folder in the Parameters menu to enable position predictions.")
+            raise UserError("No positions model folder selected", "Please select a positions model folder in the Parameters"
+                                                        " menu first.")
 
         if self._window.get_scheduler().has_active_tasks():
             return
         self.update_status("Predicting positions...")
         self._window.get_scheduler().add_task(_PredictPositions(self, self._experiment, self._time_point))
 
-    def _generate_config(self):
+    def _test_division_predictions_on_time_point(self):
+        self._experiment.images.resolution()  # Make sure a resolution is set
+        if not self._experiment.images.image_loader().has_images():
+            # Nothing to predict
+            return
+        if self.divisions_model_folder is None:
+            # No model selected
+            raise UserError("No positions model folder selected", "Please select a positions model folder in the Parameters"
+                                                        " menu first.")
+
+        if self._window.get_scheduler().has_active_tasks():
+            return
+        if self._predicted_positions is not None:
+            positions = [position for position in self._predicted_positions
+                         if position.time_point_number() == self._time_point.time_point_number()]
+        else:
+            positions = self._experiment.positions.of_time_point(self._time_point)
+        if len(positions) == 0:
+            raise UserError("No positions", f"No positions were found for time point {self._time_point.time_point_number()}."
+                                            f" The divisions predictor scores existing positions, so please load in some positions first.")
+        self.update_status("Predicting divisions...")
+        self._window.get_scheduler().add_task(_PredictDivisions(self, self._experiment, positions, self._time_point))
+
+    def _generate_position_detection_config(self):
         experiments = list(self._window.get_active_experiments())
         for experiment in experiments:
             image_loader = experiment.images.image_loader()
@@ -648,8 +554,8 @@ class _PositionPredictionVisualizer(ExitableImageVisualizer):
                                              f" so no cells can be detected. Please load some images first.")
             experiment.images.resolution()  # Checks for resolution
 
-        if self.model_folder is None:
-            raise UserError("No model folder selected", "Please select a model folder in the Parameters"
+        if self.positions_model_folder is None:
+            raise UserError("No positions model folder selected", "Please select a positions model folder in the Parameters"
                                                         " menu before generating the configuration files.")
 
         save_directory = dialog.prompt_save_file("Output directory", [("Folder", "*")])
@@ -664,7 +570,7 @@ class _PositionPredictionVisualizer(ExitableImageVisualizer):
 
         config = ConfigFile("predict_positions", folder_name=save_directory)
         config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
-        config.get_or_default("model_folder", self.model_folder)
+        config.get_or_default("model_folder", self.positions_model_folder)
         config.get_or_default("predictions_output_folder", "Nucleus center predictions")
         config.get_or_default("patch_shape_y", str(320))
         config.get_or_default("patch_shape_x", str(320))
@@ -680,6 +586,181 @@ class _PositionPredictionVisualizer(ExitableImageVisualizer):
         config.save()
         _create_run_script(save_directory, "organoid_tracker_predict_positions")
         _popup_confirmation(save_directory, "organoid_tracker_predict_positions")
+
+    def _generate_division_detection_config(self):
+        experiments = list(self._window.get_active_experiments())
+        for experiment in experiments:
+            image_loader = experiment.images.image_loader()
+            if not image_loader.has_images():
+                raise UserError("No images", f"No images were loaded in the experiment \"{experiment.name}\","
+                                             f" so no cells can be detected. Please load some images first.")
+            experiment.images.resolution()  # Check for resolution
+            if not experiment.positions.has_positions():
+                raise UserError("No positions", f"No position data was found in project {experiment.name}. You'll need"
+                                                f" to run the position prediction step first, and load in those results.")
+
+        if self.divisions_model_folder is None:
+            raise UserError("No divisions model folder selected", "Please select a divisions model folder in the Parameters"
+                                                        " menu before generating the configuration files.")
+
+        save_directory = dialog.prompt_save_file("Output directory", [("Folder", "*")])
+        if save_directory is None:
+            return
+
+        tracking_files_folder = os.path.join(save_directory, "Input files")
+        os.makedirs(tracking_files_folder, exist_ok=True)
+        list_io.save_experiment_list_file(experiments,
+                                          os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
+                                          tracking_files_folder=tracking_files_folder)
+
+        config = ConfigFile("predict_divisions", folder_name=save_directory)
+        config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
+        config.get_or_default("model_folder", self.divisions_model_folder)
+        config.get_or_default("predictions_output_folder", "Division predictions")
+        config.get_or_default("images_channels", ",".join(str(channel.index_one) for channel in self.channels))
+        config.get_or_default("scale_factor_xy", str(self.xy_scaling))
+        config.get_or_default("scale_factor_z", str(self.z_scaling))
+        config.get_or_default("intensity_min_quantile", str(self.min_quantile))
+        config.get_or_default("intensity_max_quantile", str(self.max_quantile))
+
+        config.save()
+        _create_run_script(save_directory, "organoid_tracker_predict_divisions")
+        _popup_confirmation(save_directory, "organoid_tracker_predict_divisions")
+
+    def _generate_link_detection_config(self):
+        """For applying an already trained network on new images."""
+        experiments = list(self._window.get_active_experiments())
+        for experiment in experiments:
+            image_loader = experiment.images.image_loader()
+            if not image_loader.has_images():
+                raise UserError("No images", f"No images were loaded in the experiment \"{experiment.name}\","
+                                             f" so no cells can be detected. Please load some images first.")
+            experiment.images.resolution()  # Check for resolution
+
+        if self.links_model_folder is None:
+            raise UserError("No links model folder selected", "Please select a links model folder in the Parameters"
+                                                        " menu before generating the configuration files.")
+
+        save_directory = dialog.prompt_save_file("Output directory", [("Folder", "*")])
+        if save_directory is None:
+            return
+
+        tracking_files_folder = os.path.join(save_directory, "Input files")
+        os.makedirs(tracking_files_folder, exist_ok=True)
+        list_io.save_experiment_list_file(experiments,
+                                          os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
+                                          tracking_files_folder=tracking_files_folder)
+
+        config = ConfigFile("predict_links", folder_name=save_directory)
+        config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
+        config.get_or_default("model_folder", self.links_model_folder)
+        config.get_or_default("predictions_output_folder", "Link predictions")
+        config.get_or_default("images_channels", ",".join(str(channel.index_one) for channel in self.channels))
+        config.get_or_default("scale_factor_xy", str(self.xy_scaling))
+        config.get_or_default("scale_factor_z", str(self.z_scaling))
+        config.get_or_default("intensity_min_quantile", str(self.min_quantile))
+        config.get_or_default("intensity_max_quantile", str(self.max_quantile))
+
+        config.save()
+        _create_run_script(save_directory, "organoid_tracker_predict_links")
+        _popup_confirmation(save_directory, "organoid_tracker_predict_links")
+
+    def _generate_tracks_config(self):
+        experiments = list(self._window.get_active_experiments())
+        for experiment in experiments:
+            image_loader = experiment.images.image_loader()
+            if not image_loader.has_images():
+                raise UserError("No images", f"No images were loaded in the experiment \"{experiment.name}\","
+                                             f" so no cells can be detected. Please load some images first.")
+            if not experiment.links.has_links():
+                raise UserError("No links", f"No tracking data was found in project {experiment.name}. Did you"
+                                            f"run all the previous tracking steps?")
+            experiment.images.resolution()  # Check for resolution
+
+        save_directory = dialog.prompt_save_file("Output directory", [("Folder", "*")])
+        if save_directory is None:
+            return
+
+        tracking_files_folder = os.path.join(save_directory, "Input files")
+        os.makedirs(tracking_files_folder, exist_ok=True)
+        list_io.save_experiment_list_file(experiments,
+                                          os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
+                                          tracking_files_folder=tracking_files_folder)
+
+        config = ConfigFile("create_tracks", folder_name=save_directory)
+        config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
+        config.get_or_default("output_folder", "Output tracks")
+
+        config.save()
+        _create_run_script(save_directory, "organoid_tracker_create_tracks")
+        _popup_confirmation(save_directory, "organoid_tracker_create_tracks")
+
+    def _generate_all_steps_config(self):
+        """For applying an already trained network on new images."""
+        experiments = list(self._window.get_active_experiments())
+        for experiment in experiments:
+            image_loader = experiment.images.image_loader()
+            if not image_loader.has_images():
+                raise UserError("No images", f"No images were loaded in the experiment \"{experiment.name}\","
+                                             f" so no cells can be detected. Please load some images first.")
+            experiment.images.resolution()  # Check for resolution
+
+        if self.positions_model_folder is None:
+            raise UserError("No positions model folder selected", "Please select a positions model folder in the Parameters"
+                                                        " menu before generating the configuration files.")
+        if self.divisions_model_folder is None:
+            raise UserError("No divisions model folder selected", "Please select a divisions model folder in the Parameters"
+                                                        " menu before generating the configuration files.")
+        if self.links_model_folder is None:
+            raise UserError("No links model folder selected", "Please select a links model folder in the Parameters"
+                                                        " menu before generating the configuration files.")
+        save_directory = dialog.prompt_save_file("Output directory", [("Folder", "*")])
+        if save_directory is None:
+            return
+
+        tracking_files_folder = os.path.join(save_directory, "Input files")
+        os.makedirs(tracking_files_folder, exist_ok=True)
+        list_io.save_experiment_list_file(experiments,
+                                          os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
+                                          tracking_files_folder=tracking_files_folder)
+
+        # Generate one big config file for all steps
+        config = ConfigFile("predict_positions", folder_name=save_directory)
+        config.get_or_default("images_channels", ",".join(str(channel.index_one) for channel in self.channels), store_in_defaults=True)
+        config.get_or_default("scale_factor_xy", str(self.xy_scaling), store_in_defaults=True)
+        config.get_or_default("scale_factor_z", str(self.z_scaling), store_in_defaults=True)
+        config.get_or_default("intensity_min_quantile", str(self.min_quantile), store_in_defaults=True)
+        config.get_or_default("intensity_max_quantile", str(self.max_quantile), store_in_defaults=True)
+        config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
+        config.get_or_default("model_folder", self.positions_model_folder)
+        config.get_or_default("predictions_output_folder", "Nucleus center predictions")
+        config.get_or_default("positions_output_folder", "Automatic positions")
+        config.get_or_default("patch_shape_y", str(320))
+        config.get_or_default("patch_shape_x", str(320))
+        config.get_or_default("buffer_z", str(1))
+        config.get_or_default("buffer_y", str(32))
+        config.get_or_default("buffer_x", str(32))
+        config.save()
+        config = ConfigFile("predict_divisions", folder_name=save_directory)
+        config.get_or_default("dataset_file", "Automatic positions/_All" + list_io.FILES_LIST_EXTENSION)
+        config.get_or_default("model_folder", self.divisions_model_folder)
+        config.get_or_default("predictions_output_folder", "Division predictions")
+        config.save()
+        config = ConfigFile("predict_links", folder_name=save_directory)
+        config.get_or_default("dataset_file", "Division predictions/_All" + list_io.FILES_LIST_EXTENSION)
+        config.get_or_default("model_folder", self.links_model_folder)
+        config.get_or_default("predictions_output_folder", "Link predictions")
+        config.save()
+        config = ConfigFile("create_tracks", folder_name=save_directory)
+        config.get_or_default("dataset_file", "Link predictions/_All" + list_io.FILES_LIST_EXTENSION)
+        config.get_or_default("output_folder", "Output tracks")
+        config.save()
+
+        _create_run_script(save_directory, "organoid_tracker_run_all_tracking_steps", scripts_to_run=[
+            "organoid_tracker_predict_positions", "organoid_tracker_predict_divisions",
+            "organoid_tracker_predict_links", "organoid_tracker_create_tracks"
+        ])
+        _popup_confirmation(save_directory, "organoid_tracker_run_all_tracking_steps")
 
     def _set_min_quantile(self):
         value = dialog.prompt_float("Set minimum intensity quantile",
@@ -726,10 +807,23 @@ class _PositionPredictionVisualizer(ExitableImageVisualizer):
             self.channels = [ImageChannel(index_zero=channel) for channel in channels]
             self.update_status("Set image channel for prediction to " + (",".join(str(channel.index_one) for channel in self.channels)) + ". Use the Edit menu to generate predictions.")
 
-    def _set_model_folder(self):
-        self.model_folder = _get_model_folder("positions")
-        if self.model_folder is not None:
-            self.update_status("Set model folder to " + str(self.model_folder) + ". Use the Edit menu to generate predictions.")
+    def _set_positions_model_folder(self):
+        positions_model_folder = _get_model_folder("positions")
+        if positions_model_folder is not None:
+            self.positions_model_folder = positions_model_folder
+            self.update_status("Set model folder to " + str(self.positions_model_folder) + ". Use the Edit menu to predict the cell positions.")
+
+    def _set_divisions_model_folder(self):
+        divisions_model_folder = _get_model_folder("divisions")
+        if divisions_model_folder is not None:
+            self.divisions_model_folder = divisions_model_folder
+            self.update_status("Set model folder to " + str(self.divisions_model_folder) + ". Use the Edit menu to predict which cells will divide.")
+
+    def _set_links_model_folder(self):
+        links_model_folder = _get_model_folder("links")
+        if links_model_folder is not None:
+            self.links_model_folder = links_model_folder
+            self.update_status("Set model folder to " + str(self.links_model_folder) + ". Use the Edit menu to predict which cells are the same over time.")
 
     def _find_available_image_channels_count(self):
         max_channel_count = 1
@@ -742,17 +836,23 @@ class _PositionPredictionVisualizer(ExitableImageVisualizer):
             return  # Outdated result
         self._predicted_positions = result
         self.draw_view()
-        self.update_status("Updated position predictions. If you're happy with them, generate configuration files using the Edit menu.")
+        self.update_status("Updated position predictions. If you're happy with them, use the 'Cell tracking' menu to detect positions in all time points.")
 
+    def callback_division_predictions(self, time_point: TimePoint, result: Dict[Position, float]):
+        if time_point != self._time_point:
+            return  # Outdated result
+        self._predicted_divisions = result
+        self.draw_view()
+        self.update_status("Updated division predictions. If you're happy with them, use the 'Cell tracking' menu to detect divisions in all time points.")
 
 class _PredictPositions(Task):
-    _visualizer: _PositionPredictionVisualizer
+    _visualizer: _TrackingVisualizer
 
     _experiment: Optional[Experiment]  # Cleared after self.compute()
     _time_point: TimePoint
     _progress: float
 
-    def __init__(self, visualizer: _PositionPredictionVisualizer,
+    def __init__(self, visualizer: _TrackingVisualizer,
                  experiment: Experiment, time_point: TimePoint):
         super().__init__()
         self._visualizer = visualizer
@@ -769,7 +869,7 @@ class _PredictPositions(Task):
         _keras_environment.activate()
         import keras
         from organoid_tracker.neural_network.position_detection_cnn import position_predictor
-        model = position_predictor.load_position_model(self._visualizer.model_folder)
+        model = position_predictor.load_position_model(self._visualizer.positions_model_folder)
         model.predict_positions(self._experiment, time_points=[self._time_point],
                                 scale_factors_zyx=(self._visualizer.z_scaling, self._visualizer.xy_scaling, self._visualizer.xy_scaling),
                                 intensity_quantiles=(self._visualizer.min_quantile, self._visualizer.max_quantile),
@@ -782,6 +882,56 @@ class _PredictPositions(Task):
 
     def on_finished(self, result: Any):
         self._visualizer.callback_position_predictions(self._time_point, result)
+
+    def get_percentage_completed(self) -> Optional[int]:
+        if self._progress == 0:
+            return None
+        return int(self._progress * 100)
+
+
+class _PredictDivisions(Task):
+    _visualizer: _TrackingVisualizer
+
+    _experiment: Optional[Experiment]  # Cleared after self.compute()
+    _time_point: TimePoint
+    _positions: List[Position]
+    _progress: float
+
+    def __init__(self, visualizer: _TrackingVisualizer,
+                 experiment: Experiment, positions: List[Position], time_point: TimePoint):
+        super().__init__()
+        self._visualizer = visualizer
+        self._positions = positions
+        self._experiment = Experiment()
+        self._experiment.images = experiment.images
+        self._experiment.positions = PositionCollection(self._positions)
+        self._time_point = time_point
+        self._progress = 0
+
+    def _set_progress(self, progress: float):
+        self._progress = progress
+
+    def compute(self) -> Any:
+        import _keras_environment
+        _keras_environment.activate()
+        import keras
+        from organoid_tracker.neural_network.division_detection_cnn import division_predictor
+        model = division_predictor.load_division_model(self._visualizer.divisions_model_folder)
+        model.predict_divisions(self._experiment,
+                                scale_factors_zyx=(self._visualizer.z_scaling, self._visualizer.xy_scaling, self._visualizer.xy_scaling),
+                                intensity_quantiles=(self._visualizer.min_quantile, self._visualizer.max_quantile),
+                                image_channels=set(self._visualizer.channels))
+        # Free some memory, these models can be quite large
+        del model
+        keras.backend.clear_session()
+        positions_to_probability = dict()
+        for position in self._experiment.positions.of_time_point(self._time_point):
+            division_probability = self._experiment.positions.get_position_data(position, "division_probability")
+            positions_to_probability[position] = division_probability
+        return positions_to_probability
+
+    def on_finished(self, result: Any):
+        self._visualizer.callback_division_predictions(self._time_point, result)
 
     def get_percentage_completed(self) -> Optional[int]:
         if self._progress == 0:
