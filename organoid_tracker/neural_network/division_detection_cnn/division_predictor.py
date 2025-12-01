@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Tuple, NamedTuple, Iterable, List
+from typing import Tuple, NamedTuple, Iterable, List, Set
 
 import keras
 import numpy
@@ -13,6 +13,7 @@ from organoid_tracker.core.images import Image, Images
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
+from organoid_tracker.linking.nearby_position_finder import find_closest_n_positions
 from organoid_tracker.neural_network.image_loading import fill_none_images_with_copies, extract_patch_array
 
 
@@ -83,7 +84,7 @@ class DivisionModel(NamedTuple):
 
     def predict_divisions(self, experiment: Experiment, *,
                           batch_size: int = 32,
-                          image_channels: List[ImageChannel] = None,
+                          image_channels: Set[ImageChannel] = None,
                           scale_factors_zyx: Tuple[float, float, float] = (1.0, 1.0, 1.0),
                           intensity_quantiles: Tuple[float, float] = (0.01, 0.99)):
         """Predict division probabilities for all positions in the given experiment."""
@@ -181,3 +182,83 @@ def load_division_model(model_folder: str) -> DivisionModel:
                          patch_shape_zyx=patch_shape_zyx,
                          platt_scaling=scaling,
                          platt_intercept=intercept)
+
+
+def remove_division_oversegmentation(experiment: Experiment, min_distance_dividing_um: float = 4.5):
+    """Remove oversegmentation for dividing cells by setting a minimal distance for dividing cells. If two dividing
+    cells are too close, they are replaced by a single cell in the middle position."""
+
+    to_remove = []
+    to_add = []
+
+    for position in experiment.positions:
+
+        # Check if cell is dividing
+        division_probability = experiment.positions.get_position_data(position, data_name="division_probability")
+        if division_probability is None or division_probability <= 0.5:
+            continue
+
+        # Find 6 closest neighbors
+        neighbors = find_closest_n_positions(experiment.positions.of_time_point(position.time_point()),
+                                             around=position, max_amount=6,
+                                             resolution=experiment.images.resolution())
+        for neighbor in neighbors:
+
+            # Check if neighbor is also dividing and if the neighbor is within the range
+            neighbor_division_probability = experiment.positions.get_position_data(neighbor, data_name="division_probability")
+            if neighbor_division_probability is not None and neighbor_division_probability > 0.5:
+                detection_range = 1.5 * min_distance_dividing_um
+            else:
+                detection_range = min_distance_dividing_um
+
+            # If the division is oversegmented replace by one position in the middle
+            if position.distance_um(neighbor, resolution=experiment.images.resolution()) < detection_range:
+
+                if (position not in to_remove) and (neighbor not in to_remove):
+                    add_position = Position(x=(position.x + neighbor.x) // 2,
+                                            y=(position.y + neighbor.y) // 2,
+                                            z=(position.z + neighbor.z) // 2,
+                                            time_point=position.time_point())
+                    to_add.append(add_position)
+
+                    experiment.positions.set_position_data(add_position, 'division_probability',
+                                                           max(experiment.positions.get_position_data(
+                                                               position, data_name="division_probability"),
+                                                               experiment.positions.get_position_data(
+                                                                   neighbor, data_name="division_probability")))
+                    experiment.positions.set_position_data(add_position, 'division_penalty',
+                                                           min(experiment.positions.get_position_data(
+                                                               position, data_name="division_penalty"),
+                                                               experiment.positions.get_position_data(
+                                                                   neighbor, data_name="division_penalty")))
+                    # print(position)
+
+                to_remove = to_remove + [position, neighbor]
+
+        # Find closest neighbors at previous timepoint
+        prev_time_point = TimePoint(position.time_point().time_point_number() - 1)
+        neighbors = list(
+            find_closest_n_positions(experiment.positions.of_time_point(prev_time_point), around=position,
+                                     max_amount=6, resolution=experiment.images.resolution()))
+
+        if len(neighbors) > 0:
+            closest_neighbor = list(
+                find_closest_n_positions(experiment.positions.of_time_point(prev_time_point), around=position,
+                                         max_amount=1,
+                                         resolution=experiment.images.resolution()))[0]
+        else:
+            closest_neighbor = None
+
+        # Check for distances between cells in the previous frame
+        for neighbor in neighbors:
+            distance = position.distance_um(neighbor, resolution=experiment.images.resolution())
+
+            # Remove oversegmentation in previous frame
+            if (distance < min_distance_dividing_um) and (neighbor != closest_neighbor):
+                to_remove = to_remove + [neighbor]
+
+    # Adapt positions
+    experiment.remove_positions(to_remove)
+    experiment.positions.merge_data(PositionCollection(to_add))
+
+    print(f'Division oversegmentations removed: {len(to_remove)}')
