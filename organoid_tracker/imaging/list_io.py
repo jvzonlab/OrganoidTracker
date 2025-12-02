@@ -116,12 +116,12 @@ def save_experiment_list_file(experiments: List[Experiment], json_file_name: str
             # Save file to designated folder
             file_name = os.path.join(tracking_files_folder, f"{i + 1}. {experiment.name.get_save_name()}." + io.FILE_EXTENSION)
             io.save_data_to_json(experiment, file_name)
-            experiment_json["experiment_file"] = os.path.relpath(file_name, start=save_base_folder)
+            experiment_json["experiment_file"] = _relpath(file_name, start=save_base_folder)
         else:
             # Just enter the location where the file is currently saved
             if experiment.last_save_file is not None:
                 # Make last_save_file relative to save_base_folder
-                experiment_json["experiment_file"] = os.path.relpath(experiment.last_save_file, start=save_base_folder)
+                experiment_json["experiment_file"] = _relpath(experiment.last_save_file, start=save_base_folder)
             else:
                 if experiment.positions.has_positions() or experiment.splines.has_splines():
                     raise ValueError(f"The experiment \"{experiment.name}\" has not been saved to disk.")
@@ -141,3 +141,12 @@ def save_experiment_list_file(experiments: List[Experiment], json_file_name: str
 
     with open(json_file_name, "w", encoding="utf-8") as handle:
         json.dump(experiments_json, handle, indent=4, sort_keys=True)
+
+
+def _relpath(path: str, start: str) -> str:
+    """Returns the relative path from start to path, but if that is not possible (on different drives on Windows),
+    returns the absolute path."""
+    try:
+        return os.path.relpath(path, start=start)
+    except ValueError:
+        return os.path.abspath(path)
