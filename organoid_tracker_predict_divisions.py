@@ -7,7 +7,7 @@ import os
 
 import numpy as np
 
-from organoid_tracker.config import ConfigFile, config_type_int
+from organoid_tracker.config import ConfigFile, config_type_int, config_type_float
 from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.imaging import io, list_io
 from organoid_tracker.neural_network.division_detection_cnn.division_predictor import load_division_model, \
@@ -28,6 +28,10 @@ _channels_str = config.get_or_default("images_channels", str(1), comment="Index(
 _images_channels = {ImageChannel(index_one=int(part)) for part in _channels_str.split(",")}
 _batch_size = config.get_or_default("batch_size", str(64), type=config_type_int, comment="Batch size for predictions. If you run out of memory, lower this value. Increasing it will speed up predictions slightly (but won't affect the results).")
 _min_distance_dividing = float(config.get_or_default("minimum_distance_between_dividing_cell (in micron)", str(4.5)))
+_scale_factor_xy = config.get_or_default("scale_factor_xy", str(1.0), comment="Scale factor in x and y direction. A value of 0.5 will cause all images to be scaled down to half their size before being passed to the model.", type=config_type_float)
+_scale_factor_z = config.get_or_default("scale_factor_z", str(1.0), comment="Scale factor in z direction.", type=config_type_float)
+_intensity_quantile_min = config.get_or_default("intensity_min_quantile", str(0.01), comment="Minimum quantile for intensity normalization. Applied to entire 3D stack of each time point. A value of 0.0 means the minimum intensity is used.", type=config_type_float)
+_intensity_quantile_max = config.get_or_default("intensity_max_quantile", str(0.99), comment="Maximum quantile for intensity normalization. A value of 1.0 means the maximum intensity is used.", type=config_type_float)
 
 config.save()
 # END OF PARAMETERS
@@ -67,7 +71,9 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
         continue
 
     print(f"Working on experiment {experiment_index + 1}: {experiment.name}")
-    division_model.predict_divisions(experiment, batch_size=_batch_size, image_channels=_images_channels)
+    division_model.predict_divisions(experiment, batch_size=_batch_size, image_channels=_images_channels,
+                                     scale_factors_zyx=(_scale_factor_z, _scale_factor_xy, _scale_factor_xy),
+                                     intensity_quantiles=(_intensity_quantile_min, _intensity_quantile_max))
 
     remove_division_oversegmentation(experiment, min_distance_dividing_um=_min_distance_dividing)
 

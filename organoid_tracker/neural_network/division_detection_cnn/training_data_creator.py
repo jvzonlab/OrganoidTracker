@@ -180,63 +180,7 @@ def create_image_with_divisions_list(experiments: Iterable[Experiment], division
     return image_with_divisions_list
 
 
-# Create ImageWithPositions list for which to predict division status
-def create_image_with_positions_list(experiment: Experiment) -> Tuple[List[ImageWithPositions], List[List[Position]]]:
-    image_with_positions_list = []
-    positions_per_frame_list = []
-
-    for time_point in experiment.positions.time_points():
-
-        # read a single time point
-        positions = experiment.positions.of_time_point(time_point)
-        offset = experiment.images.offsets.of_time_point(time_point)
-        image_shape = experiment.images.get_image_stack(time_point).shape
-
-        # read positions to numpy array
-        positions_xyz = list()
-        positions_list = list()
-
-        for position in positions:
-
-            # check if the position is inside the image
-            inside = False
-            if position.x - offset.x < image_shape[2] and position.y - offset.y < image_shape[
-                1] and position.z - offset.z < image_shape[0]:
-                inside = True
-            else:
-                print('outside the image')
-                print(offset.z)
-                print(time_point)
-                print(position.z)
-                print(image_shape[0])
-
-            if position.x - offset.x >= 0 and position.y - offset.y >= 0 and position.z - offset.z >= 0:
-                inside = inside
-
-            if inside:
-                positions_xyz.append([position.x - offset.x, position.y - offset.y, position.z - offset.z])
-                positions_list.append(position)
-
-        max_size = 250
-
-        while len(positions_xyz) > 0:
-
-            # Add ImageWithPositions for that time_point
-            image_with_positions_list.append(
-                ImageWithPositions(str(experiment.name), experiment.images, time_point,
-                                    numpy.array(positions_xyz[:max_size], dtype=numpy.int32)))
-
-            positions_xyz = positions_xyz[max_size:]
-
-            # add positions as list for single time_point
-            positions_per_frame_list.append(positions_list[:max_size])
-
-            positions_list = positions_list[max_size:]
-
-    return image_with_positions_list, positions_per_frame_list
-
-
-def inside_image(position: Position, offset: Images.offsets, image_shape: Tuple[int]):
+def inside_image(position: Position, offset: Position, image_shape: Tuple[int]):
     inside = False
     if position.x - offset.x < image_shape[2] and position.y - offset.y < image_shape[1] \
             and position.z - offset.z < image_shape[0]:
