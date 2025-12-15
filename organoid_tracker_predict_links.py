@@ -1,20 +1,15 @@
 """Predictions particle positions using an already-trained convolutional neural network."""
 import _keras_environment
+from organoid_tracker.core.image_loader import ImageChannel
+
 _keras_environment.activate()
 
-import json
 import os
 
-import keras.saving
-import numpy as np
-
-from organoid_tracker.config import ConfigFile
-from organoid_tracker.core.position_collection import PositionCollection
-from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
+from organoid_tracker.config import ConfigFile, config_type_float
 from organoid_tracker.imaging import io, list_io
-from organoid_tracker.neural_network.link_detection_cnn.prediction_dataset import prediction_data_creator
-from organoid_tracker.neural_network.link_detection_cnn.training_data_creator import \
-    create_image_with_possible_links_list
+from organoid_tracker.neural_network.link_detection_cnn.link_predictor import load_link_model
+
 
 print("Hi! Configuration file is stored at " + ConfigFile.FILE_NAME)
 config = ConfigFile("predict_links")
@@ -25,36 +20,19 @@ _dataset_file = config.get_or_prompt("dataset_file", "Please paste the path here
 _model_folder = config.get_or_prompt("model_folder", "Please paste the path here to the \"trained_model\" folder containing the trained model.")
 _output_folder = config.get_or_default("predictions_output_folder", "Link predictions", comment="Output folder for the links, can be viewed using the visualizer program.")
 _channels_str = config.get_or_default("images_channels", str(1), comment="Index(es) of the channels to use. Use \"3\" to use the third channel for predictions. Use \"1,3,4\" to use the sum of the first, third and fourth channel for predictions.")
-_images_channels = {int(part) for part in _channels_str.split(",")}
+_batch_size = config.get_or_default("batch_size", str(64), type=int, comment="Batch size for predictions. If you run out of memory, lower this value. Increasing it will speed up predictions slightly (but won't affect the results).")
+_scale_factor_xy = config.get_or_default("scale_factor_xy", str(1.0), comment="Scale factor in x and y direction. A value of 0.5 will cause all images to be scaled down to half their size before being passed to the model.", type=config_type_float)
+_scale_factor_z = config.get_or_default("scale_factor_z", str(1.0), comment="Scale factor in z direction.", type=config_type_float)
+_intensity_quantile_min = config.get_or_default("intensity_min_quantile", str(0.01), comment="Minimum quantile for intensity normalization. Applied to entire 3D stack of each time point. A value of 0.0 means the minimum intensity is used.", type=config_type_float)
+_intensity_quantile_max = config.get_or_default("intensity_max_quantile", str(0.99), comment="Maximum quantile for intensity normalization. A value of 1.0 means the maximum intensity is used.", type=config_type_float)
+_images_channels = {ImageChannel(index_one=int(part)) for part in _channels_str.split(",")}
 
 config.save()
 # END OF PARAMETERS
 
-
-# set relevant parameters
-_model_folder = os.path.abspath(_model_folder)
-if not os.path.isfile(os.path.join(_model_folder, "settings.json")):
-    print("Error: no settings.json found in model folder.")
-    exit(1)
-with open(os.path.join(_model_folder, "settings.json")) as file_handle:
-    json_contents = json.load(file_handle)
-    if json_contents["type"] != "links":
-        print("Error: model at " + _model_folder + " is made for working with " + str(
-            json_contents["type"]) + ", not links")
-        exit(1)
-    time_window = json_contents["time_window"]
-    if "patch_shape_xyz" in json_contents:
-        patch_shape_xyz = json_contents["patch_shape_xyz"]
-        patch_shape_zyx = [patch_shape_xyz[2], patch_shape_xyz[1], patch_shape_xyz[0]]
-    else:
-        patch_shape_zyx = json_contents["patch_shape_zyx"]  # Seems like some versions of OrganoidTracker use this
-    scaling = json_contents["platt_scaling"] if "platt_scaling" in json_contents else 1
-    intercept = json_contents["platt_intercept"] if "platt_intercept" in json_contents else 0
-    intercept = np.log10(np.exp(intercept))
-
 # load models
 print("Loading model...")
-model = keras.saving.load_model(os.path.join(_model_folder, "model.keras"))
+link_model = load_link_model(_model_folder)
 
 # Create output folder
 _output_folder = os.path.abspath(_output_folder)  # Convert to absolute path, as list_io changes the working directory
@@ -74,64 +52,17 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
         continue
 
     print(f"Working on experiment {experiment_index + 1}: {experiment.name}")
+    old_links = experiment.links
+    link_model.predict_links(experiment, batch_size=_batch_size,
+                             image_channels=_images_channels,
+                             scale_factors_zyx=(_scale_factor_z, _scale_factor_xy, _scale_factor_xy),
+                             intensity_quantiles=(_intensity_quantile_min, _intensity_quantile_max))
 
-    # Check if images were loaded
-    if not experiment.images.image_loader().has_images():
-        print("No images were found. Please check the configuration file and make sure that you have stored images at"
-              " the specified location.")
-        exit(1)
-    experiment.images.resolution()  # Check for resolution
-
-    # Edit image channels if necessary
-    original_image_loader = experiment.images.image_loader()
-    if _images_channels != {1}:
-        # Replace the first channel
-        old_channels = experiment.images.get_channels()
-        new_channels = [old_channels[index - 1] for index in _images_channels]
-        channel_merging_image_loader = ChannelSummingImageLoader(experiment.images.image_loader(), [new_channels])
-        experiment.images.image_loader(channel_merging_image_loader)
-
-    # create image_list from experiment
-    print("Building link list...")
-    image_with_links_list, predicted_links_list, possible_links = create_image_with_possible_links_list(experiment)
-
-    print("Start predicting...")
-    all_positions = PositionCollection()
-
-    prediction_dataset_all = prediction_data_creator(image_with_links_list, time_window, patch_shape_zyx)
-    predictions_all = model.predict(prediction_dataset_all)
-
-    number_of_links_done = 0
-
-    print("Storing predictions in experiment...")
-    for i in range(len(image_with_links_list)):
-        set_size = len(predicted_links_list[i])
-
-        # create dataset and predict
-        predictions = predictions_all[number_of_links_done : (number_of_links_done+set_size)]
-        number_of_links_done = number_of_links_done + set_size
-
-        predicted_links = predicted_links_list[i]
-
-        for predicted_link, prediction in zip(predicted_links, predictions):
-            eps = 10 ** -10
-            likelihood = intercept+scaling*float(np.log10(prediction+eps)-np.log10(1-prediction+eps))
-            scaled_prediction = (10**likelihood)/(1+10**likelihood)
-
-            possible_links.set_link_data(predicted_link[0], predicted_link[1], data_name="link_probability",
-                                               value=float(scaled_prediction))
-            possible_links.set_link_data(predicted_link[0], predicted_link[1], data_name="link_penalty",
-                                               value=float(-likelihood))
-
-    # If predictions replace existing data, record overlap. Useful for evaluation purposes.
-    if experiment.links is not None:
-        for link in experiment.links.find_all_links():
-            possible_links.set_link_data(link[0], link[1], data_name="present_in_original",
-                                               value=True)
+    # Record overlap with old links (if any). Useful for evaluation purposes.
+    for position_a, position_b in old_links.find_all_links():
+        experiment.links.set_link_data(position_a, position_b, "present_in_original", True)
 
     print("Saving file...")
-    experiment.images.image_loader(original_image_loader)  # Restore original image loader
-    experiment.links = possible_links
     io.save_data_to_json(experiment, output_file)
     experiments_to_save.append(experiment)
 

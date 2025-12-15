@@ -30,6 +30,7 @@ from numpy import ndarray
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.images import Images
+from organoid_tracker.core.links import Links
 from organoid_tracker.core.position import Position
 from organoid_tracker.linking import cell_division_finder, nearest_neighbor_linker
 from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import ImageWithPositions
@@ -204,79 +205,3 @@ def create_image_with_links_list(experiments: Iterable[Experiment], division_mul
     return image_with_links_list
 
 
-def create_image_with_possible_links_list(experiment: Experiment):
-    image_with_links_list = list()
-    predicted_links_list = list()
-
-    possible_links = nearest_neighbor_linker.nearest_neighbor(experiment, tolerance=2)
-
-    for time_point in experiment.positions.time_points():
-        if experiment.images.get_image_stack(TimePoint(time_point.time_point_number() + 1)) is None:
-            break
-        # read a single time point
-        positions = experiment.positions.of_time_point(time_point)
-        offset = experiment.images.offsets.of_time_point(time_point)
-        future_offset = experiment.images.offsets.of_time_point(TimePoint(time_point.time_point_number() + 1))
-        image_shape = experiment.images.get_image_stack(time_point).shape
-        future_image_shape = experiment.images.get_image_stack(TimePoint(time_point.time_point_number() + 1)).shape
-
-        positions_xyz = list()
-        target_positions_xyz = list()
-        distances = list()
-        linked = list()
-        predicted_links = list()
-
-        for position in positions:
-            future_possibilities = possible_links.find_futures(position)
-
-            if inside_image(position, offset, image_shape):
-
-                for future_possibility in future_possibilities:
-                    if inside_image(future_possibility, future_offset, future_image_shape):
-                        target_positions_xyz.append(
-                            [future_possibility.x - future_offset.x, future_possibility.y - future_offset.y,
-                             future_possibility.z - future_offset.z])
-                        positions_xyz.append(
-                            [position.x - offset.x, position.y - offset.y, position.z - offset.z])
-
-                        distances.append(
-                            [(future_possibility.x - position.x), (future_possibility.y - position.y),
-                             (future_possibility.z - position.z)])
-
-                        linked.append(False)
-
-                        predicted_links.append((position, future_possibility))
-
-        # read positions to numpy array
-        max_size = 1000
-        while len(positions_xyz) > 0:
-            image_with_links_list.append(
-                _ImageWithLinks(str(experiment.name), experiment.images, time_point,
-                                numpy.array(positions_xyz[:max_size], dtype=numpy.int32),
-                                numpy.array(target_positions_xyz[:max_size], dtype=numpy.int32),
-                                numpy.array(distances[:max_size], dtype=numpy.int32),
-                                linked[:max_size]))
-
-            predicted_links_list.append(predicted_links[:max_size])
-
-            positions_xyz = positions_xyz[max_size:]
-            target_positions_xyz = target_positions_xyz[max_size:]
-            distances = distances[max_size:]
-            linked = linked[max_size:]
-            predicted_links = predicted_links[max_size:]
-
-    return image_with_links_list, predicted_links_list, possible_links
-
-
-def inside_image(position: Position, offset: Images.offsets, image_shape: Tuple[int, ...]):
-    inside = False
-    if position.x - offset.x < image_shape[2] and position.y - offset.y < image_shape[1] \
-            and position.z - offset.z < image_shape[0]:
-        inside = True
-
-    if position.x - offset.x >= 0 and position.y - offset.y >= 0 and position.z - offset.z >= 0:
-        inside = inside
-    else:
-        inside = False
-
-    return inside
