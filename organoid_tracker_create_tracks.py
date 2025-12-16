@@ -150,8 +150,8 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
     warning_count, no_links_count = cell_error_finder.find_errors_in_experiment(experiment_result)
     print("Writing results to file...")
     os.makedirs(output_folder_experiment, exist_ok=True)
-    io.save_data_to_json(experiment_result, os.path.join(output_folder_experiment, 'Links.' + io.FILE_EXTENSION))
-    io.save_data_to_json(experiment_all, os.path.join(output_folder_experiment, 'All possible links.' + io.FILE_EXTENSION))
+    io.save_data_to_json(experiment_result, os.path.join(output_folder_experiment, 'Final links - raw.' + io.FILE_EXTENSION))
+    io.save_data_to_json(experiment_all, os.path.join(output_folder_experiment, 'All possible links - raw.' + io.FILE_EXTENSION))
 
     print(f"Done! Found {warning_count} potential errors in the data. In addition, {no_links_count} positions didn't get"
           f" links.")
@@ -170,5 +170,5 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
     print(f"Done! Found {warning_count} potential errors in the data. In addition, {no_links_count} positions didn't get"
           f" links.")
 
-    io.save_data_to_json(experiment_all, os.path.join(output_folder_experiment, 'All possible links clean.' + io.FILE_EXTENSION))
-    io.save_data_to_json(experiment_result, os.path.join(output_folder_experiment, 'Clean.' + io.FILE_EXTENSION))
+    io.save_data_to_json(experiment_all, os.path.join(output_folder_experiment, 'All possible links - clean.' + io.FILE_EXTENSION))
+    io.save_data_to_json(experiment_result, os.path.join(output_folder_experiment, 'Final links - clean.' + io.FILE_EXTENSION))
