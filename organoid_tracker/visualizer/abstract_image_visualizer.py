@@ -1,3 +1,4 @@
+import re
 from functools import partial
 from typing import Optional, Dict, Any, Tuple
 
@@ -632,12 +633,16 @@ class AbstractImageVisualizer(Visualizer):
                     self.update_status("Cannot go to point at time point " + str(t))
             return True
         if command.startswith("goto "):
-            split = command.split(" ")
-            if len(split) != 5:
+            # Remove everything that's not a space or part of a number
+            command_args = re.sub(r"[^0-9.\- ]", "", command[len("goto "):])
+            # Collapse multiple spaces
+            command_args = re.sub(r" +", " ", command_args).strip()
+            split = command_args.split(" ")
+            if len(split) != 4:
                 self.update_status("Syntax: /goto <x> <y> <z> <t>")
                 return True
             try:
-                x, y, z, t = float(split[1]), float(split[2]), float(split[3]), int(split[4])
+                x, y, z, t = float(split[0]), float(split[1]), float(split[2]), int(split[3])
             except ValueError:
                 self.update_status(f"Invalid number in \"{command}\". Syntax: /goto <x> <y> <z> <t>")
             else:
