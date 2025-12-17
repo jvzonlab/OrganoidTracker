@@ -1,6 +1,6 @@
 # OrganoidTracker manual
 
-Welcome to the OrganoidTracker manual! This manual will tell you how to do manual and automated tracking, and also give you an overview of the code of OrganoidTracker.
+Welcome to the OrganoidTracker manual! This manual will tell you how to do manual and automated tracking, and also give you an overview of the code of [OrganoidTracker](https://github.com/jvzonlab/OrganoidTracker).
 
 Tutorials
 ---------
