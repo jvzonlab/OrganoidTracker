@@ -20,7 +20,7 @@ This current version of OrganoidTracker is different from the version published 
 
 First, make sure you have Miniforge installed. You can download it at [conda-forge.org/download](https://conda-forge.org/download/). Anaconda or Miniconda should also work, but keep in mind that both may require a paid license.
 
-Second, make sure you have downloaded OrganoidTracker. You can install it through Git (if you're familiar with that program), or [simply download it from here](https://github.com/jvzonlab/OrganoidTracker/archive/refs/heads/master.zip) and then extract it somewhere.
+Second, make sure you have downloaded OrganoidTracker. You can install it from our [GitHub repository](https://github.com/jvzonlab/OrganoidTracker), or [simply download it from here](https://github.com/jvzonlab/OrganoidTracker/archive/refs/heads/master.zip) and then extract it somewhere.
 
 Next, to run the scripts you will first need to install the dependencies. Open the Miniforge Prompt, which should now be somewhere in the Start menu. Use the command `cd path\to\folder\with\OrganoidTracker` (replace path with real path) to navigate to the directory you installed OrganoidTracker in. If you are not used to the command line, you can also type "`cd` ` `" (a `c`, a `d` and a space) and then drag in the OrganoidTracker folder and drop it in the command prompt, and then press Enter. See this illustration:
 
