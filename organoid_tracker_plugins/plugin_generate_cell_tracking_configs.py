@@ -20,6 +20,7 @@ from organoid_tracker.gui.window import Window
 from organoid_tracker.imaging import io, list_io
 from organoid_tracker.visualizer import activate
 from organoid_tracker.visualizer.exitable_image_visualizer import ExitableImageVisualizer
+from organoid_tracker.util import run_script_creator
 
 _TRAINING_PATCH_SHAPE_ZYX: Tuple[int, int, int] = (32, 96, 96)
 _TRAINING_PATCH_SHAPE_ZYX_DIVISION: Tuple[int, int, int] = (12, 64, 64)
@@ -44,15 +45,11 @@ def _create_run_script(output_folder: str, script_name: str, *, scripts_to_run: 
         scripts_to_run = [script_name]
 
     # For Windows
-    conda_env_folder = os.sep + "envs" + os.sep
-    conda_installation_folder = sys.base_exec_prefix
-    if conda_env_folder in conda_installation_folder:
-        conda_installation_folder = conda_installation_folder[0:conda_installation_folder.index(conda_env_folder)]
     bat_file = os.path.join(output_folder, script_name + ".bat")
     with open(bat_file, "w") as writer:
         writer.write(f"""@rem Automatically generated script for running {script_name}
 @echo off
-@CALL "{conda_installation_folder}\\condabin\\conda.bat" activate {os.getenv('CONDA_DEFAULT_ENV')}""")
+@CALL "{run_script_creator.find_conda_batch_file()}" activate {run_script_creator.find_conda_environment_name()}""")
         for i, script_to_run in enumerate(scripts_to_run):
             script_file = os.path.abspath(script_to_run + ".py")
             writer.write(f'\n"{sys.executable}" "{script_file}"')
@@ -436,8 +433,6 @@ class _TrackingVisualizer(ExitableImageVisualizer):
             dz = self._z - round(position.z)
 
             # Add marker
-            edge_color, edge_width = self._get_position_edge(position)
-
             positions_x_list.append(position.x)
             positions_y_list.append(position.y)
             dz_penalty = 0 if dz == 0 or max_intensity_projection else abs(dz) + 1

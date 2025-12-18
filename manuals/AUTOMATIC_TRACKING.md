@@ -53,8 +53,16 @@ This will generate a folder called `Output tracks`, which contains a folder with
 
 Now you can also set some parameters to clean up the data after tracking. It is advisable to at least remove very short tracks for clarity.
 
-### Key parameters for creating tracks
-The algorithm creates tracks using various probabilities, which are initially set with some default values. However, you can adjust these in the `organoid_tracker.ini` file. The first is the probability of a cell disappearing. This is simply the false negative rate of the cell detection plus the death rate of cells in the system. The appearance probability is again given by false negative rate alone. Cells can of course also appear from outside the field of view, to account for this you can set the maximum distance from which a cell could move out of view in a single timepoint. The (dis)appearance probabilities are then adjusted automatically near the edges of the imaging volume. However, note that the exact values of these probabilities should not substantially change the results, so a reasonable estimate will do.
+### Troubleshooting
+You can modify this step of the analysis by changing the following values in the configuration file (e.g., `organoid_tracker.ini` within `tracks`).
+* `maximum z depth for which we want tracks`: 22 (pixels, default) 
+    _Remove tracks that start or end above this pixel height, as "deeper" slices are noisier and harder to segment and therefore track. Consider decreasing this value to focus on higher quality segmentations when creating tracks._
+* `margin_um`: 8 (μm, default)
+    _Defines a margin at the image edge; positions within that margin have higher probabilities to disappear and appear. Consider increasing this margin if cells move a lot._
+* `min appearance probability`: 0.01 (default)
+    _False negative rate of cell detection. This value need not be exact to get good performance as it does not substantially affect results. Can be affected by cells "appearing" from outside the field of view, but the `margin_um` parameter (see above) already accounts for this by automatically increasing probabilites of appearance within a defined border region._
+* `min disappearance probability`: 0.01 (default)
+    _False negative rate of cell detection plus the death rate of cells. Consider adjusting to match the known death rate, but this value need not be exact to get good performance. Can be affected by cells "disappearing" to outside the field of view, but the `margin_um` parameter (see above) accounts for this by automatically increasing probabilites of disappearance within a defined border region._
 
 Step 5: Calculate error rates
 ---------------------------------
@@ -62,10 +70,12 @@ With both the **images** and **`Final links - clean.aut`** loaded into the Organ
 
 This should be produce a file called `Filtered positions.aut`.
 
-### Key parameters for calculating error rates
-In the `organoid_tracker.ini` file you might need to change the so-called 'temperature'. This accounts for the amount of shared information between the individual neural network predictions. If your data is similar to the data the neural networks are trained on, you can use the temperature associated with them (1.5 for our intestinal organoid models). If you have trained your own models, you have to calibrate the marginalization procedure to get a temperature ([See here for how to calibrate](./CALIBRATE_MARGINALIZATION.md)). This temperature is generally able to absorb any miscalibration of the neural network outputs as well. 
-
-This step also filters out all low-confidence links. You can also set this confidence threshold in the `organoid_tracker.ini` file.
+### Troubleshooting
+You can modify this step of the analysis by changing the following values in the configuration file (e.g., `organoid_tracker.ini` within `error_rates`).
+* `maximum error rate`: 0.01 (default)
+    _Links with marginal probability < (1- `maximum error rate`) are removed (e.g, links must exceed threshold probability of 0.99 for the default value of 0.01). Consider adjusting this value to make the threshold more or less stringent._
+* `temperature (to account for shared information)`: 1.5 (default)
+    _Scales probabilities before calculating marginalized probabilites across all possible states; in this way, accounts for shared information between neural network predictions and can absorb miscalibrations of the neural network outputs. Nonetheless, needs to be calibrated to each model. If your data are sufficiently similar to the intestinal organoid data we trained our models on, you can use the default value. Otherwise, [calibrate yourself](./CALIBRATE_MARGINALIZATION.md)._ 
 
 Step 6: Manually correct warnings
 ---------------------------------
