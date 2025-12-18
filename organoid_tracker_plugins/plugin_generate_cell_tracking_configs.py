@@ -12,6 +12,7 @@ from organoid_tracker.gui import dialog
 from organoid_tracker.gui.dialog import DefaultOption
 from organoid_tracker.gui.window import Window
 from organoid_tracker.imaging import io, list_io
+from organoid_tracker.util import run_script_creator
 
 _TRAINING_PATCH_SHAPE_ZYX: Tuple[int, int, int] = (32, 96, 96)
 _TRAINING_PATCH_SHAPE_ZYX_DIVISION: Tuple[int, int, int] = (12, 64, 64)
@@ -40,16 +41,11 @@ def _create_run_script(output_folder: str, script_name: str, *, scripts_to_run: 
         scripts_to_run = [script_name]
 
     # For Windows
-    conda_env_folder = os.sep + "envs" + os.sep
-    conda_installation_folder = sys.base_exec_prefix
-    if conda_env_folder in conda_installation_folder:
-        conda_installation_folder = conda_installation_folder[0:conda_installation_folder.index(conda_env_folder)]
     bat_file = os.path.join(output_folder, script_name + ".bat")
     with open(bat_file, "w") as writer:
         writer.write(f"""@rem Automatically generated script for running {script_name}
 @echo off
-@CALL "{conda_installation_folder}\\condabin\\conda.bat" activate {os.getenv('CONDA_DEFAULT_ENV')}
-set TF_FORCE_GPU_ALLOW_GROWTH=true""")
+@CALL "{run_script_creator.find_conda_batch_file()}" activate {run_script_creator.find_conda_environment_name()}""")
         for i, script_to_run in enumerate(scripts_to_run):
             script_file = os.path.abspath(script_to_run + ".py")
             writer.write(f'\n"{sys.executable}" "{script_file}"')
