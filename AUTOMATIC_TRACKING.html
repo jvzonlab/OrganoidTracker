@@ -152,16 +152,16 @@
 <p>Now you can also set some parameters to clean up the data after tracking. It is advisable to at least remove very short tracks for clarity.</p>
 <section id="troubleshooting">
 <h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this heading"></a></h3>
-<p>You can modify this step of the anlysis by changing the following values in the configuration file (e.g., <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> within <code class="docutils literal notranslate"><span class="pre">tracks</span></code>).</p>
+<p>You can modify this step of the analysis by changing the following values in the configuration file (e.g., <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> within <code class="docutils literal notranslate"><span class="pre">tracks</span></code>).</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">maximum</span> <span class="pre">z</span> <span class="pre">depth</span> <span class="pre">for</span> <span class="pre">which</span> <span class="pre">we</span> <span class="pre">want</span> <span class="pre">tracks</span></code>: 22 (pixels, default)
 <em>Remove tracks that start or end above this pixel height, as “deeper” slices are noisier and harder to segment and therefore track. Consider decreasing this value to focus on higher quality segmentations when creating tracks.</em></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">margin_um</span></code>: 8 (μm, default)
-<em>Defines a margin at the image edge; positions within that margin have higher probabilities to disappear and appear; consider increasing this margin if cells move a lot.</em></p></li>
+<em>Defines a margin at the image edge; positions within that margin have higher probabilities to disappear and appear. Consider increasing this margin if cells move a lot.</em></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">min</span> <span class="pre">appearance</span> <span class="pre">probability</span></code>: 0.01 (default)
-<em>False negative rate of cell detection. This value need not be exact to get good performance as it does not substantially affect results. Can be affected by cells “appearing” from outside the field of view, but the <code class="docutils literal notranslate"><span class="pre">margin_um</span></code> parameter (see above) already accounts for this by automatically increasing probabilites of appearance within the defined border region.</em></p></li>
+<em>False negative rate of cell detection. This value need not be exact to get good performance as it does not substantially affect results. Can be affected by cells “appearing” from outside the field of view, but the <code class="docutils literal notranslate"><span class="pre">margin_um</span></code> parameter (see above) already accounts for this by automatically increasing probabilites of appearance within a defined border region.</em></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">min</span> <span class="pre">disappearance</span> <span class="pre">probability</span></code>: 0.01 (default)
-<em>False negative rate of cell detection plus the death rate of cells. Consider adjusting to match the known death rate, but this value need not be exact to get good performance as it does not substantially affect results. Can be affected by cells “disappearing” to outside the field of view, but the <code class="docutils literal notranslate"><span class="pre">margin_um</span></code> parameter (see above) accounts for this by automatically increasing probabilites of disappearance within the defined border region.</em></p></li>
+<em>False negative rate of cell detection plus the death rate of cells. Consider adjusting to match the known death rate, but this value need not be exact to get good performance. Can be affected by cells “disappearing” to outside the field of view, but the <code class="docutils literal notranslate"><span class="pre">margin_um</span></code> parameter (see above) accounts for this by automatically increasing probabilites of disappearance within a defined border region.</em></p></li>
 </ul>
 </section>
 </section>
@@ -171,7 +171,7 @@
 <p>This should be produce a file called <code class="docutils literal notranslate"><span class="pre">Filtered</span> <span class="pre">positions.aut</span></code>.</p>
 <section id="id1">
 <h3>Troubleshooting<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
-<p>You can modify this step of the anlysis by changing the following values in the configuration file (e.g., <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> within <code class="docutils literal notranslate"><span class="pre">error_rates</span></code>).</p>
+<p>You can modify this step of the analysis by changing the following values in the configuration file (e.g., <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> within <code class="docutils literal notranslate"><span class="pre">error_rates</span></code>).</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">maximum</span> <span class="pre">error</span> <span class="pre">rate</span></code>: 0.01 (default)
 <em>Links with marginal probability &lt; (1- <code class="docutils literal notranslate"><span class="pre">maximum</span> <span class="pre">error</span> <span class="pre">rate</span></code>) are removed (e.g, links must exceed threshold probability of 0.99 for the default value of 0.01). Consider adjusting this value to make the threshold more or less stringent.</em></p></li>

@@ -54,15 +54,15 @@ This will generate a folder called `Output tracks`, which contains a folder with
 Now you can also set some parameters to clean up the data after tracking. It is advisable to at least remove very short tracks for clarity.
 
 ### Troubleshooting
-You can modify this step of the anlysis by changing the following values in the configuration file (e.g., `organoid_tracker.ini` within `tracks`).
+You can modify this step of the analysis by changing the following values in the configuration file (e.g., `organoid_tracker.ini` within `tracks`).
 * `maximum z depth for which we want tracks`: 22 (pixels, default) 
     _Remove tracks that start or end above this pixel height, as "deeper" slices are noisier and harder to segment and therefore track. Consider decreasing this value to focus on higher quality segmentations when creating tracks._
 * `margin_um`: 8 (μm, default)
-    _Defines a margin at the image edge; positions within that margin have higher probabilities to disappear and appear; consider increasing this margin if cells move a lot._
+    _Defines a margin at the image edge; positions within that margin have higher probabilities to disappear and appear. Consider increasing this margin if cells move a lot._
 * `min appearance probability`: 0.01 (default)
-    _False negative rate of cell detection. This value need not be exact to get good performance as it does not substantially affect results. Can be affected by cells "appearing" from outside the field of view, but the `margin_um` parameter (see above) already accounts for this by automatically increasing probabilites of appearance within the defined border region._
+    _False negative rate of cell detection. This value need not be exact to get good performance as it does not substantially affect results. Can be affected by cells "appearing" from outside the field of view, but the `margin_um` parameter (see above) already accounts for this by automatically increasing probabilites of appearance within a defined border region._
 * `min disappearance probability`: 0.01 (default)
-    _False negative rate of cell detection plus the death rate of cells. Consider adjusting to match the known death rate, but this value need not be exact to get good performance as it does not substantially affect results. Can be affected by cells "disappearing" to outside the field of view, but the `margin_um` parameter (see above) accounts for this by automatically increasing probabilites of disappearance within the defined border region._
+    _False negative rate of cell detection plus the death rate of cells. Consider adjusting to match the known death rate, but this value need not be exact to get good performance. Can be affected by cells "disappearing" to outside the field of view, but the `margin_um` parameter (see above) accounts for this by automatically increasing probabilites of disappearance within a defined border region._
 
 Step 5: Calculate error rates
 ---------------------------------
@@ -71,7 +71,7 @@ With both the **images** and **`Final links - clean.aut`** loaded into the Organ
 This should be produce a file called `Filtered positions.aut`.
 
 ### Troubleshooting
-You can modify this step of the anlysis by changing the following values in the configuration file (e.g., `organoid_tracker.ini` within `error_rates`).
+You can modify this step of the analysis by changing the following values in the configuration file (e.g., `organoid_tracker.ini` within `error_rates`).
 * `maximum error rate`: 0.01 (default)
     _Links with marginal probability < (1- `maximum error rate`) are removed (e.g, links must exceed threshold probability of 0.99 for the default value of 0.01). Consider adjusting this value to make the threshold more or less stringent._
 * `temperature (to account for shared information)`: 1.5 (default)
