@@ -1,0 +1,97 @@
+{
+  "geff": {
+    "geff_version": "1.1.1.1.2.dev6+ga3b7f415f",
+    "directed": true,
+    "axes": [
+      {
+        "name": "t",
+        "type": "time",
+        "unit": null,
+        "min": 0.0,
+        "max": 194.0,
+        "scale": null,
+        "scaled_unit": null,
+        "offset": null
+      },
+      {
+        "name": "z",
+        "type": "space",
+        "unit": null,
+        "min": 7.0,
+        "max": 28.0,
+        "scale": null,
+        "scaled_unit": null,
+        "offset": null
+      },
+      {
+        "name": "y",
+        "type": "space",
+        "unit": null,
+        "min": 91.0,
+        "max": 436.0,
+        "scale": null,
+        "scaled_unit": null,
+        "offset": null
+      },
+      {
+        "name": "x",
+        "type": "space",
+        "unit": null,
+        "min": 105.0,
+        "max": 614.0,
+        "scale": null,
+        "scaled_unit": null,
+        "offset": null
+      }
+    ],
+    "node_props_metadata": {
+      "tracklet_id": {
+        "identifier": "tracklet_id",
+        "dtype": "int64",
+        "varlength": false,
+        "unit": null,
+        "name": null,
+        "description": null
+      },
+      "t": {
+        "identifier": "t",
+        "dtype": "int64",
+        "varlength": false,
+        "unit": null,
+        "name": null,
+        "description": null
+      },
+      "x": {
+        "identifier": "x",
+        "dtype": "float64",
+        "varlength": false,
+        "unit": null,
+        "name": null,
+        "description": null
+      },
+      "y": {
+        "identifier": "y",
+        "dtype": "float64",
+        "varlength": false,
+        "unit": null,
+        "name": null,
+        "description": null
+      },
+      "z": {
+        "identifier": "z",
+        "dtype": "float64",
+        "varlength": false,
+        "unit": null,
+        "name": null,
+        "description": null
+      }
+    },
+    "edge_props_metadata": {},
+    "sphere": null,
+    "ellipsoid": null,
+    "track_node_props": null,
+    "related_objects": null,
+    "display_hints": null,
+    "extra": {}
+  }
+}
