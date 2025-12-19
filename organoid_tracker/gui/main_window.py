@@ -193,6 +193,7 @@ class MainWindow(Window):
             "File//Export-Export links//Guizela's file format...": lambda: action.export_links_guizela(self.get_experiment()),
             "File//Export-Export links//Cell Tracking Challenge format...": lambda: action.export_links_ctc(self.get_experiment()),
             "File//Export-Export links//TrackMate format...": lambda: action.export_links_trackmate(self.get_experiment()),
+            "File//Export-Export links//GEFF format...": lambda: action.export_links_geff(self),
             "Edit//Experiment-Rename experiment...": lambda: action.rename_experiment(self),
             "Edit//Experiment-Set image resolution...": lambda: action.set_image_resolution(self),
             "View//Toggle-Toggle showing axis numbers": lambda: action.toggle_axis(self.get_figure()),
