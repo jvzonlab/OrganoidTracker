@@ -20,6 +20,8 @@ def build_model(shape: Tuple, batch_size):
     layer = conv_block(2, layer, filters=filter_sizes[1], name="down2")
     layer = conv_block(2, layer, filters=filter_sizes[2], name="down3")
 
+    layer = keras.layers.BatchNormalization()(layer)
+
     # reshape 4x4 image to vector
     layer = keras.layers.Reshape((filter_sizes[2] * shape[0] // 4 * shape[1] // 16 * shape[2] // 16,))(layer)
 
