@@ -372,8 +372,10 @@ def bridge_gaps(experiment: Experiment, experiment_result: Experiment, miss_pena
 
     # if a position can be division but is not now, it can be considered a loose end as well
     for position in experiment_result.positions:
-        if (experiment_result.positions.get_position_data(position, 'division_penalty') < 0) and (
-                len(experiment_result.links.find_futures(position)) == 1):
+        division_penalty = experiment_result.positions.get_position_data(position, 'division_penalty')
+        if division_penalty is None:
+            continue
+        if division_penalty < 0 and len(experiment_result.links.find_futures(position)) == 1:
             next_position = experiment_result.links.find_single_future(position)
             prev_position = experiment_result.links.find_single_past(position)
 
@@ -507,8 +509,10 @@ def bridge_gaps2(experiment: Experiment, experiment_result: Experiment, miss_pen
 
     # if a position can be division but is not now, it can be considered a loose end as well
     for position in experiment_result.positions:
-        if (experiment_result.positions.get_position_data(position, 'division_penalty') < 0) and (
-                len(experiment_result.links.find_futures(position)) == 1):
+        division_penalty = experiment_result.positions.get_position_data(position, 'division_penalty')
+        if division_penalty is None:
+            continue
+        if division_penalty and len(experiment_result.links.find_futures(position)) == 1:
             next_position = experiment_result.links.find_single_future(position)
             prev_position = experiment_result.links.find_single_past(position)
 

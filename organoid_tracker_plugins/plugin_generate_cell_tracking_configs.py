@@ -471,8 +471,10 @@ class _TrackingVisualizer(ExitableImageVisualizer):
             positions_face_colors.append(colormap(division_probability))
             dz_penalty = 0 if dz == 0 or max_intensity_projection else abs(dz) + 1
             positions_marker_sizes.append(max(1.0, 7 - dz_penalty + edge_width) ** 2)
+            division_text = f"{division_probability * 100:.0f}%" if division_probability > 0.005 else "<1%"
             if division_probability > 0.1:
-                self._draw_annotation(position, f"{division_probability * 100:.0f}%")
+                self._draw_annotation(position, division_text,
+                                      text_color="black" if division_probability < 0.5 else "lime")
 
         self._ax.scatter(positions_x_list, positions_y_list, s=positions_marker_sizes, facecolor=positions_face_colors,
                          edgecolors=positions_edge_colors, linewidths=positions_edge_widths, marker="s")
