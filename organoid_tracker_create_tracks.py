@@ -60,7 +60,7 @@ _links_output_folder = os.path.abspath(_links_output_folder)
 
 for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(_dataset_file)):
     output_folder_experiment = os.path.join(_links_output_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}")
-    if os.path.exists(os.path.join(output_folder_experiment, 'Clean.' + io.FILE_EXTENSION)):
+    if os.path.exists(os.path.join(output_folder_experiment, 'Final links - clean.' + io.FILE_EXTENSION)):
         print(f"Experiment {experiment_index + 1} already processed, skipping.")
         continue
 
