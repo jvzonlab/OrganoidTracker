@@ -87,7 +87,7 @@ class LinkModel(NamedTuple):
         experiment_nearest_neighbor.images = images
         experiment_nearest_neighbor.positions = positions
 
-        for time_point in images.time_points():
+        for time_point in positions.time_points():
             if images.get_image_stack(time_point + 1) is None:
                 break  # At the end of the movie, cannot link to next time point
 

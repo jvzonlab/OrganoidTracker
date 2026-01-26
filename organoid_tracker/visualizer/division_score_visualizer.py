@@ -12,8 +12,8 @@ def _division_score_to_color(division_score: float):
 
 
 class DivisionScoreVisualizer(ExitableImageVisualizer):
-    """Shows the division scores for each position at the current time point. In the View menu, you can toggle between
-    showing the raw division score and the likelihood percentage.
+    """Shows the division score for each position at the current time point. In the View menu, you can toggle between
+    showing the raw division score (lower = more likely) and the likelihood percentage.
 
     In case you haven't predicted the division scores yet, a "?" is shown for all positions. (To predict division
     scores, run the cell tracker from the Tools menu in the main screen.)"""
@@ -40,7 +40,7 @@ class DivisionScoreVisualizer(ExitableImageVisualizer):
             result[position] = self._experiment.positions.get_position_data(position, 'division_penalty')
         self._division_scores = result
 
-    def _division_score_to_text(self, division_score: float) -> str:
+    def _division_score_to_text(self, division_score: Optional[float]) -> str:
         if division_score is None:
             return '?'
         if self._show_percentage:

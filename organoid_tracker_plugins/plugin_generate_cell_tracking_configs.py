@@ -6,6 +6,7 @@ import sys
 from typing import Dict, Optional, Any, Tuple, List
 
 import matplotlib.cm
+from matplotlib.collections import LineCollection
 
 from organoid_tracker.config import ConfigFile
 from organoid_tracker.core import UserError, TimePoint
@@ -406,14 +407,22 @@ class _TrackingVisualizer(ExitableImageVisualizer):
 
     def _draw_positions(self):
         if self._predicted_positions is None and self._predicted_divisions is None and self._predicted_links is None:
+            # Nothing was previewed, draw normal positions
+            super()._draw_positions()
+            return
+
+        if self._predicted_links is not None:
+            # Found predicted links. Those will get drawn by _draw_links, so just draw positions normally here
             super()._draw_positions()
             return
 
         if self._predicted_divisions is not None:
+            # Found predicted divisions, draw those
             self._draw_predicted_divisions()
             return
 
         if self._predicted_positions is not None:
+            # Found predicted positions, draw those
             self._draw_predicted_positions()
             return
 
@@ -472,12 +481,55 @@ class _TrackingVisualizer(ExitableImageVisualizer):
             dz_penalty = 0 if dz == 0 or max_intensity_projection else abs(dz) + 1
             positions_marker_sizes.append(max(1.0, 7 - dz_penalty + edge_width) ** 2)
             division_text = f"{division_probability * 100:.0f}%" if division_probability > 0.005 else "<1%"
-            if division_probability > 0.1:
-                self._draw_annotation(position, division_text,
-                                      text_color="black" if division_probability < 0.5 else "lime")
+            self._draw_annotation(position, division_text,
+                                  text_color="black" if division_probability < 0.5 else "lime")
 
         self._ax.scatter(positions_x_list, positions_y_list, s=positions_marker_sizes, facecolor=positions_face_colors,
                          edgecolors=positions_edge_colors, linewidths=positions_edge_widths, marker="s")
+
+    def _draw_links(self):
+        if self._predicted_links is None:
+            if self._predicted_positions is not None or self._predicted_divisions is not None:
+                return  # We're already drawing predicted positions/divisions, don't draw stored links
+
+            # We haven't predicted anything at all, just draw stored links
+            super()._draw_links()
+            return
+
+        max_intensity_projection = self._display_settings.max_intensity_projection
+        colormap = matplotlib.colors.LinearSegmentedColormap.from_list("link_fraction_cmap", ["#343434", "#52248D", "#C8C9E2"])
+
+        lines = []
+        colors = []
+        linewidths = []
+        for (position1, position2), link_fraction in self._predicted_links.items():
+            min_display_z = min(position1.z, position2.z) - self.MAX_Z_DISTANCE
+            max_display_z = max(position1.z, position2.z) + self.MAX_Z_DISTANCE
+            if (self._z < min_display_z or self._z > max_display_z) and not max_intensity_projection:
+                continue
+            if position2.time_point_number() < position1.time_point_number():
+                # Ignore links to previous time point in this visualizer, this makes the display less cluttered
+                continue
+
+            line = (position1.x, position1.y), (position2.x, position2.y)
+            lines.append(line)
+
+            colors.append(colormap(link_fraction))
+
+            linewidths.append(1 + link_fraction * 5)
+            dz = int(abs((position1.z + position2.z)/2 - self._z))
+            if max_intensity_projection:
+                dz = 0
+
+            link_text = f"{link_fraction * 100:.0f}%" if link_fraction > 0.005 else "<1%"
+            self._ax.annotate(link_text,
+                              ((position1.x + position2.x)/2, (position1.y + position2.y)/2),
+                              fontsize=10 - abs(dz / 2),
+                              fontweight="bold",
+                              color="black",
+                              backgroundcolor=(1, 1, 1, 0.4))
+
+        self._ax.add_collection(LineCollection(lines, colors=colors, linewidths=linewidths))
 
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
@@ -493,6 +545,7 @@ class _TrackingVisualizer(ExitableImageVisualizer):
             "Parameters//Images-Set image channel for prediction...": self._set_channel,
             "Cell tracking//Preview-Preview position detection": self._test_position_predictions_on_time_point,
             "Cell tracking//Preview-Preview division detection": self._test_division_predictions_on_time_point,
+            "Cell tracking//Preview-Preview link detection": self._test_link_predictions_on_time_point,
             "Cell tracking//Tracking-Predict positions in all time points...": self._generate_position_detection_config,
             "Cell tracking//Tracking-Predict divisions in all time points...": self._generate_division_detection_config,
             "Cell tracking//Tracking-Predict links in all time points...": self._generate_link_detection_config,
@@ -537,10 +590,31 @@ class _TrackingVisualizer(ExitableImageVisualizer):
         else:
             positions = self._experiment.positions.of_time_point(self._time_point)
         if len(positions) == 0:
-            raise UserError("No positions", f"No positions were found for time point {self._time_point.time_point_number()}."
+            raise UserError("No divisions", f"No divisions were found for time point {self._time_point.time_point_number()}."
                                             f" The divisions predictor scores existing positions, so please load in some positions first.")
         self.update_status("Predicting divisions...")
         self._window.get_scheduler().add_task(_PredictDivisions(self, self._experiment, positions, self._time_point))
+
+    def _test_link_predictions_on_time_point(self):
+        self._experiment.images.resolution()  # Make sure a resolution is set
+        if not self._experiment.images.image_loader().has_images():
+            # Nothing to predict
+            return
+        if self.links_model_folder is None:
+            # No model selected
+            raise UserError("No links model folder selected",
+                            "Please select a links model folder in the Parameters menu first.")
+        if not self._experiment.positions.has_positions():
+            raise UserError("No positions", f"No position data was found in project {self._experiment.name}. You'll need"
+                                            f" to run the position prediction step on all time points first, and then load in those results.")
+        if self._experiment.positions.last_time_point() == self._time_point:
+            raise UserError("At last time point", f"The current time point {self._time_point.time_point_number()} is the last"
+                                                   f" time point with positions in the experiment, so there are no links to predict from"
+                                                   f" this time point to the next one.")
+        if self._window.get_scheduler().has_active_tasks():
+            return
+        self.update_status("Predicting links...")
+        self._window.get_scheduler().add_task(_PredictLinks(self, self._experiment, self._time_point))
 
     def _generate_position_detection_config(self):
         experiments = list(self._window.get_active_experiments())
@@ -842,6 +916,13 @@ class _TrackingVisualizer(ExitableImageVisualizer):
         self.draw_view()
         self.update_status("Updated division predictions. If you're happy with them, use the 'Cell tracking' menu to detect divisions in all time points.")
 
+    def callback_link_predictions(self, time_point: TimePoint, result: Dict[Tuple[Position, Position], float]):
+        if time_point != self._time_point:
+            return  # Outdated result
+        self._predicted_links = result
+        self.draw_view()
+        self.update_status("Updated link predictions. If you're happy with them, use the 'Cell tracking' menu to detect links in all time points.")
+
 class _PredictPositions(Task):
     _visualizer: _TrackingVisualizer
 
@@ -892,7 +973,6 @@ class _PredictDivisions(Task):
     _experiment: Optional[Experiment]  # Cleared after self.compute()
     _time_point: TimePoint
     _positions: List[Position]
-    _progress: float
 
     def __init__(self, visualizer: _TrackingVisualizer,
                  experiment: Experiment, positions: List[Position], time_point: TimePoint):
@@ -903,10 +983,6 @@ class _PredictDivisions(Task):
         self._experiment.images = experiment.images
         self._experiment.positions = PositionCollection(self._positions)
         self._time_point = time_point
-        self._progress = 0
-
-    def _set_progress(self, progress: float):
-        self._progress = progress
 
     def compute(self) -> Any:
         import _keras_environment
@@ -930,7 +1006,41 @@ class _PredictDivisions(Task):
     def on_finished(self, result: Any):
         self._visualizer.callback_division_predictions(self._time_point, result)
 
-    def get_percentage_completed(self) -> Optional[int]:
-        if self._progress == 0:
-            return None
-        return int(self._progress * 100)
+
+class _PredictLinks(Task):
+    _visualizer: _TrackingVisualizer
+
+    _experiment: Optional[Experiment]  # Cleared after self.compute()
+    _time_point: TimePoint
+
+    def __init__(self, visualizer: _TrackingVisualizer,
+                 experiment: Experiment, time_point: TimePoint):
+        super().__init__()
+        self._visualizer = visualizer
+        self._experiment = Experiment()
+        self._experiment.images = experiment.images
+        positions = list(experiment.positions.of_time_point(time_point)) + \
+                    list(experiment.positions.of_time_point(time_point + 1))
+        self._experiment.positions = PositionCollection(positions)
+        self._time_point = time_point
+
+    def compute(self) -> Any:
+        import _keras_environment
+        _keras_environment.activate()
+        import keras
+        from organoid_tracker.neural_network.link_detection_cnn import link_predictor
+        model = link_predictor.load_link_model(self._visualizer.links_model_folder)
+        model.predict_links(self._experiment,
+                            scale_factors_zyx=(self._visualizer.z_scaling, self._visualizer.xy_scaling, self._visualizer.xy_scaling),
+                            intensity_quantiles=(self._visualizer.min_quantile, self._visualizer.max_quantile),
+                            image_channels=set(self._visualizer.channels))
+        # Free some memory, these models can be quite large
+        del model
+        keras.backend.clear_session()
+        links_to_probability = dict()
+        for link, link_probability in self._experiment.links.find_all_links_with_data("link_probability"):
+            links_to_probability[link] = link_probability
+        return links_to_probability
+
+    def on_finished(self, result: Any):
+        self._visualizer.callback_link_predictions(self._time_point, result)
