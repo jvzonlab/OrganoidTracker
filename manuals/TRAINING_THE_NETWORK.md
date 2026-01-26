@@ -30,7 +30,7 @@ Make sure that the data is correct! Even a low percentage of errors (1%) can alr
 Figure 2: OrganoidTracker automatically sees that you have only annotated part of the image, so you don't need to annotate the entire image. However, you do need to annotate each and every cell within that region.
 
 ## The training process
-Open the data of all the experiments you're going to use in the OrganoidTracker GUI, switch to the "<all experiments>" tab and use `Process` -> `Train the neural network...`. Run the resulting script.
+Open the data of all the experiments you're going to use in the OrganoidTracker GUI, switch to the "<all experiments>" tab and use `Tools` -> `Train a neural network` and pick the neural network to train. Run the resulting script.
 
 By default, the training lasts for 50 epochs, but you can modify this in the `organoid_tracker.ini` file next to the script. Training will stop automatically if the results no longer improve on the validation set (which will be randomly created from the dataset you supplied).
 
@@ -39,7 +39,7 @@ Neural networks work differently from our own brains. If you change some microsc
 To combat both effects, OrganoidTracker generates artificial data based on your input images. It makes cells brighter or darker and rotates them. This makes the algorithm less specific to your images. The program also randomizes the order in which it sees your training data, so that it is not training on a single experiment for a long time.
 
 ## Using image data of multiple channels
-The `Process` -> `Train the neural network...` generates a folder with a configuration file `organoid_tracker.ini` in it. If you open it, you can see where the neural network is getting its image data from. 
+The `Tools` -> `Train a neural network` menu options each generate a folder with a configuration file `organoid_tracker.ini` in it. If you open it, you can see where the neural network is getting its image data from. 
 
 An interesting setting here is `image_channels_x`, which `x` the number of the image dataset. Normally, the network is trained on just the first channel. You can change this here to another channel. This is necessary if the first channel does not properly identify the nuclei, for example because it is a brightfield channel.
 
