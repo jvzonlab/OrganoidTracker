@@ -81,8 +81,7 @@ class LinkModel(NamedTuple):
                          possible_links: Links,
                          *,
                          scale_factors_zyx: Tuple[float, float, float],
-                         intensity_quantiles: Tuple[float, float],
-                         max_per_time_point: int = 1000) -> Iterable[_PredictionPatch]:
+                         intensity_quantiles: Tuple[float, float]) -> Iterable[_PredictionPatch]:
 
         experiment_nearest_neighbor = Experiment()
         experiment_nearest_neighbor.images = images
@@ -99,8 +98,6 @@ class LinkModel(NamedTuple):
             for position_of_time_point in positions.of_time_point(time_point):
                 for future_position in possible_links.find_futures(position_of_time_point):
                     links_of_time_point.append((position_of_time_point, future_position))
-                if len(links_of_time_point) >= max_per_time_point:
-                    break
 
             if len(links_of_time_point) == 0:
                 continue
