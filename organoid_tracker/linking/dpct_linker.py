@@ -66,6 +66,10 @@ def run(positions: PositionCollection, starting_links: Links,
     :param dissappearance_weight: multiplier for disappearance - the higher, the more expensive an end-of-lineage is
     :return:
     """
+    if not starting_links.has_link_data_with_name("link_penalty"):
+        raise ValueError("Positions must have link scores assigned to them before running the linker.")
+    if not positions.has_position_data_with_name("division_penalty"):
+        print("Warning: Positions do not have division scores assigned to them. Division detection will not be possible.")
     position_ids = _PositionToId()
     input, has_possible_divisions, naive_links = _create_dpct_graph(position_ids, starting_links, positions,
                                         positions.first_time_point_number(), positions.last_time_point_number(),
@@ -102,18 +106,13 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links, posit
         positions.set_position_data(position, data_name='2nd_min_out_link_penalty', value=10)
 
     for position1, position2 in starting_links.find_all_links():
-        # Make sure position1 is earlier in time
-        if position1.time_point_number() > position2.time_point_number():
-            print('happens?')
-            position1, position2 = position2, position1
+        # Position1 is expected to be earlier in time than position2
+        # The contract of Links.find_all_links() should ensure this.
 
         # get link penalty
         link_penalty = starting_links.get_link_data(position1, position2, data_name="link_penalty")
-        # is it there?
         if link_penalty is None:
-            print(position1)
-            print("link data missing")
-            link_penalty = 2
+            raise ValueError(f"No link penalty found for link between {position1} and {position2}.")
 
         # determine the lowest in and out going link penalty for every cell
         if link_penalty < positions.get_position_data(position2, 'min_in_link_penalty'):
@@ -154,7 +153,6 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links, posit
         if division_penalty is None:
             division_penalty = 4
             positions.set_position_data(position, 'division_penalty', division_penalty)
-            print('should not happen')
 
         if (division_penalty < division_penalty_cut_off) and (len(futures) > 1) and (second_most_likely_link_penalty < disappearance_penalty):
             map = {
@@ -188,9 +186,8 @@ def _create_dpct_graph(position_ids: _PositionToId, starting_links: Links, posit
 
         link_penalty = starting_links.get_link_data(position1, position2, data_name="link_penalty")
         if link_penalty is None:
-            print("link data missing" + str(j))
             j = j + 1
-            link_penalty = 2
+            link_penalty = _DEFAULT_LINK_PENALTY
 
         # if the link penalty is much smaller then the other options available we can prune it
         if ((link_penalty < positions.get_position_data(position2, 'min_in_link_penalty') + penalty_difference_cut_off) and
