@@ -299,7 +299,7 @@ class PositionCollection:
     _all_positions: Dict[int, _PositionsAtTimePoint]
     _min_time_point_number: Optional[int] = None
     _max_time_point_number: Optional[int] = None
-    _data_names_and_types: Dict[str, Type]  # Data name -> type
+    _data_names_and_types: Dict[str, Type[DataType]]  # Data name -> type
 
     def __init__(self, positions: Iterable[Position] = ()):
         """Creates a new positions collection with the given positions already present."""
@@ -632,7 +632,7 @@ class PositionCollection:
         """Finds all data_names"""
         return set(self._data_names_and_types.keys())
 
-    def get_data_names_and_types(self) -> Dict[str, Type]:
+    def get_data_names_and_types(self) -> Dict[str, Type[DataType]]:
         """Gets all data names that are currently in use, along with their type. The type will be str, float, bool,
         list, or object. (The type int is never returned, for ints float is returned instead. This is done
         so that users don't have to worry about storing their numbers with the correct type.)"""

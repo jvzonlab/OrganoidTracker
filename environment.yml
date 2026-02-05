@@ -20,3 +20,4 @@ dependencies:
   - tqdm
   - aicspylibczi
   - zarr
+  - geff
