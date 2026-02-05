@@ -174,6 +174,20 @@ def export_links_trackmate(experiment: Experiment):
     trackmate_io.save_tracking_data(experiment, tracks_file)
 
 
+def export_links_geff(window: Window):
+    experiment = window.get_experiment()
+    if not experiment.links.has_links():
+        raise UserError("No links", "Cannot export to GEFF; there are no links created.")
+
+    geff_file = dialog.prompt_save_file("Save tracking data as...", [("GEFF file", "*.geff")])
+    if not geff_file:
+        return  # Cancelled
+
+    from organoid_tracker.imaging import geff_io
+    geff_io.save_data_file(experiment, geff_file)
+    window.set_status("Exported tracking data to \"" + geff_file + "\".")
+
+
 def save_tracking_data(window: Window, force_save_as: bool = False) -> bool:
     """Saves the tracking data of the currently open tab. Prompts the user if no previous file name is known, or if
     force_save_as is True. Updates the status bar afterwards. Returns whether saving was successful."""
