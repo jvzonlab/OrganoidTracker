@@ -187,10 +187,10 @@ class _ZarrFileLoader(FileLoader):
     def get_file_patterns(self) -> Set[str]:
         return {"*.zarr*", "*.zgroup"}
 
-    def load_file_interactive(self, file_path: str, *, into: Experiment) -> bool:
+    def load_file_interactive(self, file_path: str, *, into: LoadInto) -> bool:
         from organoid_tracker.image_loading import zarr_image_loader
-        into.images.close_image_loader()
-        zarr_image_loader.load_from_zarr_file(into, file_path)
+        into.experiment.images.close_image_loader()
+        zarr_image_loader.load_from_zarr_file(into.experiment, file_path)
         return True
 
     def get_type(self) -> FileLoaderType:
