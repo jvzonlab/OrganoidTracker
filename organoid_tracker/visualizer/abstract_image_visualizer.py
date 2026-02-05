@@ -695,27 +695,29 @@ class AbstractImageVisualizer(Visualizer):
         if file is None:
             return
 
-        images: ndarray = bits.image_to_8bit(image_3d)
         image_shape = image_3d.shape
 
-        if len(image_shape) == 3:
-            # Convert grayscale image to colored using the stored color map
-            flat_image = images.ravel()
-            images = self._get_color_map()(flat_image, bytes=True)[:, 0:3]
+        colormap = self._get_color_map()
+        if len(image_shape) == 3 and colormap.name not in {"gray", "segmentation"}:
+            # We have a 3D grayscale image, but the user is displaying it with a color map
+            # Let's save the color image instead of the grayscale image, so that the saved image looks the same as
+            # what the user sees
+            image_3d = bits.image_to_8bit(image_3d)  # Does min-max scaling to 0-255
+            flat_image = image_3d.ravel()
+            image_3d = self._get_color_map()(flat_image, bytes=True)[:, 0:3]
             new_shape = (image_shape[0], image_shape[1], image_shape[2], 3)
-            images = images.reshape(new_shape)
+            image_3d = image_3d.reshape(new_shape)
         else:
-            # Color images can be kept as is - they were already rescaled by the convertScaleAbs function, and no
-            # other transformations are necessary
+            # Image can be kept as-is. Either it's already a color image (like when showing two time points at once),
+            # or it's a grayscale image and the user is indeed using a grayscale color map
             pass
 
         # If the three color channels are the same, just use one channel
-        # This happens if self._color_map is a grayscale color map
-        if images.shape[3] == 3 and (images[:, :, :, 0] == images[:, :, :, 1]).all()\
-                and (images[:, :, :, 0] == images[:, :, :, 2]).all():
-            images = images[:, :, :, 0]
+        if len(image_3d.shape) == 4 and image_3d.shape[3] == 3 and (image_3d[:, :, :, 0] == image_3d[:, :, :, 1]).all()\
+                and (image_3d[:, :, :, 0] == image_3d[:, :, :, 2]).all():
+            image_3d = image_3d[:, :, :, 0]
 
-        tifffile.imwrite(file, images, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
+        tifffile.imwrite(file, image_3d, compression=tifffile.COMPRESSION.ADOBE_DEFLATE, compressionargs={"level": 9})
 
     def _toggle_showing_next_time_point(self):
         self._display_settings.show_next_time_point = not self._display_settings.show_next_time_point
