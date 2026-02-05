@@ -32,9 +32,11 @@ Once you're in the right directory, run the following command.
 
     conda env create -f environment-exact-win64.yml
 
-If it fails because CUDA cannot be installed, the most likely cause is that your graphics card does not support CUDA. If you're not using OrganoidTracker for automated cell tracking on this computer (but for example just for visualization and manual correction), you can instead run this command:
+If it fails because CUDA cannot be installed, the most likely cause is that your graphics card does not support CUDA, or at least not the same version as we're using. You can still install OrganoidTracker using this command:
 
     conda env create -f environment.yml
+
+Note that if your graphics card does not support CUDA, the software will run much slower, and you won't be able to train the neural network. If you have a compatible graphics card but it still fails, make sure you have the latest NVIDIA drivers installed.
 
 Afterwards, activate the environment you just created by running:
 
@@ -42,13 +44,17 @@ Afterwards, activate the environment you just created by running:
 
 Your command prompt should now start with `(organoid_tracker)`.
 
+To test if the software is working, run `python organoid_tracker.py`. A window should pop up, from which you can load images and tracking data. See the Help menu for more information and tutorials.
+
+> Tip: you can install the `orjson` library into your Conda environment to speed up saving/loading of AUT files by a factor of two. To do this, run the command `conda install orjson`.
+
 If you need to remove (the previous version of) OrganoidTracker, execute this command:
 
     conda env remove -n organoid_tracker
 
-To test if the software is working, run `python organoid_tracker.py`. A window should pop up, from which you can load images and tracking data. See the Help menu for more information and tutorials.
+If you need to update OrganoidTracker, first pull the latest changes from the GitHub repository, and then run this command:
 
-> Tip: you can install the `orjson` library into your Conda environment to speed up saving/loading of AUT files by a factor of two. To do this, run the command `conda install orjson`.
+    conda env update --file environment-exact-win64 --prune
 
 ## macOS and Linux
 Unfortunately, OrganoidTracker has only been lightly tested other OSes. Feel free to ask the authors if you run into any problems.
@@ -61,8 +67,12 @@ Then, to activate the environment you just created, run:
 
     conda activate organoid_tracker
 
+To test if the software is working, run `python organoid_tracker.py` (after you have activated the environment). A window should pop up, from which you can load images and tracking data.
+
 If you need to remove (the previous version of) OrganoidTracker, execute this command:
 
     conda env remove -n organoid_tracker
 
-To test if the software is working, run `python organoid_tracker.py` (after you have activated the environment). A window should pop up, from which you can load images and tracking data.
+If you need to update OrganoidTracker, first pull the latest changes from the GitHub repository, and then run this command:
+
+    conda env update --file environment.yml  --prune
