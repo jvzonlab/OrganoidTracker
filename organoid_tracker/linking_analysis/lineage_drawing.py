@@ -73,10 +73,10 @@ def _get_vertical_lines(x: float, linking_track: LinkingTrack, next_tracks: Set[
     we make an exception for the case where all but one of the merging cells are "simple": they consist of only a
     single vertical line, with nothing prior."""
 
-    # Find what tracks to draw
+    # Find what tracks to draw - normally just a single line
     tracks_to_draw = [linking_track]
     if len(next_tracks) == 1:
-        # A possible cell merge
+        # A possible cell merge, draw more lines
         next_track = next(iter(next_tracks))
         previous_tracks = linking_track.get_previous_tracks()
         potential_multiline_tracks = next_track.get_previous_tracks()

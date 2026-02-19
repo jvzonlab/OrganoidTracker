@@ -23,7 +23,9 @@ class LocationMap:
     def set(self, x: float, y: float, value: Optional[object]):
         """Sets the value in the grid to be equal to the given object."""
         if x < 0 or y < 0:
-            raise ValueError(f"x and y must be positive or 0, but were {x_array} and {y_array}")
+            # We can't store anything at negative x and y, and nothing interesting is plotted there anyway,
+            # so we can just ignore this
+            return
 
         x_array = int(x / self._cell_size_x)
         y_array = int(y / self._cell_size_y)
