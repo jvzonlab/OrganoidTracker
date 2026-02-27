@@ -50,6 +50,8 @@ To test if the software is working, run `python organoid_tracker.py`. A window s
 
 > Tip: you can install the `orjson` library into your Conda environment to speed up saving/loading of AUT files by a factor of two. To do this, run the command `conda install orjson`.
 
+> Tip: PyTorch tends to allocate tensors in shared memory, instead of just dedicated GPU memory, which can make training very slow. [See the PyTorch forums for a documented fix](https://discuss.pytorch.org/t/documented-fix-slow-execution-pytorch-using-gpu-shared-memory/218909).
+
 ## macOS and Linux
 Unfortunately, OrganoidTracker has only been lightly tested other OSes. Feel free to ask the authors if you run into any problems.
 

@@ -137,6 +137,9 @@
 <blockquote>
 <div><p>Tip: you can install the <code class="docutils literal notranslate"><span class="pre">orjson</span></code> library into your Conda environment to speed up saving/loading of AUT files by a factor of two. To do this, run the command <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">orjson</span></code>.</p>
 </div></blockquote>
+<blockquote>
+<div><p>Tip: PyTorch tends to allocate tensors in shared memory, instead of just dedicated GPU memory, which can make training very slow. <a class="reference external" href="https://discuss.pytorch.org/t/documented-fix-slow-execution-pytorch-using-gpu-shared-memory/218909">See the PyTorch forums for a documented fix</a>.</p>
+</div></blockquote>
 </section>
 <section id="macos-and-linux">
 <h2>macOS and Linux<a class="headerlink" href="#macos-and-linux" title="Permalink to this heading"></a></h2>
