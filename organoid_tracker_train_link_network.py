@@ -94,7 +94,7 @@ pretrained_model_path = config.get_or_default("pretrained_model_path", "",
 # Start from a pretrained model if provided, otherwise start from scratch
 if pretrained_model_path:
     print(f"Loading pretrained model. from path: {pretrained_model_path}")
-    model = keras.models.load_model(pretrained_model_path)
+    model = keras.models.load_model(os.path.join(pretrained_model_path, "model.keras"))
 else:
     model = build_model(
     shape=(patch_shape_zyx[0], patch_shape_zyx[1], patch_shape_zyx[2], time_window[1] - time_window[0] + 1),
