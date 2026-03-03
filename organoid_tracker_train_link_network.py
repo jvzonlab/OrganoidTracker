@@ -87,7 +87,16 @@ validation_dataset = training_data_creator_from_raw(image_with_links_list, time_
 debug_sample = next(iter(training_dataset))
 print(debug_sample)
 
-model = build_model(
+# Load model
+pretrained_model_path = config.get_or_default("pretrained_model_path", "", 
+                                              comment="Path to a pretrained model. If provided, the training will be continued from this model instead of starting from scratch.", 
+                                              type=str)
+# Start from a pretrained model if provided, otherwise start from scratch
+if pretrained_model_path:
+    print(f"Loading pretrained model. from path: {pretrained_model_path}")
+    model = keras.models.load_model(pretrained_model_path)
+else:
+    model = build_model(
     shape=(patch_shape_zyx[0], patch_shape_zyx[1], patch_shape_zyx[2], time_window[1] - time_window[0] + 1),
     batch_size=None)
 model.summary()
