@@ -324,6 +324,17 @@ def _generate_link_training_config(window: Window):
     config.get_or_default(f"time_window_before", str(0))
     config.get_or_default(f"time_window_after", str(1))
 
+    # Ask if starting from a pretrained model
+    if dialog.prompt_yes_no("Pretrained model", "Do you want to start training from a pretrained model?"):
+        if not dialog.popup_message_cancellable("Existing link detection model",
+                                                "First select the link detection model you will start with for training."):
+            return None
+        model_folder = _get_model_folder("links")
+        if model_folder is None:
+            return
+        config.get_or_default("pretrained_model_path", model_folder, 
+                              comment="Path to a pretrained model. If provided, the training will be continued from this model instead of starting from scratch.", type=str)
+                          
     config.save()
     _create_run_script(save_directory, "organoid_tracker_train_link_network")
     _popup_confirmation(save_directory, "organoid_tracker_train_link_network")
