@@ -1,8 +1,8 @@
 from typing import Tuple
+import os
 
 import keras
 import keras.callbacks
-import os
 
 from organoid_tracker.neural_network.position_detection_cnn.custom_filters import blur_labels
 from organoid_tracker.neural_network.position_detection_cnn.loss_functions import position_recall, position_precision, \

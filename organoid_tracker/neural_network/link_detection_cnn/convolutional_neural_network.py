@@ -1,10 +1,10 @@
 from pyexpat import model
 from typing import Tuple
+import os
 
 import keras
 import keras.losses
 import keras.metrics
-import os
 
 
 def build_model(shape: Tuple, batch_size):
