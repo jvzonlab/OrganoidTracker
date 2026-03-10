@@ -13,6 +13,7 @@ organoid_tracker.ini
 /out/
 /output/
 /training_output/
+.vscode/*
 
 # Ignore auto-generated documentation files
 /manuals_build/
