@@ -21,7 +21,7 @@ from organoid_tracker.config import ConfigFile, config_type_image_shape_xyz_to_z
 from organoid_tracker.imaging import list_io
 from organoid_tracker.linear_models.logistic_regression import platt_scaling
 from organoid_tracker.neural_network.dataset_transforms import LimitingDataset
-from organoid_tracker.neural_network.link_detection_cnn.convolutional_neural_network import build_model
+from organoid_tracker.neural_network.link_detection_cnn.convolutional_neural_network import build_model, load_pretrained_model
 from organoid_tracker.neural_network.link_detection_cnn.training_data_creator import create_image_with_links_list
 from organoid_tracker.neural_network.link_detection_cnn.training_dataset import training_data_creator_from_raw
 from organoid_tracker.neural_network.log_memory_callback import LogMemoryCallback
@@ -93,8 +93,7 @@ pretrained_model_path = config.get_or_default("pretrained_model_path", "",
                                               type=str)
 # Start from a pretrained model if provided, otherwise start from scratch
 if pretrained_model_path:
-    print(f"Loading pretrained model. from path: {pretrained_model_path}")
-    model = keras.models.load_model(os.path.join(pretrained_model_path, "model.keras"))
+    model = load_pretrained_model(pretrained_model_path)
 else:
     model = build_model(
     shape=(patch_shape_zyx[0], patch_shape_zyx[1], patch_shape_zyx[2], time_window[1] - time_window[0] + 1),
