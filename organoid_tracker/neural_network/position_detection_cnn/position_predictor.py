@@ -111,8 +111,8 @@ class _DebugPredictions:
                       prediction_patch.corner_zyx[1] + buffer_size_resized_zyx[1],
                       prediction_patch.corner_zyx[2] + buffer_size_resized_zyx[2])
         resized_predictions = resized_predictions[buffer_size_resized_zyx[0]:,
-        buffer_size_resized_zyx[1]:,
-        buffer_size_resized_zyx[2]:]
+                buffer_size_resized_zyx[1]:,
+                buffer_size_resized_zyx[2]:]
 
         # Calculate how much of the resized predictions fit into the full predictions
         # (patches have a minimum size, so at the edges of the full image they may be too large)
@@ -123,8 +123,8 @@ class _DebugPredictions:
 
         # Store into full predictions
         self._full_predictions[target_zyx[0]:target_zyx[0] + size_z,
-        target_zyx[1]:target_zyx[1] + size_y,
-        target_zyx[2]:target_zyx[2] + size_x] = resized_predictions
+                target_zyx[1]:target_zyx[1] + size_y,
+                target_zyx[2]:target_zyx[2] + size_x] = resized_predictions
 
     def save_full_predictions(self):
         """Saves the full predictions to a .tif file. Does nothing if debug storage is not enabled."""
@@ -166,13 +166,13 @@ def _split_into_patches(time_point: TimePoint, full_images: Dict[TimePoint, Imag
 
     # Make the patches
     for z_start in range(time_point_image.min_z - buffer_size_zyx_image_px[0],
-                         time_point_image.limit_z + buffer_size_zyx_image_px[0],
+                         time_point_image.limit_z - buffer_size_zyx_image_px[0],
                          patch_shape_without_buffer_zyx_image_px[0]):
         for y_start in range(time_point_image.min_y - buffer_size_zyx_image_px[1],
-                             time_point_image.limit_y + buffer_size_zyx_image_px[1],
+                             time_point_image.limit_y - buffer_size_zyx_image_px[1],
                              patch_shape_without_buffer_zyx_image_px[1]):
             for x_start in range(time_point_image.min_x - buffer_size_zyx_image_px[2],
-                                 time_point_image.limit_x + buffer_size_zyx_image_px[2],
+                                 time_point_image.limit_x - buffer_size_zyx_image_px[2],
                                  patch_shape_without_buffer_zyx_image_px[2]):
                 array = extract_patch_array(full_images, (z_start, y_start, x_start), patch_shape_zyx_image_px)
 
