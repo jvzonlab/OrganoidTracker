@@ -18,7 +18,7 @@ from organoid_tracker.config import ConfigFile, config_type_image_shape_xyz_to_z
 from organoid_tracker.imaging import list_io
 from organoid_tracker.linear_models.logistic_regression import platt_scaling
 from organoid_tracker.neural_network.dataset_transforms import LimitingDataset
-from organoid_tracker.neural_network.division_detection_cnn.convolutional_neural_network import build_model
+from organoid_tracker.neural_network.division_detection_cnn.convolutional_neural_network import build_model, load_pretrained_model
 from organoid_tracker.neural_network.division_detection_cnn.training_data_creator import \
     create_image_with_divisions_list
 from organoid_tracker.neural_network.division_detection_cnn.training_dataset import training_data_creator_from_raw
@@ -75,8 +75,15 @@ validation_dataset = training_data_creator_from_raw(image_with_divisions_list, t
                                                     patch_shape=patch_shape_zyx, batch_size=batch_size,
                                                     mode='validation', split_proportion=0.8)
 
-# build model
-model = build_model(
+# Load model
+pretrained_model_path = config.get_or_default("pretrained_model_path", "", 
+                                              comment="Path to a pretrained model. If provided, the training will be continued from this model instead of starting from scratch.", 
+                                              type=str)
+# Start from a pretrained model if provided, otherwise start from scratch
+if pretrained_model_path:
+    model = load_pretrained_model(pretrained_model_path)
+else:
+    model = build_model(
     shape=(patch_shape_zyx[0], patch_shape_zyx[1], patch_shape_zyx[2], time_window[1] - time_window[0] + 1),
     batch_size=None)
 model.summary()

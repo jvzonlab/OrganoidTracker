@@ -16,7 +16,7 @@ from organoid_tracker.neural_network.position_detection_cnn.training_inspection_
     ExampleDataset
 from organoid_tracker.config import ConfigFile, config_type_int
 from organoid_tracker.neural_network.log_memory_callback import LogMemoryCallback
-from organoid_tracker.neural_network.position_detection_cnn.convolutional_neural_network import build_model
+from organoid_tracker.neural_network.position_detection_cnn.convolutional_neural_network import build_model, load_pretrained_model
 from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import create_image_with_positions_list
 from organoid_tracker.neural_network.position_detection_cnn.training_dataset import training_data_creator_from_raw
 
@@ -69,7 +69,15 @@ validation_dataset = training_data_creator_from_raw(image_with_positions_list, t
 
 
 print("Defining model...")
-model = build_model(shape=(patch_shape_zyx[0], None, None, time_window[1] - time_window[0] + 1), batch_size=None)
+# Load model
+pretrained_model_path = config.get_or_default("pretrained_model_path", "", 
+                                              comment="Path to a pretrained model. If provided, the training will be continued from this model instead of starting from scratch.", 
+                                              type=str)
+# Start from a pretrained model if provided, otherwise start from scratch
+if pretrained_model_path:
+    model = load_pretrained_model(pretrained_model_path)
+else:
+    model = build_model(shape=(patch_shape_zyx[0], None, None, time_window[1] - time_window[0] + 1), batch_size=None)
 model.summary()
 
 print("Training...")

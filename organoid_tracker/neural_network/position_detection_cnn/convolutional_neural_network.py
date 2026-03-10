@@ -2,6 +2,7 @@ from typing import Tuple
 
 import keras
 import keras.callbacks
+import os
 
 from organoid_tracker.neural_network.position_detection_cnn.custom_filters import blur_labels
 from organoid_tracker.neural_network.position_detection_cnn.loss_functions import position_recall, position_precision, \
@@ -58,6 +59,17 @@ def build_model(shape: Tuple, batch_size):
 
     return model
 
+def load_pretrained_model(path):
+    # Load only 
+    print(f"Loading pretrained model. from path: {path}")
+    pretrained = keras.models.load_model(os.path.join(path, "model.keras"))
+    model = keras.models.clone_model(pretrained)
+    model.load_weights(os.path.join(path, "model.keras"))
+
+    model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.0005),
+                  loss=loss, metrics=[position_recall, position_precision, overcount])
+
+    return model
 
 def conv_block(n_conv, layer, filters, kernel=3, pool_size=2, pool_strides=2, dropout=False, name=None, depth_wise= None):
     for index in range(n_conv):

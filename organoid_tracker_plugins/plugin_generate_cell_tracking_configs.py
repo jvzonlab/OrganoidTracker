@@ -131,6 +131,13 @@ def _generate_position_training_config(window: Window):
     list_io.save_experiment_list_file(experiments, os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
                                       tracking_files_folder=tracking_files_folder)
 
+    # Ask if starting from a pretrained model
+    if dialog.prompt_yes_no("Pretrained model", "Do you want to start training from a pretrained model?\n\nIf yes, you will be prompted to select the folder of the pretrained position detection network."):
+        model_folder = _get_model_folder("positions")
+        config.get_or_default("pretrained_model_path", model_folder, 
+                              comment="Path to a pretrained model. If provided, the training will be continued from this model instead of starting from scratch.", type=str)
+
+
     config.save()
     _create_run_script(save_directory, "organoid_tracker_train_position_network")
     _popup_confirmation(save_directory, "organoid_tracker_train_position_network")
@@ -237,6 +244,11 @@ def _generate_division_training_config(window: Window):
     config.get_or_default(f"time_window_before", str(-1))
     config.get_or_default(f"time_window_after", str(1))
 
+    # Ask if starting from a pretrained model
+    if dialog.prompt_yes_no("Pretrained model", "Do you want to start training from a pretrained model?\n\nIf yes, you will be prompted to select the folder of the pretrained division network."):
+        model_folder = _get_model_folder("divisions")
+        config.get_or_default("pretrained_model_path", model_folder, 
+                              comment="Path to a pretrained model. If provided, the training will be continued from this model instead of starting from scratch.", type=str)
 
 
     config.save()
@@ -325,10 +337,7 @@ def _generate_link_training_config(window: Window):
     config.get_or_default(f"time_window_after", str(1))
 
     # Ask if starting from a pretrained model
-    if dialog.prompt_yes_no("Pretrained model", "Do you want to start training from a pretrained model? If yes, you will be prompted to select the folder of the pretrained links network."):
-        # if not dialog.popup_message_cancellable("Existing link detection model",
-        #                                         "Select the pretrained model for link detection."):
-        #     return None
+    if dialog.prompt_yes_no("Pretrained model", "Do you want to start training from a pretrained model?\n\nIf yes, you will be prompted to select the folder of the pretrained links network."):
         model_folder = _get_model_folder("links")
         config.get_or_default("pretrained_model_path", model_folder, 
                               comment="Path to a pretrained model. If provided, the training will be continued from this model instead of starting from scratch.", type=str)

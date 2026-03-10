@@ -1,9 +1,9 @@
 from typing import List, Tuple
+import os
 
 import keras
 import keras.metrics
 import keras.losses
-
 
 def build_model(shape: Tuple, batch_size):
     # Input layer
@@ -47,6 +47,21 @@ def build_model(shape: Tuple, batch_size):
 
     return model
 
+def load_pretrained_model(path):
+    # Load only 
+    print(f"Loading pretrained model. from path: {path}")
+    pretrained = keras.models.load_model(os.path.join(path, "model.keras"))
+    model = keras.models.clone_model(pretrained)
+    model.load_weights(os.path.join(path, "model.keras"))
+
+
+    model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.0003),
+                  loss=keras.losses.BinaryCrossentropy(from_logits=False),
+                  metrics=[keras.metrics.BinaryAccuracy(name='acc'),
+                           keras.metrics.Recall(name='rec'),
+                           keras.metrics.Precision(name='pre')])
+
+    return model
 
 def conv_block(n_conv, layer, filters, kernel=3, pool_size=2, pool_strides=2, name=None):
     for index in range(n_conv):
