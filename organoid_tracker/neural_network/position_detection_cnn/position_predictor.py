@@ -208,9 +208,9 @@ def _count_patches(time_point: TimePoint, full_images: Dict[TimePoint, Image], *
                                                patch_shape_zyx_image_px[2] - 2 * buffer_size_zyx_image_px[2]]
 
     # Count patches
-    z_size = time_point_image.limit_z + buffer_size_zyx_image_px[0] - (time_point_image.min_z - buffer_size_zyx_image_px[0])
-    y_size = time_point_image.limit_y + buffer_size_zyx_image_px[1] - (time_point_image.min_y - buffer_size_zyx_image_px[1])
-    x_size = time_point_image.limit_x + buffer_size_zyx_image_px[2] - (time_point_image.min_x - buffer_size_zyx_image_px[2])
+    z_size = time_point_image.limit_z - time_point_image.min_z
+    y_size = time_point_image.limit_y - time_point_image.min_y
+    x_size = time_point_image.limit_x - time_point_image.min_x
     return (math.ceil(z_size / patch_shape_without_buffer_zyx_image_px[0]) *
             math.ceil(y_size / patch_shape_without_buffer_zyx_image_px[1]) *
             math.ceil(x_size / patch_shape_without_buffer_zyx_image_px[2]))
