@@ -74,11 +74,18 @@ def _set_min_max_intensity(window: Window):
 
 def _merge_channels(window: Window):
     """Not implemented as a filter, but as a separate image loader."""
-    images: Images = window.get_experiment().images
-    channels = images.get_channels()
+
+    # Collect all available channels
+    channels = set()
+    for experiment in window.get_active_experiments():
+        channels.update(experiment.images.get_channels())
+
+    # Find which channels the user wants to merge
+    channels = sorted(channels)
+    if len(channels) < 2:
+        raise UserError("Not enough channels to merge", "There are not at least 2 channels available, so merging is not possible.")
     channel_ids = list(range(len(channels)))
     channel_names = ["Channel " + str(i + 1) for i in channel_ids]
-
     chosen_channel_ids = option_choose_dialog.prompt_list_multiple("Channels to merge",
                                                                    "Which channels should be merged?",
                                                                    "Channels:", channel_names)
@@ -88,15 +95,19 @@ def _merge_channels(window: Window):
         raise UserError("No channels selected", "No channels were selected.")
     remaining_channel_ids = [i for i in channel_ids if i not in chosen_channel_ids]
 
-    # Build the new channel groups
-    channel_groups = list()
-    channel_groups.append([channels[i] for i in chosen_channel_ids])  # Merge
-    for remaining_channel_id in remaining_channel_ids:
-        # Keep these separate
-        channel_groups.append([channels[remaining_channel_id]])
+    # Merge the channels
+    for experiment in window.get_active_experiments():
+        images: Images = experiment.images
 
-    channel_merger = ChannelSummingImageLoader(images.image_loader(), channel_groups)
-    images.image_loader(channel_merger)
+        # Build the new channel groups
+        channel_groups = list()
+        channel_groups.append([channels[i] for i in chosen_channel_ids])  # Merge
+        for remaining_channel_id in remaining_channel_ids:
+            # Keep these separate
+            channel_groups.append([channels[remaining_channel_id]])
+
+        channel_merger = ChannelSummingImageLoader(images.image_loader(), channel_groups)
+        images.image_loader(channel_merger)
     window.get_gui_experiment().redraw_image_and_data()
 
 
