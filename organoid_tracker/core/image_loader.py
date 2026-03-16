@@ -1,3 +1,4 @@
+import functools
 from abc import ABC, abstractmethod
 from typing import Optional, Tuple, List, Dict, Any
 
@@ -6,6 +7,7 @@ from numpy import ndarray
 from organoid_tracker.core import TimePoint
 
 
+@functools.total_ordering
 class ImageChannel:
     """Represents an image channel - for example, the bright field channel, the red channel, etc.
     The image loader is responsible for the numbering. The first channel must have number 1, the second number 2, etc."""
@@ -44,6 +46,11 @@ class ImageChannel:
 
     def __repr__(self) -> str:
         return f"ImageChannel(index_zero={self.index_zero})"
+
+    def __lt__(self, other) -> bool:
+        if not isinstance(other, ImageChannel):
+            return NotImplemented
+        return self.index_zero < other.index_zero
 
 
 class ImageLoader(ABC):

@@ -56,6 +56,8 @@ If you need to update OrganoidTracker, first pull the latest changes from the Gi
 
     conda env update --file environment-exact-win64 --prune
 
+> Tip: PyTorch tends to allocate tensors in shared memory, instead of just dedicated GPU memory, which can make training very slow. [See the PyTorch forums for a documented fix](https://discuss.pytorch.org/t/documented-fix-slow-execution-pytorch-using-gpu-shared-memory/218909).
+
 ## macOS and Linux
 Unfortunately, OrganoidTracker has only been lightly tested other OSes. Feel free to ask the authors if you run into any problems.
 

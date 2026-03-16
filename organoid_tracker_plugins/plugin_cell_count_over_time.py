@@ -17,14 +17,14 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
 def _view_cell_count_over_time(window: Window):
     experiment = window.get_experiment()
     positions = experiment.positions
-    resolution = experiment.images.resolution()
+    timings = experiment.images.timings()
 
-    time_list = list()
+    time_list_h = list()
     count_list = list()
     for time_point in positions.time_points():
-        time_list.append(resolution.time_point_interval_h * time_point.time_point_number())
+        time_list_h.append(timings.get_time_h_since_start(time_point))
         count_list.append(len(positions.of_time_point(time_point)))
-    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _plot(figure, time_list, count_list))
+    dialog.popup_figure(window.get_gui_experiment(), lambda figure: _plot(figure, time_list_h, count_list))
 
 
 def _plot(figure: Figure, time_list: List[float], count_list: List[int]):
