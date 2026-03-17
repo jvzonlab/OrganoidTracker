@@ -1,6 +1,6 @@
 import warnings
 from collections import defaultdict
-from typing import Dict, AbstractSet, Optional, Iterable, List, Any, Tuple, Union, Type, Set
+from typing import Dict, AbstractSet, Optional, Iterable, List, Any, Tuple, Union, Type, Set, Sized
 
 from organoid_tracker.core import TimePoint, min_none, max_none
 from organoid_tracker.core.position import Position
@@ -452,7 +452,7 @@ class PositionCollection:
         warnings.warn("PositionCollection.add_positions() was renamed to PositionCollection.merge_data()", DeprecationWarning)
         self.merge_data(other)
 
-    def time_points(self) -> Iterable[TimePoint]:
+    def time_points(self) -> Union[Iterable[TimePoint], Sized]:
         """Returns all time points from self.first_time_point() to self.last_time_point()."""
         return TimePoint.range(self.first_time_point(), self.last_time_point())
 
