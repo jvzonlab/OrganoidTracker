@@ -163,6 +163,11 @@ class LinesAverage(PlotAverage):
     _lines: List[Tuple[List[float], List[float]]]
     _x_step_size: float
 
+    x_values: ndarray  # X values of the mean
+    mean_values: ndarray  # Y values of the mean. You can plot the mean like plt.plot(x_values, mean_values)
+    standard_deviation_values: ndarray  # Standard deviation in the mean. Useful for plt.fill_between.
+    counts_in_standard_deviation_values: ndarray  # Counts used for calculating the standard deviation
+
     def __init__(self, *lines: Tuple[List[float], List[float]], x_step_size: float = 1):
         """Creates the moving average. Each line is ([x1, x2, ...], [y1, y2, ...]), with the x in order from low to high."""
         self._lines = list(lines)
@@ -170,19 +175,37 @@ class LinesAverage(PlotAverage):
         if x_step_size <= 0:
             raise ValueError(f"Illegal step size: {x_step_size}")
 
-    def _get_min_max_x(self, min_x: Optional[float] = None, max_x: Optional[float] = None) -> Tuple[float, float]:
+        # Calculate error bounds
+        min_x, max_x = self._get_min_max_x()
+
+        x_moving_average = list()
+        y_moving_average = list()
+        y_moving_average_standard_deviation = list()
+        y_moving_average_counts = list()
+        for x in numpy.arange(min_x + 0.01, max_x - 0.01, self._x_step_size):
+            y_values = self._get_y_values_at(x)
+            if len(y_values) <= 1:
+                continue
+
+            y_mean = numpy.nanmean(y_values)
+            y_std = numpy.nanstd(y_values, ddof=1)
+
+            x_moving_average.append(x)
+            y_moving_average.append(y_mean)
+            y_moving_average_standard_deviation.append(y_std)
+            y_moving_average_counts.append(len(y_values))
+        self.x_values = numpy.array(x_moving_average, dtype=numpy.float32)
+        self.mean_values = numpy.array(y_moving_average, dtype=numpy.float32)
+        self.standard_deviation_values = numpy.array(y_moving_average_standard_deviation, dtype=numpy.float32)
+        self.counts_in_standard_deviation_values = numpy.array(y_moving_average_counts, dtype=numpy.uint16)
+
+    def _get_min_max_x(self) -> Tuple[float, float]:
         """Gets the lowest and highest x values used in the lines. Returns (0, 1) if no lines are available."""
         found_min_x = None
         found_max_x = None
         for line_x, _ in self._lines:
             found_min_x = min_none(line_x[0], found_min_x)
             found_max_x = max_none(line_x[-1], found_max_x)
-
-        # Let min_x and max_x override the found values
-        if min_x is not None and found_min_x is not None and min_x > found_min_x:
-            found_min_x = min_x
-        if max_x is not None and found_max_x is not None and max_x < found_max_x:
-            found_max_x = max_x
 
         if found_min_x is None:
             return 0, 1
@@ -222,32 +245,26 @@ class LinesAverage(PlotAverage):
 
     def plot(self, axes: Axes, *, color: Color = Color(0, 0, 255), linewidth=2, error_opacity=0.8,
              standard_error: bool = False, label="Average", min_x: Optional[float] = None, max_x: Optional[float] = None):
-        min_x, max_x = self._get_min_max_x(min_x, max_x)
+        # Find which x values to plot
+        if min_x is None:
+            min_x = self.x_values[0]
+        if max_x is None:
+            max_x = self.x_values[-1]
+        x_mask = (self.x_values >= min_x) & (self.x_values <= max_x)
 
-        # Calculate error bounds
-        x_error_values = list()
-        y_error_values_min = list()
-        y_error_values_mean = list()
-        y_error_values_max = list()
-        for x in numpy.arange(min_x + 0.01, max_x - 0.01, self._x_step_size):
-            y_values = self._get_y_values_at(x)
-            if len(y_values) <= 1:
-                continue
-
-            y_mean = numpy.nanmean(y_values)
-            y_error = numpy.nanstd(y_values, ddof=1)
-            if standard_error:
-                y_error /= numpy.sqrt(len(y_values))
-
-            x_error_values.append(x)
-            y_error_values_min.append(y_mean - y_error)
-            y_error_values_mean.append(y_mean)
-            y_error_values_max.append(y_mean + y_error)
+        # Calculate means and error bars
+        x_values = self.x_values[x_mask]
+        mean_values = self.mean_values[x_mask]
+        y_error_values = self.standard_deviation_values[x_mask]
+        if standard_error:
+            y_error_values /= numpy.sqrt(self.counts_in_standard_deviation_values[x_mask])
+        y_error_values_min = mean_values - y_error_values
+        y_error_values_max = mean_values + y_error_values
 
         # Plot
-        if len(x_error_values) > 0:
-            axes.plot(x_error_values, y_error_values_mean, color=color.to_rgb_floats(), linewidth=linewidth, label=label)
-            axes.fill_between(x_error_values, y_error_values_min,
+        if len(x_values) > 0:
+            axes.plot(x_values, mean_values, color=color.to_rgb_floats(), linewidth=linewidth, label=label)
+            axes.fill_between(x_values, y_error_values_min,
                               y_error_values_max, color=color.to_rgb_floats(), alpha=1 - error_opacity, linewidth=0)
 
     def get_x_positions_and_means(self) -> Tuple[ndarray, ndarray]:
