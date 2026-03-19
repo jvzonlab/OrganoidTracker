@@ -8,7 +8,7 @@ import scipy
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
-from organoid_tracker.core import TimePoint
+from organoid_tracker.core import TimePoint, clamp, max_none
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.images import Images
 from organoid_tracker.core.links import Links
@@ -27,7 +27,8 @@ class LogisticFit:
         self.k = popt[1]
 
     def __call__(self, x: Union[float, numpy.ndarray]) -> float:
-        return 1 - 1 / (1 + numpy.exp(-self.k * (x - self.x0)))
+        probability = 1 - 1 / (1 + numpy.exp(-self.k * (x - self.x0)))
+        return clamp(0.0000001, probability, 0.9999999)  # Don't return exactly 0 or 1, as that doesn't work with the log-likelihood
 
 
 def nearest_neighbor(experiment: Experiment, *, tolerance: float = 1.0, back: bool = True, forward: bool = True,
@@ -97,11 +98,11 @@ def nearest_neighbor_probabilities(experiment: Experiment, *, tolerance: float =
                 distance_bin = int(log_distance // distance_bin_size_um_log)
                 false_links_count_by_distance[distance_bin] += 1
 
-    if len(true_links_count_by_distance) == 0 or len(false_links_count_by_distance) == 0:
+    if len(true_links_count_by_distance) == 0:
         raise RuntimeError("No links were created, cannot create probability map.")
 
     # Now create a probability map based on the counts
-    max_found_distance_key = max(max(true_links_count_by_distance.keys()), max(false_links_count_by_distance.keys()))
+    max_found_distance_key = max_none(max(true_links_count_by_distance.keys()), max_none(false_links_count_by_distance.keys()))
     probabilties_by_distance = {}
     for i in range(max_found_distance_key + 1):
         total = true_links_count_by_distance.get(i, 0) + false_links_count_by_distance.get(i, 0)

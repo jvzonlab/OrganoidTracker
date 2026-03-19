@@ -753,9 +753,12 @@ class AbstractImageVisualizer(Visualizer):
 
     def _set_channel_color(self, colormap_name: str):
         current_channel = self._display_settings.image_channel
-        current_colormap = self._experiment.images.get_channel_description(current_channel).colormap
         new_colormap = image_coloring.get_colormap(colormap_name)
-        self._window.perform_data_action(_ChannelChangeColorAction(current_channel, current_colormap, new_colormap))
+
+        for tab in self._window.get_gui_experiment().get_active_tabs():
+            current_colormap = tab.experiment.images.get_channel_description(current_channel).colormap
+            tab.undo_redo.do(_ChannelChangeColorAction(current_channel, current_colormap, new_colormap), tab.experiment)
+        self.update_status(f"Set colormap of channel {current_channel.index_one} to {colormap_name}.")
         self.draw_view()
 
     def _move_in_z(self, dz: int) -> bool:
@@ -797,7 +800,9 @@ class AbstractImageVisualizer(Visualizer):
 
     def _clamp_channel(self):
         """Makes sure a valid channel is selected. Changes the channel if not."""
-        available_channels = self._experiment.images.get_channels()
+        available_channels = set()
+        for experiment in self._window.get_active_experiments():
+            available_channels.update(experiment.images.get_channels())
 
         # Handle the case where no channels are available
         if len(available_channels) == 0:

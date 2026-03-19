@@ -158,7 +158,7 @@ def _draw_xy_positions(image_2d_rgb: ndarray, experiment: Experiment, time_point
     """Draws the positions on the given 2d RGB image."""
     images = experiment.images
     resolution = images.resolution()
-    max_px_from_slice = _MAX_DISTANCE_UM_FROM_SLICE / resolution.pixel_size_z_um
+    max_px_from_slice = _MAX_DISTANCE_UM_FROM_SLICE / resolution.pixel_size_z_um if resolution.pixel_size_z_um > 0 else float("inf")
 
     offset = images.offsets.of_time_point(time_point)
     for position in experiment.positions.of_time_point(time_point):

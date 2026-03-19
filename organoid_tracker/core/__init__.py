@@ -317,7 +317,7 @@ def max_none(numbers: Union[Optional[float], Iterable[Optional[float]]], *args: 
     return max_value
 
 
-def clamp(minimum: int, value: int, maximum: int):
+def clamp(minimum: Union[int, float], value: Union[int, float], maximum: Union[int, float]):
     """Clamps the given value to the specified min and max. For example, `clamp(2, value, 4)` will return value if it's
     between 2 and 4, 2 if the value is lower than 2 and 4 if the value is higher than four."""
     if value < minimum:
