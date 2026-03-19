@@ -292,12 +292,20 @@ def get_normalized_intensity(experiment: Experiment, position: Position, *, inte
 
 def perform_intensity_normalization(experiment: Experiment, *, background_correction: bool = True, z_correction: bool = False,
                                     time_correction: bool = False, intensity_key: str = DEFAULT_INTENSITY_KEY):
-    """Gets the average intensity of all positions in the experiment.
-    Returns None if there are no intensity recorded."""
+    """Performs intensity normalization for the given intensity key. The lowest found intensity in the experiment is
+    used for setting the background, if background_correction is True. In addition, the intensities will be multiplied
+    to obtain a median intensity of 1 at each z position if z_correction is True, or at every time point if
+    time_correction is True. If both z_correction and time_correction are False, the intensities will be multiplied to
+    obtain an overall median intensity of 1.
+
+    This method only works for regular intensities, not for ratiometric intensities. It will silently fail if no
+    regular intensity with the given key is found.
+    """
     if time_correction and z_correction:
         raise UserError("Time and Z correction", "Cannot apply both a time and a z correction.")
-    remove_intensity_normalization(experiment)
+    remove_intensity_normalization(experiment, intensity_key=intensity_key)
 
+    # Collect existing intensities, volumes, z and time values for this intensity
     intensities = list()
     volumes = list()
     zs = list()
