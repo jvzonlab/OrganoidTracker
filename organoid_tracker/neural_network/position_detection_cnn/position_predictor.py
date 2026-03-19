@@ -238,6 +238,7 @@ class PositionModel(NamedTuple):
                           intensity_quantiles: Tuple[float, float] = (0.01, 0.99),
                           time_points: Optional[Iterable[TimePoint] | Sized] = None,
                           progress_callback: Callable[[float], None] = lambda _: None,
+                          print_time_points: bool = False,
                           output_file: Optional[str] = None):
         """Predict positions for the given experiment.
 
@@ -258,6 +259,7 @@ class PositionModel(NamedTuple):
             on the full 3D image before splitting into patches.
             time_points: If given, only predict positions for these time points. If None, predict for all time points.
             progress_callback: A callback function that is called with the progress (between 0.0 and 1.0).
+            print_time_points: If True, the time point numbers are printed to the console during processing.
             output_file: If given, the file to save the predicted positions to. Otherwise, positions are not saved to
             disk, and just set in the experiment.
         """
@@ -303,7 +305,8 @@ class PositionModel(NamedTuple):
         for time_point in time_points:
             if experiment.positions.count_positions(time_point=time_point) > 0:
                 continue  # Skip time points that already have positions
-            print(time_point.time_point_number(), end="  ", flush=True)
+            if print_time_points:
+                print(time_point.time_point_number(), end="  ", flush=True)
             debug_predictions = _DebugPredictions()
             if debug_folder_experiment is not None:
                 debug_predictions.set_output_file(

@@ -73,7 +73,8 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
     print(f"Working on experiment {experiment_index + 1}: {experiment.name}")
     division_model.predict_divisions(experiment, batch_size=_batch_size, image_channels=_images_channels,
                                      scale_factors_zyx=(_scale_factor_z, _scale_factor_xy, _scale_factor_xy),
-                                     intensity_quantiles=(_intensity_quantile_min, _intensity_quantile_max))
+                                     intensity_quantiles=(_intensity_quantile_min, _intensity_quantile_max),
+                                     print_time_points=True)
 
     remove_division_oversegmentation(experiment, min_distance_dividing_um=_min_distance_dividing)
 

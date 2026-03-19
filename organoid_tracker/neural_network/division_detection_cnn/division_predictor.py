@@ -70,10 +70,11 @@ class DivisionModel(NamedTuple):
     platt_intercept: float
 
     def _iterate_patches(self, images: Images, positions: PositionCollection, *,
-                         scale_factors_zyx: Tuple[float, float, float],
-                         intensity_quantiles: Tuple[float, float]) -> Iterable[_PredictionPatch]:
+                         scale_factors_zyx: Tuple[float, float, float], intensity_quantiles: Tuple[float, float],
+                         print_time_points: bool) -> Iterable[_PredictionPatch]:
         for time_point in images.time_points():
-            print(time_point.time_point_number(), end="  ", flush=True)
+            if print_time_points:
+                print(time_point.time_point_number(), end="  ", flush=True)
             positions_of_time_point = positions.of_time_point(time_point)
             if len(positions_of_time_point) == 0:
                 continue
@@ -86,7 +87,8 @@ class DivisionModel(NamedTuple):
                           batch_size: int = 32,
                           image_channels: Set[ImageChannel] = None,
                           scale_factors_zyx: Tuple[float, float, float] = (1.0, 1.0, 1.0),
-                          intensity_quantiles: Tuple[float, float] = (0.01, 0.99)):
+                          intensity_quantiles: Tuple[float, float] = (0.01, 0.99),
+                          print_time_points: bool = False):
         """Predict division probabilities for all positions in the given experiment."""
 
         # Check if images were loaded
@@ -111,7 +113,7 @@ class DivisionModel(NamedTuple):
         # Do predictions
         patch_list: List[_PredictionPatch] = list()
         for patch in self._iterate_patches(images, experiment.positions, scale_factors_zyx=scale_factors_zyx,
-                                           intensity_quantiles=intensity_quantiles):
+                                           intensity_quantiles=intensity_quantiles, print_time_points=print_time_points):
             patch_list.append(patch)
             if len(patch_list) == batch_size:
                 self._predict_batch(experiment, patch_list)

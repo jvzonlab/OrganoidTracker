@@ -38,7 +38,8 @@ class LinkModel(NamedTuple):
                           batch_size: int = 32,
                           image_channels: Set[ImageChannel] = None,
                           scale_factors_zyx: Tuple[float, float, float] = (1.0, 1.0, 1.0),
-                          intensity_quantiles: Tuple[float, float] = (0.01, 0.99)):
+                          intensity_quantiles: Tuple[float, float] = (0.01, 0.99),
+                          print_time_points: bool = False):
         """Predict division probabilities for all links in the given experiment."""
 
         # Check if images were loaded
@@ -67,7 +68,7 @@ class LinkModel(NamedTuple):
         # Do predictions
         patch_list: List[_PredictionPatch] = list()
         for patch in self._iterate_patches(images, experiment.positions, possible_links, scale_factors_zyx=scale_factors_zyx,
-                                           intensity_quantiles=intensity_quantiles):
+                                           intensity_quantiles=intensity_quantiles, print_time_points=print_time_points):
             patch_list.append(patch)
             if len(patch_list) == batch_size:
                 self._predict_batch(experiment, patch_list)
@@ -81,7 +82,8 @@ class LinkModel(NamedTuple):
                          possible_links: Links,
                          *,
                          scale_factors_zyx: Tuple[float, float, float],
-                         intensity_quantiles: Tuple[float, float]) -> Iterable[_PredictionPatch]:
+                         intensity_quantiles: Tuple[float, float],
+                         print_time_points: bool) -> Iterable[_PredictionPatch]:
 
         experiment_nearest_neighbor = Experiment()
         experiment_nearest_neighbor.images = images
@@ -91,7 +93,8 @@ class LinkModel(NamedTuple):
             if images.get_image_stack(time_point + 1) is None:
                 break  # At the end of the movie, cannot link to next time point
 
-            print(time_point.time_point_number(), end="  ", flush=True)
+            if print_time_points:
+                print(time_point.time_point_number(), end="  ", flush=True)
 
             # Collect positions at this time point
             links_of_time_point = list()
