@@ -44,9 +44,9 @@ class HelpPopup(RichTextPopup):
         markdown_str = markdown_str.replace(":::{note}", "\n----------------\n### Note:")
         markdown_str = markdown_str.replace(":::", "\n-----------------\n")
 
-        # Cut off everything after :::{eval-rst}  (that is metadata for the Sphinx documentation builder)
+        # Cut off everything after ```{eval-rst}  (that is metadata for the Sphinx documentation builder)
         try:
-            remove_start_index = markdown_str.index(":::{eval-rst}")
+            remove_start_index = markdown_str.index("```{eval-rst}")
             markdown_str = markdown_str[0:remove_start_index]
         except ValueError:
             pass  # There's no metadata
