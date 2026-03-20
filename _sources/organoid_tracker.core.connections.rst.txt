@@ -3,5 +3,5 @@ organoid\_tracker.core.connections module
 
 .. automodule:: organoid_tracker.core.connections
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

@@ -36,5 +36,5 @@ Module contents
 
 .. automodule:: organoid_tracker.core
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

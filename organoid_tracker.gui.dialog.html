@@ -1,26 +1,24 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>organoid_tracker.gui.dialog module &mdash; OrganoidTracker 2.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="organoid_tracker.gui.gui_experiment module" href="organoid_tracker.gui.gui_experiment.html" />
-    <link rel="prev" title="organoid_tracker.gui.action module" href="organoid_tracker.gui.action.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -28,72 +26,60 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> OrganoidTracker
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            OrganoidTracker
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
-<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
-<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
-<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SEGMENTATION_EDITOR.html">Segmentation masks editor</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
-<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="organoid_tracker.html#subpackages">Subpackages</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.comparison.html">organoid_tracker.comparison package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.config.html">organoid_tracker.config package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.connecting.html">organoid_tracker.connecting package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.connection_analysis.html">organoid_tracker.connection_analysis package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.coordinate_system.html">organoid_tracker.coordinate_system package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.core.html">organoid_tracker.core package</a></li>
-<li class="toctree-l3 current"><a class="reference internal" href="organoid_tracker.gui.html">organoid_tracker.gui package</a><ul class="current">
-<li class="toctree-l4 current"><a class="reference internal" href="organoid_tracker.gui.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.gui.html#module-organoid_tracker.gui">Module contents</a></li>
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">organoid_tracker.gui.dialog module</a><ul>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.DefaultOption"><code class="docutils literal notranslate"><span class="pre">DefaultOption</span></code></a><ul>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.DefaultOption.CANCEL"><code class="docutils literal notranslate"><span class="pre">DefaultOption.CANCEL</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.DefaultOption.OK"><code class="docutils literal notranslate"><span class="pre">DefaultOption.OK</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html">organoid_tracker.guizela_tracker_compatibility package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.image_loading.html">organoid_tracker.image_loading package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.imaging.html">organoid_tracker.imaging package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking.html">organoid_tracker.linking package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking_analysis.html">organoid_tracker.linking_analysis package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.local_marginalization.html">organoid_tracker.local_marginalization package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.neural_network.html">organoid_tracker.neural_network package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.plugin.html">organoid_tracker.plugin package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_analysis.html">organoid_tracker.position_analysis package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection.html">organoid_tracker.position_detection package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.text_popup.html">organoid_tracker.text_popup package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.util.html">organoid_tracker.util package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.visualizer.html">organoid_tracker.visualizer package</a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.PopupWindow"><code class="docutils literal notranslate"><span class="pre">PopupWindow</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.PromptAnswer"><code class="docutils literal notranslate"><span class="pre">PromptAnswer</span></code></a><ul>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.PromptAnswer.is_cancel"><code class="docutils literal notranslate"><span class="pre">PromptAnswer.is_cancel()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.PromptAnswer.is_no"><code class="docutils literal notranslate"><span class="pre">PromptAnswer.is_no()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.PromptAnswer.is_yes"><code class="docutils literal notranslate"><span class="pre">PromptAnswer.is_yes()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="organoid_tracker.html#module-organoid_tracker">Module contents</a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.open_file"><code class="docutils literal notranslate"><span class="pre">open_file()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.popup_error"><code class="docutils literal notranslate"><span class="pre">popup_error()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.popup_exception"><code class="docutils literal notranslate"><span class="pre">popup_exception()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.popup_figure"><code class="docutils literal notranslate"><span class="pre">popup_figure()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.popup_manual"><code class="docutils literal notranslate"><span class="pre">popup_manual()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.popup_message"><code class="docutils literal notranslate"><span class="pre">popup_message()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.popup_message_cancellable"><code class="docutils literal notranslate"><span class="pre">popup_message_cancellable()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.popup_rich_text"><code class="docutils literal notranslate"><span class="pre">popup_rich_text()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.popup_visualizer"><code class="docutils literal notranslate"><span class="pre">popup_visualizer()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.prompt_color"><code class="docutils literal notranslate"><span class="pre">prompt_color()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.prompt_confirmation"><code class="docutils literal notranslate"><span class="pre">prompt_confirmation()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.prompt_directory"><code class="docutils literal notranslate"><span class="pre">prompt_directory()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.prompt_float"><code class="docutils literal notranslate"><span class="pre">prompt_float()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.prompt_int"><code class="docutils literal notranslate"><span class="pre">prompt_int()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.prompt_load_file"><code class="docutils literal notranslate"><span class="pre">prompt_load_file()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.prompt_load_multiple_files"><code class="docutils literal notranslate"><span class="pre">prompt_load_multiple_files()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.prompt_options"><code class="docutils literal notranslate"><span class="pre">prompt_options()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.prompt_save_file"><code class="docutils literal notranslate"><span class="pre">prompt_save_file()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.prompt_str"><code class="docutils literal notranslate"><span class="pre">prompt_str()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.prompt_yes_no"><code class="docutils literal notranslate"><span class="pre">prompt_yes_no()</span></code></a></li>
+<li><a class="reference internal" href="#organoid_tracker.gui.dialog.prompt_yes_no_cancel"><code class="docutils literal notranslate"><span class="pre">prompt_yes_no_cancel()</span></code></a></li>
 </ul>
 </li>
 </ul>
-
+</div>
         </div>
       </div>
     </nav>
@@ -107,10 +93,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="organoid_tracker.html">organoid_tracker package</a> &raquo;</li>
-          <li><a href="organoid_tracker.gui.html">organoid_tracker.gui package</a> &raquo;</li>
-      <li>organoid_tracker.gui.dialog module</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">organoid_tracker.gui.dialog module</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/organoid_tracker.gui.dialog.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -120,17 +104,201 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="organoid-tracker-gui-dialog-module">
-<h1>organoid_tracker.gui.dialog module<a class="headerlink" href="#organoid-tracker-gui-dialog-module" title="Permalink to this heading"></a></h1>
+  <section id="module-organoid_tracker.gui.dialog">
+<span id="organoid-tracker-gui-dialog-module"></span><h1>organoid_tracker.gui.dialog module<a class="headerlink" href="#module-organoid_tracker.gui.dialog" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.DefaultOption">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">DefaultOption</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.dialog.DefaultOption" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.DefaultOption.CANCEL">
+<span class="sig-name descname"><span class="pre">CANCEL</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'CANCEL'</span></span><a class="headerlink" href="#organoid_tracker.gui.dialog.DefaultOption.CANCEL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.DefaultOption.OK">
+<span class="sig-name descname"><span class="pre">OK</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'OK'</span></span><a class="headerlink" href="#organoid_tracker.gui.dialog.DefaultOption.OK" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.PopupWindow">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">PopupWindow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q_window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">QMainWindow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="(in Matplotlib v3.10.8)"><span class="pre">Figure</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.gui_experiment.html#organoid_tracker.gui.gui_experiment.GuiExperiment" title="organoid_tracker.gui.gui_experiment.GuiExperiment"><span class="pre">GuiExperiment</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window" title="organoid_tracker.gui.window.Window"><span class="pre">Window</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">title_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">QLabel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">QLabel</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.dialog.PopupWindow" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window" title="organoid_tracker.gui.window.Window"><code class="xref py py-class docutils literal notranslate"><span class="pre">Window</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.PromptAnswer">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">PromptAnswer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">answer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.dialog.PromptAnswer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.PromptAnswer.is_cancel">
+<span class="sig-name descname"><span class="pre">is_cancel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.dialog.PromptAnswer.is_cancel" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.PromptAnswer.is_no">
+<span class="sig-name descname"><span class="pre">is_no</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.dialog.PromptAnswer.is_no" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.PromptAnswer.is_yes">
+<span class="sig-name descname"><span class="pre">is_yes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.dialog.PromptAnswer.is_yes" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.open_file">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">open_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.dialog.open_file" title="Link to this definition"></a></dt>
+<dd><p>Opens a file using the default application.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.popup_error">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">popup_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.dialog.popup_error" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.popup_exception">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">popup_exception</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exception</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.14)"><span class="pre">BaseException</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.dialog.popup_exception" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.popup_figure">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">popup_figure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.gui_experiment.html#organoid_tracker.gui.gui_experiment.GuiExperiment" title="organoid_tracker.gui.gui_experiment.GuiExperiment"><span class="pre">GuiExperiment</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window" title="organoid_tracker.gui.window.Window"><span class="pre">Window</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="(in Matplotlib v3.10.8)"><span class="pre">Figure</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_cm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(14,</span> <span class="pre">12.7)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">export_function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.dialog.popup_figure" title="Link to this definition"></a></dt>
+<dd><p>Pops up a figure. The figure is drawn inside draw_function. Size (x, y) is specified using size_cm.
+export_function is used to save a JSON structure when the user presses Ctrl+E.</p>
+<p>For backwards compatibility, parent_window can still be a GuiExperiment. However, then plugins cannot
+access anything in the popup window.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.popup_manual">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">popup_manual</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.dialog.popup_manual" title="Link to this definition"></a></dt>
+<dd><p>Shows the manual of the program.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.popup_message">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">popup_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.dialog.popup_message" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.popup_message_cancellable">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">popup_message_cancellable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.dialog.popup_message_cancellable" title="Link to this definition"></a></dt>
+<dd><p>Shows a dialog with Ok and Cancel buttons, but with an “i” sign instead of a “?”.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.popup_rich_text">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">popup_rich_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.text_popup.text_popup.html#organoid_tracker.text_popup.text_popup.RichTextPopup" title="organoid_tracker.text_popup.text_popup.RichTextPopup"><span class="pre">RichTextPopup</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.dialog.popup_rich_text" title="Link to this definition"></a></dt>
+<dd><p>Pops up a rich text window, so that you can easily show dialogs with text, links and images.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.popup_visualizer">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">popup_visualizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window" title="organoid_tracker.gui.window.Window"><span class="pre">Window</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualizer_callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window" title="organoid_tracker.gui.window.Window"><span class="pre">Window</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_cm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(14,</span> <span class="pre">12.7)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.dialog.popup_visualizer" title="Link to this definition"></a></dt>
+<dd><p>Pops up a window, which is then returned. You can then for example attach a Visualizer to this window to show
+something. The size is the size of the figure, not the window. The window will be slightly larger than the figure.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.prompt_color">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">prompt_color</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.Color" title="organoid_tracker.core.Color"><span class="pre">Color</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;organoid_tracker.core.Color</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.Color" title="organoid_tracker.core.Color"><span class="pre">Color</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.dialog.prompt_color" title="Link to this definition"></a></dt>
+<dd><p>Prompts the user to choose a color.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.prompt_confirmation">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">prompt_confirmation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">question</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.gui.dialog.prompt_confirmation" title="Link to this definition"></a></dt>
+<dd><p>Shows a OK/Cancel dialog box. Returns True if the user pressed OK, returns False if the user pressed Cancel or
+simply closed the dialog box.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.prompt_directory">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">prompt_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.dialog.prompt_directory" title="Link to this definition"></a></dt>
+<dd><p>Shows a prompt that asks the user to select a directory. Returns None if the user pressed Cancel.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.prompt_float">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">prompt_float</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">question</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-10000000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maximum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decimals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.dialog.prompt_float" title="Link to this definition"></a></dt>
+<dd><p>Asks the user to enter a float. Returns None if the user pressed Cancel or closed the dialog box. The default
+value is automatically clamped to the minimum and maximum.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.prompt_int">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">prompt_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">question</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-2147483647</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maximum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2147483647</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.dialog.prompt_int" title="Link to this definition"></a></dt>
+<dd><p>Asks the user to enter an integer. Returns None if the user pressed Cancel or closed the dialog box. If the
+minimum is equal to the maximum, that number is returned. The default value is automatically clamped to the minimum
+and maximum.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.prompt_load_file">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">prompt_load_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.dialog.prompt_load_file" title="Link to this definition"></a></dt>
+<dd><p>Shows a prompt that asks the user to open a file. Example:</p>
+<blockquote>
+<div><p>prompt_load_file(“Choose an image”, [(“PNG file”, “<em>.png”), (“JPEG file”, “</em>.jpg”)])</p>
+</div></blockquote>
+<p>Returns None if the user pressed Cancel. This function automatically adds an “All supported files” option.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.prompt_load_multiple_files">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">prompt_load_multiple_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.gui.dialog.prompt_load_multiple_files" title="Link to this definition"></a></dt>
+<dd><p>Shows a prompt that asks the user to open multiple files. Example:</p>
+<blockquote>
+<div><p>prompt_load_files(“Choose images”, [(“PNG file”, “<em>.png”), (“JPEG file”, “</em>.jpg”)])</p>
+</div></blockquote>
+<p>Returns an empty list if the user pressed Cancel. This function automatically adds an “All supported files” option.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.prompt_options">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">prompt_options</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">question</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">option_1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">option_2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option_3</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option_default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.gui.dialog.DefaultOption" title="organoid_tracker.gui.dialog.DefaultOption"><span class="pre">DefaultOption</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DefaultOption.CANCEL</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.dialog.prompt_options" title="Link to this definition"></a></dt>
+<dd><p>Shows two or three options to choose from, and additionally a cancel button. Returns None if the default button
+(either Cancel or Ok) was pressed, returns a number (1, 2 or 3, depending on the picked option) otherwise.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.prompt_save_file">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">prompt_save_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suggested_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.Name" title="organoid_tracker.core.Name"><span class="pre">Name</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.dialog.prompt_save_file" title="Link to this definition"></a></dt>
+<dd><p>Shows a prompt that asks the user to save a file. Example:</p>
+<blockquote>
+<div><p>prompt_save_file(“Save as…”, [(“PNG file”, “<em>.png”), (“JPEG file”, “</em>.jpg”)])</p>
+</div></blockquote>
+<p>If the user does not write a file extension, then the file extension will be added automatically.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.prompt_str">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">prompt_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">question</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.dialog.prompt_str" title="Link to this definition"></a></dt>
+<dd><p>Asks the user to enter a line of text. Returns None if the user pressed Cancel or closed the dialog box.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.prompt_yes_no">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">prompt_yes_no</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.dialog.prompt_yes_no" title="Link to this definition"></a></dt>
+<dd><p>Asks a Yes/No question. Returns True if the user pressed Yes and False otherwise.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.gui.dialog.prompt_yes_no_cancel">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.gui.dialog.</span></span><span class="sig-name descname"><span class="pre">prompt_yes_no_cancel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.gui.dialog.PromptAnswer" title="organoid_tracker.gui.dialog.PromptAnswer"><span class="pre">PromptAnswer</span></a></span></span><a class="headerlink" href="#organoid_tracker.gui.dialog.prompt_yes_no_cancel" title="Link to this definition"></a></dt>
+<dd><p>Asks a yes/no/cancel question.</p>
+</dd></dl>
+
 </section>
 
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="organoid_tracker.gui.action.html" class="btn btn-neutral float-left" title="organoid_tracker.gui.action module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="organoid_tracker.gui.gui_experiment.html" class="btn btn-neutral float-right" title="organoid_tracker.gui.gui_experiment module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

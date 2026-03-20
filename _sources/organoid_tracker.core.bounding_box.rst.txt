@@ -3,5 +3,5 @@ organoid\_tracker.core.bounding\_box module
 
 .. automodule:: organoid_tracker.core.bounding_box
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

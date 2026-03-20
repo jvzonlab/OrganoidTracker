@@ -1,26 +1,24 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Automatic tracking &mdash; OrganoidTracker 2.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Plugin tutorial" href="PLUGIN_TUTORIAL.html" />
-    <link rel="prev" title="Manual tracking and error correction" href="MANUAL_TRACKING.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -28,61 +26,44 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> OrganoidTracker
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            OrganoidTracker
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Automatic tracking</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#step-1-obtain-nucleus-positions">Step 1: Obtain nucleus positions</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#correcting-for-changed-image-offsets">Correcting for changed image offsets</a></li>
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Automatic tracking</a><ul>
+<li><a class="reference internal" href="#step-1-obtain-nucleus-positions">Step 1: Obtain nucleus positions</a><ul>
+<li><a class="reference internal" href="#correcting-for-changed-image-offsets">Correcting for changed image offsets</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#step-2-obtain-division-likelihoods">Step 2: Obtain division likelihoods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#step-3-obtaining-link-likelihoods">Step 3: Obtaining link likelihoods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#step-4-create-tracks">Step 4: Create tracks</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#step-2-obtain-division-likelihoods">Step 2: Obtain division likelihoods</a></li>
+<li><a class="reference internal" href="#step-3-obtaining-link-likelihoods">Step 3: Obtaining link likelihoods</a></li>
+<li><a class="reference internal" href="#step-4-create-tracks">Step 4: Create tracks</a><ul>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#step-5-calculate-error-rates">Step 5: Calculate error rates</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id1">Troubleshooting</a></li>
+<li><a class="reference internal" href="#step-5-calculate-error-rates">Step 5: Calculate error rates</a><ul>
+<li><a class="reference internal" href="#id1">Troubleshooting</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#step-6-manually-correct-warnings">Step 6: Manually correct warnings</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#what-to-do-if-my-results-aren-t-good">What to do if my results aren’t good?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#step-7-automated-analysis">Step 7: Automated analysis</a></li>
+<li><a class="reference internal" href="#step-6-manually-correct-warnings">Step 6: Manually correct warnings</a></li>
+<li><a class="reference internal" href="#what-to-do-if-my-results-aren-t-good">What to do if my results aren’t good?</a></li>
+<li><a class="reference internal" href="#step-7-automated-analysis">Step 7: Automated analysis</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
-<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
-<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SEGMENTATION_EDITOR.html">Segmentation masks editor</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
-<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a></li>
-</ul>
-
+</div>
         </div>
       </div>
     </nav>
@@ -96,8 +77,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Automatic tracking</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Automatic tracking</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/AUTOMATIC_TRACKING.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -108,8 +89,8 @@
            <div itemprop="articleBody">
              
   <section id="automatic-tracking">
-<h1>Automatic tracking<a class="headerlink" href="#automatic-tracking" title="Permalink to this heading"></a></h1>
-<p><a class="reference internal" href="index.html"><span class="doc std std-doc">← Back to main page</span></a></p>
+<h1>Automatic tracking<a class="headerlink" href="#automatic-tracking" title="Link to this heading"></a></h1>
+<p><a class="reference internal" href="index.html"><span class="std std-doc">← Back to main page</span></a></p>
 <p>The intended workflow is as follows:</p>
 <ol class="arabic simple">
 <li><p>Obtain nucleus positions.</p></li>
@@ -122,36 +103,36 @@
 </ol>
 <p>Before you start, create a directory that will hold all the results of your analysis (e.g., <code class="docutils literal notranslate"><span class="pre">automated_tracking</span></code> inside the directory that holds your images).</p>
 <section id="step-1-obtain-nucleus-positions">
-<h2>Step 1: Obtain nucleus positions<a class="headerlink" href="#step-1-obtain-nucleus-positions" title="Permalink to this heading"></a></h2>
-<p>Open the OrganoidTracker GUI and load your images (<code class="docutils literal notranslate"><span class="pre">File</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Load</span> <span class="pre">images...</span></code>). For the best results, the input data should somewhat resemble the training data. This can often be achieved with a little pre-processing (<a class="reference internal" href="PREPROCESSING_TIPS.html"><span class="doc std std-doc">See here for tips</span></a>).</p>
-<p>Select <code class="docutils literal notranslate"><span class="pre">Tools</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Detect</span> <span class="pre">cells</span> <span class="pre">in</span> <span class="pre">images...</span></code>. When prompted by the dialog box, select the neural network trained for detecting nuclear positions. (<a class="reference internal" href="TRAINING_THE_NETWORK.html"><span class="doc std std-doc">See here for how to train a model</span></a> or find links to pre-trained models at <a class="reference external" href="https://github.com/jvzonlab/OrganoidTracker">our Github page</a>.) A second dialog box prompts you to create a folder for storing the detected positions by typing the new folder’s name (e.g., <code class="docutils literal notranslate"><span class="pre">positions</span></code> within <code class="docutils literal notranslate"><span class="pre">automated_tracking</span></code>).</p>
+<h2>Step 1: Obtain nucleus positions<a class="headerlink" href="#step-1-obtain-nucleus-positions" title="Link to this heading"></a></h2>
+<p>Open the OrganoidTracker GUI and load your images (<code class="docutils literal notranslate"><span class="pre">File</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Load</span> <span class="pre">images...</span></code>). For the best results, the input data should somewhat resemble the training data. This can often be achieved with a little pre-processing (<a class="reference internal" href="PREPROCESSING_TIPS.html"><span class="std std-doc">See here for tips</span></a>).</p>
+<p>Select <code class="docutils literal notranslate"><span class="pre">Tools</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Detect</span> <span class="pre">cells</span> <span class="pre">in</span> <span class="pre">images...</span></code>. When prompted by the dialog box, select the neural network trained for detecting nuclear positions. (<a class="reference internal" href="TRAINING_THE_NETWORK.html"><span class="std std-doc">See here for how to train a model</span></a> or find links to pre-trained models at <a class="reference external" href="https://github.com/jvzonlab/OrganoidTracker">our Github page</a>.) A second dialog box prompts you to create a folder for storing the detected positions by typing the new folder’s name (e.g., <code class="docutils literal notranslate"><span class="pre">positions</span></code> within <code class="docutils literal notranslate"><span class="pre">automated_tracking</span></code>).</p>
 <p>You now have a folder (e.g. <code class="docutils literal notranslate"><span class="pre">positions</span></code>) containing configuration files and scripts with the name <code class="docutils literal notranslate"><span class="pre">organoid_tracker_predict_positions</span></code>. To run the script, double-click the BAT file (Windows) or the SH file (Linux).</p>
 <p>After running the script, you have a folder called <code class="docutils literal notranslate"><span class="pre">Automatic</span> <span class="pre">positions</span></code> that contains a <code class="docutils literal notranslate"><span class="pre">.aut</span></code> file with a name like the input image you are analyzing. You can load this <code class="docutils literal notranslate"><span class="pre">.aut</span></code> file (<code class="docutils literal notranslate"><span class="pre">File</span></code>-&gt;<code class="docutils literal notranslate"><span class="pre">Load</span> <span class="pre">tracking</span> <span class="pre">data...</span></code>) alongside the microscopy image to assess the quality of the predictions.</p>
 <p>If you want to debug this step, open the <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> file and give the <code class="docutils literal notranslate"><span class="pre">predictions_output_folder</span></code> setting a value, for example <code class="docutils literal notranslate"><span class="pre">test</span></code>. If you run the script again, it will create a folder with that name (<code class="docutils literal notranslate"><span class="pre">test</span></code> in this example) and place images there indicating how likely it is to find a cell there.</p>
 <section id="correcting-for-changed-image-offsets">
-<h3>Correcting for changed image offsets<a class="headerlink" href="#correcting-for-changed-image-offsets" title="Permalink to this heading"></a></h3>
+<h3>Correcting for changed image offsets<a class="headerlink" href="#correcting-for-changed-image-offsets" title="Link to this heading"></a></h3>
 <p>When taking longer time lapse movies, the organoid can slowly slide out of the view. For this reason, the microscope user can move the imaged area so that the organoid stays in the view. In the time lapse movie, this makes the organoid appear to “teleport”: from the edges of the image it jumps back to the center.</p>
 <p>To create links over this “jump”, the program would need to create a lot of large-distance links. The program will likely refuse to do this. To correct for this, <em>before running the linking process</em>, open the OrganoidTracker GUI and load the images and positions (<code class="docutils literal notranslate"><span class="pre">File</span></code> menu). Then edit the data (<code class="docutils literal notranslate"><span class="pre">Edit</span> <span class="pre">-&gt;</span> <span class="pre">Manually</span> <span class="pre">change</span> <span class="pre">data...</span></code>) and edit the image offsets (<code class="docutils literal notranslate"><span class="pre">Edit</span> <span class="pre">-&gt;</span> <span class="pre">Edit</span> <span class="pre">image</span> <span class="pre">offsets...</span></code>) of the correct time point. Instructions are on the bottom of the window.</p>
 </section>
 </section>
 <section id="step-2-obtain-division-likelihoods">
-<h2>Step 2: Obtain division likelihoods<a class="headerlink" href="#step-2-obtain-division-likelihoods" title="Permalink to this heading"></a></h2>
+<h2>Step 2: Obtain division likelihoods<a class="headerlink" href="#step-2-obtain-division-likelihoods" title="Link to this heading"></a></h2>
 <p>With both the <strong>images</strong> and <strong>nuclear positions</strong> loaded into the OrganoidTracker GUI, select <code class="docutils literal notranslate"><span class="pre">Tools</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Detect</span> <span class="pre">dividing</span> <span class="pre">cells...</span></code>. When prompted by the dialog box, select the neural network trained for detecting cell divisions. You will also be prompted to create a folder for storing the detected divisions by typing its name (e.g., <code class="docutils literal notranslate"><span class="pre">divisions</span></code> within <code class="docutils literal notranslate"><span class="pre">automated_tracking</span></code>). As with step 1, this will generate various files and folders. Run the <code class="docutils literal notranslate"><span class="pre">organoid_tracker_predict_divisions</span></code> script.</p>
 <p>After the script is finished, you have a folder called <code class="docutils literal notranslate"><span class="pre">Division</span> <span class="pre">predictions</span></code> containing a new <code class="docutils literal notranslate"><span class="pre">.aut</span></code> file also named after the microscopy image. Use <code class="docutils literal notranslate"><span class="pre">File</span></code>-&gt;<code class="docutils literal notranslate"><span class="pre">Load</span> <span class="pre">tracking</span> <span class="pre">data...</span></code> to visualize the results alongside the original microscopy image.</p>
 <p>If you double-click on a cell in the main window, you can view its data, which now includes the division probability. Verify that this probability is what you would expect: high for cells that are about to divide, low otherwise.</p>
 </section>
 <section id="step-3-obtaining-link-likelihoods">
-<h2>Step 3: Obtaining link likelihoods<a class="headerlink" href="#step-3-obtaining-link-likelihoods" title="Permalink to this heading"></a></h2>
+<h2>Step 3: Obtaining link likelihoods<a class="headerlink" href="#step-3-obtaining-link-likelihoods" title="Link to this heading"></a></h2>
 <p>With both the <strong>images</strong> and <strong>divisions</strong> loaded into the OrganoidTracker GUI, select <code class="docutils literal notranslate"><span class="pre">Tools</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Detect</span> <span class="pre">link</span> <span class="pre">likelihoods...</span></code>. When prompted by the dialog box, select the neural network trained for detecting links (i.e., connections between the same nucleus in consecutive timepoints). You will also be prompted to create a folder for storing the links by typing its name (e.g., <code class="docutils literal notranslate"><span class="pre">links</span></code> within <code class="docutils literal notranslate"><span class="pre">automated_tracking</span></code>). As with step 1, this will generate various files and folders. Run the <code class="docutils literal notranslate"><span class="pre">organoid_tracker_predict_links</span></code> script.</p>
 <p>After the script is finished, you have a folder called <code class="docutils literal notranslate"><span class="pre">Link</span> <span class="pre">predictions</span></code> containing a new <code class="docutils literal notranslate"><span class="pre">.aut</span></code> file also named after the microscopy image. This contains all links that OrganoidTracker considers to be possible (e.g. links to the nearest position, plus links to positions at most two times as far as the nearest position). Use <code class="docutils literal notranslate"><span class="pre">File</span></code>-&gt;<code class="docutils literal notranslate"><span class="pre">Load</span> <span class="pre">tracking</span> <span class="pre">data...</span></code> to visualize the results alongside the original microscopy image.</p>
 </section>
 <section id="step-4-create-tracks">
-<h2>Step 4: Create tracks<a class="headerlink" href="#step-4-create-tracks" title="Permalink to this heading"></a></h2>
+<h2>Step 4: Create tracks<a class="headerlink" href="#step-4-create-tracks" title="Link to this heading"></a></h2>
 <p>With both the <strong>images</strong> and <strong>links</strong> loaded into the OrganoidTracker GUI, select <code class="docutils literal notranslate"><span class="pre">Tools</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Create</span> <span class="pre">tracks...</span></code>. You will also be prompted to create a folder for storing the tracks by typing its name (e.g., <code class="docutils literal notranslate"><span class="pre">tracks</span></code> within <code class="docutils literal notranslate"><span class="pre">automated_tracking</span></code>). As with step 1, this will generate various files and folders. Run the <code class="docutils literal notranslate"><span class="pre">organoid_tracker_create_tracks</span></code> script.</p>
 <p>This will generate a folder called <code class="docutils literal notranslate"><span class="pre">Output</span> <span class="pre">tracks</span></code>, which contains a folder with the same name as the original microscopy image. Within that folder there are four <code class="docutils literal notranslate"><span class="pre">.aut</span></code> files. As indicated by the name, these contain either <code class="docutils literal notranslate"><span class="pre">All</span> <span class="pre">possible</span> <span class="pre">links</span></code> (useful for calculating error rates) or a most probable subset (<code class="docutils literal notranslate"><span class="pre">Final</span> <span class="pre">links</span></code>). These exist as two versions, <code class="docutils literal notranslate"><span class="pre">clean</span></code> or <code class="docutils literal notranslate"><span class="pre">raw</span></code>.</p>
 <p>Now you can also set some parameters to clean up the data after tracking. It is advisable to at least remove very short tracks for clarity.</p>
 <section id="troubleshooting">
-<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this heading"></a></h3>
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
 <p>You can modify this step of the analysis by changing the following values in the configuration file (e.g., <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> within <code class="docutils literal notranslate"><span class="pre">tracks</span></code>).</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">maximum</span> <span class="pre">z</span> <span class="pre">depth</span> <span class="pre">for</span> <span class="pre">which</span> <span class="pre">we</span> <span class="pre">want</span> <span class="pre">tracks</span></code>: 22 (pixels, default)
@@ -166,54 +147,54 @@
 </section>
 </section>
 <section id="step-5-calculate-error-rates">
-<h2>Step 5: Calculate error rates<a class="headerlink" href="#step-5-calculate-error-rates" title="Permalink to this heading"></a></h2>
+<h2>Step 5: Calculate error rates<a class="headerlink" href="#step-5-calculate-error-rates" title="Link to this heading"></a></h2>
 <p>With both the <strong>images</strong> and <strong><code class="docutils literal notranslate"><span class="pre">Final</span> <span class="pre">links</span> <span class="pre">-</span> <span class="pre">clean.aut</span></code></strong> loaded into the OrganoidTracker GUI, select <code class="docutils literal notranslate"><span class="pre">Tools</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Compute</span> <span class="pre">marginalized</span> <span class="pre">error</span> <span class="pre">rates...</span></code>. When prompted, select the all possible links file (<code class="docutils literal notranslate"><span class="pre">All</span> <span class="pre">possible</span> <span class="pre">links</span> <span class="pre">-</span> <span class="pre">clean.aut</span></code>) and then create a folder for storing the output (e.g., <code class="docutils literal notranslate"><span class="pre">error_rates</span></code>). Run the resulting <code class="docutils literal notranslate"><span class="pre">organoid_tracker_marginalization</span></code> script.</p>
 <p>This should be produce a file called <code class="docutils literal notranslate"><span class="pre">Filtered</span> <span class="pre">positions.aut</span></code>.</p>
 <section id="id1">
-<h3>Troubleshooting<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
+<h3>Troubleshooting<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
 <p>You can modify this step of the analysis by changing the following values in the configuration file (e.g., <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> within <code class="docutils literal notranslate"><span class="pre">error_rates</span></code>).</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">maximum</span> <span class="pre">error</span> <span class="pre">rate</span></code>: 0.01 (default)
 <em>Links with marginal probability &lt; (1- <code class="docutils literal notranslate"><span class="pre">maximum</span> <span class="pre">error</span> <span class="pre">rate</span></code>) are removed (e.g, links must exceed threshold probability of 0.99 for the default value of 0.01). Consider adjusting this value to make the threshold more or less stringent.</em></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">temperature</span> <span class="pre">(to</span> <span class="pre">account</span> <span class="pre">for</span> <span class="pre">shared</span> <span class="pre">information)</span></code>: 1.5 (default)
-<em>Scales probabilities before calculating marginalized probabilites across all possible states; in this way, accounts for shared information between neural network predictions and can absorb miscalibrations of the neural network outputs. Nonetheless, needs to be calibrated to each model. If your data are sufficiently similar to the intestinal organoid data we trained our models on, you can use the default value. Otherwise, <a class="reference internal" href="CALIBRATE_MARGINALIZATION.html"><span class="doc std std-doc">calibrate yourself</span></a>.</em></p></li>
+<em>Scales probabilities before calculating marginalized probabilites across all possible states; in this way, accounts for shared information between neural network predictions and can absorb miscalibrations of the neural network outputs. Nonetheless, needs to be calibrated to each model. If your data are sufficiently similar to the intestinal organoid data we trained our models on, you can use the default value. Otherwise, <a class="reference internal" href="CALIBRATE_MARGINALIZATION.html"><span class="std std-doc">calibrate yourself</span></a>.</em></p></li>
 </ul>
 </section>
 </section>
 <section id="step-6-manually-correct-warnings">
-<h2>Step 6: Manually correct warnings<a class="headerlink" href="#step-6-manually-correct-warnings" title="Permalink to this heading"></a></h2>
+<h2>Step 6: Manually correct warnings<a class="headerlink" href="#step-6-manually-correct-warnings" title="Link to this heading"></a></h2>
 <p>This step is not automated. 😉</p>
 <p>With both the <strong>images</strong> and <strong><code class="docutils literal notranslate"><span class="pre">Filtered</span> <span class="pre">positions.aut</span></code></strong> loaded into the OrganoidTracker GUI, go to <code class="docutils literal notranslate"><span class="pre">Edit</span> <span class="pre">-&gt;</span> <span class="pre">Manually</span> <span class="pre">change</span> <span class="pre">data...</span></code>. A cross will appear over all locations where the program has detected some inconsistency in the tracking data:</p>
 <p><img alt="Example of a warning" src="_images/warning.png" /></p>
 <p>To view why OrganoidTracker warned you about this position, hover you mouse over a nucleus and press <strong>E</strong>. This will show you what the warning is. If the warning was a false positive, just press Delete to delete the warning. Otherwise, exit the warning screen (press E or Escape). This takes you back to the cell track editor, where you can fix the error.</p>
-<p>To fix errors, you can edit the data using mainly the Insert and Delete keys, which are used to insert and delete links (respectively). Detected positions can also be inserted and deleted if necessary. Because correcting data works exactly the same as manual tracking, please see the <a class="reference internal" href="MANUAL_TRACKING.html"><span class="doc std std-doc">manual tracking</span></a> tutorial for more information.</p>
+<p>To fix errors, you can edit the data using mainly the Insert and Delete keys, which are used to insert and delete links (respectively). Detected positions can also be inserted and deleted if necessary. Because correcting data works exactly the same as manual tracking, please see the <a class="reference internal" href="MANUAL_TRACKING.html"><span class="std std-doc">manual tracking</span></a> tutorial for more information.</p>
 <p>If you press Left and Right in the warning screen, you will be taken to other warnings in the same lineage. If you press Up or Down, you will be taken to the warnings of other lineage trees.</p>
 <p>If you press the L key from the cell track editor, a screen is opened that shows whether there are still warnings remaining in the lineage of that cell. If you hover your mouse over such a lineage and press E, the program will take you to the (first) warning in that lineage tree.</p>
 <p>If you don’t want to correct everything, there are several options:</p>
 <ul class="simple">
 <li><p>Limiting the number of time steps that you are looking at. In the warning screen, if you open the Edit menu, there’s an option to set the minimum and maximum time point for correction.</p></li>
-<li><p>Limiting the area you are looking at. This is most easily done by pressing L in the cell track editor, and then observing any lineages that still have warnings. Correct any lineages that need to be corrected (press E while you hover your mouse over them). Once you are satisfied, you can then delete all lineages that still have errors in them. This is done from the cell track editor: press <code class="docutils literal notranslate"><span class="pre">Edit</span> <span class="pre">&gt;</span> <span class="pre">Batch</span> <span class="pre">deletion</span> <span class="pre">&gt;</span> <span class="pre">Delete</span> <span class="pre">lineages</span> <span class="pre">with</span> <span class="pre">errors</span></code>. See <span class="xref myst">batch editing</span> for more ways to delete a lot of lineages at once.</p></li>
+<li><p>Limiting the area you are looking at. This is most easily done by pressing L in the cell track editor, and then observing any lineages that still have warnings. Correct any lineages that need to be corrected (press E while you hover your mouse over them). Once you are satisfied, you can then delete all lineages that still have errors in them. This is done from the cell track editor: press <code class="docutils literal notranslate"><span class="pre">Edit</span> <span class="pre">&gt;</span> <span class="pre">Batch</span> <span class="pre">deletion</span> <span class="pre">&gt;</span> <span class="pre">Delete</span> <span class="pre">lineages</span> <span class="pre">with</span> <span class="pre">errors</span></code>. See <a class="reference internal" href="#BATCH_OPERATIONS.md"><span class="xref myst">batch editing</span></a> for more ways to delete a lot of lineages at once.</p></li>
 </ul>
 <p>You can change a few settings of the error checker, to make it stricter or less strict. In the error checking screen (the screen you opened with <code class="docutils literal notranslate"><span class="pre">E</span></code>) there are three options available in the <code class="docutils literal notranslate"><span class="pre">Edit</span></code> menu: the minimimum marginalized probability a link should have, the minimum time in between two cell divisions of the same cell, and the maximum distance a cell may move per minute (only useful before marginalization).</p>
 <p>Often correcting mistakes below a certain threshold also fixes a few mistakes that were not flagged. The increase in tracking quality might therefore be more than naively expected. To check the resulting quality you can rerun the marginalization on your corrected data while flagging in the <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> file that you have checked part or all of the errors.</p>
 </section>
 <section id="what-to-do-if-my-results-aren-t-good">
-<h2>What to do if my results aren’t good?<a class="headerlink" href="#what-to-do-if-my-results-aren-t-good" title="Permalink to this heading"></a></h2>
+<h2>What to do if my results aren’t good?<a class="headerlink" href="#what-to-do-if-my-results-aren-t-good" title="Link to this heading"></a></h2>
 <p>That’s a difficult problem! You have a few options:</p>
 <ul class="simple">
 <li><p>Improve image quality. The images should be good enough that it is straightforward to track the nuclei by hand in the large majority of cases.</p></li>
 <li><p>Change some settings. The generated <code class="docutils literal notranslate"><span class="pre">organoid_tracker.ini</span></code> files contain an explanation for each of the settings.</p></li>
-<li><p><a class="reference internal" href="TRAINING_THE_NETWORK.html"><span class="doc std std-doc">Retrain the neural networks for your data.</span></a></p></li>
-<li><p><a class="reference internal" href="CUSTOM_TRACKING_SCRIPTS.html"><span class="doc std std-doc">Replace parts of the tracker with custom code</span></a></p></li>
+<li><p><a class="reference internal" href="TRAINING_THE_NETWORK.html"><span class="std std-doc">Retrain the neural networks for your data.</span></a></p></li>
+<li><p><a class="reference internal" href="CUSTOM_TRACKING_SCRIPTS.html"><span class="std std-doc">Replace parts of the tracker with custom code</span></a></p></li>
 </ul>
 </section>
 <section id="step-7-automated-analysis">
-<h2>Step 7: Automated analysis<a class="headerlink" href="#step-7-automated-analysis" title="Permalink to this heading"></a></h2>
+<h2>Step 7: Automated analysis<a class="headerlink" href="#step-7-automated-analysis" title="Link to this heading"></a></h2>
 <p>In step 5 a set of filtered high-confidence tracks is produced. You can choose to analyze these further. Generally for many application, manual corrections are not needed.</p>
 <ul class="simple">
 <li><p>If you want to quantify a fluorescence reporter you can take long tracks (<code class="docutils literal notranslate"><span class="pre">Edit</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Manually</span> <span class="pre">change</span> <span class="pre">data</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Batch</span> <span class="pre">deletion</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Delete</span> <span class="pre">short</span> <span class="pre">lineages</span></code>) and work from there.</p></li>
 <li><p>If you want to quantify tissue flows flawless trajectories are often overkill. Setting a lower probability threshold should still give you good enough data.</p></li>
-<li><p>Analyzing cell cycle dynamics should be done using survival analysis (<a class="reference internal" href="SURVIVAL_ANALYSIS.html"><span class="doc std std-doc">See here for how to do this</span></a>) anyway and this can deal with cells that are lost to follow up. So it is not a problem to use the uncorrected filtered data.</p></li>
+<li><p>Analyzing cell cycle dynamics should be done using survival analysis (<a class="reference internal" href="SURVIVAL_ANALYSIS.html"><span class="std std-doc">See here for how to do this</span></a>) anyway and this can deal with cells that are lost to follow up. So it is not a problem to use the uncorrected filtered data.</p></li>
 </ul>
 </section>
 </section>
@@ -221,10 +202,7 @@
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="MANUAL_TRACKING.html" class="btn btn-neutral float-left" title="Manual tracking and error correction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="PLUGIN_TUTORIAL.html" class="btn btn-neutral float-right" title="Plugin tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

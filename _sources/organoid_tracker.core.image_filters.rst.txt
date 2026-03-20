@@ -3,5 +3,5 @@ organoid\_tracker.core.image\_filters module
 
 .. automodule:: organoid_tracker.core.image_filters
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

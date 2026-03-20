@@ -3,5 +3,5 @@ organoid\_tracker.imaging.lines module
 
 .. automodule:: organoid_tracker.imaging.lines
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

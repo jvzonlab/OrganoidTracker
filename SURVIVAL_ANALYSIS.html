@@ -1,21 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Calibrate Marginalization &mdash; OrganoidTracker 2.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -26,42 +26,30 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> OrganoidTracker
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            OrganoidTracker
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
-<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
-<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
-<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SEGMENTATION_EDITOR.html">Segmentation masks editor</a></li>
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Calibrate Marginalization</a><ul>
+<li><a class="reference internal" href="#step-1-detect-missed-divisions">Step 1: Detect missed divisions</a></li>
+<li><a class="reference internal" href="#step-2-run-analysis-in-gui">Step 2: Run analysis in GUI</a></li>
+<li><a class="reference internal" href="#step-3-export-data">Step 3: Export data</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
-<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a></li>
-</ul>
-
+</div>
         </div>
       </div>
     </nav>
@@ -75,8 +63,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Calibrate Marginalization</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Calibrate Marginalization</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/SURVIVAL_ANALYSIS.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -87,21 +75,21 @@
            <div itemprop="articleBody">
              
   <section id="calibrate-marginalization">
-<h1>Calibrate Marginalization<a class="headerlink" href="#calibrate-marginalization" title="Permalink to this heading"></a></h1>
-<p><a class="reference internal" href="index.html"><span class="doc std std-doc">← Back to main page</span></a></p>
+<h1>Calibrate Marginalization<a class="headerlink" href="#calibrate-marginalization" title="Link to this heading"></a></h1>
+<p><a class="reference internal" href="index.html"><span class="std std-doc">← Back to main page</span></a></p>
 <p>This allows you to replicate the analysis from our most recent paper (<a class="reference external" href="https://doi.org/10.1101/2024.10.11.617799">pre-print</a>). It allows you to extract lineage dynamics from uncorrected but filtered data in a statistically rigorous manner using survival analysis.</p>
 <section id="step-1-detect-missed-divisions">
-<h2>Step 1: Detect missed divisions<a class="headerlink" href="#step-1-detect-missed-divisions" title="Permalink to this heading"></a></h2>
+<h2>Step 1: Detect missed divisions<a class="headerlink" href="#step-1-detect-missed-divisions" title="Link to this heading"></a></h2>
 <p>In survival analysis it is key that the chance of the event under study (in our case cell divisions) is independent from the chance of being lost to follow-up. During cell tracking cells are often lost just before division which violates this condition. To break the relationship between cell division and being lost, we need to look a the end of every track fragment and evaluate if it was in the process of dividing.</p>
 <p>We do this with a neural network that detects if the cell is in the division process, defined as three frames before and after the moment of chromosome separation. This network can be trained the same as the normal division detection network by setting <code class="docutils literal notranslate"><span class="pre">full_window</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> in the <code class="docutils literal notranslate"><span class="pre">organoidtracker.ini</span></code>file.</p>
 <p>The first step is thus to run the full window division network on the filtered data. A pre-trained network trained on organoid data is available here.</p>
 </section>
 <section id="step-2-run-analysis-in-gui">
-<h2>Step 2: Run analysis in GUI<a class="headerlink" href="#step-2-run-analysis-in-gui" title="Permalink to this heading"></a></h2>
+<h2>Step 2: Run analysis in GUI<a class="headerlink" href="#step-2-run-analysis-in-gui" title="Link to this heading"></a></h2>
 <p>You can now make the survival curves using use <code class="docutils literal notranslate"><span class="pre">Tools</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Cell</span> <span class="pre">cycle</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Survival</span> <span class="pre">curves</span> <span class="pre">...</span></code>. If you are in the <code class="docutils literal notranslate"><span class="pre">all_experiments</span></code> tab it will automatically make curves for all organoids.</p>
 </section>
 <section id="step-3-export-data">
-<h2>Step 3: Export data<a class="headerlink" href="#step-3-export-data" title="Permalink to this heading"></a></h2>
+<h2>Step 3: Export data<a class="headerlink" href="#step-3-export-data" title="Link to this heading"></a></h2>
 <p>For more in depth analysis you can export the cell cycle lengths using <code class="docutils literal notranslate"><span class="pre">File</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Export</span> <span class="pre">cell</span> <span class="pre">cycle</span> <span class="pre">info</span></code>. If you want to customize the output you can adapt <code class="docutils literal notranslate"><span class="pre">plugin_cell_cycle_exporter.py</span></code>.</p>
 </section>
 </section>

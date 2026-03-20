@@ -3,5 +3,5 @@ organoid\_tracker.core.concurrent module
 
 .. automodule:: organoid_tracker.core.concurrent
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

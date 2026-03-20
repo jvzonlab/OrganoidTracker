@@ -17,5 +17,5 @@ Module contents
 
 .. automodule:: organoid_tracker.position_analysis
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

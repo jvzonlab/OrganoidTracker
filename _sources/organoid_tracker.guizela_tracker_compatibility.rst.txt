@@ -22,5 +22,5 @@ Module contents
 
 .. automodule:: organoid_tracker.guizela_tracker_compatibility
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

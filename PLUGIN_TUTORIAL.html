@@ -1,26 +1,24 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Plugin tutorial &mdash; OrganoidTracker 2.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Training the neural network" href="TRAINING_THE_NETWORK.html" />
-    <link rel="prev" title="Automatic tracking" href="AUTOMATIC_TRACKING.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -28,56 +26,39 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> OrganoidTracker
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            OrganoidTracker
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Plugin tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#first-steps">First steps</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#counting-the-cells">Counting the cells</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#displaying-a-graph">Displaying a graph</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#advanced-techniques">Advanced techniques</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#additional-locations-for-storing-plugins">Additional locations for storing plugins</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#multi-file-plugins">Multi-file plugins</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#adding-cell-types">Adding cell types</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#adding-command-line-scripts">Adding command-line scripts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#adding-custom-data-file-formats">Adding custom data file formats</a></li>
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Plugin tutorial</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#first-steps">First steps</a></li>
+<li><a class="reference internal" href="#counting-the-cells">Counting the cells</a></li>
+<li><a class="reference internal" href="#displaying-a-graph">Displaying a graph</a></li>
+<li><a class="reference internal" href="#advanced-techniques">Advanced techniques</a><ul>
+<li><a class="reference internal" href="#additional-locations-for-storing-plugins">Additional locations for storing plugins</a></li>
+<li><a class="reference internal" href="#multi-file-plugins">Multi-file plugins</a></li>
+<li><a class="reference internal" href="#adding-cell-types">Adding cell types</a></li>
+<li><a class="reference internal" href="#adding-command-line-scripts">Adding command-line scripts</a></li>
+<li><a class="reference internal" href="#adding-custom-data-file-formats">Adding custom data file formats</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
-<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
-<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SEGMENTATION_EDITOR.html">Segmentation masks editor</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
-<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a></li>
-</ul>
-
+</div>
         </div>
       </div>
     </nav>
@@ -91,8 +72,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Plugin tutorial</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Plugin tutorial</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/PLUGIN_TUTORIAL.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -103,15 +84,15 @@
            <div itemprop="articleBody">
              
   <section id="plugin-tutorial">
-<h1>Plugin tutorial<a class="headerlink" href="#plugin-tutorial" title="Permalink to this heading"></a></h1>
-<p><a class="reference internal" href="index.html"><span class="doc std std-doc">← Back to main page</span></a></p>
+<h1>Plugin tutorial<a class="headerlink" href="#plugin-tutorial" title="Link to this heading"></a></h1>
+<p><a class="reference internal" href="index.html"><span class="std std-doc">← Back to main page</span></a></p>
 <section id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading"></a></h2>
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h2>
 <p>Plugins (like the rest of OrganoidTracker) are programmed in Python, a “friendly” programming language used from beginners to experts. Every Python file that you place in the <code class="docutils literal notranslate"><span class="pre">organoid_tracker_plugins</span></code> that starts with <code class="docutils literal notranslate"><span class="pre">plugin_</span></code> is automatically loaded when the program starts. Plugins can be reloaded while the program is running, making very quick development possible.</p>
 <p>In this tutorial, we’re going to create a plugin that how many detected cells there are in each time point. No prior programming knowledge is necessary to read the code, but for writing your own code some knowledge of Python is necessary. If you haven’t used Python before, it’s best to follow a course or have a supervisor explaining things to you. Alternatively, there is the website <a class="reference external" href="https://automatetheboringstuff.com/">automatetheboringstuff.com</a> with a good Python tutorial.</p>
 </section>
 <section id="first-steps">
-<h2>First steps<a class="headerlink" href="#first-steps" title="Permalink to this heading"></a></h2>
+<h2>First steps<a class="headerlink" href="#first-steps" title="Link to this heading"></a></h2>
 <p>Let’s get started. Open OrganoidTracker, go to the file menu and click the plugin folder, as seen in the image:</p>
 <p><img alt="Opening the plugin folder" src="images%2Fplugin_creation.png" /></p>
 <p>For you, the path will of course be different. Once you click it, a File Explorer window will open. In this folder, create a new Python file. (You can do this from your favorite Python editor, like PyCharm.) Give the file a name like <code class="docutils literal notranslate"><span class="pre">plugin_some_example.py</span></code>. It’s important that the file name starts with <code class="docutils literal notranslate"><span class="pre">plugin_</span></code>, otherwise OrganoidTracker will not know that it is a plugin.</p>
@@ -142,7 +123,7 @@
 <p>That’s basically the entire plugin for now. Let’s create a second function to do the actual calculations.</p>
 </section>
 <section id="counting-the-cells">
-<h2>Counting the cells<a class="headerlink" href="#counting-the-cells" title="Permalink to this heading"></a></h2>
+<h2>Counting the cells<a class="headerlink" href="#counting-the-cells" title="Link to this heading"></a></h2>
 <p>Replace the text in the plugin file you have previously created with the following:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.gui</span><span class="w"> </span><span class="kn">import</span> <span class="n">dialog</span>
 
@@ -165,7 +146,7 @@
 <p>Save the file and reload all plugins (see the <code class="docutils literal notranslate"><span class="pre">File</span></code> menu of OrganoidTracker), or restart the program. If you have some tracking data loaded, the code will now display the number of cells at each time point, for example <code class="docutils literal notranslate"><span class="pre">[5,</span> <span class="pre">5,</span> <span class="pre">5,</span> <span class="pre">6,</span> <span class="pre">7,</span> <span class="pre">7,</span> <span class="pre">7]</span></code>. The part under <code class="docutils literal notranslate"><span class="pre">for</span> <span class="pre">time_point</span> <span class="pre">in</span> <span class="pre">experiment.time_points():</span></code> is run for reach time point, and every time that part runs it appends one value (the amount of cells in that time point) to the list <code class="docutils literal notranslate"><span class="pre">cell_counts</span></code>.</p>
 </section>
 <section id="displaying-a-graph">
-<h2>Displaying a graph<a class="headerlink" href="#displaying-a-graph" title="Permalink to this heading"></a></h2>
+<h2>Displaying a graph<a class="headerlink" href="#displaying-a-graph" title="Link to this heading"></a></h2>
 <p>It would be better to display this list as a graph. Fortunately, this is easily done using the widely used Python library Matplotlib. OrganoidTracker has a function to show a Matplotlib figure as a popup window. At the bottom of your plugin file, add the following function:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_display_my_figure</span><span class="p">(</span><span class="n">figure</span><span class="p">,</span> <span class="n">cell_counts</span><span class="p">):</span>
     <span class="n">axis</span> <span class="o">=</span> <span class="n">figure</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>  <span class="c1"># gca is short for &quot;get current axis&quot;</span>
@@ -183,18 +164,18 @@
 </div>
 <p>to actually display that figure. The function <code class="docutils literal notranslate"><span class="pre">popup_figure</span></code> first sets up a window and then uses the code <code class="docutils literal notranslate"><span class="pre">lambda</span> <span class="pre">figure:</span> <span class="pre">_display_my_figure(figure,</span> <span class="pre">cell_counts))</span></code> to draw something to the figure that was just created.</p>
 <p>After saving the file and reloading the plugins, you should now end up with a graph.</p>
-<p>Congratulations, you now know the basics of plugin writing!OrganoidTracker contains a large number of functions that help you writing a plugin. See the <a class="reference internal" href="API.html"><span class="doc std std-doc">API</span></a> page for a short introduction. The main code of OrganoidTracker is also contains a lot of comments, which should help you understanding what the code is doing. A “smart” code editor that automatically displays documentation (such as Pycharm or Visual Studio Code) also helps a lot. Try and see if you can understand how the plugin <code class="docutils literal notranslate"><span class="pre">plugin_count_dividng_cells.py</span></code> works.</p>
+<p>Congratulations, you now know the basics of plugin writing!OrganoidTracker contains a large number of functions that help you writing a plugin. See the <a class="reference internal" href="API.html"><span class="std std-doc">API</span></a> page for a short introduction. The main code of OrganoidTracker is also contains a lot of comments, which should help you understanding what the code is doing. A “smart” code editor that automatically displays documentation (such as Pycharm or Visual Studio Code) also helps a lot. Try and see if you can understand how the plugin <code class="docutils literal notranslate"><span class="pre">plugin_count_dividng_cells.py</span></code> works.</p>
 </section>
 <section id="advanced-techniques">
-<h2>Advanced techniques<a class="headerlink" href="#advanced-techniques" title="Permalink to this heading"></a></h2>
+<h2>Advanced techniques<a class="headerlink" href="#advanced-techniques" title="Link to this heading"></a></h2>
 <section id="additional-locations-for-storing-plugins">
-<h3>Additional locations for storing plugins<a class="headerlink" href="#additional-locations-for-storing-plugins" title="Permalink to this heading"></a></h3>
+<h3>Additional locations for storing plugins<a class="headerlink" href="#additional-locations-for-storing-plugins" title="Link to this heading"></a></h3>
 <p>In the same menu where you found the location of the plugins, there’s an option to add another folder. It’s just below the selected option:</p>
 <p><img alt="plugin_creation.png" src="images%2Fplugin_creation.png" /></p>
 <p>This helps to keep plugins for different projects together in a folder.</p>
 </section>
 <section id="multi-file-plugins">
-<h3>Multi-file plugins<a class="headerlink" href="#multi-file-plugins" title="Permalink to this heading"></a></h3>
+<h3>Multi-file plugins<a class="headerlink" href="#multi-file-plugins" title="Link to this heading"></a></h3>
 <p>For larger plugins, placing all code in a single file becomes unwieldy. Instead, you can also put your code in multiple files placed in a single directory. The directory must have a name that starts with <code class="docutils literal notranslate"><span class="pre">plugin_</span></code>, for example <code class="docutils literal notranslate"><span class="pre">plugin_directory_example</span></code>. In that folder, you must place an <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> file. This file should contain the hooks described above, such as the <code class="docutils literal notranslate"><span class="pre">get_menu_items</span></code> function. So you get this directory structure:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Plugin</span> <span class="n">directory</span><span class="o">/</span>
     <span class="n">plugin_some_example</span><span class="o">.</span><span class="n">py</span>
@@ -211,8 +192,8 @@
 </div>
 </section>
 <section id="adding-cell-types">
-<h3>Adding cell types<a class="headerlink" href="#adding-cell-types" title="Permalink to this heading"></a></h3>
-<p>OrganoidTracker has some special support for cell types, like coloring them differently and keeping a list of them for use in the menual data editor. Internally, cell types are stored as position metadata (see the <a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html"><span class="doc std std-doc">metadata tutorial</span></a>).</p>
+<h3>Adding cell types<a class="headerlink" href="#adding-cell-types" title="Link to this heading"></a></h3>
+<p>OrganoidTracker has some special support for cell types, like coloring them differently and keeping a list of them for use in the menual data editor. Internally, cell types are stored as position metadata (see the <a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html"><span class="std std-doc">metadata tutorial</span></a>).</p>
 <p>You can register cell types as follows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.marker</span><span class="w"> </span><span class="kn">import</span> <span class="n">Marker</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.position</span><span class="w"> </span><span class="kn">import</span> <span class="n">Position</span>
@@ -225,7 +206,7 @@
 <p>The <code class="docutils literal notranslate"><span class="pre">get_markers</span></code> function is called automatically by OrganoidTracker. The function must return a list of <code class="docutils literal notranslate"><span class="pre">Marker</span></code>s. Each marker provides what it is targeting (<code class="docutils literal notranslate"><span class="pre">Position</span></code>, <code class="docutils literal notranslate"><span class="pre">Beacon</span></code> or <code class="docutils literal notranslate"><span class="pre">Spline</span></code>), the name under which it is saved to the data files, a display name and a display color. The color is used for the border of the position markers and for the lineage trees.</p>
 </section>
 <section id="adding-command-line-scripts">
-<h3>Adding command-line scripts<a class="headerlink" href="#adding-command-line-scripts" title="Permalink to this heading"></a></h3>
+<h3>Adding command-line scripts<a class="headerlink" href="#adding-command-line-scripts" title="Link to this heading"></a></h3>
 <p>Adding an additional organoid_tracker script (like <code class="docutils literal notranslate"><span class="pre">organoid_tracker_compare_positions.py</span></code>) is not possible from a plugin. Instead, you can use a subcommand of <code class="docutils literal notranslate"><span class="pre">organoid_tracker.py</span></code>. Say you want to add a command named “my_command”, then you could call it like:</p>
 <p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">organoid_tracker.py</span> <span class="pre">my_command</span></code></p>
 <p>To implement this, add the following code to your plugin:</p>
@@ -247,7 +228,7 @@
 <p>This will only call your command, and not show the graphical program. The last line of the command handler, <code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">0</span></code>, means that the command executed succesfully. If it returns any other number, then this is seen as an error code. The error code is passed on to the operating system (Windows, Linux, etc.).</p>
 </section>
 <section id="adding-custom-data-file-formats">
-<h3>Adding custom data file formats<a class="headerlink" href="#adding-custom-data-file-formats" title="Permalink to this heading"></a></h3>
+<h3>Adding custom data file formats<a class="headerlink" href="#adding-custom-data-file-formats" title="Link to this heading"></a></h3>
 <p>You can add exporting support for some custom file format by adding a new menu option to the GUI. See the “First Steps”
 section above for how to add a new menu option. Then just make your menu option call a function that does the exporting.</p>
 <p>For importing some custom file format, the same approach can be used. However, it’s better to register your custom
@@ -282,10 +263,7 @@ the program window. Here’s an example of a file loader for a fictional “XYZ�
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="AUTOMATIC_TRACKING.html" class="btn btn-neutral float-left" title="Automatic tracking" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="TRAINING_THE_NETWORK.html" class="btn btn-neutral float-right" title="Training the neural network" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

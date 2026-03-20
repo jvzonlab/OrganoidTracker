@@ -3,5 +3,5 @@ organoid\_tracker.plugin.instance module
 
 .. automodule:: organoid_tracker.plugin.instance
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

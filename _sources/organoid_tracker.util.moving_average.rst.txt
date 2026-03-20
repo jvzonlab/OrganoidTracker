@@ -3,5 +3,5 @@ organoid\_tracker.util.moving\_average module
 
 .. automodule:: organoid_tracker.util.moving_average
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

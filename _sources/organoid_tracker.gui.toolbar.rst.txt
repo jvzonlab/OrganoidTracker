@@ -3,5 +3,5 @@ organoid\_tracker.gui.toolbar module
 
 .. automodule:: organoid_tracker.gui.toolbar
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

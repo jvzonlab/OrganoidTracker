@@ -3,5 +3,5 @@ organoid\_tracker.visualizer.image\_offset\_editor module
 
 .. automodule:: organoid_tracker.visualizer.image_offset_editor
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

@@ -3,5 +3,5 @@ organoid\_tracker.visualizer.abstract\_editor module
 
 .. automodule:: organoid_tracker.visualizer.abstract_editor
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

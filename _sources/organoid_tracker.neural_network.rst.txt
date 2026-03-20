@@ -26,5 +26,5 @@ Module contents
 
 .. automodule:: organoid_tracker.neural_network
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

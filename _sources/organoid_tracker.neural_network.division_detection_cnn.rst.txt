@@ -18,5 +18,5 @@ Module contents
 
 .. automodule:: organoid_tracker.neural_network.division_detection_cnn
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

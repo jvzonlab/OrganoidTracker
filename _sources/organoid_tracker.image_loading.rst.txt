@@ -23,5 +23,5 @@ Module contents
 
 .. automodule:: organoid_tracker.image_loading
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

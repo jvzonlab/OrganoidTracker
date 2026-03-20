@@ -17,5 +17,5 @@ Module contents
 
 .. automodule:: organoid_tracker.text_popup
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

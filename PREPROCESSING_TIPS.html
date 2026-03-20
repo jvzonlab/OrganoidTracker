@@ -1,21 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Preprocessing tips &mdash; OrganoidTracker 2.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -26,42 +26,30 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> OrganoidTracker
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            OrganoidTracker
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
-<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
-<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
-<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SEGMENTATION_EDITOR.html">Segmentation masks editor</a></li>
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Preprocessing tips</a><ul>
+<li><a class="reference internal" href="#scaling-your-image">Scaling your image</a></li>
+<li><a class="reference internal" href="#removing-your-background">Removing your background</a></li>
+<li><a class="reference internal" href="#tune-contrast">Tune contrast</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
-<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a></li>
-</ul>
-
+</div>
         </div>
       </div>
     </nav>
@@ -75,8 +63,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Preprocessing tips</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Preprocessing tips</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/PREPROCESSING_TIPS.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -87,19 +75,19 @@
            <div itemprop="articleBody">
              
   <section id="preprocessing-tips">
-<h1>Preprocessing tips<a class="headerlink" href="#preprocessing-tips" title="Permalink to this heading"></a></h1>
-<p><a class="reference internal" href="index.html"><span class="doc std std-doc">← Back to main page</span></a></p>
+<h1>Preprocessing tips<a class="headerlink" href="#preprocessing-tips" title="Link to this heading"></a></h1>
+<p><a class="reference internal" href="index.html"><span class="std std-doc">← Back to main page</span></a></p>
 <p>This page contains some preprocessing tips.</p>
 <section id="scaling-your-image">
-<h2>Scaling your image<a class="headerlink" href="#scaling-your-image" title="Permalink to this heading"></a></h2>
+<h2>Scaling your image<a class="headerlink" href="#scaling-your-image" title="Link to this heading"></a></h2>
 <p>The neural networks in OrganoidTracker are all convolutional neural networks. This means first of all that they are not scale invariant. The best results are achieved when the nuclei have the same volume (in pixels) as the nuclei in the training data. For the models trained on intestinal organoid data available <a class="reference external" href="https://zenodo.org/records/13946119">on zenodo</a>, this means that nuclei should be around 25x25x4 (xyz) pixels. This match should be rather exact, within a 80% to 120% range. Scaling the data is easily achieved in for instance imageJ. Downscaling in Z can often introduce weird effects if not done by an integer factor, so try to avoid that.</p>
 </section>
 <section id="removing-your-background">
-<h2>Removing your background<a class="headerlink" href="#removing-your-background" title="Permalink to this heading"></a></h2>
+<h2>Removing your background<a class="headerlink" href="#removing-your-background" title="Link to this heading"></a></h2>
 <p>The cell detection network has to decide between what is foreground and what is background. So it helps a lot if the background is similar to the training data. In our training data the offset was set such that the background has largely a value of zero. This also seems to help during training. In order to give your data background values of zero, using a background subtraction algorithm followed by subtracting a baseline value is recommended. Blurring the images a bit to remove noise before this process can also help.</p>
 </section>
 <section id="tune-contrast">
-<h2>Tune contrast<a class="headerlink" href="#tune-contrast" title="Permalink to this heading"></a></h2>
+<h2>Tune contrast<a class="headerlink" href="#tune-contrast" title="Link to this heading"></a></h2>
 <p>In our training data the fluorescence intensities of the nuclei are rather similar (factor four difference between the bright ones and the dim ones). If the contrast is higher the data will be difficult to interpret and dim cells classified as background. This is easily solved by taking the square root of the intensity values (do not do this in uint8, but in uint16 or in 32bit). If that is not enough you can take another square root.</p>
 </section>
 </section>

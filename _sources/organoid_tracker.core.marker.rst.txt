@@ -3,5 +3,5 @@ organoid\_tracker.core.marker module
 
 .. automodule:: organoid_tracker.core.marker
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

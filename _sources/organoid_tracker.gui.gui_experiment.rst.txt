@@ -3,5 +3,5 @@ organoid\_tracker.gui.gui\_experiment module
 
 .. automodule:: organoid_tracker.gui.gui_experiment
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

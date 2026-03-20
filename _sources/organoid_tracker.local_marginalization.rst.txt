@@ -15,5 +15,5 @@ Module contents
 
 .. automodule:: organoid_tracker.local_marginalization
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

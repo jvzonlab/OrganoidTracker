@@ -3,5 +3,5 @@ organoid\_tracker.util.xml\_wrapper module
 
 .. automodule:: organoid_tracker.util.xml_wrapper
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

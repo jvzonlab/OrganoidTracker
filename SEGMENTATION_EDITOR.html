@@ -1,26 +1,24 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Segmentation masks editor &mdash; OrganoidTracker 2.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API cookbook" href="API.html" />
-    <link rel="prev" title="Working with custom metadata" href="WORKING_WITH_CUSTOM_METADATA.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -28,46 +26,29 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> OrganoidTracker
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            OrganoidTracker
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
-<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
-<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
-<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Segmentation masks editor</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#opening-the-segmentation-editor">Opening the segmentation editor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#making-changes-to-the-segmentation-masks">Making changes to the segmentation masks</a></li>
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Segmentation masks editor</a><ul>
+<li><a class="reference internal" href="#opening-the-segmentation-editor">Opening the segmentation editor</a></li>
+<li><a class="reference internal" href="#making-changes-to-the-segmentation-masks">Making changes to the segmentation masks</a></li>
 </ul>
 </li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
-<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
-<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
-<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a></li>
-</ul>
-
+</div>
         </div>
       </div>
     </nav>
@@ -81,8 +62,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Segmentation masks editor</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Segmentation masks editor</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/SEGMENTATION_EDITOR.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -93,11 +74,11 @@
            <div itemprop="articleBody">
              
   <section id="segmentation-masks-editor">
-<h1>Segmentation masks editor<a class="headerlink" href="#segmentation-masks-editor" title="Permalink to this heading"></a></h1>
-<p><a class="reference internal" href="index.html"><span class="doc std std-doc">← Back to main page</span></a></p>
+<h1>Segmentation masks editor<a class="headerlink" href="#segmentation-masks-editor" title="Link to this heading"></a></h1>
+<p><a class="reference internal" href="index.html"><span class="std std-doc">← Back to main page</span></a></p>
 <p>OrganoidTracker cannot segment nuclei/cells/etc. on its own, but it can view and edit existing segmentations.</p>
 <section id="opening-the-segmentation-editor">
-<h2>Opening the segmentation editor<a class="headerlink" href="#opening-the-segmentation-editor" title="Permalink to this heading"></a></h2>
+<h2>Opening the segmentation editor<a class="headerlink" href="#opening-the-segmentation-editor" title="Link to this heading"></a></h2>
 <p>OrganoidTracker expect segmentations to be stored as labeled images. These are images with an integer dtype, where all
 background pixels are 0, the first object with label 1, the second object with label 2, and so on. If you want to
 create such segmentations programmatically, then <a class="reference external" href="https://scikit-image.org/docs/stable/user_guide/tutorial_segmentation.html">this tutorial of scikit-image</a> explains how to create such
@@ -115,7 +96,7 @@ that program will tell you that you need to convert your segmentation images to 
 per time point (3D images) or one PNG file per time point (2D images).</p>
 </section>
 <section id="making-changes-to-the-segmentation-masks">
-<h2>Making changes to the segmentation masks<a class="headerlink" href="#making-changes-to-the-segmentation-masks" title="Permalink to this heading"></a></h2>
+<h2>Making changes to the segmentation masks<a class="headerlink" href="#making-changes-to-the-segmentation-masks" title="Link to this heading"></a></h2>
 <p>Make sure the segmentation editor is open and that you have selected the correct channel as the segmentation channel.
 Then, switch to the channel with the microscopy images on which the segmentation is based. (Channel switching is done
 using the <code class="docutils literal notranslate"><span class="pre">Navigate</span></code> menu or the <code class="docutils literal notranslate"><span class="pre">,</span></code> and <code class="docutils literal notranslate"><span class="pre">.</span></code> keys.)</p>
@@ -140,10 +121,7 @@ delete an entire object, double-click the cell and press Shift+Delete.</p>
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="WORKING_WITH_CUSTOM_METADATA.html" class="btn btn-neutral float-left" title="Working with custom metadata" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="API.html" class="btn btn-neutral float-right" title="API cookbook" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 
