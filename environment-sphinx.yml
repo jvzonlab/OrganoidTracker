@@ -6,15 +6,21 @@ channels:
   - conda-forge
 dependencies:
   - matplotlib-base
-  - numpy
-  - pip
-  - python
   - tifffile
   - scikit-image
+  - scikit-learn
   - scipy
   - nd2reader
-  - pyside2
-  - sphinx=5.0.2
+  - pyside6
+  - pandas
+  - h5py
+  - lifelines
+  - tqdm
+  - aicspylibczi
+  - ome-zarr
+  - geff
+  - sphinx=9.1.0
+  - myst-parser=5.0.0  # Markdown parsing
+  - pip
   - pip:
-    - myst-parser==0.18.0 # Markdown parsing
-    - sphinx-rtd-theme==1.0.0 # Nicer theme
+    - sphinx-rtd-theme==3.1.0  # Nicer theme (installed via PIP; same package on Conda-forge doesn't work with Sphinx 9)
