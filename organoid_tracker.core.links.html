@@ -18,7 +18,9 @@
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="organoid_tracker.core.marker module" href="organoid_tracker.core.marker.html" />
+    <link rel="prev" title="organoid_tracker.core.link_data module" href="organoid_tracker.core.link_data.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -40,88 +42,62 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">organoid_tracker.core.links module</a><ul>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack"><code class="docutils literal notranslate"><span class="pre">LinkingTrack</span></code></a><ul>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.find_all_descending_tracks"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.find_all_descending_tracks()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.find_all_previous_and_descending_tracks"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.find_all_previous_and_descending_tracks()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.find_all_previous_tracks"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.find_all_previous_tracks()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.find_all_tracks_in_same_lineage"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.find_all_tracks_in_same_lineage()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.find_first_position"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.find_first_position()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.find_last_position"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.find_last_position()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.find_position_at_time_point_number"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.find_position_at_time_point_number()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.first_time_point"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.first_time_point()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.first_time_point_number"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.first_time_point_number()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.get_age"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.get_age()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.get_duration_in_time_points"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.get_duration_in_time_points()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.get_next_tracks"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.get_next_tracks()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.get_previous_tracks"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.get_previous_tracks()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.is_time_point_number_in_range"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.is_time_point_number_in_range()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.last_time_point"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.last_time_point()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.last_time_point_number"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.last_time_point_number()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.max_time_point_number"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.max_time_point_number()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.min_time_point_number"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.min_time_point_number()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.positions"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.positions()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.LinkingTrack.will_divide"><code class="docutils literal notranslate"><span class="pre">LinkingTrack.will_divide()</span></code></a></li>
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SEGMENTATION_EDITOR.html">Segmentation masks editor</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="organoid_tracker.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.comparison.html">organoid_tracker.comparison package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.config.html">organoid_tracker.config package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.connecting.html">organoid_tracker.connecting package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.connection_analysis.html">organoid_tracker.connection_analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.coordinate_system.html">organoid_tracker.coordinate_system package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="organoid_tracker.core.html">organoid_tracker.core package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="organoid_tracker.core.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core">Module contents</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links"><code class="docutils literal notranslate"><span class="pre">Links</span></code></a><ul>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.add_link"><code class="docutils literal notranslate"><span class="pre">Links.add_link()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.add_links"><code class="docutils literal notranslate"><span class="pre">Links.add_links()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.add_track"><code class="docutils literal notranslate"><span class="pre">Links.add_track()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.connect_tracks"><code class="docutils literal notranslate"><span class="pre">Links.connect_tracks()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.contains_link"><code class="docutils literal notranslate"><span class="pre">Links.contains_link()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.contains_position"><code class="docutils literal notranslate"><span class="pre">Links.contains_position()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.copy"><code class="docutils literal notranslate"><span class="pre">Links.copy()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.debug_sanity_check"><code class="docutils literal notranslate"><span class="pre">Links.debug_sanity_check()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.find_all_data_names"><code class="docutils literal notranslate"><span class="pre">Links.find_all_data_names()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.find_all_data_of_lineage"><code class="docutils literal notranslate"><span class="pre">Links.find_all_data_of_lineage()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.find_all_data_of_link"><code class="docutils literal notranslate"><span class="pre">Links.find_all_data_of_link()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.find_all_links"><code class="docutils literal notranslate"><span class="pre">Links.find_all_links()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.find_all_links_with_data"><code class="docutils literal notranslate"><span class="pre">Links.find_all_links_with_data()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.find_all_positions"><code class="docutils literal notranslate"><span class="pre">Links.find_all_positions()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.find_all_tracks"><code class="docutils literal notranslate"><span class="pre">Links.find_all_tracks()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.find_all_tracks_and_ids"><code class="docutils literal notranslate"><span class="pre">Links.find_all_tracks_and_ids()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.find_all_tracks_in_time_point"><code class="docutils literal notranslate"><span class="pre">Links.find_all_tracks_in_time_point()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.find_appeared_positions"><code class="docutils literal notranslate"><span class="pre">Links.find_appeared_positions()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.find_disappeared_positions"><code class="docutils literal notranslate"><span class="pre">Links.find_disappeared_positions()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.find_ending_tracks"><code class="docutils literal notranslate"><span class="pre">Links.find_ending_tracks()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.find_futures"><code class="docutils literal notranslate"><span class="pre">Links.find_futures()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.find_links_of"><code class="docutils literal notranslate"><span class="pre">Links.find_links_of()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.find_pasts"><code class="docutils literal notranslate"><span class="pre">Links.find_pasts()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.find_single_future"><code class="docutils literal notranslate"><span class="pre">Links.find_single_future()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.find_single_past"><code class="docutils literal notranslate"><span class="pre">Links.find_single_past()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.find_starting_tracks"><code class="docutils literal notranslate"><span class="pre">Links.find_starting_tracks()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.get_highest_track_id"><code class="docutils literal notranslate"><span class="pre">Links.get_highest_track_id()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.get_lineage_data"><code class="docutils literal notranslate"><span class="pre">Links.get_lineage_data()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.get_link_data"><code class="docutils literal notranslate"><span class="pre">Links.get_link_data()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.get_position_at_time_point"><code class="docutils literal notranslate"><span class="pre">Links.get_position_at_time_point()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.get_position_near_time_point"><code class="docutils literal notranslate"><span class="pre">Links.get_position_near_time_point()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.get_track"><code class="docutils literal notranslate"><span class="pre">Links.get_track()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.get_track_by_id"><code class="docutils literal notranslate"><span class="pre">Links.get_track_by_id()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.get_track_id"><code class="docutils literal notranslate"><span class="pre">Links.get_track_id()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.has_link_data"><code class="docutils literal notranslate"><span class="pre">Links.has_link_data()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.has_links"><code class="docutils literal notranslate"><span class="pre">Links.has_links()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.iterate_to_future"><code class="docutils literal notranslate"><span class="pre">Links.iterate_to_future()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.iterate_to_past"><code class="docutils literal notranslate"><span class="pre">Links.iterate_to_past()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.merge_data"><code class="docutils literal notranslate"><span class="pre">Links.merge_data()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.merge_link_meta_data"><code class="docutils literal notranslate"><span class="pre">Links.merge_link_meta_data()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.move_in_time"><code class="docutils literal notranslate"><span class="pre">Links.move_in_time()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.of_time_point"><code class="docutils literal notranslate"><span class="pre">Links.of_time_point()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.remove_all_links"><code class="docutils literal notranslate"><span class="pre">Links.remove_all_links()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.remove_link"><code class="docutils literal notranslate"><span class="pre">Links.remove_link()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.remove_links_of_position"><code class="docutils literal notranslate"><span class="pre">Links.remove_links_of_position()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.replace_position"><code class="docutils literal notranslate"><span class="pre">Links.replace_position()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.set_lineage_data"><code class="docutils literal notranslate"><span class="pre">Links.set_lineage_data()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.set_link_data"><code class="docutils literal notranslate"><span class="pre">Links.set_link_data()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.links.Links.sort_tracks_by_x"><code class="docutils literal notranslate"><span class="pre">Links.sort_tracks_by_x()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.gui.html">organoid_tracker.gui package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html">organoid_tracker.guizela_tracker_compatibility package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.image_loading.html">organoid_tracker.image_loading package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.imaging.html">organoid_tracker.imaging package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking.html">organoid_tracker.linking package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking_analysis.html">organoid_tracker.linking_analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.local_marginalization.html">organoid_tracker.local_marginalization package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.neural_network.html">organoid_tracker.neural_network package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.plugin.html">organoid_tracker.plugin package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_analysis.html">organoid_tracker.position_analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection.html">organoid_tracker.position_detection package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.text_popup.html">organoid_tracker.text_popup package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.util.html">organoid_tracker.util package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.visualizer.html">organoid_tracker.visualizer package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="organoid_tracker.html#module-organoid_tracker">Module contents</a></li>
 </ul>
 </li>
 </ul>
-</li>
-</ul>
-</div>
+
         </div>
       </div>
     </nav>
@@ -136,6 +112,8 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="organoid_tracker.html">organoid_tracker package</a></li>
+          <li class="breadcrumb-item"><a href="organoid_tracker.core.html">organoid_tracker.core package</a></li>
       <li class="breadcrumb-item active">organoid_tracker.core.links module</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/organoid_tracker.core.links.rst.txt" rel="nofollow"> View page source</a>
@@ -635,7 +613,10 @@ find_starting_tracks).</p>
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="organoid_tracker.core.link_data.html" class="btn btn-neutral float-left" title="organoid_tracker.core.link_data module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="organoid_tracker.core.marker.html" class="btn btn-neutral float-right" title="organoid_tracker.core.marker module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

@@ -45,7 +45,7 @@ Want to measure the migration of a cell? You can of course track the x, y and z 
 The program cannot segment nuclei/cells on its own, but it can view and edit existing segmentations. You can find more information about this in the [segmentation editor tutorial](SEGMENTATION_EDITOR.md).
 
 
-:::{eval-rst}
+```{eval-rst}
 .. Hidden TOCs
 
 .. toctree::
@@ -81,4 +81,4 @@ The program cannot segment nuclei/cells on its own, but it can view and edit exi
    :hidden:
 
    organoid_tracker
-:::
+```

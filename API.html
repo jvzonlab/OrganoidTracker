@@ -18,7 +18,9 @@
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Batch operations" href="BATCH_EDITING.html" />
+    <link rel="prev" title="Segmentation masks editor" href="SEGMENTATION_EDITOR.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -40,27 +42,48 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">API cookbook</a><ul>
-<li><a class="reference internal" href="#how-do-i-save-and-load-tracking-data">How do I save and load tracking data?</a></li>
-<li><a class="reference internal" href="#how-do-i-iterate-over-all-positions-of-a-particular-time-point">How do I iterate over all positions of a particular time point?</a></li>
-<li><a class="reference internal" href="#how-do-i-find-the-first-last-time-point">How do I find the first/last time point?</a></li>
-<li><a class="reference internal" href="#how-do-i-iterate-over-all-positions-in-all-time-points">How do I iterate over all positions in all time points?</a></li>
-<li><a class="reference internal" href="#how-do-i-find-the-nearest-position">How do I find the nearest position?</a></li>
-<li><a class="reference internal" href="#how-do-i-check-whether-a-link-exists-between-two-positions">How do I check whether a link exists between two positions?</a></li>
-<li><a class="reference internal" href="#how-do-i-get-the-position-of-the-same-cell-in-the-next-previous-time-point">How do I get the position of the same cell in the next/previous time point?</a></li>
-<li><a class="reference internal" href="#how-do-i-measure-some-property-of-a-cell-over-time">How do I measure some property of a cell over time?</a></li>
-<li><a class="reference internal" href="#how-do-i-find-all-dead-cells">How do I find all dead cells?</a></li>
-<li><a class="reference internal" href="#how-do-i-work-with-lineage-trees">How do I work with lineage trees?</a></li>
-<li><a class="reference internal" href="#how-do-i-know-how-much-time-a-time-point-takes">How do I know how much time a time point takes?</a></li>
-<li><a class="reference internal" href="#how-do-i-get-set-the-image-resolution">How do I get/set the image resolution?</a></li>
-<li><a class="reference internal" href="#how-do-i-automatically-open-organoidtracker-from-a-standalone-script">How do I automatically open OrganoidTracker from a standalone script?</a></li>
-<li><a class="reference internal" href="#how-do-i-work-with-splines">How do I work with splines?</a></li>
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SEGMENTATION_EDITOR.html">Segmentation masks editor</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API cookbook</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-save-and-load-tracking-data">How do I save and load tracking data?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-iterate-over-all-positions-of-a-particular-time-point">How do I iterate over all positions of a particular time point?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-find-the-first-last-time-point">How do I find the first/last time point?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-iterate-over-all-positions-in-all-time-points">How do I iterate over all positions in all time points?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-find-the-nearest-position">How do I find the nearest position?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-check-whether-a-link-exists-between-two-positions">How do I check whether a link exists between two positions?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-get-the-position-of-the-same-cell-in-the-next-previous-time-point">How do I get the position of the same cell in the next/previous time point?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-measure-some-property-of-a-cell-over-time">How do I measure some property of a cell over time?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-find-all-dead-cells">How do I find all dead cells?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-work-with-lineage-trees">How do I work with lineage trees?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-know-how-much-time-a-time-point-takes">How do I know how much time a time point takes?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-get-set-the-image-resolution">How do I get/set the image resolution?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-automatically-open-organoidtracker-from-a-standalone-script">How do I automatically open OrganoidTracker from a standalone script?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-work-with-splines">How do I work with splines?</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
 </ul>
-</div>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a></li>
+</ul>
+
         </div>
       </div>
     </nav>
@@ -376,7 +399,10 @@
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="SEGMENTATION_EDITOR.html" class="btn btn-neutral float-left" title="Segmentation masks editor" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="BATCH_EDITING.html" class="btn btn-neutral float-right" title="Batch operations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

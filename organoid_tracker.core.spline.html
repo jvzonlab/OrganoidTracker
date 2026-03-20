@@ -18,7 +18,9 @@
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="organoid_tracker.core.typing module" href="organoid_tracker.core.typing.html" />
+    <link rel="prev" title="organoid_tracker.core.resolution module" href="organoid_tracker.core.resolution.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -40,66 +42,62 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">organoid_tracker.core.spline module</a><ul>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.Spline"><code class="docutils literal notranslate"><span class="pre">Spline</span></code></a><ul>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.Spline.add_point"><code class="docutils literal notranslate"><span class="pre">Spline.add_point()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.Spline.copy"><code class="docutils literal notranslate"><span class="pre">Spline.copy()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.Spline.from_position_on_axis"><code class="docutils literal notranslate"><span class="pre">Spline.from_position_on_axis()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.Spline.get_direction_marker"><code class="docutils literal notranslate"><span class="pre">Spline.get_direction_marker()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.Spline.get_interpolation_2d"><code class="docutils literal notranslate"><span class="pre">Spline.get_interpolation_2d()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.Spline.get_interpolation_3d"><code class="docutils literal notranslate"><span class="pre">Spline.get_interpolation_3d()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.Spline.get_offset"><code class="docutils literal notranslate"><span class="pre">Spline.get_offset()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.Spline.get_points_2d"><code class="docutils literal notranslate"><span class="pre">Spline.get_points_2d()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.Spline.get_points_3d"><code class="docutils literal notranslate"><span class="pre">Spline.get_points_3d()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.Spline.get_z"><code class="docutils literal notranslate"><span class="pre">Spline.get_z()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.Spline.length"><code class="docutils literal notranslate"><span class="pre">Spline.length()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.Spline.move_points"><code class="docutils literal notranslate"><span class="pre">Spline.move_points()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.Spline.remove_point"><code class="docutils literal notranslate"><span class="pre">Spline.remove_point()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.Spline.set_offset"><code class="docutils literal notranslate"><span class="pre">Spline.set_offset()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.Spline.to_position_on_axis"><code class="docutils literal notranslate"><span class="pre">Spline.to_position_on_axis()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.Spline.update_offset_for_positions"><code class="docutils literal notranslate"><span class="pre">Spline.update_offset_for_positions()</span></code></a></li>
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AUTOMATIC_TRACKING.html">Automatic tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SEGMENTATION_EDITOR.html">Segmentation masks editor</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="organoid_tracker.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.comparison.html">organoid_tracker.comparison package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.config.html">organoid_tracker.config package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.connecting.html">organoid_tracker.connecting package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.connection_analysis.html">organoid_tracker.connection_analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.coordinate_system.html">organoid_tracker.coordinate_system package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="organoid_tracker.core.html">organoid_tracker.core package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="organoid_tracker.core.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="organoid_tracker.core.html#module-organoid_tracker.core">Module contents</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection"><code class="docutils literal notranslate"><span class="pre">SplineCollection</span></code></a><ul>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.add_spline"><code class="docutils literal notranslate"><span class="pre">SplineCollection.add_spline()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.all_splines"><code class="docutils literal notranslate"><span class="pre">SplineCollection.all_splines()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.exists"><code class="docutils literal notranslate"><span class="pre">SplineCollection.exists()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.first_time_point"><code class="docutils literal notranslate"><span class="pre">SplineCollection.first_time_point()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.first_time_point_number"><code class="docutils literal notranslate"><span class="pre">SplineCollection.first_time_point_number()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.get_marker_name"><code class="docutils literal notranslate"><span class="pre">SplineCollection.get_marker_name()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.get_marker_names"><code class="docutils literal notranslate"><span class="pre">SplineCollection.get_marker_names()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.get_spline"><code class="docutils literal notranslate"><span class="pre">SplineCollection.get_spline()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.has_splines"><code class="docutils literal notranslate"><span class="pre">SplineCollection.has_splines()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.is_axis"><code class="docutils literal notranslate"><span class="pre">SplineCollection.is_axis()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.last_time_point"><code class="docutils literal notranslate"><span class="pre">SplineCollection.last_time_point()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.last_time_point_number"><code class="docutils literal notranslate"><span class="pre">SplineCollection.last_time_point_number()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.move_in_time"><code class="docutils literal notranslate"><span class="pre">SplineCollection.move_in_time()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.of_time_point"><code class="docutils literal notranslate"><span class="pre">SplineCollection.of_time_point()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.reference_time_point"><code class="docutils literal notranslate"><span class="pre">SplineCollection.reference_time_point()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.remove_spline"><code class="docutils literal notranslate"><span class="pre">SplineCollection.remove_spline()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.set_marker"><code class="docutils literal notranslate"><span class="pre">SplineCollection.set_marker()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.set_marker_name"><code class="docutils literal notranslate"><span class="pre">SplineCollection.set_marker_name()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.time_points"><code class="docutils literal notranslate"><span class="pre">SplineCollection.time_points()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.to_position_on_original_axis"><code class="docutils literal notranslate"><span class="pre">SplineCollection.to_position_on_original_axis()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.to_position_on_spline"><code class="docutils literal notranslate"><span class="pre">SplineCollection.to_position_on_spline()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplineCollection.update_for_changed_positions"><code class="docutils literal notranslate"><span class="pre">SplineCollection.update_for_changed_positions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.gui.html">organoid_tracker.gui package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.guizela_tracker_compatibility.html">organoid_tracker.guizela_tracker_compatibility package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.image_loading.html">organoid_tracker.image_loading package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.imaging.html">organoid_tracker.imaging package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking.html">organoid_tracker.linking package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.linking_analysis.html">organoid_tracker.linking_analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.local_marginalization.html">organoid_tracker.local_marginalization package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.neural_network.html">organoid_tracker.neural_network package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.plugin.html">organoid_tracker.plugin package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_analysis.html">organoid_tracker.position_analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.position_detection.html">organoid_tracker.position_detection package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.text_popup.html">organoid_tracker.text_popup package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.util.html">organoid_tracker.util package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organoid_tracker.visualizer.html">organoid_tracker.visualizer package</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplinePosition"><code class="docutils literal notranslate"><span class="pre">SplinePosition</span></code></a><ul>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplinePosition.calculate_angle"><code class="docutils literal notranslate"><span class="pre">SplinePosition.calculate_angle()</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplinePosition.distance"><code class="docutils literal notranslate"><span class="pre">SplinePosition.distance</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplinePosition.pos"><code class="docutils literal notranslate"><span class="pre">SplinePosition.pos</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplinePosition.spline"><code class="docutils literal notranslate"><span class="pre">SplinePosition.spline</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplinePosition.spline_id"><code class="docutils literal notranslate"><span class="pre">SplinePosition.spline_id</span></code></a></li>
-<li><a class="reference internal" href="#organoid_tracker.core.spline.SplinePosition.time_point"><code class="docutils literal notranslate"><span class="pre">SplinePosition.time_point</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="organoid_tracker.html#module-organoid_tracker">Module contents</a></li>
 </ul>
 </li>
 </ul>
-</li>
-</ul>
-</div>
+
         </div>
       </div>
     </nav>
@@ -114,6 +112,8 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="organoid_tracker.html">organoid_tracker package</a></li>
+          <li class="breadcrumb-item"><a href="organoid_tracker.core.html">organoid_tracker.core package</a></li>
       <li class="breadcrumb-item active">organoid_tracker.core.spline module</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/organoid_tracker.core.spline.rst.txt" rel="nofollow"> View page source</a>
@@ -429,7 +429,10 @@ to the spline are recorded.</p>
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="organoid_tracker.core.resolution.html" class="btn btn-neutral float-left" title="organoid_tracker.core.resolution module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="organoid_tracker.core.typing.html" class="btn btn-neutral float-right" title="organoid_tracker.core.typing module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

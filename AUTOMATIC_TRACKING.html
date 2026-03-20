@@ -18,7 +18,9 @@
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Plugin tutorial" href="PLUGIN_TUTORIAL.html" />
+    <link rel="prev" title="Manual tracking and error correction" href="MANUAL_TRACKING.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -40,30 +42,51 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">Automatic tracking</a><ul>
-<li><a class="reference internal" href="#step-1-obtain-nucleus-positions">Step 1: Obtain nucleus positions</a><ul>
-<li><a class="reference internal" href="#correcting-for-changed-image-offsets">Correcting for changed image offsets</a></li>
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="MANUAL_TRACKING.html">Manual tracking and error correction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Automatic tracking</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#step-1-obtain-nucleus-positions">Step 1: Obtain nucleus positions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#correcting-for-changed-image-offsets">Correcting for changed image offsets</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#step-2-obtain-division-likelihoods">Step 2: Obtain division likelihoods</a></li>
-<li><a class="reference internal" href="#step-3-obtaining-link-likelihoods">Step 3: Obtaining link likelihoods</a></li>
-<li><a class="reference internal" href="#step-4-create-tracks">Step 4: Create tracks</a><ul>
-<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-2-obtain-division-likelihoods">Step 2: Obtain division likelihoods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-3-obtaining-link-likelihoods">Step 3: Obtaining link likelihoods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-4-create-tracks">Step 4: Create tracks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#step-5-calculate-error-rates">Step 5: Calculate error rates</a><ul>
-<li><a class="reference internal" href="#id1">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-5-calculate-error-rates">Step 5: Calculate error rates</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Troubleshooting</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#step-6-manually-correct-warnings">Step 6: Manually correct warnings</a></li>
-<li><a class="reference internal" href="#what-to-do-if-my-results-aren-t-good">What to do if my results aren’t good?</a></li>
-<li><a class="reference internal" href="#step-7-automated-analysis">Step 7: Automated analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-6-manually-correct-warnings">Step 6: Manually correct warnings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-to-do-if-my-results-aren-t-good">What to do if my results aren’t good?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-7-automated-analysis">Step 7: Automated analysis</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="PLUGIN_TUTORIAL.html">Plugin tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRAINING_THE_NETWORK.html">Training the neural network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="JUPYTER_NOTEBOOK.html">Jupyter notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WORKING_WITH_CUSTOM_METADATA.html">Working with custom metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SEGMENTATION_EDITOR.html">Segmentation masks editor</a></li>
 </ul>
-</div>
+<p class="caption" role="heading"><span class="caption-text">For reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DATA_AXES.html">The data axes editor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKING_FORMATS.html">Supported tracking formats</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Browse the code</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="organoid_tracker.html">organoid_tracker package</a></li>
+</ul>
+
         </div>
       </div>
     </nav>
@@ -202,7 +225,10 @@
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="MANUAL_TRACKING.html" class="btn btn-neutral float-left" title="Manual tracking and error correction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="PLUGIN_TUTORIAL.html" class="btn btn-neutral float-right" title="Plugin tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 
