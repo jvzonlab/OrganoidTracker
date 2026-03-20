@@ -15,7 +15,9 @@ from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 from organoid_tracker.linking import nearest_neighbor_linker
+from organoid_tracker.neural_network import image_preloading
 from organoid_tracker.neural_network.image_loading import fill_none_images_with_copies, extract_patch_array
+from organoid_tracker.neural_network.image_preloading import ImagePreloader
 from organoid_tracker.neural_network.link_detection_cnn.training_dataset import add_3d_coord
 
 
@@ -39,7 +41,8 @@ class LinkModel(NamedTuple):
                           image_channels: Set[ImageChannel] = None,
                           scale_factors_zyx: Tuple[float, float, float] = (1.0, 1.0, 1.0),
                           intensity_quantiles: Tuple[float, float] = (0.01, 0.99),
-                          print_time_points: bool = False):
+                          print_time_points: bool = True,
+                          use_threading: bool = True):
         """Predict division probabilities for all links in the given experiment."""
 
         # Check if images were loaded
@@ -66,31 +69,29 @@ class LinkModel(NamedTuple):
         experiment.links = possible_links
 
         # Do predictions
-        patch_list: List[_PredictionPatch] = list()
-        for patch in self._iterate_patches(images, experiment.positions, possible_links, scale_factors_zyx=scale_factors_zyx,
-                                           intensity_quantiles=intensity_quantiles, print_time_points=print_time_points):
-            patch_list.append(patch)
-            if len(patch_list) == batch_size:
+        with (image_preloading.create_image_preloader(images, ImageChannel(index_zero=0), use_threading=use_threading,
+              older_time_points_to_keep=-self.time_window[0] + self.time_window[1]) as image_preloader):
+            patch_list: List[_PredictionPatch] = list()
+            for patch in self._iterate_patches(image_preloader, experiment.positions, possible_links, scale_factors_zyx=scale_factors_zyx,
+                                               intensity_quantiles=intensity_quantiles, print_time_points=print_time_points):
+                patch_list.append(patch)
+                if len(patch_list) == batch_size:
+                    self._predict_batch(experiment, patch_list)
+                    patch_list.clear()
+
+            if len(patch_list) > 0:
+                # Predict any remaining patches
                 self._predict_batch(experiment, patch_list)
-                patch_list.clear()
 
-        if len(patch_list) > 0:
-            # Predict any remaining patches
-            self._predict_batch(experiment, patch_list)
-
-    def _iterate_patches(self, images: Images, positions: PositionCollection,
+    def _iterate_patches(self, image_preloader: ImagePreloader, positions: PositionCollection,
                          possible_links: Links,
                          *,
                          scale_factors_zyx: Tuple[float, float, float],
                          intensity_quantiles: Tuple[float, float],
                          print_time_points: bool) -> Iterable[_PredictionPatch]:
 
-        experiment_nearest_neighbor = Experiment()
-        experiment_nearest_neighbor.images = images
-        experiment_nearest_neighbor.positions = positions
-
         for time_point in positions.time_points():
-            if images.get_image_stack(time_point + 1) is None:
+            if time_point == positions.last_time_point():
                 break  # At the end of the movie, cannot link to next time point
 
             if print_time_points:
@@ -105,7 +106,7 @@ class LinkModel(NamedTuple):
             if len(links_of_time_point) == 0:
                 continue
 
-            yield from _split_into_patches(images, time_point, links_of_time_point, self.time_window,
+            yield from _split_into_patches(image_preloader, time_point, links_of_time_point, self.time_window,
                                            patch_shape_zyx_px=self.patch_shape_zyx,
                                            scale_factors_zyx=scale_factors_zyx,
                                            intensity_quantiles=intensity_quantiles)
@@ -205,7 +206,7 @@ def load_link_model(model_folder: str) -> LinkModel:
                      platt_intercept=intercept)
 
 
-def _split_into_patches(images: Images, time_point: TimePoint, links: Iterable[Tuple[Position, Position]],
+def _split_into_patches(image_preloader: ImagePreloader, time_point: TimePoint, links: Iterable[Tuple[Position, Position]],
                         time_window: Tuple[int, int], *,
                         patch_shape_zyx_px: Tuple[int, int, int],
                         scale_factors_zyx: Tuple[float, float, float],
@@ -216,7 +217,7 @@ def _split_into_patches(images: Images, time_point: TimePoint, links: Iterable[T
     full_images = dict()
     for dt in range(time_window[0], time_window[1] + 1):
         time_point_dt = TimePoint(time_point.time_point_number() + dt)
-        full_images[time_point_dt] = images.get_image(time_point_dt, ImageChannel(index_one=1))
+        full_images[time_point_dt] = image_preloader.get_image(time_point_dt)
     time_point_image: Image = full_images.get(time_point)
     if time_point_image is None:
         return  # No image at the center time point

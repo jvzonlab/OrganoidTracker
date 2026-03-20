@@ -17,6 +17,7 @@ from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.core.images import Images, Image
 from organoid_tracker.core.position import Position
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
+from organoid_tracker.neural_network import image_preloading
 from organoid_tracker.neural_network.image_loading import fill_none_images_with_copies, extract_patch_array
 from organoid_tracker.neural_network.position_detection_cnn.loss_functions import loss, position_precision, \
     position_recall, overcount
@@ -238,7 +239,8 @@ class PositionModel(NamedTuple):
                           intensity_quantiles: Tuple[float, float] = (0.01, 0.99),
                           time_points: Optional[Iterable[TimePoint] | Sized] = None,
                           progress_callback: Callable[[float], None] = lambda _: None,
-                          print_time_points: bool = False,
+                          print_time_points: bool = True,
+                          use_threading: bool = True,
                           output_file: Optional[str] = None):
         """Predict positions for the given experiment.
 
@@ -260,6 +262,7 @@ class PositionModel(NamedTuple):
             time_points: If given, only predict positions for these time points. If None, predict for all time points.
             progress_callback: A callback function that is called with the progress (between 0.0 and 1.0).
             print_time_points: If True, the time point numbers are printed to the console during processing.
+            use_threading: If True, the model will be called from multiple threads to speed up prediction.
             output_file: If given, the file to save the predicted positions to. Otherwise, positions are not saved to
             disk, and just set in the experiment.
         """
@@ -292,99 +295,103 @@ class PositionModel(NamedTuple):
         images.offsets = experiment.images.offsets
         images.set_resolution(experiment.images.resolution())
 
-        patch_shape_z = self.keras_model.layers[0].batch_shape[1]
-        patch_shape_y = patch_shape_unbuffered_yx[0] + buffer_size_zyx[1] * 2
-        patch_shape_x = patch_shape_unbuffered_yx[1] + buffer_size_zyx[2] * 2
-        patch_shape_zyx = (patch_shape_z, patch_shape_y, patch_shape_x)
+        with (image_preloading.create_image_preloader(experiment.images, ImageChannel(index_zero=0),
+              older_time_points_to_keep=-self.time_window[0] + self.time_window[1], use_threading=use_threading)
+              as image_preloader):
 
-        # Loop over all time points
-        if time_points is None:
-            time_points = experiment.images.time_points()
-        time_points_count = len(time_points)
-        time_points_done = 0
-        for time_point in time_points:
-            if experiment.positions.count_positions(time_point=time_point) > 0:
-                continue  # Skip time points that already have positions
-            if print_time_points:
-                print(time_point.time_point_number(), end="  ", flush=True)
-            debug_predictions = _DebugPredictions()
-            if debug_folder_experiment is not None:
-                debug_predictions.set_output_file(
-                    os.path.join(debug_folder_experiment, f"image_{time_point.time_point_number()}.tif"))
+            patch_shape_z = self.keras_model.layers[0].batch_shape[1]
+            patch_shape_y = patch_shape_unbuffered_yx[0] + buffer_size_zyx[1] * 2
+            patch_shape_x = patch_shape_unbuffered_yx[1] + buffer_size_zyx[2] * 2
+            patch_shape_zyx = (patch_shape_z, patch_shape_y, patch_shape_x)
 
-            full_images = dict()
-            for dt in range(self.time_window[0], self.time_window[1] + 1):
-                time_point_dt = TimePoint(time_point.time_point_number() + dt)
-                full_images[time_point_dt] = images.get_image(time_point_dt, ImageChannel(index_one=1))
-            patch_count = _count_patches(time_point, full_images,
-                                         patch_shape_zyx_px=patch_shape_zyx,
-                                         buffer_size_zyx_px=buffer_size_zyx,
-                                         scale_factors_zyx=scale_factors_zyx)
-            patches_done = 0
-            for patch in _split_into_patches(time_point, full_images,
+            # Loop over all time points
+            if time_points is None:
+                time_points = experiment.images.time_points()
+            time_points_count = len(time_points)
+            time_points_done = 0
+            for time_point in time_points:
+                if experiment.positions.count_positions(time_point=time_point) > 0:
+                    continue  # Skip time points that already have positions
+                if print_time_points:
+                    print(time_point.time_point_number(), end="  ", flush=True)
+                debug_predictions = _DebugPredictions()
+                if debug_folder_experiment is not None:
+                    debug_predictions.set_output_file(
+                        os.path.join(debug_folder_experiment, f"image_{time_point.time_point_number()}.tif"))
+
+                full_images = dict()
+                for dt in range(self.time_window[0], self.time_window[1] + 1):
+                    time_point_dt = TimePoint(time_point.time_point_number() + dt)
+                    full_images[time_point_dt] = image_preloader.get_image(time_point_dt)
+                patch_count = _count_patches(time_point, full_images,
                                              patch_shape_zyx_px=patch_shape_zyx,
                                              buffer_size_zyx_px=buffer_size_zyx,
-                                             scale_factors_zyx=scale_factors_zyx,
-                                             intensity_quantiles=intensity_quantiles):
-                # Resize image using scipy zoom
-                patch_time_point_count = patch.array.shape[-1]
-                input_array = numpy.zeros((*patch_shape_zyx, patch_time_point_count))
-                for i in range(patch_time_point_count):
-                    input_array[:, :, :, i] = skimage.transform.resize(patch.array[:, :, :, i],
-                                                                       output_shape=patch_shape_zyx, order=0,
-                                                                       clip=False, preserve_range=True,
-                                                                       anti_aliasing=False)
+                                             scale_factors_zyx=scale_factors_zyx)
+                patches_done = 0
+                for patch in _split_into_patches(time_point, full_images,
+                                                 patch_shape_zyx_px=patch_shape_zyx,
+                                                 buffer_size_zyx_px=buffer_size_zyx,
+                                                 scale_factors_zyx=scale_factors_zyx,
+                                                 intensity_quantiles=intensity_quantiles):
+                    # Resize image using scipy zoom
+                    patch_time_point_count = patch.array.shape[-1]
+                    input_array = numpy.zeros((*patch_shape_zyx, patch_time_point_count))
+                    for i in range(patch_time_point_count):
+                        input_array[:, :, :, i] = skimage.transform.resize(patch.array[:, :, :, i],
+                                                                           output_shape=patch_shape_zyx, order=0,
+                                                                           clip=False, preserve_range=True,
+                                                                           anti_aliasing=False)
 
-                # Call the model
-                prediction = \
-                keras.ops.convert_to_numpy(self.keras_model(input_array[numpy.newaxis, ...], training=False))[0, :, :, :, 0]
+                    # Call the model
+                    prediction = \
+                    keras.ops.convert_to_numpy(self.keras_model(input_array[numpy.newaxis, ...], training=False))[0, :, :, :, 0]
 
-                debug_predictions.add_patch(patch, prediction)
+                    debug_predictions.add_patch(patch, prediction)
 
-                # Interpolate between layers for peak detection
-                prediction, z_divisor = reconstruct_volume(prediction, mid_layers)
-                coordinates = peak_local_max(prediction, min_distance=peak_min_distance_px,
-                                             threshold_abs=threshold, exclude_border=False)
-                for coordinate in coordinates:
-                    # Back to coords of the prediction input
-                    prediction_z = coordinate[0] / z_divisor - 1
-                    prediction_y = coordinate[1]
-                    prediction_x = coordinate[2]
+                    # Interpolate between layers for peak detection
+                    prediction, z_divisor = reconstruct_volume(prediction, mid_layers)
+                    coordinates = peak_local_max(prediction, min_distance=peak_min_distance_px,
+                                                 threshold_abs=threshold, exclude_border=False)
+                    for coordinate in coordinates:
+                        # Back to coords of the prediction input
+                        prediction_z = coordinate[0] / z_divisor - 1
+                        prediction_y = coordinate[1]
+                        prediction_x = coordinate[2]
 
-                    # Check if inside buffer area
-                    if (prediction_z < patch.buffer_zyx_px[0] or
-                            prediction_z >= prediction.shape[0] - patch.buffer_zyx_px[0] or
-                            prediction_y < patch.buffer_zyx_px[1] or
-                            prediction_y >= prediction.shape[1] - patch.buffer_zyx_px[1] or
-                            prediction_x < patch.buffer_zyx_px[2] or
-                            prediction_x >= prediction.shape[2] - patch.buffer_zyx_px[2]):
-                        continue  # Inside buffer, ignore
+                        # Check if inside buffer area
+                        if (prediction_z < patch.buffer_zyx_px[0] or
+                                prediction_z >= prediction.shape[0] - patch.buffer_zyx_px[0] or
+                                prediction_y < patch.buffer_zyx_px[1] or
+                                prediction_y >= prediction.shape[1] - patch.buffer_zyx_px[1] or
+                                prediction_x < patch.buffer_zyx_px[2] or
+                                prediction_x >= prediction.shape[2] - patch.buffer_zyx_px[2]):
+                            continue  # Inside buffer, ignore
 
-                    # Back to coords of the full image
-                    full_image_z = int(prediction_z / patch.scale_factors_zyx[0] + patch.corner_zyx[0])
-                    full_image_y = int(prediction_y / patch.scale_factors_zyx[1] + patch.corner_zyx[1])
-                    full_image_x = int(prediction_x / patch.scale_factors_zyx[2] + patch.corner_zyx[2])
+                        # Back to coords of the full image
+                        full_image_z = int(prediction_z / patch.scale_factors_zyx[0] + patch.corner_zyx[0])
+                        full_image_y = int(prediction_y / patch.scale_factors_zyx[1] + patch.corner_zyx[1])
+                        full_image_x = int(prediction_x / patch.scale_factors_zyx[2] + patch.corner_zyx[2])
 
-                    # Bounds check for full image (the last patches may go beyond the image size, because patches have a minimum size)
-                    full_image_size_zyx = patch.full_image_size_zyx
-                    if full_image_z >= full_image_size_zyx[0] or full_image_y >= full_image_size_zyx[
-                        1] or full_image_x >= full_image_size_zyx[2]:
-                        continue
+                        # Bounds check for full image (the last patches may go beyond the image size, because patches have a minimum size)
+                        full_image_size_zyx = patch.full_image_size_zyx
+                        if full_image_z >= full_image_size_zyx[0] or full_image_y >= full_image_size_zyx[
+                            1] or full_image_x >= full_image_size_zyx[2]:
+                            continue
 
-                    experiment.positions.add(
-                        Position(full_image_x, full_image_y, full_image_z, time_point=patch.time_point))
+                        experiment.positions.add(
+                            Position(full_image_x, full_image_y, full_image_z, time_point=patch.time_point))
 
-                # Report progress
-                patches_done += 1
-                total_iterations = patch_count * time_points_count
-                iterations_done = time_points_done * patch_count + patches_done
-                progress_callback(iterations_done / total_iterations)
-            time_points_done += 1
-            debug_predictions.save_full_predictions()
-            is_autosaved = autosaver.autosave_after_interval(experiment)
-        if not is_autosaved:
-            autosaver.save(experiment)
-        progress_callback(1.0)
+                    # Report progress
+                    patches_done += 1
+                    total_iterations = patch_count * time_points_count
+                    iterations_done = time_points_done * patch_count + patches_done
+                    progress_callback(iterations_done / total_iterations)
+                time_points_done += 1
+                debug_predictions.save_full_predictions()
+                is_autosaved = autosaver.autosave_after_interval(experiment)
+            if not is_autosaved:
+                autosaver.save(experiment)
+            progress_callback(1.0)
 
 
 def load_position_model(model_folder: str) -> PositionModel:

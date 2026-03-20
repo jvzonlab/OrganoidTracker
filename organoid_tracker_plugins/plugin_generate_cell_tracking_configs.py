@@ -952,7 +952,9 @@ class _PredictPositions(Task):
                                 scale_factors_zyx=(self._visualizer.z_scaling, self._visualizer.xy_scaling, self._visualizer.xy_scaling),
                                 intensity_quantiles=(self._visualizer.min_quantile, self._visualizer.max_quantile),
                                 image_channels=set(self._visualizer.channels),
-                                progress_callback=self._set_progress)
+                                progress_callback=self._set_progress,
+                                use_threading=False,  # No further threading, we're already on a worker thread
+                                print_time_points=False)
         # Free some memory, these models can be quite large
         del model
         keras.backend.clear_session()
@@ -993,7 +995,9 @@ class _PredictDivisions(Task):
         model.predict_divisions(self._experiment,
                                 scale_factors_zyx=(self._visualizer.z_scaling, self._visualizer.xy_scaling, self._visualizer.xy_scaling),
                                 intensity_quantiles=(self._visualizer.min_quantile, self._visualizer.max_quantile),
-                                image_channels=set(self._visualizer.channels))
+                                image_channels=set(self._visualizer.channels),
+                                print_time_points=False,
+                                use_threading=False)  # No further threading, we're already on a worker thread
         # Free some memory, these models can be quite large
         del model
         keras.backend.clear_session()
@@ -1033,7 +1037,9 @@ class _PredictLinks(Task):
         model.predict_links(self._experiment,
                             scale_factors_zyx=(self._visualizer.z_scaling, self._visualizer.xy_scaling, self._visualizer.xy_scaling),
                             intensity_quantiles=(self._visualizer.min_quantile, self._visualizer.max_quantile),
-                            image_channels=set(self._visualizer.channels))
+                            image_channels=set(self._visualizer.channels),
+                            print_time_points=False,
+                            use_threading=False)   # No further threading, we're already on a worker thread
         # Free some memory, these models can be quite large
         del model
         keras.backend.clear_session()

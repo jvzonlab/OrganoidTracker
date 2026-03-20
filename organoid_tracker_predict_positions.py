@@ -111,7 +111,6 @@ for experiment_index, experiment in enumerate(experiment_list):
                             scale_factors_zyx=(_scale_factor_z, _scale_factor_xy, _scale_factor_xy),
                             intensity_quantiles=(_intensity_quantile_min, _intensity_quantile_max),
                             threshold=_threshold,
-                            print_time_points=True,
                             output_file=output_file)
 
     if _dataset_file != '':

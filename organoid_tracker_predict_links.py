@@ -56,8 +56,7 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
     link_model.predict_links(experiment, batch_size=_batch_size,
                              image_channels=_images_channels,
                              scale_factors_zyx=(_scale_factor_z, _scale_factor_xy, _scale_factor_xy),
-                             intensity_quantiles=(_intensity_quantile_min, _intensity_quantile_max),
-                             print_time_points=True)
+                             intensity_quantiles=(_intensity_quantile_min, _intensity_quantile_max))
 
     # Record overlap with old links (if any). Useful for evaluation purposes.
     for position_a, position_b in old_links.find_all_links():
