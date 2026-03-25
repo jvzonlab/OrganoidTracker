@@ -14,7 +14,7 @@ import numpy as np
 import tifffile
 from torch.utils.data import DataLoader
 
-from organoid_tracker.config import ConfigFile, config_type_image_shape_xyz_to_zyx, config_type_int, config_type_bool
+from organoid_tracker.config import ConfigFile, config_type_image_shape_xyz_to_zyx, config_type_int, config_type_bool, config_type_float
 from organoid_tracker.imaging import list_io
 from organoid_tracker.linear_models.logistic_regression import platt_scaling
 from organoid_tracker.neural_network.dataset_transforms import LimitingDataset
@@ -49,6 +49,8 @@ epochs = config.get_or_default("epochs", "50", comment="For how many epochs the 
                                                        " always better; at some point the network might get overfitted"
                                                        " to your training data.",
                                type=config_type_int)
+learning_rate = config.get_or_default("learning_rate", "0.0003", comment="The learning rate for the optimizer.",
+                               type=config_type_float)
 config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
@@ -81,11 +83,12 @@ pretrained_model_path = config.get_or_default("pretrained_model_path", "",
                                               type=str)
 # Start from a pretrained model if provided, otherwise start from scratch
 if pretrained_model_path:
-    model = load_pretrained_model(pretrained_model_path)
+    model = load_pretrained_model(pretrained_model_path, learning_rate=learning_rate)
 else:
     model = build_model(
     shape=(patch_shape_zyx[0], patch_shape_zyx[1], patch_shape_zyx[2], time_window[1] - time_window[0] + 1),
-    batch_size=None)
+    batch_size=None,
+    learning_rate=learning_rate)
 model.summary()
 
 # train model

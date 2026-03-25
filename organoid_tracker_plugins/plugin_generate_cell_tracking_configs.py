@@ -118,6 +118,7 @@ def _generate_position_training_config(window: Window):
 
     config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
     config.get_or_default("epochs", "50")
+    config.get_or_default("learning_rate", "0.0005")
     config.get_or_default("patch_shape",
                           f"{_TRAINING_PATCH_SHAPE_ZYX[2]}, {_TRAINING_PATCH_SHAPE_ZYX[1]}, {_TRAINING_PATCH_SHAPE_ZYX[0]}")
     config.get_or_default("output_folder", "./output")
@@ -236,6 +237,7 @@ def _generate_division_training_config(window: Window):
 
     config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
     config.get_or_default("epochs", "50")
+    config.get_or_default("learning_rate", "0.0003")
     config.get_or_default("patch_shape",
                           f"{_TRAINING_PATCH_SHAPE_ZYX_DIVISION[2]}, {_TRAINING_PATCH_SHAPE_ZYX_DIVISION[1]}, {_TRAINING_PATCH_SHAPE_ZYX_DIVISION[0]}")
     config.get_or_default("output_folder", "./output")
@@ -328,6 +330,7 @@ def _generate_link_training_config(window: Window):
     config = ConfigFile("train_link_network", folder_name=save_directory)
     config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
     config.get_or_default("epochs", "50")
+    config.get_or_default("learning_rate", "0.00003")
     config.get_or_default("patch_shape",
                           f"{_TRAINING_PATCH_SHAPE_ZYX_LINKING[2]}, {_TRAINING_PATCH_SHAPE_ZYX_LINKING[1]}, {_TRAINING_PATCH_SHAPE_ZYX_LINKING[0]}")
     config.get_or_default("output_folder", "./output")

@@ -10,7 +10,7 @@ import random
 
 import keras.models
 
-from organoid_tracker.config import config_type_image_shape_xyz_to_zyx
+from organoid_tracker.config import config_type_float, config_type_image_shape_xyz_to_zyx
 from organoid_tracker.imaging import list_io
 from organoid_tracker.neural_network.position_detection_cnn.training_inspection_callback import WriteExamplesCallback, \
     ExampleDataset
@@ -45,6 +45,8 @@ epochs = config.get_or_default("epochs", "50", comment="For how many epochs the 
                                                        " always better; at some point the network might get overfitted"
                                                        " to your training data.",
                                 type=config_type_int)
+learning_rate = config.get_or_default("learning_rate", "0.0005", comment="The learning rate for the optimizer.",
+                               type=config_type_float)
 config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
@@ -75,9 +77,11 @@ pretrained_model_path = config.get_or_default("pretrained_model_path", "",
                                               type=str)
 # Start from a pretrained model if provided, otherwise start from scratch
 if pretrained_model_path:
-    model = load_pretrained_model(pretrained_model_path)
+    model = load_pretrained_model(pretrained_model_path, learning_rate=learning_rate)
 else:
-    model = build_model(shape=(patch_shape_zyx[0], None, None, time_window[1] - time_window[0] + 1), batch_size=None)
+    model = build_model(shape=(patch_shape_zyx[0], None, None, time_window[1] - time_window[0] + 1), 
+                        batch_size=None,
+                        learning_rate=learning_rate)
 model.summary()
 
 print("Training...")

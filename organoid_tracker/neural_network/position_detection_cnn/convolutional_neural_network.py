@@ -9,7 +9,7 @@ from organoid_tracker.neural_network.position_detection_cnn.loss_functions impor
     overcount, loss
 
 
-def build_model(shape: Tuple, batch_size):
+def build_model(shape: Tuple, batch_size, learning_rate=0.0005):
     # Input layer
     input = keras.Input(shape=shape, batch_size=batch_size)
 
@@ -54,19 +54,19 @@ def build_model(shape: Tuple, batch_size):
 
     model = keras.Model(inputs=input, outputs=output, name="YOLO")
 
-    model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.0005),
+    model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
                   loss=loss, metrics=[position_recall, position_precision, overcount])
 
     return model
 
-def load_pretrained_model(path):
+def load_pretrained_model(path, learning_rate=0.0005):
     # Load only 
     print(f"Loading pretrained model. from path: {path}")
     pretrained = keras.models.load_model(os.path.join(path, "model.keras"))
     model = keras.models.clone_model(pretrained)
     model.load_weights(os.path.join(path, "model.keras"))
 
-    model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.0005),
+    model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
                   loss=loss, metrics=[position_recall, position_precision, overcount])
 
     return model

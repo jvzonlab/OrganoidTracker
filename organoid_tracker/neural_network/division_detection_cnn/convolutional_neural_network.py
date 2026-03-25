@@ -5,7 +5,7 @@ import keras
 import keras.metrics
 import keras.losses
 
-def build_model(shape: Tuple, batch_size):
+def build_model(shape: Tuple, batch_size, learning_rate=0.0003):
     # Input layer
     input = keras.Input(shape=shape, batch_size=batch_size)
 
@@ -39,7 +39,7 @@ def build_model(shape: Tuple, batch_size):
     model = keras.Model(inputs=input, outputs=output, name="YOLO_division")
 
     # Add loss functions and metrics
-    model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.0003),
+    model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
                   loss=keras.losses.BinaryCrossentropy(from_logits=False),
                   metrics=[keras.metrics.BinaryAccuracy(name='acc'),
                            keras.metrics.Recall(name='rec'),
@@ -47,7 +47,7 @@ def build_model(shape: Tuple, batch_size):
 
     return model
 
-def load_pretrained_model(path):
+def load_pretrained_model(path, learning_rate=0.0003):
     # Load only 
     print(f"Loading pretrained model. from path: {path}")
     pretrained = keras.models.load_model(os.path.join(path, "model.keras"))
@@ -55,7 +55,7 @@ def load_pretrained_model(path):
     model.load_weights(os.path.join(path, "model.keras"))
 
 
-    model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.0003),
+    model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
                   loss=keras.losses.BinaryCrossentropy(from_logits=False),
                   metrics=[keras.metrics.BinaryAccuracy(name='acc'),
                            keras.metrics.Recall(name='rec'),
