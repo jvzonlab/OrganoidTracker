@@ -17,6 +17,7 @@ Submodules
    organoid_tracker.image_loading.liffile_image_loader
    organoid_tracker.image_loading.merged_tiff_image_loader
    organoid_tracker.image_loading.nd2file_image_loader
+   organoid_tracker.image_loading.zarr_image_loader
 
 Module contents
 ---------------

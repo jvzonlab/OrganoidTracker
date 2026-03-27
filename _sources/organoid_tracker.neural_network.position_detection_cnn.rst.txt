@@ -12,8 +12,7 @@ Submodules
    organoid_tracker.neural_network.position_detection_cnn.image_with_positions_to_tensor_loader
    organoid_tracker.neural_network.position_detection_cnn.loss_functions
    organoid_tracker.neural_network.position_detection_cnn.peak_calling
-   organoid_tracker.neural_network.position_detection_cnn.prediction_dataset
-   organoid_tracker.neural_network.position_detection_cnn.split_images
+   organoid_tracker.neural_network.position_detection_cnn.position_predictor
    organoid_tracker.neural_network.position_detection_cnn.training_data_creator
    organoid_tracker.neural_network.position_detection_cnn.training_dataset
    organoid_tracker.neural_network.position_detection_cnn.training_inspection_callback

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>organoid_tracker.neural_network.image_transforms module &mdash; OrganoidTracker 2.0 documentation</title>
+  <title>organoid_tracker.neural_network.image_loading module &mdash; OrganoidTracker 2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
 
@@ -19,8 +19,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="organoid_tracker.neural_network.log_memory_callback module" href="organoid_tracker.neural_network.log_memory_callback.html" />
-    <link rel="prev" title="organoid_tracker.neural_network.image_preloading module" href="organoid_tracker.neural_network.image_preloading.html" /> 
+    <link rel="next" title="organoid_tracker.neural_network.image_preloading module" href="organoid_tracker.neural_network.image_preloading.html" />
+    <link rel="prev" title="organoid_tracker.neural_network.dataset_transforms module" href="organoid_tracker.neural_network.dataset_transforms.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -115,9 +115,9 @@
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="organoid_tracker.html">organoid_tracker package</a></li>
           <li class="breadcrumb-item"><a href="organoid_tracker.neural_network.html">organoid_tracker.neural_network package</a></li>
-      <li class="breadcrumb-item active">organoid_tracker.neural_network.image_transforms module</li>
+      <li class="breadcrumb-item active">organoid_tracker.neural_network.image_loading module</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/organoid_tracker.neural_network.image_transforms.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/organoid_tracker.neural_network.image_loading.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -125,16 +125,33 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="organoid-tracker-neural-network-image-transforms-module">
-<h1>organoid_tracker.neural_network.image_transforms module<a class="headerlink" href="#organoid-tracker-neural-network-image-transforms-module" title="Link to this heading"></a></h1>
+  <section id="module-organoid_tracker.neural_network.image_loading">
+<span id="organoid-tracker-neural-network-image-loading-module"></span><h1>organoid_tracker.neural_network.image_loading module<a class="headerlink" href="#module-organoid_tracker.neural_network.image_loading" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.neural_network.image_loading.extract_patch_array">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.neural_network.image_loading.</span></span><span class="sig-name descname"><span class="pre">extract_patch_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">full_images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.images.html#organoid_tracker.core.images.Image" title="organoid_tracker.core.images.Image"><span class="pre">Image</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_zyx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patch_shape_zyx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></span><a class="headerlink" href="#organoid_tracker.neural_network.image_loading.extract_patch_array" title="Link to this definition"></a></dt>
+<dd><p>Extracts a patch from the full images. Coordinates are assumed to be in position coordinates. Offsets of the
+images are taken into account.</p>
+<p>full_images must contain a continuous set of time points, but doesn’t have to be in order.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.neural_network.image_loading.fill_none_images_with_copies">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.neural_network.image_loading.</span></span><span class="sig-name descname"><span class="pre">fill_none_images_with_copies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">full_images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="organoid_tracker.core.images.html#organoid_tracker.core.images.Image" title="organoid_tracker.core.images.Image"><span class="pre">Image</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.neural_network.image_loading.fill_none_images_with_copies" title="Link to this definition"></a></dt>
+<dd><p>Fills any None values in the array with the array of the closest time point that is available.</p>
+<p>(At the start or end of a movie, some time points may be missing. In that case, it’s best to just copy the nearest
+available image.)</p>
+<p>Raises a ValueError if no images are available at all.</p>
+</dd></dl>
+
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="organoid_tracker.neural_network.image_preloading.html" class="btn btn-neutral float-left" title="organoid_tracker.neural_network.image_preloading module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="organoid_tracker.neural_network.log_memory_callback.html" class="btn btn-neutral float-right" title="organoid_tracker.neural_network.log_memory_callback module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="organoid_tracker.neural_network.dataset_transforms.html" class="btn btn-neutral float-left" title="organoid_tracker.neural_network.dataset_transforms module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="organoid_tracker.neural_network.image_preloading.html" class="btn btn-neutral float-right" title="organoid_tracker.neural_network.image_preloading module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

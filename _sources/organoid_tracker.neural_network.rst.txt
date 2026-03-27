@@ -18,6 +18,8 @@ Submodules
    :maxdepth: 1
 
    organoid_tracker.neural_network.dataset_transforms
+   organoid_tracker.neural_network.image_loading
+   organoid_tracker.neural_network.image_preloading
    organoid_tracker.neural_network.image_transforms
    organoid_tracker.neural_network.log_memory_callback
 

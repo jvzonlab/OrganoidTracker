@@ -19,7 +19,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="organoid_tracker.neural_network.position_detection_cnn.prediction_dataset module" href="organoid_tracker.neural_network.position_detection_cnn.prediction_dataset.html" />
+    <link rel="next" title="organoid_tracker.neural_network.position_detection_cnn.position_predictor module" href="organoid_tracker.neural_network.position_detection_cnn.position_predictor.html" />
     <link rel="prev" title="organoid_tracker.neural_network.position_detection_cnn.loss_functions module" href="organoid_tracker.neural_network.position_detection_cnn.loss_functions.html" /> 
 </head>
 
@@ -129,14 +129,6 @@
   <section id="module-organoid_tracker.neural_network.position_detection_cnn.peak_calling">
 <span id="organoid-tracker-neural-network-position-detection-cnn-peak-calling-module"></span><h1>organoid_tracker.neural_network.position_detection_cnn.peak_calling module<a class="headerlink" href="#module-organoid_tracker.neural_network.position_detection_cnn.peak_calling" title="Link to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="organoid_tracker.neural_network.position_detection_cnn.peak_calling.create_prediction_mask">
-<span class="sig-prename descclassname"><span class="pre">organoid_tracker.neural_network.position_detection_cnn.peak_calling.</span></span><span class="sig-name descname"><span class="pre">create_prediction_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">radius_x_px_float</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.resolution.html#organoid_tracker.core.resolution.ImageResolution" title="organoid_tracker.core.resolution.ImageResolution"><span class="pre">ImageResolution</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></span><a class="headerlink" href="#organoid_tracker.neural_network.position_detection_cnn.peak_calling.create_prediction_mask" title="Link to this definition"></a></dt>
-<dd><p>Creates a mask that is spherical in micrometers. If the resolution is not the same in the x, y and z directions,
-this sphere will appear as a spheroid in the images.</p>
-<p>For use with the footprint param in scikit-image peak_local_max.</p>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="organoid_tracker.neural_network.position_detection_cnn.peak_calling.reconstruct_volume">
 <span class="sig-prename descclassname"><span class="pre">organoid_tracker.neural_network.position_detection_cnn.peak_calling.</span></span><span class="sig-name descname"><span class="pre">reconstruct_volume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">multi_im</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mid_layers_nb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.neural_network.position_detection_cnn.peak_calling.reconstruct_volume" title="Link to this definition"></a></dt>
 <dd><p>Reconstructs a volume so that the xy scale is roughly equal to the z scale. Returns the used scale.</p>
@@ -149,7 +141,7 @@ this sphere will appear as a spheroid in the images.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="organoid_tracker.neural_network.position_detection_cnn.loss_functions.html" class="btn btn-neutral float-left" title="organoid_tracker.neural_network.position_detection_cnn.loss_functions module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="organoid_tracker.neural_network.position_detection_cnn.prediction_dataset.html" class="btn btn-neutral float-right" title="organoid_tracker.neural_network.position_detection_cnn.prediction_dataset module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="organoid_tracker.neural_network.position_detection_cnn.position_predictor.html" class="btn btn-neutral float-right" title="organoid_tracker.neural_network.position_detection_cnn.position_predictor module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

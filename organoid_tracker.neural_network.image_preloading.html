@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>organoid_tracker.neural_network.image_transforms module &mdash; OrganoidTracker 2.0 documentation</title>
+  <title>organoid_tracker.neural_network.image_preloading module &mdash; OrganoidTracker 2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
 
@@ -19,8 +19,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="organoid_tracker.neural_network.log_memory_callback module" href="organoid_tracker.neural_network.log_memory_callback.html" />
-    <link rel="prev" title="organoid_tracker.neural_network.image_preloading module" href="organoid_tracker.neural_network.image_preloading.html" /> 
+    <link rel="next" title="organoid_tracker.neural_network.image_transforms module" href="organoid_tracker.neural_network.image_transforms.html" />
+    <link rel="prev" title="organoid_tracker.neural_network.image_loading module" href="organoid_tracker.neural_network.image_loading.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -115,9 +115,9 @@
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="organoid_tracker.html">organoid_tracker package</a></li>
           <li class="breadcrumb-item"><a href="organoid_tracker.neural_network.html">organoid_tracker.neural_network package</a></li>
-      <li class="breadcrumb-item active">organoid_tracker.neural_network.image_transforms module</li>
+      <li class="breadcrumb-item active">organoid_tracker.neural_network.image_preloading module</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/organoid_tracker.neural_network.image_transforms.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/organoid_tracker.neural_network.image_preloading.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -125,16 +125,49 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="organoid-tracker-neural-network-image-transforms-module">
-<h1>organoid_tracker.neural_network.image_transforms module<a class="headerlink" href="#organoid-tracker-neural-network-image-transforms-module" title="Link to this heading"></a></h1>
+  <section id="module-organoid_tracker.neural_network.image_preloading">
+<span id="organoid-tracker-neural-network-image-preloading-module"></span><h1>organoid_tracker.neural_network.image_preloading module<a class="headerlink" href="#module-organoid_tracker.neural_network.image_preloading" title="Link to this heading"></a></h1>
+<p>Image preloading, for the case where you need to sequentially load all images in an experiment.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.neural_network.image_preloading.ImagePreloader">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">organoid_tracker.neural_network.image_preloading.</span></span><span class="sig-name descname"><span class="pre">ImagePreloader</span></span><a class="headerlink" href="#organoid_tracker.neural_network.image_preloading.ImagePreloader" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
+<p>Abstract class for preloading images. Implementations of this class can load images in the background and keep them
+in memory, with a certain window of time points. This can speed up loading images when you need to load multiple
+time points in a row, for example when predicting positions over time.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.neural_network.image_preloading.ImagePreloader.get_image">
+<span class="sig-name descname"><span class="pre">get_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.html#organoid_tracker.core.TimePoint" title="organoid_tracker.core.TimePoint"><span class="pre">TimePoint</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.images.html#organoid_tracker.core.images.Image" title="organoid_tracker.core.images.Image"><span class="pre">Image</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#organoid_tracker.neural_network.image_preloading.ImagePreloader.get_image" title="Link to this definition"></a></dt>
+<dd><p>Returns the image for the given time point, or None if there is no image for this time point. Also preloads
+images for future time points in the background.</p>
+<p>The first time you call this method, you can call it with any time point. You can thereafter call it with a
+time point in the past (up to older_time_points_to_keep time points in the past), the same time point,
+or one time point in the future. In that case, the time window shifts one forward. The oldest image is unloaded,
+and a new image is loaded in the background.</p>
+<p>You cannot skip time points, so you cannot call it with a time point that is more than one time point in the
+future compared to the then-latest requested time point.</p>
+<p>Raises RuntimeError if you call this method before entering the context manager (before __enter__ was called).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="organoid_tracker.neural_network.image_preloading.create_image_preloader">
+<span class="sig-prename descclassname"><span class="pre">organoid_tracker.neural_network.image_preloading.</span></span><span class="sig-name descname"><span class="pre">create_image_preloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.images.html#organoid_tracker.core.images.Images" title="organoid_tracker.core.images.Images"><span class="pre">Images</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageChannel" title="organoid_tracker.core.image_loader.ImageChannel"><span class="pre">ImageChannel</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">preload_window_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">older_time_points_to_keep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_threading</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.neural_network.image_preloading.ImagePreloader" title="organoid_tracker.neural_network.image_preloading.ImagePreloader"><span class="pre">ImagePreloader</span></a></span></span><a class="headerlink" href="#organoid_tracker.neural_network.image_preloading.create_image_preloader" title="Link to this definition"></a></dt>
+<dd><p>Creates an image preloader. If use_threading is True, it will load images in the background using a separate thread.
+If use_threading is False, it will not load images in the background, but it will still keep track of the latest
+requested time point and enforce the allowed time point window. (So essentially, it just makes sure your code is
+ready for threading.)</p>
+</dd></dl>
+
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="organoid_tracker.neural_network.image_preloading.html" class="btn btn-neutral float-left" title="organoid_tracker.neural_network.image_preloading module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="organoid_tracker.neural_network.log_memory_callback.html" class="btn btn-neutral float-right" title="organoid_tracker.neural_network.log_memory_callback module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="organoid_tracker.neural_network.image_loading.html" class="btn btn-neutral float-left" title="organoid_tracker.neural_network.image_loading module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="organoid_tracker.neural_network.image_transforms.html" class="btn btn-neutral float-right" title="organoid_tracker.neural_network.image_transforms module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
