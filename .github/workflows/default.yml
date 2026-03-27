@@ -12,9 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
     - name: Install Conda environment from environment-sphinx.yml
-      uses: mamba-org/setup-micromamba@v1
+      uses: mamba-org/setup-micromamba@v2
       with:
         environment-file: environment-sphinx.yml
     # Run Sphinx build
@@ -24,7 +24,7 @@ jobs:
         sphinx-apidoc -o manuals/ organoid_tracker --separate --force -d 1 --no-toc
         sphinx-build -b html manuals/ manuals_build/html
     # Create an artifact of the html output.
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       with:
         name: DocumentationHTML
         path: manuals_build/html/
