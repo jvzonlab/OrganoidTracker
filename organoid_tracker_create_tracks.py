@@ -58,10 +58,26 @@ config.save()
 # Convert output folder to absolute path (as list_io changes the working directory)
 _links_output_folder = os.path.abspath(_links_output_folder)
 
+# Define aut list files, remove any existing (since we append to each file)
+_all_final_links_clean_output_file = os.path.join(_links_output_folder, "All experiments - final links - clean" + list_io.FILES_LIST_EXTENSION)
+_all_final_links_raw_output_file = os.path.join(_links_output_folder, "All experiments - final links - raw" + list_io.FILES_LIST_EXTENSION)
+if os.path.exists(_all_final_links_clean_output_file):
+    os.remove(_all_final_links_clean_output_file)
+if os.path.exists(_all_final_links_raw_output_file):
+    os.remove(_all_final_links_raw_output_file)
+
 for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(_dataset_file)):
     output_folder_experiment = os.path.join(_links_output_folder, f"{experiment_index + 1}. {experiment.name.get_save_name()}")
-    if os.path.exists(os.path.join(output_folder_experiment, 'Final links - clean.' + io.FILE_EXTENSION)):
+    final_links_raw_file = os.path.join(output_folder_experiment, 'Final links - raw.' + io.FILE_EXTENSION)
+    final_links_clean_file = os.path.join(output_folder_experiment, 'Final links - clean.' + io.FILE_EXTENSION)
+    if os.path.exists(final_links_raw_file) and os.path.exists(final_links_clean_file):
         print(f"Experiment {experiment_index + 1} already processed, skipping.")
+
+        # Just append to list_io file
+        experiment.last_save_file = final_links_raw_file
+        list_io.save_experiment_list_file([experiment], _all_final_links_raw_output_file, append_to_file=True)
+        experiment.last_save_file = final_links_clean_file
+        list_io.save_experiment_list_file([experiment], _all_final_links_clean_output_file, append_to_file=True)
         continue
 
     possible_links = experiment.links
@@ -150,8 +166,9 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
     warning_count, no_links_count = cell_error_finder.find_errors_in_experiment(experiment_result)
     print("Writing results to file...")
     os.makedirs(output_folder_experiment, exist_ok=True)
-    io.save_data_to_json(experiment_result, os.path.join(output_folder_experiment, 'Final links - raw.' + io.FILE_EXTENSION))
+    io.save_data_to_json(experiment_result, final_links_raw_file)
     io.save_data_to_json(experiment_all, os.path.join(output_folder_experiment, 'All possible links - raw.' + io.FILE_EXTENSION))
+    list_io.save_experiment_list_file([experiment_result], _all_final_links_raw_output_file, append_to_file=True)
 
     print(f"Done! Found {warning_count} potential errors in the data. In addition, {no_links_count} positions didn't get"
           f" links.")
@@ -167,8 +184,8 @@ for experiment_index, experiment in enumerate(list_io.load_experiment_list_file(
     experiment_result, experiment_all = _remove_single_positions(experiment_result, experiment_all)
 
     warning_count, no_links_count = cell_error_finder.find_errors_in_experiment(experiment_result)
-    print(f"Done! Found {warning_count} potential errors in the data. In addition, {no_links_count} positions didn't get"
-          f" links.")
+    print(f"Done! {warning_count} potential errors remain in the data.")
 
     io.save_data_to_json(experiment_all, os.path.join(output_folder_experiment, 'All possible links - clean.' + io.FILE_EXTENSION))
-    io.save_data_to_json(experiment_result, os.path.join(output_folder_experiment, 'Final links - clean.' + io.FILE_EXTENSION))
+    io.save_data_to_json(experiment_result, final_links_clean_file)
+    list_io.save_experiment_list_file([experiment_result], _all_final_links_clean_output_file, append_to_file=True)
