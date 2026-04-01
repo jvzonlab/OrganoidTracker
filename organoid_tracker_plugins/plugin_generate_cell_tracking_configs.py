@@ -636,11 +636,11 @@ class _TrackingVisualizer(ExitableImageVisualizer):
         tracking_files_folder = os.path.join(save_directory, "Input files")
         os.makedirs(tracking_files_folder, exist_ok=True)
         list_io.save_experiment_list_file(experiments,
-                                          os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
+                                          os.path.join(save_directory, "Input dataset" + list_io.FILES_LIST_EXTENSION),
                                           tracking_files_folder=tracking_files_folder)
 
         config = ConfigFile("predict_positions", folder_name=save_directory)
-        config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
+        config.get_or_default("dataset_file", "Input dataset" + list_io.FILES_LIST_EXTENSION)
         config.get_or_default("model_folder", self.positions_model_folder)
         config.get_or_default("predictions_output_folder", "Nucleus center predictions")
         config.get_or_default("patch_shape_y", str(320))
@@ -681,11 +681,11 @@ class _TrackingVisualizer(ExitableImageVisualizer):
         tracking_files_folder = os.path.join(save_directory, "Input files")
         os.makedirs(tracking_files_folder, exist_ok=True)
         list_io.save_experiment_list_file(experiments,
-                                          os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
+                                          os.path.join(save_directory, "Input dataset" + list_io.FILES_LIST_EXTENSION),
                                           tracking_files_folder=tracking_files_folder)
 
         config = ConfigFile("predict_divisions", folder_name=save_directory)
-        config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
+        config.get_or_default("dataset_file", "Input dataset" + list_io.FILES_LIST_EXTENSION)
         config.get_or_default("model_folder", self.divisions_model_folder)
         config.get_or_default("predictions_output_folder", "Division predictions")
         config.get_or_default("images_channels", ",".join(str(channel.index_one) for channel in self.channels))
@@ -719,11 +719,11 @@ class _TrackingVisualizer(ExitableImageVisualizer):
         tracking_files_folder = os.path.join(save_directory, "Input files")
         os.makedirs(tracking_files_folder, exist_ok=True)
         list_io.save_experiment_list_file(experiments,
-                                          os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
+                                          os.path.join(save_directory, "Input dataset" + list_io.FILES_LIST_EXTENSION),
                                           tracking_files_folder=tracking_files_folder)
 
         config = ConfigFile("predict_links", folder_name=save_directory)
-        config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
+        config.get_or_default("dataset_file", "Input dataset" + list_io.FILES_LIST_EXTENSION)
         config.get_or_default("model_folder", self.links_model_folder)
         config.get_or_default("predictions_output_folder", "Link predictions")
         config.get_or_default("images_channels", ",".join(str(channel.index_one) for channel in self.channels))
@@ -755,11 +755,11 @@ class _TrackingVisualizer(ExitableImageVisualizer):
         tracking_files_folder = os.path.join(save_directory, "Input files")
         os.makedirs(tracking_files_folder, exist_ok=True)
         list_io.save_experiment_list_file(experiments,
-                                          os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
+                                          os.path.join(save_directory, "Input dataset" + list_io.FILES_LIST_EXTENSION),
                                           tracking_files_folder=tracking_files_folder)
 
         config = ConfigFile("create_tracks", folder_name=save_directory)
-        config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
+        config.get_or_default("dataset_file", "Input dataset" + list_io.FILES_LIST_EXTENSION)
         config.get_or_default("output_folder", "Output tracks")
 
         config.save()
@@ -792,7 +792,7 @@ class _TrackingVisualizer(ExitableImageVisualizer):
         tracking_files_folder = os.path.join(save_directory, "Input files")
         os.makedirs(tracking_files_folder, exist_ok=True)
         list_io.save_experiment_list_file(experiments,
-                                          os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
+                                          os.path.join(save_directory, "Input dataset" + list_io.FILES_LIST_EXTENSION),
                                           tracking_files_folder=tracking_files_folder)
 
         # Generate one big config file for all steps
@@ -802,7 +802,7 @@ class _TrackingVisualizer(ExitableImageVisualizer):
         config.get_or_default("scale_factor_z", str(self.z_scaling), store_in_defaults=True)
         config.get_or_default("intensity_min_quantile", str(self.min_quantile), store_in_defaults=True)
         config.get_or_default("intensity_max_quantile", str(self.max_quantile), store_in_defaults=True)
-        config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
+        config.get_or_default("dataset_file", "Input dataset" + list_io.FILES_LIST_EXTENSION)
         config.get_or_default("model_folder", self.positions_model_folder)
         config.get_or_default("predictions_output_folder", "Nucleus center predictions")
         config.get_or_default("positions_output_folder", "Automatic positions")
