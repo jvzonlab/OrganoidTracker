@@ -629,8 +629,9 @@ class AbstractImageVisualizer(Visualizer):
                 track = self._experiment.links.get_track_by_id(track_id)
                 if track is None:
                     self.update_status(f"Track with id {track_id} not found.")
+                    return False
                 if not self._move_to_position(track.find_first_position()):
-                    self.update_status("Cannot go to point at time point " + str(t))
+                    self.update_status("Cannot go to time point " + str(track.first_time_point_number()))
             return True
         if command.startswith("goto "):
             # Remove everything that's not a space or part of a number
