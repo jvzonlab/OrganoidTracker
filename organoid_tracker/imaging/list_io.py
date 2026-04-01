@@ -127,7 +127,9 @@ def save_experiment_list_file(experiments: List[Experiment], json_file_name: str
                     raise ValueError(f"The experiment \"{experiment.name}\" has not been saved to disk.")
 
         # Store images
-        experiment_json.update(experiment.images.image_loader().serialize_to_dictionary())
+        returned_dict = experiment.images.image_loader().serialize_to_dictionary()
+        _relativize_paths(returned_dict, start=save_base_folder)
+        experiment_json.update(returned_dict)
 
         # Store time points
         if experiment.first_time_point_number() is not None:
@@ -141,6 +143,23 @@ def save_experiment_list_file(experiments: List[Experiment], json_file_name: str
 
     with open(json_file_name, "w", encoding="utf-8") as handle:
         json.dump(experiments_json, handle, indent=4, sort_keys=True)
+
+
+def _relativize_paths(json_object: Any, start: str):
+    """Relativizes any paths in the given dictionary or list, recursively. Does nothing if the json_object is not a
+    dictionary or a list."""
+    if isinstance(json_object, dict):
+        for key, value in json_object.items():
+            if isinstance(value, str) and os.path.exists(value):
+                json_object[key] = _relpath(value, start=start)
+            else:
+                _relativize_paths(value, start=start)
+    elif isinstance(json_object, list):
+        for index, value in enumerate(json_object):
+            if isinstance(value, str) and os.path.exists(value):
+                json_object[index] = _relpath(value, start=start)
+            else:
+                _relativize_paths(value, start=start)
 
 
 def _relpath(path: str, start: str) -> str:
