@@ -321,6 +321,10 @@ class ChannelDescription(NamedTuple):
         """Creates a new ChannelDescription with the same channel name, but a different colormap."""
         return ChannelDescription(self.channel_name, colormap)
 
+    def with_name(self, channel_name: str) -> "ChannelDescription":
+        """Creates a new ChannelDescription with the same colormap, but a different channel name."""
+        return ChannelDescription(channel_name, self.colormap)
+
 
 class Images:
     """Records the images (3D + time), their resolution and their offset."""

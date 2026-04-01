@@ -1,16 +1,15 @@
 import re
 from functools import partial
-from typing import Optional, Dict, Any, Tuple
+from typing import Optional, Dict, Any
 
 import matplotlib.colors
 import numpy
-from matplotlib import cm
+import tifffile
 from matplotlib.backend_bases import MouseEvent
 from matplotlib.collections import LineCollection
 from matplotlib.colors import Colormap
 from matplotlib.patches import Rectangle
 from numpy import ndarray
-import tifffile
 
 from organoid_tracker import core
 from organoid_tracker.core import TimePoint, UserError, COLOR_CELL_CURRENT, image_coloring
@@ -20,12 +19,12 @@ from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.spline import Spline
 from organoid_tracker.core.typing import MPLColor
-from organoid_tracker.gui import dialog, option_choose_dialog
+from organoid_tracker.gui import dialog
 from organoid_tracker.gui.dialog import prompt_int
 from organoid_tracker.gui.undo_redo import UndoableAction
 from organoid_tracker.gui.window import Window, DisplaySettings
-from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.linking_analysis import linking_markers
+from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.util import bits
 from organoid_tracker.util.mpl_helper import line_infinite
 from organoid_tracker.visualizer import Visualizer, activate
@@ -302,15 +301,22 @@ class AbstractImageVisualizer(Visualizer):
             z_str = "m.i.p."
         return z_str
 
+    def _get_figure_title_channel_str(self) -> str:
+        channel_index_str = str(self._display_settings.image_channel.index_one)
+        channel_str = self._experiment.images.get_channel_description(
+            self._display_settings.image_channel).channel_name
+        if channel_str != channel_index_str:
+            # A custom name was set, show it
+            channel_str = channel_index_str + "/'" + channel_str + "'"
+        return channel_str
+
     def _get_figure_title(self) -> str:
         timing = ""
         if self._experiment.images.has_timings():
             time_m = self._experiment.images.timings().get_time_m_since_start(self._time_point)
             timing = f", t={time_m:.1f}m" if time_m < 90 else f", t={time_m/60:.1f}h"
-        channel_name = self._experiment.images.get_channel_description(self._display_settings.image_channel).channel_name
-
         return f"Time point {self._time_point.time_point_number()}    (z={self._get_figure_title_z_str()}, " \
-               f"c={channel_name}{timing})"
+               f"c={self._get_figure_title_channel_str()}{timing})"
 
     def _draw_extra(self):
         pass  # Subclasses can override this

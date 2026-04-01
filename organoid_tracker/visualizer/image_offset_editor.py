@@ -50,7 +50,7 @@ class ImageOffsetEditor(ExitableImageVisualizer):
     def _get_figure_title(self) -> str:
         return (f"Editing image offsets\n"
                 f"Time points {self._time_point.time_point_number()} (green) - {self._time_point.time_point_number() + 1} (purple)"
-                f"    (z={self._get_figure_title_z_str()}, c={self._display_settings.image_channel.index_one})")
+                f"    (z={self._get_figure_title_z_str()}, c={self._get_figure_title_channel_str()})")
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
         return {
