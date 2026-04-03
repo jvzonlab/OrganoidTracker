@@ -705,7 +705,7 @@ class AbstractImageVisualizer(Visualizer):
         image_shape = image_3d.shape
 
         colormap = self._get_color_map()
-        if len(image_shape) == 3 and colormap.name not in {"gray", "segmentation"}:
+        if len(image_shape) == 3 and colormap.name not in {"gray", image_coloring.SEGMENTATION_COLORMAP_NAME}:
             # We have a 3D grayscale image, but the user is displaying it with a color map
             # Let's save the color image instead of the grayscale image, so that the saved image looks the same as
             # what the user sees

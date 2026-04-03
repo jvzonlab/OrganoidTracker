@@ -4,12 +4,15 @@ from typing import Optional, Tuple, NamedTuple
 import matplotlib.cm
 from matplotlib.colors import Colormap, ListedColormap, LinearSegmentedColormap
 
+# The name of the segmentation colormap.
+SEGMENTATION_COLORMAP_NAME = "segmentation"
+
 # The colormaps, in order of appearance in the GUI
 COLORMAP_LISTS = {
     "basic": ["gray", "red", "green", "blue", "cyan", "magenta", "yellow"],
     "uniform": ["viridis", "plasma", "inferno", "magma", "cividis"],
     "misc": ["bone", "pink", "hot", "afmhot", "gist_heat", "copper"],
-    "segmentation": ["segmentation"]
+    "segmentation": [SEGMENTATION_COLORMAP_NAME]
 }
 
 # Initialized in get_colormap
@@ -22,7 +25,7 @@ def _create_segmentation_colormap() -> Colormap:
     samples = [source_colormap(sample_pos / 1000) for sample_pos in range(1000)]
     random.Random("fixed seed to ensure same colors").shuffle(samples)
     samples[0] = (0, 0, 0, 0)  # Force background to black
-    return ListedColormap(samples, name="segmentation")
+    return ListedColormap(samples, name=SEGMENTATION_COLORMAP_NAME)
 
 
 def _create_black_to_color_colormap(color_name: str, max_color_rgb: Tuple[float, float, float]) -> Colormap:
@@ -32,7 +35,7 @@ def _create_black_to_color_colormap(color_name: str, max_color_rgb: Tuple[float,
 
 def _create_colormap(name: str) -> Colormap:
     """Internal function to create a colormap by name. Will also create colormaps for names outside the allowed list."""
-    if name == "segmentation":
+    if name == SEGMENTATION_COLORMAP_NAME:
         return _create_segmentation_colormap()
     if name == "red":
         return _create_black_to_color_colormap("red", (1.0, 0.0, 0.0))
@@ -72,4 +75,4 @@ def get_colormap(name: Optional[str]) -> Colormap:
 
 def get_segmentation_colormap() -> Colormap:
     """Get the colormap for segmentation masks."""
-    return get_colormap("segmentation")
+    return get_colormap(SEGMENTATION_COLORMAP_NAME)
