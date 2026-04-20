@@ -109,6 +109,10 @@ class _WorkerJobTask(Task):
         if self._experiments_done == 0 and self._job.current_experiment_completed_fraction is None:
             return None  # Didn't start at all
 
+        if len(self._experiment_copies) == 0:
+            # At the end of self.compute(), we called self._experiment_copies.clear(), so if that's empty, we know we're done
+            return 100
+
         # The basis is just how many experiments we already completed
         basis_fraction = self._experiments_done / len(self._experiment_copies)
 
