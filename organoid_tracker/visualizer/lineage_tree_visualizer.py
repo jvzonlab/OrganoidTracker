@@ -423,7 +423,11 @@ class LineageTreeVisualizer(Visualizer):
                                                             label='error probability')
             self._cbar.ax.set_yticklabels(['>50%', '10%', '1%', '<0.1%'])
 
+        self._draw_extra()
         self._fig.canvas.draw_idle()
+
+    def _draw_extra(self):
+        pass  # Empty, but can be overridden
 
     def _on_mouse_single_click(self, event: MouseEvent):
         if self._location_map is None:
