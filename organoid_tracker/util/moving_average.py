@@ -168,21 +168,31 @@ class LinesAverage(PlotAverage):
     standard_deviation_values: ndarray  # Standard deviation in the mean. Useful for plt.fill_between.
     counts_in_standard_deviation_values: ndarray  # Counts used for calculating the standard deviation
 
-    def __init__(self, *lines: Tuple[List[float], List[float]], x_step_size: float = 1):
-        """Creates the moving average. Each line is ([x1, x2, ...], [y1, y2, ...]), with the x in order from low to high."""
+    def __init__(self, *lines: Tuple[List[float], List[float]], x_step_size: float):
+        """An average of multiple lines, possibly with different x-resolution. Each line is
+        `([x1, x2, ...], [y1, y2, ...])`, with the x in order from low to high. At every x_step_size, this class
+        estimates (using linear interpolation) the y values of all lines at that x, and calculates the mean and
+        standard deviation of those y values.
+        """
         self._lines = list(lines)
         self._x_step_size = x_step_size
         if x_step_size <= 0:
             raise ValueError(f"Illegal step size: {x_step_size}")
 
-        # Calculate error bounds
+        # Calculate steps
+        # We do want to take into account the end point if (and only if) an exact number of steps fits in the range
+        # So if the x values are [0, 1, 2, 3, 4], then with a step size of 1, we should sample at [0, 1, 2, 3, 4].
+        # However, if the x values are [0, 0.66, 1.33, 2, 2.66], then with a step size of 1 we should only sample at
+        # [0, 1, 2], and not at x=3
         min_x, max_x = self._get_min_max_x()
+        step_count = int((max_x - min_x) / self._x_step_size)
+        max_x = min_x + step_count * self._x_step_size
 
         x_moving_average = list()
         y_moving_average = list()
         y_moving_average_standard_deviation = list()
         y_moving_average_counts = list()
-        for x in numpy.arange(min_x + 0.01, max_x - 0.01, self._x_step_size):
+        for x in numpy.linspace(min_x, max_x, num=step_count + 1, endpoint=True):
             y_values = self._get_y_values_at(x)
             if len(y_values) <= 1:
                 continue
@@ -229,6 +239,10 @@ class LinesAverage(PlotAverage):
             for i in range(len(line_x)):
                 if x < line_x[i]:
                     # Need to grab y value in between point i and i-1
+                    distance_to_points = max(x - line_x[i - 1], line_x[i] - x)
+                    if distance_to_points > self._x_step_size:
+                        # No measurement point close enough, avoid oversampling
+                        break
 
                     # i_fraction is 0 if we're at line_x[i] and 1 if at line_x[i - 1]
                     i_fraction = (line_x[i] - x) / (line_x[i] - line_x[i - 1])
@@ -287,3 +301,8 @@ class LinesAverage(PlotAverage):
     def count_lines(self) -> int:
         """Returns how many lines were used to calculate the average."""
         return len(self._lines)
+
+    @property
+    def x_step_size(self) -> float:
+        """The step size that was used to calculate the average."""
+        return self._x_step_size
