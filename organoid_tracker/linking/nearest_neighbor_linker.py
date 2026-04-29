@@ -5,8 +5,6 @@ from typing import Union, Tuple
 
 import numpy
 import scipy
-from matplotlib import pyplot as plt
-from tqdm import tqdm
 
 from organoid_tracker.core import TimePoint, clamp, max_none
 from organoid_tracker.core.experiment import Experiment
@@ -80,8 +78,8 @@ def nearest_neighbor_probabilities(experiment: Experiment, *, tolerance: float =
     """
     links_nearest_neighbor = nearest_neighbor(experiment, tolerance=tolerance, back=True, forward=True,
                                               max_distance_um=max_distance_um)
-    true_links_count_by_distance = defaultdict(lambda: 0)
-    false_links_count_by_distance = defaultdict(lambda: 0)
+    true_links_count_by_log_distance = defaultdict(lambda: 0)
+    false_links_count_by_log_distance = defaultdict(lambda: 0)
 
     resolution = experiment.images.resolution()
     for time_point in experiment.positions.time_points():
@@ -93,37 +91,36 @@ def nearest_neighbor_probabilities(experiment: Experiment, *, tolerance: float =
             log_distances.sort()
 
             # First link is assumed true, the rest false
-            true_links_count_by_distance[int(log_distances[0] // distance_bin_size_um_log)] += 1
+            true_links_count_by_log_distance[int(log_distances[0] // distance_bin_size_um_log)] += 1
             for log_distance in log_distances[1:]:
                 distance_bin = int(log_distance // distance_bin_size_um_log)
-                false_links_count_by_distance[distance_bin] += 1
+                false_links_count_by_log_distance[distance_bin] += 1
 
-    if len(true_links_count_by_distance) == 0:
+    if len(true_links_count_by_log_distance) == 0:
         raise RuntimeError("No links were created, cannot create probability map.")
 
     # Now create a probability map based on the counts
-    max_found_distance_key = max_none(max(true_links_count_by_distance.keys()), max_none(false_links_count_by_distance.keys()))
-    probabilties_by_distance = {}
+    # We don't use exactly 0 or 1, as that doesn't work with the sigmoid fit
+    max_found_distance_key = max_none(max(true_links_count_by_log_distance.keys()), max_none(false_links_count_by_log_distance.keys()))
+    probabilities_by_log_distance = {}
     for i in range(max_found_distance_key + 1):
-        total = true_links_count_by_distance.get(i, 0) + false_links_count_by_distance.get(i, 0)
-        if total == 0:
-            probabilties_by_distance[i] = 0.0
-        else:
-            probabilties_by_distance[i] = true_links_count_by_distance.get(i, 0) / total
+        total = true_links_count_by_log_distance.get(i, 0) + false_links_count_by_log_distance.get(i, 0)
+        if total > 0:
+            probabilities_by_log_distance[i] = clamp(0.001, true_links_count_by_log_distance.get(i, 0) / total, 0.999)
 
     # Add some extra bins with zero probability to help the fit
-    # At large distances cells should never link, and at tiny distances they should always link.
-    # But don't use exactly 0 or 1, as that doesn't work with the sigmoid fit.
-    max_index = max(probabilties_by_distance.keys())
-    min_index = min(probabilties_by_distance.keys())
-    for i in range(max_index + 1, max_index + 10):
-        probabilties_by_distance[i] = 0.001
-    for i in range(min_index - 10, min_index - 1):
-        probabilties_by_distance[i] = 0.999
+    # At (very) large distances cells should never link, and at tiny distances they should always link.
+    # But again don't use exactly 0 or 1, as that doesn't work with the sigmoid fit.
+    max_index = max(probabilities_by_log_distance.keys())
+    min_index = min(probabilities_by_log_distance.keys())
+    for i in range(max_index + 3, max_index + 13):
+        probabilities_by_log_distance[i] = 0.001
+    for i in range(min_index - 13, min_index - 3):
+        probabilities_by_log_distance[i] = 0.999
 
-    # Now set the probabilities in the links
-    xdata = numpy.exp(numpy.array(list(probabilties_by_distance.keys()), dtype=float) * distance_bin_size_um_log)
-    ydata = numpy.array(list(probabilties_by_distance.values()), dtype=float)
+    # Do a fit, with xdata being the original distances in micrometers
+    xdata = numpy.exp(numpy.array(list(probabilities_by_log_distance.keys()), dtype=float) * distance_bin_size_um_log)
+    ydata = numpy.array(list(probabilities_by_log_distance.values()), dtype=float)
 
     def sigmoid(x, x0, k):
         y = 1 - 1 / (1 + numpy.exp(-k * (x - x0)))
@@ -131,6 +128,18 @@ def nearest_neighbor_probabilities(experiment: Experiment, *, tolerance: float =
     p0 = [numpy.median(xdata), 1]  # This is a mandatory initial guess
     popt, pcov = scipy.optimize.curve_fit(sigmoid, xdata, ydata, p0, method='lm')
     fit_sigmoid = LogisticFit(popt)
+
+    # To debug the fit, uncomment:
+    # figure = plt.figure()
+    # ax = figure.gca()
+    # ax.scatter(xdata, ydata, color="red")
+    # x_lim = 30
+    # fit_x = numpy.linspace(0, x_lim, 100)
+    # ax.plot(fit_x, [fit_sigmoid(x) for x in fit_x], color="blue")
+    # ax.set_xlabel("Distance (um)")
+    # ax.set_ylabel("Probability")
+    # ax.set_xlim(0, x_lim)
+    # plt.show()
 
     for position_a, position_b in links_nearest_neighbor.find_all_links():
         distance_um = position_a.distance_um(position_b, resolution)
