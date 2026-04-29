@@ -17,10 +17,9 @@ FILES_LIST_EXTENSION = ".autlist"
 
 def get_menu_items(window: Window) -> Dict[str, Any]:
     return {
-        "File//Project-Tabs//Import open tabs...":
-            lambda: _import_open_tabs(window),
-        "File//Project-Tabs//Export open tabs...":
-            lambda: _export_open_tabs(window)
+        "File//Project-Tabs//Import open tabs...": lambda: _import_open_tabs(window),
+        "File//Project-Tabs//Export open tabs, referencing tracking data...": lambda: _export_open_tabs(window),
+        "File//Project-Tabs//Export open tabs, copying tracking data...": lambda: _export_open_tabs_saving(window),
     }
 
 
@@ -96,3 +95,19 @@ def _export_open_tabs(window: Window):
         return
     with open(file, "w") as handle:
         json.dump(files_json, handle)
+
+
+def _export_open_tabs_saving(window: Window):
+    """Exports all open tabs, including the tracking data, to a folder chosen by the user. The list file is saved in
+    the same folder."""
+    folder = dialog.prompt_save_file("Saving folder", [("Folder", "*")])
+    if folder is None:
+        return
+
+    os.makedirs(folder, exist_ok=True)
+    experiments = [tab.experiment for tab in window.get_gui_experiment().get_all_tabs()]
+    list_io.save_experiment_list_file(experiments, os.path.join(folder, "Tracking data" + FILES_LIST_EXTENSION), tracking_files_folder=folder)
+
+    # Mark everything as saved after writing - if we got here, no IO error occurred
+    for tab in window.get_gui_experiment().get_all_tabs():
+        tab.undo_redo.mark_everything_saved()
