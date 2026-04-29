@@ -98,13 +98,15 @@ def _merge_channels(window: Window):
     # Merge the channels
     for experiment in window.get_active_experiments():
         images: Images = experiment.images
+        channels_of_experiment = images.get_channels()
 
         # Build the new channel groups
         channel_groups = list()
-        channel_groups.append([channels[i] for i in chosen_channel_ids])  # Merge
+        channel_groups.append([channels[i] for i in chosen_channel_ids if channels[i] in channels_of_experiment])  # Merge
         for remaining_channel_id in remaining_channel_ids:
             # Keep these separate
-            channel_groups.append([channels[remaining_channel_id]])
+            if channels[remaining_channel_id] in channels_of_experiment:
+                channel_groups.append([channels[remaining_channel_id]])
 
         channel_merger = ChannelSummingImageLoader(images.image_loader(), channel_groups)
         images.image_loader(channel_merger)
@@ -122,8 +124,10 @@ def _remove_filters(window: Window):
 
         # Undo channel merging
         image_loader = images.image_loader()
-        if isinstance(image_loader, ChannelSummingImageLoader):
-            images.image_loader(image_loader.get_unmerged_image_loader())
+        untransformed = image_loader.untransformed()
+        if untransformed != image_loader:
+            # There was a transformation that we just removed
+            images.image_loader(untransformed)
             removed_count += 1
 
         # Undo filters
@@ -138,9 +142,9 @@ def _remove_filters(window: Window):
             window.set_status(f"Removed {removed_count} filters for channel {image_channel.index_one}.")
     else:
         if removed_count == 1:
-            window.set_status(f"Removed 1 filter in total across all tabs for channel {image_channel.index_one}.")
+            window.set_status(f"Removed 1 filter in total across all {experiment_count} tabs for channel {image_channel.index_one}.")
         else:
-            window.set_status(f"Removed {removed_count} filters in total across for channel {image_channel.index_one}.")
+            window.set_status(f"Removed {removed_count} filters in total across all {experiment_count} tabs for channel {image_channel.index_one}.")
 
     window.get_gui_experiment().redraw_image_and_data()
 

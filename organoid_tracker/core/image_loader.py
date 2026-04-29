@@ -135,6 +135,17 @@ class ImageLoader(ABC):
         """
         return self
 
+    def untransformed(self) -> "ImageLoader":
+        """If this loader transforms data of another loader, this method returns the original loader. Otherwise,
+        it returns itself.
+
+        (Note that there are also image filters, which are somewhat similar to transformations. These are set via
+        `experiment.images.filters`, and are not part of image loaders. However, while image filters can just change
+        pixel values, transformations can change the structure of the data - for example, by merging channels,
+        or by changing the z-stack.)
+        """
+        return self
+
     def has_images(self) -> bool:
         """Returns True if there are any images loaded, False otherwise.
 
