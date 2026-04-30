@@ -47,6 +47,8 @@ epochs = config.get_or_default("epochs", "50", comment="For how many epochs the 
                                 type=config_type_int)
 learning_rate = config.get_or_default("learning_rate", "0.0005", comment="The learning rate for the optimizer.",
                                type=config_type_float)
+patience = config.get_or_default("patience", "1", comment="Number of epochs to wait before stopping training if no improvement is seen.",
+                                 type=config_type_int)
 config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
@@ -77,7 +79,8 @@ pretrained_model_path = config.get_or_default("pretrained_model_path", "",
                                               type=str)
 # Start from a pretrained model if provided, otherwise start from scratch
 if pretrained_model_path:
-    model = load_pretrained_model(pretrained_model_path, learning_rate=learning_rate)
+    model = load_pretrained_model(pretrained_model_path, 
+                                  learning_rate=learning_rate)
 else:
     model = build_model(shape=(patch_shape_zyx[0], None, None, time_window[1] - time_window[0] + 1), 
                         batch_size=None,
@@ -101,7 +104,7 @@ history = model.fit(training_dataset,
                         keras.callbacks.CSVLogger(os.path.join(logging_folder, "logging.csv"), separator=",", append=False),
                         WriteExamplesCallback(logging_folder, example_dataset),
                         LogMemoryCallback(os.path.join(logging_folder, "memory_usage.csv")),
-                        keras.callbacks.EarlyStopping(patience=1, restore_best_weights=True)])
+                        keras.callbacks.EarlyStopping(patience=patience, restore_best_weights=True)])
 
 
 print("Saving model...")
