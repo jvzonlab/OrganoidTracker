@@ -262,6 +262,17 @@ self.serialize_to_config().</p>
 it returns self.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.image_loader.ImageLoader.untransformed">
+<span class="sig-name descname"><span class="pre">untransformed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.image_loader.ImageLoader.untransformed" title="Link to this definition"></a></dt>
+<dd><p>If this loader transforms data of another loader, this method returns the original loader. Otherwise,
+it returns itself.</p>
+<p>(Note that there are also image filters, which are somewhat similar to transformations. These are set via
+<cite>experiment.images.filters</cite>, and are not part of image loaders. However, while image filters can just change
+pixel values, transformations can change the structure of the data - for example, by merging channels,
+or by changing the z-stack.)</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">

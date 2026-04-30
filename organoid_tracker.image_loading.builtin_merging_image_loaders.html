@@ -227,6 +227,17 @@ self.serialize_to_config().</p>
 it returns self.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.untransformed">
+<span class="sig-name descname"><span class="pre">untransformed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelAppendingImageLoader.untransformed" title="Link to this definition"></a></dt>
+<dd><p>If this loader transforms data of another loader, this method returns the original loader. Otherwise,
+it returns itself.</p>
+<p>(Note that there are also image filters, which are somewhat similar to transformations. These are set via
+<cite>experiment.images.filters</cite>, and are not part of image loaders. However, while image filters can just change
+pixel values, transformations can change the structure of the data - for example, by merging channels,
+or by changing the z-stack.)</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -293,11 +304,6 @@ Note: the image z always goes from 0 to image_size_z - 1.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.get_unmerged_image_loader">
-<span class="sig-name descname"><span class="pre">get_unmerged_image_loader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.get_unmerged_image_loader" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.last_time_point_number">
 <span class="sig-name descname"><span class="pre">last_time_point_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.last_time_point_number" title="Link to this definition"></a></dt>
 <dd><p>Gets the last time point (inclusive) for which images are available.</p>
@@ -325,6 +331,17 @@ self.serialize_to_dictionary(), which does contain all information.</p>
 <span class="sig-name descname"><span class="pre">serialize_to_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.serialize_to_dictionary" title="Link to this definition"></a></dt>
 <dd><p>Serializes this image loader into a dictionary. The default implementation just uses the output of
 self.serialize_to_config().</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.untransformed">
+<span class="sig-name descname"><span class="pre">untransformed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.ChannelSummingImageLoader.untransformed" title="Link to this definition"></a></dt>
+<dd><p>If this loader transforms data of another loader, this method returns the original loader. Otherwise,
+it returns itself.</p>
+<p>(Note that there are also image filters, which are somewhat similar to transformations. These are set via
+<cite>experiment.images.filters</cite>, and are not part of image loaders. However, while image filters can just change
+pixel values, transformations can change the structure of the data - for example, by merging channels,
+or by changing the z-stack.)</p>
 </dd></dl>
 
 </dd></dl>
@@ -404,6 +421,17 @@ self.serialize_to_config().</p>
 <span class="sig-name descname"><span class="pre">uncached</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.uncached" title="Link to this definition"></a></dt>
 <dd><p>If this loader is a caching wrapper around another loader, this method returns one loader below. Otherwise,
 it returns self.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.untransformed">
+<span class="sig-name descname"><span class="pre">untransformed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.image_loader.html#organoid_tracker.core.image_loader.ImageLoader" title="organoid_tracker.core.image_loader.ImageLoader"><span class="pre">ImageLoader</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_merging_image_loaders.TimeAppendingImageLoader.untransformed" title="Link to this definition"></a></dt>
+<dd><p>If this loader transforms data of another loader, this method returns the original loader. Otherwise,
+it returns itself.</p>
+<p>(Note that there are also image filters, which are somewhat similar to transformations. These are set via
+<cite>experiment.images.filters</cite>, and are not part of image loaders. However, while image filters can just change
+pixel values, transformations can change the structure of the data - for example, by merging channels,
+or by changing the z-stack.)</p>
 </dd></dl>
 
 </dd></dl>
