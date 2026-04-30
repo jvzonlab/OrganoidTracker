@@ -14,11 +14,11 @@ import numpy as np
 import tifffile
 from torch.utils.data import DataLoader
 
-from organoid_tracker.config import ConfigFile, config_type_image_shape_xyz_to_zyx, config_type_int, config_type_bool
+from organoid_tracker.config import ConfigFile, config_type_image_shape_xyz_to_zyx, config_type_int, config_type_bool, config_type_float
 from organoid_tracker.imaging import list_io
 from organoid_tracker.linear_models.logistic_regression import platt_scaling
 from organoid_tracker.neural_network.dataset_transforms import LimitingDataset
-from organoid_tracker.neural_network.division_detection_cnn.convolutional_neural_network import build_model
+from organoid_tracker.neural_network.division_detection_cnn.convolutional_neural_network import build_model, load_pretrained_model
 from organoid_tracker.neural_network.division_detection_cnn.training_data_creator import \
     create_image_with_divisions_list
 from organoid_tracker.neural_network.division_detection_cnn.training_dataset import training_data_creator_from_raw
@@ -49,6 +49,10 @@ epochs = config.get_or_default("epochs", "50", comment="For how many epochs the 
                                                        " always better; at some point the network might get overfitted"
                                                        " to your training data.",
                                type=config_type_int)
+learning_rate = config.get_or_default("learning_rate", "0.0003", comment="The learning rate for the optimizer.",
+                               type=config_type_float)
+patience = config.get_or_default("patience", "2", comment="Number of epochs with no improvement after which training will be stopped.",
+                                type=config_type_int)
 config.save_and_exit_if_changed()
 # END OF PARAMETERS
 
@@ -75,10 +79,19 @@ validation_dataset = training_data_creator_from_raw(image_with_divisions_list, t
                                                     patch_shape=patch_shape_zyx, batch_size=batch_size,
                                                     mode='validation', split_proportion=0.8)
 
-# build model
-model = build_model(
+# Load model
+pretrained_model_path = config.get_or_default("pretrained_model_path", "", 
+                                              comment="Path to a pretrained model. If provided, the training will be continued from this model instead of starting from scratch.", 
+                                              type=str)
+# Start from a pretrained model if provided, otherwise start from scratch
+if pretrained_model_path:
+    model = load_pretrained_model(pretrained_model_path, 
+                                  learning_rate=learning_rate)
+else:
+    model = build_model(
     shape=(patch_shape_zyx[0], patch_shape_zyx[1], patch_shape_zyx[2], time_window[1] - time_window[0] + 1),
-    batch_size=None)
+    batch_size=None,
+    learning_rate=learning_rate)
 model.summary()
 
 # train model
@@ -94,7 +107,7 @@ history = model.fit(training_dataset,
                     validation_steps=len(validation_dataset),
                     callbacks=[keras.callbacks.CSVLogger(os.path.join(logging_folder, "logging.csv"), separator=",", append=False),
                                LogMemoryCallback(os.path.join(logging_folder, "memory_usage.csv")),
-                               keras.callbacks.EarlyStopping(patience=2, restore_best_weights=True)])
+                               keras.callbacks.EarlyStopping(patience=patience, restore_best_weights=True)])
 
 # save model
 print("Saving model...")

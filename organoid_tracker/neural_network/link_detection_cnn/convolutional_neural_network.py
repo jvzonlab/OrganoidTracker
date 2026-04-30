@@ -1,11 +1,13 @@
+from pyexpat import model
 from typing import Tuple
+import os
 
 import keras
 import keras.losses
 import keras.metrics
 
 
-def build_model(shape: Tuple, batch_size):
+def build_model(shape: Tuple, batch_size, learning_rate=0.00003):
     shape = (shape[0], shape[1], shape[2], shape[3] + 3)
 
     # Input layer
@@ -68,13 +70,28 @@ def build_model(shape: Tuple, batch_size):
     # full model
     model = keras.Model(inputs=[input_1, input_2, input_distance], outputs=output, name="links")
 
-    model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.00003),
+    model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
                   loss=keras.losses.BinaryCrossentropy(from_logits=False),
                   metrics=[keras.metrics.BinaryAccuracy(name='acc'),
                            keras.metrics.Recall(name='rec'),
                            keras.metrics.Precision(name='pre')])
     return model
 
+def load_pretrained_model(path, learning_rate=0.00003):
+    # Load only 
+    print(f"Loading pretrained model. from path: {path}")
+    pretrained = keras.models.load_model(os.path.join(path, "model.keras"))
+    model = keras.models.clone_model(pretrained)
+    model.load_weights(os.path.join(path, "model.keras"))
+
+
+    model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
+                  loss=keras.losses.BinaryCrossentropy(from_logits=False),
+                  metrics=[keras.metrics.BinaryAccuracy(name='acc'),
+                           keras.metrics.Recall(name='rec'),
+                           keras.metrics.Precision(name='pre')])
+
+    return model
 
 def stack_target(tensor, tensor_target):
     return keras.ops.stack([tensor[:, :, :, :, 0], tensor_target[:, :, :, :, 0]], axis=-1)

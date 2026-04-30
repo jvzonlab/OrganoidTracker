@@ -125,6 +125,8 @@ def _generate_position_training_config(window: Window):
 
     config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
     config.get_or_default("epochs", "50")
+    config.get_or_default("learning_rate", "0.0005")
+    config.get_or_default("patience", "2")
     config.get_or_default("patch_shape",
                           f"{_TRAINING_PATCH_SHAPE_ZYX[2]}, {_TRAINING_PATCH_SHAPE_ZYX[1]}, {_TRAINING_PATCH_SHAPE_ZYX[0]}")
     config.get_or_default("output_folder", "./output")
@@ -137,6 +139,13 @@ def _generate_position_training_config(window: Window):
     os.makedirs(tracking_files_folder, exist_ok=True)
     list_io.save_experiment_list_file(experiments, os.path.join(save_directory, "Dataset" + list_io.FILES_LIST_EXTENSION),
                                       tracking_files_folder=tracking_files_folder)
+
+    # Ask if starting from a pretrained model
+    if dialog.prompt_yes_no("Pretrained model", "Do you want to start training from a pretrained model?\n\nIf yes, you will be prompted to select the folder of the pretrained position detection network."):
+        model_folder = _get_model_folder("positions")
+        config.get_or_default("pretrained_model_path", model_folder, 
+                              comment="Path to a pretrained model. If provided, the training will be continued from this model instead of starting from scratch.", type=str)
+
 
     config.save()
     _create_run_script(save_directory, "organoid_tracker_train_position_network")
@@ -197,6 +206,8 @@ def _generate_division_training_config(window: Window):
 
     config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
     config.get_or_default("epochs", "50")
+    config.get_or_default("learning_rate", "0.0003")
+    config.get_or_default("patience", "2")
     config.get_or_default("patch_shape",
                           f"{_TRAINING_PATCH_SHAPE_ZYX_DIVISION[2]}, {_TRAINING_PATCH_SHAPE_ZYX_DIVISION[1]}, {_TRAINING_PATCH_SHAPE_ZYX_DIVISION[0]}")
     config.get_or_default("output_folder", "./output")
@@ -205,6 +216,11 @@ def _generate_division_training_config(window: Window):
     config.get_or_default(f"time_window_before", str(-1))
     config.get_or_default(f"time_window_after", str(1))
 
+    # Ask if starting from a pretrained model
+    if dialog.prompt_yes_no("Pretrained model", "Do you want to start training from a pretrained model?\n\nIf yes, you will be prompted to select the folder of the pretrained division network."):
+        model_folder = _get_model_folder("divisions")
+        config.get_or_default("pretrained_model_path", model_folder, 
+                              comment="Path to a pretrained model. If provided, the training will be continued from this model instead of starting from scratch.", type=str)
 
 
     config.save()
@@ -242,6 +258,8 @@ def _generate_link_training_config(window: Window):
     config = ConfigFile("train_link_network", folder_name=save_directory)
     config.get_or_default("dataset_file", "Dataset" + list_io.FILES_LIST_EXTENSION)
     config.get_or_default("epochs", "50")
+    config.get_or_default("learning_rate", "0.00003")
+    config.get_or_default("patience", "2")
     config.get_or_default("patch_shape",
                           f"{_TRAINING_PATCH_SHAPE_ZYX_LINKING[2]}, {_TRAINING_PATCH_SHAPE_ZYX_LINKING[1]}, {_TRAINING_PATCH_SHAPE_ZYX_LINKING[0]}")
     config.get_or_default("output_folder", "./output")
@@ -250,6 +268,12 @@ def _generate_link_training_config(window: Window):
     config.get_or_default(f"time_window_before", str(0))
     config.get_or_default(f"time_window_after", str(1))
 
+    # Ask if starting from a pretrained model
+    if dialog.prompt_yes_no("Pretrained model", "Do you want to start training from a pretrained model?\n\nIf yes, you will be prompted to select the folder of the pretrained links network."):
+        model_folder = _get_model_folder("links")
+        config.get_or_default("pretrained_model_path", model_folder, 
+                              comment="Path to a pretrained model. If provided, the training will be continued from this model instead of starting from scratch.", type=str)
+                          
     config.save()
     _create_run_script(save_directory, "organoid_tracker_train_link_network")
     _popup_confirmation(save_directory, "organoid_tracker_train_link_network")
