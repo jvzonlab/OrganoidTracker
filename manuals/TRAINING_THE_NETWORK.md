@@ -1,49 +1,60 @@
 # Training the neural network
 [← Back to main page](index.md)
 
-If you want to train your own neural network, read on. Training your own neural network is a good idea if you're not satisfied with how the cell detection in your images is done. However, training requires a graphics card with at least 10 GB of VRAM. I'm using a NVIDIA GeForce RTX 2080 Ti card, which has enough video RAM for a batch size of 48 with images of 512x512x32 px.
+If the [pretrained models](https://zenodo.org/records/17495402) for nucleus detection and tracking do not work well on your images, you can train your own neural network. You will need *enough vRAM* and *enough training data*. The OrganoidTracker2.0 models were trained on an NVIDIA GeForce RTX 2080 Ti card with 11GB of vRAM, which was sufficient for a batch size of 48 with images of 512x512x32 px. The training data consisted of ~200,000 cell detections and links across 1405 frames from multiple timelapse datasets (281h of imaging total). If you have a smaller dataset, it may be possible to merely finetune the existing model.
 
-## Some background information
-The tracker uses three neural networks. The first one detects where cells are, the second detects how likely it is that a cell is currently dividing and the third detects how likely it is that two cells at subsequent time points are the same cell.
+## OrganoidTracker uses three neural networks
+The tracker uses outputs from three neural networks to construct optimal tracks. The first networks detects where cells are, the second detects how likely it is that a cell is currently dividing, and the third detects how likely it is that two cells at subsequent time points are the same cell.
 
-The first network, the network that detects nucleus centers, is a so-called image to image network. Given a microscopy image, it outputs small dots that represent the nucleus centers. See Figure 1. This transformation is a large mathematical function with a huge number of parameters. During training, these parameters are optimized. You might be familiar with fitting the parameters `a` and `b` in the function `f(x) = ax + b` to some point cloud; in essence a neural network is a more complex variant of this, where many simpler functions are stacked on top of each other.
+### Cell detection
+The first network, which detects nucleus centers, is an "image-to-image" network. Given a microscopy image as input, it outputs an "image" with small dots that represent the nucleus centers (Figure 1). The neural network is therefore a large mathematical function with a huge number of parameters that transforms the microscopy image into an image of cell centers. Training optimizes these parameters. Therefore, as the training data, you must provide examples of these output images, essentially a bunch of examples of "here is a nucleus center" and "here is not a nucleus center." During training, the network gets better and better at reproducing the images you trained it on.
 
 ![Network output](images/network.png)  
 Figure 1: The network goes from an input image to an image that shows where the nucleus centers are.
 
-By giving the neural network a lot of examples of "here is a nucleus center" and "here is not a nucleus center", it "learns" to recognize cells on it's own. For this, it fits the parameters of the neural network such that the network gets better and better in reproducing the images you trained it on.
+### Link and division detection
+The other two networks are classification networks. They take images as input and output a single number (instead of an image). Note that these intput images are crops around a single cell center, so both the link and division networks depend on the performance of the position detection network. 
 
-The other two networks are classification networks. They take one or two images as input, and output a single number (instead of another image, like the network above). Training still works in a similar way. For the division detection network, the network receives a lot of examples of cells, and optimizes all parameters such that it can decide whether a cell divides. For the linking network, it receives pairs of images centered around two nuclei, and learns to decide whether the images are displaying the same cell.
+The division detection network works on a crop around a cell position for three consecutive timepoints and determines the probability that the cell is dividing in the middle frame. In this way, the "division score" is a feature of every cell center at every timepoint (except the first and final ones). 
 
-If you've not already done so, you should definitely look up some information on how convolutional neural networks work; there a lot of great videos and books. Tip: try a book for Keras or PyTorch beginners. These books tend to provide a practical introduction, while still covering enough theory so that the networks don't look like magical creatures anymore.
+The link detection network receives pairs of images centered around two nuclei and computes the probability that the images display the same cell. Thus, the "linking score" is a feature of many "possible" links, though the possible links are pruned based on a distance metric (i.e., only nearby neighbors are checked for links).
+
+To generate examples of division and links, you must manually track timelapse images. 
 
 ## Acquiring training data
-First, you're going to need a lot of training data. The more and the more diverse the training data, the better. The training data should be a good sample of the data you eventually want to obtain. I'm using around 10000 data points (detected cells) from 10 different time lapses myself. In the OrganoidTracker GUI in the `View` menu there is an options to view how many detected positions you have in your experiment.
+You training images will ideally include as many examples as possible, be similar to you true experimental set-up, and represent the diversity of cell shapes and divisions that can occur. If you are manually tracking in the OrganoidTracker GUI, you can use `View` -> `View statistics` to check how many detected positions you have in your experiment.
 
-If you have less data, there are several options. You can download a pre-trained networks at [our Github page](https://github.com/jvzonlab/OrganoidTracker) and train it for more time steps on your data, for example up to step 125000 if the network was originally trained for 100000 steps. Compared to training a network for scratch, this allows you to get away with a lot less training data.
+Your training data should also be **annotated,** with ground truth positions, divisions, and links marked. See [our guide on manual tracking](MANUAL_TRACKING.md) for how to do this in the OrganoidTracker GUI. Note that you do not need to generate the individual crops that are used as example inputs for the division and links model. Instead, by creating the "tree" that links positions in time, you provide enough information for the OrganoidTracker training procedure to create those crops itself during the training process.
 
-You can also download one of the fully annotated 3D+time time lapses from the [Cell Tracking Challenge](https://celltrackingchallenge.net/3d-datasets/) and add them to your dataset, provided those look similar enough.
-
-Make sure that the data is correct! Even a low percentage of errors (1%) can already weaken the training. You don't need to annotate the entire image, OrganoidTracker will crop your image to the area where there are annotations. This cropping uses a simple cuboid (3D rectangle) shape. However, within the area you're annotating you need to annotate each and every cell, otherwise you're teaching the network that those things are not cells. See Figure 2.
+Make sure that the data is correct! Even a low percentage of errors (1%) can already weaken the training. Note that:
+* When training a position model, every position must be selected, or the network learns to ignore things that are actually cells (Figure 2). However, OrganoidTracker will crop a 3D rectangle (xyz) around all positions in the training data, so it is sufficient to fully annotate only a subsection of your image. Note also the the z-location of the position also matters.
+* For the division and link models, comprehensive annotation is less important, since the model works around a crop of the specified cell center. Nonetheless, these should be correct.
 
 ![Annotations](images/annotations.png)  
 Figure 2: OrganoidTracker automatically sees that you have only annotated part of the image, so you don't need to annotate the entire image. However, you do need to annotate each and every cell within that region.
 
+### Automatic data augmentation
+Training with the OrganoidTracker scripts automatically includes some data augmentation, which is meant to simulate subtle variations in microscope settings or cells that can arise. Specifically, OrganoidTracker generates artificial data based on your input images that it adds to the training data. It makes cells brighter or darker and rotates them. 
+
+The program also randomizes the order in which it sees your training data, so that it is not training on a single experiment for a long time.
+
 ## The training process
-Open the data of all the experiments you're going to use in the OrganoidTracker GUI, switch to the "<all experiments>" tab and use `Tools` -> `Train a neural network` and pick the neural network to train. Run the resulting script.
+OrganoidTracker streamlines training by allowing you to load and visualize the training data and then generating the necessary script to run the training. You will run the resulting script to complete the training.
 
-By default, the training lasts for 50 epochs, but you can modify this in the `organoid_tracker.ini` file next to the script. Training will stop automatically if the results no longer improve on the validation set (which will be randomly created from the dataset you supplied).
+To start, load all your training data, which shoudl be a series of images and their associated tracks (i.e., ground truth annotations of positions, divisions, and links). Open each image (`File` -> `Load images...`) and its associated tracking data (`File` -> `Load tracking data...`) in their own tab. The GUI opens with an empty tab, but you must add additional ones (`File` -> `New project...`) to load more than one image. The dropdown menu in the upper right lists all the open tabs, so you can switch between them. The final tab is always labelled `<all experiments>`. Select that tab and then go to `Tools` -> `Train a neural network` and pick the neural network to train. 
 
-Neural networks work differently from our own brains. If you change some microscopy settings, which makes the noise in the images different, then if you're unlucky the neural network will suddenly not recognize your nuclei anymore. Additionally, if you provide the network nuclei at a different resolution, it might no longer work.
+First, you must specify the output directory (e.g., a name like `model_positions`). Second, you will be asked if you would like to start from a pretrained model. Only select yes if you are instead fine-tuning a model (see below), rather than training from scratch. Then all the files will be generated in the output folder you specified, which you can immediately navigate to by selecting `Open that directory` in the final dialog box.
 
-To combat both effects, OrganoidTracker generates artificial data based on your input images. It makes cells brighter or darker and rotates them. This makes the algorithm less specific to your images. The program also randomizes the order in which it sees your training data, so that it is not training on a single experiment for a long time.
+To run the training, double click either the `*.bat` or `*.sh` file that was generated. You may also modify features of the training with the following parameters in the config file (i.e., `organoid_tracker.ini`):
+* `epochs`: 50 (default), but OrganoidTracker uses an early stopping criteria based on changes in the loss of an automatically held out validation set. 
+* `learning_rate`: varies between the different models
+* `patience`: 1 or 2 (default), number of epochs to keep training even if validation loss increases (as used in `PyTorch`); the model with lowest validation error is kept
+* `image_channels_x`, where `x` is the dataset number: 1 (default, int), which channel to train on. Can take multiple channels as a list (e.g., "3,4"). The first channel is 1, not 0, as in the OrganoidTracker GUI
+* `time_window_before` and `time_window_after`: set to 0 if data are not timelapse or nuclei in adjacent frames are not close to each other for some other reason. Otherwise, multiple timepoints are used for nucleus recognition
 
-## Using image data of multiple channels
-The `Tools` -> `Train a neural network` menu options each generate a folder with a configuration file `organoid_tracker.ini` in it. If you open it, you can see where the neural network is getting its image data from. 
+## Troubleshooting
 
-An interesting setting here is `image_channels_x`, which `x` the number of the image dataset. Normally, the network is trained on just the first channel. You can change this here to another channel. This is necessary if the first channel does not properly identify the nuclei, for example because it is a brightfield channel.
-
-You can also provide multiple channels, for example `image_channels_x = 3,4` which will first sum the third and fourth channel, and then train the network on the sum of those channels. (The first channel is channel 1, not 0, just like in the OrganoidTracker GUI.)
-
-## Using data that is not from a time lapse
-If you're using data that is not from a time-lapse (so just a sequence of unrelated images), or if the nuclei have moved so much that they're no longer close to themselves in the next time point, make sure to set `time_window_before` and  `time_window_after` to 0 in the `organoid_tracker.ini` file. Otherwise multiple time points will be used for recognition of the nuclei.
+### What to do if you don't have enough training data
+Perhaps after training and adjusting hyperparameters, your model is still not performing well on test data, and you suspect you do not have enough training data. You can:
+* **Finetune our models wiht your smaller dataset**: If [our models](https://zenodo.org/records/17495402) and another pretrained model already has somewhat reasonable performance on your data, you could use your smaller dataset to finetune these models for better performance, rather than retraining from scratch (i.e., transfer learning). To do this, you merely select the pretrained model when prompted by the GUI, during the training setup process. It may also be useful to lower the learning rate and increase the patience, parameters which you can change in the config file. Otherwise, the pretrained model loads the same loss function and optimizer as when training from scratch.
+* **Find published ground truth data that resembles yours**: If no existing model performs reasonably well and you only need more data, you may find published (and possibly annotated) data that you can use, provided that they look similar enough. For example, the [Cell Tracking Challenge](https://celltrackingchallenge.net/3d-datasets/) includes many fully annotated 3D timelapses.
