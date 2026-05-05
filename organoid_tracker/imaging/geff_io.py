@@ -1,3 +1,4 @@
+from enum import auto, Enum
 from typing import Any, List, NamedTuple, Optional, Dict, Type
 from typing import Literal
 
@@ -9,6 +10,7 @@ from geff._typing import ZarrPropDict, PropDictNpArray, InMemoryGeff
 from geff.core_io import write_arrays
 from geff.core_io._serialization import deserialize_vlen_property_data
 from geff_spec import Axis, GeffMetadata
+from statsmodels.tsa.adfvalues import z_ct_smallp
 from zarr.storage import StoreLike
 
 from organoid_tracker.core import UserError
@@ -32,6 +34,43 @@ _MULTIPLICATION_FACTOR_TO_MINUTES = {
     "second": 1/60.0,
     "millisecond": 1/60000.0,
 }
+
+
+class _OurAxisType(Enum):
+    TIME = auto()
+    X = auto()
+    Y = auto()
+    Z = auto()
+
+
+class _AxisInfo:
+    scale: float  = 1  # Whatever scale factor we need to apply to get from
+    offset: float = 0
+    axis_name: str = "none"
+
+
+class _AxesInfo:
+    x: _AxisInfo
+    y: _AxisInfo
+    z: _AxisInfo
+    time: _AxisInfo
+
+    def __init__(self):
+        self.x = _AxisInfo()
+        self.y = _AxisInfo()
+        self.z = _AxisInfo()
+        self.time = _AxisInfo()
+
+    def axis(self, axis_type: _OurAxisType) -> _AxisInfo:
+        if axis_type == _OurAxisType.TIME:
+            return self.time
+        elif axis_type == _OurAxisType.X:
+            return self.x
+        elif axis_type == _OurAxisType.Y:
+            return self.y
+        elif axis_type == _OurAxisType.Z:
+            return self.z
+        raise ValueError(f"Unknown axis type: {axis_type}")
 
 
 def _load_prop_to_memory(zarr_prop: ZarrPropDict, prop_metadata: dict[str, Any]) -> PropDictNpArray:
@@ -204,14 +243,23 @@ def _read_positions(experiment: Experiment, in_memory_geff: InMemoryGeff, min_ti
 
     # Read in the scale factors
     geff_axes = in_memory_geff["metadata"].axes
-    time_scale_factor, z_scale_factor, y_scale_factor, x_scale_factor = _read_scale_factors_tzyx(experiment, geff_axes)
+    axes_info = _read_axes_info(experiment, geff_axes)
 
     node_ids = in_memory_geff["node_ids"]
     node_props = in_memory_geff["node_props"]
-    time_values = node_props["t"]["values"]
-    x_values = node_props["x"]["values"]
-    y_values = node_props["y"]["values"]
-    z_values = node_props["z"]["values"]
+
+    time_values = node_props[axes_info.time.axis_name]["values"]
+    x_values = node_props[axes_info.x.axis_name]["values"]
+    y_values = node_props[axes_info.y.axis_name]["values"]
+    if axes_info.z.axis_name in node_props:
+        z_values = node_props[axes_info.z.axis_name]["values"]
+    else:
+        z_values = numpy.zeros_like(x_values)  # For 2D-tracking, just fill in zeros for the Z
+
+    if numpy.min(time_values) == numpy.max(time_values) == 0:
+        # Fix for a malformed GEFF file of 2D cell tracking, where the Z and T axis were swapped
+        time_values = z_values
+        z_values = numpy.zeros_like(time_values)
 
     positions_by_node_id = []
     experiment_positions = experiment.positions
@@ -223,10 +271,10 @@ def _read_positions(experiment: Experiment, in_memory_geff: InMemoryGeff, min_ti
             # Skip positions outside the requested time point range
             continue
 
-        position = Position(float(x_values[i] * x_scale_factor),
-                            float(y_values[i] * y_scale_factor),
-                            float(z_values[i] * z_scale_factor),
-                            time_point_number=int(time_values[i] * time_scale_factor))
+        position = Position(float(x_values[i] * axes_info.x.scale + axes_info.x.offset),
+                            float(y_values[i] * axes_info.y.scale + axes_info.y.offset),
+                            float(z_values[i] * axes_info.z.scale + axes_info.z.offset),
+                            time_point_number=int(time_values[i] * axes_info.time.scale + axes_info.time.offset),)
 
         if node_id == len(positions_by_node_id):
             # Most common case - sequential node ids
@@ -249,49 +297,87 @@ def _read_positions(experiment: Experiment, in_memory_geff: InMemoryGeff, min_ti
     return positions_by_node_id
 
 
-def _read_scale_factors_tzyx(experiment: Experiment, geff_axes: list[Axis]) -> tuple[float, float, float, float]:
+def _read_axes_info(experiment: Experiment, geff_axes: list[Axis]) -> _AxesInfo:
     """Read the scale factors for time, z, y, x axes from the GEFF axes. Raises an UserError if unsupported units are found."""
-    x_scale_factor = 1
-    y_scale_factor = 1
-    z_scale_factor = 1
-    time_scale_factor = 1
-    for ax in geff_axes:
-        ax_name = ax.name
+    our_axes_info = _AxesInfo()
 
-        # Scale and offset are currently not supported
-        if "scale" in ax and ax.scale is not None:
-            raise UserError("Unsupported file", "Scaled axes are not supported in our GEFF loader")
-        if "offset" in ax and ax.offset is not None:
-            raise UserError("Unsupported file", "Offsetting axes is not supported in our GEFF loader")
+    for ax in geff_axes:
+
+        # Read any extra scale
+        original_unit = ax.unit
+        final_unit = ax.unit
+        scale_factor = 1
+        offset = ax.offset if "offset" in ax else 0
+        if "scale" in ax:
+            scale_factor = ax.scale
+            final_unit = ax.scaled_unit  # scaled_unit must exist if scale is set, according to the spec
 
         if ax.type == "time":
-            if ax.unit is not None and ax.unit != "frame":
+            our_axis_type = _OurAxisType.TIME
+
+            if original_unit is None:
+                original_unit = "frame"
+            if final_unit is None:
+                final_unit = "frame"
+
+            if final_unit != "frame":
+                # Need to adjust the scale so that we end up with frames
+                if original_unit == "frame":
+                    # Easy - original was in time frames, so just remove the scaling
+                    offset /= scale_factor  # Offset is applied after scaling, so we need to adjust it as well
+                    scale_factor = 1
                 resolution = _get_resolution(experiment)
-                if ax.unit not in _MULTIPLICATION_FACTOR_TO_MINUTES:
+                if final_unit not in _MULTIPLICATION_FACTOR_TO_MINUTES:
                     raise UserError("Unsupported file",
-                                    f"The unit '{ax['unit']}' for the time axis '{ax_name}' is not supported in our GEFF loader")
-                time_scale_factor = _MULTIPLICATION_FACTOR_TO_MINUTES[ax["unit"]] / resolution.time_point_interval_m
+                                    f"The unit '{final_unit}' for the time axis '{ax.name}' is not supported in our GEFF loader")
+                scale_factor *= _MULTIPLICATION_FACTOR_TO_MINUTES[final_unit] / resolution.time_point_interval_m
+                offset *= _MULTIPLICATION_FACTOR_TO_MINUTES[final_unit] / resolution.time_point_interval_m
         elif ax.type == "space":
-            if ax.unit is not None and ax.unit != "pixel":
-                resolution = _get_resolution(experiment)
-                if ax.unit not in _MULTIPLICATION_FACTOR_TO_MICROMETERS:
-                    raise UserError("Unsupported file",
-                                    f"The unit '{ax.unit}' for the {ax_name}-axis is not supported in our GEFF loader")
-                scale_to_micrometers = _MULTIPLICATION_FACTOR_TO_MICROMETERS[ax["unit"]]
-                if ax_name == "x":
-                    x_scale_factor = scale_to_micrometers / resolution.pixel_size_x_um
-                elif ax_name == "y":
-                    y_scale_factor = scale_to_micrometers / resolution.pixel_size_y_um
-                elif ax_name == "z":
-                    z_scale_factor = scale_to_micrometers / resolution.pixel_size_z_um
+            if not ax.name in ("x", "y", "z"):
+                raise UserError("Unsupported file",
+                                f"Spatial axis name '{ax.name}' is not supported in our GEFF loader. Only 'x', 'y' and 'z' are supported.")
+            our_axis_type = _OurAxisType[ax.name.upper()]  # Works, because ax_name can only be x, y or z at this point
+
+            if original_unit is None:
+                original_unit = "pixel"
+            if final_unit is None:
+                final_unit = "pixel"
+            if final_unit != "pixel":
+                # Need to adjust the scale so that we end up with pixels
+                if original_unit == "pixel":
+                    # Easy, original was in pixels, so just don't apply the scaling
+                    offset /= scale_factor  # Offset is applied after scaling, to adjust it as well
+                    scale_factor = 1
                 else:
-                    raise UserError("Unsupported file",
-                                    f"Spatial axis name '{ax_name}' is not supported in our GEFF loader")
-        elif ax.type == "channel":
+                    # Make a calculation on how to go from this unit to pixels
+                    resolution = _get_resolution(experiment)
+                    if final_unit not in _MULTIPLICATION_FACTOR_TO_MICROMETERS:
+                        raise UserError("Unsupported file",
+                                        f"The unit '{final_unit}' for the {ax_name}-axis is not supported in our GEFF loader")
+                    scale_to_micrometers = _MULTIPLICATION_FACTOR_TO_MICROMETERS[final_unit]
+                    if ax.name == "x":
+                        extra_scale_factor = scale_to_micrometers / resolution.pixel_size_x_um
+                    elif ax.name == "y":
+                        extra_scale_factor = scale_to_micrometers / resolution.pixel_size_y_um
+                    elif ax.name == "z":
+                        extra_scale_factor = scale_to_micrometers / resolution.pixel_size_z_um
+                    else:
+                        raise ValueError(ax.name)  # Shouldn't happen, we checked above that ax_name is x, y or z
+                    scale_factor *= extra_scale_factor
+                    offset *= extra_scale_factor  # Offset is applied after scaling, so adjust too
+
+        elif ax.type == "channel" or ax.type is None:
             continue
         else:
-            raise NotImplementedError(f"Axis type {ax['type']} is not supported in our GEFF loader")
-    return time_scale_factor, z_scale_factor, y_scale_factor, x_scale_factor
+            raise NotImplementedError(f"Axis type {ax.type} is not supported in our GEFF loader")
+
+        # Put all collected info into axes_info
+        our_axis_info = our_axes_info.axis(our_axis_type)
+        our_axis_info.axis_name = ax.name
+        our_axis_info.scale_factor = scale_factor
+        our_axis_info.offset = offset
+
+    return our_axes_info
 
 
 def _get_resolution(experiment: Experiment) -> ImageResolution:

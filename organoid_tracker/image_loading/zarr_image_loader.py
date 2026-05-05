@@ -1,8 +1,13 @@
+import os
+from pathlib import Path
 from typing import Tuple, Optional
 
+import dask
 import numpy
+import zarr
+from dask.array import Array
 from numpy import ndarray
-from ome_zarr.io import parse_url
+from ome_zarr.io import parse_url, ZarrLocation
 from ome_zarr.reader import Reader, Node
 
 from organoid_tracker.core import TimePoint, UserError
@@ -21,10 +26,15 @@ def load_from_zarr_file(experiment: Experiment, container: str, min_time_point: 
 class _ZarrImageLoader(ImageLoader):
 
     _file_name: str
-    _zarr_store: Reader
 
-    _node_index: int = 0
-    _image_node: Node
+    # Two different ZARR formats are supported: the OME-Zarr ones with a .zgroup file, and the basic ZARR ones with a
+    # .zarray file. If we have an OME-Zarr, we use the ome_zarr_reader to read it, otherwise we use the raw_zarr_array.
+    # We can tell which one we have (in __init__) by checking if the file has a .zgroup or .zarray file.
+    _ome_zarr_reader: Reader | None = None
+    _ome_node_index: int = 0
+    _ome_image_node: Node | None = None
+
+    _raw_zarr_array: zarr.Array
 
     _axes_names: str
     _axes_sizes: Tuple[int, ...]
@@ -42,28 +52,42 @@ class _ZarrImageLoader(ImageLoader):
         self._file_name = file_name
 
         # Open Zarr container
-        zarr_location = parse_url(file_name)
+        zarr_location = parse_url(Path(file_name))
         if zarr_location is None:
-            raise UserError("Not a Zarr container", f"The file '{file_name}' is not a valid Zarr container.")
-        self._zarr_store = Reader(parse_url(file_name))
+            if os.path.exists(os.path.join(file_name, ".zarray")):
+                # Basic ZARR file, not OME-ZARR
+                zarr_array = zarr.open_array(Path(file_name), mode="r")
+                self._raw_zarr_array = zarr_array
 
-        # Find image nodes
-        nodes = list(self._zarr_store())
-        if len(nodes) == 0:
-            self.close()
-            raise UserError("No image data", f"No image data found in Zarr file '{file_name}'")
-        self._image_node = nodes[self._node_index]
+                shape = zarr_array.shape
+                if len(shape) > len(_SUPPORTED_AXIS):
+                    raise UserError("Too complicated Zarr array", f"Found a Zarr (not Ome-Zarr) with shape {shape}, which we cannot currently handle.")
 
-        # Find axes names and sizes
-        self._axes_names = ""
-        self._axes_sizes = self._image_node.data[0].shape
-        for ax in self._image_node.metadata["axes"]:
-            ax_name = ax["name"]
-            if ax_name not in _SUPPORTED_AXIS:
+                self._axes_names = _SUPPORTED_AXIS[-len(shape):]  # Assume axes are in order of _SUPPORTED_AXIS
+                self._axes_sizes = shape
+            else:
+                raise UserError("Not a Zarr container", f"The file '{file_name}' is not a valid Zarr container.")
+        else:
+            # We have an OME-Zarr store
+            self._ome_zarr_reader = Reader(zarr_location)
+
+            # Find image nodes
+            nodes = list(self._ome_zarr_reader())
+            if len(nodes) == 0:
                 self.close()
-                raise UserError("Unsupported axis", f"We cannot read Zarr files with an axis '{ax_name}'."
-                                                    f"Only the axes '{''.join(_SUPPORTED_AXIS)}' are supported.")
-            self._axes_names += ax_name
+                raise UserError("No image data", f"No image data found in Zarr file '{file_name}'")
+            self._ome_image_node = nodes[self._ome_node_index]
+
+            # Find axes names and sizes
+            self._axes_names = ""
+            self._axes_sizes = self._ome_image_node.data[0].shape
+            for ax in self._ome_image_node.metadata["axes"]:
+                ax_name = ax["name"]
+                if ax_name not in _SUPPORTED_AXIS:
+                    self.close()
+                    raise UserError("Unsupported axis", f"We cannot read Zarr files with an axis '{ax_name}'."
+                                                        f"Only the axes '{''.join(_SUPPORTED_AXIS)}' are supported.")
+                self._axes_names += ax_name
 
         # Find available time points
         self._min_available_time_point_number = 0
@@ -97,7 +121,10 @@ class _ZarrImageLoader(ImageLoader):
             elif axis_name in ("z", "y", "x"):
                 indices.append(slice(None))
 
-        return numpy.asarray(self._image_node.data[0][tuple(indices)])
+        if self._ome_image_node is not None:
+            return numpy.asarray(self._ome_image_node.data[0][tuple(indices)])
+        else:
+            return self._raw_zarr_array[tuple(indices)]
 
     def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
         # Check bounds
@@ -120,7 +147,10 @@ class _ZarrImageLoader(ImageLoader):
             elif axis_name in ("y", "x"):
                 indices.append(slice(None))
 
-        return numpy.asarray(self._image_node.data[0][tuple(indices)])
+        if self._ome_image_node is not None:
+            return numpy.asarray(self._ome_image_node.data[0][tuple(indices)])
+        else:
+            return self._raw_zarr_array[tuple(indices)]
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
         y_size = self._axes_sizes[self._axes_names.index("y")]
@@ -137,11 +167,12 @@ class _ZarrImageLoader(ImageLoader):
         return self._channel_count
 
     def serialize_to_config(self) -> Tuple[str, str]:
-        return self._file_name, str(self._node_index)
+        return self._file_name, str(self._ome_node_index)
 
     def copy(self) -> "ImageLoader":
         return _ZarrImageLoader(self._file_name, self._min_available_time_point_number, self._max_available_time_point_number)
 
     def close(self):
-        self._zarr_store.zarr.store.close()
-        self._zarr_store = None
+        if self._ome_zarr_reader is not None:
+            self._ome_zarr_reader.zarr.store.close()
+            self._ome_zarr_reader = None

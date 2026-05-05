@@ -101,7 +101,7 @@ class ChannelSummingImageLoader(ImageLoader):
             "images_channel_summing": channel_indices
         }
 
-    def get_unmerged_image_loader(self) -> ImageLoader:
+    def untransformed(self) -> ImageLoader:
         return self._image_loader
 
     def copy(self) -> "ImageLoader":
@@ -126,6 +126,13 @@ class ChannelSummingImageLoader(ImageLoader):
             raise ValueError("Cannot save images for this channel")
         original_channels = self._channels[image_channel.index_zero]
         self._image_loader.save_3d_image_array(time_point, original_channels[0], image)
+
+    def __eq__(self, other):
+        return (isinstance(other, ChannelSummingImageLoader) and other._channels == self._channels
+                and other._image_loader == self._image_loader)
+
+    def __hash__(self) -> int:
+        return hash((self._image_loader, *self._channels))
 
 
 class ChannelAppendingImageLoader(ImageLoader):
@@ -225,6 +232,12 @@ class ChannelAppendingImageLoader(ImageLoader):
             new_internal.append(internal.uncached())
         return ChannelAppendingImageLoader(new_internal)
 
+    def untransformed(self) -> "ImageLoader":
+        new_internal = list()
+        for internal in self._unique_loaders:
+            new_internal.append(internal.untransformed())
+        return ChannelAppendingImageLoader(new_internal)
+
     def close(self):
         for internal in self._unique_loaders:
             internal.close()
@@ -245,6 +258,12 @@ class ChannelAppendingImageLoader(ImageLoader):
                 return
             image_channel_index -= image_loader.get_channel_count()
         raise ValueError(f"Cannot save images for this channel: {image_channel}")
+
+    def __eq__(self, other) -> bool:
+        return isinstance(other, ChannelAppendingImageLoader) and self._unique_loaders == other._unique_loaders
+
+    def __hash__(self) -> int:
+        return hash(tuple(self._unique_loaders))
 
 
 class TimeAppendingImageLoader(ImageLoader):
@@ -398,7 +417,21 @@ class TimeAppendingImageLoader(ImageLoader):
             new_internal.append(internal.uncached())
         return TimeAppendingImageLoader(new_internal, self._min_time_point_number, self._max_time_point_number)
 
+    def untransformed(self) -> "ImageLoader":
+        new_internal = list()
+        for internal in self._internal:
+            new_internal.append(internal.untransformed())
+        return TimeAppendingImageLoader(new_internal, self._min_time_point_number, self._max_time_point_number)
+
     def close(self):
         for internal in self._internal:
             internal.close()
 
+    def __eq__(self, other) -> bool:
+        return (isinstance(other, TimeAppendingImageLoader)
+                and self._internal == other._internal
+                and self._min_time_point_number == other._min_time_point_number
+                and self._max_time_point_number == other._max_time_point_number)
+
+    def __hash__(self) -> int:
+        return hash(tuple(self._internal))
