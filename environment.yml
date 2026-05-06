@@ -19,5 +19,5 @@ dependencies:
   - pytorch
   - tqdm
   - aicspylibczi
-  - ome-zarr
+  - zarr
   - geff

@@ -1,3 +1,4 @@
+import os
 from enum import auto, Enum
 from typing import Any, List, NamedTuple, Optional, Dict, Type
 from typing import Literal
@@ -73,32 +74,6 @@ class _AxesInfo:
         raise ValueError(f"Unknown axis type: {axis_type}")
 
 
-def _load_prop_to_memory(zarr_prop: ZarrPropDict, prop_metadata: dict[str, Any]) -> PropDictNpArray:
-    """Load a zarr property dictionary into memory, including deserialization."""
-    dtype = numpy.dtype(prop_metadata["dtype"])
-    values_dtype = numpy.uint64 if prop_metadata["varlength"] else dtype
-    values = numpy.array(zarr_prop["values"], dtype=values_dtype)
-    if "missing" in zarr_prop:
-        missing = numpy.array(zarr_prop["missing"], dtype=bool)
-    else:
-        missing = None
-        
-    if "data" in zarr_prop:
-        data = numpy.array(zarr_prop["data"], dtype=dtype)
-    else:
-        data = None
-
-    if "varlength" in prop_metadata and prop_metadata["varlength"]:
-        if data is None:
-            raise ValueError(
-                f"Property {prop_metadata['identifier']} metadata is varlength but no "
-                "serialized data was found in GEFF zarr"
-            )
-        return deserialize_vlen_property_data(values, missing, data)
-    else:
-        return PropDictNpArray(values=values, missing=missing)
-
-
 def _read_prop(group: zarr.Group, name: str, prop_type: Literal["node", "edge"]) -> ZarrPropDict:
     """Read a single property into a zarr property dictionary."""
     group_path = f"nodes/props/{name}" if prop_type == "node" else f"edges/props/{name}"
@@ -114,75 +89,13 @@ def _read_prop(group: zarr.Group, name: str, prop_type: Literal["node", "edge"])
     return prop_dict
 
 
-def _read_geff(source: StoreLike) -> InMemoryGeff:
-    """Parses a GEFF zarr store into an in-memory representation."""
-    group = zarr.open_group(source, mode="r")
-    metadata: GeffMetadata = group.attrs["geff"]
-    nodes = zarr.open_array(source, path="nodes/ids", mode="r")
-    edges = zarr.open_array(source, path="edges/ids", mode="r")
-    node_props: dict[str, ZarrPropDict] = {}
-    edge_props: dict[str, ZarrPropDict] = {}
-
-    # get node properties
-    nodes_group = group.get("nodes")
-    if "props" in nodes_group.keys():
-        node_props_group = zarr.open_group(group.store, path="nodes/props", mode="r")
-        node_prop_names: list[str] = [*node_props_group.group_keys()]
-    else:
-        node_prop_names = []
-    for name in node_prop_names:
-        node_props[name] = _read_prop(group, name, "node")
-
-    # get edge properties
-    edges_group = group.get("edges")
-    if "props" in edges_group.keys():
-        edge_props_group = zarr.open_group(group.store, path="edges/props", mode="r")
-        edge_prop_names: list[str] = [*edge_props_group.group_keys()]
-    else:
-        edge_prop_names = []
-    for name in edge_prop_names:
-        edge_props[name] = _read_prop(group, name, "edge")
-
-    nodes = numpy.array(nodes)
-    node_props_memory: dict[str, PropDictNpArray] = {}
-    for name, props in node_props.items():
-        prop_metadata = metadata["node_props_metadata"][name]
-        node_props_memory[name] = _load_prop_to_memory(props, prop_metadata)
-
-    # remove edges if any of its nodes has been masked
-    edges = numpy.array(edges[:])
-    edge_props_memory: dict[str, PropDictNpArray] = {}
-    for name, props in edge_props.items():
-        prop_metadata = metadata["edge_props_metadata"][name]
-        edge_props_memory[name] = _load_prop_to_memory(props, prop_metadata)
-
-
-    # Remove any metadata for properties that are not present
-    for property_name in list(metadata["node_props_metadata"].keys()):
-        if property_name not in node_props.keys():
-            del metadata["node_props_metadata"][property_name]
-    for property_name in list(metadata["edge_props_metadata"].keys()):
-        if property_name not in edge_props.keys():
-            del metadata["edge_props_metadata"][property_name]
-
-    return {
-        "metadata": metadata,
-        "node_ids": nodes,
-        "node_props": node_props_memory,
-        "edge_ids": edges,
-        "edge_props": edge_props_memory,
-    }
-
-
-
-def load_data_file(file_name: str, min_time_point: int = -9999999, max_time_point: int = 9999999, experiment: Experiment = None):
+def load_data_file(geff_source: str, min_time_point: int = -9999999, max_time_point: int = 9999999, experiment: Experiment = None):
     experiment = experiment if experiment is not None else Experiment()
 
-    try:
-        geff_index = file_name.lower().rindex(".geff")
-    except ValueError:
-        raise ValueError("File name does not contain .geff extension")
-    geff_source = file_name[:geff_index + 5]
+    # Correct for cases where the path doesn't end with .geff (because the user selected a file inside)
+    if isinstance(geff_source, str) and f".geff{os.sep}" in geff_source:
+        geff_index = geff_source.lower().rindex(".geff")
+        geff_source = geff_source[:geff_index + 5]
 
     geff_reader = GeffReader(geff_source)
     geff_reader.read_node_props()

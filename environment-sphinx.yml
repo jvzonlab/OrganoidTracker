@@ -17,7 +17,7 @@ dependencies:
   - lifelines
   - tqdm
   - aicspylibczi
-  - ome-zarr
+  - zarr
   - geff
   - sphinx=9.1.0
   - myst-parser=5.0.0  # Markdown parsing
