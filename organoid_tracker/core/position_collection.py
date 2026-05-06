@@ -525,6 +525,11 @@ class PositionCollection:
             new_positions_dict[time_point_number + time_point_delta] = values_old
         self._all_positions = new_positions_dict
 
+        # We also need to update the stored min and max time point number
+        if self._min_time_point_number is not None and self._max_time_point_number is not None:
+            self._min_time_point_number += time_point_delta
+            self._max_time_point_number += time_point_delta
+
     def has_position_data(self) -> bool:
         """Gets whether there is any position metadata stored here."""
         return len(self._data_names_and_types) > 0
