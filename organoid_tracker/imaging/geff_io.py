@@ -239,12 +239,14 @@ def _read_axes_info(experiment: Experiment, geff_axes: list[Axis]) -> _AxesInfo:
                     # Easy - original was in time frames, so just remove the scaling
                     offset /= scale_factor  # Offset is applied after scaling, so we need to adjust it as well
                     scale_factor = 1
-                resolution = _get_resolution(experiment)
-                if final_unit not in _MULTIPLICATION_FACTOR_TO_MINUTES:
-                    raise UserError("Unsupported file",
-                                    f"The unit '{final_unit}' for the time axis '{ax.name}' is not supported in our GEFF loader")
-                scale_factor *= _MULTIPLICATION_FACTOR_TO_MINUTES[final_unit] / resolution.time_point_interval_m
-                offset *= _MULTIPLICATION_FACTOR_TO_MINUTES[final_unit] / resolution.time_point_interval_m
+                else:
+                    # Make a calculation on how to get from this unit to frames
+                    resolution = _get_resolution(experiment)
+                    if final_unit not in _MULTIPLICATION_FACTOR_TO_MINUTES:
+                        raise UserError("Unsupported file",
+                                        f"The unit '{final_unit}' for the time axis '{ax.name}' is not supported in our GEFF loader")
+                    scale_factor *= _MULTIPLICATION_FACTOR_TO_MINUTES[final_unit] / resolution.time_point_interval_m
+                    offset *= _MULTIPLICATION_FACTOR_TO_MINUTES[final_unit] / resolution.time_point_interval_m
         elif ax.type == "space":
             if not ax.name in ("x", "y", "z"):
                 raise UserError("Unsupported file",
@@ -483,12 +485,7 @@ def save_data_file(experiment: Experiment, file_name: str):
         edge_props={name: prop.to_geff_prop_dict() for name, prop in edge_props.items()},
         metadata=GeffMetadata(
             geff_version=geff.__version__,
-            axes=[
-                Axis(name="t", type="time", unit="frame"),
-                Axis(name="z", type="space", unit="pixel"),
-                Axis(name="y", type="space", unit="pixel"),
-                Axis(name="x", type="space", unit="pixel")
-            ],
+            axes=_get_geff_axes_meta(experiment),
             directed=True,
             node_props_metadata={},
             edge_props_metadata={},
@@ -496,4 +493,25 @@ def save_data_file(experiment: Experiment, file_name: str):
         ),
         overwrite=True
     )
+
+
+def _get_geff_axes_meta(experiment: Experiment) -> List[Axis]:
+    """Extracts the axis meta of the experiment into the GEFF format. Tries to include the resolution if available."""
+    try:
+        resolution = experiment.images.resolution()
+        axes = [
+            Axis(name="t", type="time", unit="frame", scale=resolution.time_point_interval_m, scaled_unit="minute"),
+            Axis(name="z", type="space", unit="pixel", scale=resolution.pixel_size_x_um, scaled_unit="micrometer"),
+            Axis(name="y", type="space", unit="pixel", scale=resolution.pixel_size_y_um, scaled_unit="micrometer"),
+            Axis(name="x", type="space", unit="pixel", scale=resolution.pixel_size_z_um, scaled_unit="micrometer")
+        ]
+    except UserError:
+        # No resolution set. Fine, we'll just don't export the scaling then
+        axes = [
+            Axis(name="t", type="time", unit="frame"),
+            Axis(name="z", type="space", unit="pixel"),
+            Axis(name="y", type="space", unit="pixel"),
+            Axis(name="x", type="space", unit="pixel")
+        ]
+    return axes
 
