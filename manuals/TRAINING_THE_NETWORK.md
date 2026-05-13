@@ -4,8 +4,9 @@
 If the [pretrained models](https://zenodo.org/records/17495402) for nucleus detection and tracking do not work well on your images, you can train your own neural network. 
 
 ## Requirements
-*Enough vRAM*:  OrganoidTracker2.0 models were trained on an NVIDIA GeForce RTX 2080 Ti card with 11GB of vRAM, which was sufficient for a batch size of 48 with images of 512x512x32 px. Lower batch or image sizes can reduce memory requirements.
-*Enough training data*: The training data for OrganoidTracker 2.0 consisted of ~200,000 cell detections and links across 1405 frames from multiple timelapse datasets (281h of imaging total). Smaller datasets can instead be used to finetune existing models.
+**Enough vRAM**:  OrganoidTracker2.0 models were trained on an NVIDIA GeForce RTX 2080 Ti card with 11GB of vRAM, which was sufficient for a batch size of 48 with images of 512x512x32 px. Lower batch or image sizes can reduce memory requirements.
+
+**Enough training data**: The training data for OrganoidTracker 2.0 consisted of ~200,000 cell detections and links across 1405 frames from multiple timelapse datasets (281h of imaging total). Smaller datasets can instead be used to finetune existing models.
 
 ## OrganoidTracker uses three neural networks
 The tracker uses outputs from three neural networks to construct optimal tracks.
@@ -22,7 +23,7 @@ The **division detection network** works on a crop around a cell position for th
 The **link detection network** receives pairs of images centered around two nuclei and computes the probability that the images display the same cell. Thus, the "linking score" is a feature of many "possible" links, though the possible links are pruned based on a distance metric (i.e., only nearby neighbors are checked for links).
 
 ## Acquiring training data
-You training images will ideally include as many examples as possible, be similar to you true experimental set-up, and represent the diversity of cell shapes and divisions that can occur. To check how many examples you have, you can use `View` -> `View statistics` to check how many detected positions you have in your experiment.
+You training images will ideally include as many examples as possible, be similar to you true experimental set-up, and represent the diversity of cell shapes and divisions that can occur. To check how many examples you have, you can use `View` -> `View statistics`.
 
 Your training data should also be **annotated**, with ground truth positions, divisions, and links marked. See [our guide on manual tracking](MANUAL_TRACKING.md) for how to do this in the OrganoidTracker GUI. 
 
