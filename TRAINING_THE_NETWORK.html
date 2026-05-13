@@ -111,8 +111,8 @@
 <p>If the <a class="reference external" href="https://zenodo.org/records/17495402">pretrained models</a> for nucleus detection and tracking do not work well on your images, you can train your own neural network.</p>
 <section id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
-<p><em>Enough vRAM</em>:  OrganoidTracker2.0 models were trained on an NVIDIA GeForce RTX 2080 Ti card with 11GB of vRAM, which was sufficient for a batch size of 48 with images of 512x512x32 px. Lower batch or image sizes can reduce memory requirements.
-<em>Enough training data</em>: The training data for OrganoidTracker 2.0 consisted of ~200,000 cell detections and links across 1405 frames from multiple timelapse datasets (281h of imaging total). Smaller datasets can instead be used to finetune existing models.</p>
+<p><strong>Enough vRAM</strong>:  OrganoidTracker2.0 models were trained on an NVIDIA GeForce RTX 2080 Ti card with 11GB of vRAM, which was sufficient for a batch size of 48 with images of 512x512x32 px. Lower batch or image sizes can reduce memory requirements.</p>
+<p><strong>Enough training data</strong>: The training data for OrganoidTracker 2.0 consisted of ~200,000 cell detections and links across 1405 frames from multiple timelapse datasets (281h of imaging total). Smaller datasets can instead be used to finetune existing models.</p>
 </section>
 <section id="organoidtracker-uses-three-neural-networks">
 <h2>OrganoidTracker uses three neural networks<a class="headerlink" href="#organoidtracker-uses-three-neural-networks" title="Link to this heading"></a></h2>
@@ -126,7 +126,7 @@ Figure 1: The network goes from an input image to an image that shows where the 
 </section>
 <section id="acquiring-training-data">
 <h2>Acquiring training data<a class="headerlink" href="#acquiring-training-data" title="Link to this heading"></a></h2>
-<p>You training images will ideally include as many examples as possible, be similar to you true experimental set-up, and represent the diversity of cell shapes and divisions that can occur. To check how many examples you have, you can use <code class="docutils literal notranslate"><span class="pre">View</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">View</span> <span class="pre">statistics</span></code> to check how many detected positions you have in your experiment.</p>
+<p>You training images will ideally include as many examples as possible, be similar to you true experimental set-up, and represent the diversity of cell shapes and divisions that can occur. To check how many examples you have, you can use <code class="docutils literal notranslate"><span class="pre">View</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">View</span> <span class="pre">statistics</span></code>.</p>
 <p>Your training data should also be <strong>annotated</strong>, with ground truth positions, divisions, and links marked. See <a class="reference internal" href="MANUAL_TRACKING.html"><span class="std std-doc">our guide on manual tracking</span></a> for how to do this in the OrganoidTracker GUI.</p>
 <p>Make sure that the data is correct! Even a low percentage of errors (1%) can already weaken the training. Note that:</p>
 <ul class="simple">
