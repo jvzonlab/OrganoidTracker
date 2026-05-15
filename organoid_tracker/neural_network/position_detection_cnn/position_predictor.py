@@ -295,7 +295,7 @@ class PositionModel(NamedTuple):
         images.offsets = experiment.images.offsets
         images.set_resolution(experiment.images.resolution())
 
-        with (image_preloading.create_image_preloader(experiment.images, ImageChannel(index_zero=0),
+        with (image_preloading.create_image_preloader(images, ImageChannel(index_zero=0),
               older_time_points_to_keep=-self.time_window[0] + self.time_window[1], use_threading=use_threading)
               as image_preloader):
 
@@ -306,7 +306,7 @@ class PositionModel(NamedTuple):
 
             # Loop over all time points
             if time_points is None:
-                time_points = experiment.images.time_points()
+                time_points = images.time_points()
             time_points_count = len(time_points)
             time_points_done = 0
             for time_point in time_points:
