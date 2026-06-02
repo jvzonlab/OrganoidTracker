@@ -191,10 +191,19 @@ def export_links_geff(window: Window):
 def save_tracking_data(window: Window, force_save_as: bool = False) -> bool:
     """Saves the tracking data of the currently open tab. Prompts the user if no previous file name is known, or if
     force_save_as is True. Updates the status bar afterwards. Returns whether saving was successful."""
-    saved = save_tracking_data_of_tab(window.get_gui_experiment().get_open_tab(), force_save_as)
-    if saved:
-        window.set_status("Saved to " + window.get_experiment().last_save_file + ".")
-    return saved
+    active_tabs = window.get_gui_experiment().get_active_tabs()
+    if len(active_tabs) == 1:
+        saved = save_tracking_data_of_tab(window.get_gui_experiment().get_open_tab(), force_save_as)
+        if saved:
+            window.set_status("Saved to " + window.get_experiment().last_save_file + ".")
+        return saved
+    else:
+        for active_tab in active_tabs:
+            saved = save_tracking_data_of_tab(active_tab, force_save_as)
+            if not saved:
+                return False
+        window.set_status(f"Saved the tracking data of {len(active_tabs)} tabs.")
+        return True
 
 
 def save_tracking_data_of_tab(tab: SingleGuiTab, force_save_as: bool = False):
@@ -202,7 +211,17 @@ def save_tracking_data_of_tab(tab: SingleGuiTab, force_save_as: bool = False):
     force_save_as is True. Returns whether saving was successful."""
     data_file = tab.experiment.last_save_file
     if data_file is None or force_save_as:
-        data_file = dialog.prompt_save_file("Save data as...", [
+
+        # Find name for in window title
+        experiment_name = tab.experiment.name
+        if experiment_name.has_name():
+            experiment_name = experiment_name.get_name()
+            if len(experiment_name) > 15:
+                experiment_name = experiment_name[:14] + "..."
+        else:
+            experiment_name = "data"
+
+        data_file = dialog.prompt_save_file(f"Save {experiment_name} as...", [
             (io.FILE_EXTENSION.upper() + " file", "*." + io.FILE_EXTENSION)])
     if not data_file:
         return False  # Cancelled
