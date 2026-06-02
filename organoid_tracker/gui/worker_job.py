@@ -127,6 +127,7 @@ class _WorkerJobTask(Task):
     def on_finished(self, result: Any):
         for tab in self._results_by_tab:
             self._job.use_data(tab, self._results_by_tab[tab])
+        self._window.redraw_data()
         self._job.on_finished(self._results_by_tab.values())
 
     def on_error(self, e: BaseException):
