@@ -46,7 +46,7 @@ class DivisionScoreVisualizer(ExitableImageVisualizer):
         if self._show_percentage:
             likelihood = -division_score
             percentage = (10 ** likelihood) / (1 + 10 ** likelihood)
-            if percentage < 0.51:
+            if percentage < 0.0051:
                 return '<1%'  # Would get rounded to 0% otherwise
             return str(round(percentage * 100)) + '%'
         else:
