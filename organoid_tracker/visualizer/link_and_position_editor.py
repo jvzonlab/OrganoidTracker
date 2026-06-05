@@ -1017,12 +1017,23 @@ class LinkAndPositionEditor(AbstractEditor):
 
     def _delete_positions_without_links(self):
         """Deletes all positions that have no links."""
-        snapshots = []
-        links = self._experiment.links
-        for position in self._experiment.positions:
-            if not links.contains_position(position):
-                snapshots.append(FullPositionSnapshot.from_position(self._experiment, position))
-        self._perform_action(_DeletePositionsAction(snapshots))
+        count = 0
+        tabs = 0
+        for tab in self._window.get_gui_experiment().get_active_tabs():
+            snapshots = []
+            links = tab.experiment.links
+            for position in tab.experiment.positions:
+                if not links.contains_position(position):
+                    snapshots.append(FullPositionSnapshot.from_position(tab.experiment, position))
+            count += len(snapshots)
+            if count > 0:
+                tabs += 1
+            tab.undo_redo.do(_DeletePositionsAction(snapshots), tab.experiment)
+        self.draw_view()
+        if tabs == 1:
+            self.update_status(f"Deleted {count} position(s).")
+        else:
+            self.update_status(f"Deleted {count} position(s) across {tabs} tabs.")
 
     def _delete_unlikely_links(self):
         """Deletes all links with a low score"""
