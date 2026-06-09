@@ -475,16 +475,19 @@ class Images:
         array = self._image_loader.get_2d_image_array(time_point, image_channel, image_z)
         return self.filters.filter(time_point, image_channel, image_z, array)
 
-    def set_resolution(self, resolution: Optional[ImageResolution]):
+    def set_resolution(self, resolution: Optional[ImageResolution], *, update_timings: bool = False):
         """Sets the image resolution."""
         if resolution is None:
             resolution = ImageResolution(0, 0, 0, 0)
         self._resolution = resolution
 
         # Keep timings in sync
-        time_resolution_m = self._resolution.time_point_interval_m
-        if self._timings is not None and self._timings.get_time_m_since_previous(TimePoint(1)) != time_resolution_m:
-            self._timings = None  # Delete timing information, as it's not in sync with the resolution anymore
+        if update_timings:
+            time_resolution_m = self._resolution.time_point_interval_m
+            if self._timings is not None and self._timings.get_time_m_since_previous(TimePoint(1)) != time_resolution_m:
+                self._timings = None  # Delete timing information, as it's not in sync with the resolution anymore
+        else:
+            self._resolution.time_point_interval_m = self._timings.get_time_m_since_previous(TimePoint(1)) if self._timings is not None else 0
 
     def copy(self) -> "Images":
         """Returns a copy of this images object. Any changes to the copy won't affect this object and vice versa."""

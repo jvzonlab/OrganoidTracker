@@ -22,10 +22,13 @@ class _ResolutionEditorWindow(QDialog):
     t_res: QDoubleSpinBox
     ok_button: QPushButton
 
-    def __init__(self, image_resolution: ImageResolution):
+    allow_time_edit: bool
+
+    def __init__(self, image_resolution: ImageResolution, allow_time_edit: bool):
         super().__init__()
 
         self.setWindowTitle("Image resolution")
+        self.allow_time_edit = allow_time_edit
 
         form_box = QGroupBox("Image resolution", parent=self)
         form = QFormLayout()
@@ -48,7 +51,10 @@ class _ResolutionEditorWindow(QDialog):
         self.t_res = QDoubleSpinBox(parent=form_box)
         self.t_res.setSuffix("   min/tp")
         self.t_res.setValue(image_resolution.time_point_interval_m)
-        self.t_res.valueChanged.connect(self._on_field_change)
+        if not allow_time_edit:
+            self.t_res.setEnabled(False)
+        else:
+            self.t_res.valueChanged.connect(self._on_field_change)
         form.addRow(QLabel("Time resolution:", parent=form_box), self.t_res)
         form_box.setLayout(form)
 
@@ -77,7 +83,7 @@ class _ResolutionEditorWindow(QDialog):
             valid = False
         if self.z_res.value() <= 0:
             valid = False
-        if self.t_res.value() <= 0:
+        if self.allow_time_edit and self.t_res.value() <= 0:
             valid = False
         self.ok_button.setEnabled(valid)
 
@@ -86,17 +92,19 @@ class _UpdateImageResolutionAction(UndoableAction):
     """Action to update the image resolution in an experiment."""
     _new_resolution: ImageResolution
     _old_resolution: Optional[ImageResolution]
+    _update_timings: bool = False
 
-    def __init__(self, old_resolution: ImageResolution, new_resolution: ImageResolution):
+    def __init__(self, old_resolution: ImageResolution, new_resolution: ImageResolution, *, update_timings: bool):
         self._new_resolution = new_resolution
         self._old_resolution = old_resolution
+        self._update_timings = update_timings
 
     def do(self, experiment: Experiment) -> str:
-        experiment.images.set_resolution(self._new_resolution)
+        experiment.images.set_resolution(self._new_resolution, update_timings=self._update_timings)
         return "Updated image resolution"
 
     def undo(self, experiment: Experiment) -> str:
-        experiment.images.set_resolution(self._old_resolution)
+        experiment.images.set_resolution(self._old_resolution, update_timings=self._update_timings)
         return "Restored image resolution"
 
 
@@ -104,9 +112,14 @@ def popup_resolution_setter(window: Window):
     """Shows a popup to change the image resolution."""
     experiment = window.get_experiment()
     image_resolution = experiment.images.resolution(allow_incomplete=True)
-    popup = _ResolutionEditorWindow(image_resolution)
+
+    allow_time_edit = True
+    if experiment.images.has_timings() and not experiment.images.timings().is_simple_multiplication():
+        allow_time_edit = False  # Don't allow to edit complex timings via this editor
+
+    popup = _ResolutionEditorWindow(image_resolution, allow_time_edit)
     result = popup.exec_()
     if result != QDialog.Accepted:
         return
     new_image_resolution = ImageResolution(popup.x_res.value(), popup.y_res.value(), popup.z_res.value(), popup.t_res.value())
-    window.perform_data_action(_UpdateImageResolutionAction(image_resolution, new_image_resolution))
+    window.perform_data_action(_UpdateImageResolutionAction(image_resolution, new_image_resolution, update_timings=allow_time_edit))
