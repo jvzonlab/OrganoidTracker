@@ -3,13 +3,11 @@
 from typing import Optional
 
 from PySide6 import QtCore
-from PySide6.QtWidgets import QDoubleSpinBox, QDialog, QPushButton, QWidget, QGroupBox, QFormLayout, QLabel, \
+from PySide6.QtWidgets import QDoubleSpinBox, QDialog, QPushButton, QGroupBox, QFormLayout, QLabel, \
     QDialogButtonBox, QVBoxLayout
 
-from organoid_tracker.core import UserError
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.resolution import ImageResolution
-from organoid_tracker.gui.gui_experiment import GuiExperiment
 from organoid_tracker.gui.undo_redo import UndoableAction
 from organoid_tracker.gui.window import Window
 
@@ -100,11 +98,11 @@ class _UpdateImageResolutionAction(UndoableAction):
         self._update_timings = update_timings
 
     def do(self, experiment: Experiment) -> str:
-        experiment.images.set_resolution(self._new_resolution, update_timings=self._update_timings)
+        experiment.images.set_resolution(self._new_resolution, overwrite_complex_timings=self._update_timings)
         return "Updated image resolution"
 
     def undo(self, experiment: Experiment) -> str:
-        experiment.images.set_resolution(self._old_resolution, update_timings=self._update_timings)
+        experiment.images.set_resolution(self._old_resolution, overwrite_complex_timings=self._update_timings)
         return "Restored image resolution"
 
 

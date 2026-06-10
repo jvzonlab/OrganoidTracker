@@ -407,7 +407,7 @@ class Images:
         If you set the timings to None, only the time resolution in ImageResolution will be used.
 
         Note: in ImageResolution, the time interval is updated to match t(1) - t(0). If you later set a different
-        time resolution, then that will delete the timings information.
+        time resolution, then that can delete the timings information.
         """
         if timings is None:
             self._timings = None
@@ -475,19 +475,28 @@ class Images:
         array = self._image_loader.get_2d_image_array(time_point, image_channel, image_z)
         return self.filters.filter(time_point, image_channel, image_z, array)
 
-    def set_resolution(self, resolution: Optional[ImageResolution], *, update_timings: bool = False):
-        """Sets the image resolution."""
+    def set_resolution(self, resolution: Optional[ImageResolution], *, overwrite_complex_timings: bool = False):
+        """Sets the image resolution.
+
+        For historical reasons, rudimentary timing information is also kept in the ImageResolution object, in addition
+        to self.timings(). If variable-length timings have been specified in self.timings(), then by default, these
+        timings will be kept, and the passed resolution will instead be modified. You can pass
+        `overwrite_complex_timings=True` to this method to always overwrite existing timings.
+        """
         if resolution is None:
             resolution = ImageResolution(0, 0, 0, 0)
         self._resolution = resolution
 
         # Keep timings in sync
-        if update_timings:
-            time_resolution_m = self._resolution.time_point_interval_m
-            if self._timings is not None and self._timings.get_time_m_since_previous(TimePoint(1)) != time_resolution_m:
-                self._timings = None  # Delete timing information, as it's not in sync with the resolution anymore
+        if self._timings is None or self._timings.is_simple_multiplication() or overwrite_complex_timings:
+            # Overwrite self._timings
+            if resolution.time_point_interval_m > 0:
+                self._timings = ImageTimings.contant_timing(resolution.time_point_interval_m)
+            else:
+                self._timings = None
         else:
-            self._resolution.time_point_interval_m = self._timings.get_time_m_since_previous(TimePoint(1)) if self._timings is not None else 0
+            # Overwrite self._resolution.time_point_interval_m instead
+            self._resolution.time_point_interval_m = self._timings.get_time_m_since_previous(TimePoint(1))
 
     def copy(self) -> "Images":
         """Returns a copy of this images object. Any changes to the copy won't affect this object and vice versa."""
