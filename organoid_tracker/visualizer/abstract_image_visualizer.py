@@ -266,12 +266,14 @@ class AbstractImageVisualizer(Visualizer):
         self._ax.scatter(x_values, y_values, marker='*', facecolor=colors, edgecolors="black", s=sizes, linewidths=2)
 
     def _draw_annotation(self, position: Position, text: str, *, text_color: MPLColor = "black",
-                         background_color: MPLColor = (1, 1, 1, 0.8)):
+                         background_color: MPLColor = (1, 1, 1, 0.8), horizontalalignment: str = "center",
+                         verticalalignment: str = "center", zorder: int = 5):
         """Draws an annotation with text for the given position."""
         font_size = max(8, 12 - abs(position.z - self._z))
         self._ax.annotate(text, (position.x, position.y), fontsize=font_size,
                           fontweight="bold", color=text_color, backgroundcolor=background_color,
-                          horizontalalignment='center', verticalalignment='center')
+                          horizontalalignment=horizontalalignment, verticalalignment=verticalalignment,
+                          zorder=zorder)
 
     def _draw_line(self, start: Position, end: Position, color: MPLColor = COLOR_CELL_CURRENT):
         direction = end - start

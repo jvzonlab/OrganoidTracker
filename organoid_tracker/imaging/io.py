@@ -20,7 +20,7 @@ from organoid_tracker.core.links import Links, LinkingTrack
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
 from organoid_tracker.core.resolution import ImageResolution, ImageTimings
-from organoid_tracker.core.spline import SplineCollection, Spline
+from organoid_tracker.core.spline import SplineCollection, Spline, SplineCheckpoint
 from organoid_tracker.core.warning_limits import WarningLimits
 from organoid_tracker.image_loading.builtin_image_filters import ThresholdFilter, GaussianBlurFilter, \
     MultiplyPixelsFilter, InterpolatedMinMaxFilter, IntensityPoint
@@ -33,7 +33,6 @@ SUPPORTED_IMPORT_FILES = [
     ("Cell tracking challenge files", "*.txt"),
     ("TrackMate file", "*.xml"),
     ("Guizela's tracking files", "track_00000.p")]
-WRITE_NEW_FORMAT = True  # Default value for the saving function. Reading always supports both formats.
 
 
 class NumpyToJsonEncoder(json.JSONEncoder):
@@ -398,6 +397,12 @@ def _parse_splines_format(experiment: Experiment, splines_data: List[Dict], min_
             spline.add_point(points_x[i], points_y[i], points_z[i])
         spline.set_offset(spline_json["offset"])
         spline_id = int(spline_json["id"]) if "id" in spline_json else None
+        if "checkpoints" in spline_json:
+            for checkpoint in spline_json["checkpoints"]:
+                pos = checkpoint["pos"]
+                save_name = checkpoint.get("save_name", None)
+                spline.add_checkpoint(SplineCheckpoint(pos=pos, save_name=save_name))
+
         experiment.splines.add_spline(TimePoint(time_point_number), spline, spline_id)
 
 
@@ -533,49 +538,6 @@ def _add_d3_data(links: Links, positions: PositionCollection, links_json: Dict,
                 links.set_link_data(source, target, data_key, data_value)
 
 
-def _links_to_d3_data(links: Links, positions: PositionCollection) -> Dict:
-    """Return data in D3.js node-link format that is suitable for JSON serialization
-    and use in Javascript documents."""
-    links.sort_tracks_by_x()  # Make sure tracks are always saved in the correct order
-
-    nodes = list()
-
-    # Save nodes and store extra data
-    for position in positions:
-        node = {
-            "id": _encode_position(position)
-        }
-        for data_name, data_value in positions.find_all_data_of_position(position):
-            if data_name == "shape":
-                continue  # For historical reasons, shape information is stored in the "positions" array
-            node[data_name] = data_value
-        nodes.append(node)
-
-    # Save edges
-    lineage_starting_positions = {track.find_first_position() for track in links.find_starting_tracks()}
-    edges = list()
-    for source, target in links.find_all_links():
-        edge = {
-            "source": _encode_position(source),
-            "target": _encode_position(target)
-        }
-        if source in lineage_starting_positions:
-            # Start of a lineage, so add lineage data
-            for data_name, data_value in links.find_all_data_of_lineage(links.get_track(source)):
-                edge["__lineage_" + data_name] = data_value
-        for data_name, data_value in links.find_all_data_of_link(source, target):
-            edge[data_name] = data_value
-        edges.append(edge)
-
-    return {
-        "directed": False,
-        "multigraph": False,
-        "graph": dict(),
-        "nodes": nodes,
-        "links": edges
-    }
-
-
 def save_positions_to_json(experiment: Experiment, json_file_name: str):
     """Saves a list of positions (pixel coordinate) to disk. Because the offset of the images is not saved, the offset
     is added to all positions. This method is mainly intended to export training data for neural networks, so it will
@@ -622,17 +584,6 @@ def _encode_beacons(beacons: BeaconCollection):
     return data_structure
 
 
-def _encode_positions_in_old_format(positions: PositionCollection):
-    data_structure = {}
-    for time_point in positions.time_points():
-        encoded_positions = []
-        for position in positions.of_time_point(time_point):
-            encoded_positions.append([position.x, position.y, position.z])
-
-        data_structure[str(time_point.time_point_number())] = encoded_positions
-    return data_structure
-
-
 def _encode_data_axes_to_json(data_axes: SplineCollection) -> List[Dict]:
     json_list = list()
     for spline_id, time_point, spline in data_axes.all_splines():
@@ -642,8 +593,8 @@ def _encode_data_axes_to_json(data_axes: SplineCollection) -> List[Dict]:
             "x_list": points_x,
             "y_list": points_y,
             "z_list": points_z,
-            "z": spline.get_z(),  # For compatibility with older OrganoidTracker versions (December 2022)
             "offset": spline.get_offset(),
+            "checkpoints": [{"pos": c.pos, "save_name": c.save_name} for c in spline.checkpoints()],
             "id": spline_id
         }
         json_list.append(json_object)
@@ -826,7 +777,7 @@ def _encode_tracks_and_meta(links: Links) -> List[Dict]:
     return tracks_json
 
 
-def save_data_to_json(experiment: Experiment, json_file_name: str, *, write_new_format: bool = WRITE_NEW_FORMAT):
+def save_data_to_json(experiment: Experiment, json_file_name: str):
     """Saves positions, shapes, scores and links to a JSON file. The file should end with the extension FILE_EXTENSION.
 
     We can save in the old v1 or the newer v2 format, which stores the positions and tracks in a more efficient way.
@@ -835,26 +786,15 @@ def save_data_to_json(experiment: Experiment, json_file_name: str, *, write_new_
     # Record where file has been saved to
     experiment.last_save_file = json_file_name
 
-    if write_new_format:
-        save_data = {"version": "v2"}
+    save_data = {"version": "v2"}
 
-        # Save positions
-        if experiment.positions.has_positions():
-            save_data["positions"] = _encode_positions_and_meta(experiment.positions)
+    # Save positions
+    if experiment.positions.has_positions():
+        save_data["positions"] = _encode_positions_and_meta(experiment.positions)
 
-        # Save tracks
-        if experiment.links.has_links():
-            save_data["tracks"] = _encode_tracks_and_meta(experiment.links)
-    else:
-        save_data = {"version": "v1"}
-
-        # Save positions
-        if experiment.positions.has_positions():
-            save_data["positions"] = _encode_positions_in_old_format(experiment.positions)
-
-        # Save links
-        if experiment.links.has_links() or experiment.positions.has_position_data():
-            save_data["links"] = _links_to_d3_data(experiment.links, experiment.positions)
+    # Save tracks
+    if experiment.links.has_links():
+        save_data["tracks"] = _encode_tracks_and_meta(experiment.links)
 
     # Save name
     if experiment.name.has_name():

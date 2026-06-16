@@ -1,5 +1,5 @@
 import math
-from typing import List, Dict, Optional, Tuple, Iterable
+from typing import List, Dict, Optional, Tuple, Iterable, NamedTuple, Sequence
 
 import numpy
 from scipy import interpolate
@@ -13,6 +13,22 @@ from organoid_tracker.core.vector import Vector3
 from organoid_tracker.imaging import angles
 
 _REFERENCE = Vector3(0, 0, -1)
+
+
+class SplineCheckpoint(NamedTuple):
+    """A checkpoint on a spline, used to mark some position on the spline. For example, in intestinal organoids this is
+    used to mark the boundary between the crypt and the villus."""
+
+    save_name: Optional[str]  # The name of the checkpoint type. Multiple checkpoints can have the same name.
+    pos: float  # The position of this checkpoint on the spline, in pixels. This is relative to the offset of the spline.
+
+    def with_position(self, new_pos: float) -> "SplineCheckpoint":
+        """Returns a copy of this checkpoint with the specified position."""
+        return SplineCheckpoint(self.save_name, new_pos)
+
+    def with_save_name(self, save_name: Optional[str]) -> "SplineCheckpoint":
+        """Returns a copy of this checkpoint with the specified save name."""
+        return SplineCheckpoint(save_name, self.pos)
 
 
 class SplinePosition:
@@ -57,11 +73,11 @@ class SplinePosition:
 
 
 class Spline:
-    """A curve (curved line) trough the positions. This can be used to measure how far the positions are along this
+    """A curve (curved line) through the positions. This can be used to measure how far the positions are along this
      curve.
 
      An offset specifies the zero-point of the axis. A checkpoint (relative to the offset) specifies some point after
-     which a newregion starts. For example, in intestinal organoids this is used to mark the boundary between the crypt
+     which a new region starts. For example, in intestinal organoids this is used to mark the boundary between the crypt
      and the villus.
      """
 
@@ -71,6 +87,7 @@ class Spline:
 
     _interpolation: Optional[Tuple[List[float], List[float], List[float]]]
     _offset: float
+    _checkpoints: list[SplineCheckpoint]
 
     def __init__(self):
         self._x_list = []
@@ -78,6 +95,7 @@ class Spline:
         self._z_list = []
         self._interpolation = None
         self._offset = 0
+        self._checkpoints = list()
 
     def add_point(self, x: float, y: float, z: float):
         """Adds a new point to the path."""
@@ -86,6 +104,11 @@ class Spline:
         self._z_list.append(float(z))
 
         self._interpolation = None  # Invalidate previous interpolation
+
+    def add_checkpoint(self, checkpoint: SplineCheckpoint):
+        """Adds a new checkpoint to the path."""
+        self._checkpoints.append(checkpoint)
+        self._checkpoints.sort(key=lambda c: c.pos)  # Keep checkpoints sorted by position
 
     def get_points_2d(self) -> Tuple[List[float], List[float]]:
         """Gets all explicitly added points (no interpolation) without the z coord."""
@@ -103,6 +126,11 @@ class Spline:
             combined_length += _distance(x_values[i], y_values[i], z_values[i], x_values[i - 1], y_values[i - 1],
                                          z_values[i - 1])
         return combined_length
+
+    def checkpoints(self) -> Sequence[SplineCheckpoint]:
+        """Gets the checkpoints on this spline. Modifications need to be done through self.add_checkpoint() and
+        self.remove_checkpoint(), to make sure the list stays sorted."""
+        return self._checkpoints
 
     def get_z(self) -> int:
         """Gets the average Z coord of this path. Raises ValueError if the path has no points."""
@@ -220,7 +248,7 @@ class Spline:
             return "^" if dy < 0 else "v"
 
     def __eq__(self, other):
-        # Paths are only equal if they are the same instence
+        # Splines are only equal if they are the same instance
         return other is self
 
     def copy(self) -> "Spline":
@@ -229,6 +257,7 @@ class Spline:
         for i in range(len(self._x_list)):
             copy.add_point(self._x_list[i], self._y_list[i], self._z_list[i])
         copy._offset = self._offset
+        copy._checkpoints = self._checkpoints.copy()
         return copy
 
     def remove_point(self, x: float, y: float):
@@ -237,8 +266,14 @@ class Spline:
             if abs(self._x_list[i] - x) < 1 and abs(self._y_list[i] - y) < 1:
                 del self._x_list[i]
                 del self._y_list[i]
+                del self._z_list[i]
                 self._interpolation = None  # Interpolation is now outdated
                 return
+
+    def remove_checkpoint(self, checkpoint: SplineCheckpoint):
+        """Removes the given checkpoint. Does nothing if there is no such checkpoint."""
+        if checkpoint in self._checkpoints:
+            self._checkpoints.remove(checkpoint)
 
     def update_offset_for_positions(self, positions: Iterable[Position]):
         """Updates the offset of this spline such that the lowest path position that is ever returned by
@@ -253,12 +288,17 @@ class Spline:
             if current_lowest_position is None or path_position < current_lowest_position:
                 current_lowest_position = path_position
         if current_lowest_position is not None:  # Don't do anything if the list of positions was empty
-            self._offset += current_lowest_position
+            self.set_offset(self._offset + current_lowest_position)
 
     def set_offset(self, offset: float):
         """Manually sets the offset used in calls to get_path_position_2d and path_position_to_xy. See also
         update_offset_for_positions."""
-        self._offset = float(offset)
+        offset = float(offset)
+        difference = offset - self._offset
+        self._offset = offset
+
+        # Also move the checkpoints along the axis
+        self._checkpoints = [checkpoint.with_position(checkpoint.pos - difference) for checkpoint in self._checkpoints]
 
     def get_offset(self) -> float:
         """Gets the offset used in calls to get_path_position_2d and path_position_to_xy. Note that these methods apply
@@ -273,13 +313,50 @@ class Spline:
 
         self._interpolation = None  # Invalidate previous interpolation
 
+    def get_closest_checkpoint(self, pos: float, *, max_distance: float = float("inf")) -> Optional[SplineCheckpoint]:
+        """Gets the checkpoint that is closest to the given position on the spline, or None if there are no checkpoints
+        within the given maximum distance."""
+        closest_checkpoint = None
+        closest_checkpoint_distance = max_distance
+        for checkpoint in self._checkpoints:
+            distance = abs(checkpoint.pos - pos)
+            if distance <= closest_checkpoint_distance:
+                closest_checkpoint = checkpoint
+        return closest_checkpoint
 
-def _distance(x1, y1, z1, x2, y2, z2) -> float:
+    def reverse(self):
+        """Reverses the direction of the spline. The checkpoints will stay at the same XYZ location. Resets the offset
+        to 0."""
+        self.set_offset(0)
+
+        # Store old checkpoint positions
+        checkpoints = self._checkpoints.copy()
+        checkpoints_xyz = [self.from_position_on_axis(checkpoint.pos) for checkpoint in self._checkpoints]
+
+        # Reverse the spline
+        self._x_list.reverse()
+        self._y_list.reverse()
+        self._z_list.reverse()
+        self._interpolation = None
+
+        # Readd the checkpoints
+        self._checkpoints.clear()
+        for checkpoint_xyz, checkpoint in zip(checkpoints_xyz, checkpoints):
+            if checkpoint_xyz is None:
+                continue
+            new_pos = self.to_position_on_axis(Position(*checkpoint_xyz))
+            if new_pos is None:
+                continue
+            self._checkpoints.append(checkpoint.with_position(new_pos.pos))
+        self._checkpoints.reverse()
+
+
+def _distance(x1: float, y1: float, z1: float, x2: float, y2: float, z2: float) -> float:
     """Distance between two points."""
     return numpy.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
 
 
-def _distance_squared(vx, vy, vz, wx, wy, wz) -> float:
+def _distance_squared(vx: float, vy: float, vz: float, wx: float, wy: float, wz: float) -> float:
     return (vx - wx) ** 2 + (vy - wy) ** 2 + (vz - wz) ** 2
 
 
@@ -300,10 +377,12 @@ class SplineCollection:
     """Holds the paths of all time points in an experiment."""
 
     _splines: Dict[TimePoint, Dict[int, Spline]]
-    _spline_markers: Dict[int, str]  # Map of spline id -> name
-    _spline_is_axis: Dict[int, bool]  # Map of spline_id -> bool
     _min_time_point_number: Optional[int]
     _max_time_point_number: Optional[int]
+
+    _spline_markers: Dict[int, str]  # Map of spline id -> name
+    _spline_is_axis: Dict[int, bool]  # Map of spline_id -> bool
+
     _reference_time_point: Optional[TimePoint]
 
     def __init__(self):
@@ -355,7 +434,7 @@ class SplineCollection:
         paths defined."""
         splines = self._splines.get(time_point)
         if splines is None:
-            return []
+            return
         for spline_id, spline in splines.items():
             yield spline_id, spline
 
