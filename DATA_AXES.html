@@ -57,7 +57,11 @@
 <li class="toctree-l1"><a class="reference internal" href="API.html">API cookbook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="BATCH_EDITING.html">Batch operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html">Custom tracking formats</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">The data axes editor</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">The data axes editor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#types-of-data-axes">Types of data axes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#spline-checkpoints">Spline checkpoints</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="IMAGE_FORMATS.html">Supported image formats</a></li>
 <li class="toctree-l1"><a class="reference internal" href="INSTALLATION.html">Installation instructions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="SCRIPTS.html">The scripts</a></li>
@@ -95,12 +99,43 @@
   <section id="the-data-axes-editor">
 <h1>The data axes editor<a class="headerlink" href="#the-data-axes-editor" title="Link to this heading"></a></h1>
 <p><a class="reference internal" href="index.html"><span class="std std-doc">← Back to main page</span></a></p>
-<p>Say you want to know how far along a particle is along an axis. This custom axis does not align with the x, y or z axis. For example, you are looking at cell migration from the intestinal crypt to the intestinal villus. Then you want to draw an axis from the crypt to the villus, and see how far along the cells are over time.</p>
-<p>For this, you first need to draw the data axis. This is a manual process. Open the data editor (in the <code class="docutils literal notranslate"><span class="pre">Edit</span></code> menu, or press <code class="docutils literal notranslate"><span class="pre">C</span></code> in the main screen) and then the axis editor (again in the <code class="docutils literal notranslate"><span class="pre">Edit</span></code> manu, or alternatively press <code class="docutils literal notranslate"><span class="pre">A</span></code>).</p>
-<p>You need to draw axis from the lowest point to the highest point. Hover you mouse at the start of the axis (the zero point) and press Insert. A marker will be added. Then move your mouse to another point and press Insert again to insert a line to this point from the previuos marker. If your axis is not a straight line, you can add more points and a spline will be drawn using those points.</p>
-<p>You can add a second (or third, fourth, etc.) axis by deselecting the first axis (double-click) and then pressing Insert without having an axis selected. Every particle will be assigned to the axis that was nearest in the first time point.</p>
-<p>For the next time point, you can either draw the axis again, or (if the particles haven’t moved too much) you can simply press C to copy the selected axis from another time point over to this time point. You can repeat this until the whole experiment is analyzed.</p>
+<p>In biology, cells don’t always move perfectly along the x, y or z axis. Still, you might want to track how far along a cell is along some custom axis. For example, you might be looking at cell migration from the intestinal crypt to the intestinal villus. In that case, you’ll need to draw the axis yourself from the crypt bottom to the villus tip. Then, you can track how far along this axis the cells are at each time point. This is what the data axes editor is for.</p>
+<p>In OrganoidTracker, data axis are implemented as splines. You need to draw them by hand. Open the data editor (in the <code class="docutils literal notranslate"><span class="pre">Edit</span></code> menu, or press <code class="docutils literal notranslate"><span class="pre">C</span></code> in the main screen) and then the axis editor (again in the <code class="docutils literal notranslate"><span class="pre">Edit</span></code> manu, or alternatively press <code class="docutils literal notranslate"><span class="pre">A</span></code>).</p>
+<p>You need to draw axis from the starting point of your axis to the final point. Hover you mouse at the start of the axis (the zero point) and press Insert. A marker will be added. Then move your mouse to another point and press Insert again to insert a line to this point from the previous marker. You can continue adding points like this, and the program will draw a spline through all points.</p>
+<p>For the next time point, you can either draw the axis again, or (if the cells haven’t moved too much) you can simply press Insert to copy the selected axis from another time point over to this time point. You can repeat this until the whole experiment is analyzed.</p>
 <p>If you select an axis and then press Delete, the whole axis will be deleted.</p>
+<section id="types-of-data-axes">
+<h2>Types of data axes<a class="headerlink" href="#types-of-data-axes" title="Link to this heading"></a></h2>
+<p>By default, there are just splines. However, by placing a tiny Python file in the plugins folder, you can create new types of data axes.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.marker</span><span class="w"> </span><span class="kn">import</span> <span class="n">Marker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.spline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Spline</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_markers</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Marker</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">Marker</span><span class="p">([</span><span class="n">Spline</span><span class="p">],</span> <span class="s2">&quot;CRYPT&quot;</span><span class="p">,</span> <span class="s2">&quot;crypt-villus axis&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">is_axis</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="p">]</span>
+</pre></div>
+</div>
+<p>Save this file as <code class="docutils literal notranslate"><span class="pre">plugin_SOME_NAME_HERE.py</span></code> to the plugins folder (see <code class="docutils literal notranslate"><span class="pre">File</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Install</span> <span class="pre">new</span> <span class="pre">plugin</span></code> in the main menu). Then, when you reload all plugins and open the data axes editor, you’ll see that under <code class="docutils literal notranslate"><span class="pre">Edit</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Set</span> <span class="pre">type</span> <span class="pre">of</span> <span class="pre">spline</span></code>.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">is_axis=True</span></code>, then the spline uses arrowheads to indicate the direction of the axis. Otherwise, it will just use dots.</p>
+<p>The type of data axis only affect how it’s displayed. It’s up to you to distinguish between them in your downstream data analysis. You can use the name of the axis (in this case, “CRYPT”) to do so.</p>
+</section>
+<section id="spline-checkpoints">
+<h2>Spline checkpoints<a class="headerlink" href="#spline-checkpoints" title="Link to this heading"></a></h2>
+<p>Along the spline, you can highlight specific points. In the crypt-villus axis example, you might want to indicate the “neck”, the transition area between the crypt and the villus. To do this, first select the spline by clicking on it. Then, click a second time on the spline at the point you want to highlight. That point is now selected. To insert a checkpoint there, press Insert or Enter.</p>
+<p>Analogous to naming the spline types, you can also name the checkpoint types. The full plugin code would then become:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.marker</span><span class="w"> </span><span class="kn">import</span> <span class="n">Marker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.spline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Spline</span><span class="p">,</span> <span class="n">SplineCheckpoint</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_markers</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Marker</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">Marker</span><span class="p">([</span><span class="n">Spline</span><span class="p">],</span> <span class="s2">&quot;CRYPT&quot;</span><span class="p">,</span> <span class="s2">&quot;crypt-villus axis&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">is_axis</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">Marker</span><span class="p">([</span><span class="n">SplineCheckpoint</span><span class="p">],</span> <span class="s2">&quot;CRYPT_NECK&quot;</span><span class="p">,</span> <span class="s2">&quot;crypt neck&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+    <span class="p">]</span>
+</pre></div>
+</div>
+<p>When inserting a new checkpoint, you will be prompted which type it should be. When inserting another checkpoint, it will automatically be of the same type as the previously inserted checkpoint. You can change the type of a checkpoint by selecting it and then choosing a different type in the <code class="docutils literal notranslate"><span class="pre">Edit</span></code> menu.</p>
+</section>
 </section>
 
 

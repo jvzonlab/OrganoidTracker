@@ -130,15 +130,28 @@
 <dt class="sig sig-object py" id="organoid_tracker.core.spline.Spline">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">organoid_tracker.core.spline.</span></span><span class="sig-name descname"><span class="pre">Spline</span></span><a class="headerlink" href="#organoid_tracker.core.spline.Spline" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>A curve (curved line) trough the positions. This can be used to measure how far the positions are along this
+<p>A curve (curved line) through the positions. This can be used to measure how far the positions are along this
 curve.</p>
 <p>An offset specifies the zero-point of the axis. A checkpoint (relative to the offset) specifies some point after
-which a newregion starts. For example, in intestinal organoids this is used to mark the boundary between the crypt
+which a new region starts. For example, in intestinal organoids this is used to mark the boundary between the crypt
 and the villus.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.spline.Spline.add_checkpoint">
+<span class="sig-name descname"><span class="pre">add_checkpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.core.spline.SplineCheckpoint" title="organoid_tracker.core.spline.SplineCheckpoint"><span class="pre">SplineCheckpoint</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.spline.Spline.add_checkpoint" title="Link to this definition"></a></dt>
+<dd><p>Adds a new checkpoint to the path.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.core.spline.Spline.add_point">
 <span class="sig-name descname"><span class="pre">add_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.spline.Spline.add_point" title="Link to this definition"></a></dt>
 <dd><p>Adds a new point to the path.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.spline.Spline.checkpoints">
+<span class="sig-name descname"><span class="pre">checkpoints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.14)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#organoid_tracker.core.spline.SplineCheckpoint" title="organoid_tracker.core.spline.SplineCheckpoint"><span class="pre">SplineCheckpoint</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#organoid_tracker.core.spline.Spline.checkpoints" title="Link to this definition"></a></dt>
+<dd><p>Gets the checkpoints on this spline. Modifications need to be done through self.add_checkpoint() and
+self.remove_checkpoint(), to make sure the list stays sorted.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -152,6 +165,13 @@ and the villus.</p>
 <span class="sig-name descname"><span class="pre">from_position_on_axis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.spline.Spline.from_position_on_axis" title="Link to this definition"></a></dt>
 <dd><p>Given a path position, this returns the corresponding x, y and z coordinates. Returns None for positions
 outside of the line.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.spline.Spline.get_closest_checkpoint">
+<span class="sig-name descname"><span class="pre">get_closest_checkpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">inf</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.core.spline.SplineCheckpoint" title="organoid_tracker.core.spline.SplineCheckpoint"><span class="pre">SplineCheckpoint</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.spline.Spline.get_closest_checkpoint" title="Link to this definition"></a></dt>
+<dd><p>Gets the checkpoint that is closest to the given position on the spline, or None if there are no checkpoints
+within the given maximum distance.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -211,9 +231,22 @@ the offset automatically, so except for saving/loading purposes there should be 
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.spline.Spline.remove_checkpoint">
+<span class="sig-name descname"><span class="pre">remove_checkpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#organoid_tracker.core.spline.SplineCheckpoint" title="organoid_tracker.core.spline.SplineCheckpoint"><span class="pre">SplineCheckpoint</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.spline.Spline.remove_checkpoint" title="Link to this definition"></a></dt>
+<dd><p>Removes the given checkpoint. Does nothing if there is no such checkpoint.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="organoid_tracker.core.spline.Spline.remove_point">
 <span class="sig-name descname"><span class="pre">remove_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.spline.Spline.remove_point" title="Link to this definition"></a></dt>
 <dd><p>Removes the point that is (within 1 px) at the given coords. Does nothing if there is no such point.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.spline.Spline.reverse">
+<span class="sig-name descname"><span class="pre">reverse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.spline.Spline.reverse" title="Link to this definition"></a></dt>
+<dd><p>Reverses the direction of the spline. The checkpoints will stay at the same XYZ location. Resets the offset
+to 0.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -235,6 +268,38 @@ both in pixels. Returns None if this spline has fewer than 2 points.</p>
 <span class="sig-name descname"><span class="pre">update_offset_for_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.14)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position" title="organoid_tracker.core.position.Position"><span class="pre">Position</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.spline.Spline.update_offset_for_positions" title="Link to this definition"></a></dt>
 <dd><p>Updates the offset of this spline such that the lowest path position that is ever returned by
 get_path_position_2d is exactly 0.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.core.spline.SplineCheckpoint">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">organoid_tracker.core.spline.</span></span><span class="sig-name descname"><span class="pre">SplineCheckpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.core.spline.SplineCheckpoint" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.NamedTuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></a></p>
+<p>A checkpoint on a spline, used to mark some position on the spline. For example, in intestinal organoids this is
+used to mark the boundary between the crypt and the villus.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.core.spline.SplineCheckpoint.pos">
+<span class="sig-name descname"><span class="pre">pos</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#organoid_tracker.core.spline.SplineCheckpoint.pos" title="Link to this definition"></a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.core.spline.SplineCheckpoint.save_name">
+<span class="sig-name descname"><span class="pre">save_name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#organoid_tracker.core.spline.SplineCheckpoint.save_name" title="Link to this definition"></a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.spline.SplineCheckpoint.with_position">
+<span class="sig-name descname"><span class="pre">with_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.core.spline.SplineCheckpoint" title="organoid_tracker.core.spline.SplineCheckpoint"><span class="pre">SplineCheckpoint</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.spline.SplineCheckpoint.with_position" title="Link to this definition"></a></dt>
+<dd><p>Returns a copy of this checkpoint with the specified position.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.core.spline.SplineCheckpoint.with_save_name">
+<span class="sig-name descname"><span class="pre">with_save_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#organoid_tracker.core.spline.SplineCheckpoint" title="organoid_tracker.core.spline.SplineCheckpoint"><span class="pre">SplineCheckpoint</span></a></span></span><a class="headerlink" href="#organoid_tracker.core.spline.SplineCheckpoint.with_save_name" title="Link to this definition"></a></dt>
+<dd><p>Returns a copy of this checkpoint with the specified save name.</p>
 </dd></dl>
 
 </dd></dl>

@@ -126,7 +126,7 @@ some_other_file_of_this_plugin.do_some_work()
 ```
 
 ### Adding cell types
-OrganoidTracker has some special support for cell types, like coloring them differently and keeping a list of them for use in the menual data editor. Internally, cell types are stored as position metadata (see the [metadata tutorial](WORKING_WITH_CUSTOM_METADATA.md)).
+OrganoidTracker has some special support for cell types, like coloring them differently and keeping a list of them for use in the manual data editor. Internally, cell types are stored as position metadata (see the [metadata tutorial](WORKING_WITH_CUSTOM_METADATA.md)).
 
 You can register cell types as follows:
 
@@ -139,7 +139,7 @@ def get_markers():
             Marker([Position], "GOBLET", "goblet cell", (126, 255, 64))]
 ```
 
-The `get_markers` function is called automatically by OrganoidTracker. The function must return a list of `Marker`s. Each marker provides what it is targeting (`Position`, `Beacon` or `Spline`), the name under which it is saved to the data files, a display name and a display color. The color is used for the border of the position markers and for the lineage trees.
+The `get_markers` function is called automatically by OrganoidTracker. The function must return a list of `Marker`s. Each marker provides what it is targeting (`Position`, `Beacon`, `Spline` or `SplineCheckpoint`), the name under which it is saved to the data files, a display name and a display color. The color is used for the border of the position markers and for the lineage trees.
 
 ### Adding command-line scripts
 

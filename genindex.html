@@ -150,6 +150,8 @@
       </ul></li>
       <li><a href="organoid_tracker.core.beacon_collection.html#organoid_tracker.core.beacon_collection.BeaconCollection.add_beacons">add_beacons() (organoid_tracker.core.beacon_collection.BeaconCollection method)</a>
 </li>
+      <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.Spline.add_checkpoint">add_checkpoint() (organoid_tracker.core.spline.Spline method)</a>
+</li>
       <li><a href="organoid_tracker.core.connections.html#organoid_tracker.core.connections.Connections.add_connection">add_connection() (organoid_tracker.core.connections.Connections method)</a>
 </li>
       <li><a href="organoid_tracker.core.connections.html#organoid_tracker.core.connections.Connections.add_connections">add_connections() (organoid_tracker.core.connections.Connections method)</a>
@@ -388,6 +390,8 @@
 </li>
       <li><a href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position.check_time_point">check_time_point() (organoid_tracker.core.position.Position method)</a>
 </li>
+      <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.Spline.checkpoints">checkpoints() (organoid_tracker.core.spline.Spline method)</a>
+</li>
       <li><a href="organoid_tracker.core.html#organoid_tracker.core.clamp">clamp() (in module organoid_tracker.core)</a>
 </li>
       <li><a href="organoid_tracker.gui.undo_redo.html#organoid_tracker.gui.undo_redo.UndoRedo.clear">clear() (organoid_tracker.gui.undo_redo.UndoRedo method)</a>
@@ -474,10 +478,10 @@
 </li>
       <li><a href="organoid_tracker.config.html#organoid_tracker.config.ConfigFile">ConfigFile (class in organoid_tracker.config)</a>
 </li>
-      <li><a href="organoid_tracker.linking_analysis.links_postprocessor.html#organoid_tracker.linking_analysis.links_postprocessor.connect_loose_ends">connect_loose_ends() (in module organoid_tracker.linking_analysis.links_postprocessor)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="organoid_tracker.linking_analysis.links_postprocessor.html#organoid_tracker.linking_analysis.links_postprocessor.connect_loose_ends">connect_loose_ends() (in module organoid_tracker.linking_analysis.links_postprocessor)</a>
+</li>
       <li><a href="organoid_tracker.core.links.html#organoid_tracker.core.links.Links.connect_tracks">connect_tracks() (organoid_tracker.core.links.Links method)</a>
 </li>
       <li><a href="organoid_tracker.core.connections.html#organoid_tracker.core.connections.Connections">Connections (class in organoid_tracker.core.connections)</a>
@@ -1232,6 +1236,8 @@
         <li><a href="organoid_tracker.core.images.html#organoid_tracker.core.images.Images.get_channels">(organoid_tracker.core.images.Images method)</a>
 </li>
       </ul></li>
+      <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.Spline.get_closest_checkpoint">get_closest_checkpoint() (organoid_tracker.core.spline.Spline method)</a>
+</li>
       <li><a href="organoid_tracker.visualizer.html#organoid_tracker.visualizer.Visualizer.get_closest_position">get_closest_position() (organoid_tracker.visualizer.Visualizer static method)</a>
 </li>
       <li><a href="organoid_tracker.linking_analysis.lineage_markers.html#organoid_tracker.linking_analysis.lineage_markers.get_color">get_color() (in module organoid_tracker.linking_analysis.lineage_markers)</a>
@@ -4120,8 +4126,12 @@
 </li>
       <li><a href="organoid_tracker.gui.dialog.html#organoid_tracker.gui.dialog.PopupWindow">PopupWindow (class in organoid_tracker.gui.dialog)</a>
 </li>
-      <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.SplinePosition.pos">pos (organoid_tracker.core.spline.SplinePosition attribute)</a>
+      <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.SplineCheckpoint.pos">pos (organoid_tracker.core.spline.SplineCheckpoint attribute)</a>
+
+      <ul>
+        <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.SplinePosition.pos">(organoid_tracker.core.spline.SplinePosition attribute)</a>
 </li>
+      </ul></li>
       <li><a href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position">Position (class in organoid_tracker.core.position)</a>
 </li>
       <li><a href="organoid_tracker.core.beacon_collection.html#organoid_tracker.core.beacon_collection.Beacon.position">position (organoid_tracker.core.beacon_collection.Beacon attribute)</a>
@@ -4294,9 +4304,11 @@
       </ul></li>
       <li><a href="organoid_tracker.core.links.html#organoid_tracker.core.links.Links.remove_all_links">remove_all_links() (organoid_tracker.core.links.Links method)</a>
 </li>
+      <li><a href="organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.html#organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.remove_axis_from_axes_list">remove_axis_from_axes_list() (in module organoid_tracker.guizela_tracker_compatibility.axis_lib_v2)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.html#organoid_tracker.guizela_tracker_compatibility.axis_lib_v2.remove_axis_from_axes_list">remove_axis_from_axes_list() (in module organoid_tracker.guizela_tracker_compatibility.axis_lib_v2)</a>
+      <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.Spline.remove_checkpoint">remove_checkpoint() (organoid_tracker.core.spline.Spline method)</a>
 </li>
       <li><a href="organoid_tracker.core.connections.html#organoid_tracker.core.connections.Connections.remove_connection">remove_connection() (organoid_tracker.core.connections.Connections method)</a>
 </li>
@@ -4352,6 +4364,8 @@
 </li>
       <li><a href="organoid_tracker.util.mpl_helper.html#organoid_tracker.util.mpl_helper.restore_axes_limits">restore_axes_limits() (in module organoid_tracker.util.mpl_helper)</a>
 </li>
+      <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.Spline.reverse">reverse() (organoid_tracker.core.spline.Spline method)</a>
+</li>
       <li><a href="organoid_tracker.gui.undo_redo.html#organoid_tracker.gui.undo_redo.ReversedAction">ReversedAction (class in organoid_tracker.gui.undo_redo)</a>
 </li>
       <li><a href="organoid_tracker.text_popup.text_popup.html#organoid_tracker.text_popup.text_popup.RichTextPopup">RichTextPopup (class in organoid_tracker.text_popup.text_popup)</a>
@@ -4395,7 +4409,11 @@
       <li><a href="organoid_tracker.gui.toolbar.html#organoid_tracker.gui.toolbar.Toolbar.save_handler">save_handler() (organoid_tracker.gui.toolbar.Toolbar method)</a>
 </li>
       <li><a href="organoid_tracker.core.marker.html#organoid_tracker.core.marker.Marker.save_name">save_name (organoid_tracker.core.marker.Marker property)</a>
+
+      <ul>
+        <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.SplineCheckpoint.save_name">(organoid_tracker.core.spline.SplineCheckpoint attribute)</a>
 </li>
+      </ul></li>
       <li><a href="organoid_tracker.imaging.io.html#organoid_tracker.imaging.io.save_positions_to_json">save_positions_to_json() (in module organoid_tracker.imaging.io)</a>
 </li>
       <li><a href="organoid_tracker.comparison.report_json_io.html#organoid_tracker.comparison.report_json_io.save_report">save_report() (in module organoid_tracker.comparison.report_json_io)</a>
@@ -4603,6 +4621,8 @@
       <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.SplinePosition.spline">spline (organoid_tracker.core.spline.SplinePosition attribute)</a>
 </li>
       <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.SplinePosition.spline_id">spline_id (organoid_tracker.core.spline.SplinePosition attribute)</a>
+</li>
+      <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.SplineCheckpoint">SplineCheckpoint (class in organoid_tracker.core.spline)</a>
 </li>
       <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.SplineCollection">SplineCollection (class in organoid_tracker.core.spline)</a>
 </li>
@@ -4908,10 +4928,10 @@
 </li>
       <li><a href="organoid_tracker.core.links.html#organoid_tracker.core.links.LinkingTrack.will_divide">will_divide() (organoid_tracker.core.links.LinkingTrack method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="organoid_tracker.linking_analysis.cell_fate_finder.html#organoid_tracker.linking_analysis.cell_fate_finder.CellFateType.WILL_SHED">WILL_SHED (organoid_tracker.linking_analysis.cell_fate_finder.CellFateType attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="organoid_tracker.gui.window.html#organoid_tracker.gui.window.Window">Window (class in organoid_tracker.gui.window)</a>
 </li>
       <li><a href="organoid_tracker.core.images.html#organoid_tracker.core.images.ChannelDescription.with_colormap">with_colormap() (organoid_tracker.core.images.ChannelDescription method)</a>
@@ -4919,6 +4939,10 @@
       <li><a href="organoid_tracker.core.images.html#organoid_tracker.core.images.ChannelDescription.with_name">with_name() (organoid_tracker.core.images.ChannelDescription method)</a>
 </li>
       <li><a href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position.with_offset">with_offset() (organoid_tracker.core.position.Position method)</a>
+</li>
+      <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.SplineCheckpoint.with_position">with_position() (organoid_tracker.core.spline.SplineCheckpoint method)</a>
+</li>
+      <li><a href="organoid_tracker.core.spline.html#organoid_tracker.core.spline.SplineCheckpoint.with_save_name">with_save_name() (organoid_tracker.core.spline.SplineCheckpoint method)</a>
 </li>
       <li><a href="organoid_tracker.core.position.html#organoid_tracker.core.position.Position.with_time_point">with_time_point() (organoid_tracker.core.position.Position method)</a>
 </li>
