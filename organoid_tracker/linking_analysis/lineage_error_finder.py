@@ -62,9 +62,15 @@ def delete_problematic_lineages(experiment: Experiment):
             for position in track.positions():
                 positions_to_remove.append(position)
 
+    # Also remove any positions without links - these should also have an error marker
+    links = experiment.links
+    for time_point in experiment.positions.time_points():
+        for position in experiment.positions.of_time_point(time_point):
+            if not links.contains_position(position):
+                positions_to_remove.append(position)
+
     # Actually remove them
-    for position in positions_to_remove:
-        experiment.remove_position(position)
+    experiment.remove_positions(positions_to_remove)
 
 
 def find_error_focus_min_divisions(experiment: Experiment) -> int:

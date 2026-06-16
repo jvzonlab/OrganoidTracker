@@ -1438,6 +1438,7 @@ class LinkAndPositionEditor(AbstractEditor):
             self._experiment.warning_limits.min_time_between_divisions_h = new_time
             cell_error_finder.find_errors_in_experiment(self._experiment)
             self._window.get_undo_redo().mark_unsaved_changes()
+            self.draw_view()
             self.update_status("Set minimum time between divisions to " + str(new_time) + " hours.")
 
     def _change_errors_max_distance(self):
@@ -1452,6 +1453,7 @@ class LinkAndPositionEditor(AbstractEditor):
             self._experiment.warning_limits.max_distance_moved_um_per_min = new_distance
             cell_error_finder.find_errors_in_experiment(self._experiment)
             self._window.get_undo_redo().mark_unsaved_changes()
+            self.draw_view()
             self.update_status("Set maximum distance per time point to " + str(new_distance) + " micrometers.")
 
     def _change_errors_min_marginal_probability(self):
@@ -1465,6 +1467,7 @@ class LinkAndPositionEditor(AbstractEditor):
             self._experiment.warning_limits.min_marginal_probability = new_limit
             cell_error_finder.find_errors_in_experiment(self._experiment)
             self._window.get_undo_redo().mark_unsaved_changes()
+            self.draw_view()
             self.update_status("Set minimum marginal probability of a link to " + str(new_limit) + ".")
 
     def _change_errors_min_time_point(self):
