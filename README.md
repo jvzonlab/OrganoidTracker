@@ -1,7 +1,7 @@
 ![Logo](manuals/images/logo.png) OrganoidTracker
 ================================================
 
-[Publication of OrganoidTracker 1](https://doi.org/10.1371/journal.pone.0240802) / [Pre-print of OrganoidTracker 2](https://doi.org/10.1101/2024.10.11.617799)
+[Publication of OrganoidTracker 1](https://doi.org/10.1371/journal.pone.0240802) / [Publication of OrganoidTracker 2](https://doi.org/10.1038/s41592-025-02845-6)
 
 Program for tracking cell nuclei in (intestinal) organoids over time. Uses a convolutional neural network for nucleus detection, a min-cost flow solver ([Haubold, 2016]) for linking nuclei over time and tools for manual error correction.
 
@@ -45,7 +45,7 @@ OrganoidTracker must be installed using Anaconda. See the [installation] page fo
 Running the main program
 ------------------------
 Open an Anaconda Prompt, activate the correct environment and navigate to the folder in which you installed OrganoidTracker.
-The `organoid_tracker.py` script starts a graphical program that allows you to visualize and edit your data.
+The `organoid_tracker.py` script starts a graphical program that allows you to visualize and edit your data, as well as generate scripts to run predictions on your data or train on your own data.
 
 
 Reading the manual
