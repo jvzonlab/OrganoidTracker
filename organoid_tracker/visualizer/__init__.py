@@ -248,7 +248,19 @@ class Visualizer:
         return None
 
     def get_extra_menu_options(self) -> Dict[str, Any]:
-        return {}
+        return {
+            "File//Export-Export image//Screenshot of current view...": self._export_screenshot,
+        }
+
+    def _export_screenshot(self):
+        filename = dialog.prompt_save_file("Export screenshot", [
+                                ("PNG files", "*.png"),
+                                ("SVG files", "*.svg"),
+                                ("PDF files", "*.pdf"),
+                                ("TIFF files", "*.tif")])
+        if filename is None:
+            return
+        self._fig.savefig(filename, dpi=150)
 
     def _get_must_show_plugin_menus(self) -> bool:
         """Returns whether the plugin-added menu options must be shown in this visualizer."""

@@ -11,7 +11,6 @@ from organoid_tracker.gui.gui_experiment import GuiExperiment
 from organoid_tracker.gui.progress_bar import ProgressBar
 from organoid_tracker.gui.threading import Scheduler
 from organoid_tracker.gui.undo_redo import UndoRedo, UndoableAction
-from organoid_tracker.linking_analysis.errors import Error
 from organoid_tracker.plugin.plugin_manager import PluginManager
 from organoid_tracker.plugin.registry import Registry
 
