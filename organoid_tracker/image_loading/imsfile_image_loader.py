@@ -783,7 +783,7 @@ class _ImsImageLoader(ImageLoader):
         return self._reader.resolution
 
     def get_time_resolution_m(self) -> float:
-        if "DataSetTimes" in self._reader.hf:
+        if "DataSetTimes" in self._reader.hf and len(self._reader.hf["DataSetTimes"]["Time"]) > 1:
             time_0_ns = self._reader.hf["DataSetTimes"]["Time"][0][2]
             time_1_ns = self._reader.hf["DataSetTimes"]["Time"][1][2]
             timespan_s = (time_1_ns - time_0_ns) / 1_000_000_000
@@ -791,7 +791,7 @@ class _ImsImageLoader(ImageLoader):
         return 0
 
     def get_timings(self) -> Optional[ImageTimings]:
-        if "DataSetTimes" in self._reader.hf:
+        if "DataSetTimes" in self._reader.hf and len(self._reader.hf["DataSetTimes"]["Time"]) > 1:
             timespans_s = [float(moment[2] / 1_000_000_000) for moment in self._reader.hf["DataSetTimes"]["Time"]]
             timespans_s = numpy.array(timespans_s, dtype=numpy.float64)
             timespans_s -= timespans_s[0]
