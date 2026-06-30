@@ -77,7 +77,7 @@ Step 5: Calculate error rates
 ---------------------------------
 With both the **images** and **`Final links - clean.aut`** loaded into the OrganoidTracker GUI, select `Tools` -> `Compute marginalized error rates...`. When prompted, select the all possible links file (`All possible links - clean.aut`) and then create a folder for storing the output (e.g., `error_rates`). Run the resulting `organoid_tracker_marginalization` script.
 
-This should be produce a file called `Filtered positions.aut`.
+This should be produce a file called `Filtered positions.aut` and a file called `Marginalized positions.aut`. In the latter the links are simply updated with their marginalized probabilities and uncertain links are flagged (<99% certain, see below), no positions or links are removed. In `Filtered positions.aut` links between positions that are uncertain are removed. 
 
 ### Troubleshooting
 You can modify this step of the analysis by changing the following values in the configuration file (e.g., `organoid_tracker.ini` within `error_rates`).
@@ -90,7 +90,7 @@ Step 6: Manually correct warnings
 ---------------------------------
 This step is not automated. 😉 
 
-With both the **images** and **`Filtered positions.aut`** loaded into the OrganoidTracker GUI, go to `Edit -> Manually change data...`. A cross will appear over all locations where the program has detected some inconsistency in the tracking data:
+With both the **images** and **`Marginalized positions.aut`** or **`Filtered positions.aut`** loaded into the OrganoidTracker GUI, go to `Edit -> Manually change data...`. A cross will appear over all locations where the program has detected some inconsistency in the tracking data. In **`Filtered positions.aut`** uncertain links have been removed and need to readded in the case of false positive warnings, in **`Marginalized positions.aut`** uncertain links are only flagged:
 
 ![Example of a warning](images/warning.png)
 
