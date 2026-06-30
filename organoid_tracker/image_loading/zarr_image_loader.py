@@ -134,9 +134,10 @@ def _read_axes_order_from_attrs(attributes: Attributes) -> Optional[str]:
 
     axes_names = []
     for axis in multiscales_axes_metadata:
-        if axis["name"] not in _SUPPORTED_AXIS:
-            raise UserError("Unsupported axis", f"Found unsupported axis: \"{axis['name']}\".")
-        axes_names.append(axis["name"])
+        axis_name = axis["name"].lower()
+        if axis_name not in _SUPPORTED_AXIS:
+            raise UserError("Unsupported axis", f"Found unsupported axis: \"{axis_name}\".")
+        axes_names.append(axis_name)
     return "".join(axes_names)
 
 
