@@ -65,6 +65,7 @@ _scale_factor_xy = config.get_or_default("scale_factor_xy", str(1.0), comment="S
 _scale_factor_z = config.get_or_default("scale_factor_z", str(1.0), comment="Scale factor in z direction.", type=config_type_float)
 _intensity_quantile_min = config.get_or_default("intensity_min_quantile", str(0.01), comment="Minimum quantile for intensity normalization. Applied to entire 3D stack of each time point. A value of 0.0 means the minimum intensity is used.", type=config_type_float)
 _intensity_quantile_max = config.get_or_default("intensity_max_quantile", str(0.99), comment="Maximum quantile for intensity normalization. A value of 1.0 means the maximum intensity is used.", type=config_type_float)
+_tophat_mask = config.get_or_default("tophat_mask", str(0), comment="Mask size used for tophat background subtraction. A value of zero means no subtraction will be performed. Currently only affects position detection.", type=config_type_int)
 _debug_folder = config.get_or_default("predictions_output_folder", "",
                                       comment="If you want to see the raw prediction images, paste the path to a folder here. In that folder, a prediction image will be placed for each time point.")
 if len(_debug_folder) == 0:
@@ -110,6 +111,7 @@ for experiment_index, experiment in enumerate(experiment_list):
                             buffer_size_zyx=(_buffer_z, _buffer_y, _buffer_x),
                             scale_factors_zyx=(_scale_factor_z, _scale_factor_xy, _scale_factor_xy),
                             intensity_quantiles=(_intensity_quantile_min, _intensity_quantile_max),
+                            tophat_mask = _tophat_mask,
                             threshold=_threshold,
                             output_file=output_file)
 

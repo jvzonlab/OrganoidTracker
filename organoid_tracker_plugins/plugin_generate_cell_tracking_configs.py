@@ -413,6 +413,7 @@ class _TrackingVisualizer(ExitableImageVisualizer):
     max_quantile: float = 0.99
     xy_scaling: float = 1.0
     z_scaling: float = 1.0
+    tophat_mask: int = 0
     channels: List[ImageChannel]
 
     _predicted_positions: Optional[List[Position]] = None
@@ -566,6 +567,7 @@ class _TrackingVisualizer(ExitableImageVisualizer):
             "Parameters//Images-Set max intensity quantile...": self._set_max_quantile,
             "Parameters//Images-Set XY scaling...": self._set_xy_scaling,
             "Parameters//Images-Set Z scaling...": self._set_z_scaling,
+            "Parameters//Images-Set tophat_mask...": self._set_tophat_mask,
             "Parameters//Images-Set image channel for prediction...": self._set_channel,
             "Cell tracking//Preview-Preview position detection": self._test_position_predictions_on_time_point,
             "Cell tracking//Preview-Preview division detection": self._test_division_predictions_on_time_point,
@@ -674,6 +676,7 @@ class _TrackingVisualizer(ExitableImageVisualizer):
         config.get_or_default("buffer_x", str(32))
         config.get_or_default("scale_factor_xy", str(self.xy_scaling))
         config.get_or_default("scale_factor_z", str(self.z_scaling))
+        config.get_or_default("tophat_mask", str(self.tophat_mask))
         config.get_or_default("intensity_min_quantile", str(self.min_quantile))
         config.get_or_default("intensity_max_quantile", str(self.max_quantile))
         config.get_or_default("images_channels", ",".join(str(channel.index_one) for channel in self.channels))
@@ -824,6 +827,7 @@ class _TrackingVisualizer(ExitableImageVisualizer):
         config.get_or_default("images_channels", ",".join(str(channel.index_one) for channel in self.channels), store_in_defaults=True)
         config.get_or_default("scale_factor_xy", str(self.xy_scaling), store_in_defaults=True)
         config.get_or_default("scale_factor_z", str(self.z_scaling), store_in_defaults=True)
+        config.get_or_default("tophat_mask", str(self.tophat_mask), store_in_defaults=True)
         config.get_or_default("intensity_min_quantile", str(self.min_quantile), store_in_defaults=True)
         config.get_or_default("intensity_max_quantile", str(self.max_quantile), store_in_defaults=True)
         config.get_or_default("dataset_file", "Input dataset" + list_io.FILES_LIST_EXTENSION)
@@ -890,6 +894,15 @@ class _TrackingVisualizer(ExitableImageVisualizer):
         if value is not None:
             self.z_scaling = value
             self.update_status("Set Z scaling factor to " + str(self.z_scaling) + ". Use the Edit menu to generate predictions.")
+
+    def _set_tophat_mask(self):
+        value = dialog.prompt_int("Set Tophat mask size",
+                                    "Please enter the mask size (in XY) used for the background subtraction." 
+                                    "If set to zero no background subtraction will be performed." "Only applies during the position detection step for now.",
+                                    default=self.tophat_mask, minimum=0, maximum=1000)
+        if value is not None:
+            self.tophat_mask = value
+            self.update_status("Set Tophat mask size " + str(self.tophat_mask) + ". Use the Edit menu to generate predictions.")
 
     def _set_channel(self):
         available_channels_count = self._find_available_image_channels_count()

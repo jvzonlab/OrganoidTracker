@@ -7,6 +7,7 @@ from typing import NamedTuple, Tuple, Optional, Iterable, Set, Callable, Sized, 
 import keras
 import numpy
 import skimage
+import scipy.ndimage
 import tifffile
 from skimage.feature import peak_local_max
 
@@ -139,7 +140,8 @@ def _split_into_patches(time_point: TimePoint, full_images: Dict[TimePoint, Imag
                         patch_shape_zyx_px: Tuple[int, int, int],
                         buffer_size_zyx_px: Tuple[int, int, int],
                         scale_factors_zyx: Tuple[float, float, float],
-                        intensity_quantiles: Tuple[float, float]) -> Iterable[_PredictionPatch]:
+                        intensity_quantiles: Tuple[float, float],
+                        tophat_mask: int) -> Iterable[_PredictionPatch]:
     """patch_shape_z needs to match what the model expect, and patch_shape_y and x should be a multiple of 32."""
 
     # Create a dictionary of all full images in the time window
@@ -181,6 +183,15 @@ def _split_into_patches(time_point: TimePoint, full_images: Dict[TimePoint, Imag
                 array /= (max_intensity - min_intensity)
                 array -= min_intensity / (max_intensity - min_intensity)
                 numpy.clip(array, 0.0, 1.0, out=array)
+
+                # Background subtraction
+                if tophat_mask > 0:
+                    background = scipy.ndimage.filters.gaussian_filter(array, (0,2,2,0))
+                    background = scipy.ndimage.filters.minimum_filter(background, size=(1, tophat_mask, tophat_mask, 1))
+                    background = scipy.ndimage.filters.maximum_filter(background, size=(1, tophat_mask, tophat_mask, 1))
+
+                    array = array - background
+                    numpy.clip(array, 0.0, 1.0, out=array)
 
                 yield _PredictionPatch(array=array,
                                        corner_zyx=(z_start, y_start, x_start),
@@ -237,6 +248,7 @@ class PositionModel(NamedTuple):
                           mid_layers: int = 5,
                           scale_factors_zyx: Tuple[float, float, float] = (1.0, 1.0, 1.0),
                           intensity_quantiles: Tuple[float, float] = (0.01, 0.99),
+                          tophat_mask: int = 0,
                           time_points: Optional[Iterable[TimePoint] | Sized] = None,
                           progress_callback: Callable[[float], None] = lambda _: None,
                           print_time_points: bool = True,
@@ -332,7 +344,9 @@ class PositionModel(NamedTuple):
                                                  patch_shape_zyx_px=patch_shape_zyx,
                                                  buffer_size_zyx_px=buffer_size_zyx,
                                                  scale_factors_zyx=scale_factors_zyx,
-                                                 intensity_quantiles=intensity_quantiles):
+                                                 intensity_quantiles=intensity_quantiles,
+                                                 tophat_mask = tophat_mask):
+
                     offset = full_images.get(patch.time_point).offset
 
                     # Resize image using scipy zoom
@@ -379,7 +393,6 @@ class PositionModel(NamedTuple):
 
                         if (full_image_z-offset.z) >= full_image_size_zyx[0] or (full_image_y - offset.y) >= full_image_size_zyx[
                             1] or (full_image_x-offset.x) >= full_image_size_zyx[2]:
-                            print(full_image_z)
                             continue
 
                         experiment.positions.add(
