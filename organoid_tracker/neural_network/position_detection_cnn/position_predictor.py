@@ -14,7 +14,7 @@ import organoid_tracker.imaging.io
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.image_loader import ImageChannel
-from organoid_tracker.core.images import Images, Image
+from organoid_tracker.core.images import Images, Image, ImageOffsets
 from organoid_tracker.core.position import Position
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 from organoid_tracker.neural_network import image_preloading
@@ -84,7 +84,7 @@ class _DebugPredictions:
         """Sets the output file for saving full predictions. If filename is None, debug storage is disabled."""
         self._output_file = filename
 
-    def add_patch(self, prediction_patch: _PredictionPatch, predictions_array: numpy.ndarray):
+    def add_patch(self, prediction_patch: _PredictionPatch, predictions_array: numpy.ndarray, offset: Position):
         if self._output_file is None:
             return  # Debug storage not enabled
 
@@ -108,9 +108,9 @@ class _DebugPredictions:
             int(prediction_patch.buffer_zyx_px[1] / prediction_patch.scale_factors_zyx[1]),
             int(prediction_patch.buffer_zyx_px[2] / prediction_patch.scale_factors_zyx[2]),
         )
-        target_zyx = (prediction_patch.corner_zyx[0] + buffer_size_resized_zyx[0],
-                      prediction_patch.corner_zyx[1] + buffer_size_resized_zyx[1],
-                      prediction_patch.corner_zyx[2] + buffer_size_resized_zyx[2])
+        target_zyx = (prediction_patch.corner_zyx[0] - int(offset.z) + buffer_size_resized_zyx[0],
+                      prediction_patch.corner_zyx[1] - int(offset.y) + buffer_size_resized_zyx[1],
+                      prediction_patch.corner_zyx[2] - int(offset.x) + buffer_size_resized_zyx[2])
         resized_predictions = resized_predictions[buffer_size_resized_zyx[0]:,
                 buffer_size_resized_zyx[1]:,
                 buffer_size_resized_zyx[2]:]
@@ -333,6 +333,8 @@ class PositionModel(NamedTuple):
                                                  buffer_size_zyx_px=buffer_size_zyx,
                                                  scale_factors_zyx=scale_factors_zyx,
                                                  intensity_quantiles=intensity_quantiles):
+                    offset = full_images.get(patch.time_point).offset
+
                     # Resize image using scipy zoom
                     patch_time_point_count = patch.array.shape[-1]
                     input_array = numpy.zeros((*patch_shape_zyx, patch_time_point_count))
@@ -346,7 +348,7 @@ class PositionModel(NamedTuple):
                     prediction = \
                     keras.ops.convert_to_numpy(self.keras_model(input_array[numpy.newaxis, ...], training=False))[0, :, :, :, 0]
 
-                    debug_predictions.add_patch(patch, prediction)
+                    debug_predictions.add_patch(patch, prediction, offset)
 
                     # Interpolate between layers for peak detection
                     prediction, z_divisor = reconstruct_volume(prediction, mid_layers)
@@ -374,8 +376,10 @@ class PositionModel(NamedTuple):
 
                         # Bounds check for full image (the last patches may go beyond the image size, because patches have a minimum size)
                         full_image_size_zyx = patch.full_image_size_zyx
-                        if full_image_z >= full_image_size_zyx[0] or full_image_y >= full_image_size_zyx[
-                            1] or full_image_x >= full_image_size_zyx[2]:
+
+                        if (full_image_z-offset.z) >= full_image_size_zyx[0] or (full_image_y - offset.y) >= full_image_size_zyx[
+                            1] or (full_image_x-offset.x) >= full_image_size_zyx[2]:
+                            print(full_image_z)
                             continue
 
                         experiment.positions.add(
