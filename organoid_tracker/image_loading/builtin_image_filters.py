@@ -2,6 +2,7 @@
 from typing import NamedTuple, Dict, Tuple, Optional
 
 import numpy
+import scipy
 import skimage.filters
 from numpy import ndarray
 from scipy.interpolate import LinearNDInterpolator
@@ -217,3 +218,37 @@ def create_min_max_filter(min_value: float, max_value: float) -> ImageFilter:
     works perfectly fine as a simple min-max filter.
     """
     return InterpolatedMinMaxFilter({IntensityPoint(TimePoint(0), 0): (min_value, max_value)})
+
+class TopHatFilter(ImageFilter):
+    """Applies a Gaussian blur in 2D."""
+
+    mask_size: int
+
+    def __init__(self, mask_size: float = 50):
+        self.mask_size = mask_size
+
+    def filter(self, time_point, image_z, image: ndarray):
+        if len(image.shape) == 3:
+
+            background = scipy.ndimage.filters.gaussian_filter(image.astype(numpy.float32), (0, 2, 2))
+            background = scipy.ndimage.filters.minimum_filter(background, size=(1, self.mask_size, self.mask_size))
+            background = scipy.ndimage.filters.maximum_filter(background, size=(1, self.mask_size, self.mask_size))
+
+            image[...] = numpy.clip(image-background, 0.0, None).astype(image.dtype)
+
+        elif len(image.shape) == 2: # len(...) == 2
+
+            background = scipy.ndimage.filters.gaussian_filter(image.astype(numpy.float32), (2, 2))
+            background = scipy.ndimage.filters.minimum_filter(background, size=(self.mask_size, self.mask_size))
+            background = scipy.ndimage.filters.maximum_filter(background, size=(self.mask_size, self.mask_size))
+
+            image[...] = numpy.clip(image-background, 0.0, None).astype(image.dtype)
+
+        else:
+            raise ValueError("Can only handle 2D or 3D images. Got shape " + str(image.shape))
+
+    def copy(self) -> ImageFilter:
+        return TopHatFilter(self.mask_size)
+
+    def get_name(self) -> str:
+        return "TopHat filter"

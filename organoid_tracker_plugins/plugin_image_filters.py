@@ -6,7 +6,7 @@ from organoid_tracker.gui import dialog, option_choose_dialog
 from organoid_tracker.gui.window import Window
 from organoid_tracker.image_loading import builtin_image_filters
 from organoid_tracker.image_loading.builtin_image_filters import GaussianBlurFilter, MultiplyPixelsFilter, \
-    ThresholdFilter
+    ThresholdFilter, TopHatFilter
 from organoid_tracker.image_loading.builtin_merging_image_loaders import ChannelSummingImageLoader
 
 
@@ -15,6 +15,7 @@ def get_menu_items(window: Window) -> Dict[str, Any]:
         "View//Image-Image filters//Filter-Increase brightness...": lambda: _enhance_brightness(window),
         "View//Image-Image filters//Filter-Set min-max intensity...": lambda: _set_min_max_intensity(window),
         "View//Image-Image filters//Filter-Threshold...": lambda: _threshold(window),
+        "View//Image-Image filters//Filter-TopHat...": lambda: _tophat(window),
         "View//Image-Image filters//Filter-Gaussian blur...": lambda: _gaussian_blur(window),
         "View//Image-Image filters//Filter-Merge channels...": lambda: _merge_channels(window),
         "View//Image-Image filters//Remove-Remove all filters": lambda: _remove_filters(window)
@@ -31,6 +32,18 @@ def _threshold(window: Window):
     image_channel = window.display_settings.image_channel
     for experiment in window.get_active_experiments():
         experiment.images.filters.add_filter(image_channel, ThresholdFilter(min_value / 100))
+    window.get_gui_experiment().redraw_image_and_data()
+
+
+def _tophat(window: Window):
+    value = dialog.prompt_float("mask size", "What is the mask size in pixels?",
+                                minimum=2, maximum=100, default=50)
+    if value is None:
+        return
+
+    image_channel = window.display_settings.image_channel
+    for experiment in window.get_active_experiments():
+        experiment.images.filters.add_filter(image_channel, TopHatFilter(value))
     window.get_gui_experiment().redraw_image_and_data()
 
 
