@@ -301,6 +301,39 @@ The input array will be modified.</p>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.TopHatFilter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.builtin_image_filters.</span></span><span class="sig-name descname"><span class="pre">TopHatFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.TopHatFilter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="organoid_tracker.core.image_filters.html#organoid_tracker.core.image_filters.ImageFilter" title="organoid_tracker.core.image_filters.ImageFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageFilter</span></code></a></p>
+<p>Applies a Gaussian blur in 2D.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.TopHatFilter.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.image_filters.html#organoid_tracker.core.image_filters.ImageFilter" title="organoid_tracker.core.image_filters.ImageFilter"><span class="pre">ImageFilter</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.TopHatFilter.copy" title="Link to this definition"></a></dt>
+<dd><p>Copies the filter, such that changes to this filter have no effect on the copy, and vice versa.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.TopHatFilter.filter">
+<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.TopHatFilter.filter" title="Link to this definition"></a></dt>
+<dd><p>Filters the given input array, which is a grayscale array of 2 or 3 dimensions. If it is three dimensions,
+then image_z is None. Note that the image_z does not include any image offsets, so z=0 will always be the
+lowest image plane.
+The input array will be modified.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.TopHatFilter.get_name">
+<span class="sig-name descname"><span class="pre">get_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.TopHatFilter.get_name" title="Link to this definition"></a></dt>
+<dd><p>Returns a user-friendly name, like “Enhance contrast” or “Suppress noise”.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.TopHatFilter.mask_size">
+<span class="sig-name descname"><span class="pre">mask_size</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.TopHatFilter.mask_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="organoid_tracker.image_loading.builtin_image_filters.create_min_max_filter">
 <span class="sig-prename descclassname"><span class="pre">organoid_tracker.image_loading.builtin_image_filters.</span></span><span class="sig-name descname"><span class="pre">create_min_max_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="organoid_tracker.core.image_filters.html#organoid_tracker.core.image_filters.ImageFilter" title="organoid_tracker.core.image_filters.ImageFilter"><span class="pre">ImageFilter</span></a></span></span><a class="headerlink" href="#organoid_tracker.image_loading.builtin_image_filters.create_min_max_filter" title="Link to this definition"></a></dt>
