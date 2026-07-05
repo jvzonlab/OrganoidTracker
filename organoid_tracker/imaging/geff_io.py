@@ -194,8 +194,7 @@ def _read_positions(experiment: Experiment, in_memory_geff: InMemoryGeff, min_ti
             positions_by_node_id.append(position)
         else:
             # Handle non-sequential node ids - append the list with None until it's big enough
-            while len(positions_by_node_id) <= node_id:
-                positions_by_node_id.append(None)
+            positions_by_node_id = positions_by_node_id + [None]*(node_id + 1 -len(positions_by_node_id))
             positions_by_node_id[node_id] = position
         experiment_positions.add(position)
 
