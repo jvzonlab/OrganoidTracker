@@ -9,6 +9,7 @@ from organoid_tracker.core.position import Position
 from organoid_tracker.gui import dialog
 from organoid_tracker.gui.undo_redo import UndoableAction
 from organoid_tracker.gui.window import Window
+from organoid_tracker.visualizer.image_offset_editor import _ChangeAllPositionsAction
 
 
 def get_menu_items(window: Window):
@@ -16,23 +17,6 @@ def get_menu_items(window: Window):
         "Edit//Batch-Automatic offsets...":
             lambda: _automatically_offset_images(window),
     }
-
-class _ReplaceOffsetsAction(UndoableAction):
-
-    _old_offsets: ImageOffsets
-    _new_offsets: ImageOffsets
-
-    def __init__(self, old_offsets: ImageOffsets, new_offsets: ImageOffsets):
-        self._old_offsets = old_offsets
-        self._new_offsets = new_offsets
-
-    def do(self, experiment: Experiment) -> str:
-        experiment.images.offsets = self._new_offsets
-        return f"Created {len(self._new_offsets.to_list())} new offsets"
-
-    def undo(self, experiment: Experiment) -> str:
-        experiment.images.offsets= self._old_offsets
-        return "Restored the previous offsets"
 
 def _automatically_offset_images(window: Window):
 
@@ -77,5 +61,5 @@ def _automatically_offset_images(window: Window):
 
         offsets = ImageOffsets(offset_list)
 
-        result_message = tab.undo_redo.do(_ReplaceOffsetsAction(tab.experiment.images.offsets, offsets), tab.experiment)
+        result_message = tab.undo_redo.do(_ChangeAllPositionsAction(tab.experiment.images.offsets, offsets), tab.experiment)
         window.set_status(result_message)
