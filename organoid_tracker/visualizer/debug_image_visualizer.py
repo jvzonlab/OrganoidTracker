@@ -1,4 +1,4 @@
-from matplotlib import cm
+import matplotlib
 from matplotlib.colors import Colormap
 from numpy import ndarray
 
@@ -10,7 +10,7 @@ from organoid_tracker.visualizer import activate
 from organoid_tracker.visualizer.abstract_image_visualizer import AbstractImageVisualizer
 
 
-def popup_3d_image(image: ndarray, name: str, cmap: Colormap = cm.get_cmap("gray")):
+def popup_3d_image(image: ndarray, name: str, cmap: Colormap = matplotlib.colormaps.get_cmap("gray")):
     """To be used in scripts, where no GUI loop is running. After showing the image, the program exits."""
     experiment = Experiment()
     experiment.images.image_loader(SingleImageLoader(image))

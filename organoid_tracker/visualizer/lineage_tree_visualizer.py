@@ -4,7 +4,6 @@ from typing import Dict, Any, Tuple, Optional, List
 
 import matplotlib.cm
 import matplotlib.colors
-import numpy
 import numpy as np
 from matplotlib.backend_bases import MouseEvent
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -13,7 +12,6 @@ from organoid_tracker.core import Color, UserError
 from organoid_tracker.core.links import LinkingTrack
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.position_collection import PositionCollection
-from organoid_tracker.core.resolution import ImageTimings, ImageResolution
 from organoid_tracker.gui import dialog, option_choose_dialog
 from organoid_tracker.gui.location_map import LocationMap
 from organoid_tracker.gui.window import Window
@@ -27,7 +25,7 @@ from organoid_tracker.local_marginalization.tree_drawing import color_error_rate
 from organoid_tracker.position_analysis import position_markers
 from organoid_tracker.visualizer import Visualizer
 
-_SPLINE_COLORMAP = matplotlib.cm.get_cmap("YlOrBr")  # For drawing position on axis
+_SPLINE_COLORMAP = matplotlib.colormaps.get_cmap("YlOrBr")  # For drawing position on axis
 
 
 def _includes_cell_type(positions: PositionCollection, linking_track: LinkingTrack, cell_type: str):

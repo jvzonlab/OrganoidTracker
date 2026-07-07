@@ -12,7 +12,7 @@ from organoid_tracker.linking_analysis.errors import Error
 
 
 def color_error_rates(time_point_number: int, track: LinkingTrack, experiment: Experiment) -> MPLColor:
-    _COLORMAP = matplotlib.cm.get_cmap("RdYlGn")
+    _COLORMAP = matplotlib.colormaps.get_cmap("RdYlGn")
 
     position = track.find_position_at_time_point_number(time_point_number)
 

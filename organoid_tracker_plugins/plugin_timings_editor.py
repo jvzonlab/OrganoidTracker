@@ -174,7 +174,6 @@ class _TimingsVisualizer(Visualizer):
             self._ax.axvline(self._max_selected_time_h, color="#00ff00", linestyle="--")
 
         self._ax.set_ylim(*self._Y_LIMITS)
-        self._fig.tight_layout()
         self._fig.canvas.draw()
 
     def _on_scroll(self, event: MouseEvent):

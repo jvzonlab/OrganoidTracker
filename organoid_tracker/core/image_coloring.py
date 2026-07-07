@@ -49,7 +49,7 @@ def _create_colormap(name: str) -> Colormap:
         return _create_black_to_color_colormap("magenta", (1.0, 0.0, 1.0))
     if name == "yellow":
         return _create_black_to_color_colormap("yellow", (1.0, 1.0, 0.0))
-    return matplotlib.cm.get_cmap(name)
+    return matplotlib.colormaps.get_cmap(name)
 
 
 def get_colormap(name: Optional[str]) -> Colormap:

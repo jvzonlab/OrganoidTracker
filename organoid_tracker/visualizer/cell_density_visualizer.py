@@ -45,7 +45,7 @@ class CellDensityVisualizer(ExitableImageVisualizer):
         self._position_to_density = densities
 
     def _on_position_draw(self, position: Position, color: str, dz: int, dt: int) -> bool:
-        color_map = matplotlib.cm.get_cmap("jet")
+        color_map = matplotlib.colormaps.get_cmap("jet")
 
         density = self._position_to_density.get(position)
         density_color = "gray"

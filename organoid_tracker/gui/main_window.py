@@ -1,3 +1,4 @@
+import logging
 import sys
 from functools import partial
 from typing import Callable, Optional
@@ -245,10 +246,18 @@ def launch_window(experiment: Experiment) -> MainWindow:
     pyplot.rcParams["font.family"] = "Arial, sans-serif"
     pyplot.rcParams["xtick.direction"] = "in"
     pyplot.rcParams["ytick.direction"] = "in"
+    pyplot.rcParams['figure.autolayout'] = False  # If we use constrained layout or tight layout, panning causes strange artifacts with the x and y tick labels
+    pyplot.rcParams['figure.subplot.left'] = 0.04
+    pyplot.rcParams['figure.subplot.bottom'] = 0.04
+    pyplot.rcParams['figure.subplot.right'] = 0.99
+    pyplot.rcParams['figure.subplot.top'] = 0.98
+
+    # Ignore "Ignoring fixed x/y limits to fulfill fixed data aspect with adjustable data limits."
+    # (Everytime any method calls .set_x/ylim, autoscale is disabled, and this warning is shown when resizing the window)
+    logging.getLogger("matplotlib.axes._base").setLevel(logging.ERROR)
 
     # Create matplotlib figure
     fig = Figure(figsize=(12, 12), dpi=95)
-    fig.subplots_adjust(left=0.04, bottom=0.04, right=0.99, top=0.98)
 
     # Create empty window
     root = QApplication.instance()

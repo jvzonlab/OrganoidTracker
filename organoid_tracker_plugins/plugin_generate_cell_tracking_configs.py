@@ -5,7 +5,7 @@ import shlex
 import sys
 from typing import Dict, Optional, Any, Tuple, List
 
-import matplotlib.cm
+import matplotlib
 from matplotlib.collections import LineCollection
 
 from organoid_tracker.config import ConfigFile
@@ -480,7 +480,7 @@ class _TrackingVisualizer(ExitableImageVisualizer):
         if self._predicted_divisions is None:
             return
 
-        colormap = matplotlib.cm.get_cmap("Purples")
+        colormap = matplotlib.colormaps.get_cmap("Purples")
 
         max_intensity_projection = self._display_settings.max_intensity_projection
         positions_x_list, positions_y_list, positions_face_colors, positions_edge_colors, positions_edge_widths, positions_marker_sizes = \
