@@ -501,12 +501,12 @@ def _get_geff_axes_meta(experiment: Experiment) -> List[Axis]:
         resolution = experiment.images.resolution()
         axes = [
             Axis(name="t", type="time", unit="frame", scale=resolution.time_point_interval_m, scaled_unit="minute"),
-            Axis(name="z", type="space", unit="pixel", scale=resolution.pixel_size_x_um, scaled_unit="micrometer"),
+            Axis(name="z", type="space", unit="pixel", scale=resolution.pixel_size_z_um, scaled_unit="micrometer"),
             Axis(name="y", type="space", unit="pixel", scale=resolution.pixel_size_y_um, scaled_unit="micrometer"),
-            Axis(name="x", type="space", unit="pixel", scale=resolution.pixel_size_z_um, scaled_unit="micrometer")
+            Axis(name="x", type="space", unit="pixel", scale=resolution.pixel_size_x_um, scaled_unit="micrometer")
         ]
     except UserError:
-        # No resolution set. Fine, we'll just don't export the scaling then
+        # No resolution set. Fine, we'll just not export the scaling then
         axes = [
             Axis(name="t", type="time", unit="frame"),
             Axis(name="z", type="space", unit="pixel"),
