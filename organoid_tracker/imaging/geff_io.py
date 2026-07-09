@@ -1,6 +1,6 @@
 import os
 from enum import auto, Enum
-from typing import Any, List, NamedTuple, Optional, Dict, Type
+from typing import List, Optional, Dict, Type
 from typing import Literal
 
 import geff
@@ -9,32 +9,14 @@ import zarr
 from geff import GeffReader
 from geff._typing import ZarrPropDict, PropDictNpArray, InMemoryGeff
 from geff.core_io import write_arrays
-from geff.core_io._serialization import deserialize_vlen_property_data
 from geff_spec import Axis, GeffMetadata
-from statsmodels.tsa.adfvalues import z_ct_smallp
-from zarr.storage import StoreLike
 
 from organoid_tracker.core import UserError
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.position import Position
 from organoid_tracker.core.resolution import ImageResolution
 from organoid_tracker.core.typing import DataType
-
-# Multiply your value by these factors to convert to micrometers
-_MULTIPLICATION_FACTOR_TO_MICROMETERS = {
-    "meter": 1e6,
-    "centimeter": 1e4,
-    "millimeter": 1e3,
-    "micrometer": 1.0,
-    "nanometer": 1e-3,
-}
-_MULTIPLICATION_FACTOR_TO_MINUTES = {
-    "day": 1440.0,
-    "hour": 60.0,
-    "minute": 1.0,
-    "second": 1/60.0,
-    "millisecond": 1/60000.0,
-}
+from organoid_tracker.util import unit_conversion
 
 
 class _OurAxisType(Enum):
@@ -242,11 +224,11 @@ def _read_axes_info(experiment: Experiment, geff_axes: list[Axis]) -> _AxesInfo:
                 else:
                     # Make a calculation on how to get from this unit to frames
                     resolution = _get_resolution(experiment)
-                    if final_unit not in _MULTIPLICATION_FACTOR_TO_MINUTES:
+                    if final_unit not in unit_conversion.MULTIPLICATION_FACTOR_TO_MINUTES:
                         raise UserError("Unsupported file",
                                         f"The unit '{final_unit}' for the time axis '{ax.name}' is not supported in our GEFF loader")
-                    scale_factor *= _MULTIPLICATION_FACTOR_TO_MINUTES[final_unit] / resolution.time_point_interval_m
-                    offset *= _MULTIPLICATION_FACTOR_TO_MINUTES[final_unit] / resolution.time_point_interval_m
+                    scale_factor *= unit_conversion.MULTIPLICATION_FACTOR_TO_MINUTES[final_unit] / resolution.time_point_interval_m
+                    offset *= unit_conversion.MULTIPLICATION_FACTOR_TO_MINUTES[final_unit] / resolution.time_point_interval_m
         elif ax.type == "space":
             if not ax.name in ("x", "y", "z"):
                 raise UserError("Unsupported file",
@@ -266,10 +248,10 @@ def _read_axes_info(experiment: Experiment, geff_axes: list[Axis]) -> _AxesInfo:
                 else:
                     # Make a calculation on how to go from this unit to pixels
                     resolution = _get_resolution(experiment)
-                    if final_unit not in _MULTIPLICATION_FACTOR_TO_MICROMETERS:
+                    if final_unit not in unit_conversion.MULTIPLICATION_FACTOR_TO_MICROMETERS:
                         raise UserError("Unsupported file",
-                                        f"The unit '{final_unit}' for the {ax_name}-axis is not supported in our GEFF loader")
-                    scale_to_micrometers = _MULTIPLICATION_FACTOR_TO_MICROMETERS[final_unit]
+                                        f"The unit '{final_unit}' for the {ax.name}-axis is not supported in our GEFF loader")
+                    scale_to_micrometers = unit_conversion.MULTIPLICATION_FACTOR_TO_MICROMETERS[final_unit]
                     if ax.name == "x":
                         extra_scale_factor = scale_to_micrometers / resolution.pixel_size_x_um
                     elif ax.name == "y":

@@ -1,8 +1,6 @@
 import os
-from pathlib import Path
-from typing import Tuple, Optional, List
+from typing import Tuple, Optional, Dict, Any
 
-import numpy
 import zarr
 from numpy import ndarray
 from zarr.core.attributes import Attributes
@@ -12,6 +10,8 @@ from organoid_tracker.core import TimePoint, UserError, image_coloring
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.image_loader import ImageLoader, ImageChannel
 from organoid_tracker.core.images import ChannelDescription
+from organoid_tracker.core.resolution import ImageResolution
+from organoid_tracker.util import unit_conversion
 
 _SUPPORTED_AXIS = ("t", "c", "z", "y", "x")
 
@@ -73,6 +73,8 @@ def load_from_zarr_file(experiment: Experiment, file_name: str, min_time_point: 
                 axes_names = _guess_axes_order_from_shape(zarr_sub_entry)  # Make an educated guess
 
             experiment.images.image_loader(_ZarrImageLoader(file_name, axes_names, zarr_sub_entry, min_time_point, max_time_point))
+            _set_experiment_name(experiment, file_name)
+            _set_experiment_resolution(experiment, zarr_group_or_array.attrs)
 
             if key == "segmentation":
                 # Set the appropriate colormap
@@ -84,6 +86,7 @@ def load_from_zarr_file(experiment: Experiment, file_name: str, min_time_point: 
         # We just have a bare array, try to display it
         axes_names = _guess_axes_order_from_shape(zarr_group_or_array)
         experiment.images.image_loader(_ZarrImageLoader(file_name, axes_names, zarr_group_or_array, min_time_point, max_time_point))
+        _set_experiment_name(experiment, file_name)
     else:
         # Don't know what happened here
         raise UserError("Unsupported ZARR", f"Found unsupported entry: {zarr_group_or_array}")
@@ -139,6 +142,61 @@ def _read_axes_order_from_attrs(attributes: Attributes) -> Optional[str]:
             raise UserError("Unsupported axis", f"Found unsupported axis: \"{axis_name}\".")
         axes_names.append(axis_name)
     return "".join(axes_names)
+
+
+def _set_experiment_name(experiment: Experiment, file_name: str):
+    """Sets an automatic name of the experiment based on the file name of the ZARR folder."""
+    file_name = os.path.basename(file_name)
+    if file_name.lower().endswith(".zarr"):
+        file_name = file_name[:-len(".zarr")]
+    experiment.name.provide_automatic_name(file_name)
+
+
+def _set_experiment_resolution(experiment: Experiment, attributes: Attributes):
+    if "multiscales" not in attributes:
+        return  # Right now, we only support the axes metadata in the "multiscales" format
+
+    multiscales_meta = attributes["multiscales"][0]
+    if "axes" not in multiscales_meta or "datasets" not in multiscales_meta:
+        return
+
+    multiscales_axes_metadata = multiscales_meta["axes"]
+    dataset_metadata = multiscales_meta["datasets"][0]
+    if "coordinateTransformations" not in dataset_metadata:
+        return
+    scales: list[float] = []
+    for coordinate_transform in dataset_metadata["coordinateTransformations"]:
+        if "scale" in coordinate_transform and len(coordinate_transform["scale"]) > 0:
+            scales = coordinate_transform["scale"]
+    if len(scales) == 0:
+        return  # Didn't find a valid scale
+
+    x_resolution_um = None  # X and Y resolution are required, for Z and T we can use a default value
+    y_resolution_um = None
+    z_resolution_um = 0
+    time_resolution_minutes = 0
+    for axis, scale in zip(multiscales_axes_metadata, scales):
+        axis_name = axis["name"].lower()
+        if "unit" not in axis:
+            continue  # No unit specified, don't know what to do with the number
+        axis_unit = axis["unit"].lower()
+        if axis_name in "xyz":
+            if axis_unit not in unit_conversion.MULTIPLICATION_FACTOR_TO_MICROMETERS:
+                continue  # Can't handle this unit, so we skip it
+            if axis_name == "x":
+                x_resolution_um = scale * unit_conversion.MULTIPLICATION_FACTOR_TO_MICROMETERS[axis_unit]
+            elif axis_name == "y":
+                y_resolution_um = scale * unit_conversion.MULTIPLICATION_FACTOR_TO_MICROMETERS[axis_unit]
+            elif axis_name == "z":
+                z_resolution_um = scale * unit_conversion.MULTIPLICATION_FACTOR_TO_MICROMETERS[axis_unit]
+        elif axis_name == "t":
+            if axis_unit not in unit_conversion.MULTIPLICATION_FACTOR_TO_MINUTES:
+                continue  # Can't handle this unit, so we skip it
+            time_resolution_minutes = scale * unit_conversion.MULTIPLICATION_FACTOR_TO_MINUTES[axis_unit] * 60  # Convert to minutes
+    if x_resolution_um is not None and y_resolution_um is not None:
+        # Got enough information, we can set a resolution
+        resolution = ImageResolution(x_resolution_um, y_resolution_um, z_resolution_um, time_resolution_minutes)
+        experiment.images.set_resolution(resolution)
 
 
 class _ZarrImageLoader(ImageLoader):
