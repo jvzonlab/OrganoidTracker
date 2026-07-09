@@ -105,8 +105,8 @@ def load_data_file(geff_source: str, min_time_point: int = -9999999, max_time_po
     edge_props = in_memory_geff["edge_props"]
     experiment_links = experiment.links
     for i, (source_node_id, target_node_id) in enumerate(edge_ids):
-        source_position = positions_by_node_id[source_node_id]
-        target_position = positions_by_node_id[target_node_id]
+        source_position = positions_by_node_id.get(source_node_id)
+        target_position = positions_by_node_id.get(target_node_id)
         if source_position is None or target_position is None:
             continue  # Outside of time point range - no position was created
         experiment_links.add_link(source_position, target_position)
@@ -132,9 +132,9 @@ def load_data_file(geff_source: str, min_time_point: int = -9999999, max_time_po
 
 
 def _read_positions(experiment: Experiment, in_memory_geff: InMemoryGeff, min_time_point: int, max_time_point: int,
-                    node_prop_names: list[str]) -> list[Position | None]:
+                    node_prop_names: list[str]) -> dict[int, Position]:
     """Read the positions and position metadata from the in-memory GEFF data and adds them to the experiment.
-    Returns a list of positions by node id."""
+    Returns a dict of positions by node id."""
 
     # Read in the scale factors
     geff_axes = in_memory_geff["metadata"].axes
@@ -156,7 +156,7 @@ def _read_positions(experiment: Experiment, in_memory_geff: InMemoryGeff, min_ti
         time_values = z_values
         z_values = numpy.zeros_like(time_values)
 
-    positions_by_node_id = []
+    positions_by_node_id = dict()
     experiment_positions = experiment.positions
     for i in range(len(node_ids)):
         node_id = node_ids[i]
@@ -171,14 +171,7 @@ def _read_positions(experiment: Experiment, in_memory_geff: InMemoryGeff, min_ti
                             float(z_values[i] * axes_info.z.scale + axes_info.z.offset),
                             time_point_number=int(time_values[i] * axes_info.time.scale + axes_info.time.offset),)
 
-        if node_id == len(positions_by_node_id):
-            # Most common case - sequential node ids
-            positions_by_node_id.append(position)
-        else:
-            # Handle non-sequential node ids - append the list with None until it's big enough
-            while len(positions_by_node_id) <= node_id:
-                positions_by_node_id = positions_by_node_id + [None]*(node_id + 1 -len(positions_by_node_id))
-            positions_by_node_id[node_id] = position
+        positions_by_node_id[node_id] = position
         experiment_positions.add(position)
 
         # Read in the position metadata
