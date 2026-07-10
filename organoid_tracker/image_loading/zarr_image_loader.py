@@ -3,6 +3,7 @@ from typing import Tuple, Optional, Dict, Any
 
 import zarr
 from numpy import ndarray
+from zarr import Array, Group
 from zarr.core.attributes import Attributes
 from zarr.storage import LocalStore, ZipStore
 
@@ -24,9 +25,7 @@ def load_from_zarr_file(experiment: Experiment, file_name: str, min_time_point: 
         file_name = file_name[:-7]  # Both strings are 7 characters long, so this works
 
     # Open Zarr container
-    zarr_store = ZipStore(file_name, read_only=True) if file_name.lower().endswith(".zip") else LocalStore(
-        file_name, read_only=True)
-    zarr_group_or_array = zarr.open(zarr_store, mode="r")
+    zarr_group_or_array = _open_zarr(file_name)
 
     # Check what we just loaded - a ZARR Group or Array?
     if isinstance(zarr_group_or_array, zarr.Group):
@@ -72,7 +71,7 @@ def load_from_zarr_file(experiment: Experiment, file_name: str, min_time_point: 
             if axes_names is None:
                 axes_names = _guess_axes_order_from_shape(zarr_sub_entry)  # Make an educated guess
 
-            experiment.images.image_loader(_ZarrImageLoader(file_name, axes_names, zarr_sub_entry, min_time_point, max_time_point))
+            experiment.images.image_loader(_ZarrImageLoader(file_name, axes_names, key, zarr_sub_entry, min_time_point, max_time_point))
             _set_experiment_name(experiment, file_name)
             _set_experiment_resolution(experiment, zarr_group_or_array.attrs)
 
@@ -85,11 +84,19 @@ def load_from_zarr_file(experiment: Experiment, file_name: str, min_time_point: 
     elif isinstance(zarr_group_or_array, zarr.Array):
         # We just have a bare array, try to display it
         axes_names = _guess_axes_order_from_shape(zarr_group_or_array)
-        experiment.images.image_loader(_ZarrImageLoader(file_name, axes_names, zarr_group_or_array, min_time_point, max_time_point))
+        experiment.images.image_loader(_ZarrImageLoader(file_name, axes_names, None, zarr_group_or_array, min_time_point, max_time_point))
         _set_experiment_name(experiment, file_name)
     else:
         # Don't know what happened here
         raise UserError("Unsupported ZARR", f"Found unsupported entry: {zarr_group_or_array}")
+
+
+def _open_zarr(file_name: str) -> Array | Group:
+    """Opens the ZARR store at the given file name. If it's a ZIP, it's opened as a ZIP file."""
+    zarr_store = ZipStore(file_name, read_only=True) if file_name.lower().endswith(".zip") else LocalStore(
+        file_name, read_only=True)
+    zarr_group_or_array = zarr.open(zarr_store, mode="r")
+    return zarr_group_or_array
 
 
 def _guess_axes_order_from_shape(zarr_array: zarr.Array) -> str:
@@ -203,6 +210,7 @@ class _ZarrImageLoader(ImageLoader):
 
     _file_name: str
 
+    _array_location: str | None  # Path to the array within the above file name
     _raw_zarr_array: zarr.Array
 
     _axes_names: str
@@ -214,9 +222,10 @@ class _ZarrImageLoader(ImageLoader):
     _z_count: int
     _channel_count: int
 
-    def __init__(self, file_name: str, axes_names: str, array: zarr.Array, min_time_point: Optional[int] = None, max_time_point: Optional[int] = None):
+    def __init__(self, file_name: str, axes_names: str, array_location: str | None, array: zarr.Array, min_time_point: Optional[int] = None, max_time_point: Optional[int] = None):
         self._file_name = file_name
         self._axes_names = axes_names
+        self._array_location = array_location
         self._raw_zarr_array = array
 
         self._axes_sizes = self._raw_zarr_array.shape
@@ -296,7 +305,11 @@ class _ZarrImageLoader(ImageLoader):
         return self._file_name, "0"
 
     def copy(self) -> "ImageLoader":
-        return _ZarrImageLoader(self._file_name, self._min_available_time_point_number, self._max_available_time_point_number)
+        zarr_array = _open_zarr(self._file_name)
+        if self._array_location is not None:
+            zarr_array = zarr_array[self._array_location]
+        return _ZarrImageLoader(self._file_name, self._axes_names, self._array_location, zarr_array,
+                                self._min_available_time_point_number, self._max_available_time_point_number)
 
     def close(self):
         self._raw_zarr_array.store.close()
