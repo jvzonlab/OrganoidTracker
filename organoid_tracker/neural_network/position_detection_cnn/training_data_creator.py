@@ -178,9 +178,11 @@ def create_image_with_positions_list(experiments: Iterable[Experiment]):
     for experiment in experiments:
         # read a complete experiment
 
-        for time_point in experiment.positions.time_points():
+        for time_point in experiment.images.time_points():
             # read a single time point
             positions = experiment.positions.of_time_point(time_point)
+            if len(positions) == 0:
+                continue  # Skip this time point, nothing to train on
             offset = experiment.images.offsets.of_time_point(time_point)
 
             # read positions to numpy array
@@ -199,7 +201,7 @@ def create_image_with_positions_list(experiments: Iterable[Experiment]):
 def create_image_list_without_positions(experiment: Experiment) -> List[ImageWithPositions]:
     image_list = []
 
-    for time_point in experiment.time_points():
+    for time_point in experiment.images.time_points():
         image_list.append(
             ImageWithPositions(str(experiment.name), experiment.images, time_point, numpy.empty((0, 3), dtype=numpy.float32)))
 
