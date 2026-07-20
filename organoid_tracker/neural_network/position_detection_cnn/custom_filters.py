@@ -216,8 +216,8 @@ def distance_map(y_true, range=(3., 16., 16.), range_edges = (3., 11. , 11.), ad
     full_size = keras.ops.cast(keras.ops.size(weights), "float32")
     zero_count = full_size - non_zero_count
 
-    background_weight = 0.5
-    #background_weight = 0.0 #fly
+    # background_weight = 0.5
+    background_weight = 0.0 #fly, biohub competition
     # background_weight = 0.95 #worm
     # weight the loss by the amount of non zeroes values in label
     weights = keras.ops.where(keras.ops.equal(weights, 0),
