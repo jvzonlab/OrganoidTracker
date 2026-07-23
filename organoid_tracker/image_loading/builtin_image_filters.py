@@ -219,8 +219,9 @@ def create_min_max_filter(min_value: float, max_value: float) -> ImageFilter:
     """
     return InterpolatedMinMaxFilter({IntensityPoint(TimePoint(0), 0): (min_value, max_value)})
 
+
 class TopHatFilter(ImageFilter):
-    """Applies a Gaussian blur in 2D."""
+    """Applies a TopHat filter in 2D."""
 
     mask_size: int
 

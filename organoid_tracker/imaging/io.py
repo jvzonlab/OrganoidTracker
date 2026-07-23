@@ -23,7 +23,7 @@ from organoid_tracker.core.resolution import ImageResolution, ImageTimings
 from organoid_tracker.core.spline import SplineCollection, Spline, SplineCheckpoint
 from organoid_tracker.core.warning_limits import WarningLimits
 from organoid_tracker.image_loading.builtin_image_filters import ThresholdFilter, GaussianBlurFilter, \
-    MultiplyPixelsFilter, InterpolatedMinMaxFilter, IntensityPoint
+    MultiplyPixelsFilter, InterpolatedMinMaxFilter, IntensityPoint, TopHatFilter
 from organoid_tracker.linking_analysis import linking_markers
 
 FILE_EXTENSION = "aut"
@@ -488,6 +488,8 @@ def _parse_image_filters(data: Dict[str, Any]) -> ImageFilters:
                     points[IntensityPoint(time_point=TimePoint(point_dict["t"]), z=point_dict["z"])] \
                         = point_dict["min"], point_dict["max"]
                 filters.add_filter(channel, InterpolatedMinMaxFilter(points))
+            elif filter_dict["type"] == "tophat":
+                filters.add_filter(channel, TopHatFilter(filter_dict["mask_size"]))
             else:
                 raise ValueError("Unknown image filter: " + filter_dict["type"])
     return filters
@@ -682,6 +684,11 @@ def _encode_image_filters_to_json(filters: ImageFilters) -> Dict[str, Any]:
                     "points": [
                         {"min": values[0], "max": values[1], "t": point.time_point.time_point_number(), "z": point.z}
                         for point, values in filter.points.items()]
+                })
+            elif isinstance(filter, TopHatFilter):
+                filter_dicts.append({
+                    "type": "tophat",
+                    "mask_size": filter.mask_size
                 })
             else:
                 warnings.warn("Unknown filter: " + str(filter.get_name()))
