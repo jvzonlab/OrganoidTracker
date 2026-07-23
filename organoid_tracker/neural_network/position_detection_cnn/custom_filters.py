@@ -235,4 +235,7 @@ def distance_map(y_true, range=(3., 16., 16.), range_edges = (3., 11. , 11.), ad
 
     weights = keras.ops.divide(weights, keras.ops.mean(weights))
 
+    # The weights can become NaN by a division by zero (if there are no positions in the crop)
+    weights = keras.ops.where(keras.ops.isnan(weights), 0., weights)
+
     return distances, weights
