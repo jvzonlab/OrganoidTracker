@@ -60,7 +60,7 @@ def position_recall(y_true, y_pred):
     peaks_blur = disk_labels(peaks)
     detected_positions = keras.ops.where(peaks_blur > 0, positions, 0)
 
-    return keras.ops.sum(detected_positions) / keras.ops.sum(positions)
+    return (keras.ops.sum(detected_positions) + 0.001) / (keras.ops.sum(positions) + 0.001)
 
 
 def overcount(y_true, y_pred):
