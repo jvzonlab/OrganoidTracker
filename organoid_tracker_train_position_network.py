@@ -104,7 +104,8 @@ history = model.fit(training_dataset,
                         keras.callbacks.CSVLogger(os.path.join(logging_folder, "logging.csv"), separator=",", append=False),
                         WriteExamplesCallback(logging_folder, example_dataset),
                         LogMemoryCallback(os.path.join(logging_folder, "memory_usage.csv")),
-                        keras.callbacks.EarlyStopping(patience=patience, restore_best_weights=True)])
+                        keras.callbacks.EarlyStopping(patience=patience, restore_best_weights=True),
+                        keras.callbacks.BackupAndRestore(os.path.join(trained_model_folder, "backup_and_restore"))])
 
 
 print("Saving model...")
