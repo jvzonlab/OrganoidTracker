@@ -4,6 +4,7 @@ import numpy
 
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.images import Image
+from organoid_tracker.core.position import Position
 from organoid_tracker.imaging import cropper
 
 
@@ -60,3 +61,14 @@ def extract_patch_array(full_images: Dict[TimePoint, Image], start_zyx: Tuple[in
         cropper.crop_3d(image.array, x_start, y_start, z_start, output_array[:, :, :, dt_index])
 
     return output_array
+
+
+def is_inside_image(position: Position, offset: Position, image_shape: Tuple[int, int, int]) -> bool:
+    if position.x - offset.x >= image_shape[2] or position.y - offset.y >= image_shape[1] \
+            or position.z - offset.z >= image_shape[0]:
+        return False
+
+    if position.x - offset.x < 0 or position.y - offset.y < 0 or position.z - offset.z < 0:
+        return False
+
+    return True

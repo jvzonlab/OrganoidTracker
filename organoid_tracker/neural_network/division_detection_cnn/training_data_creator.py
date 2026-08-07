@@ -31,8 +31,8 @@ import random
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.images import Images
-from organoid_tracker.core.position import Position
 from organoid_tracker.linking import cell_division_finder
+from organoid_tracker.neural_network.image_loading import is_inside_image
 from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import ImageWithPositions
 
 
@@ -114,13 +114,18 @@ def create_image_with_divisions_list(experiments: Iterable[Experiment], division
         for pos in div_positions:
             div_time_points.append(pos.time_point())
 
+        image_loader = experiment.images.image_loader()
+        image_shape = image_loader.get_image_size_zyx()
+        if image_shape is None:
+            # No images available
+            continue
+
         for time_point in experiment.positions.time_points():
 
             positions = list(experiment.positions.of_time_point(time_point))
             random.shuffle(positions)
 
             offset = experiment.images.offsets.of_time_point(time_point)
-            image_shape = experiment._images.get_image_stack(time_point).shape
 
             # read positions to numpy array
             positions_xyz = []
@@ -158,7 +163,7 @@ def create_image_with_divisions_list(experiments: Iterable[Experiment], division
                     repeat = 0
 
                 # check if position is inside the frame
-                if inside_image(position, offset, image_shape):
+                if is_inside_image(position, offset, image_shape):
                     for i in range(repeat):
                         positions_xyz.append([position.x - offset.x, position.y - offset.y, position.z - offset.z])
                         dividing.append(divide)
@@ -179,16 +184,3 @@ def create_image_with_divisions_list(experiments: Iterable[Experiment], division
 
     return image_with_divisions_list
 
-
-def inside_image(position: Position, offset: Position, image_shape: Tuple[int]):
-    inside = False
-    if position.x - offset.x < image_shape[2] and position.y - offset.y < image_shape[1] \
-            and position.z - offset.z < image_shape[0]:
-        inside = True
-
-    if position.x - offset.x >= 0 and position.y - offset.y >= 0 and position.z - offset.z >= 0:
-        inside = inside
-    else:
-        inside = False
-
-    return inside
