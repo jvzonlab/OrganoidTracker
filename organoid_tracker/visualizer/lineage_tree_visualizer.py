@@ -308,7 +308,7 @@ class LineageTreeVisualizer(Visualizer):
         return all_positions, max_position
 
     def _give_lineage_color(self, linking_track: LinkingTrack, color: Color):
-        """Gives a while lineage (including all children) a color."""
+        """Gives a whole lineage (including all children) a color."""
         self._track_to_manual_color[linking_track] = color
         for next_track in linking_track.get_next_tracks():
             self._give_lineage_color(next_track, color)
@@ -377,7 +377,7 @@ class LineageTreeVisualizer(Visualizer):
 
             return 0, 0, 0  # Default is black
 
-        self._location_map = LocationMap()
+        self._location_map = LocationMap(cell_size_y=1 if display_timings is None else display_timings.get_time_m_since_previous(1) / 60)
         width = LineageDrawing(tracks).draw_lineages_colored(self._ax, color_getter=color_getter,
                                                              timings=display_timings,
                                                              location_map=self._location_map,
@@ -386,7 +386,7 @@ class LineageTreeVisualizer(Visualizer):
                                                              line_width=self._get_lineage_line_width())
 
         self._ax.set_xticks([])
-        if self._ax.get_xlim() == (0, 1):
+        if self._is_ylim_uninitialized():
             # Only change axis if the default values were used
             if display_timings is None:
                 self._ax.set_ylim((experiment.last_time_point_number(), experiment.first_time_point_number() - 1))
@@ -394,7 +394,7 @@ class LineageTreeVisualizer(Visualizer):
                 self._ax.set_ylim((display_timings.get_time_h_since_start(experiment.last_time_point_number()),
                                    display_timings.get_time_h_since_start(experiment.first_time_point_number()) - 1))
             # noinspection PyTypeChecker
-            self._ax.set_xlim([-0.1, width + 0.1])
+            self._ax.set_xlim([-1, width + 1])
 
         if self._display_error_rates:
 
@@ -423,6 +423,13 @@ class LineageTreeVisualizer(Visualizer):
 
         self._draw_extra()
         self._fig.canvas.draw_idle()
+
+    def _is_ylim_uninitialized(self) -> bool:
+        # We change the ylim such that the first entry is larger than the last
+        # (otherwise 0 is at the bottom, which is not what we want for plotting lineage trees)
+        # This method checks if the ylim is still in its default state (i.e. the first entry is smaller than the last)
+        ylim_start, ylim_end = self._ax.get_ylim()
+        return ylim_start < ylim_end
 
     def _draw_extra(self):
         pass  # Empty, but can be overridden
