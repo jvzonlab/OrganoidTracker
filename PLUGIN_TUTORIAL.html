@@ -124,7 +124,7 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_menu_items</span><span class="p">(</span><span class="n">window</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;My menu item//Count cells in time points...&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">dialog</span><span class="o">.</span><span class="n">popup_message</span><span class="p">(</span><span class="s2">&quot;My plugin&quot;</span><span class="p">,</span> <span class="s2">&quot;Not yet implemented&quot;</span><span class="p">)</span>
+        <span class="s2">"My menu item//Count cells in time points..."</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">dialog</span><span class="o">.</span><span class="n">popup_message</span><span class="p">(</span><span class="s2">"My plugin"</span><span class="p">,</span> <span class="s2">"Not yet implemented"</span><span class="p">)</span>
     <span class="p">}</span>
 </pre></div>
 </div>
@@ -134,10 +134,10 @@
 <p>On the first line of the script, we import the <code class="docutils literal notranslate"><span class="pre">dialog</span></code> module, so that we can use that module later on to show a dialog message. On the third line (starting with <code class="docutils literal notranslate"><span class="pre">def</span></code>), we define a function called <code class="docutils literal notranslate"><span class="pre">get_menu_items</span></code> that takes one parameter, <code class="docutils literal notranslate"><span class="pre">window</span></code>. That parameter refers to the currently open window, and you can use it to access the currently loaded project(s). We will show how do that that later, but for now we’re actually not using the window yet, so you won’t see the word <code class="docutils literal notranslate"><span class="pre">window</span></code> elsewhere in the script.</p>
 <p>The function returns a so-called dictionary. If you haven’t seen these structures before in Python, you should look them up, but for now we can show how you would use them to create a small “real” dictionary:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_dictionary</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;apple&quot;</span><span class="p">:</span> <span class="s2">&quot;Type of fruit&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;biology&quot;</span><span class="p">:</span> <span class="s2">&quot;Study of living systems&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;boat&quot;</span><span class="p">:</span> <span class="s2">&quot;Vehicle for water transporation&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;cell&quot;</span><span class="p">:</span> <span class="s2">&quot;Some kind of enclosed space.&quot;</span>
+    <span class="s2">"apple"</span><span class="p">:</span> <span class="s2">"Type of fruit"</span><span class="p">,</span>
+    <span class="s2">"biology"</span><span class="p">:</span> <span class="s2">"Study of living systems"</span><span class="p">,</span>
+    <span class="s2">"boat"</span><span class="p">:</span> <span class="s2">"Vehicle for water transporation"</span><span class="p">,</span>
+    <span class="s2">"cell"</span><span class="p">:</span> <span class="s2">"Some kind of enclosed space."</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -152,7 +152,7 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_menu_items</span><span class="p">(</span><span class="n">window</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;My menu item//Count cells in time points...&quot;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">_count_cells</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
+        <span class="s2">"My menu item//Count cells in time points..."</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">_count_cells</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
     <span class="p">}</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_count_cells</span><span class="p">(</span><span class="n">window</span><span class="p">):</span>
@@ -163,7 +163,7 @@
         <span class="n">cell_count_for_this_time_point</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cells_of_this_time_point</span><span class="p">)</span>
         
         <span class="n">cell_counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cell_count_for_this_time_point</span><span class="p">)</span>
-    <span class="n">dialog</span><span class="o">.</span><span class="n">popup_message</span><span class="p">(</span><span class="s2">&quot;My plugin&quot;</span><span class="p">,</span> <span class="s2">&quot;The cells counts are &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cell_counts</span><span class="p">))</span>
+    <span class="n">dialog</span><span class="o">.</span><span class="n">popup_message</span><span class="p">(</span><span class="s2">"My plugin"</span><span class="p">,</span> <span class="s2">"The cells counts are "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cell_counts</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>Save the file and reload all plugins (see the <code class="docutils literal notranslate"><span class="pre">File</span></code> menu of OrganoidTracker), or restart the program. If you have some tracking data loaded, the code will now display the number of cells at each time point, for example <code class="docutils literal notranslate"><span class="pre">[5,</span> <span class="pre">5,</span> <span class="pre">5,</span> <span class="pre">6,</span> <span class="pre">7,</span> <span class="pre">7,</span> <span class="pre">7]</span></code>. The part under <code class="docutils literal notranslate"><span class="pre">for</span> <span class="pre">time_point</span> <span class="pre">in</span> <span class="pre">experiment.time_points():</span></code> is run for reach time point, and every time that part runs it appends one value (the amount of cells in that time point) to the list <code class="docutils literal notranslate"><span class="pre">cell_counts</span></code>.</p>
@@ -172,13 +172,13 @@
 <h2>Displaying a graph<a class="headerlink" href="#displaying-a-graph" title="Link to this heading"></a></h2>
 <p>It would be better to display this list as a graph. Fortunately, this is easily done using the widely used Python library Matplotlib. OrganoidTracker has a function to show a Matplotlib figure as a popup window. At the bottom of your plugin file, add the following function:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_display_my_figure</span><span class="p">(</span><span class="n">figure</span><span class="p">,</span> <span class="n">cell_counts</span><span class="p">):</span>
-    <span class="n">axis</span> <span class="o">=</span> <span class="n">figure</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>  <span class="c1"># gca is short for &quot;get current axis&quot;</span>
+    <span class="n">axis</span> <span class="o">=</span> <span class="n">figure</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>  <span class="c1"># gca is short for "get current axis"</span>
     
     <span class="n">axis</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">cell_counts</span><span class="p">)</span>  <span class="c1"># Plots the points</span>
-    <span class="n">axis</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Time point&quot;</span><span class="p">)</span>
-    <span class="n">axis</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Cell count&quot;</span><span class="p">)</span>
+    <span class="n">axis</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Time point"</span><span class="p">)</span>
+    <span class="n">axis</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Cell count"</span><span class="p">)</span>
     
-    <span class="n">figure</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Cell count over time&quot;</span><span class="p">)</span>  <span class="c1"># Supplies a title</span>
+    <span class="n">figure</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">"Cell count over time"</span><span class="p">)</span>  <span class="c1"># Supplies a title</span>
 </pre></div>
 </div>
 <p>Finally, replace the line <code class="docutils literal notranslate"><span class="pre">dialog.popup_message(&quot;My</span> <span class="pre">plugin&quot;,</span> <span class="pre">&quot;The</span> <span class="pre">cells</span> <span class="pre">counts</span> <span class="pre">are</span> <span class="pre">&quot;</span> <span class="pre">+</span> <span class="pre">str(cell_counts))</span></code> with</p>
@@ -222,8 +222,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.position</span><span class="w"> </span><span class="kn">import</span> <span class="n">Position</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_markers</span><span class="p">():</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">Marker</span><span class="p">([</span><span class="n">Position</span><span class="p">],</span> <span class="s2">&quot;STEM&quot;</span><span class="p">,</span> <span class="s2">&quot;stem cell&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">182</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
-            <span class="n">Marker</span><span class="p">([</span><span class="n">Position</span><span class="p">],</span> <span class="s2">&quot;GOBLET&quot;</span><span class="p">,</span> <span class="s2">&quot;goblet cell&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">126</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">64</span><span class="p">))]</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">Marker</span><span class="p">([</span><span class="n">Position</span><span class="p">],</span> <span class="s2">"STEM"</span><span class="p">,</span> <span class="s2">"stem cell"</span><span class="p">,</span> <span class="p">(</span><span class="mi">182</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+            <span class="n">Marker</span><span class="p">([</span><span class="n">Position</span><span class="p">],</span> <span class="s2">"GOBLET"</span><span class="p">,</span> <span class="s2">"goblet cell"</span><span class="p">,</span> <span class="p">(</span><span class="mi">126</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">64</span><span class="p">))]</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">get_markers</span></code> function is called automatically by OrganoidTracker. The function must return a list of <code class="docutils literal notranslate"><span class="pre">Marker</span></code>s. Each marker provides what it is targeting (<code class="docutils literal notranslate"><span class="pre">Position</span></code>, <code class="docutils literal notranslate"><span class="pre">Beacon</span></code>, <code class="docutils literal notranslate"><span class="pre">Spline</span></code> or <code class="docutils literal notranslate"><span class="pre">SplineCheckpoint</span></code>), the name under which it is saved to the data files, a display name and a display color. The color is used for the border of the position markers and for the lineage trees.</p>
@@ -239,12 +239,12 @@
 <span class="c1"># This method is called by the plugin system</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_commands</span><span class="p">():</span>
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;my_command&quot;</span><span class="p">:</span> <span class="n">_my_command_handler</span>
+        <span class="s2">"my_command"</span><span class="p">:</span> <span class="n">_my_command_handler</span>
     <span class="p">}</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_my_command_handler</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello world!&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Hello world!"</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
     <span class="k">return</span> <span class="mi">0</span>
 </pre></div>
 </div>
@@ -263,10 +263,10 @@ the program window. Here’s an example of a file loader for a fictional “XYZ�
 
 <span class="k">class</span><span class="w"> </span><span class="nc">_MyFileLoader</span><span class="p">(</span><span class="n">FileLoader</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;XYZ file&quot;</span>
+        <span class="k">return</span> <span class="s2">"XYZ file"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">get_file_patterns</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;*.xyz&quot;</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"*.xyz"</span><span class="p">}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">load_file_interactive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">into</span><span class="p">:</span> <span class="n">Experiment</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="c1"># Implement the actual loading here</span>

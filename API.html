@@ -124,10 +124,10 @@
 <span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
 
 <span class="c1"># Loading a new experiment from existing data</span>
-<span class="n">experiment</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">load_data_file</span><span class="p">(</span><span class="s2">&quot;my_file_name.aut&quot;</span><span class="p">)</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">load_data_file</span><span class="p">(</span><span class="s2">"my_file_name.aut"</span><span class="p">)</span>
 
 <span class="c1"># Saving</span>
-<span class="n">io</span><span class="o">.</span><span class="n">save_data_to_json</span><span class="p">(</span><span class="n">experiment</span><span class="p">,</span> <span class="s2">&quot;my_file_name.aut&quot;</span><span class="p">)</span>
+<span class="n">io</span><span class="o">.</span><span class="n">save_data_to_json</span><span class="p">(</span><span class="n">experiment</span><span class="p">,</span> <span class="s2">"my_file_name.aut"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>For other file formats, you need to write a script yourself. See the <a class="reference internal" href="CUSTOM_TRACKING_FORMATS.html"><span class="std std-doc">custom tracking formats</span></a> page for an example.</p>
@@ -142,7 +142,7 @@
 <span class="n">time_point</span> <span class="o">=</span> <span class="n">TimePoint</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># This represents the second time point of the experiment</span>
 <span class="n">positions</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">of_time_point</span><span class="p">(</span><span class="n">time_point</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found positions:&quot;</span><span class="p">,</span> <span class="n">positions</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Found positions:"</span><span class="p">,</span> <span class="n">positions</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -168,8 +168,8 @@
 
 <span class="k">for</span> <span class="n">time_point</span> <span class="ow">in</span> <span class="n">experiment</span><span class="o">.</span><span class="n">time_points</span><span class="p">():</span>
     <span class="n">positions_of_time_point</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">of_time_point</span><span class="p">(</span><span class="n">time_point</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In time point&quot;</span><span class="p">,</span> <span class="n">time_point</span><span class="o">.</span><span class="n">time_point_number</span><span class="p">(),</span> <span class="s2">&quot;there are&quot;</span><span class="p">,</span>
-          <span class="nb">len</span><span class="p">(</span><span class="n">positions_of_time_point</span><span class="p">),</span> <span class="s2">&quot;time points.&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"In time point"</span><span class="p">,</span> <span class="n">time_point</span><span class="o">.</span><span class="n">time_point_number</span><span class="p">(),</span> <span class="s2">"there are"</span><span class="p">,</span>
+          <span class="nb">len</span><span class="p">(</span><span class="n">positions_of_time_point</span><span class="p">),</span> <span class="s2">"time points."</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -281,9 +281,9 @@
 
 <span class="n">track</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">get_track</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Track goes from time point&quot;</span><span class="p">,</span> <span class="n">track</span><span class="o">.</span><span class="n">first_time_point_number</span><span class="p">(),</span> <span class="s2">&quot;to&quot;</span><span class="p">,</span>
-      <span class="n">track</span><span class="o">.</span><span class="n">last_time_point_number</span><span class="p">(),</span> <span class="s2">&quot;after which&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">track</span><span class="o">.</span><span class="n">get_next_tracks</span><span class="p">()),</span>
-      <span class="s2">&quot;directly follow&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Track goes from time point"</span><span class="p">,</span> <span class="n">track</span><span class="o">.</span><span class="n">first_time_point_number</span><span class="p">(),</span> <span class="s2">"to"</span><span class="p">,</span>
+      <span class="n">track</span><span class="o">.</span><span class="n">last_time_point_number</span><span class="p">(),</span> <span class="s2">"after which"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">track</span><span class="o">.</span><span class="n">get_next_tracks</span><span class="p">()),</span>
+      <span class="s2">"directly follow"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">track.get_next_tracks()</span></code> method never returns only one track. It returns either zero tracks (if the lineage ended there) or two tracks (if the cell divided), representing the tracks of a daughter cell.</p>
@@ -317,7 +317,7 @@
 <span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
 <span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">set_resolution</span><span class="p">(</span><span class="n">ImageResolution</span><span class="p">(</span><span class="mf">0.32</span><span class="p">,</span> <span class="mf">0.32</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
 
-<span class="c1"># Here&#39;s how to get the time between time points:</span>
+<span class="c1"># Here's how to get the time between time points:</span>
 <span class="n">minutes_between_time_points</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">resolution</span><span class="p">()</span><span class="o">.</span><span class="n">time_point_interval_m</span>
 <span class="n">hours_between_time_points</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">resolution</span><span class="p">()</span><span class="o">.</span><span class="n">time_point_interval_h</span>
 </pre></div>
@@ -334,9 +334,9 @@
 <span class="c1"># This is how you define the resolution (x in um, y, z, t in minutes)</span>
 <span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">set_resolution</span><span class="p">(</span><span class="n">ImageResolution</span><span class="p">(</span><span class="mf">0.32</span><span class="p">,</span> <span class="mf">0.32</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
 <span class="c1"># (if you load an expeirment from an AUT file, the resolution will</span>
-<span class="c1"># likely be defined already, and you don&#39;t need the above line)</span>
+<span class="c1"># likely be defined already, and you don't need the above line)</span>
 
-<span class="c1"># Here&#39;s how to get the size of a pixel in micrometers (um)</span>
+<span class="c1"># Here's how to get the size of a pixel in micrometers (um)</span>
 <span class="n">pixel_size_x_in_um</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">resolution</span><span class="p">()</span><span class="o">.</span><span class="n">pixel_size_x_um</span>
 <span class="n">pixel_size_y_in_um</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">resolution</span><span class="p">()</span><span class="o">.</span><span class="n">pixel_size_y_um</span>  <span class="c1"># Should be equal to x resolution</span>
 <span class="n">pixel_size_z_in_um</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">resolution</span><span class="p">()</span><span class="o">.</span><span class="n">pixel_size_z_um</span>  <span class="c1"># Z resolution is often lower</span>
@@ -366,7 +366,7 @@
 
 <span class="c1"># Open the visualizer</span>
 <span class="n">standard_image_visualizer</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span>
-<span class="n">main_window</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>  <span class="c1"># Necessary! Google &quot;event loop&quot; for details</span>
+<span class="n">main_window</span><span class="o">.</span><span class="n">mainloop</span><span class="p">()</span>  <span class="c1"># Necessary! Google "event loop" for details</span>
 </pre></div>
 </div>
 </section>
@@ -384,7 +384,7 @@
 <span class="n">spline_position</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">splines</span><span class="o">.</span><span class="n">to_position_on_spline</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">spline_position</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
     <span class="c1"># How to calculate progress on a spline</span>
-    <span class="c1"># Beware - doesn&#39;t have to be in the range 0-1</span>
+    <span class="c1"># Beware - doesn't have to be in the range 0-1</span>
     <span class="n">fraction_along_spline</span> <span class="o">=</span> <span class="n">spline_position</span><span class="o">.</span><span class="n">pos</span> <span class="o">/</span> <span class="n">spline_position</span><span class="o">.</span><span class="n">spline</span><span class="o">.</span><span class="n">length</span><span class="p">()</span>
     
     <span class="c1"># Distance in px from position to the nearest point on the spline</span>

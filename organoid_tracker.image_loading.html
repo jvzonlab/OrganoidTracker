@@ -149,7 +149,7 @@
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.core.experiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Experiment</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.image_loading</span><span class="w"> </span><span class="kn">import</span> <span class="n">general_image_loader</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">general_image_loader</span><span class="o">.</span><span class="n">load_images</span><span class="p">(</span><span class="n">experiment</span><span class="p">,</span> <span class="s2">&quot;path/to/folder&quot;</span><span class="p">,</span> <span class="s2">&quot;image_t</span><span class="si">{time:003}</span><span class="s2">_c</span><span class="si">{channel}</span><span class="s2">.tif&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">general_image_loader</span><span class="o">.</span><span class="n">load_images</span><span class="p">(</span><span class="n">experiment</span><span class="p">,</span> <span class="s2">"path/to/folder"</span><span class="p">,</span> <span class="s2">"image_t</span><span class="si">{time:003}</span><span class="s2">_c</span><span class="si">{channel}</span><span class="s2">.tif"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Or, in case you need to load something more advanced: (this example append three different channels)</p>
@@ -157,18 +157,18 @@
 <span class="gp">&gt;&gt;&gt; </span><span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.image_loading</span><span class="w"> </span><span class="kn">import</span> <span class="n">general_image_loader</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">general_image_loader</span><span class="o">.</span><span class="n">load_images_from_dictionary</span><span class="p">(</span><span class="n">experiment</span><span class="p">,</span> <span class="p">{</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="s2">&quot;images_channel_appending&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="s2">"images_channel_appending"</span><span class="p">:</span> <span class="p">[</span>
 <span class="gp">&gt;&gt;&gt; </span>           <span class="p">{</span>
-<span class="gp">&gt;&gt;&gt; </span>               <span class="s2">&quot;images_container&quot;</span><span class="p">:</span> <span class="s2">&quot;path/to/my/data&quot;</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>               <span class="s2">&quot;images_pattern&quot;</span><span class="p">:</span> <span class="s2">&quot;t</span><span class="si">{time:03}</span><span class="s2">_488nm.tif&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="s2">"images_container"</span><span class="p">:</span> <span class="s2">"path/to/my/data"</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="s2">"images_pattern"</span><span class="p">:</span> <span class="s2">"t</span><span class="si">{time:03}</span><span class="s2">_488nm.tif"</span>
 <span class="gp">&gt;&gt;&gt; </span>           <span class="p">},</span>
 <span class="gp">&gt;&gt;&gt; </span>           <span class="p">{</span>
-<span class="gp">&gt;&gt;&gt; </span>               <span class="s2">&quot;images_container&quot;</span><span class="p">:</span> <span class="s2">&quot;path/to/my/data&quot;</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>               <span class="s2">&quot;images_pattern&quot;</span><span class="p">:</span> <span class="s2">&quot;t</span><span class="si">{time:03}</span><span class="s2">_561nm.tif&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="s2">"images_container"</span><span class="p">:</span> <span class="s2">"path/to/my/data"</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="s2">"images_pattern"</span><span class="p">:</span> <span class="s2">"t</span><span class="si">{time:03}</span><span class="s2">_561nm.tif"</span>
 <span class="gp">&gt;&gt;&gt; </span>           <span class="p">},</span>
 <span class="gp">&gt;&gt;&gt; </span>           <span class="p">{</span>
-<span class="gp">&gt;&gt;&gt; </span>               <span class="s2">&quot;images_container&quot;</span><span class="p">:</span> <span class="s2">&quot;path/to/my/data&quot;</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>               <span class="s2">&quot;images_pattern&quot;</span><span class="p">:</span> <span class="s2">&quot;t</span><span class="si">{time:03}</span><span class="s2">_CoolLED.tif&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="s2">"images_container"</span><span class="p">:</span> <span class="s2">"path/to/my/data"</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>               <span class="s2">"images_pattern"</span><span class="p">:</span> <span class="s2">"t</span><span class="si">{time:03}</span><span class="s2">_CoolLED.tif"</span>
 <span class="gp">&gt;&gt;&gt; </span>           <span class="p">}</span>
 <span class="gp">&gt;&gt;&gt; </span>       <span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="p">})</span>

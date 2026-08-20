@@ -140,7 +140,7 @@
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-organoid_tracker.plugin" title="Link to this heading"></a></h2>
 <p>Internal OrganoidTracker code to load plugins. Example usage:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.plugin</span><span class="w"> </span><span class="kn">import</span> <span class="n">plugin_loader</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">plugin</span> <span class="o">=</span> <span class="n">plugin_loader</span><span class="o">.</span><span class="n">load_plugin</span><span class="p">(</span><span class="s2">&quot;path/to/folder/plugin_file.py&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plugin</span> <span class="o">=</span> <span class="n">plugin_loader</span><span class="o">.</span><span class="n">load_plugin</span><span class="p">(</span><span class="s2">"path/to/folder/plugin_file.py"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">plugin</span><span class="o">.</span><span class="n">get_commands</span><span class="p">())</span>  <span class="c1"># Prints the commands of the first plugin in the folder</span>
 </pre></div>
 </div>

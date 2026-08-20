@@ -150,7 +150,7 @@
 possible to fix that without breaking all existing code.</p>
 <p>To load tracking data from disk:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.imaging</span><span class="w"> </span><span class="kn">import</span> <span class="n">io</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">experiment</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">load_data_file</span><span class="p">(</span><span class="s2">&quot;file_name.aut&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">experiment</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">load_data_file</span><span class="p">(</span><span class="s2">"file_name.aut"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>And to save it again:
@@ -158,7 +158,7 @@ possible to fix that without breaking all existing code.</p>
 <p>To load a dataset of multiple tracking files plus images:
 (create those files in the GUI using File -&gt; Tabs -&gt; Export open tabs)</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">organoid_tracker.imaging</span><span class="w"> </span><span class="kn">import</span> <span class="n">list_io</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">experiment</span> <span class="ow">in</span> <span class="n">list_io</span><span class="o">.</span><span class="n">load_experiment_list_file</span><span class="p">(</span><span class="s2">&quot;some_file.autlist&quot;</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">experiment</span> <span class="ow">in</span> <span class="n">list_io</span><span class="o">.</span><span class="n">load_experiment_list_file</span><span class="p">(</span><span class="s2">"some_file.autlist"</span><span class="p">):</span>
 <span class="gp">&gt;&gt;&gt; </span>   <span class="o">...</span>  <span class="c1"># Do something with the experiment</span>
 </pre></div>
 </div>
