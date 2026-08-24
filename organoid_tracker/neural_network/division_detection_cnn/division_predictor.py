@@ -197,7 +197,7 @@ def remove_division_oversegmentation(experiment: Experiment, min_distance_dividi
     cells are too close, they are replaced by a single cell in the middle position."""
 
     to_remove = []
-    to_add = []
+    to_add = PositionCollection()
 
     for position in experiment.positions:
 
@@ -227,14 +227,14 @@ def remove_division_oversegmentation(experiment: Experiment, min_distance_dividi
                                             y=(position.y + neighbor.y) // 2,
                                             z=(position.z + neighbor.z) // 2,
                                             time_point=position.time_point())
-                    to_add.append(add_position)
+                    to_add.add(add_position)
 
-                    experiment.positions.set_position_data(add_position, 'division_probability',
+                    to_add.set_position_data(add_position, 'division_probability',
                                                            max(experiment.positions.get_position_data(
                                                                position, data_name="division_probability"),
                                                                experiment.positions.get_position_data(
                                                                    neighbor, data_name="division_probability")))
-                    experiment.positions.set_position_data(add_position, 'division_penalty',
+                    to_add.set_position_data(add_position, 'division_penalty',
                                                            min(experiment.positions.get_position_data(
                                                                position, data_name="division_penalty"),
                                                                experiment.positions.get_position_data(

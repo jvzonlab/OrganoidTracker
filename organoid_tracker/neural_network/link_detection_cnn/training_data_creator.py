@@ -21,8 +21,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import random
-from typing import List, Iterable, Tuple
+from typing import List, Iterable
 
 import numpy
 from numpy import ndarray
@@ -30,9 +29,9 @@ from numpy import ndarray
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.images import Images
-from organoid_tracker.core.links import Links
-from organoid_tracker.core.position import Position
+from organoid_tracker.gui import image_series_loader_dialog
 from organoid_tracker.linking import cell_division_finder, nearest_neighbor_linker
+from organoid_tracker.neural_network.image_loading import is_inside_image
 from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import ImageWithPositions
 
 
@@ -98,6 +97,11 @@ def create_image_with_links_list(experiments: Iterable[Experiment], division_mul
                 if len(futures) > 1:
                     multiple_options_positions.append(position)
 
+        image_loader = experiment.images.image_loader()
+        image_shape = image_loader.get_image_size_zyx()
+        if image_shape is None:
+            continue  # No images for this experiment, skip it
+
         for time_point in experiment.positions.time_points():
             # if there is no next timepoint available end the routine
             if experiment.images.get_image_stack(TimePoint(time_point.time_point_number() + 1)) is None:
@@ -116,9 +120,6 @@ def create_image_with_links_list(experiments: Iterable[Experiment], division_mul
             offset = experiment.images.offsets.of_time_point(time_point)
             future_offset = experiment.images.offsets.of_time_point(TimePoint(time_point.time_point_number() + 1))
 
-            image_shape = experiment.images.get_image_stack(time_point).shape
-            future_image_shape = experiment.images.get_image_stack(TimePoint(time_point.time_point_number() + 1)).shape
-
             positions_xyz = list()
             target_positions_xyz = list()
             distances = list()
@@ -129,7 +130,7 @@ def create_image_with_links_list(experiments: Iterable[Experiment], division_mul
                 future_link = links.find_futures(position)
 
                 # check if the position is inside the image
-                if inside_image(position, offset, image_shape):
+                if is_inside_image(position, offset, image_shape):
 
                     # is the cell dividing
                     if position in div_positions_plus_window:
@@ -148,7 +149,7 @@ def create_image_with_links_list(experiments: Iterable[Experiment], division_mul
                         multiple_counter = multiple_counter + 1
 
                     for future_possibility in future_possibilities:
-                        if inside_image(future_possibility, future_offset, future_image_shape):
+                        if is_inside_image(future_possibility, future_offset, image_shape):
 
                             repeats_link = repeats
 

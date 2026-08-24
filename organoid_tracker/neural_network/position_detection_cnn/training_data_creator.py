@@ -30,6 +30,7 @@ from tifffile import tifffile
 
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.experiment import Experiment
+from organoid_tracker.core.image_loader import ImageChannel
 from organoid_tracker.core.images import Images
 from organoid_tracker.core.position import Position
 
@@ -52,7 +53,10 @@ class ImageWithPositions:
 
     def load_image(self, dt: int = 0) -> Optional[ndarray]:
         time_point = TimePoint(self.time_point.time_point_number() + dt)
-        image_stack = self._images.get_image_stack(time_point)
+
+        # Load image directly from the image loader to bypass the cache
+        image_stack = self._images.image_loader().get_3d_image_array(time_point, ImageChannel(index_zero=0))
+
         if image_stack is not None and image_stack.dtype == numpy.uint16:
             # The dtype uint16 is not supported by PyTorch, so we convert it to int16 or int32, depending on what
             # will fit the data
