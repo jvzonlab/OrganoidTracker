@@ -290,10 +290,9 @@ def get_normalized_intensity(experiment: Experiment, position: Position, *, inte
     return (intensity - background_per_px * volume_px) * multiplier
 
 
-def perform_intensity_normalization(experiment: Experiment, *, background_correction: bool = True, z_correction: bool = False,
+def perform_intensity_normalization(experiment: Experiment, *, background_correction: bool = False, z_correction: bool = False,
                                     time_correction: bool = False, intensity_key: str = DEFAULT_INTENSITY_KEY):
-    """Performs intensity normalization for the given intensity key. The lowest found intensity in the experiment is
-    used for setting the background, if background_correction is True. In addition, the intensities will be multiplied
+    """Performs intensity normalization for the given intensity key. The intensities will be multiplied
     to obtain a median intensity of 1 at each z position if z_correction is True, or at every time point if
     time_correction is True. If both z_correction and time_correction are False, the intensities will be multiplied to
     obtain an overall median intensity of 1.
@@ -301,6 +300,8 @@ def perform_intensity_normalization(experiment: Experiment, *, background_correc
     This method only works for regular intensities, not for ratiometric intensities. It will silently fail if no
     regular intensity with the given key is found.
     """
+    if background_correction:
+        raise ValueError("Background correction is not supported in this function anymore. Please use set_intensity_background instead.")
     if time_correction and z_correction:
         raise UserError("Time and Z correction", "Cannot apply both a time and a z correction.")
     remove_intensity_normalization(experiment, intensity_key=intensity_key)
@@ -314,7 +315,7 @@ def perform_intensity_normalization(experiment: Experiment, *, background_correc
     positions = experiment.positions
     for position, intensity in positions.find_all_positions_with_data(intensity_key):
         volume = positions.get_position_data(position, intensity_key + "_volume")
-        if volume is None and background_correction:
+        if volume is None:
             continue
         if intensity == 0:
             continue
@@ -332,18 +333,13 @@ def perform_intensity_normalization(experiment: Experiment, *, background_correc
     zs = numpy.array(zs, dtype=numpy.int32)
     ts = numpy.array(ts, dtype=numpy.int32)
 
-    if background_correction:
-        # Assume the lowest signal consists of only background
-        lowest_intensity_index = numpy.argmin(intensities / volumes)
-        background_per_px = float(intensities[lowest_intensity_index] / volumes[lowest_intensity_index])
+    # Apply the stored background correction
+    background_per_px = experiment.global_data.get_data(intensity_key + "_background_per_pixel")
+    if background_per_px is None:
+        background_per_px = 0
+    intensities -= volumes * background_per_px
 
-        # Subtract this background
-        intensities -= volumes * background_per_px
-        experiment.global_data.set_data(intensity_key + "_background_per_pixel", background_per_px)
-    else:
-        experiment.global_data.set_data(intensity_key + "_background_per_pixel", 0)
-
-    # Now normalize the mean to 1
+    # Now normalize the median to 1
     if z_correction:
         for z in range(int(numpy.min(zs)), int(numpy.max(zs)) + 1):
             median = numpy.median(intensities[zs == z])
@@ -362,11 +358,23 @@ def perform_intensity_normalization(experiment: Experiment, *, background_correc
 
 def remove_intensity_normalization(experiment: Experiment, *, intensity_key: str = DEFAULT_INTENSITY_KEY):
     """Removes the normalization set by perform_intensity_normalization."""
-    experiment.global_data.set_data(intensity_key + "_background_per_pixel", None)
     experiment.global_data.set_data(intensity_key + "_multiplier", None)
     for key in list(experiment.global_data.get_all_data().keys()):
         if key.startswith(intensity_key + "_multiplier_z") or key.startswith(intensity_key + "_multiplier_t"):
             experiment.global_data.set_data(key, None)
+
+
+def set_intensity_background(experiment: Experiment, background_per_pixel: Optional[float], *, intensity_key: str = DEFAULT_INTENSITY_KEY):
+    """Sets the background per pixel for the given intensity key. This will be used in get_normalized_intensity to
+    subtract the background from the raw intensity. Set to None or 0 to remove the background correction.
+
+    Changing the background removes any existing intensity normalization, as otherwise the calculated normalization
+    would be invalid.
+    """
+    remove_intensity_normalization(experiment, intensity_key=intensity_key)
+    if background_per_pixel == 0:
+        background_per_pixel = None
+    experiment.global_data.set_data(intensity_key + "_background_per_pixel", background_per_pixel)
 
 
 def add_ratiometric_intensity(experiment: Experiment, intensity_name: str, intensity_key_1: str, intensity_key_2: str
