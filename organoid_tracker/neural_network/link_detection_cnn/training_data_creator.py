@@ -102,9 +102,10 @@ def create_image_with_links_list(experiments: Iterable[Experiment], division_mul
         if image_shape is None:
             continue  # No images for this experiment, skip it
 
+        last_time_point_number = image_loader.last_time_point_number()
         for time_point in experiment.positions.time_points():
             # if there is no next timepoint available end the routine
-            if experiment.images.get_image_stack(TimePoint(time_point.time_point_number() + 1)) is None:
+            if last_time_point_number is not None and time_point.time_point_number() + 1 > last_time_point_number:
                 break
 
             # counts if events of interest happen at this timepoint.
