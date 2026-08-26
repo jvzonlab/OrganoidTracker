@@ -7,6 +7,8 @@ are actually linked won't have a link then.)
 """
 import os
 
+from tqdm import tqdm
+
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.imaging import io, list_io
 from organoid_tracker.linking import nearby_position_finder
@@ -15,7 +17,10 @@ _LINKS_TRUE_POSITIVE_FILE = r"D:\Nextcloud\rkok\Biohub competition\Official data
 _POSITION_PREDICTIONS_FILE = r"D:\Nextcloud\rkok\Biohub competition\Positions predictions (attempt 1)\Automatic positions\_All.autlist"
 _OUTPUT_FOLDER = r"E:\Scratch\Biohub competition\Linking network training data"
 
-_DISTANCE_CUTOFF_UM = 5
+# Positions too close to the ground truth positions are not added, as they are likely the same cell
+# Positions too far from the ground truth positions are not added either, as they are not interesting negative examples to train on
+_MIN_DISTANCE_FROM_GROUND_TRUTH_UM = 5
+_MAX_DISTANCE_FROM_GROUND_TRUTH_UM = 20
 
 
 def _name(experiment: Experiment) -> str:
@@ -60,9 +65,12 @@ def main():
                 position -= prediction_offset
                 position += our_offset
 
-                if nearby_position_finder.find_closest_position(existing_positions, around=position, resolution=resolution, max_distance_um=_DISTANCE_CUTOFF_UM) \
-                    is not None:
-                    continue  # Skip positions that are too close to existing ground truth positions
+                closest_ground_truth_position = nearby_position_finder.find_closest_position(existing_positions, around=position, resolution=resolution, max_distance_um=_MAX_DISTANCE_FROM_GROUND_TRUTH_UM)
+                if closest_ground_truth_position is None:
+                    continue  # Too far from any existing ground truth position, so we don't add it
+                distance_squared = closest_ground_truth_position.distance_squared(position, resolution=resolution)
+                if distance_squared < _MIN_DISTANCE_FROM_GROUND_TRUTH_UM ** 2:
+                    continue  # Too close to an existing ground truth position, so we don't add it
 
                 experiment.positions.add(position)
 
