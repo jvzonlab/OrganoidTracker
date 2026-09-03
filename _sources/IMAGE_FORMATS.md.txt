@@ -14,12 +14,18 @@ LIF files are used by Leica microscopes, CZI files by Zeiss microscopes and ND2 
 ## IMS files
 IMS files are used by Imaris. OrganoidTracker only has basic support for those files: it will read the images, but not anything else, like segmentation or tracking data. To load an Imaris file, simply select `File` -> `Load images...` and select the file.
 
-## A folder containing one 3D image for every time point
+## A folder containing one image for every time point
 Many biologists save images like `image_0.tif`, `image_1.tif`, `image_2.tif` etc., with each image representing a single channel of a single time point. If you load an image **from time point 0 or 1**, the program will automatically try to search for other images with a similar naming pattern. The program is able to recognize the following naming patterns:
 
 * Images **ending** with a number, like `image0.png`, `image1.png`, `image2.png`. The number will be interpreted as a time point number. (Brackets) around the number are allowed.
 * Images **containing** the letter `t` followed by a number, like `nd56t1.tif`, `nd56t2.tif`. The number will be interpreted as a time point number. A captial `T` instead of a `t` is also allowed.
 * Images **containing** the letter `c` followed by a number, like `nd56t1c1.tif`, `nd56t1c2.tif`. The number will now be interpreted as a channel. A capital `C` instead of a `c` is also allowed.
+* Images **containing** the format `00d00h00m`, like `48_C6_00d00h00m.tif`, indicating the day, hour and minute. Timings information is automatically parsed from the file name.
+
+The following formats are supported:
+* TIFF files (`.tif` or `.tiff`)
+* PNG files (`.png`)
+* JPEG files (`.jpg` or `.jpeg`)
 
 Leading zeroes (like in `image_0001.png`) are supported.
 
@@ -27,4 +33,8 @@ Leading zeroes (like in `image_0001.png`) are supported.
 If instead only a single TIFF file is found, OrganoidTracker assumes that an the entire time-series is saved to that file. OrganoidTracker uses the `tifffile` Python package to read the metadata of the file, to found our how the file is constructed. If OrganoidTracker doesn't understand the file format, an error message is displayed.
 
 ## A single image
-If the program cannot find any pattern in the file name, and the file is not a multi-page TIFF file, it will display a warning and load only that image. You'll end up with a "movie" of only one time point.
+If the program cannot find any pattern in the file name, and the file is not a multi-page TIFF file, it will load only that image. You'll end up with a "movie" of only one time point.
+
+The following formats are supported:
+* PNG files (`.png`)
+* JPEG files (`.jpg` or `.jpeg`)

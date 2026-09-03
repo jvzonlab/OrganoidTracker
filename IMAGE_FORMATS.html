@@ -61,7 +61,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Supported image formats</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#lif-czi-and-nd2-files">LIF, CZI and ND2 files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ims-files">IMS files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#a-folder-containing-one-3d-image-for-every-time-point">A folder containing one 3D image for every time point</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a-folder-containing-one-image-for-every-time-point">A folder containing one image for every time point</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#a-multi-page-tiff-file">A multi-page TIFF file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#a-single-image">A single image</a></li>
 </ul>
@@ -116,13 +116,20 @@
 <h2>IMS files<a class="headerlink" href="#ims-files" title="Link to this heading"></a></h2>
 <p>IMS files are used by Imaris. OrganoidTracker only has basic support for those files: it will read the images, but not anything else, like segmentation or tracking data. To load an Imaris file, simply select <code class="docutils literal notranslate"><span class="pre">File</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Load</span> <span class="pre">images...</span></code> and select the file.</p>
 </section>
-<section id="a-folder-containing-one-3d-image-for-every-time-point">
-<h2>A folder containing one 3D image for every time point<a class="headerlink" href="#a-folder-containing-one-3d-image-for-every-time-point" title="Link to this heading"></a></h2>
+<section id="a-folder-containing-one-image-for-every-time-point">
+<h2>A folder containing one image for every time point<a class="headerlink" href="#a-folder-containing-one-image-for-every-time-point" title="Link to this heading"></a></h2>
 <p>Many biologists save images like <code class="docutils literal notranslate"><span class="pre">image_0.tif</span></code>, <code class="docutils literal notranslate"><span class="pre">image_1.tif</span></code>, <code class="docutils literal notranslate"><span class="pre">image_2.tif</span></code> etc., with each image representing a single channel of a single time point. If you load an image <strong>from time point 0 or 1</strong>, the program will automatically try to search for other images with a similar naming pattern. The program is able to recognize the following naming patterns:</p>
 <ul class="simple">
 <li><p>Images <strong>ending</strong> with a number, like <code class="docutils literal notranslate"><span class="pre">image0.png</span></code>, <code class="docutils literal notranslate"><span class="pre">image1.png</span></code>, <code class="docutils literal notranslate"><span class="pre">image2.png</span></code>. The number will be interpreted as a time point number. (Brackets) around the number are allowed.</p></li>
 <li><p>Images <strong>containing</strong> the letter <code class="docutils literal notranslate"><span class="pre">t</span></code> followed by a number, like <code class="docutils literal notranslate"><span class="pre">nd56t1.tif</span></code>, <code class="docutils literal notranslate"><span class="pre">nd56t2.tif</span></code>. The number will be interpreted as a time point number. A captial <code class="docutils literal notranslate"><span class="pre">T</span></code> instead of a <code class="docutils literal notranslate"><span class="pre">t</span></code> is also allowed.</p></li>
 <li><p>Images <strong>containing</strong> the letter <code class="docutils literal notranslate"><span class="pre">c</span></code> followed by a number, like <code class="docutils literal notranslate"><span class="pre">nd56t1c1.tif</span></code>, <code class="docutils literal notranslate"><span class="pre">nd56t1c2.tif</span></code>. The number will now be interpreted as a channel. A capital <code class="docutils literal notranslate"><span class="pre">C</span></code> instead of a <code class="docutils literal notranslate"><span class="pre">c</span></code> is also allowed.</p></li>
+<li><p>Images <strong>containing</strong> the format <code class="docutils literal notranslate"><span class="pre">00d00h00m</span></code>, like <code class="docutils literal notranslate"><span class="pre">48_C6_00d00h00m.tif</span></code>, indicating the day, hour and minute. Timings information is automatically parsed from the file name.</p></li>
+</ul>
+<p>The following formats are supported:</p>
+<ul class="simple">
+<li><p>TIFF files (<code class="docutils literal notranslate"><span class="pre">.tif</span></code> or <code class="docutils literal notranslate"><span class="pre">.tiff</span></code>)</p></li>
+<li><p>PNG files (<code class="docutils literal notranslate"><span class="pre">.png</span></code>)</p></li>
+<li><p>JPEG files (<code class="docutils literal notranslate"><span class="pre">.jpg</span></code> or <code class="docutils literal notranslate"><span class="pre">.jpeg</span></code>)</p></li>
 </ul>
 <p>Leading zeroes (like in <code class="docutils literal notranslate"><span class="pre">image_0001.png</span></code>) are supported.</p>
 </section>
@@ -132,7 +139,12 @@
 </section>
 <section id="a-single-image">
 <h2>A single image<a class="headerlink" href="#a-single-image" title="Link to this heading"></a></h2>
-<p>If the program cannot find any pattern in the file name, and the file is not a multi-page TIFF file, it will display a warning and load only that image. You’ll end up with a “movie” of only one time point.</p>
+<p>If the program cannot find any pattern in the file name, and the file is not a multi-page TIFF file, it will load only that image. You’ll end up with a “movie” of only one time point.</p>
+<p>The following formats are supported:</p>
+<ul class="simple">
+<li><p>PNG files (<code class="docutils literal notranslate"><span class="pre">.png</span></code>)</p></li>
+<li><p>JPEG files (<code class="docutils literal notranslate"><span class="pre">.jpg</span></code> or <code class="docutils literal notranslate"><span class="pre">.jpeg</span></code>)</p></li>
+</ul>
 </section>
 </section>
 
