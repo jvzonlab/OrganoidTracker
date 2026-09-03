@@ -12,6 +12,7 @@ class TestImageOffsets(unittest.TestCase):
         self.assertEqual("image_{time:02}.png", find_time_and_channel_pattern(None, "image_01.png"))
         self.assertEqual("nd799xy08t{time:03}.tif", find_time_and_channel_pattern(None, "nd799xy08t001.tif"))
         self.assertEqual("nd799xy08T{time:03}.tif", find_time_and_channel_pattern(None, "nd799xy08T001.tif"))
+        self.assertEqual("4-8_C6_1_{day:02d}d{hour:02d}h{minute:02d}m.tif", find_time_and_channel_pattern(None, "4-8_C6_1_00d00h00m.tif"))
 
     def test_time_negatives(self):
         # Contains a few numbers

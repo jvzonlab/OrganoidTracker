@@ -4,8 +4,12 @@ from typing import Optional
 
 
 def find_time_and_channel_pattern(directory: Optional[str], file_name: str) -> Optional[str]:
-    """Given a file name like "image_t1_c1.png", returns "image_t{time}_c{channel}.png". Returns None if no pattern
+    """Given a file name like "image_t1_c1.png", returns "image_t{time}_c{channel}.png", or "4-8_C6_1_00d00h00m.tif"
+    returns "4-8_C6_1_{day:02d}d{hour:02d}h{minute:02d}m.tif". Returns None if no pattern
     (time or channel) was found."""
+    if "00d00h00m" in file_name:
+        # Special case for timestamped folders
+        return file_name.replace("00d00h00m", "{day:02d}d{hour:02d}h{minute:02d}m")
     time_pattern = _find_time_pattern(directory, file_name)
     if time_pattern is None:
         return None  # No time pattern

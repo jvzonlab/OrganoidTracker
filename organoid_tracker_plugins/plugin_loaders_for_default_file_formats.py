@@ -33,6 +33,33 @@ def _prompt_series(series_names: List[str], allow_all: bool) -> List[int]:
     return [selection + 1]  # Convert to 1-based index
 
 
+class _PNGOrJPEGImageFileLoader(FileLoader):
+    def get_name(self) -> str:
+        return "PNG or JPEG"
+
+    def get_file_patterns(self) -> Set[str]:
+        return {"*.png", "*.jpeg", "*.jpg"}
+
+    def load_file_interactive(self, file_path: str, *, into: LoadInto) -> bool:
+        from organoid_tracker.image_loading import folder_image_loader, timestamped_folder_image_loader
+        into.experiment.images.close_image_loader()
+
+        directory, file_name = os.path.split(file_path)
+        file_name_pattern = image_file_name_pattern_finder.find_time_and_channel_pattern(directory, file_name)
+        if file_name_pattern is None:
+            # No pattern found, assume we only have a single file
+            file_name_pattern = file_name
+
+        if timestamped_folder_image_loader.is_timestamped_pattern(file_name_pattern):
+            timestamped_folder_image_loader.load_images_from_folder(into.experiment, directory, file_name_pattern)
+        else:
+            folder_image_loader.load_images_from_folder(into.experiment, directory, file_name_pattern)
+        return True
+
+    def get_type(self) -> FileLoaderType:
+        return FileLoaderType.IMAGE
+
+
 class _TifFileLoader(FileLoader):
     def get_name(self) -> str:
         return "Single TIF or TIF series"
@@ -41,7 +68,7 @@ class _TifFileLoader(FileLoader):
         return {"*.tif", "*.tiff"}
 
     def load_file_interactive(self, file_path: str, *, into: LoadInto) -> bool:
-        from organoid_tracker.image_loading import folder_image_loader
+        from organoid_tracker.image_loading import folder_image_loader, timestamped_folder_image_loader
         into.experiment.images.close_image_loader()
 
         directory, file_name = os.path.split(file_path)
@@ -53,7 +80,10 @@ class _TifFileLoader(FileLoader):
             merged_tiff_image_loader.load_from_tif_file(into.experiment, file_path)
             return True
 
-        folder_image_loader.load_images_from_folder(into.experiment, directory, file_name_pattern)
+        if timestamped_folder_image_loader.is_timestamped_pattern(file_name_pattern):
+            timestamped_folder_image_loader.load_images_from_folder(into.experiment, directory, file_name_pattern)
+        else:
+            folder_image_loader.load_images_from_folder(into.experiment, directory, file_name_pattern)
         return True
 
     def get_type(self) -> FileLoaderType:
@@ -225,6 +255,7 @@ class _TrackingFileLoader(FileLoader):
 def get_file_loaders() -> List[FileLoader]:
     """Returns the default file formats that are supported by the program."""
     return [_TifFileLoader(),
+            _PNGOrJPEGImageFileLoader(),
             _LifFileLoader(),
             _Nd2FileLoader(),
             _CziFileLoader(),

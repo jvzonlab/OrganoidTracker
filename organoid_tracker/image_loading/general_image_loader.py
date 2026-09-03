@@ -42,7 +42,10 @@ def load_images(experiment: Experiment, container: str, pattern: str,
         print("Failed to load \"" + container + "\" - file or folder does not exist")
         return  # Cannot load anything
     if os.path.isdir(container):  # Try as images folder
-        from organoid_tracker.image_loading import folder_image_loader
+        from organoid_tracker.image_loading import folder_image_loader, timestamped_folder_image_loader
+        if timestamped_folder_image_loader.is_timestamped_pattern(pattern):
+            timestamped_folder_image_loader.load_images_from_folder(experiment, container, pattern, min_time_point, max_time_point)
+            return
         folder_image_loader.load_images_from_folder(experiment, container, pattern, min_time_point, max_time_point)
         return
     raise ValueError("Unknown file format: " + container + " " + pattern)

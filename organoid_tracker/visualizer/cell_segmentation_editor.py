@@ -727,7 +727,7 @@ class CellSegmentationEditor(AbstractEditor):
         new_loader = FolderImageLoader(folder, "segmentation_t{time}.tif",
                                        min_time_point=self._experiment.images.first_time_point_number(),
                                        max_time_point=self._experiment.images.last_time_point_number(),
-                                       min_channel=1, max_channel=1)
+                                       min_file_name_channel=1, max_file_name_channel=1)
         self._experiment.images.image_loader(ChannelAppendingImageLoader([self._experiment.images.image_loader(), new_loader]))
         new_channel = self._experiment.images.get_channels()[-1]
         self._experiment.images.set_channel_description(new_channel, ChannelDescription("segmentation", image_coloring.get_segmentation_colormap()))
