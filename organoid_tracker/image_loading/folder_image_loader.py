@@ -40,6 +40,11 @@ def load_images_from_folder(experiment: Experiment, folder: str, file_name_forma
                 if path.isfile(next_channel_file_name):
                     min_channel += 1
                     continue
+            if max_found_time_point < 0:
+                # Not a fatal error if a negative time point doesn't exist, try our discovery at time point 0 instead
+                max_found_time_point = 0
+                min_time_point = 0
+                continue
             if max_found_time_point == 0:
                 # Not a fatal error if time point number 0 doesn't exist
                 max_found_time_point += 1
@@ -76,7 +81,7 @@ class FolderImageLoader(ImageLoader):
     _file_name_format: str
     _min_time_point: int
     _max_time_point: int
-    _channel_offset: int
+    _file_channel_offset: int
     _channel_count: int
     _image_size_czyx: Optional[Tuple[int, int, int, int]]
 
@@ -91,19 +96,18 @@ class FolderImageLoader(ImageLoader):
         self._min_time_point = min_time_point
         self._max_time_point = max_time_point
         self._image_size_czyx = None
-        self._channel_offset = min_file_name_channel
+        self._file_channel_offset = min_file_name_channel
         self._channel_count = max_file_name_channel - min_file_name_channel + 1
 
         if self._channel_count == 1:
             # If we only have one channel, check if maybe the images themselves have multiple channels.
             # If so, we will use those instead of the file-name based channels
             self._channel_count = self._get_image_size_czyx()[0]
-            self._channel_offset = 0
 
     def _get_image_size_czyx(self) -> Tuple[int, int, int, int]:
         """Get the size of the image at the first time point, and cache it."""
         if self._image_size_czyx is None:
-            file_name = path.join(self._folder, self._file_name_format.format(time=self._min_time_point, channel=self._channel_offset))
+            file_name = path.join(self._folder, self._file_name_format.format(time=self._min_time_point, channel=self._file_channel_offset))
             image_czyx = read_image_czyx(file_name)
             self._image_size_czyx = image_czyx.shape
         return self._image_size_czyx
@@ -128,7 +132,7 @@ class FolderImageLoader(ImageLoader):
 
         file_name = path.join(self._folder, self._file_name_format.format(
                 time=time_point.time_point_number(),
-                channel=image_channel.index_zero + self._channel_offset))
+                channel=image_channel.index_zero + self._file_channel_offset))
 
         return self._select_channel(read_image_czyx(file_name), image_channel)
 
@@ -141,7 +145,7 @@ class FolderImageLoader(ImageLoader):
 
         file_name = path.join(self._folder, self._file_name_format.format(
             time=time_point.time_point_number(),
-            channel=image_channel.index_zero + self._channel_offset))
+            channel=image_channel.index_zero + self._file_channel_offset))
         return self._select_channel(read_image_cyx(file_name, image_z), image_channel)
 
     def _select_channel(self, image_czyx_or_cyx: Optional[ndarray], image_channel: ImageChannel) -> Optional[ndarray]:
@@ -149,11 +153,10 @@ class FolderImageLoader(ImageLoader):
             return None
 
         has_multiple_channels = image_czyx_or_cyx.shape[0] > 1
-        c_index = image_channel.index_zero + self._channel_offset if self._channel_is_in_image() else 0
         if has_multiple_channels:
-            return image_czyx_or_cyx[c_index].copy()  # Copy to avoid keeping a reference to the big original image
+            return image_czyx_or_cyx[image_channel.index_zero].copy()  # Copy to avoid keeping a reference to the big original image
         else:
-            return image_czyx_or_cyx[c_index]
+            return image_czyx_or_cyx[0]
 
     def get_channel_count(self) -> int:
         return self._channel_count
@@ -166,7 +169,7 @@ class FolderImageLoader(ImageLoader):
 
     def copy(self) -> ImageLoader:
         return FolderImageLoader(self._folder, self._file_name_format, self._min_time_point, self._max_time_point,
-                                 self._channel_offset, self._channel_offset + self._channel_count - 1)
+                                 self._file_channel_offset, self._file_channel_offset + self._channel_count - 1)
 
     def serialize_to_config(self) -> Tuple[str, str]:
         return self._folder, self._file_name_format
@@ -189,5 +192,5 @@ class FolderImageLoader(ImageLoader):
 
         file_name = path.join(self._folder, self._file_name_format.format(
             time=time_point.time_point_number(),
-            channel=image_channel.index_zero + self._channel_offset))
+            channel=image_channel.index_zero + self._file_channel_offset))
         write_image_czyx(file_name, image)
