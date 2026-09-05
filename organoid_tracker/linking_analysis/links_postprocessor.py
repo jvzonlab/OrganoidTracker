@@ -14,12 +14,16 @@ import numpy as np
 
 def postprocess(experiment: Experiment, margin_xy: int):
     _remove_positions_close_to_edge(experiment, margin_xy)
-    # _remove_spurs(experiment)
     _mark_positions_going_out_of_image(experiment)
 
 
-def finetune_solution(experiment: Experiment, experiment_result: Experiment):
+def finetune_solution(experiment_all: Experiment, experiment_result: Experiment, *, iterations: int):
     """Adds, deletes or swaps single links to lower the energy of the solution"""
+    for i in range(iterations):
+        _finetune_solution_single_iteration(experiment_all, experiment_result)
+
+
+def _finetune_solution_single_iteration(experiment: Experiment, experiment_result: Experiment):
     mothers = cell_division_finder.find_mothers(experiment_result.links, exclude_multipolar=False)
     links_result = experiment_result.links
     links_start = experiment.links
@@ -242,8 +246,6 @@ def finetune_solution(experiment: Experiment, experiment_result: Experiment):
             else:
                 experiment_result.links.remove_link(position, next_positions[1])
 
-    return experiment_result
-
 
 def connect_loose_ends(experiment: Experiment, experiment_result: Experiment, oversegmentation_penalty=2.0, window=4):
     """connects tracks broken up by overgsegmentation (---===---- -> ---------)"""
@@ -356,8 +358,6 @@ def connect_loose_ends(experiment: Experiment, experiment_result: Experiment, ov
 
     print('number of oversegmentations fixed:')
     print(len(oversegmentations_fixed))
-
-    return experiment_result, experiment
 
 
 def bridge_gaps(experiment: Experiment, experiment_result: Experiment, miss_penalty=2.0):
@@ -495,8 +495,6 @@ def bridge_gaps(experiment: Experiment, experiment_result: Experiment, miss_pena
     print('number of gaps fixed:')
     print(len(fixed) // 2)
 
-    return experiment_result, experiment
-
 
 def bridge_gaps2(experiment: Experiment, experiment_result: Experiment, miss_penalty=2.0):
     """connects tracks broken up by not having a proposed link between them (----____ -> ---------)"""
@@ -591,8 +589,6 @@ def bridge_gaps2(experiment: Experiment, experiment_result: Experiment, miss_pen
     print('number of gaps fixed:')
     print(len(fixed) // 2)
 
-    return experiment_result, experiment
-
 
 def pinpoint_divisions(experiment: Experiment, experiment_result: Experiment, min_penalty_diff=1.0):
     """if two cell detections are made before the division network expects a division we want to align these events """
@@ -641,10 +637,9 @@ def pinpoint_divisions(experiment: Experiment, experiment_result: Experiment, mi
 
                     experiment_result.links.add_link(next_positions[1], next_next_position)
 
-    return experiment_result, experiment
-
 
 def remove_tracks_too_deep(experiment: Experiment, max_z: int):
+    """Removes tracks where both the start and end is above max_z. Max_z is in image coordinates, not position coords."""
     loose_ends = list(experiment.links.find_disappeared_positions())
 
     for position in loose_ends:
@@ -666,10 +661,8 @@ def remove_tracks_too_deep(experiment: Experiment, max_z: int):
                     experiment.remove_positions(pasts)
                     experiment.remove_position(position)
 
-    return experiment
 
-
-def _remove_tracks_too_short(experiment_result: Experiment, experiment: Experiment, min_t: int):
+def remove_tracks_too_short(experiment_result: Experiment, experiment: Experiment, min_t: int):
     loose_start = list(
         experiment_result.links.find_appeared_positions(
             time_point_number_to_ignore=experiment.first_time_point_number()))
@@ -688,10 +681,8 @@ def _remove_tracks_too_short(experiment_result: Experiment, experiment: Experime
                 experiment_result.remove_positions(to_remove)
                 experiment.remove_positions(to_remove)
 
-    return experiment_result, experiment
 
-
-def _remove_spurs_division(experiment: Experiment, experiment_result: Experiment):
+def remove_spurs_division(experiment: Experiment, experiment_result: Experiment):
     mothers = cell_division_finder.find_mothers(experiment_result.links, exclude_multipolar=True)
 
     for position in mothers:
@@ -703,8 +694,6 @@ def _remove_spurs_division(experiment: Experiment, experiment_result: Experiment
                     and (daughter.time_point_number() != experiment.last_time_point_number()):
                 experiment_result.remove_position(daughter)
                 experiment.remove_position(daughter)
-
-    return experiment_result, experiment
 
 
 def _remove_positions_close_to_edge(experiment: Experiment, margin_xy: int):
@@ -721,7 +710,7 @@ def _remove_positions_close_to_edge(experiment: Experiment, margin_xy: int):
 
 def _mark_positions_going_out_of_image(experiment: Experiment):
     """Adds "going into view" and "going out of view" markers to all positions that fall outside the next or previous
-    image, in case the camera was moved."""
+    image, in case the image offset was moved."""
     for time_point in experiment.time_points():
         try:
             time_point_previous = experiment.get_previous_time_point(time_point)
@@ -754,27 +743,17 @@ def _add_out_of_view_markers(links: Links, positions: PositionCollection, positi
             linking_markers.set_track_start_marker(positions, linked_position, StartMarker.GOES_INTO_VIEW)
 
 
-def _remove_spurs(experiment: Experiment):
-    """Removes all very short tracks that end in a cell death."""
-    links = experiment.links
-    for position in list(links.find_appeared_positions()):
-        _check_for_and_remove_spur(experiment, links, position)
-
-
-def _remove_single_positions(experiment_result: Experiment, experiment: Experiment):
-    """Removes loose positions."""
-    positions = experiment_result.positions
+def remove_single_positions(experiment_result: Experiment, experiment: Experiment):
+    """Removes positions without any links in experiment_result from both experiments."""
     to_remove = []
 
-    for position in positions:
-        if (len(experiment_result.links.find_futures(position)) +
-            len(experiment_result.links.find_pasts(position))) == 0:
+    links = experiment_result.links
+    for position in experiment_result.positions:
+        if not links.contains_position(position):
             to_remove.append(position)
 
     experiment.remove_positions(to_remove)
     experiment_result.remove_positions(to_remove)
-
-    return experiment_result, experiment
 
 
 def _check_for_and_remove_spur(experiment: Experiment, links: Links, position: Position):
