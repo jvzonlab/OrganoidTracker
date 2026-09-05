@@ -156,7 +156,7 @@ class LinkModel(NamedTuple):
                        'input_distances': distances_zyx}
 
         # Predict
-        raw_predictions = keras.ops.convert_to_numpy(self.keras_model(input_array, training=False))
+        raw_predictions = self.keras_model.predict(input_array, verbose=0)
         raw_predictions = raw_predictions.flatten()
 
         # Apply Platt scaling

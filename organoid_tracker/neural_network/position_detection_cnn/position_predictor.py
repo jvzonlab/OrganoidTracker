@@ -359,8 +359,7 @@ class PositionModel(NamedTuple):
                                                                            anti_aliasing=False)
 
                     # Call the model
-                    prediction = \
-                    keras.ops.convert_to_numpy(self.keras_model(input_array[numpy.newaxis, ...], training=False))[0, :, :, :, 0]
+                    prediction = self.keras_model.predict(input_array[numpy.newaxis, ...], verbose=0)[0, :, :, :, 0]
 
                     debug_predictions.add_patch(patch, prediction, offset)
 
