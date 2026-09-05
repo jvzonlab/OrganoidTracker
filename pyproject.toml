@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "organoid_tracker"
+description = "3D cell tracking tool created for organoids, where cells are difficult to track because they form complex 3D tissue architectures, are tightly packed and can move rapidly. However, it also works well for other 3D and 2D cell systems."
+version = "2.2"
+requires-python = ">=3.11"
+readme = "README.md"
+dependencies = [
+#  "ilastik-forge::dpct",  -- Not on PyPI unfortunately, only on Conda.
+  "matplotlib",
+  "scikit-image",
+  "scikit-learn",
+  "scipy",
+  "keras",
+  "torch",
+  "tqdm"
+]
+
+[project.optional-dependencies]
+gui = [
+  "tifffile",
+  "nd2reader",
+  "pyside6",
+  "pandas",
+  "h5py",
+  "lifelines",
+  "markdown",
+  "aicspylibczi",
+  "zarr",
+  "geff"
+]
+
+
+[tool.hatch.build.targets.wheel]
+packages = ["organoid_tracker"]  # So that we can use `import organoid_tracker`
