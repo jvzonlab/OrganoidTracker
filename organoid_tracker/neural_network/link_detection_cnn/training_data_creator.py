@@ -29,7 +29,6 @@ from numpy import ndarray
 from organoid_tracker.core import TimePoint
 from organoid_tracker.core.experiment import Experiment
 from organoid_tracker.core.images import Images
-from organoid_tracker.gui import image_series_loader_dialog
 from organoid_tracker.linking import cell_division_finder, nearest_neighbor_linker
 from organoid_tracker.neural_network.image_loading import is_inside_image
 from organoid_tracker.neural_network.position_detection_cnn.training_data_creator import ImageWithPositions
