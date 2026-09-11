@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Tuple, NamedTuple, Iterable, List, Set
+from typing import Tuple, NamedTuple, Iterable, List, Set, Callable
 
 import keras
 import numpy
@@ -72,11 +72,20 @@ class DivisionModel(NamedTuple):
     platt_intercept: float
 
     def _iterate_patches(self, image_preloader: ImagePreloader, positions: PositionCollection, *,
-                         scale_factors_zyx: Tuple[float, float, float], intensity_quantiles: Tuple[float, float],
+                         scale_factors_zyx: Tuple[float, float, float],
+                         intensity_quantiles: Tuple[float, float],
+                         progress_callback: Callable[[float], None] = lambda _: None,
                          print_time_points: bool) -> Iterable[_PredictionPatch]:
+        first_time_point = positions.first_time_point()
+        last_time_point = positions.last_time_point()
+
         for time_point in positions.time_points():
             if print_time_points:
                 print(time_point.time_point_number(), end="  ", flush=True)
+            if progress_callback is not None:
+                progress = ((time_point.time_point_number() - first_time_point.time_point_number())
+                            / max(last_time_point.time_point_number() - first_time_point.time_point_number(), 1))
+                progress_callback(progress)
             positions_of_time_point = positions.of_time_point(time_point)
             if len(positions_of_time_point) == 0:
                 continue
@@ -91,6 +100,7 @@ class DivisionModel(NamedTuple):
                           scale_factors_zyx: Tuple[float, float, float] = (1.0, 1.0, 1.0),
                           intensity_quantiles: Tuple[float, float] = (0.01, 0.99),
                           print_time_points: bool = True,
+                          progress_callback: Callable[[float], None] = lambda _: None,
                           use_threading: bool = True):
         """Predict division probabilities for all positions in the given experiment."""
 
@@ -118,8 +128,11 @@ class DivisionModel(NamedTuple):
               older_time_points_to_keep=-self.time_window[0] + self.time_window[1])
               as image_preloader):
             patch_list: List[_PredictionPatch] = list()
-            for patch in self._iterate_patches(image_preloader, experiment.positions, scale_factors_zyx=scale_factors_zyx,
-                                               intensity_quantiles=intensity_quantiles, print_time_points=print_time_points):
+            for patch in self._iterate_patches(image_preloader, experiment.positions,
+                                               scale_factors_zyx=scale_factors_zyx,
+                                               intensity_quantiles=intensity_quantiles,
+                                               progress_callback=progress_callback,
+                                               print_time_points=print_time_points):
                 patch_list.append(patch)
                 if len(patch_list) == batch_size:
                     self._predict_batch(experiment, patch_list)

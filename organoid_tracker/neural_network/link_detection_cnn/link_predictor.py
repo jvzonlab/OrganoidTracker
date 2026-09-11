@@ -1,6 +1,6 @@
 import json
 import os
-from typing import NamedTuple, Tuple, Set, List, Iterable, Dict
+from typing import NamedTuple, Tuple, Set, List, Iterable, Dict, Callable
 
 import keras
 import numpy
@@ -42,6 +42,7 @@ class LinkModel(NamedTuple):
                           scale_factors_zyx: Tuple[float, float, float] = (1.0, 1.0, 1.0),
                           intensity_quantiles: Tuple[float, float] = (0.01, 0.99),
                           print_time_points: bool = True,
+                          progress_callback: Callable[[float], None] = lambda _: None,
                           use_threading: bool = True):
         """Predict division probabilities for all links in the given experiment."""
 
@@ -72,8 +73,11 @@ class LinkModel(NamedTuple):
         with (image_preloading.create_image_preloader(images, ImageChannel(index_zero=0), use_threading=use_threading,
               older_time_points_to_keep=-self.time_window[0] + self.time_window[1]) as image_preloader):
             patch_list: List[_PredictionPatch] = list()
-            for patch in self._iterate_patches(image_preloader, experiment.positions, possible_links, scale_factors_zyx=scale_factors_zyx,
-                                               intensity_quantiles=intensity_quantiles, print_time_points=print_time_points):
+            for patch in self._iterate_patches(image_preloader, experiment.positions, possible_links,
+                                               scale_factors_zyx=scale_factors_zyx,
+                                               intensity_quantiles=intensity_quantiles,
+                                               progress_callback=progress_callback,
+                                               print_time_points=print_time_points):
                 patch_list.append(patch)
                 if len(patch_list) == batch_size:
                     self._predict_batch(experiment, patch_list)
@@ -88,14 +92,21 @@ class LinkModel(NamedTuple):
                          *,
                          scale_factors_zyx: Tuple[float, float, float],
                          intensity_quantiles: Tuple[float, float],
+                         progress_callback: Callable[[float], None] = lambda _: None,
                          print_time_points: bool) -> Iterable[_PredictionPatch]:
 
+        first_time_point = positions.first_time_point()
+        last_time_point = positions.last_time_point()
         for time_point in positions.time_points():
-            if time_point == positions.last_time_point():
+            if time_point == last_time_point:
                 break  # At the end of the movie, cannot link to next time point
 
             if print_time_points:
                 print(time_point.time_point_number(), end="  ", flush=True)
+            if progress_callback is not None:
+                progress = ((time_point.time_point_number() - first_time_point.time_point_number())
+                            / max(last_time_point.time_point_number() - 1 - first_time_point.time_point_number(), 1))
+                progress_callback(progress)
 
             # Collect positions at this time point
             links_of_time_point = list()
