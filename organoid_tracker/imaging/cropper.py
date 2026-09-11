@@ -95,7 +95,7 @@ def crop_3d(image: ndarray, x_start: int, y_start: int, z_start: int, output: nd
     y_size = output.shape[1]
     z_size = output.shape[0]
 
-    if x_start + x_size <= 0 or y_start + y_size <= 0:
+    if x_start + x_size <= 0 or y_start + y_size <= 0 or z_start + z_size <= 0:
         return  # We're completely outside the image, nothing to do
     if x_start + x_size > image.shape[2]:
         x_size = image.shape[2] - x_start  # Partly outside image, reduce size
