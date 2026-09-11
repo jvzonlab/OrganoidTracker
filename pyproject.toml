@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "organoid_tracker"
 description = "3D cell tracking tool created for organoids, where cells are difficult to track because they form complex 3D tissue architectures, are tightly packed and can move rapidly. However, it also works well for other 3D and 2D cell systems."
-version = "2.2"
+version = "2.2.1"  # Just for TestPyPI, better to start at 2.2 when we do the actual release
 requires-python = ">=3.11"
 readme = "README.md"
 dependencies = [
