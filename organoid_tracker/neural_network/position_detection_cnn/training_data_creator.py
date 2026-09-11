@@ -73,10 +73,12 @@ class ImageWithPositions:
             return self.load_image(dt).shape
         return size
 
-    def load_image_time_stack(self, time_window: Union[List[int], Tuple[int, int]] = (0, 0), delay=0) -> Optional[ndarray]:
+    def load_image_time_stack(self, time_window: Union[List[int], Tuple[int, int]] = (0, 0), delay=0) -> ndarray:
         """Loads images in a time window. Returns a 4D array, [z, y, x, t]."""
 
         center_image = self.load_image(delay)
+        if center_image is None:
+            raise ValueError(f"Failed to load the center image. {self.experiment_name}, time point {self.time_point.time_point_number()} + {delay}")
         offset_ref = self._images.offsets.of_time_point(TimePoint(self.time_point.time_point_number() + delay))
         image_shape_ref = center_image.shape
 
