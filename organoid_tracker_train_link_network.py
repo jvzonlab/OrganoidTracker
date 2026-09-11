@@ -2,6 +2,8 @@
 
 """Script used to train the convolutional neural network, so that it can recognize the same nucleus across time points.
 """
+from tqdm import tqdm
+
 import _keras_environment
 _keras_environment.activate()
 
@@ -152,7 +154,7 @@ calibration_dataset = DataLoader(
 
 predicted_chances_all = []
 ground_truth_linked = []
-for sample in calibration_dataset:
+for sample in tqdm(calibration_dataset):
     output_element = model.predict(sample[0], verbose=0)
     predicted_chances_all += np.squeeze(output_element).tolist()
     ground_truth_linked += keras.ops.convert_to_numpy(sample[1]).tolist()
