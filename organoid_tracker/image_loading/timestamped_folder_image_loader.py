@@ -96,6 +96,10 @@ class _TimestampedImageLoader(ImageLoader):
         self._max_time_point_number = min_none(self._max_time_point_number, max_time_point_number)
 
     def create_timings(self) -> ImageTimings | None:
+        if len(self._file_paths) < 2:
+            # If we have only one time point, we can't create timings
+            return None
+
         pattern = re.compile(_DATE_PATTERN)
 
         timings_array_m = numpy.full(len(self._file_paths), -1, dtype=numpy.float64)
