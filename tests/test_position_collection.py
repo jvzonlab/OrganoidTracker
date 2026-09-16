@@ -35,6 +35,17 @@ class TestPositionCollection(unittest.TestCase):
         positions.set_position_data(position, "test_data", None)
         self.assertFalse(positions.has_position_data_with_name("test_data"))
 
+    def test_remove_all_data_with_name(self):
+        positions = PositionCollection()
+        position = Position(3, 5, 6, time_point_number=5)
+        positions.add(position)
+
+        positions.set_position_data(position, "test_data", True)
+        self.assertTrue(positions.has_position_data_with_name("test_data"))
+        positions.delete_data_with_name("test_data")
+
+        self.assertFalse(positions.has_position_data_with_name("test_data"))
+
     def test_time_offset(self):
         positions = PositionCollection()
         old_pos = Position(3, 5, 6, time_point_number=5)

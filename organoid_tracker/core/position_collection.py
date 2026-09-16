@@ -630,8 +630,15 @@ class PositionCollection:
 
     def delete_data_with_name(self, data_name: str):
         """Deletes the data with the given key, for all positions in the experiment."""
+        if not data_name in self._data_names_and_types:
+            return
+
+        # Remove from each time point
         for positions_at_time_point in self._all_positions.values():
             positions_at_time_point.delete_data_with_name(data_name)
+
+        # Also remove from index
+        del self._data_names_and_types[data_name]
 
     def find_all_data_names(self) -> Set[str]:
         """Finds all data_names"""
