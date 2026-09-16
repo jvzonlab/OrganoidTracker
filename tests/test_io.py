@@ -47,7 +47,7 @@ class TestIO(TestCase):
 
         with TemporaryDirectory() as directory:
             file = os.path.join(directory, "test." + io.FILE_EXTENSION)
-            io.save_data_to_json(experiment, file, write_new_format=True)
+            io.save_data_to_json(experiment, file)
 
             with open(file) as handle:
                 data = json.load(handle)
@@ -85,7 +85,7 @@ class TestIO(TestCase):
 
         with TemporaryDirectory() as directory:
             file = os.path.join(directory, "test." + io.FILE_EXTENSION)
-            io.save_data_to_json(experiment, file, write_new_format=True)
+            io.save_data_to_json(experiment, file)
 
             with open(file) as handle:
                 data = json.load(handle)
@@ -176,7 +176,7 @@ class TestIO(TestCase):
 
         with TemporaryDirectory() as directory:
             file = os.path.join(directory, "test." + io.FILE_EXTENSION)
-            io.save_data_to_json(experiment, file, write_new_format=True)
+            io.save_data_to_json(experiment, file)
 
             experiment = io.load_data_file(file, min_time_point=2, max_time_point=3)
             self.assertEqual(2, len(experiment.positions))
