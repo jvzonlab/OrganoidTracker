@@ -26,10 +26,11 @@ class TestIntensityCalculator(unittest.TestCase):
         positions.set_position_data(position_2, "intensity_volume", 100)
         positions.set_position_data(position_3, "intensity_volume", 200)
 
+        intensity_calculator.set_intensity_background(experiment, background_per_pixel=12/200)  # Such that position_3 is only background
         intensity_calculator.perform_intensity_normalization(experiment)
-        intensity1 = intensity_calculator.get_normalized_intensity(experiment, position_1)
-        intensity2 = intensity_calculator.get_normalized_intensity(experiment, position_2)
-        intensity3 = intensity_calculator.get_normalized_intensity(experiment, position_3)
+        intensity1 = intensity_calculator.get_normalized_intensity(experiment, position_1, per_pixel=True)
+        intensity2 = intensity_calculator.get_normalized_intensity(experiment, position_2, per_pixel=True)
+        intensity3 = intensity_calculator.get_normalized_intensity(experiment, position_3, per_pixel=True)
 
         print(intensity1, intensity2, intensity3)
 

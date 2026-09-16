@@ -1,9 +1,10 @@
 """Contains a lot of functions related to measuring intensity, averaged intensity and intensity derivatives."""
 
 import math
-from typing import Optional, Dict, List, Any, Callable
+from typing import Optional, Dict, List, Any, Callable, NamedTuple
 
 import numpy
+import scipy.stats
 from scipy.stats import linregress
 
 from organoid_tracker.core import UserError
@@ -153,8 +154,8 @@ def remove_intensities(experiment: Experiment, *, intensity_key: str = DEFAULT_I
     experiment.positions.delete_data_with_name(intensity_key)
     experiment.positions.delete_data_with_name(intensity_key + "_volume")
 
-    # Remove normalization
-    remove_intensity_normalization(experiment, intensity_key=intensity_key)
+    # Remove background (also removes any normalization)
+    set_intensity_background(experiment, None, intensity_key=intensity_key)
 
 
 def get_regular_intensity_keys(experiment: Experiment) -> List[str]:
@@ -290,12 +291,28 @@ def get_normalized_intensity(experiment: Experiment, position: Position, *, inte
     return (intensity - background_per_px * volume_px) * multiplier
 
 
+class NormalizationResult(NamedTuple):
+    normalized: bool  # Whether any normalization was applied
+    message: Optional[str] = None  # Any warning or error message to show to the user
+
+
 def perform_intensity_normalization(experiment: Experiment, *, background_correction: bool = False, z_correction: bool = False,
-                                    time_correction: bool = False, intensity_key: str = DEFAULT_INTENSITY_KEY):
-    """Performs intensity normalization for the given intensity key. The intensities will be multiplied
-    to obtain a median intensity of 1 at each z position if z_correction is True, or at every time point if
-    time_correction is True. If both z_correction and time_correction are False, the intensities will be multiplied to
-    obtain an overall median intensity of 1.
+                                    time_correction: bool = False, intensity_key: str = DEFAULT_INTENSITY_KEY,
+                                    intensity_key_source: Optional[str] = None) -> NormalizationResult:
+    """Performs intensity normalization for the given intensity key.
+
+    If z_correction and time_correction are both False, the overall median intensity will be normalized to 1.
+
+    If z_correction is True, a logarithmic fit will be performed to the intensities as a function of z, such that
+     the fitted intensity at each z position is normalized to 1.
+
+    If time_correction is True, a logarithmic fit will be performed to the intensities as a function of time,
+    such that the fitted intensity at each time point is normalized to 1.
+
+    intensity_key specifies the intensity to normalize, and intensity_key_source specifies the intensity to use for
+    calculating the normalization. You can for example use z_correction=True, intensity_key="intensity_gfp" and
+    intensity_key_source="intensity_dapi" to correct for extinction in Z, as measured by the DAPI intensity, and apply
+    that correction to the GFP intensity.
 
     This method only works for regular intensities, not for ratiometric intensities. It will silently fail if no
     regular intensity with the given key is found.
@@ -306,6 +323,10 @@ def perform_intensity_normalization(experiment: Experiment, *, background_correc
         raise UserError("Time and Z correction", "Cannot apply both a time and a z correction.")
     remove_intensity_normalization(experiment, intensity_key=intensity_key)
 
+    # Normalize using the intensities themselves if no different key was specified
+    if intensity_key_source is None:
+        intensity_key_source = intensity_key
+
     # Collect existing intensities, volumes, z and time values for this intensity
     intensities = list()
     volumes = list()
@@ -313,8 +334,8 @@ def perform_intensity_normalization(experiment: Experiment, *, background_correc
     ts = list()
 
     positions = experiment.positions
-    for position, intensity in positions.find_all_positions_with_data(intensity_key):
-        volume = positions.get_position_data(position, intensity_key + "_volume")
+    for position, intensity in positions.find_all_positions_with_data(intensity_key_source):
+        volume = positions.get_position_data(position, intensity_key_source + "_volume")
         if volume is None:
             continue
         if intensity == 0:
@@ -326,7 +347,7 @@ def perform_intensity_normalization(experiment: Experiment, *, background_correc
         ts.append(position.time_point_number())
 
     if len(intensities) == 0:
-        return
+        return NormalizationResult(normalized=False, message=f"No intensity data found for the intensity with the key '{intensity_key_source}'.")
 
     intensities = numpy.array(intensities, dtype=numpy.float32)
     volumes = numpy.array(volumes, dtype=numpy.float32)
@@ -334,26 +355,50 @@ def perform_intensity_normalization(experiment: Experiment, *, background_correc
     ts = numpy.array(ts, dtype=numpy.int32)
 
     # Apply the stored background correction
-    background_per_px = experiment.global_data.get_data(intensity_key + "_background_per_pixel")
+    background_per_px = experiment.global_data.get_data(intensity_key_source + "_background_per_pixel")
     if background_per_px is None:
         background_per_px = 0
     intensities -= volumes * background_per_px
 
+    # Transform the intensities to per-pixel values
+    intensities /= volumes
+
     # Now normalize the median to 1
+    warning = None
     if z_correction:
-        for z in range(int(numpy.min(zs)), int(numpy.max(zs)) + 1):
-            median = numpy.median(intensities[zs == z])
-            normalization_factor = float(1 / median)
-            experiment.global_data.set_data(intensity_key + "_multiplier_z" + str(z), normalization_factor)
+        # Normalize using a logarithmic fit
+        to_filter = intensities > 0
+        intensities_model = numpy.log(intensities[to_filter])
+        zs_model = zs[to_filter]
+        if len(zs_model) < 4:
+            warning = NormalizationResult(message="Not enough data points to fit a logarithmic curve by Z. Falling back to overall normalization.", normalized=True)
+        else:
+            model = scipy.stats.linregress(zs_model, intensities_model)
+            for z in range(int(numpy.min(zs)), int(numpy.max(zs)) + 1):
+                modelled_intensity = numpy.exp(model.intercept + model.slope * z)
+                normalization_factor = float(1 / modelled_intensity)
+                experiment.global_data.set_data(intensity_key + "_multiplier_z" + str(z), normalization_factor)
     elif time_correction:
-        for t in range(int(numpy.min(ts)), int(numpy.max(ts)) + 1):
-            median = numpy.median(intensities[ts == t])
-            normalization_factor = float(1 / median)
-            experiment.global_data.set_data(intensity_key + "_multiplier_t" + str(t), normalization_factor)
-    else:
-        median = numpy.median(intensities)
-        normalization_factor = float(1 / median)
-        experiment.global_data.set_data(intensity_key + "_multiplier", normalization_factor)
+        # Normalize using a logarithmic fit
+        to_filter = intensities > 0
+        intensities_model = numpy.log(intensities[to_filter])
+        ts_model = ts[to_filter]
+        if len(ts_model) < 4:
+            warning = NormalizationResult(message="Not enough data points to fit a logarithmic curve by time. Falling back to overall normalization.", normalized=True)
+        else:
+            model = scipy.stats.linregress(ts_model, intensities_model)
+            for t in range(int(numpy.min(ts)), int(numpy.max(ts)) + 1):
+                modelled_intensity = numpy.exp(model.intercept + model.slope * t)
+                normalization_factor = float(1 / modelled_intensity)
+                experiment.global_data.set_data(intensity_key + "_multiplier_t" + str(t), normalization_factor)
+
+    # Just normalize the overall median to 1
+    median = numpy.median(intensities)
+    normalization_factor = float(1 / median)
+    experiment.global_data.set_data(intensity_key + "_multiplier", normalization_factor)
+    if warning is not None:
+        return warning
+    return NormalizationResult(normalized=True)
 
 
 def remove_intensity_normalization(experiment: Experiment, *, intensity_key: str = DEFAULT_INTENSITY_KEY):
