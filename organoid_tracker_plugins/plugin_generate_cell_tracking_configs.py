@@ -142,7 +142,7 @@ def _generate_position_training_config(window: Window):
 
     # Ask if starting from a pretrained model
     model_folder = ""
-    if dialog.prompt_yes_no("Pretrained model", "Do you want to start training from a pretrained model?\n\nIf yes, you will be prompted to select the folder of the pretrained links network."):
+    if dialog.prompt_yes_no("Pretrained model", "Do you want to start training from a pretrained model?\n\nIf yes, you will be prompted to select the folder of the pretrained positions network."):
         model_folder = _get_model_folder("positions")
         if not model_folder:
             return  # Cancelled
@@ -220,7 +220,7 @@ def _generate_division_training_config(window: Window):
 
     # Ask if starting from a pretrained model
     model_folder = ""
-    if dialog.prompt_yes_no("Pretrained model", "Do you want to start training from a pretrained model?\n\nIf yes, you will be prompted to select the folder of the pretrained links network."):
+    if dialog.prompt_yes_no("Pretrained model", "Do you want to start training from a pretrained model?\n\nIf yes, you will be prompted to select the folder of the pretrained divisions network."):
         model_folder = _get_model_folder("divisions")
         if not model_folder:
             return  # Cancelled
