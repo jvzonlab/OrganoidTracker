@@ -50,7 +50,7 @@ def build_model(shape: Tuple, batch_size, learning_rate=0.0003):
 def load_pretrained_model(path, learning_rate=0.0003):
     # Load only 
     print(f"Loading pretrained model. from path: {path}")
-    pretrained = keras.models.load_model(os.path.join(path, "model.keras"))
+    pretrained = keras.models.load_model(os.path.join(path, "model.keras"), compile=False)
     model = keras.models.clone_model(pretrained)
     model.load_weights(os.path.join(path, "model.keras"))
 

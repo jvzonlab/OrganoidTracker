@@ -62,13 +62,13 @@ def build_model(shape: Tuple, batch_size, learning_rate=0.0005):
 def load_pretrained_model(path, learning_rate=0.0005):
     # Load only 
     print(f"Loading pretrained model. from path: {path}")
-    pretrained = keras.models.load_model(os.path.join(path, "model.keras"))
+    pretrained = keras.models.load_model(os.path.join(path, "model.keras"), compile=False)
     model = keras.models.clone_model(pretrained)
     model.load_weights(os.path.join(path, "model.keras"))
 
     model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
                   loss=loss, metrics=[position_recall, position_precision, overcount])
-
+    
     return model
 
 def conv_block(n_conv, layer, filters, kernel=3, pool_size=2, pool_strides=2, dropout=False, name=None, depth_wise= None):
