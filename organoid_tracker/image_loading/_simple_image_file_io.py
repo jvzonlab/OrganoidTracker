@@ -56,6 +56,10 @@ def _load_tiff_czyx(file_name: str) -> Optional[ndarray]:
         # noinspection PyTypeChecker
         array = numpy.squeeze(f.asarray(maxworkers=None))
         # ^ maxworkers=None makes image loader work on half of all cores
+        if len(array.shape) == 2:
+            # We have a 2D grayscale image, so we can just return it with the color and z axes added
+            # (got some files from the Incucyte microscope that reported 2 pages, but only returned one grayscale plane)
+            return array[numpy.newaxis, numpy.newaxis, ...]
         if len(f.pages) == 1:
             # If we have a single page, make it a 3D image anyways
             array = array[numpy.newaxis, ...]
