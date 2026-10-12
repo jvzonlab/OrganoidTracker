@@ -109,6 +109,8 @@ class FolderImageLoader(ImageLoader):
         if self._image_size_czyx is None:
             file_name = path.join(self._folder, self._file_name_format.format(time=self._min_time_point, channel=self._file_channel_offset))
             image_czyx = read_image_czyx(file_name)
+            if image_czyx is None:
+                return 1, 1, 1, 1  # No images, return a dummy size
             self._image_size_czyx = image_czyx.shape
         return self._image_size_czyx
 

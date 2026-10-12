@@ -54,13 +54,13 @@ def load_from_zarr_file(experiment: Experiment, file_name: str, min_time_point: 
 
             keys.remove("tracks")  # So that we don't try to read this as an image in the next step
         if len(keys) == 0:
-            return
+            return  # Fine if keys are empty after loading the tracking data, we just don't have any images to load
 
         # After reading the GEFF (if any), there are still other groups left
         # Hopefully these are the images
 
         # We currently only support one image in the OME-Zarr group, so we take the first one. If there are multiple, we ignore the others.
-        key = keys[0]
+        key = sorted(keys)[0]
         zarr_sub_entry = zarr_group_or_array[key]
 
         if isinstance(zarr_sub_entry, zarr.Array):
@@ -133,6 +133,9 @@ def _read_axis_order_from_geff(tracks_group: zarr.Group) -> str:
 def _read_axes_order_from_attrs(attributes: Attributes) -> Optional[str]:
     """Reads the attributes of a ZARR file, to figure out the axis order.
     Returned string uses letters from _SUPPORTED_AXIS."""
+    if "ome" in attributes:
+        attributes = attributes["ome"]  # For some images, the metadata is wrapped in an "ome" attribute
+
     if "multiscales" not in attributes:
         return None  # Right now, we only support the axes metadata in the "multiscales" format
 
@@ -160,6 +163,9 @@ def _set_experiment_name(experiment: Experiment, file_name: str):
 
 
 def _set_experiment_resolution(experiment: Experiment, attributes: Attributes):
+    if "ome" in attributes:
+        attributes = attributes["ome"]  # For some images, the metadata is wrapped in an "ome" attribute
+
     if "multiscales" not in attributes:
         return  # Right now, we only support the axes metadata in the "multiscales" format
 
@@ -199,7 +205,7 @@ def _set_experiment_resolution(experiment: Experiment, attributes: Attributes):
         elif axis_name == "t":
             if axis_unit not in unit_conversion.MULTIPLICATION_FACTOR_TO_MINUTES:
                 continue  # Can't handle this unit, so we skip it
-            time_resolution_minutes = scale * unit_conversion.MULTIPLICATION_FACTOR_TO_MINUTES[axis_unit] * 60  # Convert to minutes
+            time_resolution_minutes = scale * unit_conversion.MULTIPLICATION_FACTOR_TO_MINUTES[axis_unit]  # Convert to minutes
     if x_resolution_um is not None and y_resolution_um is not None:
         # Got enough information, we can set a resolution
         resolution = ImageResolution(x_resolution_um, y_resolution_um, z_resolution_um, time_resolution_minutes)
