@@ -1,6 +1,6 @@
 import os.path
 from threading import Lock
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Union
 
 import numpy
 import tifffile
@@ -42,24 +42,31 @@ class _MergedTiffImageLoader(ImageLoader):
     @staticmethod
     def _init_channels(axes: str, shape: Tuple[int, ...]) -> List[ImageChannel]:
         """Returns a list of all available channels."""
-        channel_count = 1
-        try:
+        if "S" in axes and "C" in axes:
+            raise UserError("Unsupported image", "TIFF file is too complex. It has both a 'C' channel"
+                                                 " axis and an 'S' RGB channel axis. We can only read one of them,"
+                                                 " not both.")
+        if "C" in axes:
+            # C channel axis
             channel_index = axes.index("C")
             channel_count = shape[channel_index]
-        except ValueError:
-            pass  # No channel axis
+            return [ImageChannel(index_zero=i) for i in range(channel_count)]
+        if "S" in axes:
+            # RGB(A) channel axis
+            channel_index = axes.index("S")
+            channel_count = shape[channel_index]
+            return [ImageChannel(index_zero=i) for i in range(channel_count)]
 
-        return [ImageChannel(index_zero=i) for i in range(channel_count)]
+        # Only one channel
+        return [ImageChannel(index_zero=0)]
 
     @staticmethod
-    def _init_image_size_zyx(axes: str, shape: Tuple[int, ...]) -> Tuple[int, int, int]:
+    def _init_image_size_zyxs(axes: str, shape: Tuple[int, ...]) -> Tuple[int, int, int]:
         x_size = shape[axes.index("X")]
         y_size = shape[axes.index("Y")]
-        try:
-            z_size = shape[axes.index("Z")]
-        except ValueError:
-            z_size = 1  # No Z-axis
-        return z_size, y_size, x_size
+        z_size = shape[axes.index("Z")] if "Z" in axes else 1
+        s_size = shape[axes.index("S")] if "S" in axes else 1
+        return z_size, y_size, x_size, s_size
 
     @staticmethod
     def _get_highest_time_point(axes: str, shape: Tuple[int, ...]) -> int:
@@ -78,9 +85,8 @@ class _MergedTiffImageLoader(ImageLoader):
     _file_name: str
     _axes: str
     _shape: Tuple[int, ...]
-    _is_rgb: bool = False
     _channels: List[ImageChannel]
-    _image_size_zyx: Tuple[int, int, int]
+    _image_size_zyxs: Tuple[int, int, int, int]
     _min_time_point_number: int
     _max_time_point_number: int
 
@@ -96,13 +102,13 @@ class _MergedTiffImageLoader(ImageLoader):
             self._axes = "ZYX"  # Q means 'other/unknown'. Assume a QYX image is an ZYX image
         self._shape = self._tiff_series.shape
 
-        if self._axes[-2:] != "YX":
+        if not self._axes.endswith("YX") and not self._axes.endswith("YXS"):
             self._tiff.close()
-            raise UserError("Unsupported image", "We can only read TIF-stacks of black-and-white images, not RGB(A)"
-                                                 " stacks.\nThis data format (" + self._axes + ") is therefore not supported.")
+            raise UserError("Unsupported image", "Last axes of the data format must by YX or YXS."
+                                                 "\nThis data format (" + self._axes + ") is therefore not supported.")
 
         self._channels = self._init_channels(self._axes, self._shape)
-        self._image_size_zyx = self._init_image_size_zyx(self._axes, self._shape)
+        self._image_size_zyxs = self._init_image_size_zyxs(self._axes, self._shape)
         self._min_time_point_number = max_none(0, min_time_point_number)
         self._max_time_point_number = min_none(self._get_highest_time_point(self._axes, self._shape),
                                                max_time_point_number)
@@ -129,7 +135,14 @@ class _MergedTiffImageLoader(ImageLoader):
     def _has_wrong_page_count(self) -> bool:
         """Some files (over 2 GB) have an apparently incorrect page count. This method returns True if that is the case.
         In that case, more low-level page reading functions need to be used."""
-        expected_page_count = numpy.prod(self._shape[0:-2])  # Every page is a 2D image
+        time_point_count = self._max_time_point_number - self._min_time_point_number + 1
+
+        # Channels can be stored within a page (S axis) or as separate pages (C axis)
+        channel_page_count = len(self._channels) if "C" in self._axes else 1
+
+        z_count = self._image_size_zyxs[0]
+        expected_page_count = time_point_count * channel_page_count * z_count
+
         page_count = len(self._tiff_series.pages)
         return page_count == 1 and expected_page_count > 1
 
@@ -140,10 +153,14 @@ class _MergedTiffImageLoader(ImageLoader):
         if image_channel.index_zero >= len(self._channels):
             return None  # Invalid channel
 
+        z_size = self._image_size_zyxs[0]
         with self._tiff_lock:
-            out = tifffile.create_output(None, self._image_size_zyx, self._tiff_series.dtype)
-            for z in range(self._image_size_zyx[0]):
-                self._get_2d_image_array(time_point.time_point_number(), image_channel.index_zero, z, out[z])
+            out = tifffile.create_output(None, (z_size, *self._get_tiff_page_shape()), self._tiff_series.dtype)
+            for z in range(self._image_size_zyxs[0]):
+                self._read_tiff_page(time_point.time_point_number(), image_channel.index_zero, z, out[z])
+        if len(out.shape) == 4:
+            # We have an RGB(A) image, so only return one channel
+            out = out[:, :, :, image_channel.index_zero]
         return out
 
     def get_2d_image_array(self, time_point: TimePoint, image_channel: ImageChannel, image_z: int) -> Optional[ndarray]:
@@ -152,16 +169,19 @@ class _MergedTiffImageLoader(ImageLoader):
             return None  # Time out of range
         if image_channel.index_zero >= len(self._channels):
             return None  # Invalid channel
-        if image_z < 0 or image_z >= self._image_size_zyx[0]:
+        if image_z < 0 or image_z >= self._image_size_zyxs[0]:
             return None  # Z out of range
 
         with self._tiff_lock:
-            out = tifffile.create_output(None, self._image_size_zyx[1:], self._tiff_series.dtype)
-            self._get_2d_image_array(time_point.time_point_number(), image_channel.index_zero, image_z, out)
+            out = tifffile.create_output(None, self._get_tiff_page_shape(), self._tiff_series.dtype)
+            self._read_tiff_page(time_point.time_point_number(), image_channel.index_zero, image_z, out)
+        if len(out.shape) == 3:
+            # We have an RGB(A) image, so only return one channel
+            out = out[:, :, image_channel.index_zero]
         return out
 
     def get_image_size_zyx(self) -> Optional[Tuple[int, int, int]]:
-        return self._image_size_zyx
+        return self._image_size_zyxs[0], self._image_size_zyxs[1], self._image_size_zyxs[2]
 
     def first_time_point_number(self) -> Optional[int]:
         return self._min_time_point_number
@@ -180,14 +200,17 @@ class _MergedTiffImageLoader(ImageLoader):
 
     def _get_offset(self, t: int, c: int, z: int, item_size: int) -> int:
         """Gets the pixel offset for the given 2D image."""
-        offset = self._get_2d_page_number(t, c, z) * self._image_size_zyx[1] * self._image_size_zyx[2] * item_size
-        return int(offset + self._tiff_series.dataoffset)
+        offset = self._get_2d_page_number(t, c, z) * self._image_size_zyxs[1] * self._image_size_zyxs[2] * self._image_size_zyxs[3] * item_size
+        tiff_data_offset = self._tiff_series.dataoffset
+        if tiff_data_offset is None:
+            tiff_data_offset = 0
+        return int(offset + tiff_data_offset)
 
     def _get_2d_page_number(self, t: int, c: int, z: int) -> int:
         """Gets the page number for the given 2D image.
 
         Note: this method must be called from within a synchronized block."""
-        skip_axes = 3 if self._is_rgb else 2
+        skip_axes = 3 if "S" in self._axes else 2
         page = 0
         for i in range(len(self._axes) - skip_axes):
             axis = self._axes[i]
@@ -200,7 +223,7 @@ class _MergedTiffImageLoader(ImageLoader):
                 page += c * multiplier
         return int(page)
 
-    def _get_2d_image_array(self, t: int, c: int, z: int, out: ndarray):
+    def _read_tiff_page(self, t: int, c: int, z: int, out: ndarray):
         """Reads a 2D image array into the given output array. No range checks are performed. Make sure that the
         out array is created using tifffile.create_output(...).
 
@@ -212,7 +235,7 @@ class _MergedTiffImageLoader(ImageLoader):
         else:
             # Need to fiddle with bytes :(. Irfanview also has trouble with these files, tifffile is not the only one.
             offset = self._get_offset(t, c, z, self._tiff_series.dtype.itemsize)
-            shape_2d = self._shape[-2:]
+            shape_2d = self._get_tiff_page_shape()
             type_code = self._tiff.byteorder + self._tiff_series.dtype.char
             self._tiff.filehandle.seek(offset)
             self._tiff.filehandle.read_array(type_code, numpy.prod(shape_2d), out=out)
@@ -246,3 +269,10 @@ class _MergedTiffImageLoader(ImageLoader):
                              compressionargs={"level": 9})
             self._tiff = TiffFile(self._file_name)
             self._tiff_series = self._tiff.series[0]
+
+    def _get_tiff_page_shape(self) -> Union[Tuple[int, int], Tuple[int, int, int]]:
+        """Gets the shape of a single page in the TIFF file. Returns (Y, X) for grayscale images or
+        (Y, X, S) for RGB(A) images."""
+        if "S" in self._axes:
+            return self._image_size_zyxs[1], self._image_size_zyxs[2], self._image_size_zyxs[3]
+        return self._image_size_zyxs[1], self._image_size_zyxs[2]
